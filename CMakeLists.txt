@@ -30,7 +30,7 @@ set(Teem_VERSION_MAJOR "1")
 set(Teem_VERSION_MINOR "12")
 set(Teem_VERSION_PATCH "0")
 
-# Set the C standard to C11 for all targets in this directory
+# Set the C standard to C99 for all targets in this directory
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 

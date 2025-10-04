@@ -242,20 +242,30 @@ been able to figure out who set this up, in order to get it fixed or updated.
 * The tests in teem/Testing are slowly accumulating.  Much of the effort in
 ongoing Teem development will be in creating and strengthening tests.
 
-* Prior to TeemV2, Teem is 99.9% ANSI C89. For TeemV2 some libraries outside
-NrrdIO are starting to adopt C99 and C11, because of the improvements they offer.
-Aside from those, the known ways that Teem code isn't C89:
+* Prior to TeemV2, Teem is 99.9% ANSI C89. The code that goes into NrrdIO should
+remain as close as possible to C89, hopefully not straying further than these:
  - using the "long long" type qualifier to generate 64-bit ints (on *nix,
    and __int64 on Windows).
  - various strings created at compile time, often via the automatic
    "foo" "bar" --> "foobar" string concatenation, exceed the length
    509 guaranteed to be supported by the standard
- - using snprintf() and fileno(), which are POSIX but not ANSI C
+ - using snprintf() and fileno(), which are POSIX but not ANSI C89
 Note that automatic conversion from a non-void* to a void*, in the specific
 case of supplying the value for a %p argument to a printf-like function, is not
 actually in C89: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=26542 The
-AIR_VOIDP(x) and AIR_CVOIDP(x) macros are used to cast x to void* or const void
-* in this context.
+AIR_VOIDP(x) and AIR_CVOIDP(x) macros are used to cast x to void* or const void*
+to avoid warnings.
+
+* With TeemV2, more of C99 and C11 are being used, because of their real benefit:
+ - // comments
+ - * variables declared mid-block
+ - __func__ instead of manually written static cont char me[]="functionname"
+ - compound literals
+ - designated initializers for structs (these last two great for airEnum creation)
+ - snprintf, vsnprintf
+Things in C99 that should NOT be used in Teem:
+ - variable-length arrays (because they are blind-spots for valgrind)
+ - <tgmath.h> (magical awesomeness but unsure of MSVC support)
 
 * Compiling with various warnings can help reveal bugs and potential problems.
 The advice here is relevant for Teem:
@@ -266,7 +276,7 @@ However, -Wmissing-prototypes complains about a missing prototype even for
 local (static) functions that aren't used outside a given file, which is very
 common in Teem, and adding their protoypes would be onerous (and for similar
 reasons -Wmissing-declarations is not helpful).  So what has proven useful for
-development is:
+development of Teem as a whole is:
 
   gcc -O2 -std=c99 -pedantic \
    -W -Wall -Wextra -Wno-long-long -Wno-overlength-strings \
