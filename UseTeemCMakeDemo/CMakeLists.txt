@@ -1,14 +1,31 @@
-project (SampleTeemUsingProject)
 
-cmake_minimum_required(VERSION 3.13...3.15)
+# Shows how to use CMake to make an executable that depends on Teem
 
-if(${CMAKE_VERSION} VERSION_LESS 3.15)
-    cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
-else()
-    cmake_policy(VERSION 3.15)
-endif()
+# Actually this version requirement may be needlessly high; an earlier
+# CMake version may also work; probably anything above 3.0
+cmake_minimum_required(VERSION 3.14)
 
+# Set (demo) project name, initialize compiler detection and compiler flags
+project(DemoOfUsingTeem LANGUAGES C)
+
+# Find Teem (must be installed in CMAKE_PREFIX_PATH or default system paths)
 find_package(Teem REQUIRED)
-add_executable(sanity sanity.c)
-target_include_directories(sanity PRIVATE ${Teem_INCLUDE_DIRS})
-target_link_libraries(sanity teem)
+
+# Associate one executable testio with project
+add_executable(testio testio.c)
+
+# Link testio against the imported target, which brings in include paths and
+# transitive dependencies automatically
+target_link_libraries(testio PRIVATE Teem::Teem)
+
+# Give the installed binary an LC_RPATH that points at the actual libteem location
+set_target_properties(testio PROPERTIES
+  INSTALL_RPATH "$<TARGET_FILE_DIR:Teem::Teem>"
+  # Optional but nice for running from the build tree on non-Apple platforms too:
+  BUILD_RPATH   "$<TARGET_FILE_DIR:Teem::Teem>"
+)
+
+# Install the testio binary into ${CMAKE_INSTALL_PREFIX}/bin
+install(TARGETS testio
+  RUNTIME DESTINATION bin     # for executables on all platforms
+)

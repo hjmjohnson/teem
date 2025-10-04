@@ -1,16 +1,8 @@
-# This variable will help provide a master list of all the sources.
-# Add new source files here.
-set(HEST_SOURCES
-  defaultsHest.c
-  hest.h
-  methodsHest.c
-  parseHest.c
-  privateHest.h
-  usage.c
-  adders.c
-  argvHest.c
-  )
-
-target_sources(teem PRIVATE ${HEST_SOURCES})
-# This will group all the source files in the VS project by directory
-source_group( hest FILES ${HEST_SOURCES} )
+_Teem_add_library(${CMAKE_CURRENT_SOURCE_DIR}
+  SOURCES
+    adders.c argvHest.c defaultsHest.c methodsHest.c parseHest.c parsest.c usage.c
+    # private header
+    privateHest.h
+  PUBLIC_HEADERS
+    hest.h
+)

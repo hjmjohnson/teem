@@ -1,87 +1,17 @@
-# This variable will help provide a master list of all the sources.
-# Add new source files here.
-set(UNRRDU_SOURCES
-  fft.c
-  i2w.c
-  w2i.c
-  1op.c
-  2op.c
-  3op.c
-  affine.c
-  about.c
-  built.c
-  axdelete.c
-  axinfo.c
-  basinfo.c
-  axinsert.c
-  axmerge.c
-  axsplit.c
-  block.c
-  ccadj.c
-  ccfind.c
-  ccmerge.c
-  ccsettle.c
-  cmedian.c
-  convert.c
-  crop.c
-  acrop.c
-  data.c
-  dering.c
-  dhisto.c
-  dice.c
-  dist.c
-  env.c
-  flip.c
-  flotsam.c
-  gamma.c
-  head.c
-  heq.c
-  histax.c
-  histo.c
-  imap.c
-  inset.c
-  jhisto.c
-  join.c
-  lut.c
-  lut2.c
-  make.c
-  minmax.c
-  cksum.c
-  diff.c
-  dnorm.c
-  vidicon.c
-  grid.c
-  ilk.c
-  ninspect.c
-  hack.c
-  aabplot.c
-  undos.c
-  uncmt.c
-  mlut.c
-  mrmap.c
-  pad.c
-  permute.c
-  privateUnrrdu.h
-  project.c
-  quantize.c
-  resample.c
-  reshape.c
-  rmap.c
-  save.c
-  shuffle.c
-  slice.c
-  sselect.c
-  splice.c
-  subst.c
-  swap.c
-  tile.c
-  unorient.c
-  unquantize.c
-  unrrdu.h
-  untile.c
-  unblock.c
+_Teem_add_library(${CMAKE_CURRENT_SOURCE_DIR}
+  SOURCES
+    flotsam.c
+    1op.c 2op.c 3op.c aabplot.c about.c acrop.c affine.c axdelete.c axinfo.c
+    axinsert.c axmerge.c axsplit.c basinfo.c block.c built.c ccadj.c ccfind.c
+    ccmerge.c ccsettle.c cksum.c cmedian.c convert.c crop.c data.c dering.c
+    dhisto.c dice.c diff.c dist.c dnorm.c env.c fft.c flip.c gamma.c grid.c hack.c
+    head.c heq.c histax.c histo.c i2w.c ilk.c imap.c inset.c jhisto.c join.c lut.c
+    lut2.c make.c minmax.c mlut.c mrmap.c ninspect.c pad.c permute.c project.c
+    quantize.c resample.c reshape.c rmap.c save.c shuffle.c slice.c splice.c
+    sselect.c subst.c swap.c tile.c unblock.c uncmt.c undos.c unorient.c
+    unquantize.c untile.c vidicon.c w2i.c
+    # private header
+    privateUnrrdu.h
+  PUBLIC_HEADERS
+    unrrdu.h
 )
-
-target_sources(teem PRIVATE ${UNRRDU_SOURCES})
-# This will group all the source files in the VS project by directory
-source_group( unrrdu FILES ${UNRRDU_SOURCES} )

@@ -1,67 +1,66 @@
-#
-# Teem: Tools to process and visualize scientific data and images
-# Copyright (C) 2009--2025  University of Chicago
-# Copyright (C) 2005--2008  Gordon Kindlmann
-# Copyright (C) 1998--2004  University of Utah
-#
-# This library is free software; you can redistribute it and/or modify it under the terms
-# of the GNU Lesser General Public License (LGPL) as published by the Free Software
-# Foundation; either version 2.1 of the License, or (at your option) any later version.
-# The terms of redistributing and/or modifying this software also include exceptions to
-# the LGPL that facilitate static linking.
-#
-# This library is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-# PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
-# You should have received a copy of the GNU Lesser General Public License
-# along with this library; if not, see <https://www.gnu.org/licenses/>.
-#
+# Define a helper for Teem command-line tools
+function(teem_add_executable name)
+  add_executable(${name} ${ARGN})
+  target_link_libraries(${name} PRIVATE Teem)
 
-macro(CREATE_EXEC name sources)
-  add_executable(${name} ${sources})
-  target_link_libraries(${name} teem)
   install(TARGETS ${name}
     RUNTIME DESTINATION ${BIN_INSTALL_DIR}
     COMPONENT Runtime
+  )
+  if(WIN32 AND BUILD_SHARED_LIBS)
+    # Ensure every exe ${name} sees the DLL by copying it to their output folder
+    add_custom_command(TARGET ${name} POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+              $<TARGET_FILE:Teem>
+              $<TARGET_FILE_DIR:${name}>
     )
-  set_target_properties(${name} PROPERTIES
-    INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib
-    )
-endmacro()
+  endif()
+endfunction()
 
-# unu starts by calling nrrdSanityOrDie; other build info moved to "unu built"
-# CREATE_EXEC(nrrdSanity nrrdSanity.c)
-CREATE_EXEC(overrgb overrgb.c)
-CREATE_EXEC(mrender mrender.c)
-CREATE_EXEC(miter miter.c)
-CREATE_EXEC(vprobe vprobe.c)
-CREATE_EXEC(gprobe gprobe.c)
-# CREATE_EXEC(ninspect ninspect.c)  # moved to "unu ninspect"
-CREATE_EXEC(unu unu.c)
-CREATE_EXEC(puller puller.c)
-CREATE_EXEC(tend tend.c)
+# List of all Teem command-line tools.  TeemV2 stripped down the number of tools built;
+# those no longer built are commented out below, with explanation.  TeemV2 also dropped
+# the increasingly annoying BUILD_EXPERIMENTAL_LIBS and BUILD_EXPERIMENTAL_APPS toggles
+set(Teem_EXECUTABLES
+  # airSanity: all its tests are included in nrrdSanity
+  # nrrdSanity: no needed since unu starts by calling nrrdSanityOrDie
+  #     and the other build info it provided is now produced by the new "unu built"
+  # cubic: just calls ell_cubic; now more easily done via Python wrappers
+  # qbert: created for volume rendering on GPUs from 20 years ago
+  # ilk: now available as "unu ilk"
+  # emap, deconv, gkms, spots: functionality not currently handled elsewhere, but
+  #     probably not actually used by anyone?
+  #     If you disagree say so: https://discord.gg/xBBqZGXkF7
+  #     Also, these are still available via GNUmakefiles
+  # talkweb: the web has changed in 20 years
+  # pprobe: functionality available via "gprobe -pp"
+  # ungantry: functionality available via "gprobe -pg" and an appropriate grid
+  # ninspect: moved to "unu ninspect"
+  overrgb
+  mrender
+  miter
+  vprobe
+  gprobe
+  unu
+  puller
+  tend
+)
 
-### For TeemV2, these were removed from compilation: they have no compelling
-### general purpose, for reasons indicated with further comments. No reason
-### to delete the sources though; they can still be compiled by other means.
-##
-## NOTE: The BUILD_EXPERIMENTAL_LIBS-dependent inclusion of binaries has to be
-## done with knowledge of how BUILD_EXPERIMENTAL_LIBS behaves in the top-level
-## CMakeLists.txt file
-# if(BUILD_EXPERIMENTAL_APPS)
-#   CREATE_EXEC(airSanity airSanity.c)  # tests included in nrrdSanity
-#   CREATE_EXEC(cubic cubic.c) # just calls ell_cubic; more easily done via Python wrappers
-#   CREATE_EXEC(qbert qbert.c) # created for volume rendering on GPUs from 20 years ago
-#   CREATE_EXEC(ilk ilk.c)     # now part of unu: "unu ilk"
-#   CREATE_EXEC(emap emap.c)     # functionality not currently handled elsewhere,
-#                                  but nor is it is really needed for anything
-#   CREATE_EXEC(talkweb talkweb.c)   # the web has changed in 20 years
-#   CREATE_EXEC(pprobe pprobe.c)     # gprobe can do this
-#   CREATE_EXEC(ungantry ungantry.c) # gprobe can do this
-#    CREATE_EXEC(deconv deconv.c) # functionality not currently handled elsewhere,
-#                                   but nor is it is really needed for anything
-#   if(BUILD_EXPERIMENTAL_LIBS)
-#     CREATE_EXEC(gkms gkms.c)   # hasn't been tested in a long time
-#     CREATE_EXEC(spots spots.c) # hasn't been tested in a long time
-#   endif()
-# endif()
+# Define each executable
+foreach(exec IN LISTS Teem_EXECUTABLES)
+  teem_add_executable(${exec} ${exec}.c)
+endforeach()
+
+# Collect source files for IDE grouping
+set(_Teem_EXEC_SOURCES)
+foreach(exec IN LISTS Teem_EXECUTABLES)
+  list(APPEND _Teem_EXEC_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/${exec}.c")
+endforeach()
+
+# IDE grouping: use TREE so folder structure is preserved
+# and PREFIX "Teem/src/bin" so all executables appear under a single top-level folder,
+# alongside the other component libraries
+source_group(
+  TREE "${CMAKE_CURRENT_SOURCE_DIR}"
+  PREFIX "Teem/src/bin"
+  FILES ${_Teem_EXEC_SOURCES}
+)
