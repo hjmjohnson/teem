@@ -41,7 +41,7 @@ http://www.cmake.org/
 An example sequence of commands to build Teem and the "unu" utility
 (with static-linking):
 
-  svn co https://svn.code.sf.net/p/teem/code/teem/trunk teem-src
+  git clone http://git.code.sf.net/p/teem/teem.git teem-src
   TEEM_SRC=$(cd teem-src && pwd)
   TEEM_INSTALL=$(mkdir teem-install && cd teem-install && pwd)
   mkdir teem-build && cd teem-build
