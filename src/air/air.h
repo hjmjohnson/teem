@@ -40,15 +40,15 @@
 ** _MAJOR, _MINOR, _PATCH numbers are the components.
 ** NOTE: In ../../CMakeLists.txt, Teem_VERSION variables record the same values.
 ** Yes, keeping the below in sync, and in sync with ../../CMakeLists.txt,
-** is a manual operation.
+** is a manual operation.  See also airTeemReleaseDate in miscAir.c
 */
 /* clang-format off */
-#define TEEM_VERSION_MAJOR   1       /* must be 1 digit */
-#define TEEM_VERSION_MINOR    12     /* 1 or 2 digits */
+#define TEEM_VERSION_MAJOR   0       /* must be 1 digit */
+#define TEEM_VERSION_MINOR    00     /* 1 or 2 digits */
 #define TEEM_VERSION_PATCH      00   /* 1 or 2 digits */
-#define TEEM_VERSION         11200   /* must be 5 digits, to facilitate
+#define TEEM_VERSION         20000   /* must be 5 digits, to facilitate
                                         easy numerical comparison */
-#define TEEM_VERSION_STRING "1.12.0" /* cannot be so easily compared */
+#define TEEM_VERSION_STRING "2.00.0" /* cannot be so easily compared */
 /* clang-format on */
 
 /* NrrdIO-hack-000 */

@@ -39,7 +39,7 @@
 */
 const char *const airTeemVersion = TEEM_VERSION_STRING;
 const int airTeemReleaseDone = AIR_FALSE;
-const char *const airTeemReleaseDate = "maybe 2019 or 2020";
+const char *const airTeemReleaseDate = "hopefully 2025";
 
 /*
 ******** airTeemVersionSprint
