@@ -70,9 +70,6 @@ main() {
     size0 = size1;
   }
 
-  /* http://teem.svn.sourceforge.net/viewvc/teem/teem/trunk/src/nrrd/nrrdMacros.h?r1=3931&r2=4587
-     BUG: previous version causes array subscript is below array bounds.  */
-
   /* 00000000000000000000000000000000000000000000000 */
   /* using coord0 == size0 == NULL here is to make sure that its not even
      accessed */
