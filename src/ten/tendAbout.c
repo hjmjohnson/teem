@@ -31,8 +31,9 @@ tend_aboutMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                 "library in the \"Teem\" collection of libraries.  More information "
                 "about Teem is at <http://teem.sf.net>. A checkout of Teem source "
                 "is available via:\n "
-                "svn co http://svn.code.sf.net/p/teem/code/teem/trunk teem\n ";
-  /* "svn co http://teem.svn.sf.net/svnroot/teem/teem/trunk teem\n "; */
+                "git clone http://git.code.sf.net/p/teem/teem.git\n ";
+  /* old: "svn co http://svn.code.sf.net/p/teem/code/teem/trunk teem\n "; */
+  /* older: "svn co http://teem.svn.sf.net/svnroot/teem/teem/trunk teem\n "; */
   char par2[]
     = "\t\t\t\t"
       "Long-term maintenance of this software depends on funding, and "

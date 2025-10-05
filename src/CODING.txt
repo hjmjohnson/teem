@@ -236,11 +236,11 @@ functions can use whatever name they want.
 
 http://my.cdash.org/index.php?project=Teem
 
-but this has not been updated with a correct svn checkout and GLK has never
+but this has not been updated with a correct source checkout and GLK has never
 been able to figure out who set this up, in order to get it fixed or updated.
 
 * The tests in teem/Testing are slowly accumulating.  Much of the effort in
-ongoing Teem development will be in creating and strengthening tests.
+ongoing Teem development should be in creating and strengthening tests.
 
 * Prior to TeemV2, Teem is 99.9% ANSI C89. The code that goes into NrrdIO should
 remain as close as possible to C89, hopefully not straying further than these:

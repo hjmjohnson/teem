@@ -71,6 +71,7 @@ scp index.html kindlmann,teem@web.sourceforge.net:/home/project-web/teem/htdocs
   and make sure Windows stuff also still works (if new files or
   libraries were added)
 
+HEY everything about svn needs to now be about git
 2) svn "tag":
 setenv VERSION <<version>>
 svn copy https://svn.code.sf.net/p/teem/code/teem/trunk \

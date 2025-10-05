@@ -1,43 +1,16 @@
 ** Below are some non-trivial coding tasks that would help Teem a lot,
-** starting with the most important.  Compared to things in TODO.txt,
-** these are more generally useful, and can be done prior to working
-** on Teem 2.0 because they don't involve API changes.
+** starting with the most important.
 
 
-Update NrrdIO's CMakeLists.txt file.  While Teem has an ok and maintained
-CMakeLists.txt file:
-<http://sourceforge.net/p/teem/code/HEAD/tree/teem/trunk/CMakeLists.txt#l86>
-NrrdIO has a fairly meagre one:
-<http://sourceforge.net/p/teem/code/HEAD/tree/NrrdIO/trunk/CMakeLists.txt>
-
-What best practices are in Teem's CMakeLists.txt that should be copied in
-NrrdIO's (or introduced there if Teem's is out dated)?  You can get a copy of
-NrrdIO via: svn co http://svn.code.sf.net/p/teem/code/NrrdIO/trunk/ NrrdIO The
-source files here are largely extracted automatically by Teem code, via
-running:
-make -f pre-GNUmakefile
-clean make -f pre-GNUmakefile
-But the CMakeLists.txt file there is specific to NrrdIO; it isn't copied
-or updated based on anything in the rest of Teem.
+Update NrrdIO's CMakeLists.txt file. Teem's CMake files were re-written for
+TeemV2, what best practices are in Teem's CMake files can be copied to NrrdIO?
 
 
-Create and host a new Teem CDash dashboard. The old one at
+Update the Teem CDash dashboard, or create a new one. The old one at
 <http://my.cdash.org/index.php?project=Teem> stopped working when
-Sourceforge changed the URL for code repo, and, whomever at Kitware created
-that dashboard no longer works there, and, they don't want to be bothered
-with fixing something that isn't making them money.  Also, enlist more
+Sourceforge changed the URL for code repo, and, GLK has been unable to
+figure out who or what process created it. Also, enlist more
 machines for testing.
-
-
-Generate and commit some examples for using Doxygen to document Teem code,
-with "for dummies"-level intructions on how to run doxygen to generate a
-set of documentation web pages. One or two of these have been floated, but
-nothing was committed to the repo so they haven't stuck as examples to
-build upon.  Also, figure out a way to streamline the propogation of
-newly-generated documentation (from doxygen) to sourceforge-hosted web
-pages.  It seems like changes at sourceforge have made it increasingly
-annoying to update those web pages, so something scripted (or at least
-documented in gory detail) will help.
 
 
 Scrutinize all uses of sizeof(), especially with memcpy or memset.  When
@@ -106,14 +79,10 @@ Run Clang's static analyzer:
 <http://clang-analyzer.llvm.org/scan-build.html> Right now this reports
 "217 bugs found".  The "Value ... is never read" bugs seem mostly
 innocuous, all the other ones are actually concerning.  Any questions that
-arise in fixing the bugs should be posted to the teem-users list:
-http://sourceforge.net/p/teem/mailman/teem-users/
+arise in fixing the bugs should be posted to the teem-users Discord:
+https://discord.gg/xBBqZGXkF7
 
 
-Hest would benefit from some way of accepting comments (which are removed
-prior to doing the real work of command-line parsing). What should the
-syntax for this be?  Ignoring anything after a "#"?  Is there a way to
-delimit a comment string (as with /* ... */).  Implementing this would
-likely involve revisiting the cryptic innards of hest, which haven't
-changed a lot since they were first written during the 2002 winter
-olympics.  This is all do-able without any API changes.
+(Hest would benefit from some way of accepting comments ...
+ For TeemV2 GLK bit bullet and completely rewrote hestParse,
+ use that opportunity to add -{ ... }- comments)

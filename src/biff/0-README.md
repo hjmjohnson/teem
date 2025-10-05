@@ -84,13 +84,13 @@ wrote 6 annotations in shape-annote.c
 
 Thus, it is files ending with `-annote.c` that are written or over-written by `scan-symbols.py`. In a way that helps ensure Teem libraries have the symbols intended, `scan-symbols.py` will loudly fail if it detects that a link-able symbol in library `lib` does not start with `lib` or `\_lib`.
 
-Then to process these (in e.g. `~/teem/src/gage`):
+Then to process these in, e.g. `~/teem/src/gage`, in file `miscGage.c`:
 
 ```
 diff miscGage{-annote,}.c # to inspect what biff auto-scan wrote
 mv miscGage{-annote,}.c # to start editing
-# open miscGage.c (for example) for editing, confirm each annotation,
-# and then change "Biff?" to "Biff:" once confirmed.
-svn diff -x -U0 miscGage.c # to confirm what was changed
-svn commit ...
+# open miscGage.c for editing, confirm each annotation,
+# change "Biff?" to "Biff:" once every annotation is confirmed.
+git diff -U0 miscGage.c # to confirm what was changed
+git commit ...
 ```

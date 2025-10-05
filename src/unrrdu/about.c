@@ -31,13 +31,14 @@ unrrdu_aboutMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                 "library in the \"Teem\" collection of libraries.  More information "
                 "about Teem is at <http://teem.sf.net>. A checkout of Teem source "
                 "is available via:\n "
-                "svn co http://svn.code.sf.net/p/teem/code/teem/trunk teem\n ";
-  /* "svn co http://teem.svn.sf.net/svnroot/teem/teem/trunk teem\n "; */
+                "git clone http://git.code.sf.net/p/teem/teem.git\n ";
+  /* old: "svn co http://svn.code.sf.net/p/teem/code/teem/trunk teem\n "; */
+  /* older: "svn co http://teem.svn.sf.net/svnroot/teem/teem/trunk teem\n "; */
   char par2[]
     = "\t\t\t\t"
       "Many people have probably used and relied on unu and Nrrd for their work, "
       "but it is very hard to find evidence of them respecting the long-standing "
-      "request  made in the following paragraph. Nevertheless, it persists, in "
+      "request made in the following paragraph. Nevertheless, it persists, in "
       "the interest of posterity if not irony.\n "
       "\n "
       "\t\t\t"
