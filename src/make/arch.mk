@@ -51,12 +51,13 @@ CP := cp
 CHMOD := chmod
 
 # other $(CC) flags for .c compilation (e.g. optimization and warnings)
-CFLAGS = -O3 -g -W -Wall -Wextra
+# Any existing CFLAGS variable (e.g. from environment) is added at end
+CFLAGS := -O3 -g -W -Wall -Wextra $(CFLAGS)
 
 # further $(CC) flags for creating executables when linking with (static) library
-BIN_CFLAGS =
+BIN_CFLAGS :=
 
 # more flags to try:
-# -std=c90 -pedantic -Wno-long-long -Wno-overlength-strings -Wstrict-aliasing=2 -Wstrict-overflow=5
+# -std=c99 -pedantic -Wno-long-long -Wno-overlength-strings -Wstrict-aliasing=2 -Wstrict-overflow=5
 # -Weverything -Wno-poison-system-directories -Wno-padded -Wno-format-nonliteral -Wno-float-equal -Wno-reserved-id-macro
 ## for trying undefined behavior flagging  -fsanitize=undefined
