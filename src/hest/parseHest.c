@@ -1262,8 +1262,8 @@ setValues(char **optParms, int *optDfltd, unsigned int *optParmNum, int *appr,
 ** documentation?
 */
 int
-hestParse(hestOpt *opt, int _argc, const char **_argv, char **errP,
-          const hestParm *_hparm) {
+hestParseOld(hestOpt *opt, int _argc, const char **_argv, char **errP,
+             const hestParm *_hparm) {
   /* see note on ME (at top) for why me[] ends with ": " */
   static const char me[] = "hestParse: ";
   char **argv, **optParms;

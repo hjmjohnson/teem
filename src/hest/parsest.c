@@ -1442,7 +1442,7 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
   return 0;
 }
 
-/* hestParse2
+/* hestParse  (the 2025 hestParse re-write)
 Parse the `argc`,`argv` commandline according to the hestOpt array `hopt`, and as
 tweaked by settings in (if non-NULL) the given `hestParm *_hparm`.  If there is an
 error, an error message string describing it in detail is generated and
@@ -1472,8 +1472,8 @@ So parse those per-opt args to set final values for the user to see
 What is allocated as result of work here should be freed by hestParseFree
 */
 int
-hestParse2(hestOpt *hopt, int argc, const char **argv, char **errP,
-           const hestParm *_hparm) {
+hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
+          const hestParm *_hparm) {
   airArray *mop = airMopNew(); // initialize the mop
   int pret;
   // make exactly one of (given) _hparm and (our) hparm non-NULL

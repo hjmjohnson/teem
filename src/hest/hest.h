@@ -385,16 +385,16 @@ HEST_EXPORT int hestOptParmCheck(const hestOpt *hopt, const hestParm *hparm,
                                  char **errP);
 
 // parseHest.c
-HEST_EXPORT int hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
-                          const hestParm *hparm);
+HEST_EXPORT int hestParseOld(hestOpt *hopt, int argc, const char **argv, char **errP,
+                             const hestParm *hparm);
 HEST_EXPORT hestOpt *hestParseFree(hestOpt *hopt);
 HEST_EXPORT void hestParseOrDie(hestOpt *hopt, int argc, const char **argv,
                                 hestParm *hparm, const char *me, const char *info,
                                 int doInfo, int doUsage, int doGlossary);
 
 // parsest.c
-HEST_EXPORT int hestParse2(hestOpt *hopt, int argc, const char **argv, char **errP,
-                           const hestParm *hparm);
+HEST_EXPORT int hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
+                          const hestParm *hparm);
 
 // usage.c
 HEST_EXPORT void _hestPrintStr(FILE *f, unsigned int indent, unsigned int already,
