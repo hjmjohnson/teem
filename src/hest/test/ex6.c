@@ -399,7 +399,7 @@ main(int argc, const char **argv) {
 #if 0
 #endif
   int eret;
-  if ((eret = hestParse2(opt, argc - 1, argv + 1, NULL, hparm))) {
+  if ((eret = hestParse(opt, argc - 1, argv + 1, NULL, hparm))) {
     // have already fprintf'd to stderr
     if (2 != eret) hestUsage(stderr, opt, argv[0], hparm);
     hestParmFree(hparm);

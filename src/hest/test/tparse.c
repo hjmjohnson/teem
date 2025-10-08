@@ -84,7 +84,7 @@ main(int argc, const char **argv) {
                        &offLen);
 
   char *err = NULL;
-  if (hestParse2(opt, argc - 1, argv + 1, &err, hparm)) {
+  if (hestParse(opt, argc - 1, argv + 1, &err, hparm)) {
     fprintf(stderr, "%s: problem:\n%s\n", argv[0], err);
     free(err);
     ret = 1;

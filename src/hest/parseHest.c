@@ -1257,9 +1257,9 @@ setValues(char **optParms, int *optDfltd, unsigned int *optParmNum, int *appr,
 }
 
 /*
-******** hestParse()
+******** hestParseOld()
 **
-** documentation?
+** The original implementation of hestParse, replaced by that in parsest.c
 */
 int
 hestParseOld(hestOpt *opt, int _argc, const char **_argv, char **errP,
