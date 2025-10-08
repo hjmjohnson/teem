@@ -128,7 +128,7 @@ This gets one character `icc` at a time, and a pointer to the current DFA state
 `*stateP`, and builds up the output token in `tharg`.
 The Next Arg STatus pointer `nastP` is used to signal when a token is finished. */
 static int
-argstGo(int *nastP, hestArg *tharg, int *stateP, int icc, int vrbo) {
+argstGo(int *nastP, hestArg *tharg, int *stateP, int source, int icc, int vrbo) {
   char cc = (char)icc;
   if (vrbo) {
     printf("%s: hello: getting %d=|%c| in state=%s\n", __func__, icc, cc,
@@ -139,12 +139,19 @@ argstGo(int *nastP, hestArg *tharg, int *stateP, int icc, int vrbo) {
     int ret;
     switch (*stateP) {
     case argstInside:
-    case argstStart:
-      /* EOF ends the arg we're argstInside (which is fine), or it ends the arg we're
-         just argstStart'ing, and that's fine too: it's how to get an empty string arg,
-         which is a legit arg (e.g. unu make -k <kind> default is "" for single empty
-         string; the mishandling of that triggered the 2025 hest re-write) */
+      /* EOF/end-of-string ends the arg we're argstInside; cool; it is done. */
       *nastP = nastBehold;
+      ret = 0;
+      break;
+    case argstStart:
+      /* EOF or end-of-string ends an arg that we hasn't gotten any characters yet; this
+         is subtle. If we're reading args from the command-line, we need a way to get an
+         empty string arg, which is a legit arg, e.g. unu make -k <kind> default is ""
+         to mean single empty string; great, not a problem! Actually the mishandling of
+         that is what triggered the 2025 hest re-write! But, this is also the state
+         we'll find ourselves in within the trailing white-space (e.g. final newline(s))
+         of a response file, but the intent there is *not* an empty string arg */
+      *nastP = (source == hestSourceResponseFile ? nastTryAgain : nastBehold);
       ret = 0;
       break;
     case argstComment:
@@ -331,7 +338,7 @@ histProcNextArgTry(int *nastP, hestArg *tharg, hestInputStack *hist,
         biffAddf(HEST, "%s%sconfused by input source %d", _ME_, hin->source);
         return 1;
       }
-      if (argstGo(nastP, tharg, &state, icc, hparm->verbosity > 4)) {
+      if (argstGo(nastP, tharg, &state, hin->source, icc, hparm->verbosity > 4)) {
         if (hestSourceResponseFile == hin->source) {
           biffAddf(HEST, "%s%strouble at character %u of %s \"%s\"", _ME_, hin->carIdx,
                    airEnumStr(hestSource, hin->source), hin->rfname);
