@@ -68,6 +68,8 @@ _hestTypeSize[_HEST_TYPE_MAX+1] = {
 };
 /* clang-format on */
 
+/* ... Not bothering with Biff: annotations for these parser functions ... */
+
 /* now (in 2025) that we've done all this work to preserve the command-line argv[]
 tokens, and to properly tokenize default strings and response files, we should stop using
 the airParseStrT functions that internally use airStrtok(): we have exactly one token to
@@ -291,7 +293,7 @@ static const airEnum _hestSource
      .sense = AIR_FALSE};
 const airEnum *const hestSource = &_hestSource;
 
-int
+int /* Biff: nope */
 hestSourceUser(int src) {
   return (hestSourceCommandLine == src || hestSourceResponseFile == src);
 }
@@ -301,7 +303,7 @@ hestOpt array. Very few uses of hest within Teem use more than 32 options. Hopef
 this avoids all the reallocations in the past action of hestOptAdd and the like. */
 #define INCR 32
 
-hestParm *
+hestParm * /* Biff: nope */
 hestParmNew() {
   hestParm *hparm;
 
@@ -349,7 +351,7 @@ hestParmNew() {
   return hparm;
 }
 
-hestParm *
+hestParm * /* Biff: nope */
 hestParmFree(hestParm *hparm) {
 
   airFree(hparm);
@@ -371,7 +373,7 @@ a tiny number of columns (and certainly hasn't been well-tested with that).
 
 If ioctl() never worked, then hparm->columns gets the given nonIoctlColumns, and we
 return 1 (but this 1 is not an error that needs any recovering from). */
-int
+int /* Biff: nope */
 hestParmColumnsIoctl(hestParm *hparm, unsigned int nonIoctlColumns) {
   struct winsize wsz;
   int ret;
@@ -400,7 +402,7 @@ hestParmColumnsIoctl(hestParm *hparm, unsigned int nonIoctlColumns) {
 }
 
 // _hestMax(-1) == INT_MAX, otherwise _hestMax(m) == m
-int
+int /* Biff: nope */
 _hestMax(int max) {
 
   if (-1 == max) {
@@ -411,7 +413,7 @@ _hestMax(int max) {
 
 /* minmaxKind determines the kind (1,2,3,4, or 5) of an opt,
    based on the min and max fields from the hestOpt */
-static int
+static int /* Biff: nope */
 minmaxKind(unsigned int min, int _max) {
   int ret;
   int max = _hestMax(_max);
@@ -475,7 +477,7 @@ NULL-terminated, mainly because "opt" is an array of hestOpt structs, not an arr
 pointers to hestOpt structs. Pre-2023, this function did clever things to detect the
 terminating hestOpt, but with the introduction of arrAlloc and arrLen that is moot.
 */
-unsigned int
+unsigned int /* Biff: nope */
 hestOptNum(const hestOpt *hopt) {
   return hopt ? hopt->arrLen : 0;
 }
@@ -497,7 +499,7 @@ optarrNew(hestOpt **optP) {
 
 /* line airArrayLenIncr(1): increments logical length by 1,
 and returns index of newly-available element */
-static unsigned int
+static unsigned int /* Biff: nope */
 optarrIncr(hestOpt **optP) {
   unsigned int olen, nlen;
   olen = (*optP)->arrLen; /* == index of new element */
@@ -574,7 +576,7 @@ e.g. enforcing that we have a non-NULL sawP iff this is a multi-variadic paramet
 option, or that without a flag (`flag` is NULL) we must have min > 0.  All of that is
 done later, in _hestOPCheck.
 */
-unsigned int
+unsigned int /* Biff: nope */
 hestOptAdd_nva(hestOpt **hoptP, const char *flag, const char *name, int type,
                unsigned int min, int max, void *valueP, const char *dflt,
                const char *info, unsigned int *sawP, const airEnum *enm,
@@ -612,7 +614,7 @@ hestOptAdd_nva(hestOpt **hoptP, const char *flag, const char *name, int type,
  * thus speed up later checking the `hestOpt->source` to learn where how the option was
  * parsed. Returns UINT_MAX in case of error.
  */
-unsigned int
+unsigned int /* Biff: nope */
 hestOptAdd(hestOpt **hoptP, const char *flag, const char *name, int type,
            unsigned int min, int max, void *valueP, const char *dflt, const char *info,
            ...) {
@@ -660,7 +662,7 @@ _hestOptFree(hestOpt *hopt) {
   return;
 }
 
-hestOpt *
+hestOpt * /* Biff: nope */
 hestOptFree(hestOpt *hopt) {
   if (!hopt) return NULL;
   uint num = hopt->arrLen;
@@ -693,7 +695,7 @@ biff message.
 Prior to 2023 code revisit: this used to set the "kind" in all the opts, but now that is
 more appropriately done at the time the option is added.
 */
-int
+int /* Biff: (private) 1 */
 _hestOPCheck(const hestOpt *hopt, const hestParm *hparm) {
   if (!(hopt && hparm)) {
     biffAddf(HEST, "%s%sgot NULL hopt (%p) or hparm (%p)", _ME_, AIR_VOIDP(hopt),
@@ -945,7 +947,7 @@ _hestOPCheck(const hestOpt *hopt, const hestParm *hparm) {
  * hestOptCheck: check given hestOpt array `hopt`, using the default hestParm.
  * Puts any errors into newly allocated (caller responsible to free) `*errP`.
  */
-int
+int /* Biff: nope # biff use is internal */
 hestOptCheck(const hestOpt *hopt, char **errP) {
   hestParm *hparm = hestParmNew();
   if (_hestOPCheck(hopt, hparm)) {
@@ -973,7 +975,7 @@ hestOptCheck(const hestOpt *hopt, char **errP) {
  * `*errP`.
  * HEY copy-pasta
  */
-int
+int /* Biff: nope # biff use is internal */
 hestOptParmCheck(const hestOpt *hopt, const hestParm *hparm, char **errP) {
   if (_hestOPCheck(hopt, hparm)) {
     char *err = biffGetDone(HEST);

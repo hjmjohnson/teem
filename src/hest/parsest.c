@@ -30,7 +30,7 @@ hist  = hestInputStack
 */
 
 // histPopt pops one hestInput from the `hist` stack
-static int
+static int /* Biff: 1 */
 histPop(hestInputStack *hist, const hestParm *hparm) {
   if (!(hist && hparm)) {
     biffAddf(HEST, "%s%sgot NULL pointer (hist %p hparm %p)", _ME_, AIR_VOIDP(hist),
@@ -127,7 +127,7 @@ shell does for you to convert the command-line you type into an array argv[] of 
 This gets one character `icc` at a time, and a pointer to the current DFA state
 `*stateP`, and builds up the output token in `tharg`.
 The Next Arg STatus pointer `nastP` is used to signal when a token is finished. */
-static int
+static int /* Biff: 1 */
 argstGo(int *nastP, hestArg *tharg, int *stateP, int source, int icc, int vrbo) {
   char cc = (char)icc;
   if (vrbo) {
@@ -281,7 +281,7 @@ arg: when we see that the input source at the top of the stack is exhausted, the
 that source, but we shouldn't have to then immediately test if the next input source is
 also exhausted (instead we say "try again").
 */
-static int
+static int /* Biff: 1 */
 histProcNextArgTry(int *nastP, hestArg *tharg, hestInputStack *hist,
                    const hestParm *hparm) {
   if (!(nastP && tharg && hist && hparm)) {
@@ -374,7 +374,7 @@ histProcNextArgTry(int *nastP, hestArg *tharg, hestInputStack *hist,
 }
 
 // histProcNextArg wraps around histProcNextArgTry, hiding occurances of nastTryAgain
-static int
+static int /* Biff: 1 */
 histProcNextArg(int *nastP, hestArg *tharg, hestInputStack *hist,
                 const hestParm *hparm) {
   // printf("!%s: hello hist->len %u\n", __func__, hist->len);
@@ -391,7 +391,7 @@ histProcNextArg(int *nastP, hestArg *tharg, hestInputStack *hist,
   return 0;
 }
 
-static int
+static int /* Biff: 1 */
 histPushCommandLine(hestInputStack *hist, int argc, const char **argv,
                     const hestParm *hparm) {
   if (!(hist && argv && hparm)) {
@@ -419,7 +419,7 @@ histPushCommandLine(hestInputStack *hist, int argc, const char **argv,
   return 0;
 }
 
-static int
+static int /* Biff: 1 */
 histPushResponseFile(hestInputStack *hist, const char *rfname, const hestParm *hparm) {
   if (!(hist && rfname && hparm)) {
     biffAddf(HEST, "%s%sgot NULL pointer (hist %p, rfname %p, hparm %p)", _ME_,
@@ -484,7 +484,7 @@ histPushResponseFile(hestInputStack *hist, const char *rfname, const hestParm *h
   return 0;
 }
 
-static int
+static int /* Biff: 1 */
 histPushDefault(hestInputStack *hist, const char *dflt, const hestParm *hparm) {
   if (!(hist && dflt && hparm)) {
     biffAddf(HEST, "%s%sgot NULL pointer (hist %p, dflt %p, hparm %p)", _ME_,
@@ -526,7 +526,7 @@ histProcNextArg).
 This function takes no ownership of anything so avoids any mopping responsibility, not
 even for the tmp arg holder `tharg`; that is passed in here and cleaned up caller.
 */
-static int
+static int /* Biff: 1 */
 histProcess(hestArgVec *havec, int *helpWantedP, hestArg *tharg, hestInputStack *hist,
             const hestParm *hparm) {
   if (!hist->len) {
@@ -686,7 +686,7 @@ Given an arg string `flarg` (which may be an flag arg (like "-size") or not (lik
 this finds which one, of the options in the given hestOpt array `hopt`, is identified by
 `flarg`. If there is a match, returns the index of that option, else returns UINT_MAX.
 */
-static uint
+static uint /* Biff: nope */
 whichOptFlag(const hestOpt *hopt, const char *flarg, const hestParm *hparm) {
   uint optNum = hopt->arrLen;
   if (hparm->verbosity > 3)
@@ -726,7 +726,7 @@ whichOptFlag(const hestOpt *hopt, const char *flarg, const hestParm *hparm) {
 
 /* identStr sprints into `ident` (and returns same `ident`)
    a way to identify `hopt` in error and usage messages */
-static char *
+static char * /* Biff: nope */
 identStr(char *ident, const hestOpt *hopt) {
   if (hopt->flag) {
     if (strchr(hopt->flag, MULTI_FLAG_SEP)) {
@@ -750,7 +750,7 @@ takes `hestOpt *hopt` instead of `hopt->havec` so that we can also set `hopt->so
 according to the incoming `hvsrc->harg[]->source`. To minimize cleverness, we set
 `hopt->source` with every transferred argument, which means that the per-option source
 remembered is the source of the *last* argument of the option. */
-static int
+static int /* Biff: 1 */
 havecTransfer(hestOpt *hopt, hestArgVec *hvsrc, uint srcIdx, uint num,
               const hestParm *hparm) {
   if (!(hopt && hvsrc)) {
@@ -825,7 +825,7 @@ This is where, thanks to the action of whichOptFlag(), "--" (and only "--" due t
 VAR_PARM_STOP_FLAG) is used as a marker for the end of a flagged variadic parameter
 option.  AND, the "--" marker is removed from `havec`.
 */
-static int
+static int /* Biff: 1 */
 havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
   char *havStr, ident1[AIR_STRLEN_HUGE + 1], ident2[AIR_STRLEN_HUGE + 1];
   uint argIdx = 0;
@@ -984,7 +984,7 @@ This is the function that has to handle the trickly logic of allowing there to b
 multiple unflagged options, only one of which may have a variadic number of parms; that
 one has to be extracted last.
 */
-static int
+static int /* Biff: 1 */
 havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
   char *havStr = NULL, ident[AIR_STRLEN_HUGE + 1];
   uint optNum = hopt->arrLen; // number of options (flagged or unflagged)
@@ -1182,7 +1182,7 @@ hopt->dflt string is what we look to now, to finish setting per-option hopt->hav
 for all the options for which hopt->havec have not already been set.  We use
 `!hopt->source` (aka hestSourceUnknown) as the indicator of not already being set.
 */
-static int
+static int /* Biff: 1 */
 optProcessDefaults(hestOpt *hopt, hestArg *tharg, hestInputStack *hist,
                    const hestParm *hparm) {
   char ident[AIR_STRLEN_HUGE + 1];
@@ -1269,8 +1269,12 @@ optProcessDefaults(hestOpt *hopt, hestArg *tharg, hestInputStack *hist,
 /* optSetValues
 Finally: the parsing of hopt[opi].havec to set values in whatever hopt[opi].valueP points
 to. No caller or parent mop is passed anymore, since the new per-hestOpt parseMop can
-remember what needs to be freed. */
-static int
+remember what needs to be freed. The return value from this is (except for an instance of
+hestOpt kind confusion) in turn the return value from whichever _hestParseSingle[]
+function first returned non-zero to indicate a parsing error. That return could be
+anything non-zero, but the Biff: annotations currently do not have a way of expressing
+that. */
+static int /* Biff: 1 # BUT Actually maybe not; see above */
 optSetValues(hestOpt *hopt, const hestParm *hparm) {
   char ident[AIR_STRLEN_HUGE + 1];
   void *valueP;
@@ -1482,7 +1486,7 @@ So parse those per-opt args to set final values for the user to see
 
 What is allocated as result of work here should be freed by hestParseFree
 */
-int
+int /* Biff: nope # all biff use is internal */
 hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
           const hestParm *_hparm) {
   airArray *mop = airMopNew(); // initialize the mop
