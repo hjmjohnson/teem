@@ -27,46 +27,40 @@ extern "C" {
 #endif
 
 /*
-**
-** Twisted C-preprocessor tricks.  The idea is to make it as simple
-** as possible to add new commands to unu, so that the new commands
-** have to be added to only one thing in this source file, and
-** the Makefile.
-**
-** Associated with each unu command are some pieces of information:
-** the single word command (e.g. "slice") that is used by invoke it,
-** the short (approx. one-line) description of its function, and the
-** "main" function to call with the appropriate argc, argv.  It would
-** be nice to use a struct to hold this information, and we can: the
-** unrrduCmd struct is defined above.  It would also be nice to have
-** all the command's information be held in one array of unrrduCmds.
-** Unfortunately, declaring this is not possible unless all the
-** unrrduCmds and their fields are IN THIS FILE, because otherwise
-** they're not constant expressions, so they can't initialize an
-** aggregate data type.  So, we instead make an array of unrrduCmd
-** POINTERS, which can be initialized with the addresses of individual
-** unrrduCmd structs, declared and defined in the global scope. is
-** done in flotsam.c.  Each of the source files for the various unu
-** commands are responsible for setting the fields (at compile-time)
-** of their associated unrrduCmd.
-**
-** We use three macros to automate this somewhat:
-** UNRRDU_DECLARE: declares unrrdu_xxxCmd as an extern unrrduCmd
-**                 (defined in xxx.c), used later in this header file.
-** UNRRDU_LIST:    the address of unrrdu_xxxCmd, for listing in the array of
-**                 unrrduCmd structs in the (compile-time) definition of
-**                 unrrduCmdList[].  This is used in flotsam.c.
-****
-** Then, to facilitate running these macros on each of the different
-** commands, there is a UNRRDU_MAP macro which is used to essentially map
-** the two macros above over the list of unu commands.  Functional
-** programming meets the C pre-processor.  Therefore:
+Twisted C-preprocessor tricks.  The idea is to make it as simple as possible to add new
+commands to unu, so that the new commands have to be added to only one thing in this
+source file, and the Makefile.
+
+Associated with each unu command are some pieces of information: the single word command
+(e.g. "slice") that is used by invoke it, the short (approx. one-line) description of its
+function, and the "main" function to call with the appropriate argc, argv.  It would be
+nice to use a struct to hold this information, and we can: the unrrduCmd struct is
+defined above.  It would also be nice to have all the command's information be held in
+one array of unrrduCmds. Unfortunately, declaring this is not possible unless all the
+unrrduCmds and their fields are IN THIS FILE, because otherwise they're not constant
+expressions, so they can't initialize an aggregate data type.  So, we instead make an
+array of unrrduCmd POINTERS, which can be initialized with the addresses of individual
+unrrduCmd structs, declared and defined in the global scope. is done in flotsam.c.  Each
+of the source files for the various unu commands are responsible for setting the fields
+(at compile-time) of their associated unrrduCmd.
+
+We use three macros to automate this somewhat:
+UNRRDU_DECLARE: declares unrrdu_xxxCmd as an extern unrrduCmd
+                (defined in xxx.c), used later in this header file.
+UNRRDU_LIST:    the address of unrrdu_xxxCmd, for listing in the array of
+                unrrduCmd structs in the (compile-time) definition of
+                unrrduCmdList[].  This is used in flotsam.c.
+
+Then, to facilitate running these macros on each of the different commands, there is a
+UNRRDU_MAP macro which is used to essentially map the two macros above over the list of
+unu commands.  Functional programming meets the C pre-processor.  Therefore:
 ***********************************************************
-    You add command foo to unu by:
-    1) adding F(foo) to definition of UNRRDU_MAP()
-    2) implement foo.c, and list foo.o in GNUmakefile and CmakeLists.txt
-    That's it.
-********************************************************** */
+**  You add command foo to unu by:
+**  1) adding F(foo) to definition of UNRRDU_MAP()
+**  2) implement foo.c, and list foo.o in GNUmakefile and CmakeLists.txt
+**  That's it.
+**********************************************************
+*/
 #define UNRRDU_DECLARE(C) UNRRDU_EXPORT const unrrduCmd unrrdu_##C##Cmd;
 #define UNRRDU_LIST(C)    &unrrdu_##C##Cmd,
 #define UNRRDU_MAP(F)                                                                   \
@@ -237,7 +231,11 @@ UNRRDU_MAP(UNRRDU_DECLARE)
 */
 #define PARSE(INFO)                                                                     \
   if ((pret = hestParse(opt, argc, argv, &err, hparm))) {                               \
-    if (1 == pret || 2 == pret) {                                                       \
+    if (-1 == pret) {                                                                   \
+      /* hestOpt array malformed, this will explain how */                              \
+      fprintf(stderr, "%s: %s\n", me, err);                                             \
+      exit(1);                                                                          \
+    } else if (1 == pret || 2 == pret) {                                                \
       if (!(getenv(UNRRDU_QUIET_QUIT_ENV)                                               \
             && airEndsWith(err, UNRRDU_QUIET_QUIT_STR "\n"))) {                         \
         fprintf(stderr, "%s: %s\n", me, err);                                           \
