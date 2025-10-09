@@ -1054,7 +1054,8 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     /* Either we have enough args to satisfy this option (and thus don't care if it has a
     default), or, we do *not* have enough args and hence want to use the default.  In the
     later case, we don't have a default, that's a problem that needs an error message.
-    So, either way, we try extracting the args and report any problems encountered. */
+    So, either way, we try extracting the args and report any problems encountered.
+    Recall that _hestOPCheck enforces non-variadic unflagged options have min > 1. */
     if (hopt[opi].min /* == max */ < havec->len || !hopt[opi].dflt) {
       havStr = hestArgVecSprint(havec, AIR_TRUE);
       if (havecTransfer(hopt + opi, havec, 0, hopt[opi].min, hparm)) {
@@ -1104,7 +1105,7 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     printf("%s: ufVarOpi=%u   min, have, max = %u %u %d\n", __func__, ufVarOpi,
            hopt[ufVarOpi].min, havec->len, _hestMax(hopt[ufVarOpi].max));
   }
-  uint minArg = hopt[ufVarOpi].min; /* min < max ! */
+  uint minArg = hopt[ufVarOpi].min; /* min < max for sure */
   if (minArg > havec->len && !hopt[ufVarOpi].dflt) {
     havStr = hestArgVecSprint(havec, AIR_TRUE);
     biffAddf(HEST, "%s%sgiven (index: labeled) argv=|%s|", _ME_, havStr);
@@ -1127,6 +1128,16 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
       biffAddf(HEST, "%s%strouble getting args for unflagged variadic %s[%u]", _ME_,
                identStr(ident, hopt + ufVarOpi), ufVarOpi);
       return (free(havStr), free(ufOpi2), 1);
+    }
+    if (!minArg) {
+      /* The sole unflagged option is allowed to be variadic with min==0.
+         In that case, we consider getting 0 args to be satisfying the option,
+         so we do record a source here to prevent the immediately following complaint
+         "didn't get required (default-less) unflagged". BUT WHAT IS THE SOURCE
+         OF NOTHING (NO ARGS)?  This weirdness is part of why the 2025 re-write initially
+         disallowed any min=0 unflagged variadic.  We thus cross our fingers and hope
+         we're not lying when we say that the source was the command-line. */
+      (hopt + ufVarOpi)->source = hestSourceCommandLine;
     }
   }
   /* else minArg > havec->len so can't satisfy from havec, but that's ok for

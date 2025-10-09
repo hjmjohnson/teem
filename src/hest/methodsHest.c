@@ -701,7 +701,9 @@ _hestOPCheck(const hestOpt *hopt, const hestParm *hparm) {
     return 1;
   }
   uint optNum = hopt->arrLen;
-  uint ufvarNum = 0; // number of unflagged variadic-parameter options
+  uint ufNum = 0;             // number of unflagged options
+  uint ufvarNum = 0;          // number of unflagged variadic-parameter options
+  uint ufvarKind5Min0Num = 0; // like it says
   for (uint opi = 0; opi < optNum; opi++) {
     if (!(AIR_IN_OP(airTypeUnknown, hopt[opi].type, airTypeLast))) {
       biffAddf(HEST, "%s%sopt[%u].type (%d) not in valid range [%d,%d]", _ME_, opi,
@@ -814,11 +816,22 @@ _hestOPCheck(const hestOpt *hopt, const hestParm *hparm) {
       }
     } else { // ------ end of if (hopt[opi].flag)
       // hopt[opi] is unflagged
-      if (!hopt[opi].min) {
-        // this rules out all unflagged kind 1 and kind 4
-        // and prevents unflagged kind 5 w/ min=0
-        biffAddf(HEST, "%s%sunflagged opt[%u] (name %s) must have min >= 1, not 0", _ME_,
-                 opi, hopt[opi].name ? hopt[opi].name : "not set");
+      ufNum += 1;
+      if (1 == hopt[opi].kind || 4 == hopt[opi].kind) {
+        if (!hopt[opi].min) {
+          // this rules out all unflagged kind 1 and kind 4
+          // and prevents unflagged kind 5 w/ min=0
+          biffAddf(HEST, "%s%sunflagged opt[%u] (name %s) must have min >= 1, not 0",
+                   _ME_, opi, hopt[opi].name ? hopt[opi].name : "not set");
+          return 1;
+        }
+      } else if (5 == hopt[opi].kind) {
+        if (0 == hopt[opi].min) {
+          ufvarKind5Min0Num += 1;
+        }
+      } else {
+        biffAddf(HEST, "%s%sconfused by unflagged opt[%u] (name %s) kind %d", _ME_, opi,
+                 hopt[opi].name ? hopt[opi].name : "not set", hopt[opi].kind);
         return 1;
       }
     }
@@ -916,6 +929,13 @@ _hestOPCheck(const hestOpt *hopt, const hestParm *hparm) {
   if (ufvarNum > 1) {
     biffAddf(HEST, "%s%scan have at most 1 unflagged min<max options, not %u", _ME_,
              ufvarNum);
+    return 1;
+  }
+  if (ufvarKind5Min0Num && ufNum > 1) {
+    biffAddf(HEST,
+             "%s%sAn unflagged variadic min=0 option must be sole unflagged option "
+             "(but there are %u)",
+             _ME_, ufNum);
     return 1;
   }
   return 0;
