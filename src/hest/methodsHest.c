@@ -820,12 +820,12 @@ _hestOPCheck(const hestOpt *hopt, const hestParm *hparm) {
       if (1 == hopt[opi].kind || 4 == hopt[opi].kind) {
         if (!hopt[opi].min) {
           // this rules out all unflagged kind 1 and kind 4
-          // and prevents unflagged kind 5 w/ min=0
           biffAddf(HEST, "%s%sunflagged opt[%u] (name %s) must have min >= 1, not 0",
                    _ME_, opi, hopt[opi].name ? hopt[opi].name : "not set");
           return 1;
         }
       } else if (5 == hopt[opi].kind) {
+        // Okay, allow variadic min==0 if is the *only* unflagged option (of any kind)
         if (0 == hopt[opi].min) {
           ufvarKind5Min0Num += 1;
         }
