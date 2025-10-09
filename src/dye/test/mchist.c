@@ -77,36 +77,36 @@ main(int argc, const char *argv[]) {
   hestParm *hparm;
   airArray *mop;
 
-  char **ninStr, *err, *outS, doneStr[13];
-  Nrrd *nin0, *nin, *nrgb, *nout, *nhist[2], *npreout, *nhproj[3];
-  float *rgb;
-  float *out, *preout, *hist[2], maxSum, upSample, overSampleScale;
-  unsigned int size0, sX, sY, sH, ninLen, ti, overSampleNum;
-  NrrdResampleContext *rsmc;
-  NrrdKernelSpec *ksp;
-
   me = argv[0];
   mop = airMopNew();
   hopt = NULL;
   hparm = hestParmNew();
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
   hparm->responseFileEnable = AIR_TRUE;
-  hestOptAdd(&hopt, "i", "images", airTypeString, 1, -1, &ninStr, NULL,
-             "input image sequence", &ninLen, NULL, NULL);
-  hestOptAdd(&hopt, "sh", "histo size", airTypeUInt, 1, 1, &sH, "500", "histogram size");
-  hestOptAdd(&hopt, "k", "kern", airTypeOther, 1, 1, &ksp, "tent",
-             "kernel for upsampling images", NULL, NULL, nrrdHestKernelSpec);
-  hestOptAdd(&hopt, "us", "upsampling", airTypeFloat, 1, 1, &upSample, "1",
-             "amount of upsampling of image");
-  hestOptAdd(&hopt, "osn", "# oversmp", airTypeUInt, 1, 1, &overSampleNum, "1",
-             "number of sample per (upsampled) pixel");
-  hestOptAdd(&hopt, "osc", "scaling", airTypeFloat, 1, 1, &overSampleScale, "1",
-             "scaling with oversampling");
-  hestOptAdd(&hopt, "ms", "max sum", airTypeFloat, 1, 1, &maxSum, "10",
-             "per-hue histogram summation is non-linearly and "
-             "asymptotically clamped to this maximum");
-  hestOptAdd(&hopt, "o", "nout", airTypeString, 1, 1, &outS, "-", "output filename",
-             NULL);
+  char **ninStr;
+  unsigned int ninLen;
+  hestOptAdd_Nv_String(&hopt, "i", "images", 1, -1, &ninStr, NULL,
+                       "input image sequence", &ninLen);
+  unsigned int sH;
+  hestOptAdd_1_UInt(&hopt, "sh", "histo size", &sH, "500", "histogram size");
+  NrrdKernelSpec *ksp;
+  hestOptAdd_1_Other(&hopt, "k", "kern", &ksp, "tent", "kernel for upsampling images",
+                     nrrdHestKernelSpec);
+  float upSample;
+  hestOptAdd_1_Float(&hopt, "us", "upsampling", &upSample, "1",
+                     "amount of upsampling of image");
+  unsigned int overSampleNum;
+  hestOptAdd_1_UInt(&hopt, "osn", "# oversmp", &overSampleNum, "1",
+                    "number of sample per (upsampled) pixel");
+  float overSampleScale;
+  hestOptAdd_1_Float(&hopt, "osc", "scaling", &overSampleScale, "1",
+                     "scaling with oversampling");
+  float maxSum;
+  hestOptAdd_1_Float(&hopt, "ms", "max sum", &maxSum, "10",
+                     "per-hue histogram summation is non-linearly and "
+                     "asymptotically clamped to this maximum");
+  char *outS;
+  hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output filename");
 
   hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, mchistInfo, AIR_TRUE, AIR_TRUE,
                  AIR_TRUE);
@@ -118,7 +118,8 @@ main(int argc, const char *argv[]) {
     airMopError(mop);
     return 1;
   }
-  nin0 = nrrdNew();
+  Nrrd *nin0 = nrrdNew();
+  char *err;
   airMopAdd(mop, nin0, (airMopper)nrrdNuke, airMopAlways);
   if (nrrdLoad(nin0, ninStr[0], NULL)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
@@ -136,27 +137,31 @@ main(int argc, const char *argv[]) {
     airMopError(mop);
     return 1;
   }
-  rsmc = nrrdResampleContextNew();
+  NrrdResampleContext *rsmc = nrrdResampleContextNew();
   airMopAdd(mop, rsmc, (airMopper)nrrdResampleContextNix, airMopAlways);
-  size0 = AIR_UINT(nin0->axis[0].size);
-  sX = AIR_UINT(upSample * nin0->axis[1].size);
-  sY = AIR_UINT(upSample * nin0->axis[2].size);
-  nrgb = nrrdNew();
+  unsigned int size0 = AIR_UINT(nin0->axis[0].size);
+  unsigned int sX = AIR_UINT(upSample * nin0->axis[1].size);
+  unsigned int sY = AIR_UINT(upSample * nin0->axis[2].size);
+  Nrrd *nrgb = nrrdNew();
   airMopAdd(mop, nrgb, (airMopper)nrrdNuke, airMopAlways);
   if (nrrdResampleDefaultCenterSet(rsmc, nrrdCenterCell)
       || nrrdResampleInputSet(rsmc, nin0)
       || nrrdResampleKernelSet(rsmc, 1, ksp->kernel, ksp->parm)
       || nrrdResampleKernelSet(rsmc, 2, ksp->kernel, ksp->parm)
-      || nrrdResampleSamplesSet(rsmc, 1, sX) || nrrdResampleSamplesSet(rsmc, 2, sY)
-      || nrrdResampleRangeFullSet(rsmc, 1) || nrrdResampleRangeFullSet(rsmc, 2)
+      || nrrdResampleSamplesSet(rsmc, 1, sX) //
+      || nrrdResampleSamplesSet(rsmc, 2, sY) //
+      || nrrdResampleRangeFullSet(rsmc, 1)   //
+      || nrrdResampleRangeFullSet(rsmc, 2)   //
       || nrrdResampleTypeOutSet(rsmc, nrrdTypeFloat)
-      || nrrdResampleRenormalizeSet(rsmc, AIR_TRUE) || nrrdResampleExecute(rsmc, nrgb)) {
+      || nrrdResampleRenormalizeSet(rsmc, AIR_TRUE) //
+      || nrrdResampleExecute(rsmc, nrgb)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error resampling slice:\n%s", me, err);
     airMopError(mop);
     return 1;
   }
 
+  Nrrd *nhist[2];
   nhist[0] = nrrdNew();
   airMopAdd(mop, nhist[0], (airMopper)nrrdNuke, airMopAlways);
   nhist[1] = nrrdNew();
@@ -172,6 +177,7 @@ main(int argc, const char *argv[]) {
   nhist[0]->axis[0].max = nhist[0]->axis[1].max = 1.0;
   nhist[1]->axis[0].min = nhist[1]->axis[1].min = 0.0;
   nhist[1]->axis[0].max = nhist[1]->axis[1].max = 1.0;
+  Nrrd *nhproj[3];
   nhproj[0] = nrrdNew();
   airMopAdd(mop, nhproj[0], (airMopper)nrrdNix, airMopAlways);
   nhproj[1] = nrrdNew();
@@ -180,11 +186,12 @@ main(int argc, const char *argv[]) {
   airMopAdd(mop, nhproj[2], (airMopper)nrrdNix, airMopAlways);
 
   printf("working ...       ");
+  float *hist[2];
   hist[0] = AIR_CAST(float *, nhist[0]->data);
   hist[1] = AIR_CAST(float *, nhist[1]->data);
-  nin = nrrdNew();
+  Nrrd *nin = nrrdNew();
   airMopAdd(mop, nin, (airMopper)nrrdNuke, airMopAlways);
-  npreout = nrrdNew();
+  Nrrd *npreout = nrrdNew();
   airMopAdd(mop, npreout, (airMopper)nrrdNuke, airMopAlways);
   if (nrrdMaybeAlloc_va(npreout, nrrdTypeFloat, 3, AIR_SIZE_T(3), AIR_SIZE_T(sH),
                         AIR_SIZE_T(ninLen))) {
@@ -193,7 +200,9 @@ main(int argc, const char *argv[]) {
     airMopError(mop);
     return 1;
   }
-  preout = AIR_CAST(float *, npreout->data);
+  float *preout = AIR_CAST(float *, npreout->data);
+  unsigned int ti; // used post-loop with airDoneStr
+  char doneStr[13];
   for (ti = 0; ti < ninLen; ti++) {
     printf("%s", airDoneStr(0, ti, ninLen, doneStr));
     fflush(stdout);
@@ -223,14 +232,14 @@ main(int argc, const char *argv[]) {
       airMopError(mop);
       return 1;
     }
-    rgb = AIR_CAST(float *, nrgb->data);
+    float *rgb = AIR_CAST(float *, nrgb->data);
     imageProc(nhproj, nhist, sH, rgb, size0, sX * sY, overSampleNum, overSampleScale);
     preout += 3 * sH;
   }
   printf("%s\n", airDoneStr(0, ti, ninLen, doneStr));
   fflush(stdout);
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
   if (nrrdMaybeAlloc_va(nout, nrrdTypeFloat, 3, AIR_SIZE_T(3), AIR_SIZE_T(sH),
                         AIR_SIZE_T(ninLen))) {
@@ -239,7 +248,7 @@ main(int argc, const char *argv[]) {
     airMopError(mop);
     return 1;
   }
-  out = AIR_CAST(float *, nout->data);
+  float *out = AIR_CAST(float *, nout->data);
   preout = AIR_CAST(float *, npreout->data);
   for (ti = 0; ti < ninLen; ti++) {
     unsigned int hi;
