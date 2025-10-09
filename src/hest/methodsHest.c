@@ -831,11 +831,8 @@ _hestOPCheck(const hestOpt *hopt, const hestParm *hparm) {
         if (0 == hopt[opi].min) {
           ufvarKind5Min0Num += 1;
         }
-      } else {
-        biffAddf(HEST, "%s%sconfused by unflagged opt[%u] (name %s) kind %d", _ME_, opi,
-                 hopt[opi].name ? hopt[opi].name : "not set", hopt[opi].kind);
-        return 1;
       }
+      // else it's a fixed (non-variadic) unflagged option; cool
     }
     if (4 == hopt[opi].kind) { // single variadic parameter
       // immediately above have just ruled out unflagged kind 4
