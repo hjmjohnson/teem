@@ -9,9 +9,9 @@ limnPolyDataWriteIV,int,1,0,limn,limn/io.c:136
 limnObjectReadOFF,int,1,0,limn,limn/io.c:262
 limnPolyDataWriteLMPD,int,1,0,limn,limn/io.c:453
 limnPolyDataReadLMPD,int,1,0,limn,limn/io.c:580
-limnPolyDataWriteVTK,int,1,0,limn,limn/io.c:963
-limnPolyDataReadOFF,int,1,0,limn,limn/io.c:1053
-limnPolyDataSave,int,1,0,limn,limn/io.c:1158
+limnPolyDataWriteVTK,int,1,0,limn,limn/io.c:960
+limnPolyDataReadOFF,int,1,0,limn,limn/io.c:1050
+limnPolyDataSave,int,1,0,limn,limn/io.c:1155
 limnLightUpdate,int,1,0,limn,limn/light.c:65
 limnPolyDataAlloc,int,1,0,limn,limn/polydata.c:147
 limnPolyDataCopy,int,1,0,limn,limn/polydata.c:226

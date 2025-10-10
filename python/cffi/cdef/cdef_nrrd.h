@@ -243,6 +243,8 @@ typedef struct NrrdEncoding_t {
 ** it took to read it in.
 */
 typedef struct NrrdIoState_t {
+  int verbose;                  /* new for Teem v2: replacing the old global
+                                   nrrdStateVerboseIO */
   char *path,                   /* allows us to remember the directory
                                    from whence this nrrd was "load"ed, or
                                    to whence this nrrd is "save"ed, MINUS the
@@ -651,7 +653,9 @@ extern int nrrdDefaultDeclineStdioOnTTY;
 /* ---- END non-NrrdIO */
 extern int nrrdDefaultCenter;
 extern double nrrdDefaultSpacing;
-extern int nrrdStateVerboseIO;
+/* Teem v2: nrrdStateVerboseIO --> nrrdDefaultVerboseIO,
+   and added NrrdIoState->verbose which is initialized by this */
+extern int nrrdDefaultVerboseIO;
 extern int nrrdStateKeyValuePairsPropagate;
 /* ---- BEGIN non-NrrdIO */
 extern int nrrdStateBlind8BitRange;
@@ -677,8 +681,9 @@ extern const char *const nrrdEnvVarDefaultWriteCharsPerLine;
 extern const char *const nrrdEnvVarDefaultWriteValsPerLine;
 extern const char *const nrrdEnvVarDefaultKernelParm0;
 extern const char *const nrrdEnvVarDefaultSpacing;
+/* Teem v2: nrrdEnvVarStateVerboseIO --> nrrdEnvVarDefaultVerboseIO */
+extern const char *const nrrdEnvVarDefaultVerboseIO;
 extern const char *const nrrdEnvVarStateKindNoop;
-extern const char *const nrrdEnvVarStateVerboseIO;
 extern const char *const nrrdEnvVarStateKeyValuePairsPropagate;
 extern const char *const nrrdEnvVarStateBlind8BitRange;
 extern const char *const nrrdEnvVarStateAlwaysSetContent;
