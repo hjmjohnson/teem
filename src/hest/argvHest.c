@@ -199,7 +199,7 @@ _hestPlainWord(const char *s) {
   for (; *s; s++) {
     plain &= (isalnum(*s)               //
               || *s == '_' || *s == '-' //
-              || *s == '.' || *s == '/');
+              || *s == '.' || *s == ',' || *s == '/');
     if (!plain) break;
   }
   return plain;
