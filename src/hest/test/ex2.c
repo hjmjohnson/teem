@@ -21,9 +21,6 @@
 
 int
 main(int argc, const char **argv) {
-  int res[2], v, numIn;
-  char **in, *out;
-  int n;
   hestOpt *opt = NULL;
   hestParm *parm;
   char *err = NULL,
@@ -36,12 +33,16 @@ main(int argc, const char **argv) {
   parm->responseFileEnable = AIR_TRUE;
 
   opt = NULL;
-  hestOptAdd(&opt, "res", "sx sy", airTypeInt, 2, 2, res, NULL, "image resolution");
-  hestOptAdd(&opt, "v", "level", airTypeInt, 0, 1, &v, "0", "verbosity level");
-  hestOptAdd(&opt, "out", "file", airTypeString, 1, 1, &out, "output.ppm",
-             "PPM image output");
-  hestOptAdd(&opt, NULL, "input", airTypeString, 1, -1, &in, NULL, "input image file(s)",
-             &numIn);
+  int res[2];
+  hestOptAdd_2_Int(&opt, "res", "sx sy", res, NULL, "image resolution");
+  int v;
+  hestOptAdd_1v_Int(&opt, "v", "level", &v, "0", "verbosity level");
+  char *out;
+  hestOptAdd_1_String(&opt, "out", "file", &out, "output.ppm", "PPM image output");
+  char **in;
+  unsigned int numIn;
+  hestOptAdd_Nv_String(&opt, NULL, "input", 1, -1, &in, NULL, "input image file(s)",
+                       &numIn);
 
   if (1 == argc) {
     /* didn't get anything at all on command line */
@@ -74,7 +75,7 @@ main(int argc, const char **argv) {
   printf("  v = %d\n", v);
   printf("out = \"%s\"\n", out);
   printf(" in = %d files:", numIn);
-  for (n = 0; n <= numIn - 1; n++) {
+  for (unsigned int n = 0; n <= numIn - 1; n++) {
     printf(" \"%s\"", in[n]);
   }
   printf("\n");
