@@ -37,15 +37,16 @@ hestCB cbinfo = {2 * sizeof(double), "location", parse, NULL};
 
 int
 main(int argc, const char **argv) {
-  double single[2], triple[6], maybe[2], *many;
-  int howMany, i, N;
   hestOpt *opt = NULL;
-  char *err = NULL;
 
-  hestOptAdd(&opt, "A", "x,y", airTypeOther, 1, 1, single, "30,50", "testing A", NULL,
-             NULL, &cbinfo);
-  hestOptAdd(&opt, "B", "x1,y1 x2,y2 x3,y3", airTypeOther, 3, 3, triple, "1,2 3,4 5,6",
-             "testing B", NULL, NULL, &cbinfo);
+  double single[2];
+  hestOptAdd_1_Other(&opt, "A", "x,y", single, "30,50", "testing A", &cbinfo);
+  double triple[6];
+  hestOptAdd_3_Other(&opt, "B", "x1,y1 x2,y2 x3,y3", triple, "1,2 3,4 5,6", "testing B",
+                     &cbinfo);
+  /*
+  2025 re-write: only allow simple scalar types as single variadic parm (not Other)
+  double maybe[2];
   hestOptAdd(&opt, "C", "mx,my", airTypeOther, 0, 1, maybe, "-0.1,-0.2",
              "testing C. The utility of this can be better "
              "demonstrated in the following manner:\n "
@@ -54,24 +55,26 @@ main(int argc, const char **argv) {
              "- watch football on TV\n "
              "- remember to walk the dog",
              NULL, NULL, &cbinfo);
-  hestOptAdd(&opt, "D", "nx,ny", airTypeOther, 1, -1, &many, "8,8 7,7", "testing D",
-             &howMany, NULL, &cbinfo);
-  hestOptAdd(&opt, "int", "N", airTypeInt, 1, 1, &N, NULL, "an integer");
+  */
+  double *many;
+  unsigned howMany;
+  hestOptAdd_Nv_Other(&opt, "D", "nx,ny", 1, -1, &many, "8,8 7,7", "testing D", &howMany,
+                      &cbinfo);
+  int N;
+  hestOptAdd_1_Int(&opt, "int", "N", &N, NULL, "an integer");
 
-  if (hestParse(opt, argc - 1, argv + 1, &err, NULL)) {
-    fprintf(stderr, "ERROR: %s\n", err);
-    free(err);
-    hestUsage(stderr, opt, argv[0], NULL);
-    hestGlossary(stderr, opt, NULL);
-    exit(1);
-  }
+  hestParseOrDie(opt, argc - 1, argv + 1, NULL, argv[0], "hest/text/ex4",
+                 AIR_TRUE /* doInfo */, AIR_TRUE /* doUsage */,
+                 AIR_TRUE /* doGlossary */);
 
   printf("single: (%g,%g)\n", single[0], single[1]);
   printf("triple: (%g,%g) (%g,%g) (%g,%g)\n", triple[0], triple[1], triple[2], triple[3],
          triple[4], triple[5]);
+  /*
   printf("maybe: (%g,%g)\n", maybe[0], maybe[1]);
+  */
   printf("many(%d):", howMany);
-  for (i = 0; i <= howMany - 1; i++) {
+  for (unsigned int i = 0; i <= howMany - 1; i++) {
     printf(" (%g,%g)", many[0 + 2 * i], many[1 + 2 * i]);
   }
   printf("\n");
