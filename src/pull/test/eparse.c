@@ -17,52 +17,42 @@
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #include "../pull.h"
 
 const char *info = ("Tests parsing of energy, and its methods.");
 
 int
 main(int argc, const char *argv[]) {
-  const char *me;
-  hestOpt *hopt=NULL;
-  airArray *mop;
-
+  const char *me = argv[0];
+  hestOpt *hopt = NULL;
+  airArray *mop = airMopNew();
   pullEnergySpec *ensp;
-  unsigned int pi, xi, nn;
-  double xx, supp;
-
-  mop = airMopNew();
-  me = argv[0];
-  hestOptAdd(&hopt, "energy", "spec", airTypeOther, 1, 1, &ensp, NULL,
-             "specification of force function to use",
-             NULL, NULL, pullHestEnergySpec);
-  hestParseOrDie(hopt, argc-1, argv+1, NULL,
-                 me, info, AIR_TRUE, AIR_TRUE, AIR_TRUE);
+  hestOptAdd_1_Other(&hopt, "energy", "spec", &ensp, NULL,
+                     "specification of force function to use", pullHestEnergySpec);
+  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info, AIR_TRUE, AIR_TRUE, AIR_TRUE);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
-  fprintf(stderr, "%s: parsed energy \"%s\", with %u parms.\n", me,
-          ensp->energy->name, ensp->energy->parmNum);
-  for (pi=0; pi<ensp->energy->parmNum; pi++) {
+  fprintf(stderr, "%s: parsed energy \"%s\", with %u parms.\n", me, ensp->energy->name,
+          ensp->energy->parmNum);
+  for (unsigned int pi = 0; pi < ensp->energy->parmNum; pi++) {
     fprintf(stderr, "parm[%u] == %g\n", pi, ensp->parm[pi]);
   }
   fprintf(stderr, "\n");
 
-  nn = 600;
-  supp = 1.0;
-  for (xi=1; xi<nn; xi++) {
-    double x0, x1, ee, ff, e0, e1, dummy;
-    xx = AIR_AFFINE(0, xi,   nn, 0, supp);
-    x1 = AIR_AFFINE(0, xi+1, nn, 0, supp);
-    x0 = AIR_AFFINE(0, xi-1, nn, 0, supp);
+  unsigned int nn = 600;
+  double supp = 1.0;
+  for (unsigned int xi = 1; xi < nn; xi++) {
+    double xx, x0, x1, ee, ff, e0, e1, dummy;
+    xx = AIR_AFFINE(0, xi, nn, 0, supp);
+    x1 = AIR_AFFINE(0, xi + 1, nn, 0, supp);
+    x0 = AIR_AFFINE(0, xi - 1, nn, 0, supp);
     e1 = ensp->energy->eval(&dummy, x1, ensp->parm);
     e0 = ensp->energy->eval(&dummy, x0, ensp->parm);
     ee = ensp->energy->eval(&ff, xx, ensp->parm);
-    printf("%g %g %g %g\n", xx, ee, ff, (e1 - e0)/(x1 - x0));
+    printf("%g %g %g %g\n", xx, ee, ff, (e1 - e0) / (x1 - x0));
   }
 
   airMopOkay(mop);
   return 0;
 }
-
