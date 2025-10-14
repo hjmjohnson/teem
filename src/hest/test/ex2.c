@@ -31,6 +31,7 @@ main(int argc, const char **argv) {
 
   parm = hestParmNew();
   parm->responseFileEnable = AIR_TRUE;
+  parm->respectDashDashHelp = AIR_TRUE;
 
   opt = NULL;
   int res[2];
@@ -58,16 +59,20 @@ main(int argc, const char **argv) {
   }
 
   /* else we got something, see if we can parse it */
-  if (hestParse(opt, argc - 1, argv + 1, &err, parm)) {
-    fprintf(stderr, "ERROR: %s\n", err);
-    free(err);
+  int pret = hestParse(opt, argc - 1, argv + 1, &err, parm);
+  if (pret || opt->helpWanted) {
+    if (pret) {
+      fprintf(stderr, "ERROR: %s\n", err);
+      free(err);
+    }
     /* print usage information ... */
-    hestUsage(stderr, opt, argv[0], parm);
-    hestGlossary(stderr, opt, parm);
+    FILE *stdo = pret ? stderr : stdout;
+    hestUsage(stdo, opt, argv[0], parm);
+    hestGlossary(stdo, opt, parm);
     /* ... and then avoid memory leaks */
     opt = hestOptFree(opt);
     parm = hestParmFree(parm);
-    exit(1);
+    exit(pret);
   }
 
   printf("(err = %s)\n", err);
