@@ -73,10 +73,7 @@ int
 main(int argc, const char **argv) {
   hestOpt *opt = NULL;
   hestParm *hparm;
-  char *err = NULL,
-       info[] = "Exercises the many new hest functions. "
-                "As usual, any implied functionality is purely coincidental, "
-                "especially since this is the output of a gray-haired unicyclist.";
+  char *err = NULL;
 
   hparm = hestParmNew();
   hparm->responseFileEnable = AIR_TRUE;
