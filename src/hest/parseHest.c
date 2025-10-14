@@ -1496,7 +1496,7 @@ void
 hestParseOrDie(hestOpt *opt, int argc, const char **argv, hestParm *hparm,
                const char *me, const char *info, int doInfo, int doUsage,
                int doGlossary) {
-  int argcWanting, parseErr, wantHelp;
+  int argcBereft, parseErr, wantHelp;
   char *errS = NULL;
 
   if (!(opt && argv)) {
@@ -1516,7 +1516,7 @@ hestParseOrDie(hestOpt *opt, int argc, const char **argv, hestParm *hparm,
   }
 
   /* Pre-June 2023 these two check were done only after a hestParse error;
-  why not check first? */
+     why not check first? */
   if (argv[0] && !strcmp(argv[0], "--version")) {
     /* print version info and bail */
     char vbuff[AIR_STRLEN_LARGE + 1];
@@ -1528,14 +1528,14 @@ hestParseOrDie(hestOpt *opt, int argc, const char **argv, hestParm *hparm,
   }
   if (argv[0] && !strcmp(argv[0], "--help")) {
     /* actually, not an error, --help was the first argument; does NOT depend on
-    parm->respectDashDashHelp */
-    argcWanting = AIR_FALSE;
+       parm->respectDashDashHelp */
+    argcBereft = AIR_FALSE;
     parseErr = 0;
     wantHelp = AIR_TRUE;
   } else {
     /* we call hestParse if there are args, or (else) having no args is ok */
     if (argc || (hparm && hparm->noArgsIsNoProblem)) {
-      argcWanting = AIR_FALSE;
+      argcBereft = AIR_FALSE;
       parseErr = hestParse(opt, argc, argv, &errS, hparm);
       wantHelp = opt->helpWanted;
       if (wantHelp && parseErr) {
@@ -1547,21 +1547,21 @@ hestParseOrDie(hestOpt *opt, int argc, const char **argv, hestParm *hparm,
       /* at most one of wantHelp and parseErr is true */
     } else {
       /* the empty command-line is an implicit call for help */
-      argcWanting = AIR_TRUE;
+      argcBereft = AIR_TRUE;
       parseErr = 0;
-      /* subtle difference between argcWanting and wantHelp is for maintaining
+      /* subtle difference between argcBereft and wantHelp is for maintaining
       functionality of pre-June 2023 code */
       wantHelp = AIR_FALSE;
     }
   }
-  if (!argcWanting && !wantHelp && !parseErr) {
-    /* no help needed or wanted, and (if done) parsing was successful
-    great; return to caller */
+  if (!argcBereft && !wantHelp && !parseErr) {
+    /* no help needed or wanted, and (if done) parsing was successful, great;
+       return to caller */
     return;
   }
 
-  /* whether by argcWanting or wantHelp or parseErr, from here on out we are not
-  returning to caller */
+  /* whether by argcBereft or wantHelp or parseErr, from here on out we are not
+     returning to caller */
   if (parseErr) {
     fprintf(stderr, "ERROR: %s\n", errS);
     airFree(errS);
