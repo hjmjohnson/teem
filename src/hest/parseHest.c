@@ -1491,9 +1491,19 @@ had been usefully responded to as the sole argument, but only after a hestParse 
 (which then sometimes leaked memory by not freeing errS). Now these are checked for prior
 to calling hestParse, and (with hparm->respectDashDashHelp), "--help" is recognized
 anywhere in the command-line.
-*/
+
+With 2025 hestParse re-write for TeemV2, decided to turn on respectDashDashHelp here.
+Even though it is probably weird to be modifying the given parameter block here, the
+purpose of hestParseOrDie is to be the one-stop top-level thing for command-line parsing,
+and usefully acting on "--help" is something that definitely belongs on that one-stop
+function. Also, the "OrDie" part of hestParseOrDie means we are already in the business
+of modifying the given hestParm *_hparm (via hestParmFree), which is what requires _hparm
+to be not const (which is what enables modifying _hparm->respectDashDashHelp). And for
+this to be consistent, we want the same behavior of hestParseOrDie around --help to be
+the same in the case of when the given _hparm is NULL, so in that case we create a new
+hestParm as needed. */
 void
-hestParseOrDie(hestOpt *opt, int argc, const char **argv, hestParm *hparm,
+hestParseOrDie(hestOpt *opt, int argc, const char **argv, hestParm *_hparm,
                const char *me, const char *info, int doInfo, int doUsage,
                int doGlossary) {
   int argcBereft, parseErr, wantHelp;
@@ -1522,7 +1532,7 @@ hestParseOrDie(hestOpt *opt, int argc, const char **argv, hestParm *hparm,
     char vbuff[AIR_STRLEN_LARGE + 1];
     airTeemVersionSprint(vbuff);
     printf("%s\n", vbuff);
-    hestParmFree(hparm);
+    hestParmFree(_hparm); // NULL _hparm is ok
     hestOptFree(opt);
     exit(0);
   }
@@ -1534,9 +1544,19 @@ hestParseOrDie(hestOpt *opt, int argc, const char **argv, hestParm *hparm,
     wantHelp = AIR_TRUE;
   } else {
     /* we call hestParse if there are args, or (else) having no args is ok */
-    if (argc || (hparm && hparm->noArgsIsNoProblem)) {
+    if (argc || (_hparm && _hparm->noArgsIsNoProblem)) {
       argcBereft = AIR_FALSE;
-      parseErr = hestParse(opt, argc, argv, &errS, hparm);
+      // see note above about TeemV2 handling of respectDashDashHelp
+      hestParm *tparm = NULL;
+      if (_hparm) {
+        _hparm->respectDashDashHelp = AIR_TRUE;
+      } else {
+        // create tmp hparm in order to turn on respectDashDashHelp
+        tparm = hestParmNew();
+        tparm->respectDashDashHelp = AIR_TRUE;
+      }
+      parseErr = hestParse(opt, argc, argv, &errS, tparm ? tparm : _hparm);
+      if (tparm) hestParmFree(tparm); // free tmp hparm if we made it
       wantHelp = opt->helpWanted;
       if (wantHelp && parseErr) {
         /* should not happen at the same time */
@@ -1568,12 +1588,12 @@ hestParseOrDie(hestOpt *opt, int argc, const char **argv, hestParm *hparm,
     /* but no return or exit; there's more to say */
   }
 #define STDWUT (parseErr ? stderr : stdout)
-  if (hparm && hparm->dieLessVerbose) {
+  if (_hparm && _hparm->dieLessVerbose) {
     /* newer logic for when to print which things */
-    if (wantHelp && info) hestInfo(STDWUT, me ? me : "", info, hparm);
-    if (doUsage) hestUsage(STDWUT, opt, me ? me : "", hparm);
+    if (wantHelp && info) hestInfo(STDWUT, me ? me : "", info, _hparm);
+    if (doUsage) hestUsage(STDWUT, opt, me ? me : "", _hparm);
     if (wantHelp && doGlossary) {
-      hestGlossary(STDWUT, opt, hparm);
+      hestGlossary(STDWUT, opt, _hparm);
     } else if ((!argc || parseErr) && me) {
       fprintf(STDWUT, "\"%s --help\" for more information\n", me);
     }
@@ -1581,13 +1601,13 @@ hestParseOrDie(hestOpt *opt, int argc, const char **argv, hestParm *hparm,
     /* leave older (pre-dieLessVerbose) logic as is */
     if (!parseErr) {
       /* no error, just !argc */
-      if (doInfo && info) hestInfo(stdout, me ? me : "", info, hparm);
+      if (doInfo && info) hestInfo(stdout, me ? me : "", info, _hparm);
     }
-    if (doUsage) hestUsage(STDWUT, opt, me ? me : "", hparm);
-    if (doGlossary) hestGlossary(STDWUT, opt, hparm);
+    if (doUsage) hestUsage(STDWUT, opt, me ? me : "", _hparm);
+    if (doGlossary) hestGlossary(STDWUT, opt, _hparm);
   }
 #undef STDWUT
-  hestParmFree(hparm);
+  hestParmFree(_hparm);
   hestOptFree(opt);
   exit(!!parseErr);
 }

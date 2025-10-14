@@ -63,7 +63,7 @@ main(int argc, const char **argv) {
   int N;
   hestOptAdd_1_Int(&opt, "int", "N", &N, NULL, "an integer");
 
-  hestParseOrDie(opt, argc - 1, argv + 1, NULL, argv[0], "hest/text/ex4",
+  hestParseOrDie(opt, argc - 1, argv + 1, NULL /* hparm */, argv[0], "hest/text/ex4",
                  AIR_TRUE /* doInfo */, AIR_TRUE /* doUsage */,
                  AIR_TRUE /* doGlossary */);
 

@@ -332,7 +332,11 @@ hestParmNew() {
   and sets helpWanted in the first hestOpt, and the caller will have to know
   to check for that.  This logic is handled by hestParse but maybe in the future there
   can be a different top-level parser function that turns on parm->respectDashDashHelp
-  and knows how to check the results */
+  and knows how to check the results.
+  2025 rewrite (for TeemV2): respectDashDashHelp is now turned on in hestParseOrDie;
+  this function that has been part of hest since at least 2003's version 1.5 release,
+  so it is not a new or different top-level parser function, but it seems like there
+  is no other new top-level parser function on the horizon. */
   hparm->respectDashDashHelp = AIR_FALSE;
   /* for these most recent addition to the hestParm,
      abstaining from adding yet another default global variable */
