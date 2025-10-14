@@ -336,7 +336,10 @@ hestParmNew() {
   2025 rewrite (for TeemV2): respectDashDashHelp is now turned on in hestParseOrDie;
   this function that has been part of hest since at least 2003's version 1.5 release,
   so it is not a new or different top-level parser function, but it seems like there
-  is no other new top-level parser function on the horizon. */
+  is no other new top-level parser function on the horizon. Still, that is just for
+  users who want the one-stop convenience of hestParseOrDie. Users who do not want
+  that convenience are signing up for more work, which includes deciding how to respond
+  to --help (which is non-trivial as just explained) */
   hparm->respectDashDashHelp = AIR_FALSE;
   /* for these most recent addition to the hestParm,
      abstaining from adding yet another default global variable */
