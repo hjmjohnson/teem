@@ -117,8 +117,7 @@ main(int argc, const char **argv) {
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
   hestOptAdd(&hopt, "sbp", "sbp0", airTypeOther, 1, -1, &sbpv, NULL, "stack blur parms",
              &sbpNum, NULL, gageHestStackBlurParm);
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, sbpInfo, AIR_TRUE, AIR_TRUE,
-                 AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, sbpInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

@@ -112,8 +112,7 @@ main(int argc, const char *argv[]) {
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
   hestOptAdd(&hopt, "bs", "bspec0", airTypeOther, 1, -1, &bsv, NULL, "bspecs", &bsNum,
              NULL, nrrdHestBoundarySpec);
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, tbspecInfo, AIR_TRUE, AIR_TRUE,
-                 AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, tbspecInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

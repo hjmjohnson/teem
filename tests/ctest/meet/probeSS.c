@@ -922,8 +922,7 @@ main(int argc, const char **argv) {
   hestOptAdd(&hopt, "pnum", "N", airTypeUInt, 1, 1, &probeNum, "100", "# of probes");
   hestOptAdd(&hopt, "k", "kern", airTypeString, 1, 1, &kernS, NULL,
              "kernel to use; can be: box, cos, or ctmr");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, testInfo, AIR_TRUE, AIR_TRUE,
-                 AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, testInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
