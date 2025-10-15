@@ -373,7 +373,7 @@ main(int argc, const char *argv[]) {
   hestOptAdd_3_Double(&hopt, "p", "vec", pp, "0 0 0", "rotation as P vector");
   double ss;
   hestOptAdd_1_Double(&hopt, "s", "scl", &ss, "1.0", "scaling");
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info, AIR_TRUE, AIR_TRUE, AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

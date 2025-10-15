@@ -347,7 +347,7 @@ hestParmNew() {
   hparm->noArgsIsNoProblem = hestDefaultNoArgsIsNoProblem;
   hparm->cleverPluralizeOtherY = hestDefaultCleverPluralizeOtherY;
   /* here too: newer addition to hestParm avoid adding another default global */
-  hparm->dieLessVerbose = AIR_FALSE;
+  hparm->dieWithoutNewerFeatures = AIR_FALSE;
   hparm->noBlankLineBeforeUsage = AIR_FALSE;
   hparm->columns = hestDefaultColumns;
   // see note in privateHest.h about the removal of these
@@ -933,7 +933,7 @@ _hestOPCheck(const hestOpt *hopt, const hestParm *hparm) {
     ufvarNum += (hopt[opi].kind > 3 && (!hopt[opi].flag));
   }
   if (ufvarNum > 1) {
-    biffAddf(HEST, "%s%scan have at most 1 unflagged min<max options, not %u", _ME_,
+    biffAddf(HEST, "%s%scan have at most 1 unflagged variadic options, not %u", _ME_,
              ufvarNum);
     return 1;
   }

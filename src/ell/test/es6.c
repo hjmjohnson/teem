@@ -37,39 +37,35 @@ main(int argc, const char *argv[]) {
   hparm = hestParmNew();
   hopt = NULL;
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
-  hestOptAdd(&hopt, NULL, "matrix", airTypeOther, 1, 1, &_nin, NULL,
-             "6x6 matrix", NULL, NULL, nrrdHestNrrd);
-  hestParseOrDie(hopt, argc-1, argv+1, hparm,
-                 me, es6Info, AIR_TRUE, AIR_TRUE, AIR_TRUE);
+  hestOptAdd(&hopt, NULL, "matrix", airTypeOther, 1, 1, &_nin, NULL, "6x6 matrix", NULL,
+             NULL, nrrdHestNrrd);
+  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, es6Info);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
   nin = nrrdNew();
   airMopAdd(mop, nin, (airMopper)nrrdNuke, airMopAlways);
 
-  if (!(2 == _nin->dim
-        && 6 == _nin->axis[0].size
-        && 6 == _nin->axis[1].size)) {
-    fprintf(stderr, "%s: didn't get 2-D 6x6 matrix (got %u-D %ux%u)\n", me,
-            _nin->dim,
-            AIR_UINT(_nin->axis[0].size),
-            AIR_UINT(_nin->axis[1].size));
-    airMopError(mop); return 1;
+  if (!(2 == _nin->dim && 6 == _nin->axis[0].size && 6 == _nin->axis[1].size)) {
+    fprintf(stderr, "%s: didn't get 2-D 6x6 matrix (got %u-D %ux%u)\n", me, _nin->dim,
+            AIR_UINT(_nin->axis[0].size), AIR_UINT(_nin->axis[1].size));
+    airMopError(mop);
+    return 1;
   }
 
   nrrdConvert(nin, _nin, nrrdTypeDouble);
   in = AIR_CAST(double *, nin->data);
 
-  sym[ 0] = in[ 0];
-  sym[ 1] = in[ 1];
-  sym[ 2] = in[ 2];
-  sym[ 3] = in[ 3];
-  sym[ 4] = in[ 4];
-  sym[ 5] = in[ 5];
-  sym[ 6] = in[ 7];
-  sym[ 7] = in[ 8];
-  sym[ 8] = in[ 9];
-  sym[ 9] = in[10];
+  sym[0] = in[0];
+  sym[1] = in[1];
+  sym[2] = in[2];
+  sym[3] = in[3];
+  sym[4] = in[4];
+  sym[5] = in[5];
+  sym[6] = in[7];
+  sym[7] = in[8];
+  sym[8] = in[9];
+  sym[9] = in[10];
   sym[10] = in[11];
   sym[11] = in[14];
   sym[12] = in[15];
@@ -81,27 +77,26 @@ main(int argc, const char *argv[]) {
   sym[18] = in[28];
   sym[19] = in[29];
   sym[20] = in[35];
-  for (rr=1; rr<6; rr++) {
-    for (cc=0; cc<rr; cc++) {
-      in[cc + 6*rr] = in[rr + 6*cc];
+  for (rr = 1; rr < 6; rr++) {
+    for (cc = 0; cc < rr; cc++) {
+      in[cc + 6 * rr] = in[rr + 6 * cc];
     }
   }
 
   fprintf(stderr, "m = [");
-  for (rr=0; rr<6; rr++) {
-    for (cc=0; cc<6; cc++) {
-      fprintf(stderr, "%g%s", in[cc + 6*rr],
-              cc<5 ? "," : (rr<5 ? ";" : "]"));
+  for (rr = 0; rr < 6; rr++) {
+    for (cc = 0; cc < 6; cc++) {
+      fprintf(stderr, "%g%s", in[cc + 6 * rr], cc < 5 ? "," : (rr < 5 ? ";" : "]"));
     }
     fprintf(stderr, "\n");
   }
 
-  ell_6ms_eigensolve_d(eval, evec, sym, FLT_MIN/10);
+  ell_6ms_eigensolve_d(eval, evec, sym, FLT_MIN / 10);
 
-  for (ii=0; ii<6; ii++) {
+  for (ii = 0; ii < 6; ii++) {
     fprintf(stderr, "eval[%u] = %g:\n  ", ii, eval[ii]);
-    for (jj=0; jj<6; jj++) {
-      fprintf(stderr, "  %g", evec[jj + 6*ii]);
+    for (jj = 0; jj < 6; jj++) {
+      fprintf(stderr, "  %g", evec[jj + 6 * ii]);
     }
     fprintf(stderr, "\n");
   }
@@ -109,4 +104,3 @@ main(int argc, const char *argv[]) {
   airMopOkay(mop);
   exit(0);
 }
-

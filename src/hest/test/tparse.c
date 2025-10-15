@@ -19,6 +19,8 @@
 
 #include "../hest.h"
 
+typedef unsigned int uint;
+
 int
 main(int argc, const char **argv) {
 
@@ -34,47 +36,27 @@ main(int argc, const char **argv) {
   hestParm *hparm = hestParmNew();
   hparm->respectDashDashHelp = AIR_TRUE;
   hparm->responseFileEnable = AIR_TRUE;
-  hparm->verbosity = 4;
+  hparm->verbosity = 0;
 
   int flag;
   hestOptAdd_Flag(&opt, "b,bingo", &flag, "a flag");
   int verb;
   hestOptAdd_1_Int(&opt, "v", "verb", &verb, "0", "verbosity");
   /*
-  int unpA[2];
-  hestOptAdd_2_Int(&opt, NULL, "A A", unpA, NULL, "unflagged A");
-
   int *size;
-  unsigned int slen;
+  uint slen;
   hestOptAdd_Nv_Int(&opt, "s,sizes", "sx sy", 2, -1, &size, NULL, "image resolutions",
                     &slen);
                     */
-#if 0
-  int *unpB;
-  unsigned int sawB;
-  hestOptAdd_Nv_Int(&opt, NULL, "B B", 2, -1, &unpB, /* "BBBB" */ NULL, "unflagged B",
-                    &sawB);
-#endif
-  /* int unpB[2];
-     hestOptAdd_2_Int(&opt, NULL, "B B", unpB, NULL, "unflagged B"); */
-#if 0
-  int unpC[2];
-  hestOptAdd_2_Int(&opt, NULL, "C C", unpC, /* "dfltC0 dfltC1" */ NULL, "unflagged C");
-#endif
-  /*
-  int *unpC;
-  unsigned int sawC;
-  hestOptAdd_Nv_Int(&opt, NULL, "C C", 1, 2, &unpC, NULL, "unflagged C", &sawC);
-  */
   char **kinds;
-  unsigned int kindsLen;
+  uint kindsLen;
   hestOptAdd_Nv_String(&opt, "k,kind", "k0 k1", 1, -1, &kinds, "",
                        "what \"kind\" is each axis, from the nrrdKind airEnum "
                        "(e.g. space, time, 3-vector, 3D-masked-symmetric-matrix, "
                        "or \"none\" to signify no kind)",
                        &kindsLen);
   double *off;
-  unsigned int offLen;
+  uint offLen;
   hestOptAdd_Nv_Double(&opt, "off,offset", "off0", 0, -1, &off, "",
                        "For each axis, an offset or shift to the position (in index "
                        "space) of the lower end of the sampling domain. "
@@ -82,24 +64,40 @@ main(int argc, const char **argv) {
                        "together, or none of these (so that, by default, the full "
                        "domain of the axis is resampled).",
                        &offLen);
+  int unpA[2];
+  uint opiA = hestOptAdd_2_Int(&opt, NULL, "A0 A1", unpA, "0 1", "unflagged A");
+  int *unpB;
+  uint sawB;
+  uint opiB = hestOptAdd_Nv_Int(&opt, NULL, "B0", 1, -1, &unpB, "23", "unflagged B",
+                                &sawB);
+  int unpC[2];
+  uint opiC = hestOptAdd_2_Int(&opt, NULL, "C C", unpC, /* "dfltC0 dfltC1" */ NULL,
+                               "unflagged C");
+#if 0
+  // to test disallowance of >1 one unflagged variadic option
+  int *unpC;
+  uint sawC;
+  hestOptAdd_Nv_Int(&opt, NULL, "C0 C1", 1, 2, &unpC, NULL, "unflagged C", &sawC);
+#endif
 
-  char *err = NULL;
-  if (hestParse(opt, argc - 1, argv + 1, &err, hparm)) {
-    fprintf(stderr, "%s: problem:\n%s\n", argv[0], err);
-    free(err);
-    ret = 1;
-  } else if (opt->helpWanted) {
-    printf("\n\n%s: help wanted!\n\n\n", argv[0]);
-  } else {
-    for (unsigned int ki = 0; ki < kindsLen; ki++) {
-      printf("kind[%u] = |%s|\n", ki, kinds[ki]);
-    }
-    for (unsigned int ii = 0; ii < offLen; ii++) {
-      printf("off[%u] = %g\n", ii, off[ii]);
-    }
-    hestParseFree(opt);
-    hestOptFree(opt);
-    hestParmFree(hparm);
+  hestParseOrDie(opt, argc - 1, argv + 1, hparm, argv[0], "info about tparse");
+  for (uint ki = 0; ki < kindsLen; ki++) {
+    printf("kind[%u] = |%s|\n", ki, kinds[ki]);
   }
+  for (uint ii = 0; ii < offLen; ii++) {
+    printf("off[%u] = %g\n", ii, off[ii]);
+  }
+  printf("unpA = %d %d (source %s)\n", unpA[0], unpA[1],
+         airEnumStr(hestSource, opt[opiA].source));
+  printf("unpB (source %s) = ...\n", airEnumStr(hestSource, opt[opiB].source));
+  for (uint ii = 0; ii < sawB; ii++) {
+    printf("   [%u] = %u\n", ii, unpB[ii]);
+  }
+  printf("unpC = %d %d (source %s)\n", unpC[0], unpC[1],
+         airEnumStr(hestSource, opt[opiC].source));
+  hestParseFree(opt);
+  hestOptFree(opt);
+  hestParmFree(hparm);
+
   exit(ret);
 }

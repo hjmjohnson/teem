@@ -739,7 +739,7 @@ identStr(char *ident, const hestOpt *hopt) {
       sprintf(ident, "\"-%s\" option", hopt->flag);
     }
   } else {
-    sprintf(ident, "\"<%s>\" option", hopt->name);
+    sprintf(ident, "unflagged \"<%s>\" option", hopt->name);
   }
   return ident;
 }
@@ -804,6 +804,13 @@ optAllPrint(const char *func, const char *ctx, const hestOpt *hoptall) {
   printf("%s: ^'^'^'^'^'^'^'^'^\n", func);
   return;
 }
+
+#define BIFF_GIVEN_ARGV(HAVSTR)                                                         \
+  if (airStrlen((HAVSTR))) {                                                            \
+    biffAddf(HEST, "%s%swith (index: labeled) argv=|%s|", _ME_, (HAVSTR));              \
+  } else {                                                                              \
+    biffAddf(HEST, "%s%swith *empty* argv", _ME_);                                      \
+  }
 
 /* havecExtractFlagged
 Extracts the parameter args associated with all flagged options from the given
@@ -884,7 +891,7 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
              __func__, optIdx, theOpt->flag, parmNum, hitEnd, hitVPS, nextOptIdx);
     if (parmNum < theOpt->min) { // didn't get required min # parameters
       havStr = hestArgVecSprint(havec, AIR_TRUE);
-      biffAddf(HEST, "%s%sgiven (index: labeled) argv=|%s|", _ME_, havStr);
+      BIFF_GIVEN_ARGV(havStr);
       if (hitEnd) {
         biffAddf(HEST,
                  "%s%shit end of args before getting %u parameter%s "
@@ -926,7 +933,7 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     hestArgNix(hestArgVecRemove(havec, argIdx));
     havStr = hestArgVecSprint(havec, AIR_TRUE);
     if (havecTransfer(theOpt, havec, argIdx, parmNum, hparm)) {
-      biffAddf(HEST, "%s%sgiven (index: labeled) argv=|%s|", _ME_, havStr);
+      BIFF_GIVEN_ARGV(havStr);
       biffAddf(HEST, "%s%strouble transferring %u args for %s", _ME_, parmNum,
                identStr(ident1, theOpt));
       return (free(havStr), 1);
@@ -1059,8 +1066,8 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     if (hopt[opi].min /* == max */ < havec->len || !hopt[opi].dflt) {
       havStr = hestArgVecSprint(havec, AIR_TRUE);
       if (havecTransfer(hopt + opi, havec, 0, hopt[opi].min, hparm)) {
-        biffAddf(HEST, "%s%sgiven (index: labeled) argv=|%s|", _ME_, havStr);
-        biffAddf(HEST, "%s%strouble getting args for %sunflagged %s[%u]", _ME_,
+        BIFF_GIVEN_ARGV(havStr);
+        biffAddf(HEST, "%s%strouble getting args for %s%s[%u]", _ME_,
                  !hopt[opi].dflt ? "default-less " : "", identStr(ident, hopt + opi),
                  opi);
         return (free(havStr), free(ufOpi2), 1);
@@ -1090,8 +1097,8 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
                      : 0);
       havStr = hestArgVecSprint(havec, AIR_TRUE);
       if (havecTransfer(hopt + opi, havec, idx0, hopt[opi].min, hparm)) {
-        biffAddf(HEST, "%s%sgiven (index: labeled) argv=|%s|", _ME_, havStr);
-        biffAddf(HEST, "%s%strouble getting args for (later) %sunflagged %s[%u]", _ME_,
+        BIFF_GIVEN_ARGV(havStr);
+        biffAddf(HEST, "%s%strouble getting args for (later) %s%s[%u]", _ME_,
                  !hopt[opi].dflt ? "default-less " : "", identStr(ident, hopt + opi),
                  opi);
         return (free(havStr), free(ufOpi2), 1);
@@ -1108,11 +1115,12 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
   uint minArg = hopt[ufVarOpi].min; /* min < max for sure */
   if (minArg > havec->len && !hopt[ufVarOpi].dflt) {
     havStr = hestArgVecSprint(havec, AIR_TRUE);
-    biffAddf(HEST, "%s%sgiven (index: labeled) argv=|%s|", _ME_, havStr);
+    BIFF_GIVEN_ARGV(havStr);
     biffAddf(HEST,
-             "%s%shave only %u args left but need %u for "
-             "(default-less) variadic unflagged %s[%u]",
-             _ME_, havec->len, minArg, identStr(ident, hopt + ufVarOpi), ufVarOpi);
+             "%s%shave %s%u args left but need %u for "
+             "(default-less) variadic %s[%u]",
+             _ME_, havec->len ? "only " : "", havec->len, minArg,
+             identStr(ident, hopt + ufVarOpi), ufVarOpi);
     return (free(havStr), free(ufOpi2), 1);
   }
   // else minArg <= havec->len, or, minArg > havec->len and do have default
@@ -1124,8 +1132,8 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     }
     if (havecTransfer(hopt + ufVarOpi, havec, 0, getArg, hparm)) {
       havStr = hestArgVecSprint(havec, AIR_TRUE);
-      biffAddf(HEST, "%s%sgiven (index: labeled) argv=|%s|", _ME_, havStr);
-      biffAddf(HEST, "%s%strouble getting args for unflagged variadic %s[%u]", _ME_,
+      BIFF_GIVEN_ARGV(havStr);
+      biffAddf(HEST, "%s%strouble getting args for variadic %s[%u]", _ME_,
                identStr(ident, hopt + ufVarOpi), ufVarOpi);
       return (free(havStr), free(ufOpi2), 1);
     }
@@ -1150,7 +1158,7 @@ finishingup:
   for (upii = 0; upii < ufOptNum; upii++) {
     uint opi = ufOpi2[2 * upii + 0];
     if (!(hopt[opi].dflt) && hestSourceUnknown == hopt[opi].source) {
-      biffAddf(HEST, "%s%sdidn't get required (default-less) unflagged %s[%u]", _ME_,
+      biffAddf(HEST, "%s%sdidn't get required (default-less) %s[%u]", _ME_,
                identStr(ident, hopt + opi), opi);
       return (free(ufOpi2), 1);
     }
@@ -1158,7 +1166,7 @@ finishingup:
   // currently it's an error to have un-accounted-for args left overå
   if (havec->len) {
     havStr = hestArgVecSprint(havec, AIR_TRUE);
-    biffAddf(HEST, "%s%sgiven (index: labeled) argv=|%s|", _ME_, havStr);
+    BIFF_GIVEN_ARGV(havStr);
     biffAddf(HEST,
              "%s%safter getting %u unflagged opts, have %u unexpected arg%s "
              "%s\"%s\"",
@@ -1376,8 +1384,8 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
     break;
     case 2: // -------- one required parameter --------
       if ((pret = _hestParseSingle[type](valueP, hopt[opi].havec->harg[0]->str, hpp))) {
-        biffAddf(HEST, "%s%sproblem parsing for (kind 2) %s[%u] (from %s): %s", _ME_,
-                 ident, opi, airEnumStr(hestSource, hopt[opi].source), hpp->err);
+        biffAddf(HEST, "%s%sproblem parsing for %s[%u] (from %s): %s", _ME_, ident, opi,
+                 airEnumStr(hestSource, hopt[opi].source), hpp->err);
         return pret;
       }
       break;
@@ -1387,8 +1395,8 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
       for (uint argi = 0; argi < hopt[opi].havec->len; argi++) {
         if ((pret = _hestParseSingle[type](cvalueP + size * argi,
                                            hopt[opi].havec->harg[argi]->str, hpp))) {
-          biffAddf(HEST, "%s%sproblem parsing arg %u (of %u) for (kind 3) %s[%u]: %s",
-                   _ME_, argi, hopt[opi].havec->len, ident, opi, hpp->err);
+          biffAddf(HEST, "%s%sproblem parsing arg[%u] (of %u) for %s[%u]: %s", _ME_,
+                   argi, hopt[opi].havec->len, ident, opi, hpp->err);
           return pret;
         }
       }
@@ -1441,7 +1449,7 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
       for (uint argi = 0; argi < hopt[opi].havec->len; argi++) {
         if ((pret = _hestParseSingle[type](cvalueP + size * argi,
                                            hopt[opi].havec->harg[argi]->str, hpp))) {
-          biffAddf(HEST, "%s%sproblem parsing arg %u (of %u) for (kind 5) %s[%u]: %s",
+          biffAddf(HEST, "%s%sproblem parsing arg[%u] (of %u) for (kind 5) %s[%u]: %s",
                    _ME_, argi, hopt[opi].havec->len, ident, opi, hpp->err);
           return pret;
         }

@@ -76,8 +76,7 @@ main(int argc, const char *argv[]) {
                     "use fast separable deconvolution instead of brain-dead "
                     "brute-force iterative method");
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output volume");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, deconvInfo, AIR_TRUE, AIR_TRUE,
-                 AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, deconvInfo);
   airMopAdd(mop, hopt, AIR_CAST(airMopper, hestOptFree), airMopAlways);
   airMopAdd(mop, hopt, AIR_CAST(airMopper, hestParseFree), airMopAlways);
 

@@ -72,7 +72,7 @@ main(int argc, const char *argv[]) {
              "translation for drawing");
   hestOptAdd(&hopt, "s", "scale", airTypeDouble, 1, 1, &scale, "1.0",
              "scaling for drawing");
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info, AIR_TRUE, AIR_TRUE, AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

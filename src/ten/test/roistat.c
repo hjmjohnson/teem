@@ -17,7 +17,6 @@
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #include "../ten.h"
 
 const char *info = ("tensor ROI information.");
@@ -26,11 +25,11 @@ int
 main(int argc, const char *argv[]) {
   const char *me;
   char *err;
-  hestOpt *hopt=NULL;
+  hestOpt *hopt = NULL;
   airArray *mop;
 
-  unsigned int sx, sy, sz, ss, ii, anisoTypeNum, anisoTypeIdx,
-    roiVoxNum, roiVoxIdx, statNum, statIdx;
+  unsigned int sx, sy, sz, ss, ii, anisoTypeNum, anisoTypeIdx, roiVoxNum, roiVoxIdx,
+    statNum, statIdx;
   float *ten, *roi, *aniso, eval[3], *stat;
   Nrrd *nten, *_nroi, *nroi, *naniso, *nstat;
   int *anisoType, *measr;
@@ -38,18 +37,15 @@ main(int argc, const char *argv[]) {
   mop = airMopNew();
 
   me = argv[0];
-  hestOptAdd(&hopt, "r,roi", "roi", airTypeOther, 1, 1, &_nroi, NULL,
-             "ROI volume", NULL, NULL, nrrdHestNrrd);
-  hestOptAdd(&hopt, "i,input", "volume", airTypeOther, 1, 1, &nten, "-",
-             "tensor volume", NULL, NULL, nrrdHestNrrd);
+  hestOptAdd(&hopt, "r,roi", "roi", airTypeOther, 1, 1, &_nroi, NULL, "ROI volume", NULL,
+             NULL, nrrdHestNrrd);
+  hestOptAdd(&hopt, "i,input", "volume", airTypeOther, 1, 1, &nten, "-", "tensor volume",
+             NULL, NULL, nrrdHestNrrd);
   hestOptAdd(&hopt, "a,aniso", "aniso", airTypeEnum, 1, -1, &anisoType, NULL,
-             "which anisotropy measures to measure",
-             &anisoTypeNum, tenAniso);
+             "which anisotropy measures to measure", &anisoTypeNum, tenAniso);
   hestOptAdd(&hopt, "m,measr", "measr", airTypeEnum, 1, -1, &measr, NULL,
-             "which measures/statistics to calculate",
-             &statNum, nrrdMeasure);
-  hestParseOrDie(hopt, argc-1, argv+1, NULL,
-                 me, info, AIR_TRUE, AIR_TRUE, AIR_TRUE);
+             "which measures/statistics to calculate", &statNum, nrrdMeasure);
+  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
@@ -72,25 +68,23 @@ main(int argc, const char *argv[]) {
   sx = AIR_UINT(nten->axis[1].size);
   sy = AIR_UINT(nten->axis[2].size);
   sz = AIR_UINT(nten->axis[3].size);
-  if (!(3 == nroi->dim
-        && sx == nroi->axis[0].size
-        && sy == nroi->axis[1].size
+  if (!(3 == nroi->dim && sx == nroi->axis[0].size && sy == nroi->axis[1].size
         && sz == nroi->axis[2].size)) {
     fprintf(stderr, "%s: ROI dimension or axis sizes don't match volume", me);
     airMopError(mop);
     return 1;
   }
-  ss = sx*sy*sz;
+  ss = sx * sy * sz;
 
-  ten = AIR_CAST(float*, nten->data);
-  roi = AIR_CAST(float*, nroi->data);
+  ten = AIR_CAST(float *, nten->data);
+  roi = AIR_CAST(float *, nroi->data);
 
   /* NOTE: for time being the statistics are not weighted, because
      nrrdMeasureLine[]() can't take a weight vector... */
 
   /* find number of voxels in ROI */
   roiVoxNum = 0;
-  for (ii=0; ii<ss; ii++) {
+  for (ii = 0; ii < ss; ii++) {
     roiVoxNum += (roi[ii] > 0);
   }
   /* fprintf(stderr, "%s: # voxels in ROI == %u\n", me, roiVoxNum); */
@@ -110,11 +104,11 @@ main(int argc, const char *argv[]) {
 
   /* store all anisotropies in all ROI voxels */
   roiVoxIdx = 0;
-  for (ii=0; ii<ss; ii++) {
+  for (ii = 0; ii < ss; ii++) {
     if (roi[ii] > 0) {
-      tenEigensolve_f(eval, NULL, ten + 7*ii);
-      for (anisoTypeIdx=0; anisoTypeIdx<anisoTypeNum; anisoTypeIdx++) {
-        aniso[roiVoxIdx + roiVoxNum*anisoTypeIdx]
+      tenEigensolve_f(eval, NULL, ten + 7 * ii);
+      for (anisoTypeIdx = 0; anisoTypeIdx < anisoTypeNum; anisoTypeIdx++) {
+        aniso[roiVoxIdx + roiVoxNum * anisoTypeIdx]
           = tenAnisoEval_f(eval, anisoType[anisoTypeIdx]);
       }
       roiVoxIdx++;
@@ -122,7 +116,7 @@ main(int argc, const char *argv[]) {
   }
 
   printf("statistic:");
-  for (anisoTypeIdx=0; anisoTypeIdx<anisoTypeNum; anisoTypeIdx++) {
+  for (anisoTypeIdx = 0; anisoTypeIdx < anisoTypeNum; anisoTypeIdx++) {
     printf(" %s", airEnumStr(tenAniso, anisoType[anisoTypeIdx]));
   }
   printf("\n");
@@ -130,7 +124,7 @@ main(int argc, const char *argv[]) {
   /* do per-anisotropy statistics */
   nstat = nrrdNew();
   airMopAdd(mop, nstat, AIR_CAST(airMopper, nrrdNuke), airMopAlways);
-  for (statIdx=0; statIdx<statNum; statIdx++) {
+  for (statIdx = 0; statIdx < statNum; statIdx++) {
     printf("%s:", airEnumStr(nrrdMeasure, measr[statIdx]));
 
     if (nrrdProject(nstat, naniso, 0, measr[statIdx], nrrdTypeFloat)) {
@@ -140,7 +134,7 @@ main(int argc, const char *argv[]) {
       return 1;
     }
     stat = AIR_CAST(float *, nstat->data);
-    for (anisoTypeIdx=0; anisoTypeIdx<anisoTypeNum; anisoTypeIdx++) {
+    for (anisoTypeIdx = 0; anisoTypeIdx < anisoTypeNum; anisoTypeIdx++) {
       printf(" %g", stat[anisoTypeIdx]);
     }
 

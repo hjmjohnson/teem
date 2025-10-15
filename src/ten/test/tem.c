@@ -44,7 +44,7 @@ main(int argc, const char *argv[]) {
   hestOptAdd_2_Double(&hopt, "mp", "minprob 1,2", minprob, "0 0",
                       "minimum significant posterior probabilies, for first and "
                       "second stages");
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info, AIR_TRUE, AIR_TRUE, AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

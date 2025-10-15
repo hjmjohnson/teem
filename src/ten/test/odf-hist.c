@@ -52,7 +52,7 @@ main(int argc, const char *argv[]) {
   char *covarS;
   hestOptAdd_1_String(&hopt, "co", "covariance out", &covarS, "covar.nrrd",
                       "covariance output file");
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info, AIR_TRUE, AIR_TRUE, AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

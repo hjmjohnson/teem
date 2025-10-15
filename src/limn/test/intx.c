@@ -17,14 +17,12 @@
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #include "../limn.h"
 
 const char *info = ("test intersection of two lists.");
 
 static unsigned int
-flipListIntx(unsigned int *dstC,
-             const unsigned int *_srcA, const unsigned int *_srcB) {
+flipListIntx(unsigned int *dstC, const unsigned int *_srcA, const unsigned int *_srcB) {
   const unsigned int *srcA, *srcB;
   unsigned int numA, numB, numC, idxA, idxB;
 
@@ -33,8 +31,8 @@ flipListIntx(unsigned int *dstC,
   numB = _srcB[0];
   srcB = _srcB + 1;
   numC = 0;
-  for (idxA=0; idxA<numA; idxA++) {
-    for (idxB=0; idxB<numB; idxB++) {
+  for (idxA = 0; idxA < numA; idxA++) {
+    for (idxB = 0; idxB < numB; idxB++) {
       if (srcA[idxA] == srcB[idxB]) {
         dstC[numC++] = srcA[idxA];
       }
@@ -46,53 +44,51 @@ flipListIntx(unsigned int *dstC,
 int
 main(int argc, const char *argv[]) {
   const char *me;
-  hestOpt *hopt=NULL;
+  hestOpt *hopt = NULL;
   airArray *mop;
 
   unsigned int *srcA, *srcB, *dstC, *_srcA, *_srcB, numA, numB, numC, idx;
 
   me = argv[0];
-  hestOptAdd(&hopt, "a", "vals", airTypeUInt, 1, -1, &srcA, NULL,
-             "list of values", &numA);
-  hestOptAdd(&hopt, "b", "vals", airTypeUInt, 1, -1, &srcB, NULL,
-             "list of values", &numB);
-  hestParseOrDie(hopt, argc-1, argv+1, NULL,
-                 me, info, AIR_TRUE, AIR_TRUE, AIR_TRUE);
+  hestOptAdd(&hopt, "a", "vals", airTypeUInt, 1, -1, &srcA, NULL, "list of values",
+             &numA);
+  hestOptAdd(&hopt, "b", "vals", airTypeUInt, 1, -1, &srcB, NULL, "list of values",
+             &numB);
+  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
   mop = airMopNew();
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
   fprintf(stderr, "a =");
-  for (idx=0; idx<numA; idx++) {
+  for (idx = 0; idx < numA; idx++) {
     fprintf(stderr, " %u", srcA[idx]);
   }
   fprintf(stderr, "\n");
   fprintf(stderr, "b =");
-  for (idx=0; idx<numB; idx++) {
+  for (idx = 0; idx < numB; idx++) {
     fprintf(stderr, " %u", srcB[idx]);
   }
   fprintf(stderr, "\n");
 
-  _srcA = AIR_CAST(unsigned int*, calloc(1+numA, sizeof(unsigned int)));
+  _srcA = AIR_CAST(unsigned int *, calloc(1 + numA, sizeof(unsigned int)));
   airMopAdd(mop, _srcA, airFree, airMopAlways);
-  _srcB = AIR_CAST(unsigned int*, calloc(1+numB, sizeof(unsigned int)));
+  _srcB = AIR_CAST(unsigned int *, calloc(1 + numB, sizeof(unsigned int)));
   airMopAdd(mop, _srcB, airFree, airMopAlways);
-  dstC = AIR_CAST(unsigned int*, calloc(1+AIR_MAX(numA,numB),
-                                        sizeof(unsigned int)));
+  dstC = AIR_CAST(unsigned int *, calloc(1 + AIR_MAX(numA, numB), sizeof(unsigned int)));
   airMopAdd(mop, dstC, airFree, airMopAlways);
 
   _srcA[0] = numA;
-  for (idx=0; idx<numA; idx++) {
-    _srcA[1+idx] = srcA[idx];
+  for (idx = 0; idx < numA; idx++) {
+    _srcA[1 + idx] = srcA[idx];
   }
   _srcB[0] = numB;
-  for (idx=0; idx<numB; idx++) {
-    _srcB[1+idx] = srcB[idx];
+  for (idx = 0; idx < numB; idx++) {
+    _srcB[1 + idx] = srcB[idx];
   }
 
   numC = flipListIntx(dstC, _srcA, _srcB);
   fprintf(stderr, "intx(a,b) =");
-  for (idx=0; idx<numC; idx++) {
+  for (idx = 0; idx < numC; idx++) {
     fprintf(stderr, " %u", dstC[idx]);
   }
   fprintf(stderr, "\n");
@@ -100,4 +96,3 @@ main(int argc, const char *argv[]) {
   airMopOkay(mop);
   return 0;
 }
-

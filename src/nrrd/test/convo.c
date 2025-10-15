@@ -181,8 +181,7 @@ main(int argc, const char *argv[]) {
              "mask to convolve with", NULL, NULL, nrrdHestNrrd);
   hestOptAdd(&hopt, NULL, "filename", airTypeString, 1, 1, &out, NULL,
              "file to write output nrrd to");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, convoInfo, AIR_TRUE, AIR_TRUE,
-                 AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, convoInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

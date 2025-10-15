@@ -85,8 +85,7 @@ main(int argc, const char *argv[]) {
   hestOptAdd_Flag(&hopt, "err", &doerr,
                   "If using \"-d\", make the image represent the error between the "
                   "real and quantized vector");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, emapInfo, AIR_TRUE, AIR_TRUE,
-                 AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, emapInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

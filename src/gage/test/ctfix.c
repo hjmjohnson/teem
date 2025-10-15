@@ -48,16 +48,15 @@ main(int argc, const char *argv[]) {
   hparm = hestParmNew();
   hopt = NULL;
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
-  hestOptAdd(&hopt, "i", "nin", airTypeOther, 1, 1, &nin, NULL,
-             "input volume", NULL, NULL, nrrdHestNrrd);
+  hestOptAdd(&hopt, "i", "nin", airTypeOther, 1, 1, &nin, NULL, "input volume", NULL,
+             NULL, nrrdHestNrrd);
   hestOptAdd(&hopt, "si", "streak info", airTypeOther, 1, 1, &_nsinfo, NULL,
              "list of streaks as 2D nrrd; per line: \n "
              "<slice> <radius> <width> <start> <stop> \n "
              "where start and stop are angles in [0,4] "
              "(instead of [-pi,pi]) delimiting arc");
-  hestOptAdd(&hopt, "k", "kernel", airTypeOther, 1, 1, &kern,
-             "tent", "kernel to use for median weighting",
-             NULL, NULL, nrrdHestKernelSpec);
+  hestOptAdd(&hopt, "k", "kernel", airTypeOther, 1, 1, &kern, "tent",
+             "kernel to use for median weighting", NULL, NULL, nrrdHestKernelSpec);
   hestOptAdd(&hopt, "c", "center x, y", airTypeDouble, 2, 2, cent, NULL,
              "The center point of tomography, around which streaks are "
              "circular arcs or fragments thereof");
@@ -68,38 +67,40 @@ main(int argc, const char *argv[]) {
              "radius");
   hestOptAdd(&hopt, "o", "filename", airTypeString, 1, 1, &outS, "-",
              "fixed volume output");
-  hestParseOrDie(hopt, argc-1, argv+1, hparm,
-                 me, ctfixInfo, AIR_TRUE, AIR_TRUE, AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, ctfixInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
-  if (!( 3 == nin->dim )) {
+  if (!(3 == nin->dim)) {
     fprintf(stderr, "%s: need 3-D input (not %d-D)\n", me, nin->dim);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
-  if (!( 2 == _nsinfo->dim && 5 == _nsinfo->axis[0].size )) {
+  if (!(2 == _nsinfo->dim && 5 == _nsinfo->axis[0].size)) {
     fprintf(stderr, "%s: need a 2-D 5-by-N list of streak locations\n", me);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
   nsinfo = nrrdNew();
   airMopAdd(mop, nsinfo, (airMopper)nrrdNuke, airMopAlways);
   if (nrrdConvert(nsinfo, _nsinfo, nrrdTypeDouble)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
-    fprintf(stderr, "%s: couldn't convert streak info to doubles:\n%s",
-            me, err);
-    airMopError(mop); return 1;
+    fprintf(stderr, "%s: couldn't convert streak info to doubles:\n%s", me, err);
+    airMopError(mop);
+    return 1;
   }
-  sinfo = (double*)(nsinfo->data);
+  sinfo = (double *)(nsinfo->data);
 
   nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
   if (nrrdCopy(nout, nin)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: couldn't allocate output:\n%s", me, err);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
 
-#define DIST(x0, y0, x1, y1) (sqrt((x0-x1)*(x0-x1) + (y0-y1)*(y0-y1)))
+#define DIST(x0, y0, x1, y1) (sqrt((x0 - x1) * (x0 - x1) + (y0 - y1) * (y0 - y1)))
 
   sx = nin->axis[0].size;
   sy = nin->axis[1].size;
@@ -118,45 +119,47 @@ main(int argc, const char *argv[]) {
   if (E) {
     airMopAdd(mop, err = biffGetDone(GAGE), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble:\n%s\n", me, err);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
   answer = gageAnswerPointer(ctx, pvl, gageSclMedian);
 
   ins = nrrdDInsert[nout->type];
   fprintf(stderr, "%s: processing streaks ... \n", me);
-  for (si=0; si<nsinfo->axis[1].size; si++) {
-    fprintf(stderr, "%s: streak %d of %d       ",
-            me, si+1, AIR_INT(nsinfo->axis[1].size));
+  for (si = 0; si < nsinfo->axis[1].size; si++) {
+    fprintf(stderr, "%s: streak %d of %d       ", me, si + 1,
+            AIR_INT(nsinfo->axis[1].size));
     fflush(stderr);
-    zi = (int)(sinfo[0 + 5*si]);
-    if (!( zi < sz )) {
-      fprintf(stderr, "%s: streak[%d] zi=%d outside valid range [0,%d]\n",
-              me, si, zi, sz-1);
-      airMopError(mop); return 1;
+    zi = (int)(sinfo[0 + 5 * si]);
+    if (!(zi < sz)) {
+      fprintf(stderr, "%s: streak[%d] zi=%d outside valid range [0,%d]\n", me, si, zi,
+              sz - 1);
+      airMopError(mop);
+      return 1;
     }
-    srad = sinfo[1 + 5*si];
-    swidth = sinfo[2 + 5*si];
-    astart = sinfo[3 + 5*si];
-    astop = sinfo[4 + 5*si];
-    for (yi=0; yi<sy; yi++) {
-      if (!(yi%3)) {
-        fprintf(stderr, "%s", airDoneStr(0, yi, sy-1, done));
+    srad = sinfo[1 + 5 * si];
+    swidth = sinfo[2 + 5 * si];
+    astart = sinfo[3 + 5 * si];
+    astop = sinfo[4 + 5 * si];
+    for (yi = 0; yi < sy; yi++) {
+      if (!(yi % 3)) {
+        fprintf(stderr, "%s", airDoneStr(0, yi, sy - 1, done));
         fflush(stderr);
       }
-      for (xi=0; xi<sx; xi++) {
+      for (xi = 0; xi < sx; xi++) {
         r = DIST(xi, yi, cent[0], cent[1]);
-        if (!( AIR_ABS(r-srad) < swidth/2 )) {
+        if (!(AIR_ABS(r - srad) < swidth / 2)) {
           continue;
         }
-        angle = atan2(yi-cent[1], xi-cent[0]);
+        angle = atan2(yi - cent[1], xi - cent[0]);
         angle = AIR_AFFINE(-AIR_PI, angle, AIR_PI, 0, 4);
-        if (!( (astart < astop && AIR_IN_CL(astart, angle, astop))
-               || (astart > astop && (AIR_IN_CL(astart, angle, 4)
-                                      || AIR_IN_CL(0, angle, astop))) )) {
+        if (!((astart < astop && AIR_IN_CL(astart, angle, astop))
+              || (astart > astop
+                  && (AIR_IN_CL(astart, angle, 4) || AIR_IN_CL(0, angle, astop))))) {
           continue;
         }
         gageProbe(ctx, xi, yi, zi);
-        ins(nout->data, xi + sx*(yi + sy*zi), *answer);
+        ins(nout->data, xi + sx * (yi + sy * zi), *answer);
       }
     }
     fprintf(stderr, "\n");
@@ -164,16 +167,16 @@ main(int argc, const char *argv[]) {
 
   if (corerad > 0) {
     fprintf(stderr, "%s: processing core ...       ", me);
-    for (zi=0; zi<sz; zi++) {
-      fprintf(stderr, "%s", airDoneStr(0, zi, sz-1, done));
-      for (yi=0; yi<sy; yi++) {
-        for (xi=0; xi<sx; xi++) {
+    for (zi = 0; zi < sz; zi++) {
+      fprintf(stderr, "%s", airDoneStr(0, zi, sz - 1, done));
+      for (yi = 0; yi < sy; yi++) {
+        for (xi = 0; xi < sx; xi++) {
           r = DIST(xi, yi, cent[0], cent[1]);
-          if (!( r < corerad )) {
+          if (!(r < corerad)) {
             continue;
           }
           gageProbe(ctx, xi, yi, zi);
-          ins(nout->data, xi + sx*(yi + sy*zi), *answer);
+          ins(nout->data, xi + sx * (yi + sy * zi), *answer);
         }
       }
     }
@@ -183,11 +186,10 @@ main(int argc, const char *argv[]) {
   if (nrrdSave(outS, nout, NULL)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: couldn't save output:\n%s", me, err);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
 
   airMopOkay(mop);
   exit(0);
 }
-
-

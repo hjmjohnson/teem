@@ -23,17 +23,16 @@ void
 maxes1(Nrrd *nout, const Nrrd *nin) {
   unsigned int sx, xi, xd;
   int xo, ismax;
-  double val, (*lup)(const void *, size_t),
-    (*ins)(void *, size_t, double);
+  double val, (*lup)(const void *, size_t), (*ins)(void *, size_t, double);
 
   lup = nrrdDLookup[nin->type];
   ins = nrrdDInsert[nin->type];
   sx = AIR_UINT(nin->axis[0].size);
-  for (xi=0; xi<sx; xi++) {
+  for (xi = 0; xi < sx; xi++) {
     ismax = AIR_TRUE;
     val = lup(nin->data, xi);
-    for (xo=-1; xo<=1; xo+=2) {
-      xd = !xi && xo < 0 ? sx-1 : AIR_MOD(xi+xo, sx);
+    for (xo = -1; xo <= 1; xo += 2) {
+      xd = !xi && xo < 0 ? sx - 1 : AIR_MOD(xi + xo, sx);
       ismax &= lup(nin->data, xd) < val;
       if (!ismax) break;
     }
@@ -46,26 +45,25 @@ void
 maxes2(Nrrd *nout, const Nrrd *nin) {
   unsigned int sx, sy, xi, yi, xd, yd;
   int xo, yo, ismax;
-  double val, (*lup)(const void *, size_t),
-    (*ins)(void *, size_t, double);
+  double val, (*lup)(const void *, size_t), (*ins)(void *, size_t, double);
 
   lup = nrrdDLookup[nin->type];
   ins = nrrdDInsert[nin->type];
   sx = AIR_UINT(nin->axis[0].size);
   sy = AIR_UINT(nin->axis[1].size);
-  for (yi=0; yi<sy; yi++) {
-    for (xi=0; xi<sx; xi++) {
+  for (yi = 0; yi < sy; yi++) {
+    for (xi = 0; xi < sx; xi++) {
       ismax = AIR_TRUE;
-      val = lup(nin->data, xi + sx*yi);
-      for (yo=-1; yo<=1; yo++) {
-        yd = !yi && yo < 0 ? sy-1 : AIR_MOD(yi+yo, sy);
-        for (xo=-1; xo<=1; xo++) {
+      val = lup(nin->data, xi + sx * yi);
+      for (yo = -1; yo <= 1; yo++) {
+        yd = !yi && yo < 0 ? sy - 1 : AIR_MOD(yi + yo, sy);
+        for (xo = -1; xo <= 1; xo++) {
           if (!xo && !yo) continue;
-          xd = !xi && xo < 0 ? sx-1 : AIR_MOD(xi+xo, sx);
-          ismax &= lup(nin->data, xd + sx*yd) < val;
+          xd = !xi && xo < 0 ? sx - 1 : AIR_MOD(xi + xo, sx);
+          ismax &= lup(nin->data, xd + sx * yd) < val;
         }
       }
-      ins(nout->data, xi + sx*yi, ismax);
+      ins(nout->data, xi + sx * yi, ismax);
     }
   }
   return;
@@ -75,31 +73,30 @@ void
 maxes3(Nrrd *nout, const Nrrd *nin) {
   unsigned int sx, sy, sz, xi, yi, zi, xd, yd, zd;
   int xo, yo, zo, ismax;
-  double val, (*lup)(const void *, size_t),
-    (*ins)(void *, size_t, double);
+  double val, (*lup)(const void *, size_t), (*ins)(void *, size_t, double);
 
   lup = nrrdDLookup[nin->type];
   ins = nrrdDInsert[nin->type];
   sx = AIR_UINT(nin->axis[0].size);
   sy = AIR_UINT(nin->axis[1].size);
   sz = AIR_UINT(nin->axis[2].size);
-  for (zi=0; zi<sz; zi++) {
-    for (yi=0; yi<sy; yi++) {
-      for (xi=0; xi<sx; xi++) {
+  for (zi = 0; zi < sz; zi++) {
+    for (yi = 0; yi < sy; yi++) {
+      for (xi = 0; xi < sx; xi++) {
         ismax = AIR_TRUE;
-        val = lup(nin->data, xi + sx*(yi + sy*zi));
-        for (zo=-1; zo<=1; zo++) {
-          zd = !zi && zo < 0 ? sz-1 : AIR_MOD(zi+zo, sz);
-          for (yo=-1; yo<=1; yo++) {
-            yd = !yi && yo < 0 ? sy-1 : AIR_MOD(yi+yo, sy);
-            for (xo=-1; xo<=1; xo++) {
+        val = lup(nin->data, xi + sx * (yi + sy * zi));
+        for (zo = -1; zo <= 1; zo++) {
+          zd = !zi && zo < 0 ? sz - 1 : AIR_MOD(zi + zo, sz);
+          for (yo = -1; yo <= 1; yo++) {
+            yd = !yi && yo < 0 ? sy - 1 : AIR_MOD(yi + yo, sy);
+            for (xo = -1; xo <= 1; xo++) {
               if (!xo && !yo && !zo) continue;
-              xd = !xi && xo < 0 ? sx-1 : AIR_MOD(xi+xo, sx);
-              ismax &= lup(nin->data, xd + sx*(yd + sy*zd)) < val;
+              xd = !xi && xo < 0 ? sx - 1 : AIR_MOD(xi + xo, sx);
+              ismax &= lup(nin->data, xd + sx * (yd + sy * zd)) < val;
             }
           }
         }
-        ins(nout->data, xi + sx*(yi + sy*zi), ismax);
+        ins(nout->data, xi + sx * (yi + sy * zi), ismax);
       }
     }
   }
@@ -124,19 +121,18 @@ main(int argc, const char *argv[]) {
   hparm = hestParmNew();
   hopt = NULL;
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
-  hestOptAdd(&hopt, "i", "nin", airTypeOther, 1, 1, &nin, NULL,
-             "input image", NULL, NULL, nrrdHestNrrd);
-  hestOptAdd(&hopt, "o", "filename", airTypeString, 1, 1, &outS, NULL,
-             "output volume");
-  hestParseOrDie(hopt, argc-1, argv+1, hparm,
-                 me, maxesInfo, AIR_TRUE, AIR_TRUE, AIR_TRUE);
+  hestOptAdd(&hopt, "i", "nin", airTypeOther, 1, 1, &nin, NULL, "input image", NULL,
+             NULL, nrrdHestNrrd);
+  hestOptAdd(&hopt, "o", "filename", airTypeString, 1, 1, &outS, NULL, "output volume");
+  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, maxesInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
   if (!AIR_IN_CL(1, nin->dim, 3)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: nin->dim %u not 1, 2, or 3", me, nin->dim);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
 
   nout = nrrdNew();
@@ -144,7 +140,8 @@ main(int argc, const char *argv[]) {
   if (nrrdCopy(nout, nin)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: couldn't allocate output:\n%s", me, err);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
 
   if (1 == nin->dim) {
@@ -158,7 +155,8 @@ main(int argc, const char *argv[]) {
   if (nrrdSave(outS, nout, NULL)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: couldn't save output:\n%s", me, err);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
 
   airMopOkay(mop);

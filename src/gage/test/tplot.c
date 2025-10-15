@@ -49,8 +49,7 @@ main(int argc, const char *argv[]) {
              "range of domain to plot");
   hestOptAdd(&hopt, "n", "# samp", airTypeUInt, 1, 1, &num, NULL, "number of samples");
   hestOptAdd(&hopt, "o", "filename", airTypeString, 1, 1, &outS, NULL, "output volume");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, tplotInfo, AIR_TRUE, AIR_TRUE,
-                 AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, tplotInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

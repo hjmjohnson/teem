@@ -17,7 +17,6 @@
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #include "../limn.h"
 
 const char *info = ("Render something in postscript.");
@@ -28,10 +27,11 @@ main(int argc, const char *argv[]) {
   char *err, *outS;
   limnCamera *cam;
   float matA[16], matB[16], winscale, edgeWidth[5];
-  hestOpt *hopt=NULL;
+  hestOpt *hopt = NULL;
   airArray *mop;
   limnObject *obj;
-  limnLook *look; int lookIdx;
+  limnLook *look;
+  int lookIdx;
   limnWindow *win;
   int partIdx, wire, concave;
   Nrrd *nmap;
@@ -41,7 +41,7 @@ main(int argc, const char *argv[]) {
   airMopAdd(mop, cam, (airMopper)limnCameraNix, airMopAlways);
 
   me = argv[0];
-  hestOptAdd(&hopt, "fr", "from point", airTypeDouble, 3, 3, cam->from,"4 4 4",
+  hestOptAdd(&hopt, "fr", "from point", airTypeDouble, 3, 3, cam->from, "4 4 4",
              "position of camera, used to determine view vector");
   hestOptAdd(&hopt, "at", "at point", airTypeDouble, 3, 3, cam->at, "0 0 0",
              "camera look-at point, used to determine view vector");
@@ -51,15 +51,14 @@ main(int argc, const char *argv[]) {
              "use a right-handed UVN frame (V points down)");
   hestOptAdd(&hopt, "or", NULL, airTypeInt, 0, 0, &(cam->orthographic), NULL,
              "use orthogonal projection");
-  hestOptAdd(&hopt, "ur", "uMin uMax", airTypeDouble, 2, 2, cam->uRange,
-             "-1 1", "range in U direction of image plane");
-  hestOptAdd(&hopt, "vr", "vMin vMax", airTypeDouble, 2, 2, cam->vRange,
-             "-1 1", "range in V direction of image plane");
+  hestOptAdd(&hopt, "ur", "uMin uMax", airTypeDouble, 2, 2, cam->uRange, "-1 1",
+             "range in U direction of image plane");
+  hestOptAdd(&hopt, "vr", "vMin vMax", airTypeDouble, 2, 2, cam->vRange, "-1 1",
+             "range in V direction of image plane");
   hestOptAdd(&hopt, "e", "envmap", airTypeOther, 1, 1, &nmap, NULL,
-             "16checker-based environment map",
-             NULL, NULL, nrrdHestNrrd);
-  hestOptAdd(&hopt, "ws", "winscale", airTypeFloat, 1, 1, &winscale,
-             "200", "world to points (PostScript) scaling");
+             "16checker-based environment map", NULL, NULL, nrrdHestNrrd);
+  hestOptAdd(&hopt, "ws", "winscale", airTypeFloat, 1, 1, &winscale, "200",
+             "world to points (PostScript) scaling");
   hestOptAdd(&hopt, "wire", NULL, airTypeInt, 0, 0, &wire, NULL,
              "just do wire-frame rendering");
   hestOptAdd(&hopt, "concave", NULL, airTypeInt, 0, 0, &concave, NULL,
@@ -72,8 +71,7 @@ main(int argc, const char *argv[]) {
              "silohuette, front crease, front non-crease");
   hestOptAdd(&hopt, "o", "output PS", airTypeString, 1, 1, &outS, "out.ps",
              "output file to render postscript into");
-  hestParseOrDie(hopt, argc-1, argv+1, NULL,
-                 me, info, AIR_TRUE, AIR_TRUE, AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
@@ -104,40 +102,52 @@ main(int argc, const char *argv[]) {
   /* X axis: rod */
   partIdx = limnObjectCylinderAdd(obj, 0, 0, 16);
   ELL_4M_IDENTITY_SET(matA);
-  ELL_4M_SCALE_SET(matB, 1, 0.2f, 0.2f); ell_4m_post_mul_f(matA, matB);
-  ELL_4M_TRANSLATE_SET(matB, 1.3f, 0, 0); ell_4m_post_mul_f(matA, matB);
+  ELL_4M_SCALE_SET(matB, 1, 0.2f, 0.2f);
+  ell_4m_post_mul_f(matA, matB);
+  ELL_4M_TRANSLATE_SET(matB, 1.3f, 0, 0);
+  ell_4m_post_mul_f(matA, matB);
   limnObjectPartTransform(obj, partIdx, matA);
 
   /* Y axis: rod + ball */
   partIdx = limnObjectCylinderAdd(obj, 0, 1, 16);
   ELL_4M_IDENTITY_SET(matA);
-  ELL_4M_SCALE_SET(matB, 0.2f, 1, 0.2f); ell_4m_post_mul_f(matA, matB);
-  ELL_4M_TRANSLATE_SET(matB, 0, 1.3f, 0); ell_4m_post_mul_f(matA, matB);
+  ELL_4M_SCALE_SET(matB, 0.2f, 1, 0.2f);
+  ell_4m_post_mul_f(matA, matB);
+  ELL_4M_TRANSLATE_SET(matB, 0, 1.3f, 0);
+  ell_4m_post_mul_f(matA, matB);
   limnObjectPartTransform(obj, partIdx, matA);
 
   partIdx = limnObjectPolarSphereAdd(obj, 0, 0, 32, 16);
   ELL_4M_IDENTITY_SET(matA);
-  ELL_4M_SCALE_SET(matB, 0.28f, 0.28f, 0.28f); ell_4m_post_mul_f(matA, matB);
-  ELL_4M_TRANSLATE_SET(matB, 0, 2.6f, 0); ell_4m_post_mul_f(matA, matB);
+  ELL_4M_SCALE_SET(matB, 0.28f, 0.28f, 0.28f);
+  ell_4m_post_mul_f(matA, matB);
+  ELL_4M_TRANSLATE_SET(matB, 0, 2.6f, 0);
+  ell_4m_post_mul_f(matA, matB);
   limnObjectPartTransform(obj, partIdx, matA);
 
   /* Z axis: rod + ball + ball */
   partIdx = limnObjectCylinderAdd(obj, 0, 2, 16);
   ELL_4M_IDENTITY_SET(matA);
-  ELL_4M_SCALE_SET(matB, 0.2f, 0.2f, 1); ell_4m_post_mul_f(matA, matB);
-  ELL_4M_TRANSLATE_SET(matB, 0, 0, 1.3f); ell_4m_post_mul_f(matA, matB);
+  ELL_4M_SCALE_SET(matB, 0.2f, 0.2f, 1);
+  ell_4m_post_mul_f(matA, matB);
+  ELL_4M_TRANSLATE_SET(matB, 0, 0, 1.3f);
+  ell_4m_post_mul_f(matA, matB);
   limnObjectPartTransform(obj, partIdx, matA);
 
   partIdx = limnObjectPolarSphereAdd(obj, 0, 1, 32, 16);
   ELL_4M_IDENTITY_SET(matA);
-  ELL_4M_SCALE_SET(matB, 0.28f, 0.28f, 0.28f); ell_4m_post_mul_f(matA, matB);
-  ELL_4M_TRANSLATE_SET(matB, 0, 0, 2.6f); ell_4m_post_mul_f(matA, matB);
+  ELL_4M_SCALE_SET(matB, 0.28f, 0.28f, 0.28f);
+  ell_4m_post_mul_f(matA, matB);
+  ELL_4M_TRANSLATE_SET(matB, 0, 0, 2.6f);
+  ell_4m_post_mul_f(matA, matB);
   limnObjectPartTransform(obj, partIdx, matA);
 
   partIdx = limnObjectPolarSphereAdd(obj, 0, 2, 32, 16);
   ELL_4M_IDENTITY_SET(matA);
-  ELL_4M_SCALE_SET(matB, 0.28f, 0.28f, 0.28f); ell_4m_post_mul_f(matA, matB);
-  ELL_4M_TRANSLATE_SET(matB, 0, 0, 3.2f); ell_4m_post_mul_f(matA, matB);
+  ELL_4M_SCALE_SET(matB, 0.28f, 0.28f, 0.28f);
+  ell_4m_post_mul_f(matA, matB);
+  ELL_4M_TRANSLATE_SET(matB, 0, 0, 3.2f);
+  ell_4m_post_mul_f(matA, matB);
   limnObjectPartTransform(obj, partIdx, matA);
 
   win = limnWindowNew(limnDevicePS);
@@ -153,16 +163,15 @@ main(int argc, const char *argv[]) {
   airMopAdd(mop, win, (airMopper)limnWindowNix, airMopAlways);
 
   if (limnObjectRender(obj, cam, win)
-      || (concave
-          ? limnObjectPSDrawConcave(obj, cam, nmap, win)
-          : limnObjectPSDraw(obj, cam, nmap, win))) {
+      || (concave ? limnObjectPSDrawConcave(obj, cam, nmap, win)
+                  : limnObjectPSDraw(obj, cam, nmap, win))) {
     airMopAdd(mop, err = biffGetDone(LIMN), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble:\n%s\n", me, err);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
   fclose(win->file);
 
   airMopOkay(mop);
   return 0;
 }
-

@@ -21,9 +21,6 @@
 
 int
 main(int argc, const char **argv) {
-  int res[2], v, numIn;
-  char **in, *out, *blah[3], *option = NULL;
-  int n, *ints, numN, flag, glag;
   hestOpt *opt = NULL;
   hestParm *parm;
   char *err = NULL,
@@ -33,58 +30,38 @@ main(int argc, const char **argv) {
                 "especially since this is the output of a unicyclist.";
 
   parm = hestParmNew();
-  parm->responseFileEnable = AIR_TRUE;
-  parm->respectDashDashHelp = AIR_TRUE;
   parm->verbosity = 3;
 
   opt = NULL;
+  int flag;
   hestOptAdd(&opt, "f,flag", NULL, airTypeInt, 0, 0, &flag, NULL,
              "a flag created via hestOptAdd");
+  int glag;
   hestOptAdd_Flag(&opt, "g,glag", &glag, "a flag created via hestOptAdd_Flag");
-  hestOptAdd(&opt, "v,verbose", "level", airTypeInt, 0, 1, &v, "0", "verbosity level");
-  hestOptAdd(&opt, "out", "file", airTypeString, 1, 1, &out, "output.ppm",
-             "PPM image output");
-  hestOptAdd(&opt, "blah", "input", airTypeString, 3, 3, blah, "a b c",
-             "input image file(s)");
+  int v;
+  hestOptAdd_1v_Int(&opt, "v,verbose", "level", &v, "0", "verbosity level");
+  char *out;
+  hestOptAdd_1_String(&opt, "out", "file", &out, "output.ppm", "PPM image output");
+  char *blah[3];
+  hestOptAdd_3_String(&opt, "blah", "input", blah, "a b c", "input image file(s)");
+  /*
+  // 2025 re-write: only allow simple scalar types as single variadic parm (not String)
+  char *option = NULL;
   hestOptAdd(&opt, "option", "opt", airTypeString, 0, 1, &option, "default",
              "this is just a test");
-  hestOptAdd(&opt, "ints", "N", airTypeInt, 1, -1, &ints, "10 20 30",
-             "a list of integers", &numN);
-  hestOptAdd(&opt, "res", "sx sy", airTypeInt, 2, 2, res, NULL, "image resolution");
-  hestOptAdd(&opt, NULL, "input", airTypeString, 1, -1, &in, NULL, "input image file(s)",
-             &numIn);
-
-  if (1 == argc) {
-    /* didn't get anything at all on command line */
-    /* print program information ... */
-    hestInfo(stderr, argv[0], info, parm);
-    /* ... and usage information ... */
-    hestUsage(stderr, opt, argv[0], parm);
-    hestGlossary(stderr, opt, parm);
-    /* ... and avoid memory leaks */
-    opt = hestOptFree(opt);
-    parm = hestParmFree(parm);
-    exit(1);
-  }
-
-  /* else we got something, see if we can parse it */
-  if (hestParse(opt, argc - 1, argv + 1, &err, parm)) {
-    fprintf(stderr, "ERROR: %s\n", err);
-    free(err);
-    /* print usage information ... */
-    hestUsage(stderr, opt, argv[0], parm);
-    hestGlossary(stderr, opt, parm);
-    /* ... and then avoid memory leaks */
-    opt = hestOptFree(opt);
-    parm = hestParmFree(parm);
-    exit(1);
-  } else if (opt->helpWanted) {
-    hestUsage(stdout, opt, argv[0], parm);
-    hestGlossary(stdout, opt, parm);
-    opt = hestOptFree(opt);
-    parm = hestParmFree(parm);
-    exit(1);
-  }
+   */
+  int *ints;
+  unsigned int numN;
+  hestOptAdd_Nv_Int(&opt, "ints", "N", 1, -1, &ints, "10 20 30", "a list of integers",
+                    &numN);
+  int res[2];
+  hestOptAdd_2_Int(&opt, "res", "sx sy", res, NULL, "image resolution");
+  char **in;
+  unsigned int numIn;
+  hestOptAdd_Nv_String(&opt, NULL, "input", 1, -1, &in, NULL, "input image file(s)",
+                       &numIn);
+  parm->dieWithoutNewerFeatures = 0;
+  hestParseOrDie(opt, argc - 1, argv + 1, parm, argv[0], info);
 
   {
     unsigned int opi, numO;
@@ -104,15 +81,15 @@ main(int argc, const char **argv) {
   printf("  flag glag = %d %d\n", flag, glag);
   printf("out = \"%s\"\n", out ? out : "(null)");
   printf("blah = \"%s\" \"%s\" \"%s\"\n", blah[0], blah[1], blah[2]);
-  printf("option = \"%s\"\n", option ? option : "(null)");
+  // printf("option = \"%s\"\n", option ? option : "(null)");
   printf("res = %d %d\n", res[0], res[1]);
   printf("\nin = %d files:", numIn);
-  for (n = 0; n <= numIn - 1; n++) {
+  for (unsigned int n = 0; n <= numIn - 1; n++) {
     printf(" \"%s\"", in[n] ? in[n] : "(null)");
   }
   printf("\n");
   printf("ints = %d ints:", numN);
-  for (n = 0; n <= numN - 1; n++) {
+  for (unsigned int n = 0; n <= numN - 1; n++) {
     printf(" %d", ints[n]);
   }
   printf("\n");

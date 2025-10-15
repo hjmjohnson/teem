@@ -35,16 +35,13 @@ main(int argc, const char *argv[]) {
   hparm = hestParmNew();
   hopt = NULL;
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
-  hestOptAdd(&hopt, NULL, "matrix", airTypeOther, 1, 1, &_ninA, NULL,
-             "first matrix",
+  hestOptAdd(&hopt, NULL, "matrix", airTypeOther, 1, 1, &_ninA, NULL, "first matrix",
              NULL, NULL, nrrdHestNrrd);
-  hestOptAdd(&hopt, NULL, "matrix", airTypeOther, 1, 1, &_ninB, NULL,
-             "first matrix",
+  hestOptAdd(&hopt, NULL, "matrix", airTypeOther, 1, 1, &_ninB, NULL, "first matrix",
              NULL, NULL, nrrdHestNrrd);
   hestOptAdd(&hopt, "o", "filename", airTypeString, 1, 1, &outS, "-",
              "file to write output nrrd to");
-  hestParseOrDie(hopt, argc-1, argv+1, hparm,
-                 me, mulInfo, AIR_TRUE, AIR_TRUE, AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, mulInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
@@ -60,16 +57,17 @@ main(int argc, const char *argv[]) {
   if (ell_Nm_mul(nmul, ninA, ninB)) {
     airMopAdd(mop, err = biffGetDone(ELL), airFree, airMopAlways);
     fprintf(stderr, "%s: problem inverting:\n%s\n", me, err);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
 
   if (nrrdSave(outS, nmul, NULL)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: problem saving output:\n%s\n", me, err);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
 
   airMopOkay(mop);
   exit(0);
 }
-

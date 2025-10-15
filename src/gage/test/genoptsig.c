@@ -74,8 +74,7 @@ main(int argc, const char *argv[]) {
   hestOptAdd(&hopt, "tent", NULL, airTypeInt, 0, 0, &tentRecon, NULL,
              "same hack: plot error with tent recon, not hermite");
   hestOptAdd(&hopt, "o", "nout", airTypeString, 1, 1, &outS, NULL, "output array");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, optsigInfo, AIR_TRUE, AIR_TRUE,
-                 AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, optsigInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

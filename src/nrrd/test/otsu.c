@@ -37,19 +37,19 @@ main(int argc, const char *argv[]) {
   hparm = hestParmNew();
   hopt = NULL;
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
-  hestOptAdd(&hopt, "i", "nhist", airTypeOther, 1, 1, &nhist, NULL,
-             "input histogram", NULL, NULL, nrrdHestNrrd);
+  hestOptAdd(&hopt, "i", "nhist", airTypeOther, 1, 1, &nhist, NULL, "input histogram",
+             NULL, NULL, nrrdHestNrrd);
   hestOptAdd(&hopt, "e", "expo", airTypeDouble, 1, 1, &expo, "2.0",
              "exponent to use for variance calculation");
-  hestParseOrDie(hopt, argc-1, argv+1, hparm,
-                 me, otsuInfo, AIR_TRUE, AIR_TRUE, AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, otsuInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
   if (nrrdHistoThresholdOtsu(&thresh, nhist, expo)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble:\n%s", me, err);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
 
   fprintf(stderr, "%s: threshold = %g\n", me, thresh);

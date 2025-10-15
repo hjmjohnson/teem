@@ -312,10 +312,10 @@ typedef struct {
     cleverPluralizeOtherY, /* when printing the type for airTypeOther, when the min
                               number of items is > 1, and the type string ends with "y",
                               then pluralize with "ies" instead of "ys" */
-    dieLessVerbose, /* on parse failure, hestParseOrDie prints less than it otherwise
-                       might: only print info and glossary when they "ask for it" */
-    noBlankLineBeforeUsage; /* like it says */
-  unsigned int columns;     /* number of printable columns in output */
+    dieWithoutNewerFeatures, /* do let hestParseOrDie turn on respectDashDashHelp or
+                                use hestParmColumnsIoctl to set columns */
+    noBlankLineBeforeUsage;  /* like it says */
+  unsigned int columns;      /* number of printable columns in output */
 } hestParm;
 
 // defaultsHest.c
@@ -364,6 +364,15 @@ HEST_EXPORT void hestOptSingleSet(hestOpt *hopt, const char *flag, const char *n
                                   int type, unsigned int min, int max, void *valueP,
                                   const char *dflt, const char *info, unsigned int *sawP,
                                   const airEnum *enm, const hestCB *CB);
+/* In the early days of hest, you could *statically* create the hestOpt *opt array; just
+like with the https://argtable.sourceforge.io argtable library that inspired hest. With
+TeemV2, the weirdly named validation-ish function `_hestPanic`, which also set the
+per-opt `kind` field, became a proper validation function `hestOptCheck` which did not
+set `kind`; that became the job of hestOptSingleSet.  That change marked the end of the
+line for static hestOpt*opt array creation, though it had already long been increasingly
+annoying because of "missing initializer" warnings around the hestOpt struct not being
+completely initialized.  This was no issue for Teem code, which had all already switched
+over to hestOptAdd(), since updated to the type-checked variants. */
 HEST_EXPORT unsigned int hestOptAdd_nva(hestOpt **optP, const char *flag,
                                         const char *name, int type, unsigned int min,
                                         int max, void *valueP, const char *dflt,
@@ -389,8 +398,9 @@ HEST_EXPORT int hestParseOld(hestOpt *hopt, int argc, const char **argv, char **
                              const hestParm *hparm);
 HEST_EXPORT hestOpt *hestParseFree(hestOpt *hopt);
 HEST_EXPORT void hestParseOrDie(hestOpt *hopt, int argc, const char **argv,
-                                hestParm *hparm, const char *me, const char *info,
-                                int doInfo, int doUsage, int doGlossary);
+                                hestParm *hparm, const char *me, const char *info);
+/*                              TeemV2 removed the final doInfo, doUsage, doGlossary
+                                args since they were typically all AIR_TRUE */
 
 // parsest.c
 HEST_EXPORT int hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,

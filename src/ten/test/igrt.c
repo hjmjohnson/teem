@@ -37,7 +37,7 @@ main(int argc, const char *argv[]) {
   double pp[3];
   hestOptAdd_3_Double(&hopt, "p", "x y z", pp, "0 0 0",
                       "location in quaternion quotient space");
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info, AIR_TRUE, AIR_TRUE, AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

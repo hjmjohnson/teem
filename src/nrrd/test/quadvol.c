@@ -57,8 +57,7 @@ main(int argc, const char *argv[]) {
              "vertical offset");
   hestOptAdd(&hopt, "o", "filename", airTypeString, 1, 1, &out, "-",
              "file to write output nrrd to");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, quadInfo, AIR_TRUE, AIR_TRUE,
-                 AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, quadInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

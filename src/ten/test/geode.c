@@ -17,7 +17,6 @@
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #include "../ten.h"
 
 const char *info = ("does geodesics");
@@ -26,13 +25,12 @@ int
 main(int argc, const char *argv[]) {
   const char *me;
   char *err;
-  hestOpt *hopt=NULL;
+  hestOpt *hopt = NULL;
   airArray *mop;
 
   char *outS;
-  double _tA[6], tA[7], _tB[6], tB[7], time0, time1, conv, confThresh,
-    pA[3], pB[3], qA[4], qB[4], rA[9], rB[9], mat1[9], mat2[9], tmp,
-    stepSize, minNorm, sclA, sclB;
+  double _tA[6], tA[7], _tB[6], tB[7], time0, time1, conv, confThresh, pA[3], pB[3],
+    qA[4], qB[4], rA[9], rB[9], mat1[9], mat2[9], tmp, stepSize, minNorm, sclA, sclB;
   unsigned int NN, maxiter, refIdx[3];
   int recurse, ptype, verb;
   Nrrd *_nin, *nin, *nout;
@@ -53,8 +51,8 @@ main(int argc, const char *argv[]) {
   hestOptAdd(&hopt, "sb", "scl", airTypeDouble, 1, 1, &sclB, "1.0",
              "scaling of second tensor");
   hestOptAdd(&hopt, "i", "nten", airTypeOther, 1, 1, &_nin, "",
-             "input tensor volume (makes previous options moot)",
-             NULL, NULL, nrrdHestNrrd);
+             "input tensor volume (makes previous options moot)", NULL, NULL,
+             nrrdHestNrrd);
   hestOptAdd(&hopt, "ri", "x y z", airTypeUInt, 3, 3, refIdx, "0 0 0",
              "index of reference tensor in input tensor volume");
   hestOptAdd(&hopt, "th", "thresh", airTypeDouble, 1, 1, &confThresh, "0.5",
@@ -75,10 +73,8 @@ main(int argc, const char *argv[]) {
              "what type of path to compute", NULL, tenInterpType);
   hestOptAdd(&hopt, "o", "filename", airTypeString, 1, 1, &outS, "-",
              "file to write output nrrd to");
-  hestOptAdd(&hopt, "v", "verbosity", airTypeInt, 1, 1, &verb, "0",
-             "verbosity");
-  hestParseOrDie(hopt, argc-1, argv+1, NULL,
-                 me, info, AIR_TRUE, AIR_TRUE, AIR_TRUE);
+  hestOptAdd(&hopt, "v", "verbosity", airTypeInt, 1, 1, &verb, "0", "verbosity");
+  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
@@ -101,28 +97,23 @@ main(int argc, const char *argv[]) {
 
     if (tenTensorCheck(_nin, nrrdTypeDefault, AIR_TRUE, AIR_TRUE)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
-      fprintf(stderr, "%s: input volume not valid:\n%s\n",
-              me, err);
+      fprintf(stderr, "%s: input volume not valid:\n%s\n", me, err);
       airMopError(mop);
       return 1;
     }
     sx = AIR_UINT(_nin->axis[1].size);
     sy = AIR_UINT(_nin->axis[2].size);
     sz = AIR_UINT(_nin->axis[3].size);
-    if (!( refIdx[0] < sx
-           && refIdx[1] < sy
-           && refIdx[2] < sz )) {
-      fprintf(stderr, "%s: index (%u,%u,%u) out of bounds (%u,%u,%u)\n", me,
-              refIdx[0], refIdx[1], refIdx[2], sx, sy, sz);
+    if (!(refIdx[0] < sx && refIdx[1] < sy && refIdx[2] < sz)) {
+      fprintf(stderr, "%s: index (%u,%u,%u) out of bounds (%u,%u,%u)\n", me, refIdx[0],
+              refIdx[1], refIdx[2], sx, sy, sz);
       airMopError(mop);
       return 1;
     }
     nin = nrrdNew();
     airMopAdd(mop, nin, (airMopper)nrrdNuke, airMopAlways);
-    numerical = (ptype == tenInterpTypeGeoLoxK
-                 || ptype == tenInterpTypeGeoLoxR
-                 || ptype == tenInterpTypeLoxK
-                 || ptype == tenInterpTypeLoxR
+    numerical = (ptype == tenInterpTypeGeoLoxK || ptype == tenInterpTypeGeoLoxR
+                 || ptype == tenInterpTypeLoxK || ptype == tenInterpTypeLoxR
                  || ptype == tenInterpTypeQuatGeoLoxK
                  || ptype == tenInterpTypeQuatGeoLoxR);
     if (numerical) {
@@ -147,11 +138,9 @@ main(int argc, const char *argv[]) {
     }
     if (nrrdConvert(nin, _nin, nrrdTypeDouble)
         || nrrdMaybeAlloc_nva(nout, nrrdTypeDouble, dimOut, size)
-        || nrrdAxisInfoCopy(nout, nin, axmap,
-                            NRRD_AXIS_INFO_SIZE_BIT)
+        || nrrdAxisInfoCopy(nout, nin, axmap, NRRD_AXIS_INFO_SIZE_BIT)
         || nrrdBasicInfoCopy(nout, nin,
-                             (NRRD_BASIC_INFO_DATA_BIT
-                              | NRRD_BASIC_INFO_TYPE_BIT
+                             (NRRD_BASIC_INFO_DATA_BIT | NRRD_BASIC_INFO_TYPE_BIT
                               | NRRD_BASIC_INFO_DIMENSION_BIT
                               | NRRD_BASIC_INFO_CONTENT_BIT
                               | NRRD_BASIC_INFO_SAMPLEUNITS_BIT))) {
@@ -162,14 +151,13 @@ main(int argc, const char *argv[]) {
     }
     in = AIR_CAST(double *, nin->data);
     out = AIR_CAST(double *, nout->data);
-    TEN_T_COPY(refTen, in + 7*(refIdx[0] + sx*(refIdx[1] + sy*refIdx[2])));
-    fprintf(stderr, "!%s: reference tensor = (%g) %g %g %g   %g %g    %g\n",
-            me, refTen[0], refTen[1], refTen[2], refTen[3],
-            refTen[4], refTen[5], refTen[6]);
-    for (zi=0; zi<sz; zi++) {
-      for (yi=0; yi<sy; yi++) {
-        for (xi=0; xi<sx; xi++) {
-          TEN_T_COPY(inTen, in + 7*(xi + sx*(yi + sy*zi)));
+    TEN_T_COPY(refTen, in + 7 * (refIdx[0] + sx * (refIdx[1] + sy * refIdx[2])));
+    fprintf(stderr, "!%s: reference tensor = (%g) %g %g %g   %g %g    %g\n", me,
+            refTen[0], refTen[1], refTen[2], refTen[3], refTen[4], refTen[5], refTen[6]);
+    for (zi = 0; zi < sz; zi++) {
+      for (yi = 0; yi < sy; yi++) {
+        for (xi = 0; xi < sx; xi++) {
+          TEN_T_COPY(inTen, in + 7 * (xi + sx * (yi + sy * zi)));
           if (numerical) {
             fprintf(stderr, "!%s: %u %u %u \n", me, xi, yi, zi);
             if (inTen[0] < confThresh) {
@@ -177,19 +165,18 @@ main(int argc, const char *argv[]) {
               out[1] = AIR_NAN;
               out[2] = AIR_NAN;
             } else {
-              tip->verbose = 10*(xi == refIdx[0]
-                                 && yi == refIdx[1]
-                                 && zi == refIdx[2]);
-              out[0] =  tenInterpDistanceTwo_d(inTen, refTen, ptype, tip);
-              out[1] =  tip->lengthShape;
-              out[2] =  tip->lengthOrient;
+              tip->verbose = 10
+                           * (xi == refIdx[0] && yi == refIdx[1] && zi == refIdx[2]);
+              out[0] = tenInterpDistanceTwo_d(inTen, refTen, ptype, tip);
+              out[1] = tip->lengthShape;
+              out[2] = tip->lengthOrient;
             }
             out += 3;
           } else {
             if (inTen[0] < confThresh) {
               *out = AIR_NAN;
             } else {
-              *out =  tenInterpDistanceTwo_d(inTen, refTen, ptype, tip);
+              *out = tenInterpDistanceTwo_d(inTen, refTen, ptype, tip);
             }
             out += 1;
           }
@@ -241,76 +228,66 @@ main(int argc, const char *argv[]) {
     time0 = airTime();
     if (tenInterpTwoDiscrete_d(nout, tA, tB, ptype, NN, tip)) {
       airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);
-      fprintf(stderr, "%s: trouble computing path:\n%s\n",
-              me, err);
+      fprintf(stderr, "%s: trouble computing path:\n%s\n", me, err);
       airMopError(mop);
       return 1;
     }
-    fprintf(stderr, "!%s: ------- # iter = %u, conv = %g\n", me,
-            tip->numIter, tip->convFinal);
+    fprintf(stderr, "!%s: ------- # iter = %u, conv = %g\n", me, tip->numIter,
+            tip->convFinal);
     time1 = airTime();
-    fprintf(stderr, "%s: path length = %g; time = %g\n",
-            me, tenInterpPathLength(nout, AIR_FALSE, AIR_FALSE, AIR_FALSE),
-            time1 - time0);
+    fprintf(stderr, "%s: path length = %g; time = %g\n", me,
+            tenInterpPathLength(nout, AIR_FALSE, AIR_FALSE, AIR_FALSE), time1 - time0);
 
     if (1) {
-      double *geod, eval0[3], eval[3], evec0[9], evec[9], rot[9], diff[7],
-        nrm, axis[3], angle;
+      double *geod, eval0[3], eval[3], evec0[9], evec[9], rot[9], diff[7], nrm, axis[3],
+        angle;
       unsigned int ii;
 
       NN = AIR_UINT(nout->axis[1].size);
       geod = AIR_CAST(double *, nout->data);
       geod += 7;
-      for (ii=1; ii<NN; ii++) {
+      for (ii = 1; ii < NN; ii++) {
         double igrad[3][7];
 
-        tenEigensolve_d(eval0, evec0, geod-7);
+        tenEigensolve_d(eval0, evec0, geod - 7);
         ELL_3M_TRANSPOSE_IP(evec0, tmp);
         tenEigensolve_d(eval, evec, geod);
         ELL_3M_MUL(rot, evec0, evec);
         angle = ell_3m_to_aa_d(axis, rot);
-        TEN_T_SUB(diff, geod, geod-7);
+        TEN_T_SUB(diff, geod, geod - 7);
         tenInvariantGradientsK_d(igrad[0], igrad[1], igrad[2], geod, 0);
         nrm = TEN_T_NORM(diff);
-        TEN_T_SCALE(diff, 1.0/nrm, diff);
-        fprintf(stderr, "%2u %9.6f (%9.6f %9.6f %9.6f) : %9.6f %9.6f %9.6f "
+        TEN_T_SCALE(diff, 1.0 / nrm, diff);
+        fprintf(stderr,
+                "%2u %9.6f (%9.6f %9.6f %9.6f) : %9.6f %9.6f %9.6f "
                 ": (%9.6f,%9.6f,%9.6f) %g %g %g\n",
-                ii, angle, axis[0], axis[1], axis[2],
-                TEN_T_DOT(igrad[0], diff),
-                TEN_T_DOT(igrad[1], diff),
-                TEN_T_DOT(igrad[2], diff),
-                nrm, TEN_T_NORM(diff), TEN_T_NORM(igrad[2]),
-                eval[0], eval[1], eval[2]);
+                ii, angle, axis[0], axis[1], axis[2], TEN_T_DOT(igrad[0], diff),
+                TEN_T_DOT(igrad[1], diff), TEN_T_DOT(igrad[2], diff), nrm,
+                TEN_T_NORM(diff), TEN_T_NORM(igrad[2]), eval[0], eval[1], eval[2]);
         geod += 7;
       }
     }
 
     if (0) {
       double eval[3], evec[9], rot[9], tt[7];
-      double unitq[8][4] = {{+1, 0, 0, 0},
-                            {-1, 0, 0, 0},
-                            {0, +1, 0, 0},
-                            {0, -1, 0, 0},
-                            {0, 0, +1, 0},
-                            {0, 0, -1, 0},
-                            {0, 0, 0, +1},
-                            {0, 0, 0, -1}};
+      double unitq[8][4] = {{+1, 0, 0, 0}, {-1, 0, 0, 0}, {0, +1, 0, 0}, {0, -1, 0, 0},
+                            {0, 0, +1, 0}, {0, 0, -1, 0}, {0, 0, 0, +1}, {0, 0, 0, -1}};
       unsigned qi;
       tenEigensolve_d(eval, evec, tB);
       ELL_3M_TRANSPOSE(rot, evec);
       ell_3m_to_q_d(qB, evec);
       fprintf(stderr, "%s:    tB: (%g) %f %f %f, %f %f, %f; qB = %f %f %f %f\n", me,
-              tB[0], tB[1], tB[2], tB[3], tB[4], tB[5], tB[6],
-              qB[0], qB[1], qB[2], qB[3]);
-      for (qi=0; qi<8; qi++) {
+              tB[0], tB[1], tB[2], tB[3], tB[4], tB[5], tB[6], qB[0], qB[1], qB[2],
+              qB[3]);
+      for (qi = 0; qi < 8; qi++) {
         double qm[4];
         ell_q_mul_d(qm, qB, unitq[qi]);
         ell_q_to_3m_d(rot, qm);
         ELL_3M_TRANSPOSE(evec, rot);
         tenMakeSingle_d(tt, tB[0], eval, evec);
-        fprintf(stderr, "%s: tt[%u]: (%g) %f %f %f, %f %f, %f; qm = %f %f %f %f\n", me, qi,
-                tt[0], tt[1], tt[2], tt[3], tt[4], tt[5], tt[6],
-                qm[0], qm[1], qm[2], qm[3]);
+        fprintf(stderr, "%s: tt[%u]: (%g) %f %f %f, %f %f, %f; qm = %f %f %f %f\n", me,
+                qi, tt[0], tt[1], tt[2], tt[3], tt[4], tt[5], tt[6], qm[0], qm[1], qm[2],
+                qm[3]);
       }
     }
   }

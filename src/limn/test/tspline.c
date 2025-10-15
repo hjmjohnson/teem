@@ -17,7 +17,6 @@
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 
-
 /*
 test/tspline -loop -t 300 300 -s 10 -i s.txt:2v:bc:1,0 -m 1000 > ! out.ps
 */
@@ -41,7 +40,6 @@ test/tspline -loop -t 300 300 -s 10 -i s.txt:2v:bc:1,0 -m 1000 > ! out.ps
  0  -10
 */
 
-
 #include "../limn.h"
 
 const char *info = ("Test limnSplines by drawing postscript curves. "
@@ -53,7 +51,7 @@ main(int argc, const char *argv[]) {
   const char *me;
   char *err;
   limnSpline *spline, *warp;
-  hestOpt *hopt=NULL;
+  hestOpt *hopt = NULL;
   airArray *mop;
   int i, M, ret, pause, loop;
   Nrrd *nout, *ntmp;
@@ -65,8 +63,7 @@ main(int argc, const char *argv[]) {
   hestOptAdd(&hopt, "i", "spline", airTypeOther, 1, 1, &spline, NULL,
              "the spline that we want to sample", NULL, NULL, limnHestSpline);
   hestOptAdd(&hopt, "w", "timewarp", airTypeOther, 1, 1, &warp, "",
-             "how to (optionally) warp the spline domain",
-             NULL, NULL, limnHestSpline);
+             "how to (optionally) warp the spline domain", NULL, NULL, limnHestSpline);
   hestOptAdd(&hopt, "loop", NULL, airTypeInt, 0, 0, &loop, NULL,
              "the last control point is in fact the first");
   hestOptAdd(&hopt, "m", "M", airTypeInt, 1, 1, &M, "512",
@@ -75,21 +72,20 @@ main(int argc, const char *argv[]) {
              "translation for drawing");
   hestOptAdd(&hopt, "s", "scale", airTypeDouble, 1, 1, &scale, "1.0",
              "scaling for drawing");
-  hestParseOrDie(hopt, argc-1, argv+1, NULL,
-                 me, info, AIR_TRUE, AIR_TRUE, AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
   spline->loop = loop;
-  if (!( limnSplineInfo2Vector == spline->info )) {
-    fprintf(stderr, "%s: sorry, can only have %s info for PostScript\n",
-            me, airEnumStr(limnSplineInfo, limnSplineInfo2Vector));
+  if (!(limnSplineInfo2Vector == spline->info)) {
+    fprintf(stderr, "%s: sorry, can only have %s info for PostScript\n", me,
+            airEnumStr(limnSplineInfo, limnSplineInfo2Vector));
     airMopError(mop);
     return 1;
   }
   if (warp) {
     warp->loop = loop;
-    if (!( limnSplineTypeTimeWarp == warp->type )) {
+    if (!(limnSplineTypeTimeWarp == warp->type)) {
       fprintf(stderr, "%s: %s spline isn't; its %s\n", me,
               airEnumStr(limnSplineType, limnSplineTypeTimeWarp),
               airEnumStr(limnSplineType, warp->type));
@@ -97,15 +93,16 @@ main(int argc, const char *argv[]) {
       return 1;
     }
     if (loop) {
-      if (!( limnSplineNumPoints(warp) == 1 + limnSplineNumPoints(spline) )) {
-        fprintf(stderr, "%s: # warp points (%d) needs to be 1 more than "
-                "# spline points (%d) for looping\n", me,
-                limnSplineNumPoints(warp), limnSplineNumPoints(spline));
+      if (!(limnSplineNumPoints(warp) == 1 + limnSplineNumPoints(spline))) {
+        fprintf(stderr,
+                "%s: # warp points (%d) needs to be 1 more than "
+                "# spline points (%d) for looping\n",
+                me, limnSplineNumPoints(warp), limnSplineNumPoints(spline));
         airMopError(mop);
         return 1;
       }
     } else {
-      if (!( limnSplineNumPoints(warp) ==  limnSplineNumPoints(spline) )) {
+      if (!(limnSplineNumPoints(warp) == limnSplineNumPoints(spline))) {
         fprintf(stderr, "%s: # warp points (%d) != # spline points (%d)\n", me,
                 limnSplineNumPoints(warp), limnSplineNumPoints(spline));
 
@@ -115,8 +112,8 @@ main(int argc, const char *argv[]) {
     }
   }
 
-  airMopAdd(mop, nout=nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, ntmp=nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ntmp = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
   if (warp) {
     minT = limnSplineMinT(warp);
     maxT = limnSplineMaxT(warp);
@@ -128,25 +125,25 @@ main(int argc, const char *argv[]) {
     ret = limnSplineSample(nout, spline, minT, M, maxT);
   }
   if (ret) {
-    airMopAdd(mop, err=biffGetDone(LIMN), airFree, airMopAlways);
+    airMopAdd(mop, err = biffGetDone(LIMN), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble:\n%s\n", me, err);
     airMopError(mop);
     return 1;
   }
 
-  out = (double*)(nout->data);
-  pause = M/150;
+  out = (double *)(nout->data);
+  pause = M / 150;
   printf("%%!\n");
   printf("1 setlinewidth\n");
-  printf("%g %g moveto\n",
-         scale*out[0 + 2*0] + tran[0], scale*out[1 + 2*0] + tran[1]);
+  printf("%g %g moveto\n", scale * out[0 + 2 * 0] + tran[0],
+         scale * out[1 + 2 * 0] + tran[1]);
   printf("gsave\n");
   printf("0.2 setlinewidth\n");
   printf("currentpoint newpath 3 0 360 arc stroke\n");
   printf("grestore\n");
-  for (i=1; i<M; i++) {
-    printf("%g %g lineto\n",
-           scale*out[0 + 2*i] + tran[0], scale*out[1 + 2*i] + tran[1]);
+  for (i = 1; i < M; i++) {
+    printf("%g %g lineto\n", scale * out[0 + 2 * i] + tran[0],
+           scale * out[1 + 2 * i] + tran[1]);
     if (0 == AIR_MOD(i, pause)) {
       printf("gsave\n");
       printf("0.2 setlinewidth\n");
@@ -160,4 +157,3 @@ main(int argc, const char *argv[]) {
   airMopOkay(mop);
   return 0;
 }
-

@@ -1439,6 +1439,7 @@ hestParseOld(hestOpt *opt, int _argc, const char **_argv, char **errP,
 
   if (HPARM->verbosity) printf("%s: #### setValues done!\n", me);
 #undef HPARM
+#undef ME
 
 parseEnd:
   airMopOkay(mop);
@@ -1476,138 +1477,140 @@ hestParseFree(hestOpt *opt) {
 /*
 hestParseOrDie()
 
-Pre-June 2023 account:
-** dumb little function which encapsulate a common usage of hest:
-** first, make sure hestOpt is valid with hestOptCheck().  Then,
-** if argc is 0 (and !hparm->noArgsIsNoProblem): maybe show
-**    info, usage, and glossary, all according to given flags, then exit(1)
-** if parsing failed: show error message, and maybe usage and glossary,
-**    again according to boolean flags, then exit(1)
-** if parsing succeeded: return
+This is a convenience wrapper around other hest functions, striving to be the most
+convenient one-stop top-level function for trying parse a command-line with hest.  It
+implements the most common usage of hest:
+- make sure hestOpt is valid with hestOptCheck(). Then:
+- if argc is 0 (and !hparm->noArgsIsNoProblem): show usage info and exit(0). Else:
+- if given only "--version" or "--help", act accordingly and exit(0). Else:
+- try hestParse(). If it fails, show error message, and usage, and exit(1).
+- Else if parsing succeeded, then just return()
 
-In June 2023 this function was completely re-written, but the description above should
-still be true, if not the whole truth.  Long prior to re-write, "--version" and "--help"
-had been usefully responded to as the sole argument, but only after a hestParse error
-(which then sometimes leaked memory by not freeing errS). Now these are checked for prior
-to calling hestParse, and (with hparm->respectDashDashHelp), "--help" is recognized
-anywhere in the command-line.
+NOTE: THIS IS A WEIRD FUNCTION because it calls exit() !
+Hence the "OrDie" in the name.  Also, in that case it cleans up the given hestOpt and
+hestParm, which is why they aren't `const`.
 
-With 2025 hestParse re-write for TeemV2, decided to turn on respectDashDashHelp here.
-Even though it is probably weird to be modifying the given parameter block here, the
-purpose of hestParseOrDie is to be the one-stop top-level thing for command-line parsing,
-and usefully acting on "--help" is something that definitely belongs on that one-stop
-function. Also, the "OrDie" part of hestParseOrDie means we are already in the business
-of modifying the given hestParm *_hparm (via hestParmFree), which is what requires _hparm
-to be not const (which is what enables modifying _hparm->respectDashDashHelp). And for
-this to be consistent, we want the same behavior of hestParseOrDie around --help to be
-the same in the case of when the given _hparm is NULL, so in that case we create a new
-hestParm as needed. */
+For TeemV2 this was simplified to clear up accumulated needlessly complicated logic:
+- This used to have 3 final args doInfo, doUsage, doGlossary. EVERY Teem use of this
+  function passed these as AIR_TRUE, so there was apparently no great loss in
+  doing away with those 3 args
+- The hestParm->dieLessVerbose option was removed. That was a response to info,
+  usage, and glossary being printed every time there was a parse error (perhaps
+  because doInfo == doUsage == doGlossary == AIR_TRUE), but we can also just do
+  the expected thing: in case of parse error (or empty argv implicit ask for help)
+  show the usage (but not info or glossary), and also print a message about
+  using --help for more info.
+
+For TeemV2, GLK also also decided to turn on newer features that aren't on by default
+(except if hparm->dieWithoutNewerFeatures):
+- hparm->respectDashDashHelp
+- use hestParmColumnsIoctl to set hparm->columns
+To be consistent, we do this both when the given hestParm *_hparm is NULL (when enabling
+these newer features is less unsurprising) AND when the given _hparm is non-NULL (when
+enabling them is more surprising). But because it is surprising, we do respect the
+setting of the new dieWithoutNewerFeatures. */
 void
-hestParseOrDie(hestOpt *opt, int argc, const char **argv, hestParm *_hparm,
-               const char *me, const char *info, int doInfo, int doUsage,
-               int doGlossary) {
-  int argcBereft, parseErr, wantHelp;
+hestParseOrDie(hestOpt *hopt, int argc, const char **argv, hestParm *_hparm,
+               const char *me, const char *info) {
+  int argcBereft = AIR_FALSE, parseErr = 0, wantHelp = AIR_FALSE;
   char *errS = NULL;
 
-  if (!(opt && argv)) {
-    /* nothing to do given NULL pointers.  Since this function was first written, this
-    condition (well actually just !opt) led to a plain return, which is what we do here,
-    but it probably would be better to have an error message and exit, like below. */
-    return;
+  if (!(hopt && argv)) {
+    /* nothing to do given NULL pointers (_hparm, me, info are all allowed to be NULL).
+    When first written, this function originally did nothing except silently return here,
+    but with 2025 re-write decided to do die with an error message here. */
+    fprintf(stderr, "%s: got NULL pointer (hopt %p, argv %p); can't proceed\n", __func__,
+            AIR_VOIDP(hopt), AIR_VOIDP(argv));
+    exit(1);
   }
-
-  if (hestOptCheck(opt, &errS)) {
-    fprintf(stderr, "ERROR in hest usage:\n%s\n", errS);
+  if (hestOptCheck(hopt, &errS)) {
+    fprintf(stderr, "ERROR in hestOpt setup:\n%s\n", errS);
     free(errS);
     /* exit, not return, since there's practically no recovery possible: hestOpts are
-    effectively set up at compile time, even with the ubiquity of hestOptAdd. The caller
-    is not going to be in a position to overcome the errors detected here, at runtime. */
+    effectively set up at compile time, even with the ubiquity of hestOptAdd and related
+    functions. The caller is, in all likelihood, not going to be in a position to
+    overcome (at runtime) the errors just detected. */
+    hestParmFree(_hparm);
+    hestOptFree(hopt);
     exit(1);
   }
 
-  /* Pre-June 2023 these two check were done only after a hestParse error;
-     why not check first? */
-  if (argv[0] && !strcmp(argv[0], "--version")) {
-    /* print version info and bail */
+  /* Pre-June 2023 checks for solo --version or first-arg --help were done only after
+     hestParse error; why not check first? */
+  if (1 == argc && !strcmp(argv[0], "--version")) {
+    // print version info and bail
     char vbuff[AIR_STRLEN_LARGE + 1];
     airTeemVersionSprint(vbuff);
     printf("%s\n", vbuff);
     hestParmFree(_hparm); // NULL _hparm is ok
-    hestOptFree(opt);
+    hestOptFree(hopt);
     exit(0);
   }
-  if (argv[0] && !strcmp(argv[0], "--help")) {
-    /* actually, not an error, --help was the first argument; does NOT depend on
-       parm->respectDashDashHelp */
-    argcBereft = AIR_FALSE;
-    parseErr = 0;
+
+  /* (maybe) enable the new features here; for simplicity we always create and use a
+     local hparm struct from here on out (so have to hestParmFree it ourselves). */
+  hestParm *hparm = hestParmNew();
+  if (_hparm) {
+    // start by copying everything; easy with nothing internal dynamically allocated
+    memcpy(hparm, _hparm, sizeof(hestParm));
+  }
+  // turn on new features unless told not to
+  if (!(hparm->dieWithoutNewerFeatures)) {
+    hestParmColumnsIoctl(hparm, hestDefaultColumns);
+    hparm->respectDashDashHelp = AIR_TRUE;
+  }
+  if (argc && !strcmp(argv[0], "--help")) {
+    /* actually, not an error, --help was the first argument. Respecting this actually
+       pre-dates parm->respectDashDashHelp and does not depend on it. */
+    // (keep argcBereft and parseError as initialized above)
     wantHelp = AIR_TRUE;
   } else {
-    /* we call hestParse if there are args, or (else) having no args is ok */
-    if (argc || (_hparm && _hparm->noArgsIsNoProblem)) {
+    if (argc || hparm->noArgsIsNoProblem) {
+      // we call hestParse if there are args, or (else) having no args is ok
       argcBereft = AIR_FALSE;
-      // see note above about TeemV2 handling of respectDashDashHelp
-      hestParm *tparm = NULL;
-      if (_hparm) {
-        _hparm->respectDashDashHelp = AIR_TRUE;
-      } else {
-        // create tmp hparm in order to turn on respectDashDashHelp
-        tparm = hestParmNew();
-        tparm->respectDashDashHelp = AIR_TRUE;
-      }
-      parseErr = hestParse(opt, argc, argv, &errS, tparm ? tparm : _hparm);
-      if (tparm) hestParmFree(tparm); // free tmp hparm if we made it
-      wantHelp = opt->helpWanted;
-      if (wantHelp && parseErr) {
-        /* should not happen at the same time */
-        fprintf(stderr, "PANIC: hestParse both saw --help and had error:\n%s\n", errS);
-        free(errS);
-        exit(1);
-      }
-      /* at most one of wantHelp and parseErr is true */
+      parseErr = hestParse(hopt, argc, argv, &errS, hparm);
+      wantHelp = hopt->helpWanted;
+      // wantHelp and parseErr should not happen at the same time
+      assert(!(wantHelp && parseErr));
+      // at most one of wantHelp and parseErr is true (or neither could be true)
     } else {
-      /* the empty command-line is an implicit call for help */
+      // the empty command-line is an implicit call for help
       argcBereft = AIR_TRUE;
       parseErr = 0;
       /* subtle difference between argcBereft and wantHelp is for maintaining
-      functionality of pre-June 2023 code */
+         functionality of pre-June 2023 code */
       wantHelp = AIR_FALSE;
     }
   }
   if (!argcBereft && !wantHelp && !parseErr) {
     /* no help needed or wanted, and (if done) parsing was successful, great;
-       return to caller */
+       clean up and return to caller */
+    hestParmFree(hparm);
     return;
   }
 
-  /* whether by argcBereft or wantHelp or parseErr, from here on out we are not
-     returning to caller */
-  if (parseErr) {
-    fprintf(stderr, "ERROR: %s\n", errS);
-    airFree(errS);
-    /* but no return or exit; there's more to say */
-  }
+  /* whether by argcBereft or wantHelp or parseErr,
+     we are NOT returning to caller */
 #define STDWUT (parseErr ? stderr : stdout)
-  if (_hparm && _hparm->dieLessVerbose) {
-    /* newer logic for when to print which things */
-    if (wantHelp && info) hestInfo(STDWUT, me ? me : "", info, _hparm);
-    if (doUsage) hestUsage(STDWUT, opt, me ? me : "", _hparm);
-    if (wantHelp && doGlossary) {
-      hestGlossary(STDWUT, opt, _hparm);
-    } else if ((!argc || parseErr) && me) {
-      fprintf(STDWUT, "\"%s --help\" for more information\n", me);
-    }
+#define ME     (me ? me : "") // different than ME above
+  if (parseErr) {
+    // the err string created by hestParse already ends with \n
+    fprintf(stderr, "ERROR: %s", errS ? errS : "(sorry no error message known)");
+    airFree(errS);
+    // but no return or exit; there's more to do
+  } else if (wantHelp) {
+    if (info) hestInfo(stdout, ME, info, hparm);
+  }
+  hestUsage(STDWUT, hopt, ME, hparm);
+  if (wantHelp) {
+    hestGlossary(STDWUT, hopt, hparm);
   } else {
-    /* leave older (pre-dieLessVerbose) logic as is */
-    if (!parseErr) {
-      /* no error, just !argc */
-      if (doInfo && info) hestInfo(stdout, me ? me : "", info, _hparm);
-    }
-    if (doUsage) hestUsage(STDWUT, opt, me ? me : "", _hparm);
-    if (doGlossary) hestGlossary(STDWUT, opt, _hparm);
+    fprintf(STDWUT, "For more info: %s --help\n", me);
   }
 #undef STDWUT
-  hestParmFree(_hparm);
-  hestOptFree(opt);
+#undef ME
+  hestParmFree(hparm);
+  hestParmFree(_hparm); // NULL _hparm ok
+  hestOptFree(hopt);
   exit(!!parseErr);
 }

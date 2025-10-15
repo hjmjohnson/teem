@@ -37,21 +37,18 @@ main(int argc, const char *argv[]) {
   hparm = hestParmNew();
   hopt = NULL;
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
-  hestOptAdd(&hopt, NULL, "val0 val1", airTypeDouble, 1, -1, &val, NULL,
-             "input values", &valLen, NULL);
+  hestOptAdd(&hopt, NULL, "val0 val1", airTypeDouble, 1, -1, &val, NULL, "input values",
+             &valLen, NULL);
   hestOptAdd(&hopt, "c,center", "center", airTypeEnum, 1, 1, &center, NULL,
              "centering (cell or node)", NULL, nrrdCenter);
-  hestOptAdd(&hopt, "s", "size", airTypeUInt, 1, 1, &size, NULL,
-             "number of samples");
-  hestParseOrDie(hopt, argc-1, argv+1, hparm,
-                 me, indxInfo, AIR_TRUE, AIR_TRUE, AIR_TRUE);
+  hestOptAdd(&hopt, "s", "size", airTypeUInt, 1, 1, &size, NULL, "number of samples");
+  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, indxInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
-  fprintf(stderr, "%s: using %s centering\n", me,
-          airEnumStr(nrrdCenter, center));
+  fprintf(stderr, "%s: using %s centering\n", me, airEnumStr(nrrdCenter, center));
 
-  top = size-1;
+  top = size - 1;
   if (nrrdCenterNode == center) {
     min = 0;
     max = top;
@@ -60,15 +57,15 @@ main(int argc, const char *argv[]) {
     max = top + 0.5;
   }
 
-  for (ii=0; ii<valLen; ii++) {
+  for (ii = 0; ii < valLen; ii++) {
     double _xi, xf;
     _xi = val[ii];
     fprintf(stderr, "%u \t%g \t", ii, _xi);
-    if (!( AIR_IN_CL(min, _xi, max) )) {
+    if (!(AIR_IN_CL(min, _xi, max))) {
       fprintf(stderr, "OUTSIDE\n");
     } else {
       if (0 && nrrdCenterCell == center) {
-        xi = AIR_UINT(_xi+1) - 1;
+        xi = AIR_UINT(_xi + 1) - 1;
       } else {
         xi = AIR_UINT(_xi);
       }
@@ -81,5 +78,3 @@ main(int argc, const char *argv[]) {
   airMopOkay(mop);
   exit(0);
 }
-
-

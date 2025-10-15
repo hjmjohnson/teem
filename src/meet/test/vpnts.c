@@ -85,8 +85,7 @@ main(int argc, const char **argv) {
              "amount of jittering to do with ppv");
   hestOptAdd(&hopt, "o", "nout", airTypeString, 1, 1, &outS, "out.nrrd",
              "filename for saving positions");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, info, AIR_TRUE, AIR_TRUE,
-                 AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, info);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

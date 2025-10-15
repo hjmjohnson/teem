@@ -17,7 +17,6 @@
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #include "../ten.h"
 
 const char *info = ("Sample space of tensor orientation.");
@@ -28,32 +27,23 @@ washQtoM3(double m[9], double q[4]) {
 
   ELL_4V_COPY(p, q);
   len = ELL_4V_LEN(p);
-  ELL_4V_SCALE(p, 1.0/len, p);
+  ELL_4V_SCALE(p, 1.0 / len, p);
   w = p[0];
   x = p[1];
   y = p[2];
   z = p[3];
   /* mathematica work implies that we should be
      setting ROW vectors here */
-  ELL_3V_SET(m+0,
-             1 - 2*(y*y + z*z),
-             2*(x*y - w*z),
-             2*(x*z + w*y));
-  ELL_3V_SET(m+3,
-             2*(x*y + w*z),
-             1 - 2*(x*x + z*z),
-             2*(y*z - w*x));
-  ELL_3V_SET(m+6,
-             2*(x*z - w*y),
-             2*(y*z + w*x),
-             1 - 2*(x*x + y*y));
+  ELL_3V_SET(m + 0, 1 - 2 * (y * y + z * z), 2 * (x * y - w * z), 2 * (x * z + w * y));
+  ELL_3V_SET(m + 3, 2 * (x * y + w * z), 1 - 2 * (x * x + z * z), 2 * (y * z - w * x));
+  ELL_3V_SET(m + 6, 2 * (x * z - w * y), 2 * (y * z + w * x), 1 - 2 * (x * x + y * y));
 }
 
 int
 main(int argc, const char *argv[]) {
   const char *me;
   char *err, *outS;
-  hestOpt *hopt=NULL;
+  hestOpt *hopt = NULL;
   airArray *mop;
 
   int xi, yi, zi, sz;
@@ -71,8 +61,7 @@ main(int argc, const char *argv[]) {
              "eigenvalues");
   hestOptAdd(&hopt, "o", "nout", airTypeString, 1, 1, &outS, "-",
              "output file to save tensors into");
-  hestParseOrDie(hopt, argc-1, argv+1, NULL,
-                 me, info, AIR_TRUE, AIR_TRUE, AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
@@ -89,16 +78,16 @@ main(int argc, const char *argv[]) {
     airMopError(mop);
     return 1;
   }
-  tdata = AIR_CAST(float*, nten->data);
-  for (zi=0; zi<sz; zi++) {
-    for (yi=0; yi<sz; yi++) {
-      for (xi=0; xi<sz; xi++) {
+  tdata = AIR_CAST(float *, nten->data);
+  for (zi = 0; zi < sz; zi++) {
+    for (yi = 0; yi < sz; yi++) {
+      for (xi = 0; xi < sz; xi++) {
         q[0] = 1.0;
-        q[1] = AIR_AFFINE(-0.5, xi, sz-0.5, -1, 1);
-        q[2] = AIR_AFFINE(-0.5, yi, sz-0.5, -1, 1);
-        q[3] = AIR_AFFINE(-0.5, zi, sz-0.5, -1, 1);
+        q[1] = AIR_AFFINE(-0.5, xi, sz - 0.5, -1, 1);
+        q[2] = AIR_AFFINE(-0.5, yi, sz - 0.5, -1, 1);
+        q[3] = AIR_AFFINE(-0.5, zi, sz - 0.5, -1, 1);
         len = ELL_4V_LEN(q);
-        ELL_4V_SCALE(q, 1.0/len, q);
+        ELL_4V_SCALE(q, 1.0 / len, q);
         washQtoM3(mRF, q);
         ELL_3M_TRANSPOSE(mRI, mRF);
 
@@ -125,4 +114,3 @@ main(int argc, const char *argv[]) {
   airMopOkay(mop);
   return 0;
 }
-

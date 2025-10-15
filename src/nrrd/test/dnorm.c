@@ -50,13 +50,12 @@ main(int argc, const char **argv) {
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
   hestOptAdd(&hopt, "h,header", NULL, airTypeInt, 0, 0, &headerOnly, NULL,
              "output header of nrrd file only, not the data itself");
-  hestOptAdd(&hopt, "i", "nin", airTypeOther, 1, 1, &nin, NULL,
-             "input image", NULL, NULL, nrrdHestNrrd);
-  hestOptAdd(&hopt, "o", "nout", airTypeString, 1, 1, &outS, "-",
-             "output filename", NULL);
+  hestOptAdd(&hopt, "i", "nin", airTypeOther, 1, 1, &nin, NULL, "input image", NULL,
+             NULL, nrrdHestNrrd);
+  hestOptAdd(&hopt, "o", "nout", airTypeString, 1, 1, &outS, "-", "output filename",
+             NULL);
 
-  hestParseOrDie(hopt, argc-1, argv+1, hparm,
-                 me, dnormInfo, AIR_TRUE, AIR_TRUE, AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, dnormInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
@@ -64,24 +63,27 @@ main(int argc, const char **argv) {
   if (nrrdTypeBlock == nin->type) {
     fprintf(stderr, "%s: can only have scalar kinds (not %s)\n", me,
             airEnumStr(nrrdType, nrrdTypeBlock));
-    airMopError(mop); exit(1);
+    airMopError(mop);
+    exit(1);
   }
 
   /* make sure all kinds are set to something */
   /* see if there's a range kind, verify that there's only one */
   kindIn = nrrdKindUnknown;
   kindAxis = 0;
-  for (axi=0; axi<nin->dim; axi++) {
+  for (axi = 0; axi < nin->dim; axi++) {
     if (nrrdKindUnknown == nin->axis[axi].kind
         || nrrdKindIsDomain(nin->axis[axi].kind)) {
       continue;
     }
     if (nrrdKindUnknown != kindIn) {
-      fprintf(stderr, "%s: got non-domain kind %s on axis %u, but already "
-              "have %s from axis %u\n", me,
-              airEnumStr(nrrdKind, nin->axis[axi].kind), axi,
+      fprintf(stderr,
+              "%s: got non-domain kind %s on axis %u, but already "
+              "have %s from axis %u\n",
+              me, airEnumStr(nrrdKind, nin->axis[axi].kind), axi,
               airEnumStr(nrrdKind, kindIn), kindAxis);
-      airMopError(mop); exit(1);
+      airMopError(mop);
+      exit(1);
     }
     kindIn = nin->axis[axi].kind;
     kindAxis = axi;
@@ -111,7 +113,8 @@ main(int argc, const char **argv) {
     default:
       fprintf(stderr, "%s: got non-conforming kind %s on axis %u\n", me,
               airEnumStr(nrrdKind, kindIn), kindAxis);
-      airMopError(mop); exit(1);
+      airMopError(mop);
+      exit(1);
       break;
     }
   } else {
@@ -124,7 +127,8 @@ main(int argc, const char **argv) {
   if (nrrdCopy(nout, nin)) {
     airMopAdd(mop, err = biffGet(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble copying:\n%s", me, err);
-    airMopError(mop); exit(1);
+    airMopError(mop);
+    exit(1);
   }
 
   /* no comments, either advertising the format URL or anything else */
@@ -137,8 +141,8 @@ main(int argc, const char **argv) {
   nrrdCommentClear(nout);
 
   /* no measurement frame */
-  for (si=0; si<NRRD_SPACE_DIM_MAX; si++) {
-    for (sj=0; sj<NRRD_SPACE_DIM_MAX; sj++) {
+  for (si = 0; si < NRRD_SPACE_DIM_MAX; si++) {
+    for (sj = 0; sj < NRRD_SPACE_DIM_MAX; sj++) {
       nout->measurementFrame[si][sj] = AIR_NAN;
     }
   }
@@ -153,13 +157,11 @@ main(int argc, const char **argv) {
   /* turn off centers (perhaps Diderot should assume cell-centered) */
   /* turn off thickness */
   /* turn off labels and units */
-  for (axi=0; axi<nout->dim; axi++) {
+  for (axi = 0; axi < nout->dim; axi++) {
     if (nrrdKindUnknown == kindOut) {
       nout->axis[axi].kind = nrrdKindSpace;
     } else {
-      nout->axis[axi].kind = (kindAxis == axi
-                              ? kindOut
-                              : nrrdKindSpace);
+      nout->axis[axi].kind = (kindAxis == axi ? kindOut : nrrdKindSpace);
     }
     nout->axis[axi].center = nrrdCenterUnknown;
     nout->axis[axi].thickness = AIR_NAN;
@@ -187,10 +189,9 @@ main(int argc, const char **argv) {
     if (!nrrdSpaceVecExists(nout->spaceDim, nout->spaceOrigin)) {
       nrrdSpaceVecSetZero(nout->spaceOrigin);
     }
-    for (axi=0; axi<nout->dim; axi++) {
+    for (axi = 0; axi < nout->dim; axi++) {
       if (nrrdKindUnknown == kindOut || kindAxis != axi) {
-        if (!nrrdSpaceVecExists(nout->spaceDim,
-                                nout->axis[axi].spaceDirection)) {
+        if (!nrrdSpaceVecExists(nout->spaceDim, nout->axis[axi].spaceDirection)) {
           nrrdSpaceVecSetZero(nout->axis[axi].spaceDirection);
           nout->axis[axi].spaceDirection[saxi] = 1.0;
         }
@@ -202,13 +203,11 @@ main(int argc, const char **argv) {
   } else {
     int saxi = 0;
     nrrdSpaceVecSetZero(nout->spaceOrigin);
-    for (axi=0; axi<nout->dim; axi++) {
+    for (axi = 0; axi < nout->dim; axi++) {
       if (nrrdKindUnknown == kindOut || kindAxis != axi) {
         nrrdSpaceVecSetZero(nout->axis[axi].spaceDirection);
         nout->axis[axi].spaceDirection[saxi]
-          = (AIR_EXISTS(nin->axis[axi].spacing)
-             ? nin->axis[axi].spacing
-             : 1.0);
+          = (AIR_EXISTS(nin->axis[axi].spacing) ? nin->axis[axi].spacing : 1.0);
         saxi++;
       } else {
         nrrdSpaceVecSetNaN(nout->axis[axi].spaceDirection);
@@ -218,19 +217,18 @@ main(int argc, const char **argv) {
   }
   /* probably should be asserted earlier */
   if (nout->dim != nout->spaceDim + !!kindOut) {
-    fprintf(stderr, "%s: output dim %d != spaceDim %d + %d %s%s%s\n",
-            me, nout->dim, nout->spaceDim, !!kindOut,
-            kindOut ? "for non-scalar (" : "(scalar data)",
-            kindOut ? airEnumStr(nrrdKind, kindOut) : "",
-            kindOut ? ") data" : "");
-    airMopError(mop); exit(1);
+    fprintf(stderr, "%s: output dim %d != spaceDim %d + %d %s%s%s\n", me, nout->dim,
+            nout->spaceDim, !!kindOut, kindOut ? "for non-scalar (" : "(scalar data)",
+            kindOut ? airEnumStr(nrrdKind, kindOut) : "", kindOut ? ") data" : "");
+    airMopError(mop);
+    exit(1);
   }
 
   if (nrrdSave(outS, nout, nio)) {
     airMopAdd(mop, err = biffGet(NRRD), airFree, airMopAlways);
-    fprintf(stderr, "%s: trouble saving \"%s\":\n%s",
-            me, outS, err);
-    airMopError(mop); exit(1);
+    fprintf(stderr, "%s: trouble saving \"%s\":\n%s", me, outS, err);
+    airMopError(mop);
+    exit(1);
   }
 
   airMopOkay(mop);

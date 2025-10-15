@@ -29,7 +29,7 @@ main(int argc, const char *argv[]) {
   pullEnergySpec *ensp;
   hestOptAdd_1_Other(&hopt, "energy", "spec", &ensp, NULL,
                      "specification of force function to use", pullHestEnergySpec);
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info, AIR_TRUE, AIR_TRUE, AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

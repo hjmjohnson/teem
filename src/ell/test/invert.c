@@ -39,12 +39,10 @@ main(int argc, const char *argv[]) {
   hopt = NULL;
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
   hestOptAdd(&hopt, NULL, "matrix", airTypeOther, 1, 1, &nin, NULL,
-             "transform(s) to apply to image",
-             NULL, NULL, nrrdHestNrrd);
+             "transform(s) to apply to image", NULL, NULL, nrrdHestNrrd);
   hestOptAdd(&hopt, "o", "filename", airTypeString, 1, 1, &outS, "-",
              "file to write output nrrd to");
-  hestParseOrDie(hopt, argc-1, argv+1, hparm,
-                 me, invInfo, AIR_TRUE, AIR_TRUE, AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, invInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
@@ -70,22 +68,21 @@ main(int argc, const char *argv[]) {
     fprintf(stderr, "%s: inverse:\n", me);
     ell_4m_print_d(stderr, m4);
   }
-  func = (nmat->axis[0].size == nmat->axis[1].size
-          ? ell_Nm_inv
-          : ell_Nm_pseudo_inv);
+  func = (nmat->axis[0].size == nmat->axis[1].size ? ell_Nm_inv : ell_Nm_pseudo_inv);
   if (func(ninv, nmat)) {
     airMopAdd(mop, err = biffGetDone(ELL), airFree, airMopAlways);
     fprintf(stderr, "%s: problem inverting:\n%s\n", me, err);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
 
   if (nrrdSave(outS, ninv, NULL)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: problem saving output:\n%s\n", me, err);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
 
   airMopOkay(mop);
   exit(0);
 }
-

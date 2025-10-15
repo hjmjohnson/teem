@@ -45,7 +45,7 @@ main(int argc, const char **argv) {
   hestOptAdd_3_Other(&opt, "B", "x1,y1 x2,y2 x3,y3", triple, "1,2 3,4 5,6", "testing B",
                      &cbinfo);
   /*
-  2025 re-write: only allow simple scalar types as single variadic parm (not Other)
+  // 2025 re-write: only allow simple scalar types as single variadic parm (not Other)
   double maybe[2];
   hestOptAdd(&opt, "C", "mx,my", airTypeOther, 0, 1, maybe, "-0.1,-0.2",
              "testing C. The utility of this can be better "
@@ -63,9 +63,8 @@ main(int argc, const char **argv) {
   int N;
   hestOptAdd_1_Int(&opt, "int", "N", &N, NULL, "an integer");
 
-  hestParseOrDie(opt, argc - 1, argv + 1, NULL /* hparm */, argv[0], "hest/text/ex4",
-                 AIR_TRUE /* doInfo */, AIR_TRUE /* doUsage */,
-                 AIR_TRUE /* doGlossary */);
+  hestParseOrDie(opt, argc - 1, argv + 1, NULL /* hparm */, argv[0],
+                 "info about hest/text/ex4");
 
   printf("single: (%g,%g)\n", single[0], single[1]);
   printf("triple: (%g,%g) (%g,%g) (%g,%g)\n", triple[0], triple[1], triple[2], triple[3],

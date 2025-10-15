@@ -107,8 +107,7 @@ main(int argc, const char *argv[]) {
                          "multi-threading. "));
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, NULL,
                       "filename for output of final converged (two-channel) texture");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, spotsInfo, AIR_TRUE, AIR_TRUE,
-                 AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, spotsInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

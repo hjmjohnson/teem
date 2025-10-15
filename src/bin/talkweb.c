@@ -505,8 +505,7 @@ main(int argc, const char *argv[]) {
                       "HTML for link to next slide");
   hestOptAdd_1_String(&hopt, "last", "text", &lastLink, "<b>&gt;&gt;|</b>",
                       "HTML for link to last slide");
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, tkwbInfo, AIR_TRUE, AIR_TRUE,
-                 AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, tkwbInfo);
   mop = airMopNew();
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);

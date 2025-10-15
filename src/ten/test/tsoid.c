@@ -17,16 +17,14 @@
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #include "../ten.h"
 
 const char *info = ("Save a single ellipsoid or superquadric "
                     "into an OFF file.");
 
 int
-soidDoit(limnObject *obj, int look,
-         int gtype, float gamma, int res,
-         float AB[2], float ten[7]) {
+soidDoit(limnObject *obj, int look, int gtype, float gamma, int res, float AB[2],
+         float ten[7]) {
   int partIdx, axis;
   float cl, cp, qA, qB, eval[3], evec[9], matA[16], matB[16];
 
@@ -37,16 +35,16 @@ soidDoit(limnObject *obj, int look,
   } else {
     tenEigensolve_f(eval, evec, ten);
     ELL_SORT3(eval[0], eval[1], eval[2], cl);
-    cl = (eval[0] - eval[1])/(eval[0] + eval[1] + eval[2]);
-    cp = 2*(eval[1] - eval[2])/(eval[0] + eval[1] + eval[2]);
+    cl = (eval[0] - eval[1]) / (eval[0] + eval[1] + eval[2]);
+    cp = 2 * (eval[1] - eval[2]) / (eval[0] + eval[1] + eval[2]);
     if (cl > cp) {
       axis = 0;
-      qA = powf(1-cp, gamma);
-      qB = powf(1-cl, gamma);
+      qA = powf(1 - cp, gamma);
+      qB = powf(1 - cl, gamma);
     } else {
       axis = 2;
-      qA = powf(1-cl, gamma);
-      qB = powf(1-cp, gamma);
+      qA = powf(1 - cl, gamma);
+      qB = powf(1 - cp, gamma);
     }
     /*
     fprintf(stderr, "eval = %g %g %g -> cl=%g %s cp=%g -> axis = %d\n",
@@ -57,23 +55,21 @@ soidDoit(limnObject *obj, int look,
   if (tenGlyphTypeBox == gtype) {
     partIdx = limnObjectCubeAdd(obj, look);
   } else if (tenGlyphTypeSphere == gtype) {
-    partIdx = limnObjectPolarSphereAdd(obj, look,
-                                       0, 2*res, res);
+    partIdx = limnObjectPolarSphereAdd(obj, look, 0, 2 * res, res);
   } else {
-    partIdx = limnObjectPolarSuperquadAdd(obj, look,
-                                          axis, qA, qB, 2*res, res);
+    partIdx = limnObjectPolarSuperquadAdd(obj, look, axis, qA, qB, 2 * res, res);
   }
   ELL_4M_IDENTITY_SET(matA);
-  ELL_4V_SET(matB + 0*4, eval[0],       0,       0, 0);
-  ELL_4V_SET(matB + 1*4,       0, eval[1],       0, 0);
-  ELL_4V_SET(matB + 2*4,       0,       0, eval[2], 0);
-  ELL_4V_SET(matB + 3*4,       0,       0,       0, 1);
+  ELL_4V_SET(matB + 0 * 4, eval[0], 0, 0, 0);
+  ELL_4V_SET(matB + 1 * 4, 0, eval[1], 0, 0);
+  ELL_4V_SET(matB + 2 * 4, 0, 0, eval[2], 0);
+  ELL_4V_SET(matB + 3 * 4, 0, 0, 0, 1);
   ELL_4M_SCALE_SET(matB, eval[0], eval[1], eval[2]);
   ell_4m_post_mul_f(matA, matB);
-  ELL_4V_SET(matB + 0*4, evec[0 + 0*3], evec[0 + 1*3], evec[0 + 2*3], 0);
-  ELL_4V_SET(matB + 1*4, evec[1 + 0*3], evec[1 + 1*3], evec[1 + 2*3], 0);
-  ELL_4V_SET(matB + 2*4, evec[2 + 0*3], evec[2 + 1*3], evec[2 + 2*3], 0);
-  ELL_4V_SET(matB + 3*4,             0,             0,             0, 1);
+  ELL_4V_SET(matB + 0 * 4, evec[0 + 0 * 3], evec[0 + 1 * 3], evec[0 + 2 * 3], 0);
+  ELL_4V_SET(matB + 1 * 4, evec[1 + 0 * 3], evec[1 + 1 * 3], evec[1 + 2 * 3], 0);
+  ELL_4V_SET(matB + 2 * 4, evec[2 + 0 * 3], evec[2 + 1 * 3], evec[2 + 2 * 3], 0);
+  ELL_4V_SET(matB + 3 * 4, 0, 0, 0, 1);
   ell_4m_post_mul_f(matA, matB);
   limnObjectPartTransform(obj, partIdx, matA);
 
@@ -86,7 +82,7 @@ scalingMatrix(double mat[9], double vec[3], double scl) {
 
   ELL_3V_NORM(dir, vec, len);
   ELL_3MV_OUTER(tmp, dir, dir);
-  ELL_3M_SCALE(tmp, scl-1, tmp);
+  ELL_3M_SCALE(tmp, scl - 1, tmp);
   ELL_3M_IDENTITY_SET(mat);
   ELL_3M_ADD2(mat, mat, tmp);
   return;
@@ -96,17 +92,17 @@ int
 main(int argc, const char *argv[]) {
   const char *me;
   char *err, *outS;
-  double eval[3], matA[9], matB[9], sval[3], uu[9], vv[9], escl[5],
-    view[3];
+  double eval[3], matA[9], matB[9], sval[3], uu[9], vv[9], escl[5], view[3];
   float matAf[9], matBf[16];
   float pp[3], qq[4], mR[9], len, gamma;
   float os, vs, rad, AB[2], ten[7];
-  hestOpt *hopt=NULL;
+  hestOpt *hopt = NULL;
   airArray *mop;
   limnObject *obj;
-  limnLook *look; int lookRod, lookSoid;
+  limnLook *look;
+  int lookRod, lookSoid;
   float kadsRod[3], kadsSoid[3];
-  int gtype, partIdx=-1; /* sssh */
+  int gtype, partIdx = -1; /* sssh */
   int res;
   FILE *file;
 
@@ -122,18 +118,16 @@ main(int argc, const char *argv[]) {
   hestOptAdd(&hopt, "vs", "view-dir scaling", airTypeFloat, 1, 1, &vs, "1",
              "scaling along view-direction (to show off bas-relief "
              "ambibuity of ellipsoids versus superquads)");
-  hestOptAdd(&hopt, "es", "extra scaling", airTypeDouble, 5, 5, escl,
-             "2 1 0 0 1", "extra scaling specified with five values "
+  hestOptAdd(&hopt, "es", "extra scaling", airTypeDouble, 5, 5, escl, "2 1 0 0 1",
+             "extra scaling specified with five values "
              "0:tensor|1:geometry|2:none vx vy vz scaling");
-  hestOptAdd(&hopt, "fr", "from (eye) point", airTypeDouble, 3, 3, &view,
-             "4 4 4", "eye point, needed for non-unity \"-vs\"");
-  hestOptAdd(&hopt, "gamma", "superquad sharpness", airTypeFloat, 1, 1,
-             &gamma, "0",
+  hestOptAdd(&hopt, "fr", "from (eye) point", airTypeDouble, 3, 3, &view, "4 4 4",
+             "eye point, needed for non-unity \"-vs\"");
+  hestOptAdd(&hopt, "gamma", "superquad sharpness", airTypeFloat, 1, 1, &gamma, "0",
              "how much to sharpen edges as a "
              "function of differences between eigenvalues");
   hestOptAdd(&hopt, "g", "glyph shape", airTypeEnum, 1, 1, &gtype, "sqd",
-             "glyph to use; not all are implemented here",
-             NULL, tenGlyphType);
+             "glyph to use; not all are implemented here", NULL, tenGlyphType);
   hestOptAdd(&hopt, "pp", "x y z", airTypeFloat, 3, 3, pp, "0 0 0",
              "transform: rotation identified by"
              "location in quaternion quotient space");
@@ -141,15 +135,13 @@ main(int argc, const char *argv[]) {
              "black axis cylinder radius (or 0.0 to not drawn these)");
   hestOptAdd(&hopt, "res", "resolution", airTypeInt, 1, 1, &res, "25",
              "tesselation resolution for both glyph and axis cylinders");
-  hestOptAdd(&hopt, "pg", "ka kd ks", airTypeFloat, 3, 3, kadsSoid,
-             "0.2 0.8 0.0",
+  hestOptAdd(&hopt, "pg", "ka kd ks", airTypeFloat, 3, 3, kadsSoid, "0.2 0.8 0.0",
              "phong coefficients for glyph");
   hestOptAdd(&hopt, "pr", "ka kd ks", airTypeFloat, 3, 3, kadsRod, "1 0 0",
              "phong coefficients for black rods (if being drawn)");
   hestOptAdd(&hopt, "o", "output OFF", airTypeString, 1, 1, &outS, "out.off",
              "output file to save OFF into");
-  hestParseOrDie(hopt, argc-1, argv+1, NULL,
-                 me, info, AIR_TRUE, AIR_TRUE, AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
   mop = airMopNew();
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
@@ -157,20 +149,20 @@ main(int argc, const char *argv[]) {
   obj = limnObjectNew(1000, AIR_TRUE);
   airMopAdd(mop, obj, (airMopper)limnObjectNix, airMopAlways);
 
-  if (!( 0 == escl[0] || 1 == escl[0] || 2 == escl[0] )) {
+  if (!(0 == escl[0] || 1 == escl[0] || 2 == escl[0])) {
     fprintf(stderr, "%s: escl[0] %g not 0, 1 or 2\n", me, escl[0]);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
-  if (!(tenGlyphTypeBox == gtype ||
-        tenGlyphTypeSphere == gtype ||
-        tenGlyphTypeSuperquad == gtype)) {
+  if (!(tenGlyphTypeBox == gtype || tenGlyphTypeSphere == gtype
+        || tenGlyphTypeSuperquad == gtype)) {
     fprintf(stderr, "%s: got %s %s, but here only do %s, %s, or %s\n", me,
-            tenGlyphType->name,
-            airEnumStr(tenGlyphType, gtype),
+            tenGlyphType->name, airEnumStr(tenGlyphType, gtype),
             airEnumStr(tenGlyphType, tenGlyphTypeBox),
             airEnumStr(tenGlyphType, tenGlyphTypeSphere),
             airEnumStr(tenGlyphType, tenGlyphTypeSuperquad));
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
 
   /* create limnLooks for glyph and for rods */
@@ -189,7 +181,7 @@ main(int argc, const char *argv[]) {
   ELL_3M_IDENTITY_SET(matA); /* A = I */
   ELL_3V_SCALE(eval, os, eval);
   ELL_3M_SCALE_SET(matB, eval[0], eval[1], eval[2]); /* B = diag(eval) */
-  ell_3m_post_mul_d(matA, matB); /* A = B*A = diag(eval) */
+  ell_3m_post_mul_d(matA, matB);                     /* A = B*A = diag(eval) */
 
   if (0 == escl[0]) {
     scalingMatrix(matB, escl + 1, escl[4]);
@@ -199,13 +191,14 @@ main(int argc, const char *argv[]) {
   if (1 != vs) {
     if (!ELL_3V_LEN(view)) {
       fprintf(stderr, "%s: need non-zero view for vs %g != 1\n", me, vs);
-      airMopError(mop); return 1;
+      airMopError(mop);
+      return 1;
     }
     scalingMatrix(matB, view, vs);
     /* the scaling along the view direction is a symmetric matrix,
        but applying that scaling to the symmetric input tensor
        is not necessarily symmetric */
-    ell_3m_post_mul_d(matA, matB);  /* A = B*A */
+    ell_3m_post_mul_d(matA, matB); /* A = B*A */
   }
   /* so we do an SVD to get rotation U and the scalings sval[] */
   /* U * diag(sval) * V */
@@ -242,17 +235,15 @@ main(int argc, const char *argv[]) {
   /* now create symmetric matrix out of U and sval */
   /* A = I */
   ELL_3M_IDENTITY_SET(matA);
-  ell_3m_pre_mul_d(matA, uu);   /* A = A*U = I*U = U */
+  ell_3m_pre_mul_d(matA, uu);                        /* A = A*U = I*U = U */
   ELL_3M_SCALE_SET(matB, sval[0], sval[1], sval[2]); /* B = diag(sval) */
-  ell_3m_pre_mul_d(matA, matB); /* A = U*diag(sval) */
+  ell_3m_pre_mul_d(matA, matB);                      /* A = U*diag(sval) */
   ELL_3M_TRANSPOSE(matB, uu);
   ell_3m_pre_mul_d(matA, matB); /* A = U*diag(sval)*U^T */
   TEN_M2T_TT(ten, float, matA);
 
-  partIdx = soidDoit(obj, lookSoid,
-                     gtype, gamma, res,
-                     (AIR_EXISTS(AB[0]) && AIR_EXISTS(AB[1])) ? AB : NULL,
-                     ten);
+  partIdx = soidDoit(obj, lookSoid, gtype, gamma, res,
+                     (AIR_EXISTS(AB[0]) && AIR_EXISTS(AB[1])) ? AB : NULL, ten);
 
   if (1 == escl[0]) {
     scalingMatrix(matB, escl + 1, escl[4]);
@@ -269,49 +260,49 @@ main(int argc, const char *argv[]) {
   if (rad) {
     partIdx = limnObjectCylinderAdd(obj, lookRod, 0, res);
     ELL_4M_IDENTITY_SET(matAf);
-    ELL_4M_SCALE_SET(matBf, AIR_FLOAT((1-eval[0])/2), rad, rad);
+    ELL_4M_SCALE_SET(matBf, AIR_FLOAT((1 - eval[0]) / 2), rad, rad);
     ell_4m_post_mul_f(matAf, matBf);
-    ELL_4M_TRANSLATE_SET(matBf, AIR_FLOAT((1+eval[0])/2), 0.0, 0.0);
+    ELL_4M_TRANSLATE_SET(matBf, AIR_FLOAT((1 + eval[0]) / 2), 0.0, 0.0);
     ell_4m_post_mul_f(matAf, matBf);
     limnObjectPartTransform(obj, partIdx, matAf);
 
     partIdx = limnObjectCylinderAdd(obj, lookRod, 0, res);
     ELL_4M_IDENTITY_SET(matAf);
-    ELL_4M_SCALE_SET(matBf, AIR_FLOAT((1-eval[0])/2), rad, rad);
+    ELL_4M_SCALE_SET(matBf, AIR_FLOAT((1 - eval[0]) / 2), rad, rad);
     ell_4m_post_mul_f(matAf, matBf);
-    ELL_4M_TRANSLATE_SET(matBf, AIR_FLOAT(-(1+eval[0])/2), 0.0, 0.0);
-    ell_4m_post_mul_f(matAf, matBf);
-    limnObjectPartTransform(obj, partIdx, matAf);
-
-    partIdx = limnObjectCylinderAdd(obj, lookRod, 1, res);
-    ELL_4M_IDENTITY_SET(matAf);
-    ELL_4M_SCALE_SET(matBf, rad, AIR_FLOAT((1-eval[1])/2), rad);
-    ell_4m_post_mul_f(matAf, matBf);
-    ELL_4M_TRANSLATE_SET(matBf, 0.0, AIR_FLOAT((1+eval[1])/2), 0.0);
+    ELL_4M_TRANSLATE_SET(matBf, AIR_FLOAT(-(1 + eval[0]) / 2), 0.0, 0.0);
     ell_4m_post_mul_f(matAf, matBf);
     limnObjectPartTransform(obj, partIdx, matAf);
 
     partIdx = limnObjectCylinderAdd(obj, lookRod, 1, res);
     ELL_4M_IDENTITY_SET(matAf);
-    ELL_4M_SCALE_SET(matBf, rad, AIR_FLOAT((1-eval[1])/2), rad);
+    ELL_4M_SCALE_SET(matBf, rad, AIR_FLOAT((1 - eval[1]) / 2), rad);
     ell_4m_post_mul_f(matAf, matBf);
-    ELL_4M_TRANSLATE_SET(matBf, 0.0, AIR_FLOAT(-(1+eval[1])/2), 0.0);
+    ELL_4M_TRANSLATE_SET(matBf, 0.0, AIR_FLOAT((1 + eval[1]) / 2), 0.0);
+    ell_4m_post_mul_f(matAf, matBf);
+    limnObjectPartTransform(obj, partIdx, matAf);
+
+    partIdx = limnObjectCylinderAdd(obj, lookRod, 1, res);
+    ELL_4M_IDENTITY_SET(matAf);
+    ELL_4M_SCALE_SET(matBf, rad, AIR_FLOAT((1 - eval[1]) / 2), rad);
+    ell_4m_post_mul_f(matAf, matBf);
+    ELL_4M_TRANSLATE_SET(matBf, 0.0, AIR_FLOAT(-(1 + eval[1]) / 2), 0.0);
     ell_4m_post_mul_f(matAf, matBf);
     limnObjectPartTransform(obj, partIdx, matAf);
 
     partIdx = limnObjectCylinderAdd(obj, lookRod, 2, res);
     ELL_4M_IDENTITY_SET(matAf);
-    ELL_4M_SCALE_SET(matBf, rad, rad, AIR_FLOAT((1-eval[2])/2));
+    ELL_4M_SCALE_SET(matBf, rad, rad, AIR_FLOAT((1 - eval[2]) / 2));
     ell_4m_post_mul_f(matAf, matBf);
-    ELL_4M_TRANSLATE_SET(matBf, 0.0, 0.0, AIR_FLOAT((1+eval[2])/2));
+    ELL_4M_TRANSLATE_SET(matBf, 0.0, 0.0, AIR_FLOAT((1 + eval[2]) / 2));
     ell_4m_post_mul_f(matAf, matBf);
     limnObjectPartTransform(obj, partIdx, matAf);
 
     partIdx = limnObjectCylinderAdd(obj, lookRod, 2, res);
     ELL_4M_IDENTITY_SET(matAf);
-    ELL_4M_SCALE_SET(matBf, rad, rad, AIR_FLOAT((1-eval[2])/2));
+    ELL_4M_SCALE_SET(matBf, rad, rad, AIR_FLOAT((1 - eval[2]) / 2));
     ell_4m_post_mul_f(matAf, matBf);
-    ELL_4M_TRANSLATE_SET(matBf, 0.0, 0.0, AIR_FLOAT(-(1+eval[2])/2));
+    ELL_4M_TRANSLATE_SET(matBf, 0.0, 0.0, AIR_FLOAT(-(1 + eval[2]) / 2));
     ell_4m_post_mul_f(matAf, matBf);
     limnObjectPartTransform(obj, partIdx, matAf);
   }
@@ -322,7 +313,8 @@ main(int argc, const char *argv[]) {
   if (limnObjectWriteOFF(file, obj)) {
     airMopAdd(mop, err = biffGetDone(LIMN), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble:\n%s\n", me, err);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
 
   airMopOkay(mop);

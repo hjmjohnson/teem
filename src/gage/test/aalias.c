@@ -48,16 +48,15 @@ main(int argc, const char *argv[]) {
   hparm = hestParmNew();
   hopt = NULL;
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
-  hestOptAdd(&hopt, "i", "nin", airTypeOther, 1, 1, &nin, NULL,
-             "input volume", NULL, NULL, nrrdHestNrrd);
-  hestOptAdd(&hopt, "k00", "kernel", airTypeOther, 1, 1, &k00,
-             "tent", "k00", NULL, NULL, nrrdHestKernelSpec);
-  hestOptAdd(&hopt, "k11", "kernel", airTypeOther, 1, 1, &k11,
-             "cubicd:0,0.5", "k00", NULL, NULL, nrrdHestKernelSpec);
-  hestOptAdd(&hopt, "k22", "kernel", airTypeOther, 1, 1, &k22,
-             "cubicdd:1,0", "k00", NULL, NULL, nrrdHestKernelSpec);
-  hestOptAdd(&hopt, "dt", "step", airTypeDouble, 1, 1, &dt, "0.17",
-             "time step size");
+  hestOptAdd(&hopt, "i", "nin", airTypeOther, 1, 1, &nin, NULL, "input volume", NULL,
+             NULL, nrrdHestNrrd);
+  hestOptAdd(&hopt, "k00", "kernel", airTypeOther, 1, 1, &k00, "tent", "k00", NULL, NULL,
+             nrrdHestKernelSpec);
+  hestOptAdd(&hopt, "k11", "kernel", airTypeOther, 1, 1, &k11, "cubicd:0,0.5", "k00",
+             NULL, NULL, nrrdHestKernelSpec);
+  hestOptAdd(&hopt, "k22", "kernel", airTypeOther, 1, 1, &k22, "cubicdd:1,0", "k00",
+             NULL, NULL, nrrdHestKernelSpec);
+  hestOptAdd(&hopt, "dt", "step", airTypeDouble, 1, 1, &dt, "0.17", "time step size");
   hestOptAdd(&hopt, "th", "val", airTypeDouble, 1, 1, &thresh, "0.0",
              "the value to use for thresholding the input "
              "volume, to create the binary constraint image.");
@@ -71,8 +70,7 @@ main(int argc, const char *argv[]) {
              "maximum # iterations");
   hestOptAdd(&hopt, "o", "filename", airTypeString, 1, 1, &outS, "-",
              "fixed volume output");
-  hestParseOrDie(hopt, argc-1, argv+1, hparm,
-                 me, aaliasInfo, AIR_TRUE, AIR_TRUE, AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, aaliasInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
@@ -82,12 +80,12 @@ main(int argc, const char *argv[]) {
   airMopAdd(mop, ndist, (airMopper)nrrdNuke, airMopAlways);
   airMopAdd(mop, nmask, (airMopper)nrrdNuke, airMopAlways);
   airMopAdd(mop, nupdate, (airMopper)nrrdNuke, airMopAlways);
-  if (nrrdConvert(ndist, nin, nrrdTypeDouble)
-      || nrrdConvert(nmask, nin, nrrdTypeDouble)
+  if (nrrdConvert(ndist, nin, nrrdTypeDouble) || nrrdConvert(nmask, nin, nrrdTypeDouble)
       || nrrdConvert(nupdate, nin, nrrdTypeDouble)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: couldn't allocate buffers:\n%s", me, err);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
   dist = AIR_CAST(double *, ndist->data);
   mask = AIR_CAST(double *, nmask->data);
@@ -110,7 +108,8 @@ main(int argc, const char *argv[]) {
   if (E) {
     airMopAdd(mop, err = biffGetDone(GAGE), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble:\n%s\n", me, err);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
   /* valu = gageAnswerPointer(ctx, pvl, gageSclValue); */
   gmag = gageAnswerPointer(ctx, pvl, gageSclGradMag);
@@ -120,25 +119,25 @@ main(int argc, const char *argv[]) {
   sy = nin->axis[1].size;
   sz = nin->axis[2].size;
 
-  for (iter=0; iter<maxIter; iter++) {
+  for (iter = 0; iter < maxIter; iter++) {
     double rms;
     unsigned count;
     fprintf(stderr, "%s: iter %u:      ", me, iter);
     fflush(stderr);
-    for (zi=0; zi<sz; zi++) {
-      fprintf(stderr, "%s", airDoneStr(0, zi, sz-1, done));
+    for (zi = 0; zi < sz; zi++) {
+      fprintf(stderr, "%s", airDoneStr(0, zi, sz - 1, done));
       fflush(stderr);
-      for (yi=0; yi<sy; yi++) {
-        for (xi=0; xi<sx; xi++) {
-          si = xi + sx*(yi + sy*zi);
+      for (yi = 0; yi < sy; yi++) {
+        for (xi = 0; xi < sx; xi++) {
+          si = xi + sx * (yi + sy * zi);
           gageProbe(ctx, xi, yi, zi);
-          update[si] = -dt*(*gmag)*(*mcrv);
+          update[si] = -dt * (*gmag) * (*mcrv);
         }
       }
     }
     rms = 0;
     count = 0;
-    for (si=0; si<sx*sy*sz; si++) {
+    for (si = 0; si < sx * sy * sz; si++) {
       double newval;
       if (update[si]) {
         /* NOTE: this update behavior is only slightly different than
@@ -153,16 +152,16 @@ main(int argc, const char *argv[]) {
            the values on either side of it. */
         newval = dist[si] + update[si];
         if (mask[si] > thresh) {
-          newval = AIR_MAX(newval, thresh+eps/2);
+          newval = AIR_MAX(newval, thresh + eps / 2);
         } else {
-          newval = AIR_MIN(newval, thresh-eps/2);
+          newval = AIR_MIN(newval, thresh - eps / 2);
         }
-        rms += (dist[si] - newval)*(dist[si] - newval);
+        rms += (dist[si] - newval) * (dist[si] - newval);
         dist[si] = newval;
         count++;
       }
     }
-    fprintf(stderr, "%s", airDoneStr(0, zi, sz-1, done));
+    fprintf(stderr, "%s", airDoneStr(0, zi, sz - 1, done));
     rms /= count;
     rms = sqrt(rms);
     if (rms < rmsMin) {
@@ -181,13 +180,15 @@ main(int argc, const char *argv[]) {
   if (nrrdCopy(nout, ndist)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: couldn't allocate output:\n%s", me, err);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
 
   if (nrrdSave(outS, nout, NULL)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: couldn't save output:\n%s", me, err);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
 
   airMopOkay(mop);

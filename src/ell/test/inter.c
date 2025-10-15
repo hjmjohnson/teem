@@ -144,8 +144,7 @@ main(int argc, const char *argv[]) {
              "scaling from world space to PostScript points");
   hestOptAdd(&hopt, "o", "prefix", airTypeString, 1, 1, &outS, NULL,
              "prefix of file names");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, interInfo, AIR_TRUE, AIR_TRUE,
-                 AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, interInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

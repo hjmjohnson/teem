@@ -57,8 +57,7 @@ main(int argc, const char *argv[]) {
              "The center point around which to build radial histogram");
   hestOptAdd(&hopt, "o", "filename", airTypeString, 1, 1, &outS, "-",
              "file to write histogram to");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, histradInfo, AIR_TRUE, AIR_TRUE,
-                 AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, histradInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

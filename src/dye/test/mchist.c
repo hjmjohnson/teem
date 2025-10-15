@@ -108,8 +108,7 @@ main(int argc, const char *argv[]) {
   char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output filename");
 
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, mchistInfo, AIR_TRUE, AIR_TRUE,
-                 AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, mchistInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

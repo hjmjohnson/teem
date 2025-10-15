@@ -40,24 +40,26 @@ main(int argc, const char *argv[]) {
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
   hestOptAdd(&hopt, NULL, "input matrices", airTypeOther, 1, 1, &_nmat, NULL,
              "list of rotation matrices, 2-D array with one matrix "
-             "(in ROW-major order) per scanline", NULL, NULL, nrrdHestNrrd);
+             "(in ROW-major order) per scanline",
+             NULL, NULL, nrrdHestNrrd);
   hestOptAdd(&hopt, NULL, "output filename", airTypeString, 1, 1, &outS, "-",
              "file to write EPS output to");
-  hestParseOrDie(hopt, argc-1, argv+1, hparm,
-                 me, rot2aaInfo, AIR_TRUE, AIR_TRUE, AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, rot2aaInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
-  if (!( 2 == _nmat->dim && 9 == _nmat->axis[0].size )) {
+  if (!(2 == _nmat->dim && 9 == _nmat->axis[0].size)) {
     fprintf(stderr, "%s: need a 2-D 9-by-N nrrd\n", me);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
   nmat = nrrdNew();
   airMopAdd(mop, nmat, (airMopper)nrrdNuke, airMopAlways);
   if (nrrdConvert(nmat, _nmat, nrrdTypeDouble)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: couldn't convert to double:\n%s", me, err);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
 
   airMopOkay(mop);

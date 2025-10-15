@@ -35,24 +35,18 @@ main(int argc, const char *argv[]) {
   hparm = hestParmNew();
   hopt = NULL;
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
-  hestOptAdd(&hopt, NULL, "val", airTypeDouble, 1, 1, &val, NULL,
-             "input value");
-  hestParseOrDie(hopt, argc-1, argv+1, hparm,
-                 me, Info, AIR_TRUE, AIR_TRUE, AIR_TRUE);
+  hestOptAdd(&hopt, NULL, "val", airTypeDouble, 1, 1, &val, NULL, "input value");
+  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, Info);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
   printf("%s: tee % 10.7g -> sig % 10.7g    tau % 10.7g\n", me, val,
-         gageSigOfTau(gageTauOfTee(val)),
-         gageTauOfTee(val));
-  printf("%s: tau % 10.7g -> sig % 10.7g    tee % 10.7g\n", me, val,
-         gageSigOfTau(val),
+         gageSigOfTau(gageTauOfTee(val)), gageTauOfTee(val));
+  printf("%s: tau % 10.7g -> sig % 10.7g    tee % 10.7g\n", me, val, gageSigOfTau(val),
          gageTeeOfTau(val));
   printf("%s: sig % 10.7g -> tee % 10.7g    tau % 10.7g\n", me, val,
-         gageTeeOfTau(gageTauOfSig(val)),
-         gageTauOfSig(val));
+         gageTeeOfTau(gageTauOfSig(val)), gageTauOfSig(val));
 
   airMopOkay(mop);
   exit(0);
 }
-

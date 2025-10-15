@@ -56,7 +56,7 @@ main(int argc, const char *argv[]) {
              "number of experiments after which to print out newly "
              "computed probability");
   hestOptAdd(&hopt, NULL, "people", airTypeInt, 1, 1, &M, NULL, "# of people in room");
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info, AIR_TRUE, AIR_TRUE, AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

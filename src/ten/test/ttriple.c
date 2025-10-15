@@ -17,7 +17,6 @@
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #include "../ten.h"
 
 const char *info = ("tests conversions between info triples");
@@ -25,7 +24,7 @@ const char *info = ("tests conversions between info triples");
 int
 main(int argc, const char *argv[]) {
   const char *me;
-  hestOpt *hopt=NULL;
+  hestOpt *hopt = NULL;
   airArray *mop;
 
   int *itype, itypeNum, ii;
@@ -33,13 +32,10 @@ main(int argc, const char *argv[]) {
   char space[] = "             ";
 
   me = argv[0];
-  hestOptAdd(&hopt, NULL, "v1 v2 v3", airTypeDouble, 3, 3, src, NULL,
-             "source triple");
+  hestOptAdd(&hopt, NULL, "v1 v2 v3", airTypeDouble, 3, 3, src, NULL, "source triple");
   hestOptAdd(&hopt, "t", "type", airTypeEnum, 2, -1, &itype, NULL,
-             "sequence of triple types to convert through",
-             &itypeNum, tenTripleType);
-  hestParseOrDie(hopt, argc-1, argv+1, NULL,
-                 me, info, AIR_TRUE, AIR_TRUE, AIR_TRUE);
+             "sequence of triple types to convert through", &itypeNum, tenTripleType);
+  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
   mop = airMopNew();
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
@@ -48,8 +44,8 @@ main(int argc, const char *argv[]) {
   printf("%s", airEnumStr(tenTripleType, itype[0]));
   ell_3v_print_d(stdout, src);
   ELL_3V_COPY(last, src);
-  for (ii=1; ii<itypeNum; ii++) {
-    tenTripleConvertSingle_d(dst, itype[ii], src, itype[ii-1]);
+  for (ii = 1; ii < itypeNum; ii++) {
+    tenTripleConvertSingle_d(dst, itype[ii], src, itype[ii - 1]);
     printf("%s", space + strlen(airEnumStr(tenTripleType, itype[ii])));
     printf("%s", airEnumStr(tenTripleType, itype[ii]));
     ell_3v_print_d(stdout, dst);

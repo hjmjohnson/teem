@@ -17,7 +17,6 @@
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #include "../limn.h"
 
 const char *info = ("dumb little demonstration of calculating the "
@@ -30,7 +29,7 @@ main(int argc, const char *argv[]) {
   char *err;
   limnCamera *cam;
   float mat[16];
-  hestOpt *hopt=NULL;
+  hestOpt *hopt = NULL;
   airArray *mop;
 
   mop = airMopNew();
@@ -38,16 +37,15 @@ main(int argc, const char *argv[]) {
   airMopAdd(mop, cam, (airMopper)limnCameraNix, airMopAlways);
 
   me = argv[0];
-  hestOptAdd(&hopt, "fr", "eye pos", airTypeDouble, 3, 3, cam->from,
-             NULL, "camera eye point");
-  hestOptAdd(&hopt, "at", "at pos", airTypeDouble, 3, 3, cam->at,
-             "0 0 0", "camera look-at point");
-  hestOptAdd(&hopt, "up", "up dir", airTypeDouble, 3, 3, cam->up,
-             "0 0 1", "camera pseudo up vector");
+  hestOptAdd(&hopt, "fr", "eye pos", airTypeDouble, 3, 3, cam->from, NULL,
+             "camera eye point");
+  hestOptAdd(&hopt, "at", "at pos", airTypeDouble, 3, 3, cam->at, "0 0 0",
+             "camera look-at point");
+  hestOptAdd(&hopt, "up", "up dir", airTypeDouble, 3, 3, cam->up, "0 0 1",
+             "camera pseudo up vector");
   hestOptAdd(&hopt, "rh", NULL, airTypeInt, 0, 0, &(cam->rightHanded), NULL,
              "use a right-handed UVN frame (V points down)");
-  hestParseOrDie(hopt, argc-1, argv+1, NULL,
-                 me, info, AIR_TRUE, AIR_TRUE, AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
@@ -74,4 +72,3 @@ main(int argc, const char *argv[]) {
   airMopOkay(mop);
   return 0;
 }
-

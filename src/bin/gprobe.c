@@ -390,8 +390,7 @@ main(int argc, const char *argv[]) {
   hestOptAdd_1_Enum(&hopt, "t", "type", &otype, "float", "type of output volume",
                     nrrdType);
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output volume");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, probeInfo, AIR_TRUE, AIR_TRUE,
-                 AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, probeInfo);
   airMopAdd(mop, hopt, AIR_CAST(airMopper, hestOptFree), airMopAlways);
   airMopAdd(mop, hopt, AIR_CAST(airMopper, hestParseFree), airMopAlways);
 

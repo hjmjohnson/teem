@@ -106,8 +106,7 @@ main(int argc, const char *argv[]) {
                      "8-bit RGB background image to composite against", nrrdHestNrrd);
   hestOptAdd_1_String(&hopt, "o", "filename", &outS, NULL,
                       "file to write output PPM image to");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, overInfo, AIR_TRUE, AIR_TRUE,
-                 AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, overInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

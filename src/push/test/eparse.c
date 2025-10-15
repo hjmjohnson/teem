@@ -17,7 +17,6 @@
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #include "../push.h"
 
 const char *info = ("Tests parsing of energy, and its methods.");
@@ -25,7 +24,7 @@ const char *info = ("Tests parsing of energy, and its methods.");
 int
 main(int argc, const char *argv[]) {
   const char *me;
-  hestOpt *hopt=NULL;
+  hestOpt *hopt = NULL;
   airArray *mop;
 
   pushEnergySpec *ensp;
@@ -35,16 +34,14 @@ main(int argc, const char *argv[]) {
   mop = airMopNew();
   me = argv[0];
   hestOptAdd(&hopt, "energy", "spec", airTypeOther, 1, 1, &ensp, NULL,
-             "specification of force function to use",
-             NULL, NULL, pushHestEnergySpec);
-  hestParseOrDie(hopt, argc-1, argv+1, NULL,
-                 me, info, AIR_TRUE, AIR_TRUE, AIR_TRUE);
+             "specification of force function to use", NULL, NULL, pushHestEnergySpec);
+  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
-  fprintf(stderr, "%s: parsed energy \"%s\", with %u parms.\n", me,
-          ensp->energy->name, ensp->energy->parmNum);
-  for (pi=0; pi<ensp->energy->parmNum; pi++) {
+  fprintf(stderr, "%s: parsed energy \"%s\", with %u parms.\n", me, ensp->energy->name,
+          ensp->energy->parmNum);
+  for (pi = 0; pi < ensp->energy->parmNum; pi++) {
     fprintf(stderr, "%u: %g\n", pi, ensp->parm[pi]);
   }
   fprintf(stderr, "\n");
@@ -52,18 +49,17 @@ main(int argc, const char *argv[]) {
   nn = 600;
   supp = ensp->energy->support(ensp->parm);
   del = AIR_DELTA(0, 2, nn, 0, supp);
-  for (xi=1; xi<nn; xi++) {
+  for (xi = 1; xi < nn; xi++) {
     double x0, x1, ee, ff, e0, e1, dummy;
-    xx = AIR_AFFINE(0, xi,   nn, 0, supp);
-    x1 = AIR_AFFINE(0, xi+1, nn, 0, supp);
-    x0 = AIR_AFFINE(0, xi-1, nn, 0, supp);
+    xx = AIR_AFFINE(0, xi, nn, 0, supp);
+    x1 = AIR_AFFINE(0, xi + 1, nn, 0, supp);
+    x0 = AIR_AFFINE(0, xi - 1, nn, 0, supp);
     ensp->energy->eval(&e1, &dummy, x1, ensp->parm);
     ensp->energy->eval(&e0, &dummy, x0, ensp->parm);
     ensp->energy->eval(&ee, &ff, xx, ensp->parm);
-    printf("%g %g %g %g\n", xx, ee, ff, (e1 - e0)/del);
+    printf("%g %g %g %g\n", xx, ee, ff, (e1 - e0) / del);
   }
 
   airMopOkay(mop);
   return 0;
 }
-

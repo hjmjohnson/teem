@@ -227,7 +227,7 @@ main(int argc, const char *argv[]) {
   hestOptAdd(&hopt, "seed", "seed", airTypeUInt, 1, 1, &rngSeed, "42",
              "random number generator seed");
   hestOptAdd(&hopt, "o", "out", airTypeString, 1, 1, &outS, "-", "output filename");
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info, AIR_TRUE, AIR_TRUE, AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

@@ -509,8 +509,7 @@ main(int argc, const char *argv[]) {
                       "file to write output nrrd to.  Defaults to stdout (\"-\").");
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
 
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, info, AIR_TRUE, AIR_TRUE,
-                 AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, info);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
   uu->hctx->imgSize[0] = AIR_INT(isScale * uu->hctx->imgSize[0]);

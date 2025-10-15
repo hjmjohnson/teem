@@ -17,7 +17,6 @@
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #include "../limn.h"
 
 const char *info = ("inspect QN schemes.");
@@ -26,7 +25,7 @@ int
 main(int argc, const char *argv[]) {
   const char *me;
   char *err;
-  hestOpt *hopt=NULL;
+  hestOpt *hopt = NULL;
   airArray *mop;
 
   char *outS;
@@ -36,14 +35,11 @@ main(int argc, const char *argv[]) {
 
   mop = airMopNew();
   me = argv[0];
-  hestOptAdd(&hopt, "s", "size", airTypeUInt, 1, 1, &reso, "256",
-             "resolution");
+  hestOptAdd(&hopt, "s", "size", airTypeUInt, 1, 1, &reso, "256", "resolution");
   hestOptAdd(&hopt, "q", "which", airTypeInt, 1, 1, &qni, NULL,
              "which quantization scheme");
-  hestOptAdd(&hopt, "o", "out", airTypeString, 1, 1, &outS, "-",
-             "output image");
-  hestParseOrDie(hopt, argc-1, argv+1, NULL,
-                 me, info, AIR_TRUE, AIR_TRUE, AIR_TRUE);
+  hestOptAdd(&hopt, "o", "out", airTypeString, 1, 1, &outS, "-", "output image");
+  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
@@ -52,15 +48,16 @@ main(int argc, const char *argv[]) {
   if (limnQNDemo(nqn, reso, qni)) {
     airMopAdd(mop, err = biffGetDone(LIMN), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble:\n%s\n", me, err);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
   if (nrrdSave(outS, nqn, NULL)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble:\n%s\n", me, err);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
 
   airMopOkay(mop);
   return 0;
 }
-

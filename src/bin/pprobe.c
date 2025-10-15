@@ -148,8 +148,7 @@ main(int argc, const char *argv[]) {
                   "guess orientation info");
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-",
                       "output array, when probing on polydata vertices");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, probeInfo, AIR_TRUE, AIR_TRUE,
-                 AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, probeInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
