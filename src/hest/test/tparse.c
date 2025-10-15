@@ -42,6 +42,8 @@ main(int argc, const char **argv) {
   hestOptAdd_Flag(&opt, "b,bingo", &flag, "a flag");
   int verb;
   hestOptAdd_1_Int(&opt, "v", "verb", &verb, "0", "verbosity");
+  int funny;
+  hestOptAdd_1v_Int(&opt, "funny", "wut", &funny, "0", "humor level");
   /*
   int *size;
   uint slen;
@@ -68,7 +70,7 @@ main(int argc, const char **argv) {
   uint opiA = hestOptAdd_2_Int(&opt, NULL, "A0 A1", unpA, "0 1", "unflagged A");
   int *unpB;
   uint sawB;
-  uint opiB = hestOptAdd_Nv_Int(&opt, NULL, "B0", 1, -1, &unpB, "23", "unflagged B",
+  uint opiB = hestOptAdd_Nv_Int(&opt, NULL, "B0", 2, -1, &unpB, "23 34", "unflagged B",
                                 &sawB);
   int unpC[2];
   uint opiC = hestOptAdd_2_Int(&opt, NULL, "C C", unpC, /* "dfltC0 dfltC1" */ NULL,
@@ -81,6 +83,7 @@ main(int argc, const char **argv) {
 #endif
 
   hestParseOrDie(opt, argc - 1, argv + 1, hparm, argv[0], "info about tparse");
+  printf("funny = %d\n", funny);
   printf("kvpLen = %u\n", kvpLen);
   for (uint ki = 0; ki < kvpLen; ki++) {
     printf("kvp[%u] = |%s|\n", ki, kvp[ki]);
