@@ -36,7 +36,7 @@ main(int argc, const char **argv) {
   hestParm *hparm = hestParmNew();
   hparm->respectDashDashHelp = AIR_TRUE;
   hparm->responseFileEnable = AIR_TRUE;
-  hparm->verbosity = 0;
+  hparm->verbosity = 10;
 
   int flag;
   hestOptAdd_Flag(&opt, "b,bingo", &flag, "a flag");
@@ -48,13 +48,13 @@ main(int argc, const char **argv) {
   hestOptAdd_Nv_Int(&opt, "s,sizes", "sx sy", 2, -1, &size, NULL, "image resolutions",
                     &slen);
                     */
-  char **kinds;
-  uint kindsLen;
-  hestOptAdd_Nv_String(&opt, "k,kind", "k0 k1", 1, -1, &kinds, "",
+  char **kvp;
+  uint kvpLen;
+  hestOptAdd_Nv_String(&opt, "kvp", "k0", 0, -1, &kvp, "",
                        "what \"kind\" is each axis, from the nrrdKind airEnum "
                        "(e.g. space, time, 3-vector, 3D-masked-symmetric-matrix, "
                        "or \"none\" to signify no kind)",
-                       &kindsLen);
+                       &kvpLen);
   double *off;
   uint offLen;
   hestOptAdd_Nv_Double(&opt, "off,offset", "off0", 0, -1, &off, "",
@@ -81,9 +81,11 @@ main(int argc, const char **argv) {
 #endif
 
   hestParseOrDie(opt, argc - 1, argv + 1, hparm, argv[0], "info about tparse");
-  for (uint ki = 0; ki < kindsLen; ki++) {
-    printf("kind[%u] = |%s|\n", ki, kinds[ki]);
+  printf("kvpLen = %u\n", kvpLen);
+  for (uint ki = 0; ki < kvpLen; ki++) {
+    printf("kvp[%u] = |%s|\n", ki, kvp[ki]);
   }
+  printf("offLen = %u\n", offLen);
   for (uint ii = 0; ii < offLen; ii++) {
     printf("off[%u] = %g\n", ii, off[ii]);
   }

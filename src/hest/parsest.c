@@ -1230,10 +1230,26 @@ optProcessDefaults(hestOpt *hopt, hestArg *tharg, hestInputStack *hist,
     }
     /* printf("!%s: hopt[%u].havec %p   havec->len = %u\n", __func__, opi,
        hopt[opi].havec, hopt[opi].havec->len); */
-    if (histPushDefault(hist, hopt[opi].dflt, hparm)
-        || histProcess(hopt[opi].havec, NULL, tharg, hist, hparm)) {
-      biffAddf(HEST, "%s%sproblem tokenizing %s[%u] default string", _ME_, ident, opi);
-      return 1;
+    if (5 == hopt[opi].kind && 0 == hopt[opi].min && !strlen(hopt[opi].dflt)) {
+      /* A multiple variadic option allowing min==0 is getting its value from an empty
+         default string. The pre-2025 behavior of hest was to say: "there are zero values
+         here", so that is what we replicate here. Even if the intent (for, say,
+         string-type values) was to say "the default value is 1 empty string", that can
+         be expressed as "''" instead of "", which is clearer anyway. So we side-step
+         calling histProcess and instead directly assert that we have 0 args. */
+      if (hparm->verbosity > 1) {
+        printf("%s: empty default string for min=0 a multiple "
+               "variadic option ==> 0 args\n",
+               __func__);
+      }
+      airArrayLenSet(hopt[opi].havec->hargArr, 0);
+    } else {
+      // the option's default string should be processed like normal
+      if (histPushDefault(hist, hopt[opi].dflt, hparm)
+          || histProcess(hopt[opi].havec, NULL, tharg, hist, hparm)) {
+        biffAddf(HEST, "%s%sproblem tokenizing %s[%u] default string", _ME_, ident, opi);
+        return 1;
+      }
     }
     /* havecExtractFlagged and havecExtractUnflagged have done the work of ensuring that
     the minimum number of parm args have been extracted for each option. We should do
