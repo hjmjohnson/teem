@@ -29,12 +29,17 @@ because unsure how to handle these annoying warnings:
 ../hest/test/ex1.c:36: warning: missing initializer
 ../hest/test/ex1.c:36: warning: (near initialization for 'opt[1].sawP')
 
-Fri Jun 23 07:25:52 CDT 2023 GLK sees that its because the hestOpt
-grew from the initial minimal set of parameters that made it like argtable,
-to a much larger set, while at the same time hestOptAdd became the standard
-way of using hest. Incomplete initializing of struct members has always
-been allowed but warnings about it have gotten louder.  Pragmas added
-below to quiet it for hopefully both clang and gcc.
+Fri Jun 23 07:25:52 CDT 2023 GLK sees that its because the hestOpt grew from the initial
+minimal set of parameters that made it like argtable, to a much larger set, while at the
+same time hestOptAdd became the standard way of using hest. Incomplete initializing of
+struct members has always been allowed but warnings about it have gotten louder.  Pragmas
+added below to quiet it for hopefully both clang and gcc.
+
+2025: no - it is a lost cause: even though argtable was the inspiration for hest, there
+is no longer support for static creation of the array-of-options array. Instead, hest
+now relies on the hestOptAdd* functions to dynamically build up the hestOpt array
+(including the setting of `kind` based on `min`, `max`), as well as how it updates of the
+opt[0].arrAlloc and opt[0].arrLen fields.
 */
 
 int
@@ -48,13 +53,14 @@ main(int argc, const char **argv) {
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-field-initializers"
-  hestOpt opt[]
+  hestOpt hopt[]
     = {{"res", "sx sy", airTypeInt, 2, 2, res, NULL, "image resolution"},
-       {"v", "level", airTypeInt, 0, 1, &v, "0", "verbosity level"},
        {"VV", "level", airTypeInt, 0, 5, &mm, "33 22 11", "gonzo level", &mmm},
+       {"v", "level", airTypeInt, 0, 1, &v, "0", "verbosity level"},
        {"out", "file", airTypeString, 1, 1, &out, "output.ppm", "PPM image output"},
-       {NULL, "input", airTypeString, 1, -1, &in, NULL, "input image file(s)", &numIn},
-       {NULL, NULL, 0}};
+       {NULL, "input", airTypeString, 1, -1, &in, NULL, "input image file(s)", &numIn}};
+  hopt[0].arrAlloc = 0; // to signal that this is a static allocation
+  hopt[0].arrLen = 5;
 #pragma clang diagnostic pop
 #pragma GCC diagnostic pop
   hestParm *parm;
@@ -67,21 +73,23 @@ main(int argc, const char **argv) {
   parm = hestParmNew();
   parm->responseFileEnable = AIR_TRUE;
 
+  /* CANNOT use hestParseOrDie because this hopt is not dynamically allocated! */
+
   if (1 == argc) {
     /* didn't get anything at all on command line */
     hestInfo(stderr, argv[0], info, parm);
-    hestUsage(stderr, opt, argv[0], parm);
-    hestGlossary(stderr, opt, parm);
+    hestUsage(stderr, hopt, argv[0], parm);
+    hestGlossary(stderr, hopt, parm);
     parm = hestParmFree(parm);
     exit(1);
   }
 
   /* else we got something, see if we can parse it */
-  if (hestParse(opt, argc - 1, argv + 1, &err, parm)) {
+  if (hestParse(hopt, argc - 1, argv + 1, &err, parm)) {
     fprintf(stderr, "ERROR: %s\n", err);
     free(err);
-    hestUsage(stderr, opt, argv[0], parm);
-    hestGlossary(stderr, opt, parm);
+    hestUsage(stderr, hopt, argv[0], parm);
+    hestGlossary(stderr, hopt, parm);
     parm = hestParmFree(parm);
     exit(1);
   }
@@ -101,7 +109,7 @@ main(int argc, const char **argv) {
   }
   printf("\n");
 
-  hestParseFree(opt);
+  hestParseFree(hopt);
   parm = hestParmFree(parm);
   exit(0);
 }

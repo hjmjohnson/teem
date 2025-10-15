@@ -20,7 +20,7 @@
 #include "../hest.h"
 
 /*
-** this example has been taken out of the build because GLK was sure
+** this example has been taken out of the build because GLK was unsure
 ** Fri May 13 00:51:11 CDT 2011 how to handle these annoying warnings:
 
 ../hest/test/ex0.c: In function 'main':
@@ -29,6 +29,11 @@
 ../hest/test/ex0.c:34: warning: missing initializer
 ../hest/test/ex0.c:34: warning: (near initialization for 'opt[1].sawP')
 
+2025: no - it is a lost cause: even though argtable was the inspiration for hest, there
+is no longer support for static creation of the array-of-options array. Instead, hest
+now relies on the hestOptAdd* functions to dynamically build up the hestOpt array
+(including the setting of `kind` based on `min`, `max`), as well as how it updates of the
+opt[0].arrAlloc and opt[0].arrLen fields.
 */
 
 int
