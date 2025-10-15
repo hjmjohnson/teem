@@ -238,7 +238,7 @@ UNRRDU_MAP(UNRRDU_DECLARE)
     } else if (1 == pret || 2 == pret) {                                                \
       if (!(getenv(UNRRDU_QUIET_QUIT_ENV)                                               \
             && airEndsWith(err, UNRRDU_QUIET_QUIT_STR "\n"))) {                         \
-        fprintf(stderr, "%s: %s\n", me, err);                                           \
+        fprintf(stderr, "%s: %s", me, err);                                             \
         free(err);                                                                      \
         hestUsage(stderr, opt, me, hparm);                                              \
         /* Its gotten too annoying to always get this glossary; */                      \

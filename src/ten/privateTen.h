@@ -45,7 +45,7 @@ extern "C" {
 #define JUSTPARSE(INFO)                                                                 \
   if ((pret = hestParse(hopt, argc, argv, &perr, hparm))) {                             \
     if (1 == pret) {                                                                    \
-      fprintf(stderr, "%s: %s\n", me, perr);                                            \
+      fprintf(stderr, "%s: %s", me, perr);                                              \
       free(perr);                                                                       \
       hestUsage(stderr, hopt, me, hparm);                                               \
       if (hparm && hparm->noArgsIsNoProblem) {                                          \
