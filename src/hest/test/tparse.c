@@ -36,7 +36,7 @@ main(int argc, const char **argv) {
   hestParm *hparm = hestParmNew();
   hparm->respectDashDashHelp = AIR_TRUE;
   hparm->responseFileEnable = AIR_TRUE;
-  hparm->verbosity = 10;
+  hparm->verbose = 10;
 
   int flag;
   hestOptAdd_Flag(&opt, "b,bingo", &flag, "a flag");

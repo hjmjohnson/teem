@@ -236,7 +236,7 @@ main(int argc, char *argv[]) {
 
   hparm = hestParmNew();
   hparm->respFileEnable = AIR_TRUE;
-  hparm->verbosity = 0;
+  hparm->verbose = 0;
 
   cam = echoLimnCamNew();
   airMopAdd(mop, cam, (airMopper)limnCamNix, airMopAlways);

@@ -79,7 +79,7 @@ main(int argc, const char **argv) {
   hparm->responseFileEnable = AIR_TRUE;
   hparm->respectDashDashHelp = AIR_TRUE;
   hparm->noArgsIsNoProblem = AIR_TRUE;
-  hparm->verbosity = 0;
+  hparm->verbose = 0;
   hestParmColumnsIoctl(hparm, 80);
 
   opt = NULL;
