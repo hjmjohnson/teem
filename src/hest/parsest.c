@@ -48,7 +48,7 @@ histPop(hestInputStack *hist, const hestParm *hparm) {
              _ME_, topHin->dashBraceComment, topHin->dashBraceComment > 1 ? "s" : "");
     return 1;
   }
-  if (hparm->verbosity) {
+  if (hparm->verbose) {
     printf("%s: changing stack height: %u --> %u; popping %s source\n", __func__,
            hist->len, hist->len - 1,
            airEnumStr(hestSource, hist->hin[hist->len - 1].source));
@@ -338,7 +338,7 @@ histProcNextArgTry(int *nastP, hestArg *tharg, hestInputStack *hist,
         biffAddf(HEST, "%s%sconfused by input source %d", _ME_, hin->source);
         return 1;
       }
-      if (argstGo(nastP, tharg, &state, hin->source, icc, hparm->verbosity > 4)) {
+      if (argstGo(nastP, tharg, &state, hin->source, icc, hparm->verbose > 4)) {
         if (hestSourceResponseFile == hin->source) {
           biffAddf(HEST, "%s%strouble at character %u of %s \"%s\"", _ME_, hin->carIdx,
                    airEnumStr(hestSource, hin->source), hin->rfname);
@@ -383,7 +383,7 @@ histProcNextArg(int *nastP, hestArg *tharg, hestInputStack *hist,
       biffAddf(HEST, "%s%strouble getting next arg", _ME_);
       return 1;
     }
-    if (hparm->verbosity > 1) {
+    if (hparm->verbose > 1) {
       printf("%s: histProcNextArgTry set *nastP = %s\n", __func__,
              airEnumStr(nast_ae, *nastP));
     }
@@ -403,13 +403,13 @@ histPushCommandLine(hestInputStack *hist, int argc, const char **argv,
     biffAddf(HEST, "%s%sinput stack depth already at max %u", _ME_, HIST_DEPTH_MAX);
     return 1;
   }
-  if (hparm->verbosity) {
+  if (hparm->verbose) {
     printf("%s: changing stack height: %u --> %u with argc=%d,argv=%p; "
            "setting argIdx to 0\n",
            __func__, hist->hinArr->len, hist->hinArr->len + 1, argc, AIR_VOIDP(argv));
   }
   uint idx = airArrayLenIncr(hist->hinArr, 1);
-  if (hparm->verbosity > 1) {
+  if (hparm->verbose > 1) {
     printf("%s: new hinTop = %p\n", __func__, AIR_VOIDP(hist->hin + idx));
   }
   hist->hin[idx].source = hestSourceCommandLine;
@@ -471,7 +471,7 @@ histPushResponseFile(hestInputStack *hist, const char *rfname, const hestParm *h
   }
   // okay, we actually opened the response file; put it on the stack
   uint idx = airArrayLenIncr(hist->hinArr, 1);
-  if (hparm->verbosity > 1) {
+  if (hparm->verbose > 1) {
     printf("%s: (hist depth %u) new hinTop = %p\n", __func__, hist->len,
            AIR_VOIDP(hist->hin + idx));
   }
@@ -495,7 +495,7 @@ histPushDefault(hestInputStack *hist, const char *dflt, const hestParm *hparm) {
     biffAddf(HEST, "%s%sinput stack depth already at max %u", _ME_, HIST_DEPTH_MAX);
     return 1;
   }
-  if (hparm->verbosity) {
+  if (hparm->verbose) {
     printf("%s: changing stack height: %u --> %u with dflt=|%s|; "
            "dfltLen %u, dfltIdx 0\n",
            __func__, hist->hinArr->len, hist->hinArr->len + 1, dflt,
@@ -555,7 +555,7 @@ histProcess(hestArgVec *havec, int *helpWantedP, hestArg *tharg, hestInputStack 
     }
     if (nastEmpty == nast) {
       // the stack has no more tokens to give, stop looped requests for more
-      if (hparm->verbosity) {
+      if (hparm->verbose) {
         printf("%s: (iter %u, on %s) empty!\n", __func__, iters, srcstr);
       }
       break;
@@ -575,7 +575,7 @@ histProcess(hestArgVec *havec, int *helpWantedP, hestArg *tharg, hestInputStack 
       }
       if (topHin->dashBraceComment) {
         topHin->dashBraceComment -= 1;
-        if (hparm->verbosity) {
+        if (hparm->verbose) {
           printf("%s: topHin->dashBraceComment now %u\n", __func__,
                  topHin->dashBraceComment);
         }
@@ -596,7 +596,7 @@ histProcess(hestArgVec *havec, int *helpWantedP, hestArg *tharg, hestInputStack 
         return 1;
       }
       topHin->dashBraceComment += 1;
-      if (hparm->verbosity) {
+      if (hparm->verbose) {
         printf("%s: topHin->dashBraceComment now %u\n", __func__,
                topHin->dashBraceComment);
       }
@@ -604,7 +604,7 @@ histProcess(hestArgVec *havec, int *helpWantedP, hestArg *tharg, hestInputStack 
     }
     // if in comment, move along
     if (topHin && topHin->dashBraceComment) {
-      if (hparm->verbosity > 1) {
+      if (hparm->verbose > 1) {
         printf("%s: (iter %u, on %s) skipping commented-out |%s|\n", __func__, iters,
                srcstr, tharg->str);
       }
@@ -633,7 +633,7 @@ histProcess(hestArgVec *havec, int *helpWantedP, hestArg *tharg, hestInputStack 
         return 1;
       }
     }
-    if (hparm->verbosity > 2) {
+    if (hparm->verbose > 2) {
       printf("%s: (iter %u, on %s) looking at latest tharg |%s|\n", __func__, iters,
              srcstr, tharg->str);
     }
@@ -661,7 +661,7 @@ histProcess(hestArgVec *havec, int *helpWantedP, hestArg *tharg, hestInputStack 
     }
     // this arg is not specially handled by us; add it to the arg vec
     hestArgVecAppendString(havec, tharg->str);
-    if (hparm->verbosity > 1) {
+    if (hparm->verbose > 1) {
       printf("%s: (iter %u, on %s) added |%s| to havec, now len %u\n", __func__, iters,
              srcstr, tharg->str, havec->len);
     }
@@ -689,11 +689,11 @@ this finds which one, of the options in the given hestOpt array `hopt`, is ident
 static uint /* Biff: nope */
 whichOptFlag(const hestOpt *hopt, const char *flarg, const hestParm *hparm) {
   uint optNum = hopt->arrLen;
-  if (hparm->verbosity > 3)
+  if (hparm->verbose > 3)
     printf("%s: looking for maybe-is-flag |%s| in optNum=%u options\n", __func__, flarg,
            optNum);
   for (uint optIdx = 0; optIdx < optNum; optIdx++) {
-    if (hparm->verbosity > 3)
+    if (hparm->verbose > 3)
       printf("%s:      optIdx %u |%s| ?\n", __func__, optIdx,
              hopt[optIdx].flag ? hopt[optIdx].flag : "(nullflag)");
     const char *optFlag = hopt[optIdx].flag;
@@ -720,7 +720,7 @@ whichOptFlag(const hestOpt *hopt, const char *flarg, const hestParm *hparm) {
       free(buff);
     }
   }
-  if (hparm->verbosity > 3) printf("%s: no match, returning UINT_MAX\n", __func__);
+  if (hparm->verbose > 3) printf("%s: no match, returning UINT_MAX\n", __func__);
   return UINT_MAX;
 }
 
@@ -838,14 +838,14 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
   uint argIdx = 0;
   hestOpt *theOpt = NULL;
   while (argIdx < havec->len) { // NOTE: havec->len may decrease within an interation!
-    if (hparm->verbosity > 1) {
+    if (hparm->verbose > 1) {
       printf("%s: ------------- argIdx = %u (of %u) -> argv[argIdx] = |%s|\n", __func__,
              argIdx, havec->len, havec->harg[argIdx]->str);
     }
     uint optIdx = whichOptFlag(hopt, havec->harg[argIdx]->str, hparm);
     if (UINT_MAX == optIdx) {
       // havec->harg[argIdx]->str is not a flag for any option, move on to next arg
-      if (hparm->verbosity > 2) {
+      if (hparm->verbose > 2) {
         printf("%s: |%s| not a flag arg, continue\n", __func__,
                havec->harg[argIdx]->str);
       }
@@ -854,11 +854,11 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     }
     // else havec->harg[argIdx]->str is a flag for option with index optIdx aka theOpt
     theOpt = hopt + optIdx;
-    if (hparm->verbosity)
+    if (hparm->verbose)
       printf("%s: argv[%u]=|%s| is flag of opt %u \"%s\"\n", __func__, argIdx,
              havec->harg[argIdx]->str, optIdx, theOpt->flag);
     /* see if we can associate some parameters with the flag */
-    if (hparm->verbosity) printf("%s: any associated parms?\n", __func__);
+    if (hparm->verbose) printf("%s: any associated parms?\n", __func__);
     int hitEnd = AIR_FALSE;
     int varParm = (5 == hopt[optIdx].kind);
     const char VPS[3] = {'-', VAR_PARM_STOP_FLAG, '\0'};
@@ -876,7 +876,7 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
           !(hitVPS = !strcmp(VPS, havec->harg[pai]->str)))
       && UINT_MAX // and we aren't looking at start of another flagged option
            == (nextOptIdx = whichOptFlag(hopt, havec->harg[pai]->str, hparm))) {
-      if (hparm->verbosity)
+      if (hparm->verbose)
         printf("%s: optIdx %d |%s|; argIdx %u < %u |%s| --> parmNum --> %d\n", __func__,
                optIdx, theOpt->flag, argIdx, pai, havec->harg[pai]->str, parmNum + 1);
       parmNum++;
@@ -885,7 +885,7 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
        we hitEnd, or
        varParm and we hitVPS, or
        we hit the start of another flagged option (indicated by nextOptIdx) */
-    if (hparm->verbosity)
+    if (hparm->verbose)
       printf("%s: optIdx %d |%s|: stopped w/ "
              "parmNum=%u hitEnd=%d hitVPS=%d nextOptIdx=%u\n",
              __func__, optIdx, theOpt->flag, parmNum, hitEnd, hitVPS, nextOptIdx);
@@ -918,11 +918,11 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
       free(havStr);
       return 1;
     }
-    if (hparm->verbosity) {
+    if (hparm->verbose) {
       printf("%s: ________ argv[%d]=|%s|: optIdx %u |%s| followed by %u parms\n",
              __func__, argIdx, havec->harg[argIdx]->str, optIdx, theOpt->flag, parmNum);
     }
-    if (hparm->verbosity > 1) {
+    if (hparm->verbose > 1) {
       hestArgVecPrint(__func__, "main havec as it came", havec);
     }
     /* remember from whence this flagged option came, which is necessary when there are
@@ -943,7 +943,7 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
       // lose the variadic-parameter-stop flag
       hestArgNix(hestArgVecRemove(havec, argIdx));
     }
-    if (hparm->verbosity) {
+    if (hparm->verbose) {
       char info[AIR_STRLEN_HUGE + 1];
       sprintf(info, "main havec after extracting optIdx %u |%s| and %u parms", optIdx,
               theOpt->flag, parmNum);
@@ -961,7 +961,7 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     if (theOpt->flag) { // this is a flagged option we should have handled above
       int needing = (1 != theOpt->kind    // this kind of option can take a parm
                      && !(theOpt->dflt)); // and this option has no default
-      if (hparm->verbosity > 1) {
+      if (hparm->verbose > 1) {
         printf("%s: flagged opt %u |%s| source = %s%s\n", __func__, opi, theOpt->flag,
                airEnumStr(hestSource, theOpt->source),
                needing ? " <-- w/ parm but w/out default" : "");
@@ -975,7 +975,7 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     }
   }
 
-  if (hparm->verbosity) {
+  if (hparm->verbose) {
     optAllPrint(__func__, "end of havecExtractFlagged", hopt);
     hestArgVecPrint(__func__, "end of havecExtractFlagged", havec);
   }
@@ -1021,7 +1021,7 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     // fill in backward side
     ufOpi2[2 * upii + 1] = ufOpi2[2 * (ufOptNum - 1 - upii) + 0];
   }
-  if (hparm->verbosity) {
+  if (hparm->verbose) {
     printf("%s: ufOpi2 helper array:\n up:", __func__);
     for (upii = 0; upii < ufOptNum; upii++) {
       printf(" \t%u", ufOpi2[2 * upii + 0]);
@@ -1043,7 +1043,7 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
   /* now, if there is an unflagged variadic option (NOTE that _hestOPCheck()
      ensured that there is at most one of these), then ufVarOpi is its index in opt[].
      If there is no unflagged variadic option, ufVarOpi is optNum. */
-  if (hparm->verbosity) {
+  if (hparm->verbose) {
     printf("%s: ufVarOpi = %u %s\n", __func__, ufVarOpi,
            (ufVarOpi == optNum ? "==> there is no unflagged variadic opt"
                                : "is index of single unflagged variadic opt"));
@@ -1055,7 +1055,7 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     if (opi == ufVarOpi) {
       break;
     }
-    if (hparm->verbosity) {
+    if (hparm->verbose) {
       printf("%s: looking at opi = %u kind %d\n", __func__, opi, hopt[opi].kind);
     }
     /* Either we have enough args to satisfy this option (and thus don't care if it has a
@@ -1087,7 +1087,7 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     if (opi == ufVarOpi) {
       break;
     }
-    if (hparm->verbosity) {
+    if (hparm->verbose) {
       printf("%s: looking at (later) opi = %u kind %d\n", __func__, opi, hopt[opi].kind);
     }
     // same logic as above
@@ -1108,7 +1108,7 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
   }
 
   // We're here because there is an unflagged variadic option (index ufVarOpi < optNum)
-  if (hparm->verbosity) {
+  if (hparm->verbose) {
     printf("%s: ufVarOpi=%u   min, have, max = %u %u %d\n", __func__, ufVarOpi,
            hopt[ufVarOpi].min, havec->len, _hestMax(hopt[ufVarOpi].max));
   }
@@ -1175,7 +1175,7 @@ finishingup:
     return (free(havStr), airFree(ufOpi2), 1);
   }
 
-  if (hparm->verbosity) {
+  if (hparm->verbose) {
     optAllPrint(__func__, "end of havecExtractUnflagged", hopt);
     hestArgVecPrint(__func__, "end of havecExtractUnflagged", havec);
   }
@@ -1196,7 +1196,7 @@ optProcessDefaults(hestOpt *hopt, hestArg *tharg, hestInputStack *hist,
   char ident[AIR_STRLEN_HUGE + 1];
   uint optNum = hopt->arrLen;
   for (uint opi = 0; opi < optNum; opi++) {
-    if (hparm->verbosity) {
+    if (hparm->verbose) {
       printf(" -> %s incoming", __func__);
       optPrint(hopt + opi, opi);
     }
@@ -1224,7 +1224,7 @@ optProcessDefaults(hestOpt *hopt, hestArg *tharg, hestInputStack *hist,
     that no args will be put into hopt[opi].havec, and that's okay, but that's part of
     why we set the source above to hestSourceDefault, so that we'd know the source even
     if it isn't apparent in any of the (non-existant) args. */
-    if (hparm->verbosity) {
+    if (hparm->verbose) {
       printf("%s: looking at %s[%u] default string |%s|\n", __func__, ident, opi,
              hopt[opi].dflt);
     }
@@ -1237,7 +1237,7 @@ optProcessDefaults(hestOpt *hopt, hestArg *tharg, hestInputStack *hist,
          string-type values) was to say "the default value is 1 empty string", that can
          be expressed as "''" instead of "", which is clearer anyway. So we side-step
          calling histProcess and instead directly assert that we have 0 args. */
-      if (hparm->verbosity > 1) {
+      if (hparm->verbose > 1) {
         printf("%s: empty default string for min=0 a multiple "
                "variadic option ==> 0 args\n",
                __func__);
@@ -1262,7 +1262,7 @@ optProcessDefaults(hestOpt *hopt, hestArg *tharg, hestInputStack *hist,
       return 1;
     }
   nextopt:
-    if (hparm->verbosity) {
+    if (hparm->verbose) {
       printf("<-  %s: outgoing", __func__);
       optPrint(hopt + opi, opi);
     }
@@ -1303,6 +1303,7 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
   char ident[AIR_STRLEN_HUGE + 1];
   void *valueP;
   uint optNum = hopt->arrLen;
+
   for (uint opi = 0; opi < optNum; opi++) {
     int pret;
     identStr(ident, hopt + opi);
@@ -1327,7 +1328,7 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
                           ? hopt[opi].CB->size
                           : _hestTypeSize[type]));
     valueP = hopt[opi].valueP;
-    if (hparm->verbosity) {
+    if (hparm->verbose) {
       printf("%s: hopt[%u/%u]: havec_%c|%s| \t|%s| \t--> kind=%d, type=%d, size=%u\n",
              __func__, opi, optNum, airEnumStr(hestSource, hopt[opi].source)[0],
              hopt[opi].parmStr, ident, hopt[opi].kind, type, (unsigned int)size);
@@ -1350,7 +1351,7 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
       /* valueP is always assumed to be an int* */
       int *ivalueP = (int *)valueP;
       *ivalueP = hestSourceDefault != hopt[opi].source;
-      if (hparm->verbosity) {
+      if (hparm->verbose) {
         printf("   --> set value %d\n", *ivalueP);
       }
     } break;
@@ -1442,7 +1443,7 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
           havec is just a single empty string that came from the default, and this is a
           non-string variadic option with min=0, then we pretend like we never saw any
           args, and reset per-option havec to length 0. */
-          if (hparm->verbosity) {
+          if (hparm->verbose) {
             printf(
               "%s: (kind 5) %s[%u] (type=%s min=0) default single arg==empty-string "
               "treated as 0 args\n",
@@ -1523,9 +1524,9 @@ hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
   }
   // how to const-correctly use hparm or _hparm in an expression
 #define HPARM (_hparm ? _hparm : hparm)
-  if (HPARM->verbosity > 1) {
-    printf("%s: (%s) hparm->verbosity %d\n", __func__, _hparm ? "given" : "default",
-           HPARM->verbosity);
+  if (HPARM->verbose > 1) {
+    printf("%s: (%s) hparm->verbose %d\n", __func__, _hparm ? "given" : "default",
+           HPARM->verbose);
   }
 
 #if 0
@@ -1544,7 +1545,7 @@ hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
 
   // error string song and dance
 #define DO_ERR(WUT)                                                                     \
-  biffAddf(HEST, "%s%s" WUT, _MEV_(HPARM->verbosity));                                  \
+  biffAddf(HEST, "%s%s" WUT, _MEV_(HPARM->verbose));                                    \
   char *err = biffGetDone(HEST);                                                        \
   if (errP) {                                                                           \
     *errP = err;                                                                        \
@@ -1559,7 +1560,7 @@ hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
     airMopError(mop);
     return -1;
   }
-  if (HPARM->verbosity > 1) {
+  if (HPARM->verbose > 1) {
     printf("%s: _hestOPCheck passed\n", __func__);
   }
 
@@ -1573,7 +1574,7 @@ hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
   /* in case we have a parsing error, we make ourselves responsible for
      cleaning up the things allocated by parsing, prior to the error */
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopOnError);
-  if (HPARM->verbosity > 1) {
+  if (HPARM->verbose > 1) {
     printf("%s: parsing state allocated\n", __func__);
   }
 
@@ -1584,7 +1585,7 @@ hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
     airMopError(mop);
     return 1;
   }
-  if (HPARM->verbosity > 1) {
+  if (HPARM->verbose > 1) {
     // have finished input stack, what argvec did it leave us with?
     hestArgVecPrint(__func__, "after histProcess", havec);
   }

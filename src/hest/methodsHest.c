@@ -309,7 +309,7 @@ hestParmNew() {
 
   hparm = AIR_CALLOC(1, hestParm);
   assert(hparm);
-  hparm->verbosity = hestDefaultVerbosity;
+  hparm->verbose = hestDefaultVerbose;
   hparm->responseFileEnable = hestDefaultResponseFileEnable;
   hparm->elideSingleEnumType = hestDefaultElideSingleEnumType;
   hparm->elideSingleOtherType = hestDefaultElideSingleOtherType;
@@ -467,7 +467,7 @@ optInit(hestOpt *hopt) {
   hopt->enm = NULL;
   hopt->CB = NULL;
   hopt->sawP = NULL;
-  hopt->kind = 0;        /* means that this hestOpt has not been set */
+  hopt->kind = 0;        // means that this hestOpt has not been set
   hopt->parseMop = NULL; // will create with airMopNew() only as needed
   hopt->havec = NULL;
   hopt->arrAlloc = hopt->arrLen = 0;
@@ -689,8 +689,8 @@ to the given (non-NULL) hestParm `hparm`.
 Pre-2025, hest did not depend on biff, and this instead took a 'char *err' that somehow
 magically had to be allocated for the size of any possible error message generated here.
 The 2025 re-write recognized that biff is the right way to accumulate error messages, but
-the use of biff is internal to biff, and not (unusually for Teem) part of the the
-expected use of biff's API. Thus, public functions hestOptCheck() and hestOptParmCheck(),
+the use of biff is internal to hest, and not (unusually for Teem) part of the the
+expected use of hest's API. Thus, public functions hestOptCheck() and hestOptParmCheck(),
 which are the expected way to access the functionality herein, take a `char **errP` arg
 into which a message is sprintf'ed, after allocation.
 
@@ -700,7 +700,8 @@ hestOptParmCheck(), which both call _hestOPCheck, will fprintf(stderr) the infor
 biff message.
 
 Prior to 2023 code revisit: this used to set the "kind" in all the opts, but now that is
-more appropriately done at the time the option is added.
+more appropriately done at the time the option is added. This particular change closes
+off the possibility of doing an argtable-style static creation of a hestOpt array, sigh.
 */
 int /* Biff: (private) 1 */
 _hestOPCheck(const hestOpt *hopt, const hestParm *hparm) {

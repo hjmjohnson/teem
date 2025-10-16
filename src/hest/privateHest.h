@@ -100,7 +100,7 @@ extern int _hestOPCheck(const hestOpt *hopt, const hestParm *parm);
 extern int _hestPlainWord(const char *s);
 
 /* wacky hack to use with biffAddf(HEST), so that normal hest users, who haven't
-   cranked up hestParm->verbosity to debug hest itself and don't want error messages
+   cranked up hestParm->verbose to debug hest itself and don't want error messages
    prefixed by a lot of weird hest function names:
    In a function where hestParm *hparm is defined, the biff call should look like:
      biffAddf(HEST, "%s%shit a problem", _ME_, ... )
@@ -109,8 +109,8 @@ extern int _hestPlainWord(const char *s);
      biffAddf(HEST, "%s%sthis is the error", _MEV_(verb), ... )
  */
 #define _ME_                                                                            \
-  ((hparm) && (hparm)->verbosity ? __func__ : ""),                                      \
-    ((hparm) && (hparm)->verbosity ? ": " : "")
+  ((hparm) && (hparm)->verbose ? __func__ : ""),                                        \
+    ((hparm) && (hparm)->verbose ? ": " : "")
 #define _MEV_(V) ((V) ? __func__ : ""), ((V) ? ": " : "")
 
 #ifdef __cplusplus

@@ -20,7 +20,7 @@
 #include "hest.h"
 #include "privateHest.h"
 
-int hestDefaultVerbosity = 0;
+int hestDefaultVerbose = 0;
 int hestDefaultResponseFileEnable = AIR_FALSE;
 unsigned int hestDefaultColumns = 79;
 int hestDefaultElideSingleEnumType = AIR_FALSE;
