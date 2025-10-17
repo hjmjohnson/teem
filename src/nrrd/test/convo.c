@@ -157,35 +157,32 @@ convoFunc(Nrrd *nout, Nrrd *_nimg, Nrrd *_nmask, int renorm, int crop) {
 
 int
 main(int argc, const char *argv[]) {
-  const char *me;
-  char *err, *out;
-  hestOpt *hopt;
-  hestParm *hparm;
-  airArray *mop;
-  Nrrd *nimg, *nmask, *nout;
-  int uncrop, renorm;
-
-  me = argv[0];
-  mop = airMopNew();
-  hparm = hestParmNew();
-  hopt = NULL;
+  const char *me = argv[0];
+  airArray *mop = airMopNew();
+  hestParm *hparm = hestParmNew();
+  hestOpt *hopt = NULL;
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
-  hestOptAdd(&hopt, "c", NULL, airTypeInt, 0, 0, &uncrop, NULL,
-             "Don't crop the output image to the dimensions of the input "
-             "image.");
-  hestOptAdd(&hopt, "r", NULL, airTypeInt, 0, 0, &renorm, NULL,
-             "Don't renormalize the weights in the mask to 1.0. ");
-  hestOptAdd(&hopt, NULL, "image", airTypeOther, 1, 1, &nimg, NULL,
-             "image to operate on", NULL, NULL, nrrdHestNrrd);
-  hestOptAdd(&hopt, NULL, "mask", airTypeOther, 1, 1, &nmask, NULL,
-             "mask to convolve with", NULL, NULL, nrrdHestNrrd);
-  hestOptAdd(&hopt, NULL, "filename", airTypeString, 1, 1, &out, NULL,
-             "file to write output nrrd to");
+  int uncrop;
+  hestOptAdd_Flag(&hopt, "c", &uncrop,
+                  "Don't crop the output image to the "
+                  "dimensions of the input image.");
+  int renorm;
+  hestOptAdd_Flag(&hopt, "r", &renorm,
+                  "Don't renormalize the weights in the mask to 1.0. ");
+  Nrrd *nimg;
+  hestOptAdd_1_Other(&hopt, NULL, "image", &nimg, NULL, "image to operate on",
+                     nrrdHestNrrd);
+  Nrrd *nmask;
+  hestOptAdd_1_Other(&hopt, NULL, "mask", &nmask, NULL, "mask to convolve with",
+                     nrrdHestNrrd);
+  char *out;
+  hestOptAdd_1_String(&hopt, NULL, "filename", &out, NULL,
+                      "file to write output nrrd to");
   hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, convoInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
 
   if (!(2 == nimg->dim && 2 == nmask->dim)) {
@@ -195,6 +192,7 @@ main(int argc, const char *argv[]) {
     return 1;
   }
 
+  char *err;
   if (convoFunc(nout, nimg, nmask, !renorm, !uncrop)) {
     airMopAdd(mop, err = biffGetDone(CONVO), airFree, airMopAlways);
     fprintf(stderr, "%s: problem save image:\n%s\n", me, err);
