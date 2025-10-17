@@ -29,39 +29,36 @@ quadFunc(float x, float y, float z, float A, float B, float off) {
   return A * x * x + B * y * y - z + off;
 }
 
+typedef unsigned int uint;
+
 int
 main(int argc, const char *argv[]) {
-  const char *me;
-  char *err, *out;
-  int size[3], xi, yi, zi;
-  hestOpt *hopt;
-  hestParm *hparm;
-  airArray *mop;
-  float min[3], max[3], AB[2], x, y, z, *data, off;
-  Nrrd *nout;
-
-  me = argv[0];
-  mop = airMopNew();
-  hparm = hestParmNew();
-  hopt = NULL;
+  const char *me = argv[0];
+  airArray *mop = airMopNew();
+  hestParm *hparm = hestParmNew();
+  hestOpt *hopt = NULL;
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
-  hestOptAdd(&hopt, "s", "sx sy sz", airTypeInt, 3, 3, size, "128 128 128",
-             "dimensions of output volume");
-  hestOptAdd(&hopt, "min", "x y z", airTypeFloat, 3, 3, min, "-1 -1 -1",
-             "lower bounding corner of volume");
-  hestOptAdd(&hopt, "max", "x y z", airTypeFloat, 3, 3, max, "1 1 1",
-             "upper bounding corner of volume");
-  hestOptAdd(&hopt, "c", "A B", airTypeFloat, 2, 2, AB, NULL,
-             "A and B quadratic coefficients");
-  hestOptAdd(&hopt, "off", "z offset", airTypeFloat, 1, 1, &off, "0.0",
-             "vertical offset");
-  hestOptAdd(&hopt, "o", "filename", airTypeString, 1, 1, &out, "-",
-             "file to write output nrrd to");
+  uint size[3];
+  hestOptAdd_3_UInt(&hopt, "s", "sx sy sz", size, "128 128 128",
+                    "dimensions of output volume");
+  float min[3];
+  hestOptAdd_3_Float(&hopt, "min", "x y z", min, "-1 -1 -1",
+                     "lower bounding corner of volume");
+  float max[3];
+  hestOptAdd_3_Float(&hopt, "max", "x y z", max, "1 1 1",
+                     "upper bounding corner of volume");
+  float AB[2];
+  hestOptAdd_2_Float(&hopt, "c", "A B", AB, NULL, "A and B quadratic coefficients");
+  float off;
+  hestOptAdd_1_Float(&hopt, "off", "z offset", &off, "0.0", "vertical offset");
+  char *out;
+  hestOptAdd_1_String(&hopt, "o", "filename", &out, "-", "file to write output nrrd to");
   hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, quadInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
-  nout = nrrdNew();
+  char *err;
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
   if (nrrdAlloc_va(nout, nrrdTypeFloat, 3, AIR_SIZE_T(size[0]), AIR_SIZE_T(size[1]),
                    AIR_SIZE_T(size[2]))) {
@@ -71,13 +68,13 @@ main(int argc, const char *argv[]) {
     return 1;
   }
 
-  data = (float *)nout->data;
-  for (zi = 0; zi < size[2]; zi++) {
-    z = AIR_FLOAT(AIR_AFFINE(0, zi, size[2] - 1, min[2], max[2]));
-    for (yi = 0; yi < size[1]; yi++) {
-      y = AIR_FLOAT(AIR_AFFINE(0, yi, size[1] - 1, min[1], max[1]));
-      for (xi = 0; xi < size[0]; xi++) {
-        x = AIR_FLOAT(AIR_AFFINE(0, xi, size[0] - 1, min[0], max[0]));
+  float *data = (float *)nout->data;
+  for (uint zi = 0; zi < size[2]; zi++) {
+    float z = AIR_FLOAT(AIR_AFFINE(0, zi, size[2] - 1, min[2], max[2]));
+    for (uint yi = 0; yi < size[1]; yi++) {
+      float y = AIR_FLOAT(AIR_AFFINE(0, yi, size[1] - 1, min[1], max[1]));
+      for (uint xi = 0; xi < size[0]; xi++) {
+        float x = AIR_FLOAT(AIR_AFFINE(0, xi, size[0] - 1, min[0], max[0]));
         *data = quadFunc(x, y, z, AB[0], AB[1], off);
         data += 1;
       }

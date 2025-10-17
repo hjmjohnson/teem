@@ -23,29 +23,23 @@ const char *otsuInfo = ("demonstrates nrrd's Otsu thresholding");
 
 int
 main(int argc, const char *argv[]) {
-  const char *me;
-  hestOpt *hopt;
-  hestParm *hparm;
-  airArray *mop;
-
-  char *err;
-  Nrrd *nhist;
-  double thresh, expo;
-
-  me = argv[0];
-  mop = airMopNew();
-  hparm = hestParmNew();
-  hopt = NULL;
+  const char *me = argv[0];
+  airArray *mop = airMopNew();
+  hestParm *hparm = hestParmNew();
+  hestOpt *hopt = NULL;
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
-  hestOptAdd(&hopt, "i", "nhist", airTypeOther, 1, 1, &nhist, NULL, "input histogram",
-             NULL, NULL, nrrdHestNrrd);
-  hestOptAdd(&hopt, "e", "expo", airTypeDouble, 1, 1, &expo, "2.0",
-             "exponent to use for variance calculation");
+  Nrrd *nhist;
+  hestOptAdd_1_Other(&hopt, "i", "nhist", &nhist, NULL, "input histogram", nrrdHestNrrd);
+  double expo;
+  hestOptAdd_1_Double(&hopt, "e", "expo", &expo, "2.0",
+                      "exponent to use for variance calculation");
   hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, otsuInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
+  double thresh;
   if (nrrdHistoThresholdOtsu(&thresh, nhist, expo)) {
+    char *err;
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble:\n%s", me, err);
     airMopError(mop);
