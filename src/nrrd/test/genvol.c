@@ -86,35 +86,32 @@ genvolFunc(double x, double y, double z) {
   /* return sqrt(x*x + y*y); */
 }
 
+typedef unsigned int uint;
+
 int
 main(int argc, const char *argv[]) {
-  const char *me;
-  char *err, *out;
-  int size[3], xi, yi, zi;
-  hestOpt *hopt;
-  hestParm *hparm;
-  airArray *mop;
-  double min[3], max[3], x, y, z, *data;
-  Nrrd *nout;
-
-  me = argv[0];
-  mop = airMopNew();
-  hparm = hestParmNew();
-  hopt = NULL;
+  const char *me = argv[0];
+  airArray *mop = airMopNew();
+  hestParm *hparm = hestParmNew();
+  hestOpt *hopt = NULL;
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
-  hestOptAdd(&hopt, "s", "sx sy sz", airTypeInt, 3, 3, size, "128 128 128",
-             "dimensions of output volume");
-  hestOptAdd(&hopt, "min", "x y z", airTypeDouble, 3, 3, min, "-1 -1 -1",
-             "lower bounding corner of volume");
-  hestOptAdd(&hopt, "max", "x y z", airTypeDouble, 3, 3, max, "1 1 1",
-             "upper bounding corner of volume");
-  hestOptAdd(&hopt, "o", "filename", airTypeString, 1, 1, &out, "-",
-             "file to write output nrrd to");
+  uint size[3];
+  hestOptAdd_3_UInt(&hopt, "s", "sx sy sz", size, "128 128 128",
+                    "dimensions of output volume");
+  double min[3];
+  hestOptAdd_3_Double(&hopt, "min", "x y z", min, "-1 -1 -1",
+                      "lower bounding corner of volume");
+  double max[3];
+  hestOptAdd_3_Double(&hopt, "max", "x y z", max, "1 1 1",
+                      "upper bounding corner of volume");
+  char *out;
+  hestOptAdd_1_String(&hopt, "o", "filename", &out, "-", "file to write output nrrd to");
   hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, genvolInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
-  nout = nrrdNew();
+  char *err;
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
   if (nrrdAlloc_va(nout, nrrdTypeDouble, 3, AIR_SIZE_T(size[0]), AIR_SIZE_T(size[1]),
                    AIR_SIZE_T(size[2]))) {
@@ -124,13 +121,13 @@ main(int argc, const char *argv[]) {
     return 1;
   }
 
-  data = (double *)nout->data;
-  for (zi = 0; zi < size[2]; zi++) {
-    z = AIR_AFFINE(0, zi, size[2] - 1, min[2], max[2]);
-    for (yi = 0; yi < size[1]; yi++) {
-      y = AIR_AFFINE(0, yi, size[1] - 1, min[1], max[1]);
-      for (xi = 0; xi < size[0]; xi++) {
-        x = AIR_AFFINE(0, xi, size[0] - 1, min[0], max[0]);
+  double *data = (double *)nout->data;
+  for (uint zi = 0; zi < size[2]; zi++) {
+    double z = AIR_AFFINE(0, zi, size[2] - 1, min[2], max[2]);
+    for (uint yi = 0; yi < size[1]; yi++) {
+      double y = AIR_AFFINE(0, yi, size[1] - 1, min[1], max[1]);
+      for (uint xi = 0; xi < size[0]; xi++) {
+        double x = AIR_AFFINE(0, xi, size[0] - 1, min[0], max[0]);
         *data = genvolFunc(x, y, z);
         data += 1;
       }
