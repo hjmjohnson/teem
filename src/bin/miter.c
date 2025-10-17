@@ -82,9 +82,9 @@ main(int argc, const char *argv[]) {
   hestOptAdd_1_Float(&hopt, "iss", "scale", &isScale, "1.0",
                      "scaling of image size (from \"is\")");
   hestOptAdd_3_Float(&hopt, "ads", "ka kd ks", ads, "0.1 0.6 0.3", "phong components");
-  /* mite_at could be float or double, so have to use older hest interface */
-  hestOptAdd(&hopt, "sp", "spec pow", mite_at, 1, 1, &(muu->rangeInit[miteRangeSP]),
-             "30", "phong specular power");
+  hestOptAdd(&hopt, "sp", "spec pow", mite_at, // mite_at could be float or double =>
+                                               // use older hest interface
+             1, 1, &(muu->rangeInit[miteRangeSP]), "30", "phong specular power");
   hestOptAdd_1_Other(&hopt, "k00", "kernel", &(muu->ksp[gageKernel00]), "tent",
                      "value reconstruction kernel", nrrdHestKernelSpec);
   hestOptAdd_1_Other(&hopt, "k11", "kernel", &(muu->ksp[gageKernel11]), "cubicd:1,0",
