@@ -187,7 +187,7 @@ typedef struct {
                          1: min == max == 0       stand-alone flag; no parameters
                          2: min == max == 1       single fixed parameter
                          3: min == max >= 2       multiple fixed parameters
-                         4: min == 0; max == 1;   single variadic parameter
+                         4: min == 0; max == 1;   single variadic parameter: the weird kind
                          5: min < max; max >= 2   multiple variadic parameters
                         This is set by hest functions as part of building up an array of hestOpt,
                         and informs the later action of hestOptFree */
@@ -199,12 +199,12 @@ typedef struct {
                          had fussy semantics that complicated hestParseFree()'s work.
                          Now hestParseFree just calls airMopDone on all these per-option
                          parseMops (when non-NULL) */
-  hestArgVec *havec;  // the (non-flag) parm args attributed to this option
-  /* Since hest's beginning in 2002, the basic container for a set of options was an
+  hestArgVec *havec;  /* the (non-flag) parm args attributed to this option */
+  /* Since hest's beginning in 2002, the basic container for a list of options was an
   array of hestOpt structs (not pointers to them, which rules out argv-style
   NULL-termination of the array), also unfortunately with no other top-level container
   or hestContext (which is why helpWanted below is set only in the first hestOpt of the
-  array). hestOptAdd has historically reallocated the entire array, incrementing the
+  array). hestOptAdd had historically reallocated the entire array, incrementing the
   length only by one with each call, while maintaining a single terminating hestOpt,
   wherein some fields were set to special values to indicate termination. With the 2023
   code revisit, that was deemed even uglier than the new and current hack: the first
@@ -246,7 +246,7 @@ typedef struct {
 ** GK: Don't even think about storing per-parse state in here.
 */
 typedef struct {
-  int verbosity,          /* verbose diagnostic messages to stdout */
+  int verbose,            /* verbosity level of diagnostic messages to stdout */
     responseFileEnable,   /* whether or not to use response files */
     elideSingleEnumType,  /* if type is airTypeEnum, and if it's a single fixed parameter
                              option, then don't bother printing the type information as
@@ -279,13 +279,13 @@ typedef struct {
     cleverPluralizeOtherY, /* when printing the type for airTypeOther, when the min
                               number of items is > 1, and the type string ends with "y",
                               then pluralize with "ies" instead of "ys" */
-    dieLessVerbose, /* on parse failure, hestParseOrDie prints less than it otherwise
-                       might: only print info and glossary when they "ask for it" */
-    noBlankLineBeforeUsage; /* like it says */
-  unsigned int columns;     /* number of printable columns in output */
+    dieWithoutNewerFeatures, /* do let hestParseOrDie turn on respectDashDashHelp or
+                                use hestParmColumnsIoctl to set columns */
+    noBlankLineBeforeUsage;  /* like it says */
+  unsigned int columns;      /* number of printable columns in output */
 } hestParm;
 // defaultsHest.c
-extern int hestDefaultVerbosity;
+extern int hestDefaultVerbose;
 extern int hestDefaultResponseFileEnable;
 extern int hestDefaultElideSingleEnumType;
 extern int hestDefaultElideSingleOtherType;
@@ -328,12 +328,25 @@ extern void hestOptSingleSet(hestOpt *hopt, const char *flag, const char *name,
                                   int type, unsigned int min, int max, void *valueP,
                                   const char *dflt, const char *info, unsigned int *sawP,
                                   const airEnum *enm, const hestCB *CB);
+/* In the early days of hest, you could *statically* create the hestOpt *opt array; just
+like with the https://argtable.sourceforge.io argtable library that inspired hest. With
+TeemV2, the weirdly named validation-ish function `_hestPanic`, which also set the
+per-opt `kind` field, became a proper validation function `hestOptCheck` which did not
+set `kind`; that became the job of hestOptSingleSet.  That change marked the end of the
+road for static hestOpt*opt array creation, though it had already long been increasingly
+annoying because of "missing initializer" warnings around the hestOpt struct not being
+completely initialized.  This was no issue for Teem code, which had been using
+hestOptAdd_nva() (non-var-args but still with void* valueP typeless mayhem) or
+hestOptAdd() (var-args for additional typeless mayhem), and now uses one of the 99
+type-checked variants. Despite how long its used lasted in Teem code, as of 2023 there is
+no reason to use hestOptAdd()!  There is no kind of hestOpt that you can create with
+hestOptAdd() that cannot be also created by one of the 99 type-checked hestOptAdd_*_T()
+variants listed with adders.c, below */
 extern unsigned int hestOptAdd_nva(hestOpt **optP, const char *flag,
                                         const char *name, int type, unsigned int min,
                                         int max, void *valueP, const char *dflt,
                                         const char *info, unsigned int *sawP,
                                         const airEnum *enm, const hestCB *CB);
-// Instead of hestOptAdd, use one of the 99 type-checked functions (from adders.c), below
 extern unsigned int hestOptAdd(hestOpt **optP,
                                     const char *flag, const char *name,
                                     int type, unsigned int min, int max,
@@ -352,8 +365,9 @@ extern int hestParseOld(hestOpt *hopt, int argc, const char **argv, char **errP,
                              const hestParm *hparm);
 extern hestOpt *hestParseFree(hestOpt *hopt);
 extern void hestParseOrDie(hestOpt *hopt, int argc, const char **argv,
-                                hestParm *hparm, const char *me, const char *info,
-                                int doInfo, int doUsage, int doGlossary);
+                                hestParm *hparm, const char *me, const char *info);
+/*                              TeemV2 removed the final doInfo, doUsage, doGlossary
+                                args since they were typically all AIR_TRUE */
 // parsest.c
 extern int hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
                           const hestParm *hparm);
@@ -367,11 +381,10 @@ extern void hestInfo(FILE *file, const char *argv0, const char *info,
                           const hestParm *hparm);
 // adders.c
 extern void hestOptAddDeclsPrint(FILE *f);
-/* The 99 (!) non-var-args alternatives to hestOptAdd, enable more type checking because
-they non-var-args, but are also usefully type-specific for each possible type of value to
-be parsed in a way that hestOptAdd_nva cannot match. In fact, *all* possible ways of
-using hest are covered here, due to the enumeration over "kind" and over type T, which
-determines the function name as follows:
+/* The 99 (!) alternatives to hestOptAdd that enable type checking on the specific type
+of value that is to be parsed for the option. In fact, *all* possible ways of using hest
+are covered here, due to the enumeration over "kind" and over type T, which determines
+the function name as follows:
 kind  min, max             function family         description
  1    min == max == 0      hestOptAdd_Flag         (stand-alone flag; no parameters)
  2    min == max == 1      hestOptAdd_1_T          single fixed parameter
