@@ -19,7 +19,7 @@
 
 #include "../nrrd.h"
 
-const char *morphInfo = ("testing. ");
+const char *morphInfo = ("testing a hacky approach to gray-scale morphology");
 
 int
 morph(Nrrd *nout, Nrrd *_nin, Nrrd *_nkern, float scl) {
@@ -99,28 +99,19 @@ morph(Nrrd *nout, Nrrd *_nin, Nrrd *_nkern, float scl) {
 
 int
 main(int argc, const char **argv) {
-  const char *me;
-  char *outS;
-  hestOpt *hopt;
-  hestParm *hparm;
-  airArray *mop;
-
-  char *err;
-  Nrrd *nin, *nkern, *nout;
-  float scl;
-
-  me = argv[0];
-  mop = airMopNew();
-  hparm = hestParmNew();
-  hopt = NULL;
+  const char *me = argv[0];
+  airArray *mop = airMopNew();
+  hestParm *hparm = hestParmNew();
+  hestOpt *hopt = NULL;
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
-  hestOptAdd(&hopt, "i", "nin", airTypeOther, 1, 1, &nin, NULL, "input image", NULL,
-             NULL, nrrdHestNrrd);
-  hestOptAdd(&hopt, "k", "nin", airTypeOther, 1, 1, &nkern, NULL, "kernel", NULL, NULL,
-             nrrdHestNrrd);
-  hestOptAdd(&hopt, "s", "scl", airTypeFloat, 1, 1, &scl, "1.0", "scaling on kernel");
-  hestOptAdd(&hopt, "o", "nout", airTypeString, 1, 1, &outS, "-", "output filename",
-             NULL);
+  Nrrd *nin;
+  hestOptAdd_1_Other(&hopt, "i", "nin", &nin, NULL, "input image", nrrdHestNrrd);
+  Nrrd *nkern;
+  hestOptAdd_1_Other(&hopt, "k", "nin", &nkern, NULL, "kernel", nrrdHestNrrd);
+  float scl;
+  hestOptAdd_1_Float(&hopt, "s", "scl", &scl, "1.0", "scaling on kernel");
+  char *outS;
+  hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output filename");
 
   hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, morphInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
@@ -138,7 +129,8 @@ main(int argc, const char **argv) {
     exit(1);
   }
 
-  nout = nrrdNew();
+  char *err;
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
   if (morph(nout, nin, nkern, scl)) {
     airMopAdd(mop, err = biffGet(NRRD), airFree, airMopAlways);
