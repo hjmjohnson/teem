@@ -1232,11 +1232,13 @@ optProcessDefaults(hestOpt *hopt, hestArg *tharg, hestInputStack *hist,
        hopt[opi].havec, hopt[opi].havec->len); */
     if (5 == hopt[opi].kind && 0 == hopt[opi].min && !strlen(hopt[opi].dflt)) {
       /* A multiple variadic option allowing min==0 is getting its value from an empty
-         default string. The pre-2025 behavior of hest was to say: "there are zero values
-         here", so that is what we replicate here. Even if the intent (for, say,
-         string-type values) was to say "the default value is 1 empty string", that can
-         be expressed as "''" instead of "", which is clearer anyway. So we side-step
-         calling histProcess and instead directly assert that we have 0 args. */
+      default string. An established hest idiom (certainly used by unu, e.g. unu resample
+      -off) for variadic options with min=0 is to give a default as the "" empty string
+      to mean: 0 values. In the old (pre-2025) code based on strtok: strtok would look at
+      "" and see zero tokens and say: 0 values. Even if the intent (for, say, string-type
+      values) was to say "the default value is 1 empty string", that can be expressed as
+      "''" instead of "", which is clearer anyway. So we side-step calling histProcess
+      and instead directly assert that we have 0 args. */
       if (hparm->verbose > 1) {
         printf("%s: empty default string for min=0 a multiple "
                "variadic option ==> 0 args\n",
@@ -1429,29 +1431,6 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
         *((void **)valueP) = calloc(hopt[opi].havec->len + 1, size);
       } else if (hopt[opi].havec->len) {
         // only allocate if there's a need to
-        if (1 == hopt[opi].havec->len                     //
-            && !strcmp("", hopt[opi].havec->harg[0]->str) //
-            && hestSourceDefault == hopt[opi].source      //
-            && 0 == hopt[opi].min) {
-          /* An established hest idiom (certainly used by unu, e.g. unu resample -off)
-          for non-string-type variadic options with min=0, is to give a default as the
-          "" empty string to mean: 0 values. In the old (pre-2025) code based on
-          strtok: strtok would look at "" and see zero tokens and say: 0 values.  The
-          new code sees "" as one arg, dutifully saved to the per-option havec, and
-          then we would (below) try to parse "" as some type (e.g. double), which isn't
-          intended. So here is where we make the idiom work again: if the per-option
-          havec is just a single empty string that came from the default, and this is a
-          non-string variadic option with min=0, then we pretend like we never saw any
-          args, and reset per-option havec to length 0. */
-          if (hparm->verbose) {
-            printf(
-              "%s: (kind 5) %s[%u] (type=%s min=0) default single arg==empty-string "
-              "treated as 0 args\n",
-              __func__, ident, opi, _hestTypeStr[hopt[opi].type]);
-          }
-          hestArgVecReset(hopt[opi].havec);
-        }
-        // yea, so, like we were saying: only allocate if there's a need to
         if (hopt[opi].havec->len) {
           *((void **)valueP) = calloc(hopt[opi].havec->len, size);
         }
