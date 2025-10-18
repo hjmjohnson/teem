@@ -1060,9 +1060,13 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     }
     /* Either we have enough args to satisfy this option (and thus don't care if it has a
     default), or, we do *not* have enough args and hence want to use the default.  In the
-    later case, we don't have a default, that's a problem that needs an error message.
-    So, either way, we try extracting the args and report any problems encountered.
-    Recall that _hestOPCheck enforces non-variadic unflagged options have min > 1. */
+    later case, if we don't have a default, that's a problem that needs an error message.
+    So, either way, we try extracting the args and report any problems encountered,
+    including mention of whether we have a default. Recall that _hestOPCheck enforces
+    non-variadic unflagged options have min > 1. NOTE THAT WE DO NOT TRY TO COUNT the
+    number of tokens in the default: we assume that if there is a default, the user knew
+    how to set it to satisfy hopt[opi].min. It is only later (optProcessDefaults) that
+    the default string is actually processed. */
     if (hopt[opi].min /* == max */ < havec->len || !hopt[opi].dflt) {
       havStr = hestArgVecSprint(havec, AIR_TRUE);
       if (havecTransfer(hopt + opi, havec, 0, hopt[opi].min, hparm)) {
@@ -1220,31 +1224,40 @@ optProcessDefaults(hestOpt *hopt, hestArg *tharg, hestInputStack *hist,
                opi);
       return 1;
     }
-    /* in some circumstances the default may be empty "", even if non-NULL, which means
-    that no args will be put into hopt[opi].havec, and that's okay, but that's part of
-    why we set the source above to hestSourceDefault, so that we'd know the source even
-    if it isn't apparent in any of the (non-existant) args. */
     if (hparm->verbose) {
       printf("%s: looking at %s[%u] default string |%s|\n", __func__, ident, opi,
              hopt[opi].dflt);
     }
     /* printf("!%s: hopt[%u].havec %p   havec->len = %u\n", __func__, opi,
        hopt[opi].havec, hopt[opi].havec->len); */
+    /* Getting args from default strings is a little nuanced because of some exceptions,
+       handled here, which side-step calling histProcess */
     if (5 == hopt[opi].kind && 0 == hopt[opi].min && !strlen(hopt[opi].dflt)) {
       /* A multiple variadic option allowing min==0 is getting its value from an empty
-      default string. An established hest idiom (certainly used by unu, e.g. unu resample
-      -off) for variadic options with min=0 is to give a default as the "" empty string
-      to mean: 0 values. In the old (pre-2025) code based on strtok: strtok would look at
-      "" and see zero tokens and say: 0 values. Even if the intent (for, say, string-type
-      values) was to say "the default value is 1 empty string", that can be expressed as
-      "''" instead of "", which is clearer anyway. So we side-step calling histProcess
-      and instead directly assert that we have 0 args. */
+      (non-NULL) default string. An established hest idiom (certainly used by unu, e.g.
+      unu resample -off) for variadic options with min=0 is to give a default as the ""
+      empty string to mean: 0 values. In the old (pre-2025) code based on strtok: strtok
+      would look at "" and see zero tokens and say: 0 values. Even if the intent (for,
+      say, string-type values) was to say "the default value is 1 empty string", that can
+      be expressed as "''" instead of "", which is clearer anyway. So we directly assert
+      that we have 0 args. Also, this is why we set hopt[opi].source above to
+      hestSourceDefault, so that we'd know the source even if it isn't apparent in any of
+      the (non-existant) args. */
       if (hparm->verbose > 1) {
         printf("%s: empty default string for min=0 a multiple "
                "variadic option ==> 0 args\n",
                __func__);
       }
       airArrayLenSet(hopt[opi].havec->hargArr, 0);
+    } else if (2 == hopt[opi].kind && airTypeString == hopt[opi].type) {
+      /* We want exactly 1 string. While it is tempting to say for consistency "then get
+      on the hist stack and tokenize your single string just like everyone else does",
+      it is arguably more straightforward, for this single string (because there is no
+      tokenization needed!), to just take the default string as it is be the single arg.
+      This seems to mostly replicate pre-2025 hest behavior, but now we respect leading
+      white-space (the old code only respected one out of multiple leading spaces) */
+      airArrayLenSet(hopt[opi].havec->hargArr, 0);
+      hestArgVecAppendString(hopt[opi].havec, hopt[opi].dflt);
     } else {
       // the option's default string should be processed like normal
       if (histPushDefault(hist, hopt[opi].dflt, hparm)
