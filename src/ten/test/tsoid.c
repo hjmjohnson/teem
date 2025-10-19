@@ -93,7 +93,7 @@ main(int argc, const char *argv[]) {
   const char *me;
   char *err, *outS;
   double eval[3], matA[9], matB[9], sval[3], uu[9], vv[9], escl[5], view[3];
-  float matAf[9], matBf[16];
+  float matAf[16], matBf[16];
   float pp[3], qq[4], mR[9], len, gamma;
   float os, vs, rad, AB[2], ten[7];
   hestOpt *hopt = NULL;
