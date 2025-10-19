@@ -246,11 +246,11 @@ unrrdu_envMain(int argc, const char **argv, const char *me, hestParm *hparm) {
           "smart about setting the \"kind\" field of an axis after "
           "some operation that modified its samples.",
           hparm->columns);
-  envInt(out,
-         nrrdEnvVarStateVerboseIO,
-         nrrdStateVerboseIO,
-         "nrrdStateVerboseIO",
-         "The verbosity level of Nrrd input/output operations.",
+  envInt(out,                                                            /* */
+         nrrdEnvVarDefaultVerboseIO,                                     /* */
+         nrrdDefaultVerboseIO,                                           /* */
+         "nrrdDefaultVerboseIO",                                         /* */
+         "The default verbosity level of Nrrd input/output operations.", /* */
          hparm->columns);
   envBool(out,
           nrrdEnvVarStateBlind8BitRange,

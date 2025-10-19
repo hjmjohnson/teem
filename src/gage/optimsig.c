@@ -27,7 +27,7 @@ static int debugii;
 
 static airArray *debugReconErrArr = NULL;
 static double *debugReconErr = NULL;
-static char *debugReconErrName = NULL;
+static const char *debugReconErrName = NULL;
 
 /*
 ** learned:

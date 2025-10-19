@@ -142,9 +142,8 @@ nrrd:
   weird global nature of reading/writing wisdom?  Should "rigor" be an
   argument to nrrdFFT?  Is there really no error reporting on fftw_execute,
   fftw_export_wisdom_to_file?
-******* make the verbosity level a field in NrrdIoState, remove nrrdStateVerboseIO
-* add support for 16-bit float "half" (start with Milan's patch)
-* rename nrrd<Func>_nva() --> nrrd<Func>()
+******* add support for 16-bit float "half" (start with Milan's patch)
+******* rename nrrd<Func>_nva() --> nrrd<Func>()
 ******* rename nrrdResampleNrrdSet --> nrrdResampleInputSet ?
 * permit replacements for malloc/free (e.g. fftw_malloc, fftw_free) of data
 ******* rename NRRD_KERNEL_PARMS_NUM --> NRRD_KERNEL_PARM_MAXNUM
@@ -173,11 +172,6 @@ goes wrong it is REALLY mysterious, and hard to debug.  For example:
 current working directory, it will exist as a file, and hence be opened by
 unu as if it was a nrrd, but doing an fread on it will immediately hit EOF
 --> quiet quit, and very confusing.
-******* unu dice -ff should change from using %d to %u (or at least also support %u)
-* in unrrdu/make.c, reconsider the nrrdStateVerboseIO++ before, and the
-nrrdStateVerboseIO-- after, the calls to nrrdFormatNRRD->read.  You can
-set environment variable NRRD_STATE_VERBOSE_IO to 0 thinking this will turn
-things off, and yet its not off
 * unu resample:
 -- consider supporting more sophisticated expressions e.g. "x2" --> "x2+1"
 -- reconsider whether normalization should be turned on by default

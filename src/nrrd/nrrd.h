@@ -293,6 +293,8 @@ typedef struct NrrdEncoding_t {
 ** it took to read it in.
 */
 typedef struct NrrdIoState_t {
+  int verbose;                  /* new for Teem v2: replacing the old global
+                                   nrrdStateVerboseIO */
   char *path,                   /* allows us to remember the directory
                                    from whence this nrrd was "load"ed, or
                                    to whence this nrrd is "save"ed, MINUS the
@@ -722,7 +724,9 @@ NRRD_EXPORT int nrrdDefaultDeclineStdioOnTTY;
 /* ---- END non-NrrdIO */
 NRRD_EXPORT int nrrdDefaultCenter;
 NRRD_EXPORT double nrrdDefaultSpacing;
-NRRD_EXPORT int nrrdStateVerboseIO;
+/* Teem v2: nrrdStateVerboseIO --> nrrdDefaultVerboseIO,
+   and added NrrdIoState->verbose which is initialized by this */
+NRRD_EXPORT int nrrdDefaultVerboseIO;
 NRRD_EXPORT int nrrdStateKeyValuePairsPropagate;
 /* ---- BEGIN non-NrrdIO */
 NRRD_EXPORT int nrrdStateBlind8BitRange;
@@ -748,8 +752,9 @@ NRRD_EXPORT const char *const nrrdEnvVarDefaultWriteCharsPerLine;
 NRRD_EXPORT const char *const nrrdEnvVarDefaultWriteValsPerLine;
 NRRD_EXPORT const char *const nrrdEnvVarDefaultKernelParm0;
 NRRD_EXPORT const char *const nrrdEnvVarDefaultSpacing;
+/* Teem v2: nrrdEnvVarStateVerboseIO --> nrrdEnvVarDefaultVerboseIO */
+NRRD_EXPORT const char *const nrrdEnvVarDefaultVerboseIO;
 NRRD_EXPORT const char *const nrrdEnvVarStateKindNoop;
-NRRD_EXPORT const char *const nrrdEnvVarStateVerboseIO;
 NRRD_EXPORT const char *const nrrdEnvVarStateKeyValuePairsPropagate;
 NRRD_EXPORT const char *const nrrdEnvVarStateBlind8BitRange;
 NRRD_EXPORT const char *const nrrdEnvVarStateAlwaysSetContent;
@@ -764,7 +769,7 @@ NRRD_EXPORT int nrrdGetenvEnum(int *val, char **envStr, const airEnum *enm,
 NRRD_EXPORT int nrrdGetenvInt(int *val, char **envStr, const char *envVar);
 NRRD_EXPORT int nrrdGetenvUInt(unsigned int *val, char **envStr, const char *envVar);
 NRRD_EXPORT int nrrdGetenvDouble(double *val, char **envStr, const char *envVar);
-NRRD_EXPORT int nrrdGetenvString(char **envStr, const char *envVar);
+NRRD_EXPORT int nrrdGetenvString(const char **envStr, const char *envVar);
 NRRD_EXPORT void nrrdDefaultGetenv(void);
 NRRD_EXPORT void nrrdStateGetenv(void);
 /* ---- END non-NrrdIO */
@@ -922,6 +927,9 @@ NRRD_EXPORT int nrrdOriginCalculate(const Nrrd *nrrd, unsigned int *axisIdx,
                                     double *origin);
 NRRD_EXPORT int nrrdContentSet_va(Nrrd *nout, const char *func, const Nrrd *nin,
                                   const char *format, ... /* printf-style arg list */);
+NRRD_EXPORT void nrrdDescribeMore(FILE *file, const Nrrd *nrrd, const char *pfx,
+                                  int showPtrs, int elideNonExist, int elideUnknown,
+                                  const char *sepStr, unsigned int sepWidth);
 NRRD_EXPORT void nrrdDescribe(FILE *file, const Nrrd *nrrd);
 NRRD_EXPORT int nrrdCheck(const Nrrd *nrrd);
 NRRD_EXPORT int _nrrdCheck(const Nrrd *nrrd, int checkData, int useBiff);

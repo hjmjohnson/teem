@@ -231,7 +231,8 @@ airEndsWith(const char *s, const char *suff) {
 /*
 ******** airUnescape()
 **
-** unescapes \\ and \n in place in a given string.
+** unescapes \\ and \n in place in a given string, which is the only form of
+** escaping supported by key/value pairs in NRRD headers.
 ** Always returns the same pointer as given
 */
 char *

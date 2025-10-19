@@ -165,7 +165,7 @@ _nrrdFormatPNM_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
       nio->pos += AIR_INT(strspn(nio->line + nio->pos, _nrrdFieldSep));
       ret = _nrrdReadNrrdParseField(nio, AIR_FALSE);
       if (!ret) {
-        if (1 <= nrrdStateVerboseIO) {
+        if (nio && nio->verbose >= 1) {
           fprintf(stderr, "(%s: unparsable field \"%s\" --> plain comment)\n", me,
                   nio->line);
         }
@@ -177,7 +177,7 @@ _nrrdFormatPNM_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
       }
       fs = airEnumStr(nrrdField, ret);
       if (!_nrrdFieldValidInImage[ret]) {
-        if (1 <= nrrdStateVerboseIO) {
+        if (nio && nio->verbose >= 1) {
           fprintf(stderr,
                   "(%s: field \"%s\" (not allowed in PNM) "
                   "--> plain comment)\n",
@@ -188,7 +188,7 @@ _nrrdFormatPNM_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
       }
       if (!nio->seen[ret] && nrrdFieldInfoParse[ret](file, nrrd, nio, AIR_TRUE)) {
         perr = biffGetDone(NRRD);
-        if (1 <= nrrdStateVerboseIO) {
+        if (nio && nio->verbose >= 1) {
           fprintf(stderr,
                   "(%s: unparsable info for field \"%s\" "
                   "--> plain comment:\n%s)\n",

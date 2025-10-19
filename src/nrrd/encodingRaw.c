@@ -38,7 +38,6 @@ _nrrdEncodingRaw_read(FILE *file, void *data, size_t elementNum, Nrrd *nrrd,
   size_t retTmp;
   char stmp[3][AIR_STRLEN_SMALL + 1];
 
-  AIR_UNUSED(nio);
   bsize = nrrdElementSize(nrrd) * elementNum;
 
   /* HEY: There's a bug in fread/fwrite in gcc 4.2.1 (with SnowLeopard).
@@ -73,7 +72,7 @@ _nrrdEncodingRaw_read(FILE *file, void *data, size_t elementNum, Nrrd *nrrd,
 
   car = fgetc(file);
   if (EOF != car) {
-    if (1 <= nrrdStateVerboseIO) {
+    if (nio && nio->verbose >= 1) {
       fprintf(stderr,
               "%s: WARNING: finished reading raw data, "
               "but file not at EOF\n",
@@ -81,7 +80,7 @@ _nrrdEncodingRaw_read(FILE *file, void *data, size_t elementNum, Nrrd *nrrd,
     }
     ungetc(car, file);
   }
-  if (2 <= nrrdStateVerboseIO && nio->byteSkip && stdin != file) {
+  if (nio && nio->verbose >= 2 && nio->byteSkip && stdin != file) {
     savePos = ftell(file);
     if (!fseek(file, 0, SEEK_END)) {
       double frac = (AIR_CAST(double, bsize) / AIR_CAST(double, ftell(file) + 1));

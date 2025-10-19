@@ -68,7 +68,7 @@ unrrdu_makeMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   Nrrd *nrrd;
   size_t *size, bufLen;
   int headerOnly, pret, endian, type, encodingType, gotSpacing, gotThickness, gotMin,
-    gotMax, space, spaceSet;
+    gotMax, space, spaceSet, verboseBump;
   long int byteSkip; /* NOT unsigned: -1 means "from the end" */
   unsigned int ii, kindsLen, thicknessLen, spacingLen, sizeLen, nameLen, centeringsLen,
     unitsLen, labelLen, kvpLen, spunitsLen, dataFileDim, spaceDim, minLen, maxLen,
@@ -237,10 +237,13 @@ unrrdu_makeMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                       "this option allows you to explicitly name the data file, "
                       "instead of (by default, not using this option) having it be "
                       "the same filename base as the header file.");
+  hestOptAdd_1_Int(&opt, "vb,verbump", "bump", &verboseBump, "1",
+                   "just before calling nrrdFormatNRRD->read to read data files, "
+                   "bump the NrrdIoState->verbose by this value, to get more diagnostic "
+                   "feedback than would otherwise be shown");
   airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
 
   // Gone in TeemV2: airStrtokQuoting = AIR_TRUE;
-  /* hparm->verbosity = 3; / * HEY JUST FOR DEBUGGING */
   USAGE_OR_PARSE(_unrrdu_makeInfoL);
   airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
   encoding = nrrdEncodingArray[encodingType];
@@ -668,14 +671,14 @@ unrrdu_makeMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   } else {
     /* all this does is read the data from the files.  We up the verbosity
        because of all places this is probably where we really want it */
-    nrrdStateVerboseIO++;
+    nio->verbose += verboseBump;
     if (nrrdFormatNRRD->read(NULL, nrrd, nio)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
       fprintf(stderr, "%s: trouble reading data files:\n%s", me, err);
       airMopError(mop);
       return 1;
     }
-    nrrdStateVerboseIO--;
+    nio->verbose -= verboseBump;
     /* then save normally */
     nrrdIoStateInit(nio);
     if (strlen(outData)) {

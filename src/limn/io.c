@@ -722,12 +722,9 @@ limnPolyDataReadLMPD(limnPolyData *pld, FILE *file) {
   mop = airMopNew();
   nrrd = nrrdNew();
   airMopAdd(mop, nrrd, (airMopper)nrrdNuke, airMopAlways);
-  /* HEY HEY HEY HOLY CRAP!
-  ** why the hell isn't the verbosity level a field in NrrdIoState ?!?!
-  ** THIS NEES TO BE FIXED (in nrrd) ASAP!
-  */
-  hackhack = nrrdStateVerboseIO;
-  nrrdStateVerboseIO = 0;
+  hackhack = nrrdDefaultVerboseIO;
+  // to stop notices of file position not being at end, post-fread
+  nrrdDefaultVerboseIO = 0;
   if (nrrdRead(nrrd, file, NULL)) {
     biffMovef(LIMN, NRRD, "%s: trouble reading %s data", me, name);
     airMopError(mop);
@@ -865,7 +862,7 @@ limnPolyDataReadLMPD(limnPolyData *pld, FILE *file) {
   }
 
   airMopOkay(mop);
-  nrrdStateVerboseIO = hackhack;
+  nrrdDefaultVerboseIO = hackhack;
   return 0;
 }
 

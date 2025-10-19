@@ -22,13 +22,14 @@
 
 #include <unistd.h> /* for isatty() and STDIN_FILENO */
 
-#define INFO "Print header of one or more nrrd files"
+#define INFO "Print header of one or more NRRD files"
 static const char *_unrrdu_headInfoL
   = (INFO ".  The value of this is simply to print the contents of nrrd "
-          "headers.  This avoids the use of \"head -N\", where N has to be "
-          "determined manually, which always risks printing raw binary data "
-          "(following the header) to screen, which tends to clobber terminal "
-          "settings, make pointless beeps, and be annoying.\n "
+          "headers, and without any attempt to parse the header (see \"unu describe\" "
+          "for something that loads and then describes the Nrrd). \"unu head\" avoids "
+          "the use of \"head -N\", where N has to be determined manually, which always "
+          "risks printing raw binary data (following the header) to screen, which tends "
+          "to clobber terminal settings, and be generally annoying.\n "
           "* Uses nrrdOneLine");
 
 static int /* Biff: 1 */

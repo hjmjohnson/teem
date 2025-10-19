@@ -144,6 +144,7 @@ extern void (*const _nrrdCastClampRound[][NRRD_TYPE_MAX + 1])(void *, const void
 extern const char *const _nrrdFieldSep;
 extern const char *const _nrrdTextSep;
 extern const char *const _nrrdNoSpaceVector;
+extern int _nrrdCharIsFieldSep(char cc);
 extern int _nrrdByteSkipSkip(FILE *dataFile, Nrrd *nrrd, NrrdIoState *nio,
                              long int byteSkip);
 extern int _nrrdCalloc(Nrrd *nrrd, NrrdIoState *nio);

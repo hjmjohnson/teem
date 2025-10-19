@@ -1,6 +1,4 @@
 all IO-related things:
-******** why on earth is code in, say, formatText.c looking at nrrdStateVerboseIO,
-  instead of a field for verbosity in the NrrdIoState?
 ******** enable imagemagick-style format flagging on filenames ("PNM:-"),
   thereby obviating "unu save -f pnm" steps in pipes to standard out
 * get back verbose IO messages about fread-vs-directIO
@@ -27,8 +25,6 @@ ordering on the formats.
 add more internal types to stuff in arith.c for these:
 new nrrdBinaryOps: bit-wise and (&), or (|), xor (^)
 new nrrdUnaryOps: bit-wise not (^)
-
-call fflush(file) before airDioTest() ?
 
 sampleUnits map to histogram axis with all things histo
 

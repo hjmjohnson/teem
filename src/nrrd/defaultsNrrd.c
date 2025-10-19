@@ -53,13 +53,14 @@ double nrrdDefaultKernelParm0 = 1.0;
 int nrrdDefaultDeclineStdioOnTTY = AIR_TRUE;
 /* ---- END non-NrrdIO */
 int nrrdDefaultCenter = nrrdCenterCell;
+/* matches how nrrdStateVerboseIO (gone in Teem2) was initialized */
+int nrrdDefaultVerboseIO = 1; /* NrrdIO-hack-003 */
 double nrrdDefaultSpacing = 1.0;
 
 /* these aren't really "defaults" because there's no other channel for
    specifying this information.  It is just global state.  Obviously,
    like defaults, they are not thread-safe if different threads ever
    set them differently. */
-int nrrdStateVerboseIO = 1; /* NrrdIO-hack-003 */
 int nrrdStateKeyValuePairsPropagate = AIR_FALSE;
 /* ---- BEGIN non-NrrdIO */
 int nrrdStateBlind8BitRange = AIR_TRUE;
@@ -115,9 +116,12 @@ const char *const nrrdEnvVarDefaultWriteCharsPerLine
 const char *const nrrdEnvVarDefaultWriteValsPerLine = "NRRD_DEFAULT_WRITE_VALS_PER_LINE";
 const char *const nrrdEnvVarDefaultKernelParm0 = "NRRD_DEFAULT_KERNEL_PARM0";
 const char *const nrrdEnvVarDefaultSpacing = "NRRD_DEFAULT_SPACING";
+/* over-writes nrrdEnvVarStateVerboseIO for setting nrrdDefaultVerboseIO */
+const char *const nrrdEnvVarDefaultVerboseIO = "NRRD_DEFAULT_VERBOSE_IO";
 
 const char *const nrrdEnvVarStateKindNoop = "NRRD_STATE_KIND_NOOP";
-const char *const nrrdEnvVarStateVerboseIO = "NRRD_STATE_VERBOSE_IO";
+/* nrrdStateVerboseIO gone but still respect this to set nrrdDefaultVerboseIO */
+static const char *const _EnvVarStateVerboseIO = "NRRD_STATE_VERBOSE_IO";
 const char *const nrrdEnvVarStateKeyValuePairsPropagate
   = "NRRD_STATE_KEYVALUEPAIRS_PROPAGATE";
 const char *const nrrdEnvVarStateBlind8BitRange = "NRRD_STATE_BLIND_8_BIT_RANGE";
@@ -264,7 +268,7 @@ nrrdGetenvDouble(double *val, char **envStr, const char *envVar) {
 ** convenient wrapper around getenv for strings.
 */
 int /* Biff: nope */
-nrrdGetenvString(char **envStr, const char *envVar) {
+nrrdGetenvString(const char **envStr, const char *envVar) {
 
   if (!(envStr && envVar)) {
     return -1;
@@ -279,6 +283,8 @@ nrrdGetenvString(char **envStr, const char *envVar) {
 
 void
 nrrdDefaultGetenv(void) {
+  static const char me[] = "nrrdDefaultGetenv";
+  int setOldWay, oldVal, setNewWay, newVal;
 
   /* these two pre-date Def --> Default rename */
   if (-1
@@ -304,6 +310,27 @@ nrrdDefaultGetenv(void) {
   nrrdGetenvDouble(/**/ &nrrdDefaultKernelParm0, NULL, nrrdEnvVarDefaultKernelParm0);
   nrrdGetenvDouble(/**/ &nrrdDefaultSpacing, NULL, nrrdEnvVarDefaultSpacing);
 
+  /* for TeemV2 nrrdStateVerboseIO --> nrrdDefaultVerboseIO but we'll
+   still honor the old env var name if new env var name is not given */
+  setOldWay = (AIR_TRUE == nrrdGetenvInt(&oldVal, NULL, _EnvVarStateVerboseIO));
+  setNewWay = (AIR_TRUE == nrrdGetenvInt(&newVal, NULL, nrrdEnvVarDefaultVerboseIO));
+  if (setOldWay) {
+    if (!setNewWay) {
+      fprintf(stderr,
+              "%s: WARNING environment variable \"%s\" deprecated, "
+              "use \"%s\" instead\n",
+              me, _EnvVarStateVerboseIO, nrrdEnvVarDefaultVerboseIO);
+      nrrdDefaultVerboseIO = oldVal;
+    } else if (setNewWay) {
+      fprintf(stderr,
+              "%s: WARNING environment variable \"%s\" "
+              "over-riding deprecated \"%s\"\n",
+              me, nrrdEnvVarDefaultVerboseIO, _EnvVarStateVerboseIO);
+      nrrdDefaultVerboseIO = newVal;
+    }
+  } else if (setNewWay) {
+    nrrdDefaultVerboseIO = newVal;
+  }
   return;
 }
 
@@ -311,7 +338,6 @@ void
 nrrdStateGetenv(void) {
 
   nrrdGetenvBool(/**/ &nrrdStateKindNoop, NULL, nrrdEnvVarStateKindNoop);
-  nrrdGetenvInt(/**/ &nrrdStateVerboseIO, NULL, nrrdEnvVarStateVerboseIO);
   nrrdGetenvBool(/**/ &nrrdStateKeyValuePairsPropagate, NULL,
                  nrrdEnvVarStateKeyValuePairsPropagate);
   nrrdGetenvBool(/**/ &nrrdStateBlind8BitRange, NULL, nrrdEnvVarStateBlind8BitRange);

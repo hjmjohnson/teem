@@ -37,6 +37,7 @@ unrrdu_diceMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   int pret, fit;
   unsigned int axis, start, pos, top, size, sanity;
   airArray *mop;
+  NrrdIoState *nio;
 
   OPT_ADD_AXIS(axis, "axis to slice along");
   OPT_ADD_NIN(nin, "input nrrd");
@@ -63,6 +64,9 @@ unrrdu_diceMain(int argc, const char **argv, const char *me, hestParm *hparm) {
 
   mop = airMopNew();
   airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  /* (getting this just for the verbose value) */
+  nio = nrrdIoStateNew();
+  airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
 
   USAGE_OR_PARSE(_unrrdu_diceInfoL);
   airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
@@ -135,7 +139,7 @@ unrrdu_diceMain(int argc, const char **argv, const char *me, hestParm *hparm) {
       }
     }
     sprintf(fnout, fffname, base, pos + start);
-    if (nrrdStateVerboseIO > 0) {
+    if (nio->verbose > 0) {
       fprintf(stderr, "%s: %s ...\n", me, fnout);
     }
     if (nrrdSave(fnout, nout, NULL)) {

@@ -805,7 +805,7 @@ _nrrdFormatMaybeGuess(const Nrrd *nrrd, NrrdIoState *nio, const char *filename) 
     sprintf(mesg, "can not use %s format: %s", nio->format->name,
             (!available ? "not available in this Teem build" : "array doesn\'t fit"));
     if (guessed) {
-      if (1 <= nrrdStateVerboseIO) {
+      if (nio && nio->verbose >= 1) {
         fprintf(stderr, "(%s: %s --> saving to NRRD format)\n", me, mesg);
       }
       nio->format = nrrdFormatNRRD;

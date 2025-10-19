@@ -34,6 +34,20 @@ static const char *const _nrrdLineSep = "\r\n";
 const char *const _nrrdTextSep = " ,\t";
 const char *const _nrrdNoSpaceVector = "none";
 
+// returns non-zero if given char `cc` is in _nrrdFieldSep
+int
+_nrrdCharIsFieldSep(char cc) {
+  unsigned int fslen = (unsigned int)strlen(_nrrdFieldSep);
+  int ret = 0;
+  for (unsigned int ii = 0; ii < fslen; ii++) {
+    if (cc == _nrrdFieldSep[ii]) {
+      ret = 1;
+      break;
+    }
+  }
+  return ret;
+}
+
 /*
 ** return length of next "line" in nio->headerStringRead
 */
@@ -290,7 +304,7 @@ _nrrdByteSkipSkip(FILE *dataFile, Nrrd *nrrd, NrrdIoState *nio, long int byteSki
                airSprintSize_t(stmp, bsize));
       return 1;
     }
-    if (nrrdStateVerboseIO >= 2) {
+    if (nio && nio->verbose >= 2) {
       fprintf(stderr, "(%s: actually skipped %d bytes)\n", me, (int)ftell(dataFile));
     }
   } else {

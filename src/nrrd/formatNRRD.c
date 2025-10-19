@@ -418,7 +418,6 @@ static int /* Biff: 1 */
 _nrrdFormatNRRD_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
   static const char me[] = "_nrrdFormatNRRD_read";
   /* Dynamically allocated for space reasons. */
-  /* MWC: These strlen usages look really unsafe. */
   int ret;
   unsigned int llen;
   size_t valsPerPiece;
@@ -444,8 +443,16 @@ _nrrdFormatNRRD_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
         biffAddf(NRRD, "%s: trouble getting line of header", me);
         return 1;
       }
+      if (nio && nio->verbose > 3) {
+        printf("%s: got line |%s|@%p len %u\n", me, nio->line, AIR_VOIDP(nio->line),
+               llen);
+      }
       if (llen > 1) {
+        char *nioLineSave = NULL;
         ret = _nrrdReadNrrdParseField(nio, AIR_TRUE);
+        if (nio && nio->verbose > 3) {
+          printf("%s: parsed field %d = %s\n", me, ret, airEnumStr(nrrdField, ret));
+        }
         if (!ret) {
           biffAddf(NRRD,
                    "%s: trouble parsing NRRD field identifier from "
@@ -458,11 +465,58 @@ _nrrdFormatNRRD_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
           biffAddf(NRRD, "%s: already set field %s", me, airEnumStr(nrrdField, ret));
           return 1;
         }
+        /* belated TeemV2 2025 fix: Format spec says:
+            (end of 2nd paragraph of Section 1.2 Basic header structure)
+            ... Extra whitespace after the field descriptor and before the line
+            termination is ignored.
+        (One nitpick: this can't mean all " \t\n\r\v\f" whitespace;
+        so probably it just just means " \t" aka _nrrdFieldSep)
+        BUT WOW the code does not actually done this (at least not the code as it
+        arrives to us in 2025). So what to do. Rather than do the right-trim within every
+        nrrdFieldInfoParse[field]() function, we do it here. But, should we do it on
+        every possible field, or do we avoid doing it on those that might care about the
+        full content of the line, even the trailing whitespace?  We opt for the latter
+        (the more cautious approach). */
+        if (ret                          /* */
+            && ret != nrrdField_comment  /* */
+            && ret != nrrdField_content  /* */
+            && ret != nrrdField_keyvalue /* */
+            && ret != nrrdField_data_file) {
+          char *info = nio->line + nio->pos;
+          char *last = info + strlen(info) - 1;
+          while (last > info && _nrrdCharIsFieldSep(last[0])) {
+            last--;
+          }
+          /* stopped when `last` hit non-fieldsep char; back off */
+          last++;
+          if (last[0]) { /* if not at the original '\0' termination of `info` */
+            if (nio && nio->verbose > 3) {
+              printf("%s: removing trailing |%s| from %s info |%s|\n", me, last,
+                     airEnumStr(nrrdField, ret), info);
+            }
+            last[0] = '\0';
+          }
+        }
+        /* We need this nioLineSave because *IF* the field ret is nrrdField_data_file,
+           then parseNrrd.c/_nrrdReadNrrdParse_data_file() is going to re-use nio->line,
+           which means that the error message below will print garbage */
+        if (nrrdField_data_file == ret) {
+          nioLineSave = airStrdup(nio->line + nio->pos);
+        } else {
+          nioLineSave = NULL;
+        }
+        if (nio && nio->verbose > 3) {
+          printf("%s: about to parse %s info |%s|\n", me, airEnumStr(nrrdField, ret),
+                 nio->line + nio->pos);
+        }
         if (nrrdFieldInfoParse[ret](file, nrrd, nio, AIR_TRUE)) {
           biffAddf(NRRD, "%s: trouble parsing %s info |%s|", me,
-                   airEnumStr(nrrdField, ret), nio->line + nio->pos);
+                   airEnumStr(nrrdField, ret),
+                   nioLineSave ? nioLineSave : nio->line + nio->pos);
+          airFree(nioLineSave);
           return 1;
         }
+        airFree(nioLineSave);
         nio->seen[ret] = AIR_TRUE;
       }
     } while (llen > 1);
@@ -543,20 +597,20 @@ _nrrdFormatNRRD_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
       }
     }
     /* ---------------- read the data itself */
-    if (2 <= nrrdStateVerboseIO) {
+    if (nio && nio->verbose >= 2) {
       fprintf(stderr, "(%s: reading %s data ... ", me, nio->encoding->name);
       fflush(stderr);
     }
     if (!nio->skipData) {
       if (nio->encoding->read(dataFile, data, valsPerPiece, nrrd, nio)) {
-        if (2 <= nrrdStateVerboseIO) {
+        if (nio && nio->verbose >= 2) {
           fprintf(stderr, "error!\n");
         }
         biffAddf(NRRD, "%s:", me);
         return 1;
       }
     }
-    if (2 <= nrrdStateVerboseIO) {
+    if (nio && nio->verbose >= 2) {
       fprintf(stderr, "done)\n");
     }
     /* ---------------- go to next data file */
@@ -579,12 +633,12 @@ _nrrdFormatNRRD_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
     if (1 < nrrdElementSize(nrrd) && nio->encoding->endianMatters
         && nio->endian != airMyEndian()) {
       /* endianness exposed in encoding, and its wrong */
-      if (2 <= nrrdStateVerboseIO) {
+      if (nio && nio->verbose >= 2) {
         fprintf(stderr, "(%s: fixing endianness ... ", me);
         fflush(stderr);
       }
       nrrdSwapEndian(nrrd);
-      if (2 <= nrrdStateVerboseIO) {
+      if (nio && nio->verbose >= 2) {
         fprintf(stderr, "done)\n");
         fflush(stderr);
       }
@@ -776,19 +830,19 @@ _nrrdFormatNRRD_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
     data = (char *)nrrd->data;
     do {
       /* ---------------- write data */
-      if (2 <= nrrdStateVerboseIO) {
+      if (nio && nio->verbose >= 2) {
         fprintf(stderr, "(%s: writing %s data ", me, nio->encoding->name);
         fflush(stderr);
       }
       if (nio->encoding->write(dataFile, data, valsPerPiece, nrrd, nio)) {
-        if (2 <= nrrdStateVerboseIO) {
+        if (nio && nio->verbose >= 2) {
           fprintf(stderr, "error!\n");
         }
         biffAddf(NRRD, "%s: couldn't write %s data", me, nio->encoding->name);
         airMopError(mop);
         return 1;
       }
-      if (2 <= nrrdStateVerboseIO) {
+      if (nio && nio->verbose >= 2) {
         fprintf(stderr, "done)\n");
       }
       /* ---------------- go to next data file */

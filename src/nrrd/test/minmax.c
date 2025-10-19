@@ -17,7 +17,6 @@
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #include "../nrrd.h"
 
 void
@@ -34,22 +33,20 @@ main(int argc, char **argv) {
   NrrdRange *range;
 
   me = argv[0];
-  if (2 != argc)
-    usage(me);
+  if (2 != argc) usage(me);
 
-  nrrdStateVerboseIO = 10;
+  nrrdDefaultVerboseIO = 10;
 
-  if (nrrdLoad(nrrd=nrrdNew(), argv[1], NULL)) {
-    fprintf(stderr, "%s: trouble loading \"%s\":\n%s",
-            me, argv[1], err = biffGet(NRRD));
+  if (nrrdLoad(nrrd = nrrdNew(), argv[1], NULL)) {
+    fprintf(stderr, "%s: trouble loading \"%s\":\n%s", me, argv[1], err = biffGet(NRRD));
     free(err);
     exit(1);
   }
 
   range = nrrdRangeNewSet(nrrd, nrrdBlind8BitRangeState);
 
-  printf("%s: min = %g; max = %g, hasNonExist = %d\n", me,
-         range->min, range->max, range->hasNonExist);
+  printf("%s: min = %g; max = %g, hasNonExist = %d\n", me, range->min, range->max,
+         range->hasNonExist);
 
   nrrdNuke(nrrd);
 

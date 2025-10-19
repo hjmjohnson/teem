@@ -676,6 +676,11 @@ _nrrdReadNrrdParse_kinds(FILE *file, Nrrd *nrrd, NrrdIoState *nio, int useBiff) 
   return 0;
 }
 
+/*
+ * The kind of double-quoted string extraction used for NRRD units, space units, and
+ * labels: get the string within the "", with only one kind of escaping supported:
+ * \" means "
+ */
 static char * /* Biff: maybe:2:NULL */
 _nrrdGetQuotedString(char **hP, int useBiff) {
   static const char me[] = "_nrrdGetQuotedString";
@@ -1372,8 +1377,8 @@ _nrrdReadNrrdParse_data_file(FILE *ffile, Nrrd *nrrd, NrrdIoState *nio, int useB
     /* read in all the datafile names */
     lineidx = 0;
     do {
-      /* yes, nio->line is re-used/over-written here, but I don't
-         think that's a problem */
+      /* yes, nio->line is re-used/over-written here, but I don't think that's a problem
+         (2025 ha ha can I point out nioLineSave in formatNRRD.c/_nrrdFormatNRRD_read) */
       if (nrrdOneLine(&linelen, nio, ffile)) {
         biffMaybeAddf(useBiff, NRRD, "%s: trouble getting file name line %u", me,
                       lineidx);

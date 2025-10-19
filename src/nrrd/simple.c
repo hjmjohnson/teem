@@ -505,10 +505,225 @@ nrrdContentSet_va(Nrrd *nout, const char *func, const Nrrd *nin, const char *for
   return 0;
 }
 
+static void
+printDescSep(FILE *file, const char *pfx, const char *sepStr, unsigned int sepWidth,
+             const char *label) {
+  unsigned int printWidth, slen;
+  slen = airStrlen(sepStr);
+  if (!(file && slen && sepWidth)) {
+    /* nothing to do */
+    return;
+  }
+  printWidth = 0;
+  if (pfx) {
+    fprintf(file, "%s", pfx);
+    printWidth += strlen(pfx);
+  }
+  do {
+    fprintf(file, "%s", sepStr);
+    printWidth += slen;
+  } while (printWidth < sepWidth);
+  if (airStrlen(label)) {
+    fprintf(file, " %s", label);
+  }
+  fprintf(file, "\n");
+  return;
+}
+
+/*
+ ******** nrrdDescribeMore
+ *
+ * new (for TeemV2) version of nrrdDescribe, printing more information, and having more
+ * more controls. Relative to nrrdDescribe, which has been left as is, there are many
+ * many changes, all in the interest of completeness and consistency.
+ */
+void
+nrrdDescribeMore(FILE *file, const Nrrd *nrrd, const char *pfx, int showPtrs,
+                 int elideNonExist, int elideUnknown, const char *sepStr,
+                 unsigned int sepWidth) {
+  unsigned int ii, jj, sdim, sulen;
+  char stmp[AIR_STRLEN_SMALL + 1];
+
+  if (!file) {
+    // nothing to do!
+    return;
+  }
+#define PFX    (pfx ? pfx : "")
+#define INDENT "    "
+#define DESC_STRING(PTR, IND, DLIT, DSTR)                                               \
+  if ((PTR)) {                                                                          \
+    fprintf(file, "%s" IND DLIT "%s=|%s|", PFX, (DSTR), (PTR));                         \
+    if (showPtrs) {                                                                     \
+      fprintf(file, "@%p", (PTR));                                                      \
+    }                                                                                   \
+    fprintf(file, "\n");                                                                \
+  } else if (showPtrs) {                                                                \
+    fprintf(file, "%s" IND DLIT "%s=NULL\n", PFX, (DSTR));                              \
+  }
+  if (!nrrd) {
+    fprintf(file, "%sgot NULL Nrrd\n", PFX);
+    return;
+  }
+  printDescSep(file, PFX, sepStr, sepWidth, "begin"); /* ---------------- */
+  if (showPtrs) {
+    fprintf(file, "%sNrrd@%p\n", PFX, AIR_CVOIDP(nrrd));
+    fprintf(file, "%sdata@%p\n", PFX, nrrd->data);
+  }
+  DESC_STRING(nrrd->content, "", "content", "");
+  DESC_STRING(nrrd->sampleUnits, "", "sampleUnits", "");
+  sdim = nrrd->spaceDim;
+  if (sdim) {
+    int mfex = 0;
+    printDescSep(file, PFX, sepStr, sepWidth, "space"); /* ---------------- */
+    if (nrrd->space) {
+      fprintf(file, "%sSpace=%s (%u-dimensional)\n", PFX,
+              airEnumStr(nrrdSpace, nrrd->space), sdim);
+    } else {
+      fprintf(file, "%sSpace Dim=%u\n", PFX, sdim);
+    }
+    if (!elideNonExist || nrrdSpaceVecExists(sdim, nrrd->spaceOrigin)) {
+      fprintf(file, "%sSpace Origin=(", PFX);
+      for (jj = 0; jj < sdim; jj++) {
+        if (jj) fprintf(file, ",");
+        airSinglePrintf(file, NULL, "%lg", nrrd->spaceOrigin[jj]);
+      }
+      fprintf(file, ")\n");
+    }
+    for (jj = 0; jj < sdim; jj++) {
+      mfex |= nrrdSpaceVecExists(sdim, nrrd->measurementFrame[jj]);
+    }
+    if (!elideNonExist || mfex) {
+      unsigned mmlen = 0;
+      char buff[AIR_STRLEN_SMALL + 1], fmt[AIR_STRLEN_SMALL + 1];
+      fprintf(file, "%sMeasurement Frame=\n", PFX);
+      /* figure out longest string for on component */
+      for (ii = 0; ii < sdim; ii++) {
+        for (jj = 0; jj < sdim; jj++) {
+          unsigned int ml;
+          airSinglePrintf(NULL, buff, "%lg", nrrd->measurementFrame[jj][ii]);
+          ml = strlen(buff);
+          mmlen = AIR_MAX(ml, mmlen);
+        }
+      }
+      /* print the formatting string for one component */
+      sprintf(fmt, "  %%%us", mmlen);
+      for (ii = 0; ii < sdim; ii++) {
+        fprintf(file, "%s  ", PFX);
+        for (jj = 0; jj < sdim; jj++) {
+          /* inner loop is looping over columns */
+          airSinglePrintf(NULL, buff, "%lg", nrrd->measurementFrame[jj][ii]);
+          fprintf(file, fmt, buff);
+        }
+        fprintf(file, "\n");
+      }
+    }
+    sulen = 0;
+    for (jj = 0; jj < sdim; jj++) {
+      sulen += airStrlen(nrrd->spaceUnits[jj]);
+    }
+    if (showPtrs || sulen) {
+      fprintf(file, "%sSpace Units=\n", PFX);
+      for (jj = 0; jj < sdim; jj++) {
+        sprintf(stmp, "[%u]", jj);
+        DESC_STRING(nrrd->spaceUnits[jj], "", "", stmp);
+      }
+    }
+  }
+  printDescSep(file, PFX, sepStr, sepWidth, "basic"); /* ---------------- */
+  if (!elideNonExist || AIR_EXISTS(nrrd->oldMin) || AIR_EXISTS(nrrd->oldMax)) {
+    fprintf(file, "%s", PFX);
+    airSinglePrintf(file, NULL, "The old min, old max values are %lg", nrrd->oldMin);
+    airSinglePrintf(file, NULL, ", %lg\n", nrrd->oldMax);
+  }
+  fprintf(file, "%sElementNumber=%s\n", PFX,
+          airSprintSize_t(stmp, nrrdElementNumber(nrrd)));
+  fprintf(file, "%stype=%s\n", PFX, airEnumStr(nrrdType, nrrd->type));
+  if (nrrdTypeBlock == nrrd->type) {
+    fprintf(file, "%sblockSize=%s\n", PFX, airSprintSize_t(stmp, nrrd->blockSize));
+  }
+  printDescSep(file, PFX, sepStr, sepWidth, "axes"); /* ---------------- */
+  fprintf(file, "%s%u-dimensional array, with axes:\n", PFX, nrrd->dim);
+  for (ii = 0; ii < nrrd->dim; ii++) {
+    fprintf(file, "%s[%u] size=%s\n", PFX, ii,
+            airSprintSize_t(stmp, nrrd->axis[ii].size));
+    if (!elideNonExist || AIR_EXISTS(nrrd->axis[ii].spacing)) {
+      fprintf(file, "%s", PFX);
+      airSinglePrintf(file, NULL, INDENT "spacing=%lg\n", nrrd->axis[ii].spacing);
+    }
+    if (!elideNonExist || AIR_EXISTS(nrrd->axis[ii].thickness)) {
+      fprintf(file, "%s", PFX);
+      airSinglePrintf(file, NULL, INDENT "thickness=%lg\n", nrrd->axis[ii].thickness);
+    }
+    if (!elideNonExist || AIR_EXISTS(nrrd->axis[ii].min)
+        || AIR_EXISTS(nrrd->axis[ii].max)) {
+      fprintf(file, "%s", PFX);
+      airSinglePrintf(file, NULL, INDENT "axis min, max = %lg, ", nrrd->axis[ii].min);
+      airSinglePrintf(file, NULL, "%lg\n", nrrd->axis[ii].max);
+    }
+    if (sdim) {
+      if (!elideNonExist || nrrdSpaceVecExists(sdim, nrrd->axis[ii].spaceDirection)) {
+        fprintf(file, "%s" INDENT "spaceDirection=(", PFX);
+        for (jj = 0; jj < sdim; jj++) {
+          if (jj) fprintf(file, ",");
+          airSinglePrintf(file, NULL, "%lg", nrrd->axis[ii].spaceDirection[jj]);
+        }
+        fprintf(file, ")\n");
+      }
+    }
+    if (!elideUnknown || nrrd->axis[ii].center) {
+      fprintf(file, "%s" INDENT "center=%s\n", PFX,
+              airEnumStr(nrrdCenter, nrrd->axis[ii].center));
+    }
+    if (!elideUnknown || nrrd->axis[ii].kind) {
+      fprintf(file, "%s" INDENT "kind=%s\n", PFX,
+              airEnumStr(nrrdKind, nrrd->axis[ii].kind));
+    }
+    DESC_STRING(nrrd->axis[ii].label, INDENT, "label", "");
+    DESC_STRING(nrrd->axis[ii].units, INDENT, "units", "");
+  }
+  if (nrrd->cmtArr->len) {
+    printDescSep(file, PFX, sepStr, sepWidth, "comments"); /* ---------------- */
+    fprintf(file, "%scomments (%u):\n", PFX, nrrd->cmtArr->len);
+    for (ii = 0; ii < nrrd->cmtArr->len; ii++) {
+      sprintf(stmp, "[%u]", ii);
+      DESC_STRING(nrrd->cmt[ii], "", "", stmp);
+    }
+  }
+  if (nrrd->kvpArr->len) {
+    printDescSep(file, PFX, sepStr, sepWidth, "key/value"); /* ---------------- */
+    fprintf(file, "%skey/value pairs (%u):\n", PFX, nrrd->kvpArr->len);
+    if (showPtrs) {
+      for (ii = 0; ii < nrrd->kvpArr->len; ii++) {
+        fprintf(file, "%s[%u]=|%s|@%p:=|%s|@%p\n", PFX, ii, nrrd->kvp[0 + 2 * ii],
+                nrrd->kvp[0 + 2 * ii], nrrd->kvp[1 + 2 * ii], nrrd->kvp[1 + 2 * ii]);
+      }
+    } else {
+      for (ii = 0; ii < nrrd->kvpArr->len; ii++) {
+        fprintf(file, "%s[%u]=|%s|:=|%s|\n", PFX, ii, nrrd->kvp[0 + 2 * ii],
+                nrrd->kvp[1 + 2 * ii]);
+      }
+    }
+  }
+  printDescSep(file, PFX, sepStr, sepWidth, "end"); /* ---------------- */
+
+#undef DESC_STRING
+#undef INDENT
+#undef PFX
+}
+
 /*
 ******** nrrdDescribe
 **
 ** writes verbose description of nrrd to given file
+
+2025 note: this is *old* function, written early in Nrrd development. You can tell its
+age from the commented-out code referring to nrrd->min,max,hasNonExist, fields that
+were in the Nrrd a long time ago but are now in NrrdRange. Also, it is not printing
+anything about space and orientation. To implement "unu describe" GLK opted to write a
+new different function nrrdDescribeMore (above), and keep this living fossil as is,
+rather than try to make its output be generated by one particular parameterization of
+nrrdDescribeMore.
+
 */
 void
 nrrdDescribe(FILE *file, const Nrrd *nrrd) {
@@ -928,8 +1143,8 @@ _nrrdFieldCheck_kinds(const Nrrd *nrrd, int useBiff) {
   return 0;
 }
 
-/* (no Biff annotation because currently scan-symbols.py refrains from annotating static
-   functions that do NOT use biff) */
+/* (no Biff annotation because currently scan-symbols.py refrains from annotating
+   static functions that do NOT use biff) */
 static int
 _nrrdFieldCheck_labels(const Nrrd *nrrd, int useBiff) {
   /* static const char me[] = "_nrrdFieldCheck_labels"; */
@@ -1369,8 +1584,8 @@ nrrdSanity(void) {
   airLLong tmpLLI;
   airULLong tmpULLI;
   /* (much like with air/sane.c airSanity())  for Teem v1.13 GLK decided to remove this
-     optimization, which meant that this function could only run through its tests once.
-     Global state, especially if hidden like this, is fishy (and flagged by
+     optimization, which meant that this function could only run through its tests
+  once. Global state, especially if hidden like this, is fishy (and flagged by
      teem/src/_util/scan-symbols.py). This function actually reads the values of other
      global variables (like nrrdDefaultWriteEncodingType) which can absolutely change
      between calls, so this also is not a valid optimization. If profiling reveals this

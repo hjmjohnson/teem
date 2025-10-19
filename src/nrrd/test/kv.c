@@ -17,7 +17,6 @@
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #include "../nrrd.h"
 
 void
@@ -30,27 +29,25 @@ usage(char *me) {
 int
 main(int argc, char **argv) {
   char *me, *err, *value;
-  const char *key="strong bad";
+  const char *key = "strong bad";
   Nrrd *nrrd;
   NrrdIoState *io;
 
   me = argv[0];
-  if (2 != argc)
-    usage(me);
+  if (2 != argc) usage(me);
 
   io = nrrdIoStateNew();
-  nrrdStateVerboseIO = 10;
+  io->verbose = 10;
 
-  if (nrrdLoad(nrrd=nrrdNew(), argv[1], NULL)) {
-    fprintf(stderr, "%s: trouble loading \"%s\":\n%s",
-            me, argv[1], err = biffGetDone(NRRD));
+  if (nrrdLoad(nrrd = nrrdNew(), argv[1], NULL)) {
+    fprintf(stderr, "%s: trouble loading \"%s\":\n%s", me, argv[1],
+            err = biffGetDone(NRRD));
     free(err);
     exit(1);
   }
 
   if ((value = nrrdKeyValueGet(nrrd, key))) {
-    fprintf(stderr, "%s: '%s':='%s' (%d)\n", me, key, value,
-            (int)strlen(value));
+    fprintf(stderr, "%s: '%s':='%s' (%d)\n", me, key, value, (int)strlen(value));
   } else {
     fprintf(stderr, "%s: value not found for key: %s\n", me, key);
   }

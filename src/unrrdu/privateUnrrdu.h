@@ -71,6 +71,7 @@ unu commands.  Functional programming meets the C pre-processor.  Therefore:
   F(w2i)                                                                                \
   F(make)                                                                               \
   F(head)                                                                               \
+  F(describe)                                                                           \
   F(data)                                                                               \
   F(convert)                                                                            \
   F(resample)                                                                           \

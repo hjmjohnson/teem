@@ -1082,12 +1082,12 @@ traceread(pullTrace *trc, FILE *file, unsigned int _ti) {
   } else {                                                                              \
     airOneLine(file, line, AIR_STRLEN_MED + 1);                                         \
   }
-  hackhack = nrrdStateVerboseIO; /* HEY should be fixed in TeemV2 */
-  nrrdStateVerboseIO = 0;
+  hackhack = nrrdDefaultVerboseIO;
+  nrrdDefaultVerboseIO = 0;
   READ(vert);
   READ(strn);
   READ(stab);
-  nrrdStateVerboseIO = hackhack;
+  nrrdDefaultVerboseIO = hackhack;
 
   sprintf(name, "seed idx");
   lineLen = airOneLine(file, line, AIR_STRLEN_MED + 1);
