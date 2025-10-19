@@ -673,10 +673,8 @@ extern int nrrdStateKindNoop;
 /* ---- BEGIN non-NrrdIO */
 extern const char *const nrrdEnvVarDefaultWriteEncodingType;
 extern const char *const nrrdEnvVarDefaultWriteBareText;
-extern const char *const nrrdEnvVarDefaultWriteBareTextOld;
 extern const char *const nrrdEnvVarDefaultWriteMoreThanFloatInText;
 extern const char *const nrrdEnvVarDefaultCenter;
-extern const char *const nrrdEnvVarDefaultCenterOld;
 extern const char *const nrrdEnvVarDefaultWriteCharsPerLine;
 extern const char *const nrrdEnvVarDefaultWriteValsPerLine;
 extern const char *const nrrdEnvVarDefaultKernelParm0;
@@ -698,7 +696,7 @@ extern int nrrdGetenvEnum(int *val, char **envStr, const airEnum *enm,
 extern int nrrdGetenvInt(int *val, char **envStr, const char *envVar);
 extern int nrrdGetenvUInt(unsigned int *val, char **envStr, const char *envVar);
 extern int nrrdGetenvDouble(double *val, char **envStr, const char *envVar);
-extern int nrrdGetenvString(char **envStr, const char *envVar);
+extern int nrrdGetenvString(const char **envStr, const char *envVar);
 extern void nrrdDefaultGetenv(void);
 extern void nrrdStateGetenv(void);
 /* ---- END non-NrrdIO */
@@ -851,6 +849,9 @@ extern int nrrdOriginCalculate(const Nrrd *nrrd, unsigned int *axisIdx,
                                     double *origin);
 extern int nrrdContentSet_va(Nrrd *nout, const char *func, const Nrrd *nin,
                                   const char *format, ... /* printf-style arg list */);
+extern void nrrdDescribeMore(FILE *file, const Nrrd *nrrd, const char *pfx,
+                                  int showPtrs, int elideNonExist, int elideUnknown,
+                                  const char *sepStr, unsigned int sepWidth);
 extern void nrrdDescribe(FILE *file, const Nrrd *nrrd);
 extern int nrrdCheck(const Nrrd *nrrd);
 extern int _nrrdCheck(const Nrrd *nrrd, int checkData, int useBiff);
