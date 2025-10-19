@@ -744,10 +744,8 @@ NRRD_EXPORT int nrrdStateKindNoop;
 /* ---- BEGIN non-NrrdIO */
 NRRD_EXPORT const char *const nrrdEnvVarDefaultWriteEncodingType;
 NRRD_EXPORT const char *const nrrdEnvVarDefaultWriteBareText;
-NRRD_EXPORT const char *const nrrdEnvVarDefaultWriteBareTextOld;
 NRRD_EXPORT const char *const nrrdEnvVarDefaultWriteMoreThanFloatInText;
 NRRD_EXPORT const char *const nrrdEnvVarDefaultCenter;
-NRRD_EXPORT const char *const nrrdEnvVarDefaultCenterOld;
 NRRD_EXPORT const char *const nrrdEnvVarDefaultWriteCharsPerLine;
 NRRD_EXPORT const char *const nrrdEnvVarDefaultWriteValsPerLine;
 NRRD_EXPORT const char *const nrrdEnvVarDefaultKernelParm0;

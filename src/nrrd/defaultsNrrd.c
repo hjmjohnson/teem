@@ -106,11 +106,9 @@ _nrrdULLongMaxHelp(airULLong val) {
 const char *const nrrdEnvVarDefaultWriteEncodingType
   = "NRRD_DEFAULT_WRITE_ENCODING_TYPE";
 const char *const nrrdEnvVarDefaultWriteBareText = "NRRD_DEFAULT_WRITE_BARE_TEXT";
-const char *const nrrdEnvVarDefaultWriteBareTextOld = "NRRD_DEF_WRITE_BARE_TEXT";
 const char *const nrrdEnvVarDefaultWriteMoreThanFloatInText
   = "NRRD_DEFAULT_WRITE_MORE_THAN_FLOAT_IN_TEXT";
 const char *const nrrdEnvVarDefaultCenter = "NRRD_DEFAULT_CENTER";
-const char *const nrrdEnvVarDefaultCenterOld = "NRRD_DEF_CENTER";
 const char *const nrrdEnvVarDefaultWriteCharsPerLine
   = "NRRD_DEFAULT_WRITE_CHARS_PER_LINE";
 const char *const nrrdEnvVarDefaultWriteValsPerLine = "NRRD_DEFAULT_WRITE_VALS_PER_LINE";
@@ -286,18 +284,12 @@ nrrdDefaultGetenv(void) {
   static const char me[] = "nrrdDefaultGetenv";
   int setOldWay, oldVal, setNewWay, newVal;
 
-  /* these two pre-date Def --> Default rename */
-  if (-1
-      == nrrdGetenvBool(/**/ &nrrdDefaultWriteBareText, NULL,
-                        nrrdEnvVarDefaultWriteBareTextOld)) {
-    nrrdGetenvBool(/**/ &nrrdDefaultWriteBareText, NULL, nrrdEnvVarDefaultWriteBareText);
-  }
-  if (-1
-      == nrrdGetenvEnum(/**/ &nrrdDefaultCenter, NULL, nrrdCenter,
-                        nrrdEnvVarDefaultCenterOld)) {
-    nrrdGetenvEnum(/**/ &nrrdDefaultCenter, NULL, nrrdCenter, nrrdEnvVarDefaultCenter);
-  }
-  /* these post-date the Def --> Default rename */
+  /*
+   * TeemV2 gone: nrrdEnvVarDefaultWriteBareTextOld = "NRRD_DEF_WRITE_BARE_TEXT"
+   * TeemV2 gone: nrrdEnvVarDefaultCenterOld = "NRRD_DEF_CENTER";
+   */
+  nrrdGetenvBool(/**/ &nrrdDefaultWriteBareText, NULL, nrrdEnvVarDefaultWriteBareText);
+  nrrdGetenvEnum(/**/ &nrrdDefaultCenter, NULL, nrrdCenter, nrrdEnvVarDefaultCenter);
 
   nrrdGetenvBool(/**/ &nrrdDefaultWriteMoreThanFloatInText, NULL,
                  nrrdEnvVarDefaultWriteMoreThanFloatInText);
