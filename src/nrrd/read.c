@@ -34,12 +34,12 @@ static const char *const _nrrdLineSep = "\r\n";
 const char *const _nrrdTextSep = " ,\t";
 const char *const _nrrdNoSpaceVector = "none";
 
-// returns non-zero if given char `cc` is in _nrrdFieldSep
+/* returns non-zero if given char `cc` is in _nrrdFieldSep */
 int
 _nrrdCharIsFieldSep(char cc) {
-  unsigned int fslen = (unsigned int)strlen(_nrrdFieldSep);
+  unsigned int ii, fslen = (unsigned int)strlen(_nrrdFieldSep);
   int ret = 0;
-  for (unsigned int ii = 0; ii < fslen; ii++) {
+  for (ii = 0; ii < fslen; ii++) {
     if (cc == _nrrdFieldSep[ii]) {
       ret = 1;
       break;

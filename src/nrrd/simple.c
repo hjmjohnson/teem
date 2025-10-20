@@ -545,7 +545,7 @@ nrrdDescribeMore(FILE *file, const Nrrd *nrrd, const char *pfx, int showPtrs,
   char stmp[AIR_STRLEN_SMALL + 1];
 
   if (!file) {
-    // nothing to do!
+    /* nothing to do! */
     return;
   }
 #define PFX    (pfx ? pfx : "")
@@ -554,7 +554,7 @@ nrrdDescribeMore(FILE *file, const Nrrd *nrrd, const char *pfx, int showPtrs,
   if ((PTR)) {                                                                          \
     fprintf(file, "%s" IND DLIT "%s=|%s|", PFX, (DSTR), (PTR));                         \
     if (showPtrs) {                                                                     \
-      fprintf(file, "@%p", (PTR));                                                      \
+      fprintf(file, "@%p", AIR_VOIDP(PTR));                                             \
     }                                                                                   \
     fprintf(file, "\n");                                                                \
   } else if (showPtrs) {                                                                \
@@ -694,8 +694,9 @@ nrrdDescribeMore(FILE *file, const Nrrd *nrrd, const char *pfx, int showPtrs,
     fprintf(file, "%skey/value pairs (%u):\n", PFX, nrrd->kvpArr->len);
     if (showPtrs) {
       for (ii = 0; ii < nrrd->kvpArr->len; ii++) {
-        fprintf(file, "%s[%u]=|%s|@%p:=|%s|@%p\n", PFX, ii, nrrd->kvp[0 + 2 * ii],
-                nrrd->kvp[0 + 2 * ii], nrrd->kvp[1 + 2 * ii], nrrd->kvp[1 + 2 * ii]);
+        fprintf(file, "%s[%u]=|%s|@%p:=|%s|@%p\n", PFX, ii,              /* */
+                nrrd->kvp[0 + 2 * ii], AIR_VOIDP(nrrd->kvp[0 + 2 * ii]), /* */
+                nrrd->kvp[1 + 2 * ii], AIR_VOIDP(nrrd->kvp[1 + 2 * ii]));
       }
     } else {
       for (ii = 0; ii < nrrd->kvpArr->len; ii++) {
