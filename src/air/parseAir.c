@@ -78,7 +78,7 @@ airAtod(const char *str) {
   return val;
 }
 
-// NOTE: see info n air.h about TeemV2 changes to all things airType and airParse
+/* NOTE: see info n air.h about TeemV2 changes to all things airType and airParse */
 
 int
 airSingleSscanf(const char *str, const char *fmt, void *ptr) {
