@@ -119,7 +119,8 @@ airSanity(void) {
   }
   if (!(AIR_EXISTS(0.0) && AIR_EXISTS(-0.0)    /* */
         && AIR_EXISTS(1.0) && AIR_EXISTS(-1.0) /* */
-        && AIR_EXISTS(42.42) && AIR_EXISTS(AIR_PI))) {
+        /* not using AIR_PI because NrrdIO doesn't need or define that */
+        && AIR_EXISTS(42.42) && AIR_EXISTS(3.14159265358979323846))) {
     return airInsane_ExistsBad;
   }
   nanF = (float)nanValue;
