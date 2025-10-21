@@ -661,9 +661,8 @@ AIR_EXPORT void airMopSingleOkay(airArray *arr, void *ptr);
 
 /*******     the interminable sea of defines and macros     *******/
 
-#define AIR_TRUE  1
-#define AIR_FALSE 0
-
+#define AIR_TRUE       1
+#define AIR_FALSE      0
 #define AIR_WHITESPACE " \t\n\r\v\f" /* K+R pg. 157 */
 
 /*
