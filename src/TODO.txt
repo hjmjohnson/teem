@@ -105,12 +105,6 @@ nrrd:
   nio->charsPerLine and nio->valsPerLine, which are unsigned int,
   just like nrrdDefaultWriteCharsPerLine and nrrdDefaultWriteValsPerLine)
   and argument to nrrdIoStateSet.
-* with NrrdKernel:
-*******  ?? "when parsing from string, parm[0] is needed" vs "parm[0] defaults to 1.0"
- - add method for answering "do I interpolate?"
- - add fields for "if I don't interpolate, what's my approximate inverse?"
- - add statement of accuracy (in a Taylor series sense)
- - add: am I an odd or even function
 * with NrrdFormat:
  - There is now an available() method, but this is incomplete - EPS is
    something that can be written for images, but not read in general.
@@ -133,7 +127,6 @@ nrrd:
   argument to nrrdFFT?  Is there really no error reporting on fftw_execute,
   fftw_export_wisdom_to_file?
 ******* add support for 16-bit float "half" (start with Milan's patch)
-******* rename nrrd<Func>_nva() --> nrrd<Func>()
 ******* rename nrrdResampleNrrdSet --> nrrdResampleInputSet ?
 * permit replacements for malloc/free (e.g. fftw_malloc, fftw_free) of data
 * resampler: why can't you set a kernel prior to setting input?
