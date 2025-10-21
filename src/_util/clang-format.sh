@@ -10,6 +10,8 @@ if [ "$TODO" = "" ]; then
     exit 1
 fi
 
+rm -rf /tmp/tmp
+
 echo "Running over files: $TODO"
 for F in $TODO; do
     echo ================= $F
