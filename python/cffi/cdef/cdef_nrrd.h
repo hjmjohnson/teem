@@ -1526,6 +1526,7 @@ enum {
   nrrdFormatTypeLast
 };
 #define NRRD_FORMAT_TYPE_MAX 6
+/* ---- BEGIN non-NrrdIO */
 /*
 ******** nrrdBoundary* enum
 **
@@ -1543,6 +1544,7 @@ enum {
   nrrdBoundaryLast
 };
 #define NRRD_BOUNDARY_MAX 5
+/* ---- END non-NrrdIO */
 /*
 ******** nrrdType* enum
 **
@@ -2192,6 +2194,7 @@ enum {
 #define NRRD_SPACE_DIM_MAX 8
 /*                             Max dimension of "space" around array
                                (nrrd->spaceDim) */
+/* ---- BEGIN non-NrrdIO */
 /* HEY: should this be renamed -> MAXNUM ? Would be more consistent
    with other Teem pound-define names */
 #define NRRD_KERNEL_PARMS_NUM 8
@@ -2202,6 +2205,7 @@ enum {
                                 used by anyone using Teem, such as in gage.
                                 Enforcing one global max simplifies
                                 implementation. */
+/* ---- END non-NrrdIO */
 /*
 ** For the 64-bit integer types (not standard except in C99), we used
 ** to try to use the names for the _MIN and _MAX values which are used

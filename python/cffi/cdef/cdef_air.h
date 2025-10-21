@@ -585,8 +585,8 @@ extern void airMopSingleError(airArray *arr, void *ptr);
 extern void airMopSingleOkay(airArray *arr, void *ptr);
 /* ---- END non-NrrdIO */
 /*******     the interminable sea of defines and macros     *******/
-#define AIR_TRUE  1
-#define AIR_FALSE 0
+#define AIR_TRUE       1
+#define AIR_FALSE      0
 /*
 ******** AIR_UNUSED
 **
@@ -615,15 +615,6 @@ extern void airMopSingleOkay(airArray *arr, void *ptr);
 ** as arguments in Teem macros normally are
 */
 /*
-******** AIR_ENDIAN
-**
-** This reflects particulars of hardware which we're running on. The
-** difference from the things starting with TEEM_ is that the TEEM_
-** values are for passing architecture-specific to compilation of source
-** files, and thes AIR_ variables are for advertising that information
-** to anyone linking against air (or Teem) and including air.h.
-*/
-/*
 ******** AIR_NAN, AIR_POS_INF, AIR_NEG_INF
 **
 ** its nice to have these values available without the cost of a
@@ -634,74 +625,38 @@ extern void airMopSingleOkay(airArray *arr, void *ptr);
 ** the NaNs, however, they are only one of many possible
 ** representations.
 */
+/* Gone in TeemV2: size-specific AIR_EXISTS_F, AIR_EXISTS_D, AIR_ISNAN_F macros */
 /*
-******** AIR_EXISTS(x)
+******** AIR_ENDIAN
 **
-** Is non-zero (true) only for x which are not NaN or +/-infinity. Modern C has
-** isfinite() for the same purpose. Teem development started prior to isfinite() being
-** reliably available on the platforms it ran on, and the terminology of "exists" rather
-** than "finite" now pervades Teem source code.
-**
-** Much commentary, from a wide-eyed student GLK, used to be here.  The upshot:
-** - Some compilers, with some options, violate IEEE 754 on x == x being false for NaNs
-**   (but, that's moot for this macro because inf == inf).
-** - GLK now believes that whether denormals are flushed to zero, and the role of
-**   extended precision FP registers, are also moot for this macro, but welcomes
-**   counterexamples or expert guidance.
-**
-** The current definition based on "!(x-x)" has seemed to work since 2012.  With
-** -Wfloat-conversion, Clang warns that "implicit conversion turns floating-point number
-** into integer" with x-x being the operand of "!", which is unfortunate. But there is
-** no undefined behavior, at least as detected by clang -fsanitize=undefined, in !NaN
-** (as arising from !(NaN-NaN) or !(inf-inf)). BTW GLK is unsure why the current macro
-** explicitly casts the result of "!" to int, since "!" already produces an int:
-** https://en.cppreference.com/w/c/language/operator_logical. A more straight-forward
-** alternative, which avoids float conversion warnings, would be to use "x-x == x-x"
-**
-** Configuring with CMake uses teem/CMake/TestAIR_EXISTS.c (and tries to compile it the
-** same as the rest of Teem will be compiled) to test this macro (but NOTE: it has to be
-** copy-pasted to there since it can't read air.h), which then produces
-** teem-install-dir/include/teem/airExistsConf.h, which #define's AIR_EXISTS_MACRO_FAILS
-** or not, which controls whether AIR_EXISTS here uses the clever macro or the more
-** reliable function call airExists. There may yet be failure modes untested by
-** TestAIR_EXISTS.c, and by the tests in air/airSanity().
-*/
-/* ---- BEGIN non-NrrdIO */
-/* clang-format off */
-/*
-******** AIR_EXISTS_F(x)
-**
-** This is another way to check for non-specialness (not NaN, not +inf, not -inf) of
-** a _float_ _variable_, by making sure the exponent field isn't all ones.
-**
-** Unlike with AIR_EXISTS() or airExists(), this macro argument MUST be a variable of
-** type (4-byte) float, and 4 == sizeof(int): there is no implicit type converstion as
-** part of macro expansion.
-**
-** This macro is endian-safe.
+** This reflects particulars of hardware which we're running on. The
+** difference from the things starting with TEEM_ is that the TEEM_
+** values are for passing architecture-specific to compilation of source
+** files, and thes AIR_ variables are for advertising that information
+** to anyone linking against air (or Teem) and including air.h.
 */
 /*
-******** AIR_EXISTS_D(x)
+******** AIR_COMPARE(a,b)
 **
-** like AIR_EXISTS_F(), but the argument here MUST be a (8-byte) double variable
+** the sort of compare that qsort() wants for ascending sort
 */
 /*
-******** AIR_ISNAN_F(x)
+******** AIR_MOD(i, N)
 **
-** detects if a float is NaN by looking at the bits, without relying on any of its
-** arithmetic properties.  As with AIR_EXISTS_F(), this only works when the argument
-** is a float variable, and when floats and ints are 4-bytes.
+** returns that integer in [0, N-1] which is i plus a multiple of N. It may be
+** unfortunate that the expression (i)%(N) appears three times; we can hope the compiler
+** optimizes the common sub-expression.
+**
+** NOTE: !! Results will not be as expected if i and N differ in sign-ed-ness !!
+**
+** Note: integer divisions are not very fast on some modern chips; don't go silly using
+** this one.
 */
 /* ---- END non-NrrdIO */
 /*
 ******** AIR_MAX(a,b), AIR_MIN(a,b), AIR_ABS(a)
 **
 ** the usual
-*/
-/*
-******** AIR_COMPARE(a,b)
-**
-** the sort of compare that qsort() wants for ascending sort
 */
 /*
 ******** AIR_IN_OP(a,b,c), AIR_IN_CL(a,b,c)
@@ -718,23 +673,7 @@ extern void airMopSingleOkay(airArray *arr, void *ptr);
 ** returns the middle argument, after being clamped to the closed
 ** interval defined by the first and third arguments
 */
-/*
-******** AIR_MOD(i, N)
-**
-** returns that integer in [0, N-1] which is i plus a multiple of N. It may be
-** unfortunate that the expression (i)%(N) appears three times; we can hope the compiler
-** optimizes the common sub-expression.
-**
-** NOTE: !! Results will not be as expected if i and N differ in sign-ed-ness !!
-**
-** Note: integer divisions are not very fast on some modern chips; don't go silly using
-** this one.
-*/
-/*
-******** AIR_LERP(w, a, b)
-**
-** returns a when w=0, and b when w=1, and linearly varies in between
-*/
+/* ---- BEGIN non-NrrdIO */
 /*
 ******** AIR_AFFINE(i,x,I,o,O)
 **
@@ -753,6 +692,11 @@ extern void airMopSingleOkay(airArray *arr, void *ptr);
 ** NOTE that "x" is evaluated only once (which makes this more useful),
 ** as is "I" and "O" (usually not so important); "i" and "o" are each
 ** evaluated twice
+*/
+/*
+******** AIR_LERP(w, a, b)
+**
+** returns a when w=0, and b when w=1, and linearly varies in between
 */
 /*
 ******** AIR_DELTA(i,x,I,o,O)
@@ -775,3 +719,4 @@ extern void airMopSingleOkay(airArray *arr, void *ptr);
 **
 ** rounds integers up or down; just wrappers around floor and ceil
 */
+/* ---- END non-NrrdIO */
