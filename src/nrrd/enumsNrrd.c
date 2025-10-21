@@ -789,7 +789,7 @@ _nrrdSpacingStatusStr[NRRD_SPACING_STATUS_MAX+1] = {
 };
 
 static const char *
-_nrrdSpacingStatusDesc[NRRD_BOUNDARY_MAX+1] = {
+_nrrdSpacingStatusDesc[NRRD_SPACING_STATUS_MAX+1] = {
   "unknown spacing status behavior",
   "neither axis->spacing nor axis->spaceDirection set",
   "axis->spacing set normally",
@@ -949,6 +949,7 @@ _nrrdOrientationHave = {
 const airEnum *const
 nrrdOrientationHave = &_nrrdOrientationHave;
 
+/* ---- BEGIN non-NrrdIO */
 /* ------------------------ nrrdBoundary ------------------------- */
 
 static const char *

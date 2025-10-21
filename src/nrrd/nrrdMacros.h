@@ -24,6 +24,20 @@
 extern "C" {
 #endif
 
+/* ---- BEGIN non-NrrdIO */
+/*
+******** NRRD_SPACING
+**
+** the guts of nrrdAxisSpacing(), determines the inter-sample
+** spacing, given centering, min and max "position", and number of samples
+**
+** Unlike nrrdAxisSpacing, this assumes that center is either
+** nrrdCenterCell or nrrdCenterNode, but not nrrdCenterUnknown.
+*/
+#define NRRD_SPACING(center, min, max, size)                                            \
+  (nrrdCenterCell == center ? ((max) - (min)) / AIR_CAST(double, size)                  \
+                            : ((max) - (min)) / (AIR_CAST(double, (size) - 1)))
+
 /*
 ******** NRRD_CELL_POS, NRRD_NODE_POS, NRRD_POS
 ******** NRRD_CELL_IDX, NRRD_NODE_IDX, NRRD_IDX
@@ -59,18 +73,7 @@ extern "C" {
   (nrrdCenterCell == (center) ? NRRD_CELL_IDX((min), (max), (size), (pos))              \
                               : NRRD_NODE_IDX((min), (max), (size), (pos)))
 
-/*
-******** NRRD_SPACING
-**
-** the guts of nrrdAxisSpacing(), determines the inter-sample
-** spacing, given centering, min and max "position", and number of samples
-**
-** Unlike nrrdAxisSpacing, this assumes that center is either
-** nrrdCenterCell or nrrdCenterNode, but not nrrdCenterUnknown.
-*/
-#define NRRD_SPACING(center, min, max, size)                                            \
-  (nrrdCenterCell == center ? ((max) - (min)) / AIR_CAST(double, size)                  \
-                            : ((max) - (min)) / (AIR_CAST(double, (size) - 1)))
+/* ---- END non-NrrdIO */
 
 /*
 ******** NRRD_COORD_UPDATE

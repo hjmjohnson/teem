@@ -77,6 +77,7 @@ enum {
 };
 #define NRRD_FORMAT_TYPE_MAX 6
 
+/* ---- BEGIN non-NrrdIO */
 /*
 ******** nrrdBoundary* enum
 **
@@ -94,6 +95,7 @@ enum {
   nrrdBoundaryLast
 };
 #define NRRD_BOUNDARY_MAX 5
+/* ---- END non-NrrdIO */
 
 /*
 ******** nrrdType* enum

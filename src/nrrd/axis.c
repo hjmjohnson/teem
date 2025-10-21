@@ -678,6 +678,7 @@ _nrrdCenter2(int center, int defCenter) {
   return center;
 }
 
+/* ---- BEGIN non-NrrdIO */
 /*
 ******** nrrdAxisInfoPos()
 **
@@ -889,7 +890,6 @@ nrrdAxisInfoMinMaxSet(Nrrd *nrrd, unsigned int ax, int defCenter) {
 
   return;
 }
-/* ---- BEGIN non-NrrdIO */
 
 /*
 ** not using the value comparators in accessors.c because of their

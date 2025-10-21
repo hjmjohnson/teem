@@ -42,6 +42,7 @@ extern "C" {
 #define NRRD_EXT_TEXT ".txt"
 #define NRRD_EXT_EPS  ".eps"
 
+/* ---- BEGIN non-NrrdIO */
 /* HEY: should this be renamed -> MAXNUM ? Would be more consistent
    with other Teem pound-define names */
 #define NRRD_KERNEL_PARMS_NUM 8
@@ -52,6 +53,7 @@ extern "C" {
                                 used by anyone using Teem, such as in gage.
                                 Enforcing one global max simplifies
                                 implementation. */
+/* ---- END non-NrrdIO */
 
 /*
 ** For the 64-bit integer types (not standard except in C99), we used

@@ -724,6 +724,8 @@ AIR_EXPORT void airMopSingleOkay(airArray *arr, void *ptr);
 #define AIR_POS_INF (airFloatPosInf.f)
 #define AIR_NEG_INF (airFloatNegInf.f)
 
+/* NrrdIO-hack-002 */ /* simpler AIR_EXISTS for NrrdIO */
+/* ---- BEGIN non-NrrdIO */
 /*
 ******** AIR_EXISTS(x)
 **
@@ -756,21 +758,17 @@ AIR_EXPORT void airMopSingleOkay(airArray *arr, void *ptr);
 ** reliable function call airExists. There may yet be failure modes untested by
 ** TestAIR_EXISTS.c, and by the tests in air/airSanity().
 */
-/* ---- BEGIN non-NrrdIO */
 #if !defined(TEEM_NON_CMAKE)
 #  include "teem/airExistsConf.h"
 #endif
-/* ---- END non-NrrdIO */
 
 /* clang-format off */
-#if defined(_WIN32) || defined(__ECC) || defined(AIR_EXISTS_MACRO_FAILS) /* NrrdIO-hack-002 */
+#if defined(_WIN32) || defined(__ECC) || defined(AIR_EXISTS_MACRO_FAILS)
 #define AIR_EXISTS(x) (airExists(x))
 #else
 #define AIR_EXISTS(x) (AIR_CAST(int, !((x) - (x))))
 #endif
 /* clang-format on */
-
-/* ---- BEGIN non-NrrdIO */
 
 /*
 ******** AIR_EXISTS_F(x)
