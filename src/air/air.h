@@ -710,17 +710,6 @@ AIR_EXPORT void airMopSingleOkay(airArray *arr, void *ptr);
 #define AIR_CALLOC(N, T) (T *)(calloc((N), sizeof(T)))
 
 /*
-******** AIR_ENDIAN
-**
-** This reflects particulars of hardware which we're running on. The
-** difference from the things starting with TEEM_ is that the TEEM_
-** values are for passing architecture-specific to compilation of source
-** files, and thes AIR_ variables are for advertising that information
-** to anyone linking against air (or Teem) and including air.h.
-*/
-#define AIR_ENDIAN (airMyEndian())
-
-/*
 ******** AIR_NAN, AIR_POS_INF, AIR_NEG_INF
 **
 ** its nice to have these values available without the cost of a
@@ -817,6 +806,38 @@ AIR_EXPORT void airMopSingleOkay(airArray *arr, void *ptr);
   ((((*((unsigned int *)&(x))) & 0x7f800000) == 0x7f800000)                             \
    && ((*((unsigned int *)&(x))) & 0x007fffff))
 
+/*
+******** AIR_ENDIAN
+**
+** This reflects particulars of hardware which we're running on. The
+** difference from the things starting with TEEM_ is that the TEEM_
+** values are for passing architecture-specific to compilation of source
+** files, and thes AIR_ variables are for advertising that information
+** to anyone linking against air (or Teem) and including air.h.
+*/
+#define AIR_ENDIAN (airMyEndian())
+
+/*
+******** AIR_COMPARE(a,b)
+**
+** the sort of compare that qsort() wants for ascending sort
+*/
+#define AIR_COMPARE(a, b) ((a) < (b) ? -1 : ((a) > (b) ? 1 : 0))
+
+/*
+******** AIR_MOD(i, N)
+**
+** returns that integer in [0, N-1] which is i plus a multiple of N. It may be
+** unfortunate that the expression (i)%(N) appears three times; we can hope the compiler
+** optimizes the common sub-expression.
+**
+** NOTE: !! Results will not be as expected if i and N differ in sign-ed-ness !!
+**
+** Note: integer divisions are not very fast on some modern chips; don't go silly using
+** this one.
+*/
+#define AIR_MOD(i, N) ((i) % (N) >= 0 ? (i) % (N) : N + (i) % (N))
+
 /* ---- END non-NrrdIO */
 
 /*
@@ -827,13 +848,6 @@ AIR_EXPORT void airMopSingleOkay(airArray *arr, void *ptr);
 #define AIR_MAX(a, b) ((a) > (b) ? (a) : (b))
 #define AIR_MIN(a, b) ((a) < (b) ? (a) : (b))
 #define AIR_ABS(a)    ((a) > 0.0f ? (a) : -(a))
-
-/*
-******** AIR_COMPARE(a,b)
-**
-** the sort of compare that qsort() wants for ascending sort
-*/
-#define AIR_COMPARE(a, b) ((a) < (b) ? -1 : ((a) > (b) ? 1 : 0))
 
 /*
 ******** AIR_IN_OP(a,b,c), AIR_IN_CL(a,b,c)
@@ -856,27 +870,6 @@ AIR_EXPORT void airMopSingleOkay(airArray *arr, void *ptr);
 #define AIR_CLAMP(a, b, c) ((b) < (a) ? (a) : ((b) > (c) ? (c) : (b)))
 
 /*
-******** AIR_MOD(i, N)
-**
-** returns that integer in [0, N-1] which is i plus a multiple of N. It may be
-** unfortunate that the expression (i)%(N) appears three times; we can hope the compiler
-** optimizes the common sub-expression.
-**
-** NOTE: !! Results will not be as expected if i and N differ in sign-ed-ness !!
-**
-** Note: integer divisions are not very fast on some modern chips; don't go silly using
-** this one.
-*/
-#define AIR_MOD(i, N) ((i) % (N) >= 0 ? (i) % (N) : N + (i) % (N))
-
-/*
-******** AIR_LERP(w, a, b)
-**
-** returns a when w=0, and b when w=1, and linearly varies in between
-*/
-#define AIR_LERP(w, a, b) ((w) * ((b) - (a)) + (a))
-
-/*
 ******** AIR_AFFINE(i,x,I,o,O)
 **
 ** given intervals [i,I], [o,O] and a value x which may or may not be
@@ -897,6 +890,14 @@ AIR_EXPORT void airMopSingleOkay(airArray *arr, void *ptr);
 */
 #define AIR_AFFINE(i, x, I, o, O)                                                       \
   (((double)(O) - (o)) * ((double)(x) - (i)) / ((double)(I) - (i)) + (o))
+
+/* ---- BEGIN non-NrrdIO */
+/*
+******** AIR_LERP(w, a, b)
+**
+** returns a when w=0, and b when w=1, and linearly varies in between
+*/
+#define AIR_LERP(w, a, b) ((w) * ((b) - (a)) + (a))
 
 /*
 ******** AIR_DELTA(i,x,I,o,O)
@@ -926,6 +927,7 @@ AIR_EXPORT void airMopSingleOkay(airArray *arr, void *ptr);
 #define AIR_ROUNDDOWN(x)    ((int)(ceil((x) - 0.5)))
 #define AIR_ROUNDUP_UI(x)   ((unsigned int)(floor((x) + 0.5)))
 #define AIR_ROUNDDOWN_UI(x) ((unsigned int)(ceil((x) - 0.5)))
+/* ---- END non-NrrdIO */
 
 #ifdef __cplusplus
 }
