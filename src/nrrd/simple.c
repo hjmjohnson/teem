@@ -635,11 +635,13 @@ nrrdDescribeMore(FILE *file, const Nrrd *nrrd, const char *pfx, int showPtrs,
     airSinglePrintf(file, NULL, "The old min, old max values are %lg", nrrd->oldMin);
     airSinglePrintf(file, NULL, ", %lg\n", nrrd->oldMax);
   }
-  fprintf(file, "%sElementNumber=%s\n", PFX,
+  fprintf(file, "%selementNumber=%s\n", PFX,
           airSprintSize_t(stmp, nrrdElementNumber(nrrd)));
   fprintf(file, "%stype=%s\n", PFX, airEnumStr(nrrdType, nrrd->type));
   if (nrrdTypeBlock == nrrd->type) {
     fprintf(file, "%sblockSize=%s\n", PFX, airSprintSize_t(stmp, nrrd->blockSize));
+  } else {
+    fprintf(file, "%selementSize=%u\n", PFX, (unsigned int)nrrdElementSize(nrrd));
   }
   printDescSep(file, PFX, sepStr, sepWidth, "axes"); /* ---------------- */
   fprintf(file, "%s%u-dimensional array, with axes:\n", PFX, nrrd->dim);
