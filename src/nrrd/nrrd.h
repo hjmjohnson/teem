@@ -1380,7 +1380,6 @@ NRRD_EXPORT NrrdResampleContext *nrrdResampleContextNew(void);
 NRRD_EXPORT NrrdResampleContext *nrrdResampleContextNix(NrrdResampleContext *);
 NRRD_EXPORT int nrrdResampleDefaultCenterSet(NrrdResampleContext *rsmc, int center);
 NRRD_EXPORT int nrrdResampleNonExistentSet(NrrdResampleContext *rsmc, int nonExistent);
-NRRD_EXPORT int nrrdResampleNrrdSet(NrrdResampleContext *rsmc, const Nrrd *nin);
 NRRD_EXPORT int nrrdResampleInputSet(NrrdResampleContext *rsmc, const Nrrd *nin);
 NRRD_EXPORT int nrrdResampleKernelSet(NrrdResampleContext *rsmc,
                                       unsigned int axIdx,

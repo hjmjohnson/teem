@@ -127,7 +127,6 @@ nrrd:
   argument to nrrdFFT?  Is there really no error reporting on fftw_execute,
   fftw_export_wisdom_to_file?
 ******* add support for 16-bit float "half" (start with Milan's patch)
-******* rename nrrdResampleNrrdSet --> nrrdResampleInputSet ?
 * permit replacements for malloc/free (e.g. fftw_malloc, fftw_free) of data
 * resampler: why can't you set a kernel prior to setting input?
 [nrrd] nrrdDeringExecute: trouble on setup

@@ -205,59 +205,47 @@ nrrdResampleNonExistentSet(NrrdResampleContext *rsmc, int nonExist) {
   return 0;
 }
 
-#define NRRD_RESAMPLE_INPUT_SET_BODY                                                    \
-  unsigned int axIdx, kpIdx;                                                            \
-                                                                                        \
-  if (!(rsmc && nin)) {                                                                 \
-    biffAddf(NRRD, "%s: got NULL pointer", me);                                         \
-    return 1;                                                                           \
-  }                                                                                     \
-  if (nrrdCheck(nin)) {                                                                 \
-    biffAddf(NRRD, "%s: problems with given nrrd", me);                                 \
-    return 1;                                                                           \
-  }                                                                                     \
-  if (nrrdTypeBlock == nin->type) {                                                     \
-    biffAddf(NRRD, "%s: can't resample from type %s", me,                               \
-             airEnumStr(nrrdType, nrrdTypeBlock));                                      \
-    return 1;                                                                           \
-  }                                                                                     \
-                                                                                        \
-  rsmc->nin = nin;                                                                      \
-  rsmc->flag[flagInput] = AIR_TRUE;                                                     \
-                                                                                        \
-  /* per-axis information should be invalidated at this point, because                  \
-     if we defer the invalidation to later ...Update() calls, it will                   \
-     clobber the effects of intervening calls to the likes of                           \
-     ...KernelSet(), ...SampleSet(), and so on */                                       \
-  if (rsmc->dim != nin->dim) {                                                          \
-    for (axIdx = 0; axIdx < NRRD_DIM_MAX; axIdx++) {                                    \
-      rsmc->axis[axIdx].center = nrrdCenterUnknown;                                     \
-      rsmc->axis[axIdx].sizeIn = 0;                                                     \
-      rsmc->axis[axIdx].kernel = NULL;                                                  \
-      rsmc->axis[axIdx].kparm[0] = 1 /* Gone in TeemV2: nrrdDefaultKernelParm0 */;      \
-      for (kpIdx = 1; kpIdx < NRRD_KERNEL_PARM_MAXNUM; kpIdx++) {                       \
-        rsmc->axis[axIdx].kparm[kpIdx] = AIR_NAN;                                       \
-      }                                                                                 \
-      rsmc->axis[axIdx].samples = 0;                                                    \
-      rsmc->axis[axIdx].min = AIR_NAN;                                                  \
-      rsmc->axis[axIdx].max = AIR_NAN;                                                  \
-    }                                                                                   \
-  }                                                                                     \
-                                                                                        \
-  return 0
-
-int /* Biff: nope */
-nrrdResampleNrrdSet(NrrdResampleContext *rsmc, const Nrrd *nin) {
-  static const char me[] = "nrrdResampleNrrdSet";
-
-  NRRD_RESAMPLE_INPUT_SET_BODY;
-}
-
 int /* Biff: nope */
 nrrdResampleInputSet(NrrdResampleContext *rsmc, const Nrrd *nin) {
   static const char me[] = "nrrdResampleInputSet";
+  unsigned int axIdx, kpIdx;
 
-  NRRD_RESAMPLE_INPUT_SET_BODY;
+  if (!(rsmc && nin)) {
+    biffAddf(NRRD, "%s: got NULL pointer", me);
+    return 1;
+  }
+  if (nrrdCheck(nin)) {
+    biffAddf(NRRD, "%s: problems with given nrrd", me);
+    return 1;
+  }
+  if (nrrdTypeBlock == nin->type) {
+    biffAddf(NRRD, "%s: can't resample from type %s", me,
+             airEnumStr(nrrdType, nrrdTypeBlock));
+    return 1;
+  }
+
+  rsmc->nin = nin;
+  rsmc->flag[flagInput] = AIR_TRUE;
+
+  /* per-axis information should be invalidated at this point, because
+     if we defer the invalidation to later ...Update() calls, it will
+     clobber the effects of intervening calls to the likes of
+     ...KernelSet(), ...SampleSet(), and so on */
+  if (rsmc->dim != nin->dim) {
+    for (axIdx = 0; axIdx < NRRD_DIM_MAX; axIdx++) {
+      rsmc->axis[axIdx].center = nrrdCenterUnknown;
+      rsmc->axis[axIdx].sizeIn = 0;
+      rsmc->axis[axIdx].kernel = NULL;
+      rsmc->axis[axIdx].kparm[0] = 1 /* Gone in TeemV2: nrrdDefaultKernelParm0 */;
+      for (kpIdx = 1; kpIdx < NRRD_KERNEL_PARM_MAXNUM; kpIdx++) {
+        rsmc->axis[axIdx].kparm[kpIdx] = AIR_NAN;
+      }
+      rsmc->axis[axIdx].samples = 0;
+      rsmc->axis[axIdx].min = AIR_NAN;
+      rsmc->axis[axIdx].max = AIR_NAN;
+    }
+  }
+  return 0;
 }
 
 #define PER_AXIS_ERROR_CHECK                                                            \

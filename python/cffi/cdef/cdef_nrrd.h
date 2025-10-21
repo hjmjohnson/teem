@@ -1267,7 +1267,6 @@ extern NrrdResampleContext *nrrdResampleContextNew(void);
 extern NrrdResampleContext *nrrdResampleContextNix(NrrdResampleContext *);
 extern int nrrdResampleDefaultCenterSet(NrrdResampleContext *rsmc, int center);
 extern int nrrdResampleNonExistentSet(NrrdResampleContext *rsmc, int nonExistent);
-extern int nrrdResampleNrrdSet(NrrdResampleContext *rsmc, const Nrrd *nin);
 extern int nrrdResampleInputSet(NrrdResampleContext *rsmc, const Nrrd *nin);
 extern int nrrdResampleKernelSet(NrrdResampleContext *rsmc,
                                       unsigned int axIdx,
