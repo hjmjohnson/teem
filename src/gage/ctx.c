@@ -212,9 +212,9 @@ gageKernelSet(gageContext *ctx, int which, const NrrdKernel *k, const double *kp
     fprintf(stderr, "%s: which = %d -> %s\n", me, which, airEnumStr(gageKernel, which));
   }
   parmNum = k->parmNum;
-  if (!(AIR_IN_CL(0, parmNum, NRRD_KERNEL_PARMS_NUM))) {
+  if (!(AIR_IN_CL(0, parmNum, NRRD_KERNEL_PARM_MAXNUM))) {
     biffAddf(GAGE, "%s: kernel's parmNum (%d) not in range [%d,%d]", me, parmNum, 0,
-             NRRD_KERNEL_PARMS_NUM);
+             NRRD_KERNEL_PARM_MAXNUM);
     return 1;
   }
   support = k->support(kparm);

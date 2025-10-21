@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -86,8 +86,8 @@ _nrrd_TMFBAD_N_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernel_TMFBAD = {
-  "TMFBAD",
-  1, _nrrd_TMFBAD_Sup, _nrrd_TMFBAD_Int,
+  "TMFBAD", 1, AIR_FALSE,
+  _nrrd_TMFBAD_Sup, _nrrd_TMFBAD_Int,
   _nrrd_TMFBAD_1_f, _nrrd_TMFBAD_N_f,
   _nrrd_TMFBAD_1_d, _nrrd_TMFBAD_N_d
 };
@@ -850,10 +850,10 @@ _nrrd_TMF_dn_cn_1ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_dn_cn_1ef = {
-  "TMF_dn_cn_1ef",
-  1, _nrrd_TMF_dn_cn_1ef_Sup, _nrrd_TMF_dn_cn_1ef_Int,
+  "TMF_dn_cn_1ef", 1, AIR_FALSE,
+  _nrrd_TMF_dn_cn_1ef_Sup, _nrrd_TMF_dn_cn_1ef_Int,
   _nrrd_TMF_dn_cn_1ef_1_f,  _nrrd_TMF_dn_cn_1ef_N_f,
   _nrrd_TMF_dn_cn_1ef_1_d,  _nrrd_TMF_dn_cn_1ef_N_d
 };
@@ -923,10 +923,10 @@ _nrrd_TMF_dn_cn_2ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_dn_cn_2ef = {
-  "TMF_dn_cn_2ef",
-  1, _nrrd_TMF_dn_cn_2ef_Sup, _nrrd_TMF_dn_cn_2ef_Int,
+  "TMF_dn_cn_2ef", 1, AIR_FALSE,
+  _nrrd_TMF_dn_cn_2ef_Sup, _nrrd_TMF_dn_cn_2ef_Int,
   _nrrd_TMF_dn_cn_2ef_1_f,  _nrrd_TMF_dn_cn_2ef_N_f,
   _nrrd_TMF_dn_cn_2ef_1_d,  _nrrd_TMF_dn_cn_2ef_N_d
 };
@@ -996,10 +996,10 @@ _nrrd_TMF_dn_cn_3ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_dn_cn_3ef = {
-  "TMF_dn_cn_3ef",
-  1, _nrrd_TMF_dn_cn_3ef_Sup, _nrrd_TMF_dn_cn_3ef_Int,
+  "TMF_dn_cn_3ef", 1, AIR_FALSE,
+  _nrrd_TMF_dn_cn_3ef_Sup, _nrrd_TMF_dn_cn_3ef_Int,
   _nrrd_TMF_dn_cn_3ef_1_f,  _nrrd_TMF_dn_cn_3ef_N_f,
   _nrrd_TMF_dn_cn_3ef_1_d,  _nrrd_TMF_dn_cn_3ef_N_d
 };
@@ -1069,10 +1069,10 @@ _nrrd_TMF_dn_cn_4ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_dn_cn_4ef = {
-  "TMF_dn_cn_4ef",
-  1, _nrrd_TMF_dn_cn_4ef_Sup, _nrrd_TMF_dn_cn_4ef_Int,
+  "TMF_dn_cn_4ef", 1, AIR_FALSE,
+  _nrrd_TMF_dn_cn_4ef_Sup, _nrrd_TMF_dn_cn_4ef_Int,
   _nrrd_TMF_dn_cn_4ef_1_f,  _nrrd_TMF_dn_cn_4ef_N_f,
   _nrrd_TMF_dn_cn_4ef_1_d,  _nrrd_TMF_dn_cn_4ef_N_d
 };
@@ -1142,10 +1142,10 @@ _nrrd_TMF_dn_c0_1ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_dn_c0_1ef = {
-  "TMF_dn_c0_1ef",
-  1, _nrrd_TMF_dn_c0_1ef_Sup, _nrrd_TMF_dn_c0_1ef_Int,
+  "TMF_dn_c0_1ef", 1, AIR_FALSE,
+  _nrrd_TMF_dn_c0_1ef_Sup, _nrrd_TMF_dn_c0_1ef_Int,
   _nrrd_TMF_dn_c0_1ef_1_f,  _nrrd_TMF_dn_c0_1ef_N_f,
   _nrrd_TMF_dn_c0_1ef_1_d,  _nrrd_TMF_dn_c0_1ef_N_d
 };
@@ -1215,10 +1215,10 @@ _nrrd_TMF_dn_c0_2ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_dn_c0_2ef = {
-  "TMF_dn_c0_2ef",
-  1, _nrrd_TMF_dn_c0_2ef_Sup, _nrrd_TMF_dn_c0_2ef_Int,
+  "TMF_dn_c0_2ef", 1, AIR_FALSE,
+  _nrrd_TMF_dn_c0_2ef_Sup, _nrrd_TMF_dn_c0_2ef_Int,
   _nrrd_TMF_dn_c0_2ef_1_f,  _nrrd_TMF_dn_c0_2ef_N_f,
   _nrrd_TMF_dn_c0_2ef_1_d,  _nrrd_TMF_dn_c0_2ef_N_d
 };
@@ -1288,10 +1288,10 @@ _nrrd_TMF_dn_c0_3ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_dn_c0_3ef = {
-  "TMF_dn_c0_3ef",
-  1, _nrrd_TMF_dn_c0_3ef_Sup, _nrrd_TMF_dn_c0_3ef_Int,
+  "TMF_dn_c0_3ef", 1, AIR_FALSE,
+  _nrrd_TMF_dn_c0_3ef_Sup, _nrrd_TMF_dn_c0_3ef_Int,
   _nrrd_TMF_dn_c0_3ef_1_f,  _nrrd_TMF_dn_c0_3ef_N_f,
   _nrrd_TMF_dn_c0_3ef_1_d,  _nrrd_TMF_dn_c0_3ef_N_d
 };
@@ -1361,10 +1361,10 @@ _nrrd_TMF_dn_c0_4ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_dn_c0_4ef = {
-  "TMF_dn_c0_4ef",
-  1, _nrrd_TMF_dn_c0_4ef_Sup, _nrrd_TMF_dn_c0_4ef_Int,
+  "TMF_dn_c0_4ef", 1, AIR_FALSE,
+  _nrrd_TMF_dn_c0_4ef_Sup, _nrrd_TMF_dn_c0_4ef_Int,
   _nrrd_TMF_dn_c0_4ef_1_f,  _nrrd_TMF_dn_c0_4ef_N_f,
   _nrrd_TMF_dn_c0_4ef_1_d,  _nrrd_TMF_dn_c0_4ef_N_d
 };
@@ -1434,10 +1434,10 @@ _nrrd_TMF_dn_c1_1ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_dn_c1_1ef = {
-  "TMF_dn_c1_1ef",
-  1, _nrrd_TMF_dn_c1_1ef_Sup, _nrrd_TMF_dn_c1_1ef_Int,
+  "TMF_dn_c1_1ef", 1, AIR_FALSE,
+  _nrrd_TMF_dn_c1_1ef_Sup, _nrrd_TMF_dn_c1_1ef_Int,
   _nrrd_TMF_dn_c1_1ef_1_f,  _nrrd_TMF_dn_c1_1ef_N_f,
   _nrrd_TMF_dn_c1_1ef_1_d,  _nrrd_TMF_dn_c1_1ef_N_d
 };
@@ -1507,10 +1507,10 @@ _nrrd_TMF_dn_c1_2ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_dn_c1_2ef = {
-  "TMF_dn_c1_2ef",
-  1, _nrrd_TMF_dn_c1_2ef_Sup, _nrrd_TMF_dn_c1_2ef_Int,
+  "TMF_dn_c1_2ef", 1, AIR_FALSE,
+  _nrrd_TMF_dn_c1_2ef_Sup, _nrrd_TMF_dn_c1_2ef_Int,
   _nrrd_TMF_dn_c1_2ef_1_f,  _nrrd_TMF_dn_c1_2ef_N_f,
   _nrrd_TMF_dn_c1_2ef_1_d,  _nrrd_TMF_dn_c1_2ef_N_d
 };
@@ -1580,10 +1580,10 @@ _nrrd_TMF_dn_c1_3ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_dn_c1_3ef = {
-  "TMF_dn_c1_3ef",
-  1, _nrrd_TMF_dn_c1_3ef_Sup, _nrrd_TMF_dn_c1_3ef_Int,
+  "TMF_dn_c1_3ef", 1, AIR_FALSE,
+  _nrrd_TMF_dn_c1_3ef_Sup, _nrrd_TMF_dn_c1_3ef_Int,
   _nrrd_TMF_dn_c1_3ef_1_f,  _nrrd_TMF_dn_c1_3ef_N_f,
   _nrrd_TMF_dn_c1_3ef_1_d,  _nrrd_TMF_dn_c1_3ef_N_d
 };
@@ -1653,10 +1653,10 @@ _nrrd_TMF_dn_c1_4ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_dn_c1_4ef = {
-  "TMF_dn_c1_4ef",
-  1, _nrrd_TMF_dn_c1_4ef_Sup, _nrrd_TMF_dn_c1_4ef_Int,
+  "TMF_dn_c1_4ef", 1, AIR_FALSE,
+  _nrrd_TMF_dn_c1_4ef_Sup, _nrrd_TMF_dn_c1_4ef_Int,
   _nrrd_TMF_dn_c1_4ef_1_f,  _nrrd_TMF_dn_c1_4ef_N_f,
   _nrrd_TMF_dn_c1_4ef_1_d,  _nrrd_TMF_dn_c1_4ef_N_d
 };
@@ -1726,10 +1726,10 @@ _nrrd_TMF_dn_c2_1ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_dn_c2_1ef = {
-  "TMF_dn_c2_1ef",
-  1, _nrrd_TMF_dn_c2_1ef_Sup, _nrrd_TMF_dn_c2_1ef_Int,
+  "TMF_dn_c2_1ef", 1, AIR_FALSE,
+  _nrrd_TMF_dn_c2_1ef_Sup, _nrrd_TMF_dn_c2_1ef_Int,
   _nrrd_TMF_dn_c2_1ef_1_f,  _nrrd_TMF_dn_c2_1ef_N_f,
   _nrrd_TMF_dn_c2_1ef_1_d,  _nrrd_TMF_dn_c2_1ef_N_d
 };
@@ -1799,10 +1799,10 @@ _nrrd_TMF_dn_c2_2ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_dn_c2_2ef = {
-  "TMF_dn_c2_2ef",
-  1, _nrrd_TMF_dn_c2_2ef_Sup, _nrrd_TMF_dn_c2_2ef_Int,
+  "TMF_dn_c2_2ef", 1, AIR_FALSE,
+  _nrrd_TMF_dn_c2_2ef_Sup, _nrrd_TMF_dn_c2_2ef_Int,
   _nrrd_TMF_dn_c2_2ef_1_f,  _nrrd_TMF_dn_c2_2ef_N_f,
   _nrrd_TMF_dn_c2_2ef_1_d,  _nrrd_TMF_dn_c2_2ef_N_d
 };
@@ -1872,10 +1872,10 @@ _nrrd_TMF_dn_c2_3ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_dn_c2_3ef = {
-  "TMF_dn_c2_3ef",
-  1, _nrrd_TMF_dn_c2_3ef_Sup, _nrrd_TMF_dn_c2_3ef_Int,
+  "TMF_dn_c2_3ef", 1, AIR_FALSE,
+  _nrrd_TMF_dn_c2_3ef_Sup, _nrrd_TMF_dn_c2_3ef_Int,
   _nrrd_TMF_dn_c2_3ef_1_f,  _nrrd_TMF_dn_c2_3ef_N_f,
   _nrrd_TMF_dn_c2_3ef_1_d,  _nrrd_TMF_dn_c2_3ef_N_d
 };
@@ -1945,10 +1945,10 @@ _nrrd_TMF_dn_c2_4ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_dn_c2_4ef = {
-  "TMF_dn_c2_4ef",
-  1, _nrrd_TMF_dn_c2_4ef_Sup, _nrrd_TMF_dn_c2_4ef_Int,
+  "TMF_dn_c2_4ef", 1, AIR_FALSE,
+  _nrrd_TMF_dn_c2_4ef_Sup, _nrrd_TMF_dn_c2_4ef_Int,
   _nrrd_TMF_dn_c2_4ef_1_f,  _nrrd_TMF_dn_c2_4ef_N_f,
   _nrrd_TMF_dn_c2_4ef_1_d,  _nrrd_TMF_dn_c2_4ef_N_d
 };
@@ -2018,10 +2018,10 @@ _nrrd_TMF_dn_c3_1ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_dn_c3_1ef = {
-  "TMF_dn_c3_1ef",
-  1, _nrrd_TMF_dn_c3_1ef_Sup, _nrrd_TMF_dn_c3_1ef_Int,
+  "TMF_dn_c3_1ef", 1, AIR_FALSE,
+  _nrrd_TMF_dn_c3_1ef_Sup, _nrrd_TMF_dn_c3_1ef_Int,
   _nrrd_TMF_dn_c3_1ef_1_f,  _nrrd_TMF_dn_c3_1ef_N_f,
   _nrrd_TMF_dn_c3_1ef_1_d,  _nrrd_TMF_dn_c3_1ef_N_d
 };
@@ -2091,10 +2091,10 @@ _nrrd_TMF_dn_c3_2ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_dn_c3_2ef = {
-  "TMF_dn_c3_2ef",
-  1, _nrrd_TMF_dn_c3_2ef_Sup, _nrrd_TMF_dn_c3_2ef_Int,
+  "TMF_dn_c3_2ef", 1, AIR_FALSE,
+  _nrrd_TMF_dn_c3_2ef_Sup, _nrrd_TMF_dn_c3_2ef_Int,
   _nrrd_TMF_dn_c3_2ef_1_f,  _nrrd_TMF_dn_c3_2ef_N_f,
   _nrrd_TMF_dn_c3_2ef_1_d,  _nrrd_TMF_dn_c3_2ef_N_d
 };
@@ -2164,10 +2164,10 @@ _nrrd_TMF_dn_c3_3ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_dn_c3_3ef = {
-  "TMF_dn_c3_3ef",
-  1, _nrrd_TMF_dn_c3_3ef_Sup, _nrrd_TMF_dn_c3_3ef_Int,
+  "TMF_dn_c3_3ef", 1, AIR_FALSE,
+  _nrrd_TMF_dn_c3_3ef_Sup, _nrrd_TMF_dn_c3_3ef_Int,
   _nrrd_TMF_dn_c3_3ef_1_f,  _nrrd_TMF_dn_c3_3ef_N_f,
   _nrrd_TMF_dn_c3_3ef_1_d,  _nrrd_TMF_dn_c3_3ef_N_d
 };
@@ -2237,10 +2237,10 @@ _nrrd_TMF_dn_c3_4ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_dn_c3_4ef = {
-  "TMF_dn_c3_4ef",
-  1, _nrrd_TMF_dn_c3_4ef_Sup, _nrrd_TMF_dn_c3_4ef_Int,
+  "TMF_dn_c3_4ef", 1, AIR_FALSE,
+  _nrrd_TMF_dn_c3_4ef_Sup, _nrrd_TMF_dn_c3_4ef_Int,
   _nrrd_TMF_dn_c3_4ef_1_f,  _nrrd_TMF_dn_c3_4ef_N_f,
   _nrrd_TMF_dn_c3_4ef_1_d,  _nrrd_TMF_dn_c3_4ef_N_d
 };
@@ -2310,10 +2310,10 @@ _nrrd_TMF_d0_cn_1ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d0_cn_1ef = {
-  "TMF_d0_cn_1ef",
-  1, _nrrd_TMF_d0_cn_1ef_Sup, _nrrd_TMF_d0_cn_1ef_Int,
+  "TMF_d0_cn_1ef", 1, AIR_FALSE,
+  _nrrd_TMF_d0_cn_1ef_Sup, _nrrd_TMF_d0_cn_1ef_Int,
   _nrrd_TMF_d0_cn_1ef_1_f,  _nrrd_TMF_d0_cn_1ef_N_f,
   _nrrd_TMF_d0_cn_1ef_1_d,  _nrrd_TMF_d0_cn_1ef_N_d
 };
@@ -2383,10 +2383,10 @@ _nrrd_TMF_d0_cn_2ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d0_cn_2ef = {
-  "TMF_d0_cn_2ef",
-  1, _nrrd_TMF_d0_cn_2ef_Sup, _nrrd_TMF_d0_cn_2ef_Int,
+  "TMF_d0_cn_2ef", 1, AIR_FALSE,
+  _nrrd_TMF_d0_cn_2ef_Sup, _nrrd_TMF_d0_cn_2ef_Int,
   _nrrd_TMF_d0_cn_2ef_1_f,  _nrrd_TMF_d0_cn_2ef_N_f,
   _nrrd_TMF_d0_cn_2ef_1_d,  _nrrd_TMF_d0_cn_2ef_N_d
 };
@@ -2456,10 +2456,10 @@ _nrrd_TMF_d0_cn_3ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d0_cn_3ef = {
-  "TMF_d0_cn_3ef",
-  1, _nrrd_TMF_d0_cn_3ef_Sup, _nrrd_TMF_d0_cn_3ef_Int,
+  "TMF_d0_cn_3ef", 1, AIR_FALSE,
+  _nrrd_TMF_d0_cn_3ef_Sup, _nrrd_TMF_d0_cn_3ef_Int,
   _nrrd_TMF_d0_cn_3ef_1_f,  _nrrd_TMF_d0_cn_3ef_N_f,
   _nrrd_TMF_d0_cn_3ef_1_d,  _nrrd_TMF_d0_cn_3ef_N_d
 };
@@ -2529,10 +2529,10 @@ _nrrd_TMF_d0_cn_4ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d0_cn_4ef = {
-  "TMF_d0_cn_4ef",
-  1, _nrrd_TMF_d0_cn_4ef_Sup, _nrrd_TMF_d0_cn_4ef_Int,
+  "TMF_d0_cn_4ef", 1, AIR_FALSE,
+  _nrrd_TMF_d0_cn_4ef_Sup, _nrrd_TMF_d0_cn_4ef_Int,
   _nrrd_TMF_d0_cn_4ef_1_f,  _nrrd_TMF_d0_cn_4ef_N_f,
   _nrrd_TMF_d0_cn_4ef_1_d,  _nrrd_TMF_d0_cn_4ef_N_d
 };
@@ -2602,10 +2602,10 @@ _nrrd_TMF_d0_c0_1ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d0_c0_1ef = {
-  "TMF_d0_c0_1ef",
-  1, _nrrd_TMF_d0_c0_1ef_Sup, _nrrd_TMF_d0_c0_1ef_Int,
+  "TMF_d0_c0_1ef", 1, AIR_FALSE,
+  _nrrd_TMF_d0_c0_1ef_Sup, _nrrd_TMF_d0_c0_1ef_Int,
   _nrrd_TMF_d0_c0_1ef_1_f,  _nrrd_TMF_d0_c0_1ef_N_f,
   _nrrd_TMF_d0_c0_1ef_1_d,  _nrrd_TMF_d0_c0_1ef_N_d
 };
@@ -2675,10 +2675,10 @@ _nrrd_TMF_d0_c0_2ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d0_c0_2ef = {
-  "TMF_d0_c0_2ef",
-  1, _nrrd_TMF_d0_c0_2ef_Sup, _nrrd_TMF_d0_c0_2ef_Int,
+  "TMF_d0_c0_2ef", 1, AIR_FALSE,
+  _nrrd_TMF_d0_c0_2ef_Sup, _nrrd_TMF_d0_c0_2ef_Int,
   _nrrd_TMF_d0_c0_2ef_1_f,  _nrrd_TMF_d0_c0_2ef_N_f,
   _nrrd_TMF_d0_c0_2ef_1_d,  _nrrd_TMF_d0_c0_2ef_N_d
 };
@@ -2748,10 +2748,10 @@ _nrrd_TMF_d0_c0_3ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d0_c0_3ef = {
-  "TMF_d0_c0_3ef",
-  1, _nrrd_TMF_d0_c0_3ef_Sup, _nrrd_TMF_d0_c0_3ef_Int,
+  "TMF_d0_c0_3ef", 1, AIR_FALSE,
+  _nrrd_TMF_d0_c0_3ef_Sup, _nrrd_TMF_d0_c0_3ef_Int,
   _nrrd_TMF_d0_c0_3ef_1_f,  _nrrd_TMF_d0_c0_3ef_N_f,
   _nrrd_TMF_d0_c0_3ef_1_d,  _nrrd_TMF_d0_c0_3ef_N_d
 };
@@ -2821,10 +2821,10 @@ _nrrd_TMF_d0_c0_4ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d0_c0_4ef = {
-  "TMF_d0_c0_4ef",
-  1, _nrrd_TMF_d0_c0_4ef_Sup, _nrrd_TMF_d0_c0_4ef_Int,
+  "TMF_d0_c0_4ef", 1, AIR_FALSE,
+  _nrrd_TMF_d0_c0_4ef_Sup, _nrrd_TMF_d0_c0_4ef_Int,
   _nrrd_TMF_d0_c0_4ef_1_f,  _nrrd_TMF_d0_c0_4ef_N_f,
   _nrrd_TMF_d0_c0_4ef_1_d,  _nrrd_TMF_d0_c0_4ef_N_d
 };
@@ -2894,10 +2894,10 @@ _nrrd_TMF_d0_c1_1ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d0_c1_1ef = {
-  "TMF_d0_c1_1ef",
-  1, _nrrd_TMF_d0_c1_1ef_Sup, _nrrd_TMF_d0_c1_1ef_Int,
+  "TMF_d0_c1_1ef", 1, AIR_FALSE,
+  _nrrd_TMF_d0_c1_1ef_Sup, _nrrd_TMF_d0_c1_1ef_Int,
   _nrrd_TMF_d0_c1_1ef_1_f,  _nrrd_TMF_d0_c1_1ef_N_f,
   _nrrd_TMF_d0_c1_1ef_1_d,  _nrrd_TMF_d0_c1_1ef_N_d
 };
@@ -2967,10 +2967,10 @@ _nrrd_TMF_d0_c1_2ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d0_c1_2ef = {
-  "TMF_d0_c1_2ef",
-  1, _nrrd_TMF_d0_c1_2ef_Sup, _nrrd_TMF_d0_c1_2ef_Int,
+  "TMF_d0_c1_2ef", 1, AIR_FALSE,
+  _nrrd_TMF_d0_c1_2ef_Sup, _nrrd_TMF_d0_c1_2ef_Int,
   _nrrd_TMF_d0_c1_2ef_1_f,  _nrrd_TMF_d0_c1_2ef_N_f,
   _nrrd_TMF_d0_c1_2ef_1_d,  _nrrd_TMF_d0_c1_2ef_N_d
 };
@@ -3040,10 +3040,10 @@ _nrrd_TMF_d0_c1_3ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d0_c1_3ef = {
-  "TMF_d0_c1_3ef",
-  1, _nrrd_TMF_d0_c1_3ef_Sup, _nrrd_TMF_d0_c1_3ef_Int,
+  "TMF_d0_c1_3ef", 1, AIR_FALSE,
+  _nrrd_TMF_d0_c1_3ef_Sup, _nrrd_TMF_d0_c1_3ef_Int,
   _nrrd_TMF_d0_c1_3ef_1_f,  _nrrd_TMF_d0_c1_3ef_N_f,
   _nrrd_TMF_d0_c1_3ef_1_d,  _nrrd_TMF_d0_c1_3ef_N_d
 };
@@ -3113,10 +3113,10 @@ _nrrd_TMF_d0_c1_4ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d0_c1_4ef = {
-  "TMF_d0_c1_4ef",
-  1, _nrrd_TMF_d0_c1_4ef_Sup, _nrrd_TMF_d0_c1_4ef_Int,
+  "TMF_d0_c1_4ef", 1, AIR_FALSE,
+  _nrrd_TMF_d0_c1_4ef_Sup, _nrrd_TMF_d0_c1_4ef_Int,
   _nrrd_TMF_d0_c1_4ef_1_f,  _nrrd_TMF_d0_c1_4ef_N_f,
   _nrrd_TMF_d0_c1_4ef_1_d,  _nrrd_TMF_d0_c1_4ef_N_d
 };
@@ -3186,10 +3186,10 @@ _nrrd_TMF_d0_c2_1ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d0_c2_1ef = {
-  "TMF_d0_c2_1ef",
-  1, _nrrd_TMF_d0_c2_1ef_Sup, _nrrd_TMF_d0_c2_1ef_Int,
+  "TMF_d0_c2_1ef", 1, AIR_FALSE,
+  _nrrd_TMF_d0_c2_1ef_Sup, _nrrd_TMF_d0_c2_1ef_Int,
   _nrrd_TMF_d0_c2_1ef_1_f,  _nrrd_TMF_d0_c2_1ef_N_f,
   _nrrd_TMF_d0_c2_1ef_1_d,  _nrrd_TMF_d0_c2_1ef_N_d
 };
@@ -3259,10 +3259,10 @@ _nrrd_TMF_d0_c2_2ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d0_c2_2ef = {
-  "TMF_d0_c2_2ef",
-  1, _nrrd_TMF_d0_c2_2ef_Sup, _nrrd_TMF_d0_c2_2ef_Int,
+  "TMF_d0_c2_2ef", 1, AIR_FALSE,
+  _nrrd_TMF_d0_c2_2ef_Sup, _nrrd_TMF_d0_c2_2ef_Int,
   _nrrd_TMF_d0_c2_2ef_1_f,  _nrrd_TMF_d0_c2_2ef_N_f,
   _nrrd_TMF_d0_c2_2ef_1_d,  _nrrd_TMF_d0_c2_2ef_N_d
 };
@@ -3332,10 +3332,10 @@ _nrrd_TMF_d0_c2_3ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d0_c2_3ef = {
-  "TMF_d0_c2_3ef",
-  1, _nrrd_TMF_d0_c2_3ef_Sup, _nrrd_TMF_d0_c2_3ef_Int,
+  "TMF_d0_c2_3ef", 1, AIR_FALSE,
+  _nrrd_TMF_d0_c2_3ef_Sup, _nrrd_TMF_d0_c2_3ef_Int,
   _nrrd_TMF_d0_c2_3ef_1_f,  _nrrd_TMF_d0_c2_3ef_N_f,
   _nrrd_TMF_d0_c2_3ef_1_d,  _nrrd_TMF_d0_c2_3ef_N_d
 };
@@ -3405,10 +3405,10 @@ _nrrd_TMF_d0_c2_4ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d0_c2_4ef = {
-  "TMF_d0_c2_4ef",
-  1, _nrrd_TMF_d0_c2_4ef_Sup, _nrrd_TMF_d0_c2_4ef_Int,
+  "TMF_d0_c2_4ef", 1, AIR_FALSE,
+  _nrrd_TMF_d0_c2_4ef_Sup, _nrrd_TMF_d0_c2_4ef_Int,
   _nrrd_TMF_d0_c2_4ef_1_f,  _nrrd_TMF_d0_c2_4ef_N_f,
   _nrrd_TMF_d0_c2_4ef_1_d,  _nrrd_TMF_d0_c2_4ef_N_d
 };
@@ -3478,10 +3478,10 @@ _nrrd_TMF_d0_c3_1ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d0_c3_1ef = {
-  "TMF_d0_c3_1ef",
-  1, _nrrd_TMF_d0_c3_1ef_Sup, _nrrd_TMF_d0_c3_1ef_Int,
+  "TMF_d0_c3_1ef", 1, AIR_FALSE,
+  _nrrd_TMF_d0_c3_1ef_Sup, _nrrd_TMF_d0_c3_1ef_Int,
   _nrrd_TMF_d0_c3_1ef_1_f,  _nrrd_TMF_d0_c3_1ef_N_f,
   _nrrd_TMF_d0_c3_1ef_1_d,  _nrrd_TMF_d0_c3_1ef_N_d
 };
@@ -3551,10 +3551,10 @@ _nrrd_TMF_d0_c3_2ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d0_c3_2ef = {
-  "TMF_d0_c3_2ef",
-  1, _nrrd_TMF_d0_c3_2ef_Sup, _nrrd_TMF_d0_c3_2ef_Int,
+  "TMF_d0_c3_2ef", 1, AIR_FALSE,
+  _nrrd_TMF_d0_c3_2ef_Sup, _nrrd_TMF_d0_c3_2ef_Int,
   _nrrd_TMF_d0_c3_2ef_1_f,  _nrrd_TMF_d0_c3_2ef_N_f,
   _nrrd_TMF_d0_c3_2ef_1_d,  _nrrd_TMF_d0_c3_2ef_N_d
 };
@@ -3624,10 +3624,10 @@ _nrrd_TMF_d0_c3_3ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d0_c3_3ef = {
-  "TMF_d0_c3_3ef",
-  1, _nrrd_TMF_d0_c3_3ef_Sup, _nrrd_TMF_d0_c3_3ef_Int,
+  "TMF_d0_c3_3ef", 1, AIR_FALSE,
+  _nrrd_TMF_d0_c3_3ef_Sup, _nrrd_TMF_d0_c3_3ef_Int,
   _nrrd_TMF_d0_c3_3ef_1_f,  _nrrd_TMF_d0_c3_3ef_N_f,
   _nrrd_TMF_d0_c3_3ef_1_d,  _nrrd_TMF_d0_c3_3ef_N_d
 };
@@ -3697,10 +3697,10 @@ _nrrd_TMF_d0_c3_4ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d0_c3_4ef = {
-  "TMF_d0_c3_4ef",
-  1, _nrrd_TMF_d0_c3_4ef_Sup, _nrrd_TMF_d0_c3_4ef_Int,
+  "TMF_d0_c3_4ef", 1, AIR_FALSE,
+  _nrrd_TMF_d0_c3_4ef_Sup, _nrrd_TMF_d0_c3_4ef_Int,
   _nrrd_TMF_d0_c3_4ef_1_f,  _nrrd_TMF_d0_c3_4ef_N_f,
   _nrrd_TMF_d0_c3_4ef_1_d,  _nrrd_TMF_d0_c3_4ef_N_d
 };
@@ -3770,10 +3770,10 @@ _nrrd_TMF_d1_cn_1ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d1_cn_1ef = {
-  "TMF_d1_cn_1ef",
-  1, _nrrd_TMF_d1_cn_1ef_Sup, _nrrd_TMF_d1_cn_1ef_Int,
+  "TMF_d1_cn_1ef", 1, AIR_FALSE,
+  _nrrd_TMF_d1_cn_1ef_Sup, _nrrd_TMF_d1_cn_1ef_Int,
   _nrrd_TMF_d1_cn_1ef_1_f,  _nrrd_TMF_d1_cn_1ef_N_f,
   _nrrd_TMF_d1_cn_1ef_1_d,  _nrrd_TMF_d1_cn_1ef_N_d
 };
@@ -3843,10 +3843,10 @@ _nrrd_TMF_d1_cn_2ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d1_cn_2ef = {
-  "TMF_d1_cn_2ef",
-  1, _nrrd_TMF_d1_cn_2ef_Sup, _nrrd_TMF_d1_cn_2ef_Int,
+  "TMF_d1_cn_2ef", 1, AIR_FALSE,
+  _nrrd_TMF_d1_cn_2ef_Sup, _nrrd_TMF_d1_cn_2ef_Int,
   _nrrd_TMF_d1_cn_2ef_1_f,  _nrrd_TMF_d1_cn_2ef_N_f,
   _nrrd_TMF_d1_cn_2ef_1_d,  _nrrd_TMF_d1_cn_2ef_N_d
 };
@@ -3916,10 +3916,10 @@ _nrrd_TMF_d1_cn_3ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d1_cn_3ef = {
-  "TMF_d1_cn_3ef",
-  1, _nrrd_TMF_d1_cn_3ef_Sup, _nrrd_TMF_d1_cn_3ef_Int,
+  "TMF_d1_cn_3ef", 1, AIR_FALSE,
+  _nrrd_TMF_d1_cn_3ef_Sup, _nrrd_TMF_d1_cn_3ef_Int,
   _nrrd_TMF_d1_cn_3ef_1_f,  _nrrd_TMF_d1_cn_3ef_N_f,
   _nrrd_TMF_d1_cn_3ef_1_d,  _nrrd_TMF_d1_cn_3ef_N_d
 };
@@ -3989,10 +3989,10 @@ _nrrd_TMF_d1_cn_4ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d1_cn_4ef = {
-  "TMF_d1_cn_4ef",
-  1, _nrrd_TMF_d1_cn_4ef_Sup, _nrrd_TMF_d1_cn_4ef_Int,
+  "TMF_d1_cn_4ef", 1, AIR_FALSE,
+  _nrrd_TMF_d1_cn_4ef_Sup, _nrrd_TMF_d1_cn_4ef_Int,
   _nrrd_TMF_d1_cn_4ef_1_f,  _nrrd_TMF_d1_cn_4ef_N_f,
   _nrrd_TMF_d1_cn_4ef_1_d,  _nrrd_TMF_d1_cn_4ef_N_d
 };
@@ -4062,10 +4062,10 @@ _nrrd_TMF_d1_c0_1ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d1_c0_1ef = {
-  "TMF_d1_c0_1ef",
-  1, _nrrd_TMF_d1_c0_1ef_Sup, _nrrd_TMF_d1_c0_1ef_Int,
+  "TMF_d1_c0_1ef", 1, AIR_FALSE,
+  _nrrd_TMF_d1_c0_1ef_Sup, _nrrd_TMF_d1_c0_1ef_Int,
   _nrrd_TMF_d1_c0_1ef_1_f,  _nrrd_TMF_d1_c0_1ef_N_f,
   _nrrd_TMF_d1_c0_1ef_1_d,  _nrrd_TMF_d1_c0_1ef_N_d
 };
@@ -4135,10 +4135,10 @@ _nrrd_TMF_d1_c0_2ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d1_c0_2ef = {
-  "TMF_d1_c0_2ef",
-  1, _nrrd_TMF_d1_c0_2ef_Sup, _nrrd_TMF_d1_c0_2ef_Int,
+  "TMF_d1_c0_2ef", 1, AIR_FALSE,
+  _nrrd_TMF_d1_c0_2ef_Sup, _nrrd_TMF_d1_c0_2ef_Int,
   _nrrd_TMF_d1_c0_2ef_1_f,  _nrrd_TMF_d1_c0_2ef_N_f,
   _nrrd_TMF_d1_c0_2ef_1_d,  _nrrd_TMF_d1_c0_2ef_N_d
 };
@@ -4208,10 +4208,10 @@ _nrrd_TMF_d1_c0_3ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d1_c0_3ef = {
-  "TMF_d1_c0_3ef",
-  1, _nrrd_TMF_d1_c0_3ef_Sup, _nrrd_TMF_d1_c0_3ef_Int,
+  "TMF_d1_c0_3ef", 1, AIR_FALSE,
+  _nrrd_TMF_d1_c0_3ef_Sup, _nrrd_TMF_d1_c0_3ef_Int,
   _nrrd_TMF_d1_c0_3ef_1_f,  _nrrd_TMF_d1_c0_3ef_N_f,
   _nrrd_TMF_d1_c0_3ef_1_d,  _nrrd_TMF_d1_c0_3ef_N_d
 };
@@ -4281,10 +4281,10 @@ _nrrd_TMF_d1_c0_4ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d1_c0_4ef = {
-  "TMF_d1_c0_4ef",
-  1, _nrrd_TMF_d1_c0_4ef_Sup, _nrrd_TMF_d1_c0_4ef_Int,
+  "TMF_d1_c0_4ef", 1, AIR_FALSE,
+  _nrrd_TMF_d1_c0_4ef_Sup, _nrrd_TMF_d1_c0_4ef_Int,
   _nrrd_TMF_d1_c0_4ef_1_f,  _nrrd_TMF_d1_c0_4ef_N_f,
   _nrrd_TMF_d1_c0_4ef_1_d,  _nrrd_TMF_d1_c0_4ef_N_d
 };
@@ -4354,10 +4354,10 @@ _nrrd_TMF_d1_c1_1ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d1_c1_1ef = {
-  "TMF_d1_c1_1ef",
-  1, _nrrd_TMF_d1_c1_1ef_Sup, _nrrd_TMF_d1_c1_1ef_Int,
+  "TMF_d1_c1_1ef", 1, AIR_FALSE,
+  _nrrd_TMF_d1_c1_1ef_Sup, _nrrd_TMF_d1_c1_1ef_Int,
   _nrrd_TMF_d1_c1_1ef_1_f,  _nrrd_TMF_d1_c1_1ef_N_f,
   _nrrd_TMF_d1_c1_1ef_1_d,  _nrrd_TMF_d1_c1_1ef_N_d
 };
@@ -4427,10 +4427,10 @@ _nrrd_TMF_d1_c1_2ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d1_c1_2ef = {
-  "TMF_d1_c1_2ef",
-  1, _nrrd_TMF_d1_c1_2ef_Sup, _nrrd_TMF_d1_c1_2ef_Int,
+  "TMF_d1_c1_2ef", 1, AIR_FALSE,
+  _nrrd_TMF_d1_c1_2ef_Sup, _nrrd_TMF_d1_c1_2ef_Int,
   _nrrd_TMF_d1_c1_2ef_1_f,  _nrrd_TMF_d1_c1_2ef_N_f,
   _nrrd_TMF_d1_c1_2ef_1_d,  _nrrd_TMF_d1_c1_2ef_N_d
 };
@@ -4500,10 +4500,10 @@ _nrrd_TMF_d1_c1_3ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d1_c1_3ef = {
-  "TMF_d1_c1_3ef",
-  1, _nrrd_TMF_d1_c1_3ef_Sup, _nrrd_TMF_d1_c1_3ef_Int,
+  "TMF_d1_c1_3ef", 1, AIR_FALSE,
+  _nrrd_TMF_d1_c1_3ef_Sup, _nrrd_TMF_d1_c1_3ef_Int,
   _nrrd_TMF_d1_c1_3ef_1_f,  _nrrd_TMF_d1_c1_3ef_N_f,
   _nrrd_TMF_d1_c1_3ef_1_d,  _nrrd_TMF_d1_c1_3ef_N_d
 };
@@ -4573,10 +4573,10 @@ _nrrd_TMF_d1_c1_4ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d1_c1_4ef = {
-  "TMF_d1_c1_4ef",
-  1, _nrrd_TMF_d1_c1_4ef_Sup, _nrrd_TMF_d1_c1_4ef_Int,
+  "TMF_d1_c1_4ef", 1, AIR_FALSE,
+  _nrrd_TMF_d1_c1_4ef_Sup, _nrrd_TMF_d1_c1_4ef_Int,
   _nrrd_TMF_d1_c1_4ef_1_f,  _nrrd_TMF_d1_c1_4ef_N_f,
   _nrrd_TMF_d1_c1_4ef_1_d,  _nrrd_TMF_d1_c1_4ef_N_d
 };
@@ -4646,10 +4646,10 @@ _nrrd_TMF_d1_c2_1ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d1_c2_1ef = {
-  "TMF_d1_c2_1ef",
-  1, _nrrd_TMF_d1_c2_1ef_Sup, _nrrd_TMF_d1_c2_1ef_Int,
+  "TMF_d1_c2_1ef", 1, AIR_FALSE,
+  _nrrd_TMF_d1_c2_1ef_Sup, _nrrd_TMF_d1_c2_1ef_Int,
   _nrrd_TMF_d1_c2_1ef_1_f,  _nrrd_TMF_d1_c2_1ef_N_f,
   _nrrd_TMF_d1_c2_1ef_1_d,  _nrrd_TMF_d1_c2_1ef_N_d
 };
@@ -4719,10 +4719,10 @@ _nrrd_TMF_d1_c2_2ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d1_c2_2ef = {
-  "TMF_d1_c2_2ef",
-  1, _nrrd_TMF_d1_c2_2ef_Sup, _nrrd_TMF_d1_c2_2ef_Int,
+  "TMF_d1_c2_2ef", 1, AIR_FALSE,
+  _nrrd_TMF_d1_c2_2ef_Sup, _nrrd_TMF_d1_c2_2ef_Int,
   _nrrd_TMF_d1_c2_2ef_1_f,  _nrrd_TMF_d1_c2_2ef_N_f,
   _nrrd_TMF_d1_c2_2ef_1_d,  _nrrd_TMF_d1_c2_2ef_N_d
 };
@@ -4792,10 +4792,10 @@ _nrrd_TMF_d1_c2_3ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d1_c2_3ef = {
-  "TMF_d1_c2_3ef",
-  1, _nrrd_TMF_d1_c2_3ef_Sup, _nrrd_TMF_d1_c2_3ef_Int,
+  "TMF_d1_c2_3ef", 1, AIR_FALSE,
+  _nrrd_TMF_d1_c2_3ef_Sup, _nrrd_TMF_d1_c2_3ef_Int,
   _nrrd_TMF_d1_c2_3ef_1_f,  _nrrd_TMF_d1_c2_3ef_N_f,
   _nrrd_TMF_d1_c2_3ef_1_d,  _nrrd_TMF_d1_c2_3ef_N_d
 };
@@ -4865,10 +4865,10 @@ _nrrd_TMF_d1_c2_4ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d1_c2_4ef = {
-  "TMF_d1_c2_4ef",
-  1, _nrrd_TMF_d1_c2_4ef_Sup, _nrrd_TMF_d1_c2_4ef_Int,
+  "TMF_d1_c2_4ef", 1, AIR_FALSE,
+  _nrrd_TMF_d1_c2_4ef_Sup, _nrrd_TMF_d1_c2_4ef_Int,
   _nrrd_TMF_d1_c2_4ef_1_f,  _nrrd_TMF_d1_c2_4ef_N_f,
   _nrrd_TMF_d1_c2_4ef_1_d,  _nrrd_TMF_d1_c2_4ef_N_d
 };
@@ -4938,10 +4938,10 @@ _nrrd_TMF_d1_c3_1ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d1_c3_1ef = {
-  "TMF_d1_c3_1ef",
-  1, _nrrd_TMF_d1_c3_1ef_Sup, _nrrd_TMF_d1_c3_1ef_Int,
+  "TMF_d1_c3_1ef", 1, AIR_FALSE,
+  _nrrd_TMF_d1_c3_1ef_Sup, _nrrd_TMF_d1_c3_1ef_Int,
   _nrrd_TMF_d1_c3_1ef_1_f,  _nrrd_TMF_d1_c3_1ef_N_f,
   _nrrd_TMF_d1_c3_1ef_1_d,  _nrrd_TMF_d1_c3_1ef_N_d
 };
@@ -5011,10 +5011,10 @@ _nrrd_TMF_d1_c3_2ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d1_c3_2ef = {
-  "TMF_d1_c3_2ef",
-  1, _nrrd_TMF_d1_c3_2ef_Sup, _nrrd_TMF_d1_c3_2ef_Int,
+  "TMF_d1_c3_2ef", 1, AIR_FALSE,
+  _nrrd_TMF_d1_c3_2ef_Sup, _nrrd_TMF_d1_c3_2ef_Int,
   _nrrd_TMF_d1_c3_2ef_1_f,  _nrrd_TMF_d1_c3_2ef_N_f,
   _nrrd_TMF_d1_c3_2ef_1_d,  _nrrd_TMF_d1_c3_2ef_N_d
 };
@@ -5084,10 +5084,10 @@ _nrrd_TMF_d1_c3_3ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d1_c3_3ef = {
-  "TMF_d1_c3_3ef",
-  1, _nrrd_TMF_d1_c3_3ef_Sup, _nrrd_TMF_d1_c3_3ef_Int,
+  "TMF_d1_c3_3ef", 1, AIR_FALSE,
+  _nrrd_TMF_d1_c3_3ef_Sup, _nrrd_TMF_d1_c3_3ef_Int,
   _nrrd_TMF_d1_c3_3ef_1_f,  _nrrd_TMF_d1_c3_3ef_N_f,
   _nrrd_TMF_d1_c3_3ef_1_d,  _nrrd_TMF_d1_c3_3ef_N_d
 };
@@ -5157,10 +5157,10 @@ _nrrd_TMF_d1_c3_4ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d1_c3_4ef = {
-  "TMF_d1_c3_4ef",
-  1, _nrrd_TMF_d1_c3_4ef_Sup, _nrrd_TMF_d1_c3_4ef_Int,
+  "TMF_d1_c3_4ef", 1, AIR_FALSE,
+  _nrrd_TMF_d1_c3_4ef_Sup, _nrrd_TMF_d1_c3_4ef_Int,
   _nrrd_TMF_d1_c3_4ef_1_f,  _nrrd_TMF_d1_c3_4ef_N_f,
   _nrrd_TMF_d1_c3_4ef_1_d,  _nrrd_TMF_d1_c3_4ef_N_d
 };
@@ -5230,10 +5230,10 @@ _nrrd_TMF_d2_cn_1ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d2_cn_1ef = {
-  "TMF_d2_cn_1ef",
-  1, _nrrd_TMF_d2_cn_1ef_Sup, _nrrd_TMF_d2_cn_1ef_Int,
+  "TMF_d2_cn_1ef", 1, AIR_FALSE,
+  _nrrd_TMF_d2_cn_1ef_Sup, _nrrd_TMF_d2_cn_1ef_Int,
   _nrrd_TMF_d2_cn_1ef_1_f,  _nrrd_TMF_d2_cn_1ef_N_f,
   _nrrd_TMF_d2_cn_1ef_1_d,  _nrrd_TMF_d2_cn_1ef_N_d
 };
@@ -5303,10 +5303,10 @@ _nrrd_TMF_d2_cn_2ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d2_cn_2ef = {
-  "TMF_d2_cn_2ef",
-  1, _nrrd_TMF_d2_cn_2ef_Sup, _nrrd_TMF_d2_cn_2ef_Int,
+  "TMF_d2_cn_2ef", 1, AIR_FALSE,
+  _nrrd_TMF_d2_cn_2ef_Sup, _nrrd_TMF_d2_cn_2ef_Int,
   _nrrd_TMF_d2_cn_2ef_1_f,  _nrrd_TMF_d2_cn_2ef_N_f,
   _nrrd_TMF_d2_cn_2ef_1_d,  _nrrd_TMF_d2_cn_2ef_N_d
 };
@@ -5376,10 +5376,10 @@ _nrrd_TMF_d2_cn_3ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d2_cn_3ef = {
-  "TMF_d2_cn_3ef",
-  1, _nrrd_TMF_d2_cn_3ef_Sup, _nrrd_TMF_d2_cn_3ef_Int,
+  "TMF_d2_cn_3ef", 1, AIR_FALSE,
+  _nrrd_TMF_d2_cn_3ef_Sup, _nrrd_TMF_d2_cn_3ef_Int,
   _nrrd_TMF_d2_cn_3ef_1_f,  _nrrd_TMF_d2_cn_3ef_N_f,
   _nrrd_TMF_d2_cn_3ef_1_d,  _nrrd_TMF_d2_cn_3ef_N_d
 };
@@ -5449,10 +5449,10 @@ _nrrd_TMF_d2_cn_4ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d2_cn_4ef = {
-  "TMF_d2_cn_4ef",
-  1, _nrrd_TMF_d2_cn_4ef_Sup, _nrrd_TMF_d2_cn_4ef_Int,
+  "TMF_d2_cn_4ef", 1, AIR_FALSE,
+  _nrrd_TMF_d2_cn_4ef_Sup, _nrrd_TMF_d2_cn_4ef_Int,
   _nrrd_TMF_d2_cn_4ef_1_f,  _nrrd_TMF_d2_cn_4ef_N_f,
   _nrrd_TMF_d2_cn_4ef_1_d,  _nrrd_TMF_d2_cn_4ef_N_d
 };
@@ -5522,10 +5522,10 @@ _nrrd_TMF_d2_c0_1ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d2_c0_1ef = {
-  "TMF_d2_c0_1ef",
-  1, _nrrd_TMF_d2_c0_1ef_Sup, _nrrd_TMF_d2_c0_1ef_Int,
+  "TMF_d2_c0_1ef", 1, AIR_FALSE,
+  _nrrd_TMF_d2_c0_1ef_Sup, _nrrd_TMF_d2_c0_1ef_Int,
   _nrrd_TMF_d2_c0_1ef_1_f,  _nrrd_TMF_d2_c0_1ef_N_f,
   _nrrd_TMF_d2_c0_1ef_1_d,  _nrrd_TMF_d2_c0_1ef_N_d
 };
@@ -5595,10 +5595,10 @@ _nrrd_TMF_d2_c0_2ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d2_c0_2ef = {
-  "TMF_d2_c0_2ef",
-  1, _nrrd_TMF_d2_c0_2ef_Sup, _nrrd_TMF_d2_c0_2ef_Int,
+  "TMF_d2_c0_2ef", 1, AIR_FALSE,
+  _nrrd_TMF_d2_c0_2ef_Sup, _nrrd_TMF_d2_c0_2ef_Int,
   _nrrd_TMF_d2_c0_2ef_1_f,  _nrrd_TMF_d2_c0_2ef_N_f,
   _nrrd_TMF_d2_c0_2ef_1_d,  _nrrd_TMF_d2_c0_2ef_N_d
 };
@@ -5668,10 +5668,10 @@ _nrrd_TMF_d2_c0_3ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d2_c0_3ef = {
-  "TMF_d2_c0_3ef",
-  1, _nrrd_TMF_d2_c0_3ef_Sup, _nrrd_TMF_d2_c0_3ef_Int,
+  "TMF_d2_c0_3ef", 1, AIR_FALSE,
+  _nrrd_TMF_d2_c0_3ef_Sup, _nrrd_TMF_d2_c0_3ef_Int,
   _nrrd_TMF_d2_c0_3ef_1_f,  _nrrd_TMF_d2_c0_3ef_N_f,
   _nrrd_TMF_d2_c0_3ef_1_d,  _nrrd_TMF_d2_c0_3ef_N_d
 };
@@ -5741,10 +5741,10 @@ _nrrd_TMF_d2_c0_4ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d2_c0_4ef = {
-  "TMF_d2_c0_4ef",
-  1, _nrrd_TMF_d2_c0_4ef_Sup, _nrrd_TMF_d2_c0_4ef_Int,
+  "TMF_d2_c0_4ef", 1, AIR_FALSE,
+  _nrrd_TMF_d2_c0_4ef_Sup, _nrrd_TMF_d2_c0_4ef_Int,
   _nrrd_TMF_d2_c0_4ef_1_f,  _nrrd_TMF_d2_c0_4ef_N_f,
   _nrrd_TMF_d2_c0_4ef_1_d,  _nrrd_TMF_d2_c0_4ef_N_d
 };
@@ -5814,10 +5814,10 @@ _nrrd_TMF_d2_c1_1ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d2_c1_1ef = {
-  "TMF_d2_c1_1ef",
-  1, _nrrd_TMF_d2_c1_1ef_Sup, _nrrd_TMF_d2_c1_1ef_Int,
+  "TMF_d2_c1_1ef", 1, AIR_FALSE,
+  _nrrd_TMF_d2_c1_1ef_Sup, _nrrd_TMF_d2_c1_1ef_Int,
   _nrrd_TMF_d2_c1_1ef_1_f,  _nrrd_TMF_d2_c1_1ef_N_f,
   _nrrd_TMF_d2_c1_1ef_1_d,  _nrrd_TMF_d2_c1_1ef_N_d
 };
@@ -5887,10 +5887,10 @@ _nrrd_TMF_d2_c1_2ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d2_c1_2ef = {
-  "TMF_d2_c1_2ef",
-  1, _nrrd_TMF_d2_c1_2ef_Sup, _nrrd_TMF_d2_c1_2ef_Int,
+  "TMF_d2_c1_2ef", 1, AIR_FALSE,
+  _nrrd_TMF_d2_c1_2ef_Sup, _nrrd_TMF_d2_c1_2ef_Int,
   _nrrd_TMF_d2_c1_2ef_1_f,  _nrrd_TMF_d2_c1_2ef_N_f,
   _nrrd_TMF_d2_c1_2ef_1_d,  _nrrd_TMF_d2_c1_2ef_N_d
 };
@@ -5960,10 +5960,10 @@ _nrrd_TMF_d2_c1_3ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d2_c1_3ef = {
-  "TMF_d2_c1_3ef",
-  1, _nrrd_TMF_d2_c1_3ef_Sup, _nrrd_TMF_d2_c1_3ef_Int,
+  "TMF_d2_c1_3ef", 1, AIR_FALSE,
+  _nrrd_TMF_d2_c1_3ef_Sup, _nrrd_TMF_d2_c1_3ef_Int,
   _nrrd_TMF_d2_c1_3ef_1_f,  _nrrd_TMF_d2_c1_3ef_N_f,
   _nrrd_TMF_d2_c1_3ef_1_d,  _nrrd_TMF_d2_c1_3ef_N_d
 };
@@ -6033,10 +6033,10 @@ _nrrd_TMF_d2_c1_4ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d2_c1_4ef = {
-  "TMF_d2_c1_4ef",
-  1, _nrrd_TMF_d2_c1_4ef_Sup, _nrrd_TMF_d2_c1_4ef_Int,
+  "TMF_d2_c1_4ef", 1, AIR_FALSE,
+  _nrrd_TMF_d2_c1_4ef_Sup, _nrrd_TMF_d2_c1_4ef_Int,
   _nrrd_TMF_d2_c1_4ef_1_f,  _nrrd_TMF_d2_c1_4ef_N_f,
   _nrrd_TMF_d2_c1_4ef_1_d,  _nrrd_TMF_d2_c1_4ef_N_d
 };
@@ -6106,10 +6106,10 @@ _nrrd_TMF_d2_c2_1ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d2_c2_1ef = {
-  "TMF_d2_c2_1ef",
-  1, _nrrd_TMF_d2_c2_1ef_Sup, _nrrd_TMF_d2_c2_1ef_Int,
+  "TMF_d2_c2_1ef", 1, AIR_FALSE,
+  _nrrd_TMF_d2_c2_1ef_Sup, _nrrd_TMF_d2_c2_1ef_Int,
   _nrrd_TMF_d2_c2_1ef_1_f,  _nrrd_TMF_d2_c2_1ef_N_f,
   _nrrd_TMF_d2_c2_1ef_1_d,  _nrrd_TMF_d2_c2_1ef_N_d
 };
@@ -6179,10 +6179,10 @@ _nrrd_TMF_d2_c2_2ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d2_c2_2ef = {
-  "TMF_d2_c2_2ef",
-  1, _nrrd_TMF_d2_c2_2ef_Sup, _nrrd_TMF_d2_c2_2ef_Int,
+  "TMF_d2_c2_2ef", 1, AIR_FALSE,
+  _nrrd_TMF_d2_c2_2ef_Sup, _nrrd_TMF_d2_c2_2ef_Int,
   _nrrd_TMF_d2_c2_2ef_1_f,  _nrrd_TMF_d2_c2_2ef_N_f,
   _nrrd_TMF_d2_c2_2ef_1_d,  _nrrd_TMF_d2_c2_2ef_N_d
 };
@@ -6252,10 +6252,10 @@ _nrrd_TMF_d2_c2_3ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d2_c2_3ef = {
-  "TMF_d2_c2_3ef",
-  1, _nrrd_TMF_d2_c2_3ef_Sup, _nrrd_TMF_d2_c2_3ef_Int,
+  "TMF_d2_c2_3ef", 1, AIR_FALSE,
+  _nrrd_TMF_d2_c2_3ef_Sup, _nrrd_TMF_d2_c2_3ef_Int,
   _nrrd_TMF_d2_c2_3ef_1_f,  _nrrd_TMF_d2_c2_3ef_N_f,
   _nrrd_TMF_d2_c2_3ef_1_d,  _nrrd_TMF_d2_c2_3ef_N_d
 };
@@ -6325,10 +6325,10 @@ _nrrd_TMF_d2_c2_4ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d2_c2_4ef = {
-  "TMF_d2_c2_4ef",
-  1, _nrrd_TMF_d2_c2_4ef_Sup, _nrrd_TMF_d2_c2_4ef_Int,
+  "TMF_d2_c2_4ef", 1, AIR_FALSE,
+  _nrrd_TMF_d2_c2_4ef_Sup, _nrrd_TMF_d2_c2_4ef_Int,
   _nrrd_TMF_d2_c2_4ef_1_f,  _nrrd_TMF_d2_c2_4ef_N_f,
   _nrrd_TMF_d2_c2_4ef_1_d,  _nrrd_TMF_d2_c2_4ef_N_d
 };
@@ -6398,10 +6398,10 @@ _nrrd_TMF_d2_c3_1ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d2_c3_1ef = {
-  "TMF_d2_c3_1ef",
-  1, _nrrd_TMF_d2_c3_1ef_Sup, _nrrd_TMF_d2_c3_1ef_Int,
+  "TMF_d2_c3_1ef", 1, AIR_FALSE,
+  _nrrd_TMF_d2_c3_1ef_Sup, _nrrd_TMF_d2_c3_1ef_Int,
   _nrrd_TMF_d2_c3_1ef_1_f,  _nrrd_TMF_d2_c3_1ef_N_f,
   _nrrd_TMF_d2_c3_1ef_1_d,  _nrrd_TMF_d2_c3_1ef_N_d
 };
@@ -6471,10 +6471,10 @@ _nrrd_TMF_d2_c3_2ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d2_c3_2ef = {
-  "TMF_d2_c3_2ef",
-  1, _nrrd_TMF_d2_c3_2ef_Sup, _nrrd_TMF_d2_c3_2ef_Int,
+  "TMF_d2_c3_2ef", 1, AIR_FALSE,
+  _nrrd_TMF_d2_c3_2ef_Sup, _nrrd_TMF_d2_c3_2ef_Int,
   _nrrd_TMF_d2_c3_2ef_1_f,  _nrrd_TMF_d2_c3_2ef_N_f,
   _nrrd_TMF_d2_c3_2ef_1_d,  _nrrd_TMF_d2_c3_2ef_N_d
 };
@@ -6544,10 +6544,10 @@ _nrrd_TMF_d2_c3_3ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d2_c3_3ef = {
-  "TMF_d2_c3_3ef",
-  1, _nrrd_TMF_d2_c3_3ef_Sup, _nrrd_TMF_d2_c3_3ef_Int,
+  "TMF_d2_c3_3ef", 1, AIR_FALSE,
+  _nrrd_TMF_d2_c3_3ef_Sup, _nrrd_TMF_d2_c3_3ef_Int,
   _nrrd_TMF_d2_c3_3ef_1_f,  _nrrd_TMF_d2_c3_3ef_N_f,
   _nrrd_TMF_d2_c3_3ef_1_d,  _nrrd_TMF_d2_c3_3ef_N_d
 };
@@ -6617,10 +6617,10 @@ _nrrd_TMF_d2_c3_4ef_N_f(float *f, const float *x, size_t len, const double *parm
   }
 }
 
-static NrrdKernel
+static const NrrdKernel
 _nrrdKernel_TMF_d2_c3_4ef = {
-  "TMF_d2_c3_4ef",
-  1, _nrrd_TMF_d2_c3_4ef_Sup, _nrrd_TMF_d2_c3_4ef_Int,
+  "TMF_d2_c3_4ef", 1, AIR_FALSE,
+  _nrrd_TMF_d2_c3_4ef_Sup, _nrrd_TMF_d2_c3_4ef_Int,
   _nrrd_TMF_d2_c3_4ef_1_f,  _nrrd_TMF_d2_c3_4ef_N_f,
   _nrrd_TMF_d2_c3_4ef_1_d,  _nrrd_TMF_d2_c3_4ef_N_d
 };

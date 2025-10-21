@@ -253,7 +253,7 @@ tenBMatrixCheck(const Nrrd *nbmat, int type, unsigned int minnum) {
 int /* Biff: 1 */
 _tenFindValley(double *valP, const Nrrd *nhist, double tweak, int save) {
   static const char me[] = "_tenFindValley";
-  double gparm[NRRD_KERNEL_PARMS_NUM], dparm[NRRD_KERNEL_PARMS_NUM];
+  double gparm[NRRD_KERNEL_PARM_MAXNUM], dparm[NRRD_KERNEL_PARM_MAXNUM];
   Nrrd *ntmpA, *ntmpB, *nhistD, *nhistDD;
   float *hist, *histD, *histDD;
   airArray *mop;

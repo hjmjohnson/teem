@@ -1310,7 +1310,7 @@ _stackBlurSpatial(Nrrd *const nblur[], gageStackBlurParm *sbp, NrrdKernelSpec *k
                on this axis, but that would undermine the in==out==niter
                trick described above; and produce the mysterious behavior
                that the second scale-space volume is all 0.0 */
-            double boxparm[NRRD_KERNEL_PARMS_NUM] = {1.0};
+            double boxparm[NRRD_KERNEL_PARM_MAXNUM] = {1.0};
             if (!E)
               E |= nrrdResampleKernelSet(rsmc, kind->baseDim + axi, nrrdKernelBox,
                                          boxparm);

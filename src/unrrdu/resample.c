@@ -456,7 +456,7 @@ unrrdu_resampleMain(int argc, const char **argv, const char *me, hestParm *hparm
         airMopError(mop);
         return 1;
       }
-      memcpy(info->parm[ai], unuk->parm, NRRD_KERNEL_PARMS_NUM * sizeof(*unuk->parm));
+      memcpy(info->parm[ai], unuk->parm, NRRD_KERNEL_PARM_MAXNUM * sizeof(*unuk->parm));
       if (info->kernel[ai]
           && (!(AIR_EXISTS(nin->axis[ai].min) && AIR_EXISTS(nin->axis[ai].max)))) {
         nrrdAxisInfoMinMaxSet(nin, ai,

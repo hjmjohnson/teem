@@ -847,7 +847,7 @@ nrrdAxisInfoSpacingSet(Nrrd *nrrd, unsigned int ax) {
   if (!(AIR_EXISTS(min) && AIR_EXISTS(max))) {
     /* there's no actual basis on which to set the spacing information,
        but we have to set it something, so here goes .. */
-    nrrd->axis[ax].spacing = nrrdDefaultSpacing;
+    nrrd->axis[ax].spacing = 1 /* Gone in TeemV2: nrrdDefaultSpacing */;
     return;
   }
 
@@ -879,7 +879,7 @@ nrrdAxisInfoMinMaxSet(Nrrd *nrrd, unsigned int ax, int defCenter) {
 
   center = _nrrdCenter2(nrrd->axis[ax].center, defCenter);
   spacing = nrrd->axis[ax].spacing;
-  if (!AIR_EXISTS(spacing)) spacing = nrrdDefaultSpacing;
+  if (!AIR_EXISTS(spacing)) spacing = 1 /* Gone in TeemV2: nrrdDefaultSpacing */;
   if (nrrdCenterCell == center) {
     nrrd->axis[ax].min = 0;
     nrrd->axis[ax].max = spacing * AIR_CAST(double, nrrd->axis[ax].size);

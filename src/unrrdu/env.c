@@ -329,14 +329,6 @@ unrrdu_envMain(int argc, const char **argv, const char *me, hestParm *hparm) {
           "(fastest) axis.",
           hparm->columns);
 
-#if 0
-  /* GLK is ambivalent about the continued existence of these ... */
-  nrrdGetenvDouble(/**/ &nrrdDefaultKernelParm0,
-                   nrrdEnvVarDefaultKernelParm0);
-  nrrdGetenvDouble(/**/ &nrrdDefaultSpacing,
-                   nrrdEnvVarDefaultSpacing);
-#endif
-
   /* NOTE: this is an exceptional unu command that doesn't rely on
      privateUnrrdu.h USAGE() macro; so we determine our own return value */
   return 0;

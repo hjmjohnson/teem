@@ -87,7 +87,7 @@ nrrdSimpleResample(Nrrd *nout, const Nrrd *nin, const NrrdKernel *kernel,
       double spacing;
       center = _nrrdCenter2(nin->axis[ai].center, nrrdDefaultCenter);
       spacing = nin->axis[ai].spacing;
-      if (!AIR_EXISTS(spacing)) spacing = nrrdDefaultSpacing;
+      if (!AIR_EXISTS(spacing)) spacing = 1 /* Gone in TeemV2: nrrdDefaultSpacing */;
       if (nrrdCenterCell == center) {
         axmin = 0;
         axmax = spacing * nin->axis[ai].size;
@@ -294,7 +294,7 @@ _nrrdResampleMakeWeightIndex(nrrdResample_t **weightP, int **indexP, double *rat
   nrrdResample_t minIn, maxIn, minOut, maxOut, spcIn, spcOut, ratio, support, integral,
     pos, idxD, wght;
   nrrdResample_t *weight;
-  double parm[NRRD_KERNEL_PARMS_NUM];
+  double parm[NRRD_KERNEL_PARM_MAXNUM];
 
   int e, i;
 
@@ -408,7 +408,7 @@ _nrrdResampleMakeWeightIndex(nrrdResample_t **weightP, int **indexP, double *rat
   /* run the sample locations through the chosen kernel.  We play a
      sneaky trick on the kernel parameter 0 in case of downsampling
      to create the blurring of the old index space, but only if !cheap */
-  memcpy(parm, info->parm[ai], NRRD_KERNEL_PARMS_NUM * sizeof(double));
+  memcpy(parm, info->parm[ai], NRRD_KERNEL_PARM_MAXNUM * sizeof(double));
   if (ratio < 1 && !(info->cheap)) {
     parm[0] /= ratio;
   }

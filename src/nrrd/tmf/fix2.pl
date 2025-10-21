@@ -83,8 +83,8 @@ print "  fprintf\(stderr, \"_nrrd_TMFBAD: Invalid TMF indexing: ef == 0\\n\"\);\
 print "}\n\n";
 print "static const NrrdKernel\n";
 print "_nrrdKernel_TMFBAD = {\n";
-print "  \"TMFBAD\",\n";
-print "  1, _nrrd_TMFBAD_Sup, _nrrd_TMFBAD_Int,\n";
+print "  \"TMFBAD\", 1, AIR_FALSE,\n";
+print "  _nrrd_TMFBAD_Sup, _nrrd_TMFBAD_Int,\n";
 print "  _nrrd_TMFBAD_1_f, _nrrd_TMFBAD_N_f,\n";
 print "  _nrrd_TMFBAD_1_d, _nrrd_TMFBAD_N_d\n";
 print "};\n";
@@ -266,10 +266,10 @@ sub blah {
 	     . "    f[I] = AIR_CAST(float, ${kern}\(parm[0], i, t\));\n"
 	     . "  }\n"
 	     . "}\n\n");
-    $kdef = ("static NrrdKernel\n"
+    $kdef = ("static const NrrdKernel\n"
 	     . "_nrrdKernel_${kern} = {\n"
-	     . "  \"${kern}\",\n"
-	     . "  1, _nrrd_${kern}_Sup, _nrrd_${kern}_Int,\n"
+	     . "  \"${kern}\", 1, AIR_FALSE,\n"
+             . "  _nrrd_${kern}_Sup, _nrrd_${kern}_Int,\n"
 	     . "  _nrrd_${kern}_1_f,  _nrrd_${kern}_N_f,\n"
 	     . "  _nrrd_${kern}_1_d,  _nrrd_${kern}_N_d\n"
 	     . "};\n\n");

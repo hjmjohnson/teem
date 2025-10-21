@@ -48,14 +48,12 @@ int nrrdDefaultResampleClamp = AIR_TRUE;
 int nrrdDefaultResampleCheap = AIR_FALSE;
 double nrrdDefaultResamplePadValue = 0.0;
 int nrrdDefaultResampleNonExistent = nrrdResampleNonExistentNoop;
-double nrrdDefaultKernelParm0 = 1.0;
 /* creating and by-default enabling this functionality is a change for Teem2 */
 int nrrdDefaultDeclineStdioOnTTY = AIR_TRUE;
 /* ---- END non-NrrdIO */
 int nrrdDefaultCenter = nrrdCenterCell;
 /* matches how nrrdStateVerboseIO (gone in Teem2) was initialized */
 int nrrdDefaultVerboseIO = 1; /* NrrdIO-hack-003 */
-double nrrdDefaultSpacing = 1.0;
 
 /* these aren't really "defaults" because there's no other channel for
    specifying this information.  It is just global state.  Obviously,
@@ -112,8 +110,6 @@ const char *const nrrdEnvVarDefaultCenter = "NRRD_DEFAULT_CENTER";
 const char *const nrrdEnvVarDefaultWriteCharsPerLine
   = "NRRD_DEFAULT_WRITE_CHARS_PER_LINE";
 const char *const nrrdEnvVarDefaultWriteValsPerLine = "NRRD_DEFAULT_WRITE_VALS_PER_LINE";
-const char *const nrrdEnvVarDefaultKernelParm0 = "NRRD_DEFAULT_KERNEL_PARM0";
-const char *const nrrdEnvVarDefaultSpacing = "NRRD_DEFAULT_SPACING";
 /* over-writes nrrdEnvVarStateVerboseIO for setting nrrdDefaultVerboseIO */
 const char *const nrrdEnvVarDefaultVerboseIO = "NRRD_DEFAULT_VERBOSE_IO";
 
@@ -299,8 +295,6 @@ nrrdDefaultGetenv(void) {
                  nrrdEnvVarDefaultWriteCharsPerLine);
   nrrdGetenvUInt(/**/ &nrrdDefaultWriteValsPerLine, NULL,
                  nrrdEnvVarDefaultWriteValsPerLine);
-  nrrdGetenvDouble(/**/ &nrrdDefaultKernelParm0, NULL, nrrdEnvVarDefaultKernelParm0);
-  nrrdGetenvDouble(/**/ &nrrdDefaultSpacing, NULL, nrrdEnvVarDefaultSpacing);
 
   /* for TeemV2 nrrdStateVerboseIO --> nrrdDefaultVerboseIO but we'll
    still honor the old env var name if new env var name is not given */

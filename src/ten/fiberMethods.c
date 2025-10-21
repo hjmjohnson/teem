@@ -714,7 +714,7 @@ tenFiberAnisoSpeedReset(tenFiberContext *tfx) {
 int /* Biff: 1 */
 tenFiberKernelSet(tenFiberContext *tfx,
                   const NrrdKernel *kern,
-                  const double parm[NRRD_KERNEL_PARMS_NUM]) {
+                  const double parm[NRRD_KERNEL_PARM_MAXNUM]) {
   static const char me[] = "tenFiberKernelSet";
 
   if (!(tfx && kern)) {

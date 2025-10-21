@@ -10,5 +10,5 @@ as follows (in a bash-like shell)
     cat ../../preamble.c - tmp0.c > tmp1.c
   echo '/* clang-format on */' |
     cat tmp1.c - |
-    sed 's/[[:space:]]*$//'>../tmfKernel.c
+    sed 's/[[:space:]]*$//' >! ../tmfKernel.c
   rm -f tmp?.c

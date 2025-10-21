@@ -1342,7 +1342,7 @@ extern void tenFiberVerboseSet(tenFiberContext *tfx, int verbose);
 extern int tenFiberTypeSet(tenFiberContext *tfx, int type);
 extern int tenFiberKernelSet(tenFiberContext *tfx,
                                  const NrrdKernel *kern,
-                                 const double parm[NRRD_KERNEL_PARMS_NUM]);
+                                 const double parm[NRRD_KERNEL_PARM_MAXNUM]);
 extern int tenFiberProbeItemSet(tenFiberContext *tfx, int item);
 extern int tenFiberIntgSet(tenFiberContext *tfx, int intg);
 extern int tenFiberStopSet(tenFiberContext *tfx, int stop, ...);

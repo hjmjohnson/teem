@@ -105,7 +105,7 @@ makeVolume(Nrrd *nin, unsigned int sx, unsigned int sy, unsigned int sz,
   static const char me[] = "makeVolume";
   double spcOrig[NRRD_SPACE_DIM_MAX], spcVec[3][NRRD_SPACE_DIM_MAX], angle10, angle20,
     angle21, ooff[3], aperm = 0.6, lexp = 0.1, lstdv = 0.04,
-                      kparm[NRRD_KERNEL_PARMS_NUM];
+                      kparm[NRRD_KERNEL_PARM_MAXNUM];
   gageContext *gctx;
   gagePerVolume *gpvl;
   unsigned int xi, yi, zi;

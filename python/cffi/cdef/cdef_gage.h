@@ -569,8 +569,8 @@ typedef unsigned char gageQuery[GAGE_QUERY_BYTES_NUM];
 #define GAGE_PERVOLUME_ARR_INCR 32
 /* extents of known information about optimal sigma samples for
    Hermite-spline-based scale-space reconstruction */
-#define GAGE_OPTIMSIG_SIGMA_MAX      11
-#define GAGE_OPTIMSIG_SAMPLES_MAXNUM 11
+#define GAGE_OPTIMSIG_SIGMA_MAX     11
+#define GAGE_OPTIMSIG_SAMPLE_MAXNUM 11
 /*
 ******** gageContext struct
 **

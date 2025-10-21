@@ -44,7 +44,7 @@ fixproj(Nrrd *nproj[3], const Nrrd *nvol) {
   Nrrd *ntmp[3], *nt;
   int ii, jj, map[3], h[3], E, mi;
   size_t rsz[3][3];
-  double vec[3][3], dot[3], sp[3], parm[NRRD_KERNEL_PARMS_NUM];
+  double vec[3][3], dot[3], sp[3], parm[NRRD_KERNEL_PARM_MAXNUM];
   unsigned int sz[3];
 
   mop = airMopNew();

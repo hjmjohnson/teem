@@ -1483,7 +1483,7 @@ TEN_EXPORT void tenFiberVerboseSet(tenFiberContext *tfx, int verbose);
 TEN_EXPORT int tenFiberTypeSet(tenFiberContext *tfx, int type);
 TEN_EXPORT int tenFiberKernelSet(tenFiberContext *tfx,
                                  const NrrdKernel *kern,
-                                 const double parm[NRRD_KERNEL_PARMS_NUM]);
+                                 const double parm[NRRD_KERNEL_PARM_MAXNUM]);
 TEN_EXPORT int tenFiberProbeItemSet(tenFiberContext *tfx, int item);
 TEN_EXPORT int tenFiberIntgSet(tenFiberContext *tfx, int intg);
 TEN_EXPORT int tenFiberStopSet(tenFiberContext *tfx, int stop, ...);

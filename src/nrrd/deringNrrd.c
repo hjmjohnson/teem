@@ -73,7 +73,7 @@ nrrdDeringContextNew(void) {
   drc->clampHistoBins = CLAMP_HIST_BINS_MIN * 4;
   drc->rkernel = NULL;
   drc->tkernel = NULL;
-  for (pi = 0; pi < NRRD_KERNEL_PARMS_NUM; pi++) {
+  for (pi = 0; pi < NRRD_KERNEL_PARM_MAXNUM; pi++) {
     drc->rkparm[pi] = drc->tkparm[pi] = AIR_NAN;
   }
   drc->cdataIn = NULL;
@@ -267,7 +267,7 @@ nrrdDeringThetaNumSet(NrrdDeringContext *drc, unsigned int thetaNum) {
 int /* Biff: 1 */
 nrrdDeringRadialKernelSet(NrrdDeringContext *drc,
                           const NrrdKernel *rkernel,
-                          const double rkparm[NRRD_KERNEL_PARMS_NUM]) {
+                          const double rkparm[NRRD_KERNEL_PARM_MAXNUM]) {
   static const char me[] = "nrrdDeringRadialKernelSet";
   unsigned int pi;
 
@@ -277,7 +277,7 @@ nrrdDeringRadialKernelSet(NrrdDeringContext *drc,
   }
 
   drc->rkernel = rkernel;
-  for (pi = 0; pi < NRRD_KERNEL_PARMS_NUM; pi++) {
+  for (pi = 0; pi < NRRD_KERNEL_PARM_MAXNUM; pi++) {
     drc->rkparm[pi] = rkparm[pi];
   }
 
@@ -287,7 +287,7 @@ nrrdDeringRadialKernelSet(NrrdDeringContext *drc,
 int /* Biff: 1 */
 nrrdDeringThetaKernelSet(NrrdDeringContext *drc,
                          const NrrdKernel *tkernel,
-                         const double tkparm[NRRD_KERNEL_PARMS_NUM]) {
+                         const double tkparm[NRRD_KERNEL_PARM_MAXNUM]) {
   static const char me[] = "nrrdDeringThetaKernelSet";
   unsigned int pi;
 
@@ -297,7 +297,7 @@ nrrdDeringThetaKernelSet(NrrdDeringContext *drc,
   }
 
   drc->tkernel = tkernel;
-  for (pi = 0; pi < NRRD_KERNEL_PARMS_NUM; pi++) {
+  for (pi = 0; pi < NRRD_KERNEL_PARM_MAXNUM; pi++) {
     drc->tkparm[pi] = tkparm[pi];
   }
 

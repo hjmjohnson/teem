@@ -105,8 +105,8 @@ resampleContextInit(NrrdResampleContext *rsmc) {
     for (axIdx = 0; axIdx < NRRD_DIM_MAX + 1; axIdx++) {
       axis = rsmc->axis + axIdx;
       axis->kernel = NULL;
-      axis->kparm[0] = nrrdDefaultKernelParm0;
-      for (kpIdx = 1; kpIdx < NRRD_KERNEL_PARMS_NUM; kpIdx++) {
+      axis->kparm[0] = 1 /* Gone in TeemV2: nrrdDefaultKernelParm0 */;
+      for (kpIdx = 1; kpIdx < NRRD_KERNEL_PARM_MAXNUM; kpIdx++) {
         axis->kparm[kpIdx] = AIR_NAN;
       }
       axis->min = axis->max = AIR_NAN;
@@ -234,8 +234,8 @@ nrrdResampleNonExistentSet(NrrdResampleContext *rsmc, int nonExist) {
       rsmc->axis[axIdx].center = nrrdCenterUnknown;                                     \
       rsmc->axis[axIdx].sizeIn = 0;                                                     \
       rsmc->axis[axIdx].kernel = NULL;                                                  \
-      rsmc->axis[axIdx].kparm[0] = nrrdDefaultKernelParm0;                              \
-      for (kpIdx = 1; kpIdx < NRRD_KERNEL_PARMS_NUM; kpIdx++) {                         \
+      rsmc->axis[axIdx].kparm[0] = 1 /* Gone in TeemV2: nrrdDefaultKernelParm0 */;      \
+      for (kpIdx = 1; kpIdx < NRRD_KERNEL_PARM_MAXNUM; kpIdx++) {                       \
         rsmc->axis[axIdx].kparm[kpIdx] = AIR_NAN;                                       \
       }                                                                                 \
       rsmc->axis[axIdx].samples = 0;                                                    \
@@ -276,7 +276,7 @@ nrrdResampleInputSet(NrrdResampleContext *rsmc, const Nrrd *nin) {
 
 int /* Biff: nope */
 nrrdResampleKernelSet(NrrdResampleContext *rsmc, unsigned int axIdx,
-                      const NrrdKernel *kernel, double kparm[NRRD_KERNEL_PARMS_NUM]) {
+                      const NrrdKernel *kernel, double kparm[NRRD_KERNEL_PARM_MAXNUM]) {
   static const char me[] = "nrrdResampleKernelSet";
   unsigned int kpIdx;
 
@@ -705,7 +705,7 @@ _nrrdResampleVectorFillUpdate(NrrdResampleContext *rsmc) {
   int *indexData, tmp, base, rawIdx;
   nrrdResample_t *weightData, idx, integral;
   NrrdResampleAxis *axis;
-  double kparm[NRRD_KERNEL_PARMS_NUM];
+  double kparm[NRRD_KERNEL_PARM_MAXNUM];
 
   if (rsmc->flag[flagRenormalize]     /* */
       || rsmc->flag[flagBoundary]     /* */
@@ -791,10 +791,10 @@ _nrrdResampleVectorFillUpdate(NrrdResampleContext *rsmc) {
          defined, versus the newer practice of creating parameter-free kernels. The
          "sneaky trick" code below for changing parm[0] only works if the kernel actually
          looks at parm[0]!  So for the parameter-free kernels, and those for which NOT
-         nrrdKernelParm0IsScale(), we have to do what we probably should have been done
+         kernel->parm0IsScale(), we have to do what we probably should have been done
          all along: simulating the kernel scaling by pre-processing the evaluation
          locations and post-processing the kernel weights */
-      if (0 == axis->kernel->parmNum || !nrrdKernelParm0IsScale(axis->kernel)) {
+      if (0 == axis->kernel->parmNum || !axis->kernel->parm0IsScale) {
         size_t nn, ii;
         double ratio;
         nn = dotLen * axis->samples;
@@ -815,7 +815,7 @@ _nrrdResampleVectorFillUpdate(NrrdResampleContext *rsmc) {
            sneaky trick on the kernel parameter 0 in case of downsampling
            to create the blurring of the old index space */
         kparm[0] = (axis->ratio < 1 ? axis->kparm[0] / axis->ratio : axis->kparm[0]);
-        for (kpIdx = 1; kpIdx < NRRD_KERNEL_PARMS_NUM; kpIdx++) {
+        for (kpIdx = 1; kpIdx < NRRD_KERNEL_PARM_MAXNUM; kpIdx++) {
           kparm[kpIdx] = axis->kparm[kpIdx];
         }
         axis->kernel->EVALN(weightData, weightData, dotLen * axis->samples, kparm);

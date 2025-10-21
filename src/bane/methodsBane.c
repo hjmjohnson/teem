@@ -54,7 +54,7 @@ baneHVolParmNew() {
     hvp->k3pack = AIR_TRUE;
     for (i = gageKernelUnknown + 1; i < gageKernelLast; i++) {
       hvp->k[i] = NULL;
-      for (j = 0; j < NRRD_KERNEL_PARMS_NUM; j++)
+      for (j = 0; j < NRRD_KERNEL_PARM_MAXNUM; j++)
         hvp->kparm[i][j] = AIR_NAN;
     }
     hvp->renormalize = baneDefRenormalize;

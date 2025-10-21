@@ -2,10 +2,6 @@
 ** starting with the most important.
 
 
-Update NrrdIO's CMakeLists.txt file. Teem's CMake files were re-written for
-TeemV2, what best practices are in Teem's CMake files can be copied to NrrdIO?
-
-
 Update the Teem CDash dashboard, or create a new one. The old one at
 <http://my.cdash.org/index.php?project=Teem> stopped working when
 Sourceforge changed the URL for code repo, and, GLK has been unable to

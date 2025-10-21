@@ -350,8 +350,8 @@ _nrrdResampleInfoInit(NrrdResampleInfo *info) {
   for (d = 0; d < NRRD_DIM_MAX; d++) {
     info->kernel[d] = NULL;
     info->samples[d] = 0;
-    info->parm[d][0] = nrrdDefaultKernelParm0;
-    for (i = 1; i < NRRD_KERNEL_PARMS_NUM; i++)
+    info->parm[d][0] = 1 /* Gone in TeemV2: nrrdDefaultKernelParm0 */;
+    for (i = 1; i < NRRD_KERNEL_PARM_MAXNUM; i++)
       info->parm[d][i] = AIR_NAN;
     info->min[d] = info->max[d] = AIR_NAN;
   }
@@ -393,7 +393,7 @@ nrrdKernelSpecNew(void) {
   ksp = (NrrdKernelSpec *)calloc(1, sizeof(NrrdKernelSpec));
   if (ksp) {
     ksp->kernel = NULL;
-    for (i = 0; i < NRRD_KERNEL_PARMS_NUM; i++) {
+    for (i = 0; i < NRRD_KERNEL_PARM_MAXNUM; i++) {
       ksp->parm[i] = airNaN(); /* valgrind complained about AIR_NAN at -O2 */
     }
   }
@@ -422,7 +422,7 @@ nrrdKernelSpecNix(NrrdKernelSpec *ksp) {
 
 void
 nrrdKernelSpecSet(NrrdKernelSpec *ksp, const NrrdKernel *k,
-                  const double kparm[NRRD_KERNEL_PARMS_NUM]) {
+                  const double kparm[NRRD_KERNEL_PARM_MAXNUM]) {
   unsigned int p;
 
   if (ksp && k && kparm) {
@@ -434,13 +434,13 @@ nrrdKernelSpecSet(NrrdKernelSpec *ksp, const NrrdKernel *k,
 }
 
 void
-nrrdKernelParmSet(const NrrdKernel **kP, double kparm[NRRD_KERNEL_PARMS_NUM],
+nrrdKernelParmSet(const NrrdKernel **kP, double kparm[NRRD_KERNEL_PARM_MAXNUM],
                   NrrdKernelSpec *ksp) {
   int p;
 
   if (kP && kparm && ksp) {
     *kP = ksp->kernel;
-    for (p = 0; p < NRRD_KERNEL_PARMS_NUM; p++) {
+    for (p = 0; p < NRRD_KERNEL_PARM_MAXNUM; p++) {
       kparm[p] = ksp->parm[p];
     }
   }

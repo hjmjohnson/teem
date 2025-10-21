@@ -27,7 +27,7 @@
 #include <teem/ten.h>
 #include <teem/meet.h>
 
-#define SPACING(spc) (AIR_EXISTS(spc) ? spc : nrrdDefaultSpacing)
+#define SPACING(spc) (AIR_EXISTS(spc) ? spc : 1.0)
 
 /* copied this from ten.h; I don't want gage to depend on ten */
 #define PROBE_MAT2LIST(l, m)                                                            \
