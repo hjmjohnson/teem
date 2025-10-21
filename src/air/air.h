@@ -867,6 +867,7 @@ AIR_EXPORT void airMopSingleOkay(airArray *arr, void *ptr);
 */
 #define AIR_CLAMP(a, b, c) ((b) < (a) ? (a) : ((b) > (c) ? (c) : (b)))
 
+/* ---- BEGIN non-NrrdIO */
 /*
 ******** AIR_AFFINE(i,x,I,o,O)
 **
@@ -889,7 +890,6 @@ AIR_EXPORT void airMopSingleOkay(airArray *arr, void *ptr);
 #define AIR_AFFINE(i, x, I, o, O)                                                       \
   (((double)(O) - (o)) * ((double)(x) - (i)) / ((double)(I) - (i)) + (o))
 
-/* ---- BEGIN non-NrrdIO */
 /*
 ******** AIR_LERP(w, a, b)
 **
