@@ -770,39 +770,7 @@ AIR_EXPORT void airMopSingleOkay(airArray *arr, void *ptr);
 #endif
 /* clang-format on */
 
-/*
-******** AIR_EXISTS_F(x)
-**
-** This is another way to check for non-specialness (not NaN, not +inf, not -inf) of
-** a _float_ _variable_, by making sure the exponent field isn't all ones.
-**
-** Unlike with AIR_EXISTS() or airExists(), this macro argument MUST be a variable of
-** type (4-byte) float, and 4 == sizeof(int): there is no implicit type converstion as
-** part of macro expansion.
-**
-** This macro is endian-safe.
-*/
-#define AIR_EXISTS_F(x) (((*((unsigned int *)&(x))) & 0x7f800000) != 0x7f800000)
-
-/*
-******** AIR_EXISTS_D(x)
-**
-** like AIR_EXISTS_F(), but the argument here MUST be a (8-byte) double variable
-*/
-#define AIR_EXISTS_D(x)                                                                 \
-  (((*((airULLong *)&(x))) & AIR_ULLONG(0x7ff0000000000000))                            \
-   != AIR_ULLONG(0x7ff0000000000000))
-
-/*
-******** AIR_ISNAN_F(x)
-**
-** detects if a float is NaN by looking at the bits, without relying on any of its
-** arithmetic properties.  As with AIR_EXISTS_F(), this only works when the argument
-** is a float variable, and when floats and ints are 4-bytes.
-*/
-#define AIR_ISNAN_F(x)                                                                  \
-  ((((*((unsigned int *)&(x))) & 0x7f800000) == 0x7f800000)                             \
-   && ((*((unsigned int *)&(x))) & 0x007fffff))
+/* Gone in TeemV2: size-specific AIR_EXISTS_F, AIR_EXISTS_D, AIR_ISNAN_F macros */
 
 /*
 ******** AIR_ENDIAN

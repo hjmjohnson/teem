@@ -69,7 +69,7 @@ main(int argc, char *argv[]) {
     /* I think solaris turns the SNAN into a QNAN */
     printf("to double and back:\n");
     airFPFprintf_f(stdout, AIR_FLOAT(d));
-    printf("AIR_ISNAN_F = %d\n", AIR_ISNAN_F(f));
+    /* Gone in TeemV2: printf("AIR_ISNAN_F = %d\n", AIR_ISNAN_F(f)); */
   }
 
   printf(" - - - - - - - - - - - - - - - -\n");
