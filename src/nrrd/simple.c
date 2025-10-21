@@ -1457,54 +1457,7 @@ _nrrdSplitSizes(size_t *pieceSize, size_t *pieceNum, Nrrd *nrrd, unsigned int sp
   return;
 }
 
-/*
-******** nrrdHasNonExistSet()
-**
-** This function will always (assuming type is valid) set the value of
-** nrrd->hasNonExist to either nrrdNonExistTrue or nrrdNonExistFalse,
-** and it will return that value.  For lack of a more sophisticated
-** policy, blocks are currently always considered to be existent
-** values (because nrrdTypeIsIntegral[nrrdTypeBlock] is currently true).
-** This function will ALWAYS determine the correct answer and set the
-** value of nrrd->hasNonExist: it ignores the value of
-** nrrd->hasNonExist on the input nrrd.  Exception: if nrrd is null or
-** type is bogus, no action is taken and nrrdNonExistUnknown is
-** returned.
-**
-** Because this will return either nrrdNonExistTrue or nrrdNonExistFalse,
-** and because the C boolean value of these are true and false (respectively),
-** it is possible (and encouraged) to use the return of this function
-** as the expression of a conditional:
-**
-**   if (nrrdHasNonExistSet(nrrd)) {
-**     ... handle existance of non-existent values ...
-**   }
-*/
-/*
-int
-nrrdHasNonExistSet(Nrrd *nrrd) {
-  size_t I, N;
-  float val;
-
-  if (!( nrrd && !airEnumValCheck(nrrdType, nrrd->type) ))
-    return nrrdNonExistUnknown;
-
-  if (nrrdTypeIsIntegral[nrrd->type]) {
-    nrrd->hasNonExist = nrrdNonExistFalse;
-  } else {
-    nrrd->hasNonExist = nrrdNonExistFalse;
-    N = nrrdElementNumber(nrrd);
-    for (I=0; I<N; I++) {
-      val = nrrdFLookup[nrrd->type](nrrd->data, I);
-      if (!AIR_EXISTS(val)) {
-        nrrd->hasNonExist = nrrdNonExistTrue;
-        break;
-      }
-    }
-  }
-  return nrrd->hasNonExist;
-}
-*/
+/* TeemV2: long-commented-out nrrdHasNonExistSet() now removed */
 
 static int /* Biff: 1 */
 _nrrdCheckEnums(void) {
