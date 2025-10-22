@@ -243,7 +243,7 @@ enum {
   gageScl2ndDD,           /* 19: "2d", 2nd dir.deriv. along gradient: [1] */
   gageSclGeomTens,        /* 20: "gten", sym. matx w/ evals {0, K1, K2} and
                                  evecs {grad, cdir0, cdir1}: [9] */
-  gageSclGeomTensTen,     /* 21: "gtenten", 7-element geometry tensor [7] */
+  gageSclGeomTens7Ten,    /* 21: "gten7ten", 7-element geometry tensor [7] */
   gageSclK1,              /* 22: "k1", 1st principle curvature: [1] */
   gageSclK2,              /* 23: "k2", 2nd principle curvature (k2 <= k1): [1] */
   gageSclTotalCurv,       /* 24: "tc", L2 norm(K1,K2) (not Koen.'s "C"): [1] */
