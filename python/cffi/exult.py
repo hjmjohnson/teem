@@ -53,7 +53,7 @@ _tlhdrs = {
     'nrrd': ['nrrdEnums.h', 'nrrdDefines.h'],
     # ell: ellMacros.h does not add to ell API
 }
-# as of Teem v2 the per-library "experimental" notion is gone, which simplifies
+# as of TeemV2 the per-library "experimental" notion is gone, which simplifies
 # how the libraries and their dependencies are declared.  The info below should
 # be extracted from the per-library GNUmakefiles, ideally in an automated way,
 # but for now via:    grep Depends */GNUmakefile | grep -v bin/GNUmakefile
