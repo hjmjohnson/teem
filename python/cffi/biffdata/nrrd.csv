@@ -143,10 +143,10 @@ nrrdSimpleCrop,int,1,0,nrrd,nrrd/subset.c:644
 nrrdCropAuto,int,1,0,nrrd,nrrd/subset.c:665
 nrrdSplice,int,1,0,nrrd,nrrd/superset.c:30
 nrrdInset,int,1,0,nrrd,nrrd/superset.c:155
-nrrdPad_va,int,1,0,nrrd,nrrd/superset.c:279
-nrrdPad_nva,int,1,0,nrrd,nrrd/superset.c:485
-nrrdSimplePad_va,int,1,0,nrrd,nrrd/superset.c:513
-nrrdSimplePad_nva,int,1,0,nrrd,nrrd/superset.c:551
+nrrdPad_va,int,1,0,nrrd,nrrd/superset.c:277
+nrrdPad_nva,int,1,0,nrrd,nrrd/superset.c:483
+nrrdSimplePad_va,int,1,0,nrrd,nrrd/superset.c:511
+nrrdSimplePad_nva,int,1,0,nrrd,nrrd/superset.c:549
 nrrdIoStateSet,int,1,0,nrrd,nrrd/write.c:28
 nrrdIoStateEncodingSet,int,1,0,nrrd,nrrd/write.c:101
 nrrdIoStateFormatSet,int,1,0,nrrd,nrrd/write.c:121

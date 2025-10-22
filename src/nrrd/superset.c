@@ -250,8 +250,6 @@ nrrdInset(Nrrd *nout, const Nrrd *nin, const Nrrd *nsub, const size_t *min) {
     NRRD_COORD_INCR(cOut, szOut, nin->dim, 1);
   }
 
-  /* HEY: before Teem version 2.0 figure out nrrdKind stuff here */
-
   strcpy(buff1, "[");
   for (ai = 0; ai < nin->dim; ai++) {
     sprintf(buff2, "%s%s", (ai ? "," : ""), airSprintSize_t(stmp[0], min[ai]));

@@ -1,4 +1,4 @@
-# All about `/* Biff: */` annotations (new with Teem v2)
+# All about `/* Biff: */` annotations (new with TeemV2)
 
 Teem uses its `biff` library to collect error messages (based on 90s skater culture using "biff" to mean a hard fall). `biff` is not thread-safe, but that has never been the biggest barrier to its use (or Teem's use in general). Instead, a bigger problem is that there's nothing in a function type signature that advertises whether it uses `biff` at all, or what return values from the function indicate the error conditions that would have generated `biff` messages that need to be collected and passed along to the user. Thankfully, there are now some semi-automated tools to help with this.
 
