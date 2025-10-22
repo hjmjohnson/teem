@@ -22,8 +22,7 @@
 
 #define INFO "Fast Fourier Transform of selected axes"
 static const char *_unrrdu_fftInfoL_yes
-  = (INFO ". Initial attempt at wrapping the FFTW3 library; options are "
-          "likely to change in Teem 2.0.\n "
+  = (INFO ". Powered by the FFTW3 library.\n "
           "* Uses nrrdFFT");
 
 static const char *_unrrdu_fftInfoL_no

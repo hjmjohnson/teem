@@ -494,7 +494,7 @@ copy an implementation with suitable licensing).  Until then, we use
 airSprintSize_t and airSprintPtrdiff_t to sprint a single size_t or ptrdiff_t
 variable to a buffer string (typically char stmp[AIR_STRLEN_SMALL]) which is
 then handled via %s.  This is admittedly clumsy; it will hopefully be one of
-the first things to fix in Teem 2.0.
+the first things to fix in Teem 3.0 (it wasn't prioritized for TeemV2).
 
 ============ Other coding practices
 

@@ -76,11 +76,12 @@ _nrrdDimsReverse(fftw_iodim *dims, unsigned int len) {
 /*
 ******** nrrdFFT
 **
-** First pass at a wrapper around FFTW.  This was implemented out of need for a
-** specific project; and better decisions and different interfaces will become
-** apparent with time and experience; these can be in Teem 2.0.
+** Wrapper around FFTW3.  This was implemented quickly out of need for a
+** specific project, with the idea that decisions and different interfaces would
+** "become apparent with time and experience; these can be in TeemV2", but no
+** obvious problems have emerged.
 **
-** currently *requires* that input be complex-valued, in that axis 0 has to
+** Currently, this *requires* that input be complex-valued, in that axis 0 has to
 ** have size 2.  nrrdKindComplex would be sensible for input axis 0 but we don't
 ** require it, though it is set on the output.
 */

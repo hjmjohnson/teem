@@ -820,7 +820,7 @@ _fiberTraceSet(tenFiberContext *tfx, Nrrd *nval, Nrrd *nfiber, double *buff,
 ** for seedpoints and when fiber vertices are saved out, respectively.
 **
 ** As of Sun Aug  1 20:40:55 CDT 2010 this is just a wrapper around
-** _fiberTraceSet; this will probably change in Teem 2.0
+** _fiberTraceSet; this may change in the future.
 */
 int /* Biff: 1 */
 tenFiberTraceSet(tenFiberContext *tfx, Nrrd *nfiber, double *buff,
