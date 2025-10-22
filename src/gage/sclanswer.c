@@ -254,11 +254,11 @@ _gageSclAnswer(gageContext *ctx, gagePerVolume *pvl) {
       ELL_3M_ZERO_SET(gten);
     }
   }
-  if (GAGE_QUERY_ITEM_TEST(pvl->query, gageSclGeomTensTen)) {
-    pvl->directAnswer[gageSclGeomTensTen][0] = 1.0;
-    TEN_M2T(pvl->directAnswer[gageSclGeomTensTen], pvl->directAnswer[gageSclGeomTens]);
-    TEN_T_SCALE(pvl->directAnswer[gageSclGeomTensTen], -1,
-                pvl->directAnswer[gageSclGeomTensTen]);
+  if (GAGE_QUERY_ITEM_TEST(pvl->query, gageSclGeomTens7Ten)) {
+    pvl->directAnswer[gageSclGeomTens7Ten][0] = 1.0;
+    TEN_M2T(pvl->directAnswer[gageSclGeomTens7Ten], pvl->directAnswer[gageSclGeomTens]);
+    TEN_T_SCALE(pvl->directAnswer[gageSclGeomTens7Ten], -1,
+                pvl->directAnswer[gageSclGeomTens7Ten]);
   }
   if (GAGE_QUERY_ITEM_TEST(pvl->query, gageSclTotalCurv)) {
     curv = pvl->directAnswer[gageSclTotalCurv][0] = ELL_3M_FROB(gten);
