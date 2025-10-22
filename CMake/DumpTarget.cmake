@@ -3,7 +3,7 @@
 # See ../LICENSE.txt for licensing terms
 
 # This is the result of GLK nudging ChatGPT to explain what exactly is the state built up
-# inside CMake as a result of procesing a CMakeLists.txt; among all the new Teem v2 CMake
+# inside CMake as a result of procesing a CMakeLists.txt; among all the new TeemV2 CMake
 # files this one is most experimental and for learning-by-doing.  The intent, at least,
 # is to make something useful for debugging.
 

@@ -18,7 +18,7 @@ along with this library; if not, see <https://www.gnu.org/licenses/>.
 
 =============== How to connect with other Teem users.
 
-In preparation for the Teem v2 release, there's a new Discord server:
+In preparation for the TeemV2 release, there's a new Discord server:
 
   https://discord.gg/xBBqZGXkF7
 

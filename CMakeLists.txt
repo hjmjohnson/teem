@@ -24,7 +24,7 @@
 # Teem is itself made of component libraries (air, hest, biff, nrrd, etc.) but in CMake
 # we do not compile these as libraries per se: they are merely containers for .c and .h
 # files, which we compile to a single "monolithic" library. Teem also has a separate
-# system of GNUmakefiles (re-written for Teem v2) which do build the finer-grained
+# system of GNUmakefiles (re-written for TeemV2) which do build the finer-grained
 # per-component libraries (libair.a, libhest.a, etc). These remain useful for Teem
 # development, but there's no reason to complicate this CMakeLists.txt with describing
 # those smaller libraries and their inter-dependencies.
@@ -35,16 +35,16 @@
 #      FindFFTW3.cmake
 #      FindLEVMAR.cmake
 #      TeemConfig.cmake.in
-#      CheckAirExists.cmake   (new for Teem v2)
-#      CheckLibmNeeded.cmake  (new for Teem v2)
-#      DumpTarget.cmake       (new for Teem v2)
+#      CheckAirExists.cmake   (new for TeemV2)
+#      CheckLibmNeeded.cmake  (new for TeemV2)
+#      DumpTarget.cmake       (new for TeemV2)
 #  - src/bin/CMakeLists.txt
 #  - src/{air,biff,...}/CMakeLists.txt
 #  - CTestConfig.cmake
 #  - tests/ctest/CMakeLists.txt
 #  - tests/ctest/{air,biff,...}/CMakeLists.txt
 #  - UseTeemCMakeDemo/CMakeLists.txt
-# were re-written entirely for Teem v2, by me (GLK), with help from ChatGPT. This is the
+# were re-written entirely for TeemV2, by me (GLK), with help from ChatGPT. This is the
 # first time I've really scrutinized and tried to understand the CMake files, and the
 # first time I've tried anything non-trivial with ChatGPT. Current generative AI tools
 # tend to normalize and mechanize intellectual property theft, with a huge carbon
@@ -557,11 +557,11 @@ configure_package_config_file(
 write_basic_package_version_file(
   ${CMAKE_CURRENT_BINARY_DIR}/TeemConfigVersion.cmake
   VERSION ${Teem_VERSION_STRING}
-  # Teem v2 does have non-zero ABI and API changes from Teem pre-v2, hence the
-  # SameMajorVersion instead of AnyNewerVersion below.  Most Teem-using code will likely
-  # not need changing to use v2, but it does need to be recompiled.  To honor the
-  # expectations of the semantic versioning that Teem adopted in 2005 with version
-  # 1.9.0, the major version boundary has to mean something
+  # TeemV2 does have non-trivial ABI and API changes from Teem pre-V2, hence the
+  # SameMajorVersion instead of AnyNewerVersion below.  Most Teem-using code will
+  # likely not need to be changed to use V2, but it certainly needs recompiling.
+  # To honor the expectations of the semantic versioning that Teem adopted in 2005
+  # with version 1.9.0, the major version boundary has to mean something.
   COMPATIBILITY SameMajorVersion
 )
 
