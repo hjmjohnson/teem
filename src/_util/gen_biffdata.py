@@ -38,7 +38,7 @@ TLIBS = [  # 'air', 'biff',  (these libraries cannot not use biff, by their natu
     # the following lists ALL the other Teem libraries. It may be that some
     # (like elf, tijk, unrrdu) do not use biff, but that is something we discover
     # now as part of our operation, rather than decreeing from the outset.
-    'hest', # in TeemV2 now depends on biff
+    'hest',  # in TeemV2 now depends on biff
     'nrrd',
     'ell',
     'moss',
@@ -210,8 +210,6 @@ def proc_lib(path_teem: str, lib: str) -> list[str]:
     """
     path_srcs = f'{path_teem}/src/{lib}'
     # read the CMakeLists.txt file to get list of source files
-    # NOTE: This requires the "-v2" re-write of the CMakeLists.txt files for Teem v2
-    # (sorry time does not permit writing code to handle both v1 and v2 formats)
     with open(f'{path_srcs}/CMakeLists.txt', 'r', encoding='utf8') as cmfile:
         # read in lines, handling comments now
         ilines = [line.strip().split('#', 1)[0].strip() for line in cmfile.readlines()]
