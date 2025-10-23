@@ -28,9 +28,14 @@ shared library), and to generate this wrapper, which is the result of simple tex
 transformations of the template wrapper in teem/python/cffi/lliibb.py
 """
 
+# pylint can't see inside CFFI-generated modules
+# pylint: disable=c-extension-no-member
+
 import math as _math   # # likely used in _BIFF_DICT, below, for testing function return values
 import sys as _sys
 import argparse as _argparse
+
+from typing import Any, Union, Iterator
 
 # halt if python2; thanks to https://stackoverflow.com/a/65407535/1465384
 _x, *_y = 1, 2  # NOTE: A SyntaxError means you need Python3, not Python2
@@ -44,136 +49,192 @@ def string(bstr):
 
 
 class Tenum:
-    """Helper/wrapper around (pointers to) airEnums (part of Teem's "air" library).
-    This provides convenient ways to convert between integer enum values and real Python
-    strings. The C airEnum underlying the Python Tenum foo is still available as foo().
-    """
+    """A pythonic helper/wrapper around (CFFI pointers to) Teem's airEnums (which convert
+    between integer enum values and C strings, with aliases and descriptions). The conversion
+    here is between `int`s and Python `str` strings, with an API that mimics Python's `Enum`.
+    The C airEnum underlying the Python Tenum `foo` is available as `foo.airEnum`.
+    The nested Tenum.TenumValue class is for representing a single enum value in a way that
+    can be either an `int` or a `str`, like a value in Python's `IntEnum`."""
 
-    def __init__(self, aenm, _name):
-        """Constructor takes a Teem airEnum pointer (const airEnum *const)."""
-        if not str(aenm).startswith("<cdata 'airEnum *' "):
-            raise TypeError(f'passed argument {aenm} does not seem to be an airEnum pointer')
-        self.aenm = aenm
-        self.name = string(self.aenm.name)
-        self._name = _name  # the variable name for the airEnum in libteem
-        # following definition of airEnum struct in air.h
-        self.vals = list(range(1, self.aenm.M + 1))
-        if self.aenm.val:
-            self.vals = [self.aenm.val[i] for i in self.vals]
+    @staticmethod
+    def _is_airenum(obj: Any) -> bool:
+        try:
+            ty = _teem.ffi.typeof(obj)
+            # is obj a pointer to an airEnum struct?
+            return ty.kind == 'pointer' and ty.item.cname == 'airEnum' and ty.item.kind == 'struct'
+        except AttributeError:
+            return False
 
-    def __call__(self):
-        """Returns (a pointer to) the underlying airEnum."""
-        return self.aenm
+    def __init__(self, aenm, sym_name: str):   # aenm: CData typehint?
+        """Constructor takes a Teem airEnum pointer `aenm` (const airEnum *const)."""
+        if not self._is_airenum(aenm):
+            raise TypeError(f'passed argument {aenm} does not seem to be a Teem airEnum pointer')
+        # pylint: disable-next=invalid-name
+        self.airEnum = aenm   # Teem C programmers will expect this spelling
+        self.cname = _teem.ffi.string(self.airEnum.name).decode('utf8')
+        self.sym_name = sym_name  # the symbol name of this airEnum in the C library
+        self.me = f'{self.sym_name} ("{self.cname}") enum'  # how I self-identify in error messages
+        # following definition of airEnum struct in teem/air.h,
+        # self._vals is initialized to all valid (known) enum values
+        vlist = list(range(1, self.airEnum.M + 1))
+        if self.airEnum.val:
+            self._vals = [self.airEnum.val[i] for i in vlist]
+        else:
+            self._vals = vlist
 
-    def __iter__(self):
-        """Provides a way to iterate through the valid values of the enum"""
-        return iter(self.vals)
+    class TenumValue:
+        """Represents one value in a Tenum, in a way that can be both an int and a string (like
+        a value in Python's `IntEnum`), and that remembers which Tenum it is part of.
+        For example:
+           tv = teem.nrrdKind['2-vector']
+           int(tv)
+           str(tv)"""
 
-    def vals(self):
-        """Provides list of valid values"""
-        return self._vals.copy()
+        def __init__(self, tenum: 'Tenum', value: int) -> None:
+            # initialize these fields to be ready answers; yes redundant but rapidly
+            # accessible without trip over the CFFI bridge
+            self.tenum = tenum
+            self.value = value
+            self.name = tenum.name(value)   # the canonical name for `value`
+            self.description = tenum.description(value)
 
-    def valid(self, ios) -> bool:  # ios = int or string
+        @classmethod
+        def from_value(cls, tenum: 'Tenum', value: int) -> 'Tenum.TenumValue':
+            """construct TenumValue from tenum and integer value"""
+            if not value in tenum:
+                raise ValueError(
+                    f'{value} not valid {tenum.me} value (expected one of {list(map(int, tenum))}'
+                )
+            return cls(tenum, value)
+
+        def __int__(self) -> int:
+            return self.value
+
+        def __str__(self) -> str:
+            return self.name
+
+        def __repr__(self) -> str:
+            return f'<TenumValue({self.tenum.cname}) value={self.value}:name="{str(self)}">'
+
+        def __eq__(self, other: object) -> bool:
+            if isinstance(other, Tenum.TenumValue):
+                return self.tenum.airEnum is other.tenum.airEnum and self.value == other.value
+            if isinstance(other, int):
+                return self.value == other
+            if isinstance(other, str):
+                # `other` could be an alias string; map to int value to compare
+                return self.value == self.tenum.value(other)
+            # else
+            return NotImplemented
+
+        def __hash__(self) -> int:
+            return hash((id(self.tenum), self.value))
+
+    class _ArgparseAction(_argparse.Action):
+        """Custom argparse action for parsing a TenumValue from the CLI."""
+
+        def __init__(self, option_strings, dest, tenum, **kwargs):
+            super().__init__(option_strings, dest, **kwargs)
+            self.tenum = tenum
+
+        def __call__(self, parser, namespace, strings, option_string=None):
+            try:
+                # we first map from string to integer via .value()
+                # and then convert to TenumValue via []
+                # if any parsing fails we raise an excls
+                excls = _argparse.ArgumentTypeError
+                if isinstance(strings, list):
+                    result = [
+                        self.tenum[self.tenum.value(string, True, excls)] for string in strings
+                    ]
+                else:
+                    result = self.tenum[self.tenum.value(strings, True, excls)]
+                setattr(namespace, self.dest, result)
+            except excls as e:
+                opt = option_string or self.option_strings[0]
+                parser.error(f'Invalid value for {opt}: {e}')
+
+    def argparse_action(self):
+        """Return a preconfigured argparse.Action for this enum."""
+        return lambda **kwargs: self._ArgparseAction(tenum=self, **kwargs)
+
+    def __iter__(self) -> Iterator:
+        """Provides a way to iterate through the valid integer values of the enum"""
+        for val in self._vals:
+            yield self.TenumValue(self, val)
+
+    def __contains__(self, item: Union[int, str, 'Tenum.TenumValue']) -> bool:
         """Answers whether given int is a valid value of enum, or whether given string
         is a valid string in enum, depending on incoming type.
         (wraps airEnumValCheck() and airEnumVal())"""
+        if isinstance(item, int):
+            return item in self._vals
+        if isinstance(item, str):
+            return self.unknown() != self.value(item)
+        if isinstance(item, Tenum.TenumValue):
+            return item.tenum is self and item.value in self._vals
+        # else
+        return False
+
+    def __getitem__(self, ios: Union[int, str]) -> TenumValue:
+        if ios not in self:
+            raise ValueError(f'{ios} not in {self.me}')
+        # else ios is valid, and alas we redo some branching on type
         if isinstance(ios, int):
-            return not _teem.lib.airEnumValCheck(self.aenm, ios)
+            return self.TenumValue(self, ios)
         if isinstance(ios, str):
-            return self.unknown() != self.val(ios)
-        # else
-        raise TypeError(f'Need an int or str argument (not {type(ios)})')
+            return self.TenumValue(self, self.value(ios))
+        # should be impossible to get here
+        raise TypeError(f'expected int or str not {ios}:{type(ios)}')
 
-    def str(self, val: int, picky=False, excls=ValueError) -> str:
-        """Converts from integer enum value val to string identifier.
-        If picky, then failure to parse string generates an exception,
-        of class excls (defaults to ValueError) (wraps airEnumStr())"""
-        assert isinstance(val, int), f'Need an int argument (not {type(val)})'
-        if picky and not self.valid(val):
-            raise excls(f'{val} not a valid {self._name} ("{self.name}") enum value')
-        # else
-        return _teem.ffi.string(_teem.lib.airEnumStr(self.aenm, val)).decode('utf8')
+    def name(self, value: int, picky=False, excls=ValueError) -> str:
+        """Converts from integer enum value val to (Python) string identifier.
+        If picky, then failure to parse string as enum member generates an exception,
+        of class `excls` (defaults to ValueError) (wraps airEnumStr())"""
+        assert isinstance(value, int), f'Need an int argument (not {type(value)})'
+        if picky and not value in self:
+            raise excls(f'{value} not a valid {self.me} value')
+        # else whether or not `value` is in enum, use airEnumStr;
+        # this may return the string for "unknown"
+        return _teem.ffi.string(_teem.lib.airEnumStr(self.airEnum, value)).decode('utf8')
 
-    def strs(self):
-        """Provides a list of strings for the valid values"""
-        return [self.str(v) for v in self.vals()]
-
-    def desc(self, val: int) -> str:
-        """Converts from integer value val to description string
-        (wraps airEnumDesc())"""
-        assert isinstance(val, int), f'Need an int argument (not {type(val)})'
-        return string(_teem.lib.airEnumDesc(self.aenm, val))
-
-    def val(self, sss: str, picky=False) -> int:
-        """Converts from string sss to integer enum value
+    def value(self, name: str, picky=False, excls=ValueError) -> int:
+        """Converts from name `name` to integer value
         (wraps airEnumVal())"""
-        assert isinstance(sss, str), f'Need an string argument (not {type(sss)})'
-        ret = _teem.lib.airEnumVal(self.aenm, sss.encode('ascii'))
+        assert isinstance(name, str), f'Need an string argument (not {type(name)})'
+        ret = _teem.lib.airEnumVal(self.airEnum, name.encode('utf8'))
         if picky and ret == self.unknown():
-            raise ValueError(f'"{sss}" not parsable as {self._name} ("{self.name}") enum value')
+            raise excls(f'"{name}" not parsable as {self.me} value')
         # else
         return ret
+
+    def description(self, val: int) -> str:
+        """Converts from integer value `val` to description string
+        (wraps airEnumDesc())"""
+        assert isinstance(val, int), f'Need an int argument (not {type(val)})'
+        dsc = _teem.lib.airEnumDesc(self.airEnum, val)
+        return _teem.ffi.string(dsc).decode('utf8')
 
     def unknown(self) -> int:
         """Returns value representing unknown
         (wraps airEnumUnknown())"""
-        return _teem.lib.airEnumUnknown(self.aenm)
+        return _teem.lib.airEnumUnknown(self.airEnum)
 
 
-class TenumVal:
-    """Represents one value in a Tenum, in a way that can be both an int and a string,
-    and that remembers which Tenum it is part of"""
-
-    def __init__(self, tenum, ios):
-        """Create enum value from Tenum and either int or string value"""
-        if not isinstance(tenum, Tenum):
-            raise ValueError(f'Given {tenum=} not actually a Tenum')
-        if not tenum.valid(ios):
-            raise ValueError(f'Given {ios=} not member of enum {tenum.name}')
-        self.tenum = tenum
-        self.val = ios if isinstance(ios, int) else tenum.val(ios)
-
-    def __str__(self):
-        """Return own value as string"""
-        return self.tenum.str(self.val)
-
-    def __int__(self):
-        """Return own value as int"""
-        return self.val
-
-    def __repr__(self):
-        """Full string representation of own value
-        (though currently nothing knows how to parse this)"""
-        return f'{self.tenum.str(self.val)}:({self.tenum.name} enum)'
-
-    def __eq__(self, other):
-        """Test equality between two things"""
-        if isinstance(other, TenumVal):
-            if self.tenum != other.tenum:
-                return False
-            # else other same kind of tenum
-            return self.val == other.val
-        # else other not a tenum
-        if not self.tenum.valid(other):
-            raise ValueError(f'Given {other=} not member of enum {self.tenum.name}')
-        oval = other if isinstance(other, int) else self.tenum.val(other)
-        return self.val == oval
-
-
-class TenumValParseAction(_argparse.Action):
-    """Custom argparse action for parsing a TenumVal from the command-line"""
-
-    def __init__(self, option_strings, dest, tenum, **kwargs):
-        super().__init__(option_strings, dest, **kwargs)
-        # Store the enum we want to parse
-        self.tenum = tenum
-
-    def __call__(self, _parser, namespace, string, _option_string=None):
-        # parse value from string
-        val = self.tenum.val(string, True, _argparse.ArgumentTypeError)
-        tval = TenumVal(self.tenum, val)
-        # Set the parsed result in the namespace
-        setattr(namespace, self.dest, tval)
+# class TenumValParseAction(_argparse.Action):
+#    """Custom argparse action for parsing a TenumVal from the command-line"""
+#
+#    def __init__(self, option_strings, dest, tenum, **kwargs):
+#        super().__init__(option_strings, dest, **kwargs)
+#        # Store the enum we want to parse
+#        self.tenum = tenum
+#
+#    def __call__(self, _parser, namespace, string, _option_string=None):
+#        # parse value from string
+#        val = self.tenum.val(string, True, _argparse.ArgumentTypeError)
+#        tval = TenumVal(self.tenum, val)
+#        # Set the parsed result in the namespace
+#        setattr(namespace, self.dest, tval)
 
 
 def _equals_one(val):   # likely used in _BIFF_DICT, below
@@ -209,9 +270,9 @@ _BIFF_DICT = {  # contents here are filled in by teem/python/cffi/exult.py Tffi.
     'nrrdArithIterTernaryOp': (_equals_one, 0, b'nrrd', 'nrrd/arith.c:1042'),
     'nrrdArithAffine': (_equals_one, 0, b'nrrd', 'nrrd/arith.c:1065'),
     'nrrdArithIterAffine': (_equals_one, 0, b'nrrd', 'nrrd/arith.c:1108'),
-    'nrrdAxisInfoCompare': (_equals_one, 0, b'nrrd', 'nrrd/axis.c:927'),
-    'nrrdOrientationReduce': (_equals_one, 0, b'nrrd', 'nrrd/axis.c:1219'),
-    'nrrdMetaDataNormalize': (_equals_one, 0, b'nrrd', 'nrrd/axis.c:1264'),
+    'nrrdAxisInfoCompare': (_equals_one, 0, b'nrrd', 'nrrd/axis.c:929'),
+    'nrrdOrientationReduce': (_equals_one, 0, b'nrrd', 'nrrd/axis.c:1221'),
+    'nrrdMetaDataNormalize': (_equals_one, 0, b'nrrd', 'nrrd/axis.c:1266'),
     'nrrdCCFind': (_equals_one, 0, b'nrrd', 'nrrd/cc.c:283'),
     'nrrdCCAdjacency': (_equals_one, 0, b'nrrd', 'nrrd/cc.c:543'),
     'nrrdCCMerge': (_equals_one, 0, b'nrrd', 'nrrd/cc.c:643'),
@@ -856,7 +917,7 @@ class _teem_Module:
                 if cval is sym:
                     # so sym_name *is* an integer const, export that (integer) value
                     setattr(self, sym_name, sym)
-                elif isinstance(sym, int) or isinstance(sym, float) or isinstance(sym, bytes):
+                elif isinstance(sym, (bytes, float, int)):
                     # sym_name is a NON-CONST scalar, do not export, instead alias it
                     self._alias[sym_name] = sym_name
                     # HEY in the python wrappers for GLK's SciVis, this aliasing is
