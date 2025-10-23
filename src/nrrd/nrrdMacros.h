@@ -37,6 +37,7 @@ extern "C" {
 #define NRRD_SPACING(center, min, max, size)                                            \
   (nrrdCenterCell == center ? ((max) - (min)) / AIR_CAST(double, size)                  \
                             : ((max) - (min)) / (AIR_CAST(double, (size) - 1)))
+/* ---- END non-NrrdIO */
 
 /*
 ******** NRRD_CELL_POS, NRRD_NODE_POS, NRRD_POS
@@ -61,6 +62,7 @@ extern "C" {
   (nrrdCenterCell == (center) ? NRRD_CELL_POS((min), (max), (size), (idx))              \
                               : NRRD_NODE_POS((min), (max), (size), (idx)))
 
+/* ---- BEGIN non-NrrdIO */
 /* position to index, cell centering */
 #define NRRD_CELL_IDX(min, max, size, pos)                                              \
   (AIR_AFFINE((min), (pos), (max), 0, (size)) - 0.5)

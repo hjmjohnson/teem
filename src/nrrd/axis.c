@@ -678,7 +678,6 @@ _nrrdCenter2(int center, int defCenter) {
   return center;
 }
 
-/* ---- BEGIN non-NrrdIO */
 /*
 ******** nrrdAxisInfoPos()
 **
@@ -703,6 +702,7 @@ nrrdAxisInfoPos(const Nrrd *nrrd, unsigned int ax, double idx) {
   return NRRD_POS(center, min, max, size, idx);
 }
 
+/* ---- BEGIN non-NrrdIO */
 /*
 ******** nrrdAxisInfoIdx()
 **
@@ -726,6 +726,7 @@ nrrdAxisInfoIdx(const Nrrd *nrrd, unsigned int ax, double pos) {
 
   return NRRD_IDX(center, min, max, size, pos);
 }
+/* ---- END non-NrrdIO */
 
 /*
 ******** nrrdAxisInfoPosRange()
@@ -773,6 +774,7 @@ nrrdAxisInfoPosRange(double *loP, double *hiP, const Nrrd *nrrd, unsigned int ax
   return;
 }
 
+/* ---- BEGIN non-NrrdIO */
 /*
 ******** nrrdAxisInfoIdxRange()
 **
