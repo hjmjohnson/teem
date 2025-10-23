@@ -21,9 +21,9 @@ nrrdArithIterTernaryOpSelect,int,1,0,nrrd,nrrd/arith.c:954
 nrrdArithIterTernaryOp,int,1,0,nrrd,nrrd/arith.c:1042
 nrrdArithAffine,int,1,0,nrrd,nrrd/arith.c:1065
 nrrdArithIterAffine,int,1,0,nrrd,nrrd/arith.c:1108
-nrrdAxisInfoCompare,int,1,0,nrrd,nrrd/axis.c:927
-nrrdOrientationReduce,int,1,0,nrrd,nrrd/axis.c:1219
-nrrdMetaDataNormalize,int,1,0,nrrd,nrrd/axis.c:1264
+nrrdAxisInfoCompare,int,1,0,nrrd,nrrd/axis.c:929
+nrrdOrientationReduce,int,1,0,nrrd,nrrd/axis.c:1221
+nrrdMetaDataNormalize,int,1,0,nrrd,nrrd/axis.c:1266
 nrrdCCFind,int,1,0,nrrd,nrrd/cc.c:283
 nrrdCCAdjacency,int,1,0,nrrd,nrrd/cc.c:543
 nrrdCCMerge,int,1,0,nrrd,nrrd/cc.c:643

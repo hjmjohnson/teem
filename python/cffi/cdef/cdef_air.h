@@ -673,7 +673,6 @@ extern void airMopSingleOkay(airArray *arr, void *ptr);
 ** returns the middle argument, after being clamped to the closed
 ** interval defined by the first and third arguments
 */
-/* ---- BEGIN non-NrrdIO */
 /*
 ******** AIR_AFFINE(i,x,I,o,O)
 **
@@ -693,6 +692,7 @@ extern void airMopSingleOkay(airArray *arr, void *ptr);
 ** as is "I" and "O" (usually not so important); "i" and "o" are each
 ** evaluated twice
 */
+/* ---- BEGIN non-NrrdIO */
 /*
 ******** AIR_LERP(w, a, b)
 **
