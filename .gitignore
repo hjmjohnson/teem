@@ -1,0 +1,2 @@
+# destination directory of non-CMake GNUmake compilation process
+built/
