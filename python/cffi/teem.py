@@ -602,7 +602,7 @@ _BIFF_DICT = {  # contents here are filled in by teem/python/cffi/exult.py Tffi.
     'seekIsovalueSet': (_equals_one, 0, b'seek', 'seek/setSeek.c:412'),
     'seekEvalDiffThreshSet': (_equals_one, 0, b'seek', 'seek/setSeek.c:438'),
     'seekVertexStrength': (_equals_one, 0, b'seek', 'seek/textract.c:1882'),
-    'seekUpdate': (_equals_one, 0, b'seek', 'seek/updateSeek.c:670'),
+    'seekUpdate': (_equals_one, 0, b'seek', 'seek/updateSeek.c:671'),
     'tenAnisoPlot': (_equals_one, 0, b'ten', 'ten/aniso.c:1066'),
     'tenAnisoVolume': (_equals_one, 0, b'ten', 'ten/aniso.c:1125'),
     'tenAnisoHistogram': (_equals_one, 0, b'ten', 'ten/aniso.c:1197'),

@@ -1465,7 +1465,7 @@ extern const NrrdKernel *nrrdKernelDerivative(const NrrdKernel *kern);
 /* =========== nrrdEnums.h =========== */
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
   This library is free software; you can redistribute it and/or modify it under the terms
@@ -2177,7 +2177,7 @@ enum {
 /* =========== nrrdDefines.h =========== */
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
   This library is free software; you can redistribute it and/or modify it under the terms

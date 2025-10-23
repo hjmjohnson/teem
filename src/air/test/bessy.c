@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -16,7 +16,6 @@
   You should have received a copy of the GNU Lesser General Public License
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
-
 
 #include "../air.h"
 
@@ -39,16 +38,15 @@ main(int argc, char *argv[]) {
   printf("log(BesselI(0, %g)) = %g  ?=?  %g\n", x, airLogBesselI0(x),
          log(airBesselI0(x)));
   printf("BesselI(1, %g) = %g\n", x, airBesselI1(x));
-  printf("BesselI1By0(%g) = %g  ?=?  %g\n", x,
-         airBesselI1By0(x), airBesselI1(x)/airBesselI0(x));
+  printf("BesselI1By0(%g) = %g  ?=?  %g\n", x, airBesselI1By0(x),
+         airBesselI1(x) / airBesselI0(x));
   printf("BesselIExpScaled(0, %g) = %f\n", x, airBesselI0ExpScaled(x));
   printf("BesselIExpScaled(1, %g) = %f\n", x, airBesselI1ExpScaled(x));
   printf("erfc,erf(%g) = %g  %g\n", x, airErfc(x), airErf(x));
 
   printf(" n      BesselIn(n,%g)    BesselInExpScaled(n,%g)\n", x, x);
-  for (i = -10; i<= 10; i++) {
-    printf("%d     %g         %g\n", i,
-           airBesselIn(i,x), airBesselInExpScaled(i,x));
+  for (i = -10; i <= 10; i++) {
+    printf("%d     %g         %g\n", i, airBesselIn(i, x), airBesselInExpScaled(i, x));
   }
   exit(0);
 }

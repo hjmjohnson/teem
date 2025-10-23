@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -16,7 +16,6 @@
   You should have received a copy of the GNU Lesser General Public License
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
-
 
 #include "../bane.h"
 
@@ -36,16 +35,14 @@ main(int argc, char *argv[]) {
   Nrrd *nin, *nout;
 
   me = argv[0];
-  if (4 != argc)
-    usage();
+  if (4 != argc) usage();
 
   iStr = argv[1];
   mStr = argv[2];
   oStr = argv[3];
 
-  if (nrrdLoad(nin=nrrdNew(), iStr)) {
-    fprintf(stderr, "%s: trouble reading input nrrd:\n%s\n", me,
-            biffGet(NRRD));
+  if (nrrdLoad(nin = nrrdNew(), iStr)) {
+    fprintf(stderr, "%s: trouble reading input nrrd:\n%s\n", me, biffGet(NRRD));
     usage();
   }
 
@@ -60,8 +57,7 @@ main(int argc, char *argv[]) {
   }
 
   if (nrrdSave(oStr, nout, NULL)) {
-    fprintf(stderr, "%s: trouble writing output nrrd:\n%s\n", me,
-            biffGet(NRRD));
+    fprintf(stderr, "%s: trouble writing output nrrd:\n%s\n", me, biffGet(NRRD));
     usage();
   }
   exit(0);

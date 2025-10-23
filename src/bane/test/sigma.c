@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -17,7 +17,6 @@
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #include "../bane.h"
 
 int
@@ -26,7 +25,7 @@ main(int argc, char *argv[]) {
   float sigma;
 
   AIR_UNUSED(argc);
-  if (nrrdLoad(info=nrrdNew(), argv[1], NULL)) {
+  if (nrrdLoad(info = nrrdNew(), argv[1], NULL)) {
     fprintf(stderr, "trouble:\n%s\n", biffGet(BANE));
   }
   if (baneSigmaCalc(&sigma, info)) {

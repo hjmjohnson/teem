@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -16,7 +16,6 @@
   You should have received a copy of the GNU Lesser General Public License
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
-
 
 char *me;
 
@@ -40,7 +39,7 @@ main(int argc, char *argv[]) {
   cam->vRange[0] = -(cam->vRange[1] = 3);
   cam->neer = -5;
   cam->dist = 0;
-  cam->faar =  5;
+  cam->faar = 5;
   cam->atRelative = AIR_TRUE;
 
   lit = limnLightNew();
@@ -49,13 +48,12 @@ main(int argc, char *argv[]) {
   limnLightSet(lit, 2, AIR_TRUE, 0, 0, 1, 0, 0, 1);
   limnLightUpdate(lit, cam);
 
-  if (limnEnvMapFill(map=nrrdNew(), limnLightDiffuseCB,
-                     limnQN16checker, lit)) {
+  if (limnEnvMapFill(map = nrrdNew(), limnLightDiffuseCB, limnQN16checker, lit)) {
     fprintf(stderr, "%s: trouble:\n%s", me, biffGet(LIMN));
     exit(1);
   }
   range = nrrdRangeNew(0, 1);
-  if (nrrdQuantize(ppm=nrrdNew(), map, range, 8)) {
+  if (nrrdQuantize(ppm = nrrdNew(), map, range, 8)) {
     fprintf(stderr, "%s: trouble:\n%s", me, biffGet(NRRD));
     exit(1);
   }

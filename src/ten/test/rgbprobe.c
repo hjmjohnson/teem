@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -16,7 +16,6 @@
   You should have received a copy of the GNU Lesser General Public License
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
-
 
 #include "../ten.h"
 
@@ -44,8 +43,8 @@ main(int argc, char **argv) {
   hestOptAdd(&hopt, "i", "nin", airTypeOther, 1, 1, &nin, NULL,
              "input diffusion tensor volume", NULL, NULL, nrrdHestNrrd);
   hestOptAdd(&hopt, "p", "nprobe", airTypeOther, 1, 1, &nprobe, NULL,
-             "input list of points to probe at, as 3xN float nrrd",
-             NULL, NULL, nrrdHestNrrd);
+             "input list of points to probe at, as 3xN float nrrd", NULL, NULL,
+             nrrdHestNrrd);
   hestOptAdd(&hopt, "sc", "scaling", airTypeFloat, 3, 3, scale, "1.0 1.0 1.0",
              "scaling that took index space positions (in nin) to "
              "vertex positions (in nprobe); hopefully just the \"spacings\" "
@@ -55,8 +54,8 @@ main(int argc, char **argv) {
   hestOptAdd(&hopt, "o", "nout", airTypeString, 1, 1, &outS, NULL,
              "output image (floating point)");
 
-  hestParseOrDie(hopt, argc-1, argv+1, hparm,
-                 me, "secret testing area", AIR_TRUE, AIR_TRUE, AIR_TRUE);
+  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, "secret testing area", AIR_TRUE,
+                 AIR_TRUE, AIR_TRUE);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
@@ -67,9 +66,8 @@ main(int argc, char **argv) {
     return 1;
   }
 
-  if (!( nrrdTypeFloat == nprobe->type &&
-         2 == nprobe->dim &&
-         3 == nprobe->axis[0].size )) {
+  if (!(nrrdTypeFloat == nprobe->type && 2 == nprobe->dim
+        && 3 == nprobe->axis[0].size)) {
     fprintf(stderr, "%s: didn't get valid probe point list\n", me);
     airMopError(mop);
     return 1;
@@ -84,9 +82,9 @@ main(int argc, char **argv) {
   if (!E) E |= !(pvl = gagePerVolumeNew(nin, tenGageKind));
   if (!E) E |= gagePerVolumeAttach(ctx, pvl);
   if (!E) E |= gageKernelSet(ctx, gageKernel00, nrrdKernelTent, kparm);
-  if (!E) E |= gageQuerySet(pvl, ((1 << tenGageEvec) |
-                                  (1 << tenGageAniso) |
-                                  (1 << tenGageTensor)) );
+  if (!E)
+    E |= gageQuerySet(pvl,
+                      ((1 << tenGageEvec) | (1 << tenGageAniso) | (1 << tenGageTensor)));
   if (!E) E |= gageUpdate(ctx);
   if (E) {
     airMopAdd(mop, err = biffGetDone(GAGE), airFree, airMopAlways);
@@ -98,7 +96,7 @@ main(int argc, char **argv) {
   aniso = gageAnswerPointer(pvl, tenGageAniso);
   tensor = gageAnswerPointer(pvl, tenGageTensor);
 
-  if (nrrdAlloc(nout=nrrdNew(), nrrdTypeFloat, 2, 3, ptsNum)) {
+  if (nrrdAlloc(nout = nrrdNew(), nrrdTypeFloat, 2, 3, ptsNum)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: couldn't allocate output:\n%s\n", me, err);
     airMopError(mop);
@@ -107,20 +105,20 @@ main(int argc, char **argv) {
 
   idata = nprobe->data;
   odata = nout->data;
-  for (ptsIdx=0; ptsIdx<ptsNum; ptsIdx++) {
-    x = idata[3*ptsIdx + 0]/scale[0];
-    y = idata[3*ptsIdx + 1]/scale[1];
-    z = idata[3*ptsIdx + 2]/scale[2];
+  for (ptsIdx = 0; ptsIdx < ptsNum; ptsIdx++) {
+    x = idata[3 * ptsIdx + 0] / scale[0];
+    y = idata[3 * ptsIdx + 1] / scale[1];
+    z = idata[3 * ptsIdx + 2] / scale[2];
     gageProbe(ctx, x, y, z);
     r = AIR_ABS(evec[0]);
     g = AIR_ABS(evec[1]);
     b = AIR_ABS(evec[2]);
     cl = aniso[tenAniso_Cl2];
-    cl = tensor[0]*AIR_CLAMP(0.0, cl, 1.0);
+    cl = tensor[0] * AIR_CLAMP(0.0, cl, 1.0);
     cl = pow(cl, power);
-    odata[3*ptsIdx + 0] = AIR_AFFINE(0.0, cl, 1.0, 0.5, r);
-    odata[3*ptsIdx + 1] = AIR_AFFINE(0.0, cl, 1.0, 0.5, g);
-    odata[3*ptsIdx + 2] = AIR_AFFINE(0.0, cl, 1.0, 0.5, b);
+    odata[3 * ptsIdx + 0] = AIR_AFFINE(0.0, cl, 1.0, 0.5, r);
+    odata[3 * ptsIdx + 1] = AIR_AFFINE(0.0, cl, 1.0, 0.5, g);
+    odata[3 * ptsIdx + 2] = AIR_AFFINE(0.0, cl, 1.0, 0.5, b);
   }
 
   if (nrrdSave(outS, nout, NULL)) {

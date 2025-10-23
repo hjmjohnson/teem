@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -16,7 +16,6 @@
   You should have received a copy of the GNU Lesser General Public License
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
-
 
 #include "../limn.h"
 
@@ -34,8 +33,7 @@ main(int argc, char *argv[]) {
   lmpd = limnPolyDataNew();
   file = fopen("in.lmpd", "r");
   if (limnPolyDataReadLMPD(lmpd, file)) {
-    err = biffGetDone(LIMN),
-      fprintf(stderr, "%s: trouble:\n%s\n", me, err);
+    err = biffGetDone(LIMN), fprintf(stderr, "%s: trouble:\n%s\n", me, err);
     return 1;
   }
   fclose(file);
@@ -48,7 +46,5 @@ main(int argc, char *argv[]) {
   }
   fclose(file);
 
-
   return 0;
 }
-

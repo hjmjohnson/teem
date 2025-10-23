@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -16,7 +16,6 @@
   You should have received a copy of the GNU Lesser General Public License
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
-
 
 #include <stdio.h>
 #include "../ell.h"
@@ -43,16 +42,14 @@ main(int argc, char *argv[]) {
   aS = argv[1];
   bS = argv[2];
   cS = argv[3];
-  if (3 != (sscanf(aS, "%g", &a) +
-            sscanf(bS, "%g", &b) +
-            sscanf(cS, "%g", &c))) {
-    fprintf(stderr, "%s: couldn't parse \"%s\", \"%s\", \"%s\" as floats\n",
-            me, aS, bS, cS);
+  if (3 != (sscanf(aS, "%g", &a) + sscanf(bS, "%g", &b) + sscanf(cS, "%g", &c))) {
+    fprintf(stderr, "%s: couldn't parse \"%s\", \"%s\", \"%s\" as floats\n", me, aS, bS,
+            cS);
     usage();
   }
 
-  printf("%g %g %g (max idx %d; min idx %d) --> ", a, b, c,
-         ELL_MAX3_IDX(a, b, c), ELL_MIN3_IDX(a, b, c));
+  printf("%g %g %g (max idx %d; min idx %d) --> ", a, b, c, ELL_MAX3_IDX(a, b, c),
+         ELL_MIN3_IDX(a, b, c));
   ELL_SORT3(a, b, c, t);
   printf("%g %g %g\n", a, b, c);
 

@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -16,7 +16,6 @@
   You should have received a copy of the GNU Lesser General Public License
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
-
 
 #include "../air.h"
 
@@ -39,7 +38,6 @@ myclose(FILE *file) {
   return;
 }
 
-
 int
 main(int argc, char *argv[]) {
   char *me, *fileS, *line;
@@ -53,7 +51,7 @@ main(int argc, char *argv[]) {
     exit(1);
   }
   fileS = argv[1];
-  if (!( file = myopen(fileS) )) {
+  if (!(file = myopen(fileS))) {
     fprintf(stderr, "%s: couldn't open \"%s\" for reading\n", me, fileS);
     exit(1);
   }
@@ -69,13 +67,13 @@ main(int argc, char *argv[]) {
       ret = airOneLine(file, line, size);
       if (ret) {
         printf("%2d   |%s|\n", ret, line);
-        maxed |= (ret == size+1);
+        maxed |= (ret == size + 1);
       }
-    } while(ret > 0);
+    } while (ret > 0);
     myclose(file);
     free(line);
     size++;
-  } while(maxed);
+  } while (maxed);
 
   printf("\n\nsize = %d\n", size);
 

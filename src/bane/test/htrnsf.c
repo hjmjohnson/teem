@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -17,15 +17,13 @@
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #include "../bane.h"
 
 char *me;
 void
 usage() {
   /*                      0    1      2        3        4         5   (6) */
-  fprintf(stderr, "usage: %s <bIn> <sigma> <gthresh> <info2In> <trnsfOut>\n",
-          me);
+  fprintf(stderr, "usage: %s <bIn> <sigma> <gthresh> <info2In> <trnsfOut>\n", me);
   exit(1);
 }
 
@@ -38,8 +36,7 @@ main(int argc, char *argv[]) {
   float sigma, gthresh;
 
   me = argv[0];
-  if (argc != 6)
-    usage();
+  if (argc != 6) usage();
   bStr = argv[1];
   sStr = argv[2];
   gStr = argv[3];
@@ -51,8 +48,7 @@ main(int argc, char *argv[]) {
     usage();
   }
   if (!(info2 = nrrdNewRead(file))) {
-    fprintf(stderr, "%s: trouble reading info 2%s:\n%s\n", me, iStr,
-            biffGet(NRRD));
+    fprintf(stderr, "%s: trouble reading info 2%s:\n%s\n", me, iStr, biffGet(NRRD));
     usage();
   }
   fclose(file);
@@ -62,16 +58,14 @@ main(int argc, char *argv[]) {
     usage();
   }
   if (!(Bcpts = nrrdNewRead(file))) {
-    fprintf(stderr, "%s: trouble reading b(x) %s:\n%s\n", me,
-            bStr, biffGet(NRRD));
+    fprintf(stderr, "%s: trouble reading b(x) %s:\n%s\n", me, bStr, biffGet(NRRD));
     usage();
   }
   fclose(file);
 
   if (!strcmp(sStr, "nan")) {
     sigma = airNanf();
-  }
-  else {
+  } else {
     if (1 != sscanf(sStr, "%g", &sigma)) {
       fprintf(stderr, "%s: couldn't parse sigma %s\n", me, sStr);
       usage();
@@ -84,8 +78,7 @@ main(int argc, char *argv[]) {
 
   trnsf = baneNewDirtTrnsf(Bcpts, sigma, gthresh, info2);
   if (!trnsf) {
-    fprintf(stderr, "%s: trouble computing opacity functions:\n%s\n", me,
-            biffGet(BANE));
+    fprintf(stderr, "%s: trouble computing opacity functions:\n%s\n", me, biffGet(BANE));
     exit(1);
   }
   if (!(file = fopen(tStr, "w"))) {
@@ -93,8 +86,7 @@ main(int argc, char *argv[]) {
     usage();
   }
   if (dirtTrnsfWrite(file, trnsf)) {
-    fprintf(stderr, "%s: trouble writing trnsf to %s\n:%s\n", me,
-            tStr, biffGet(DIRT));
+    fprintf(stderr, "%s: trouble writing trnsf to %s\n:%s\n", me, tStr, biffGet(DIRT));
     usage();
   }
   fclose(file);

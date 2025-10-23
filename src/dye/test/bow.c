@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -16,7 +16,6 @@
   You should have received a copy of the GNU Lesser General Public License
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
-
 
 #include "../dye.h"
 
@@ -37,8 +36,7 @@ main(int argc, char *argv[]) {
   float hue, R, G, B, sc;
 
   me = argv[0];
-  if (4 != argc)
-    usage();
+  if (4 != argc) usage();
   resS = argv[1];
   scS = argv[2];
   outS = argv[3];
@@ -57,10 +55,10 @@ main(int argc, char *argv[]) {
   }
 
   fprintf(out, "# space: RGB\n");
-  for (i=0; i<=res-1; i++) {
+  for (i = 0; i <= res - 1; i++) {
     hue = (float)(AIR_AFFINE(0, i, res, 0.0, 1.0));
     dyeHSVtoRGB(&R, &G, &B, hue, 1, 1);
-    fprintf(out, "%g %g %g %g\n", hue, sc*R, sc*G, sc*B);
+    fprintf(out, "%g %g %g %g\n", hue, sc * R, sc * G, sc * B);
   }
 
   fclose(out);

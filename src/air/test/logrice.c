@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -17,7 +17,6 @@
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #include "../air.h"
 
 /*
@@ -30,16 +29,13 @@ main(int argc, char *argv[]) {
   double tru, mes, sig;
 
   me = argv[0];
-  if (4 != argc
-      || 1 != sscanf(argv[1], "%lg", &tru)
-      || 1 != sscanf(argv[2], "%lg", &mes)
+  if (4 != argc || 1 != sscanf(argv[1], "%lg", &tru) || 1 != sscanf(argv[2], "%lg", &mes)
       || 1 != sscanf(argv[3], "%lg", &sig)) {
     fprintf(stderr, "%s: need three doubles\n", me);
     exit(1);
   }
 
-  printf("log(Rician(%g,%g,%g)) = %g\n",
-         tru, mes, sig, airLogRician(tru, mes, sig));
+  printf("log(Rician(%g,%g,%g)) = %g\n", tru, mes, sig, airLogRician(tru, mes, sig));
 
   exit(0);
 }

@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -16,7 +16,6 @@
   You should have received a copy of the GNU Lesser General Public License
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
-
 
 #include "../ten.h"
 
@@ -34,9 +33,10 @@ main(int argc, char *argv[]) {
   AIR_UNUSED(argc);
   me = argv[0];
   nn = 10000000;
-  for (ii=0; ii<nn; ii++) {
+  for (ii = 0; ii < nn; ii++) {
     if (0 == (ii % 1000)) {
-      fprintf(stderr, "."); fflush(stderr);
+      fprintf(stderr, ".");
+      fflush(stderr);
     }
     evalD[0] = airDrandMT();
     evalD[1] = airDrandMT();
@@ -72,22 +72,20 @@ main(int argc, char *argv[]) {
     TEN_T_COPY_TT(tenF, float, tenD);
     tenEigensolve_d(evalD, NULL, tenD);
     tenEigensolve_f(evalF, NULL, tenF);
-    for (aa=tenAnisoUnknown+1; aa<tenAnisoLast; aa++) {
+    for (aa = tenAnisoUnknown + 1; aa < tenAnisoLast; aa++) {
       int bogus;
       aniso[0] = tenAnisoEval_f(evalF, aa);
       aniso[1] = tenAnisoEval_d(evalD, aa);
       aniso[2] = tenAnisoTen_f(tenF, aa);
       aniso[3] = tenAnisoTen_d(tenD, aa);
-      mean = (aniso[0] + aniso[1] + aniso[2] + aniso[3])/4;
-      tmp = ((aniso[0]-mean)*(aniso[0]-mean)
-             + (aniso[1]-mean)*(aniso[1]-mean)
-             + (aniso[2]-mean)*(aniso[2]-mean)
-             + (aniso[3]-mean)*(aniso[3]-mean))/4;
-      bogus = (tenAniso_Mode == aa
-               || tenAniso_Th == aa
-               || tenAniso_Skew == aa
-               || tenAniso_Ct1 == aa
-               || tenAniso_Ct2 == aa);
+      mean = (aniso[0] + aniso[1] + aniso[2] + aniso[3]) / 4;
+      tmp = ((aniso[0] - mean) * (aniso[0] - mean)
+             + (aniso[1] - mean) * (aniso[1] - mean)
+             + (aniso[2] - mean) * (aniso[2] - mean)
+             + (aniso[3] - mean) * (aniso[3] - mean))
+          / 4;
+      bogus = (tenAniso_Mode == aa || tenAniso_Th == aa || tenAniso_Skew == aa
+               || tenAniso_Ct1 == aa || tenAniso_Ct2 == aa);
       if (AIR_EXISTS(tmp) && bogus && isot) {
         continue;
       }
@@ -95,18 +93,14 @@ main(int argc, char *argv[]) {
         continue;
       }
       if (!AIR_EXISTS(tmp) || tmp > 0.0000003) {
-        fprintf(stderr, "\n%s: %u %d (%s) (isot %s, equi %s) tmp=%g\n",
-                me, ii, aa,
-                airEnumStr(tenAniso, aa),
-                isot ? "true" : "false",
+        fprintf(stderr, "\n%s: %u %d (%s) (isot %s, equi %s) tmp=%g\n", me, ii, aa,
+                airEnumStr(tenAniso, aa), isot ? "true" : "false",
                 equi ? "true" : "false", tmp);
-        fprintf(stderr, "  %g %g %g    %g %g    %g;\n",
-                tenD[1], tenD[2], tenD[3], tenD[4], tenD[5], tenD[6]);
-        fprintf(stderr, "  %f %f %f (%f %f %f)f --->\n",
-                evalD[0], evalD[1], evalD[2],
+        fprintf(stderr, "  %g %g %g    %g %g    %g;\n", tenD[1], tenD[2], tenD[3],
+                tenD[4], tenD[5], tenD[6]);
+        fprintf(stderr, "  %f %f %f (%f %f %f)f --->\n", evalD[0], evalD[1], evalD[2],
                 evalF[0], evalF[1], evalF[2]);
-        fprintf(stderr, "  %f %f %f %f\n",
-                aniso[0], aniso[1], aniso[2], aniso[3]);
+        fprintf(stderr, "  %f %f %f %f\n", aniso[0], aniso[1], aniso[2], aniso[3]);
         exit(1);
       }
     }

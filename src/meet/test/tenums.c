@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -30,13 +30,13 @@ main(int argc, const char *argv[]) {
 
   mop = airMopNew();
   if (meetAirEnumAllCheck()) {
-    airMopAdd(mop, err=biffGetDone(MEET), airFree, airMopAlways);
+    airMopAdd(mop, err = biffGetDone(MEET), airFree, airMopAlways);
     fprintf(stderr, "%s: problem:\n%s", me, err);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
   /* else no problems */
   meetAirEnumAllPrint(stdout);
-
 
   airMopOkay(mop);
   return 0;

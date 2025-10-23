@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -16,7 +16,6 @@
   You should have received a copy of the GNU Lesser General Public License
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
-
 
 #include "../air.h"
 
@@ -47,13 +46,14 @@ main(int argc, char *argv[]) {
   mop = airMopNew();
   if (!(file = fopen(fname, "rb"))) {
     fprintf(stderr, "%s: couldn't open %s for reading\n", me, fname);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
   airMopAdd(mop, file, (airMopper)airFclose, airMopAlways);
   if (1 != sscanf(incrS, "%ud", &incr)) {
-    fprintf(stderr, "%s: couln't parse incr \"%s\" as unsigned int\n",
-            me, incrS);
-    airMopError(mop); return 1;
+    fprintf(stderr, "%s: couln't parse incr \"%s\" as unsigned int\n", me, incrS);
+    airMopError(mop);
+    return 1;
   }
 
   /* now "file" is the open file that we read from, and "incr is the
@@ -84,7 +84,8 @@ main(int argc, char *argv[]) {
   dataArr = airArrayNew(appu.v, NULL, sizeof(unsigned char), incr);
   if (!dataArr) {
     fprintf(stderr, "%s: couldn't allocate airArray\n", me);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
 
   /* numRed will keep track of the number of bytes that have been
@@ -94,13 +95,15 @@ main(int argc, char *argv[]) {
   datum = fgetc(file);
   if (EOF == datum) {
     fprintf(stderr, "%s: hit EOF trying to get first byte\n", me);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
   while (EOF != datum) {
-    airArrayLenSet(dataArr, numRed+1);
+    airArrayLenSet(dataArr, numRed + 1);
     if (!data) {
       fprintf(stderr, "%s: couldn't re-allocated data buffer\n", me);
-      airMopError(mop); return 1;
+      airMopError(mop);
+      return 1;
     }
     /* now "data" is the address of a sufficiently large array */
     data[numRed++] = AIR_UCHAR(datum);
