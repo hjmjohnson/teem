@@ -131,7 +131,16 @@ class Tenum:
             return hash((id(self.tenum), self.value))
 
     class _ArgparseAction(_argparse.Action):
-        """Custom argparse action for parsing a TenumValue from the CLI."""
+        """Custom argparse action for parsing a TenumValue from the CLI.
+        Example usage:
+           enm = teem.nrrdKind
+           parser = argparse.ArgumentParser(description="...")
+           parser.add_argument(
+              "--kind",
+              action=enm.argparse_action(),
+              help=f"Specify a {enm.cname} enum value",
+           )
+        """
 
         def __init__(self, option_strings, dest, tenum, **kwargs):
             super().__init__(option_strings, dest, **kwargs)
