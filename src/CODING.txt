@@ -1,6 +1,19 @@
-This documents C coding conventions for Teem, and provides some rationale.
+This documents coding conventions for Teem, and provides some rationale.
 
-============ Basic code formatting
+Everything below is about C coding in Teem. Quick notes about Python coding,
+currently in teem/python/cffi:
+- format with blue: https://pypi.org/project/blue
+  run as: blue --line-length 99
+  (yes 99 columns, even C coding is at 89 columns)
+- do what you can to increase pylint scores
+  It is okay to silence dumb things
+  # pylint: disable=c-extension-no-member
+  since pylint doesn't easily see inside CFFI extension modules.
+  This: https://pylint.pycqa.org/en/v2.13.9/technical_reference/c_extensions.html
+  looks interesting but as yet unexplored.
+- type is hinting is nice if you can get it, but nothing rigorous is enforced
+
+============ Basic C code formatting
 Example function:
 
 unsigned int
@@ -42,16 +55,16 @@ noise in diffs. Google "trailing white space" for further info and tips.
 
 Other code formatting points:
 
-* Until July 2022 formatting was done by hand, but then formatting switched to
-be being done by clang-format, as controlled by ../.clang-format. The main
-effect of this change was consistency in using a single space around assignment
-and binary operators (in for-loops GLK had previously tended to use space only
-to separate the three parts of the loop definition).  Another change was from
-79 columns to 89 columns, since as Torvalds has pointed out here
-https://lkml.org/lkml/2020/5/29/1038 we aren't using 80x24 terminals anymore.
-Things like the compile-time creation of airEnums and gageKinds are bracketed
-by /* clang-format off */ and /* clang-format on */ to preserve the structure
-that white-space is creating there.
+* Until July 2022 formatting was done by hand, but then formatting switched to be being
+done by clang-format https://clang.llvm.org/docs/ClangFormat.html
+"clang-format --style=file" should find configuration file ../.clang-format.
+The main effect of this change was consistency in using a single space around assignment
+and binary operators (in for-loops GLK had previously tended to use space only to
+separate the three parts of the loop definition).  Another change was from 79 columns to
+89 columns, since as Torvalds has pointed out here https://lkml.org/lkml/2020/5/29/1038
+we aren't using 80x24 terminals anymore.  Things like the compile-time creation of
+airEnums and gageKinds are bracketed by /* clang-format off */ and /* clang-format on */
+to preserve the structure that white-space is creating there.
 
 * In header files, when using conditionals in the C pre-processor, put spaces
 between the "#" (in the first column) and (for example) the "define", so that
@@ -69,7 +82,7 @@ typedef double coil_t;
 
 ============ Libraries
 
-* Teem is organized as a set of libraries (current 23 of them), with a
+* Teem is organized as a set of libraries (currently 23 of them), with a
 well-defined dependency order.  New libraries are thoughtfully placed within
 this ordering.
 
