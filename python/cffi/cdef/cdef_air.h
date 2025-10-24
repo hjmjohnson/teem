@@ -34,9 +34,7 @@ CFFI, within its many limitations, specifically lacking a C pre-processor
 ** is a manual operation.  See also airTeemReleaseDate in miscAir.c
 */
 /* clang-format off */
-#define TEEM_VERSION_MAJOR   0       /* must be 1 digit */
-#define TEEM_VERSION_MINOR    00     /* 1 or 2 digits */
-#define TEEM_VERSION_PATCH      00   /* 1 or 2 digits */
+#define TEEM_VERSION_MAJOR   2       /* must be 1 digit */
 #define TEEM_VERSION         20000   /* must be 5 digits, to facilitate
                                         easy numerical comparison */
 /* clang-format on */

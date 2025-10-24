@@ -43,12 +43,12 @@
 ** is a manual operation.  See also airTeemReleaseDate in miscAir.c
 */
 /* clang-format off */
-#define TEEM_VERSION_MAJOR   0       /* must be 1 digit */
-#define TEEM_VERSION_MINOR    00     /* 1 or 2 digits */
-#define TEEM_VERSION_PATCH      00   /* 1 or 2 digits */
+#define TEEM_VERSION_MAJOR   2       /* must be 1 digit */
+#define TEEM_VERSION_MINOR     0     /* 1 or 2 digits (no leading 0) */
+#define TEEM_VERSION_PATCH       0   /* 1 or 2 digits (no leading 0) */
 #define TEEM_VERSION         20000   /* must be 5 digits, to facilitate
                                         easy numerical comparison */
-#define TEEM_VERSION_STRING "2.00.0" /* cannot be so easily compared */
+#define TEEM_VERSION_STRING "2.0.0" /* THIS is the semantic version "number" */
 /* clang-format on */
 
 /* NrrdIO-hack-000 */
