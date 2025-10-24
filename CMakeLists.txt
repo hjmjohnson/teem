@@ -75,22 +75,18 @@
 # why use 3.25: has nicer syntax for try_compile
 cmake_minimum_required(VERSION 3.25)
 
-# Teem version number (must match values in src/air/air.h)
-set(Teem_VERSION_MAJOR 2)
-set(Teem_VERSION_MINOR 0)
-set(Teem_VERSION_PATCH 0)
-
 # Set the C standard to C99 for all targets in this directory
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
-# Version string (no space in version numbers, so doesn't have to be quoted)
-set(Teem_VERSION_STRING ${Teem_VERSION_MAJOR}.${Teem_VERSION_MINOR}.${Teem_VERSION_PATCH})
-
-project(Teem VERSION ${Teem_VERSION_STRING}
+# Teem version number (must match values in src/air/air.h)
+project(Teem VERSION 2.0.0
         DESCRIPTION "Teem libraries developed by Gordon Kindlmann et al."
         HOMEPAGE_URL "https://teem.sourceforge.net/"
         LANGUAGES C)
+
+# Version string (no space in version numbers, so doesn't have to be quoted)
+set(Teem_VERSION_STRING ${PROJECT_VERSION})
 
 message(STATUS "
 ********************************************************************
