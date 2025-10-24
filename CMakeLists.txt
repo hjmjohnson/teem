@@ -579,10 +579,13 @@ install(FILES
   DESTINATION ${CONFIG_INSTALL_DIR}
 )
 
-# Install copy of the LICENSE.txt as LICENSE
+# Install LICENSE and CHANGELOG.txt for documentation purposes
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt
         DESTINATION ${CMAKE_INSTALL_DATADIR}/Teem
         RENAME LICENSE)
+
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/CHANGELOG.txt
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/Teem)
 
 ###-------------------------------------------------------------------------------------
 # For non-CMake non-Windows users: create teem.pc for pkg-config, and teem-config script
