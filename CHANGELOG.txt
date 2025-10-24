@@ -2,7 +2,7 @@
 Teem 2.0.0  (2025-?-?)
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-!!! NOTE !!!  This file is still in progress as work on TeemV2 continues ...
+NOTE : This file is still in progress as work on TeemV2 continues ...
 
 This is a new Teem release, version 2.0.0. The previous completed release was version
 1.11.0, from 20 Dec, 2012 (and Homebrew is at this time using that version 1.11.0
@@ -27,17 +27,16 @@ and to clearly distinguish this new version from the decade of "1.12" versions f
 around, the version number is now incremented to 2.0.0.
 
 Upon realizing that this would be a major version change, I took the opportunity to tweak
-some other things that were long annoying (mostly by simplifying things). With the
-exception of hestParseOrDie() no longer taking its final three arguments, these changes
-are unlikely to break Teem-using code, but all are lovingly documented below, as tagged
-with "API CHANGE". The major items are delineatd with •s. Some of these identify the
-moment of the change in terms of an svn revision number, the more recent in terms of git
-commit short hash. If your point of comparison is the last Teem release (2012's v1.11),
-then some of the API CHANGES noted below may be false positives: the change noted is
-relative to the previous commit, not the previous release.  One example of this is change
-from hestSourceUser (enum value) to hestSourceUser() (helper function). Neither existed
-in v1.11, but because of this change I had to change some Teem-using code that I
-maintain.
+and fix other things that were long annoying. With the exception of hestParseOrDie() no
+longer taking its final three arguments, these changes are unlikely to break Teem-using
+code, but all are lovingly documented below, as tagged with "API CHANGE". The major items
+are delineatd with •s. Some of these identify the moment of the change in terms of an svn
+revision number, the more recent in terms of git commit short hash. If your point of
+comparison is the last Teem release (2012's v1.11), then some of the API CHANGES noted
+below may be false positives: the change noted is relative to the previous commit, not
+the previous release.  One example of this is change from hestSourceUser (enum value) to
+hestSourceUser() (helper function). Neither existed in v1.11, but because of this change
+I had to change some Teem-using code that I maintain.
 
 I have had less time for Teem development than when I was a student or post-doc, but my
 day-to-day reliance on Teem has not decreased, nor has my interest in its long-term
@@ -65,7 +64,7 @@ being, even after GitHub has subsumed the open source mindshare. I have deep res
 about GitHub's corporate owner.  See https://githubcopilotlitigation.com/. Also note that
 GitHub is now a leaderless component of an AI platform:
 https://www.theverge.com/news/757461/microsoft-github-thomas-dohmke-resignation-coreai-team-transition
-This is a worrying shift from the organic creation of GitHub.
+This is a worrying shift from the exciting birth of GitHub.
 
 ========= use of CMake and GNUmake =========
 
