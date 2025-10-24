@@ -21,6 +21,3 @@ parseAir.c: (though used as part of nrrdRead)
 string.c: (though used as part of nrrdRead)
 
 math.c: not even sure how to test most of this
-
-? dio.c
-
