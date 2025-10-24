@@ -1,0 +1,3594 @@
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Teem 2.0.0  (2025-?-?)
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+!!! NOTE !!!  This file is still in progress as work on TeemV2 continues ...
+
+This is a new Teem release, version 2.0.0. The previous completed release was version
+1.11.0, from 20 Dec, 2012 (and Homebrew is at this time using that version 1.11.0
+<https://github.com/Homebrew/homebrew-core/blob/master/Formula/t/teem.rb>). Some time
+in 2014 the Teem source code (in its svn trunk) started declaring itself version 1.12.0,
+probably in hopeful anticipation of a release that never actually happened. Some linux
+packages of Teem <https://sources.debian.org/src/teem/> started using a version of the
+1.12 code. However, Teem version 1.12.0 never was actually finished and released by the
+main developer of Teem (me, Gordon Kindlmann, GLK), and I have no plans to do so.
+
+Unlike what might be assumed with a major version increment, the API changes with this
+version 2.0 are modest. Teem basically works the same as before: there are no huge
+disruptive changes in how the most useful functions of Teem behave, or how they use the
+various structs defined in the Teem headers.  There are, however, multiple breaking ABI
+changes. The first consequential ABI changes were in hest (svn r6085 on 2013-09-02 to add
+hestOpt->source field and change the return type of hestOptAdd from void to unsigned int,
+and r6994 on 2023-06-24 to add hestOpt->helpWanted field to finally support "--help").
+This taught/humbled me about the baffling errors from ABI mismatches, even though the
+API-using code needed no modifications.  To play well with the expectations around the
+semantic versioning https://semver.org/ that Teem bought into in 2005 with version 1.9.0,
+and to clearly distinguish this new version from the decade of "1.12" versions floating
+around, the version number is now incremented to 2.0.0.
+
+Upon realizing that this would be a major version change, I took the opportunity to tweak
+some other things that were long annoying (mostly by simplifying things). With the
+exception of hestParseOrDie() no longer taking its final three arguments, these changes
+are unlikely to break Teem-using code, but all are lovingly documented below, as tagged
+with "API CHANGE". The major items are delineatd with •s. Some of these identify the
+moment of the change in terms of an svn revision number, the more recent in terms of git
+commit short hash. If your point of comparison is the last Teem release (2012's v1.11),
+then some of the API CHANGES noted below may be false positives: the change noted is
+relative to the previous commit, not the previous release.  One example of this is change
+from hestSourceUser (enum value) to hestSourceUser() (helper function). Neither existed
+in v1.11, but because of this change I had to change some Teem-using code that I
+maintain.
+
+I have had less time for Teem development than when I was a student or post-doc, but my
+day-to-day reliance on Teem has not decreased, nor has my interest in its long-term
+utility, nor my commitment to the ongoing reproducibility of all past research results
+that depended on Teem.  Once this release is finished, I hope to find and coordinate with
+whomever created the Teem distributions for Homebrew and Linux, so that they can be
+updated. Please let me (glk@uchicago.edu) know if you know how to facilitate this.
+
+All the changes and bug fixes, from version 2012's 1.11.0 to today's version 2.0.0, are
+described below. The log suffers from some inconsistency of format due to being written
+over 13 years; hopefully you find it informative.  The ordering of items within sections
+is some combination of reverse chronological (later changes described earlier) and
+ordering changes from most interesting or important to least so.  Search for "BUG" to see
+info about bugs fixed. Search for "API CHANGE" to see changes to the APIs of the
+libraries (in particular: biff, hest, unrrdu, bane, gage, seek, moss, and meet). Also noted
+are "ABI CHANGE"s (e.g. where a struct has changed size).
+
+Since March 2001, Teem code version control has been hosted on Sourceforge, which has
+been more or less reliable over more than *two decades*.  Version control on Sourceforge
+has transitioned from using svn to using git, thanks to Hans Johnson.  The awful DevShare
+malware stuff that Sourceforge started (under new ownership) in 2012 was stopped (under
+different new ownership) in 2016, and their server reliability issues are fully resolved,
+as far as I can tell.  Teem code will continue to be hosted on Sourceforge for the time
+being, even after GitHub has subsumed the open source mindshare. I have deep reservations
+about GitHub's corporate owner.  See https://githubcopilotlitigation.com/. Also note that
+GitHub is now a leaderless component of an AI platform:
+https://www.theverge.com/news/757461/microsoft-github-thomas-dohmke-resignation-coreai-team-transition
+This is a worrying shift from the organic creation of GitHub.
+
+========= use of CMake and GNUmake =========
+
+• starting 2025-08-14 22:27:17 +0000 (Thu, 14 Aug 2025) svn Revision: 7269 ...
+  Wed Oct 8 13:17:16 2025 -0500 git commit: 99475a6d
+Everything about how Teem uses CMake has been completely re-written (or rather re-written
+again, beyond the 2019 improvements described below) by me (GLK), with help from
+ChatGPT. The updated files are:
+ - CMakeLists.txt
+ - CMake/
+     FindFFTW3.cmake
+     FindLEVMAR.cmake
+     TeemConfig.cmake.in
+     CheckAirExists.cmake   (new for TeemV2)
+     CheckLibmNeeded.cmake  (new for TeemV2)
+     DumpTarget.cmake       (new for TeemV2)
+ - src/bin/CMakeLists.txt
+ - src/{air,biff,...}/CMakeLists.txt
+ - CTestConfig.cmake
+ - tests/ctest/CMakeLists.txt
+ - tests/ctest/{air,biff,...}/CMakeLists.txt
+ - UseTeemCMakeDemo/CMakeLists.txt
+This is the first time I've really tried to understand the CMake files, and the first
+time I've tried anything non-trivial with ChatGPT. Current generative AI tools tend to
+normalize and mechanize intellectual property theft, with a huge carbon footprint. In
+this case my deep reservations about ChatGPT were overcome by my deeper distaste for
+CMake. ChatGPT's training likely consumed all findable CMakeLists.txt files and all
+available online discussion about CMake. I apologize to all those people whose past
+generous CMake online activity empowers ChatGPT but who receive no compensation from
+OpenAI.
+
+The changes to Teem's CMake machinery and its outputs are as follows:
+-- teem/CMakeLists.txt completely re-written: the CMake usage has been generally
+modernized (the required version is bumped to 3.25, released November 16, 2022), the
+sections are better organized, and the implementation has less copy-pasta. Many of the
+options exposed have been renamed to be more idiomatic (API CHANGE):
+ * BUILD_HEX    --> Teem_BUILD_HEX_UTILS (build stand-alone enhex/dhex utils)
+ * Teem_BZIP2   --> Teem_USE_BZIP2       (build Nrrd with bzip2 data encoding support)
+ * Teem_FFTW3   --> Teem_USE_FFTW3       (allow nrrdFFT and "unu fft" to work)
+ * Teem_LEVMAR  --> Teem_USE_LEVMAR      (build Teem with levmar-based optimization)
+ * Teem_PNG     --> Teem_USE_PNG         (build Nrrd with PNG file format support)
+ * Teem_PTHREAD --> Teem_USE_PTHREAD     (built Teem with multi-threading support)
+ * Teem_ZLIB    --> Teem_USE_ZLIB        (build Nrrd with zlib data encoding support)
+ * USER_DIRECTIO --> X                   (removed all remnants of SGI DirectIO support)
+ * Teem_USE_LIB_INSTALL_SUBDIR --> Teem_INSTALL_VERSIONED_PREFIX
+   (in install directory, create a subdir named with Teem version number; see below)
+-- A Teem install via old CMake files would create files in
+    installdir/lib/cmake/teem  (note "t")
+      TeemBuildSettings.cmake
+      TeemConfig.cmake
+      TeemLibraryDepends-noconfig.cmake
+      TeemLibraryDepends.cmake
+      TeemUse.cmake
+A find_package(Teem) would set variables like Teem_USE_FILE, Teem_EXECUTABLE_DIRS,
+Teem_LIBRARY_DIRS, Teem_INCLUDE_DIRS, Teem_LIBRARIES, etc. This was adhoc.
+Now, a Teem install via the new Cmake files puts things in
+    installdir/lib/cmake/Teem/  (note "T")
+      TeemConfig.cmake
+      TeemConfigVersion.cmake
+      TeemTargets-release.cmake
+      TeemTargets.cmake
+which defines a proper namespaced target "Teem::Teem". Use Teem with the modern idiom:
+    find_package(Teem REQUIRED)
+    target_link_libraries(myprog PRIVATE Teem::Teem)
+You don't need to worry about include directories, library paths, or defines. The new
+Teem package is generated with modern configure_package_config_file(), and uses
+find_dependency(...) for the optional dependencies PNG, ZLIB, etc. But all these are
+now encoded for you in the Teem::Teem target properties. The old CMake/TeemUse.cmake file
+is no longer used, and now has message(WARNING)s to say "stop using this".
+-- Teem_INSTALL_VERSIONED_SUBDIRS is different than what Teem_USE_LIB_INSTALL_SUBDIR did:
+This is the top-level structure of what Teem_USE_LIB_INSTALL_SUBDIR=ON made in
+the install directory, for version X.Y.Z:
+  installdir/bin/unu                        # and the other command-line tools
+  installdir/include/teem/airExistsConf.h
+  installdir/include/teem/air.h                 # and all the other Teem lib.h
+  installdir/lib/Teem-X.Y.Z/libteem.X.Y.Z.dylib      # and associated symlinks
+  installdir/lib/Teem-X.Y.Z/cmake/teem/*.cmake
+But now (API CHANGE?), if Teem_INSTALL_VERSIONED_PREFIX is ON, you get:
+  installdir/Teem-X.Y.Z/bin/unu ...
+  installdir/Teem-X.Y.Z/include/teem/airExistsConf.h
+  installdir/Teem-X.Y.Z/include/teem/air.h ...
+  installdir/Teem-X.Y.Z/lib/libteem.X.Y.Z.dylib ...
+  installdir/Teem-X.Y.Z/lib/cmake/Teem/*.cmake
+  installdir/Teem-X.Y.Z/share/Teem/LICENSE
+This layout is much more conventional and more logical: if versioning matters
+for the libraries, it certainly matters too for the headers defining the API!
+With Teem_INSTALL_VERSIONED_PREFIX=OFF, the preceding description of installdir
+is correct except that you remove "/Teem-X.Y.Z".
+-- The result of a CMake-powered Teem installation FINALLY include artifacts that
+facilitate Teem usage from non-CMake-using projects:
+ * installdir/lib/pkgconfig/teem.pc allows https://en.wikipedia.org/wiki/Pkg-config
+   to generate info via commands like:
+     pkg-config --cflags teem   # -> (e.g.) -I/usr/local/include
+     pkg-config --libs teem     # -> -L/usr/local/lib -lteem -lz -lpng -lm ...
+ * installdir/bin/teem-config is an old-school config script supporting:
+     teem-config --cflags
+     teem-config --libs
+     teem-config --version
+Note that there is no header file teemBuildConf.h or teemConf.h that exposes how
+Teem was compiled: by design, the API and ABI of Teem is invariant w.r.t. the
+selection of dependencies relied on at Teem's compile time.
+-- The files in UseTeemCMakeDemo/ have been updated to be a demo of using modern CMake to
+describe (and how to configure, build, install) a program that uses Teem package created
+by the new CMake install process.
+-- Header locations are exported as a FILE_SET for the sake of IDEs.
+-- How Teem uses CTest has also been modernized. The `teem/Testing/` directory that
+previously held everything about using CTest is now (API CHANGE?): `teem/tests/ctest/`
+to recognize that Python tests are now possible with the CFFI wrappers. It is likely
+that the CTest files were not actually working anymore (the top-level CMakeLists.txt has
+made BUILD_TESTING default to OFF), but now all existing tests are running again. The
+newly re-written teem/tests/ctest/CMakeLists.txt use (via a new mini library testutil)
+environment variables (instead of a configured testDataPath.h.in) to communicate paths
+into the `teem/data` directory (teemTestDataPath()) or a new per-test-executable tmp
+directory (teemTestTmpPath()).  The top-level DartConfig.cmake has been removed; anything
+about a dashboard (not that Teem has one now) can be done via the re-written
+CTestConfig.cmake.  TestBuild.cmake is no longer used and will be removed soon.
+-- I fixed a long-standing and serious problem with CMake checks the teem/src/air.h
+AIR_EXISTS macro at configure-time. The AIR_EXISTS macro tries to do what isfinite() does
+in modern C: answer if a given floating point value is an IEEE754 special value (NaN or
+infinity).  AIR_EXISTS is still in use in Teem because AIR_EXISTS predates wide
+availability of isfinite(). Since compilers can do unexpected things at high optimization
+levels (especially with things like -ffast-math enabled), it is important to test if
+AIR_EXISTS is really working.  That is the job of teem/CMake/TestAIR_EXISTS.c , which is
+used by CMake configure-time tests to transform teem/CMake/airExistsConf.h to
+installdir/include/teem/airExistsConf.h.  *However*: the long-standing and serious
+problem is that ever since this test was first created in 2015 (r6225
+https://sourceforge.net/p/teem/code/6225/ ), how TestAIR_EXISTS.c was compiled (exactly
+which compiler flags) was likely different than the rest of how Teem was compiled, which
+undermines the meaningfulness of the test (!).  With the update, great care is taken to
+ensure that how TestAIR_EXISTS.c is compiled matches how the rest of Teem will be
+compiled (given the current release type and associated flags), and now the compilation
+commands are shown for full transparency.
+-- Starting with revision r3717 on 2007-12-17, how CMake compiled and installed Teem had
+a "BUILD_EXPERIMENTAL" and later "BUILD_EXPERIMENTAL_LIBS" and
+"BUILD_EXPERIMENTAL_APPS". This started with a concern about "libraries that are in more
+active/unstable development".  But that was almost 20 years ago. There are no such
+libraries anymore.  Even for libraries that are being improved more actively, please
+refer to the "WITHOUT ANY WARRANTY" sections of the license.  The boundary between
+experimental and not experimental had to be propagated into many lower source files that
+were thereby needlessly complicated, which became especially annoying for the one person
+keeping Teem development going. Also, with newly increased reliance on python/cffi
+wrapping (see below), the fact that the API of Teem can change depending on this
+experimental-or-not setting created stupid complications, e.g. how can Python code doing
+an "import teem" gracefully learn if that `teem` has the "experimental" bits or not?  Its
+an unpythonic mess.  Removing this was overdue, and the TeemV2 release was an additionally
+motivating opportunity.
+-- Compiling a .c file in a Teem-using project used to find Teem headers with:
+    -I/path/to/teeminstall/include
+but now it uses:
+    -isystem /path/to/teeminstall/include
+which has the effect of silencing Teem-header-related warnings, which
+is probably the right choice, and seems to be the CMake convention?
+
+• 2025-08-28 05:17:10 +0000 (Thu, 28 Aug 2025) svn Revision: 7329
+With a thorough modernization of how CMake is used to build Teem, one might think that
+the older GNUmake-based build system is obsolete. Turns out, I (GLK) still prefer it for
+Teem hacking, since it offers more incremental per-library builds, and quick building of
+per-library test programs. The GNUmake build system was first written in ~2001 (before
+CMake was useful or popular) but was needlessly complicated, in part because it was
+designed for having multiple architectures share a networked filesystem.  For TeemV2,
+I revisited all the GNUmakefiles and simplified and cleaned them up:
+-- there are no more per-archicture teem/src/make/foo.mk files (for foo in aix cygwin
+darwin irix6 linux netbsd solaris win32), and no more per-architecture (and
+per-sub-architecture) subdirectories in teem/arch.  Instead, a new single
+teem/make/arch.mk contains the information that used to be in the per-arch foo.mk, or at
+least variables from which to hang this info.
+-- Everything about externals (that is, libraries we can optionally depend on: PNG ZLIB
+BZIP2 PTHREAD LEVMAR FFTW3) is moved into teem/src/make/externals.mk, because there is no
+need for setting that info in a architecture-dependent way.
+-------- !!!NOTE!!! variables like TEEM_PNG_IPATH and TEEM_PNG_LPATH (and TEEM_EXT_IPATH
+and TEEM_EXT_LPATH for all EXT) are still used, but are now set in
+teem/src/make/externals.mk (or on the command-line as variable set in the environment
+prior to "make").  More importantly, now they are true to their name:
+    (API_CHANGE?) THE VALUES SET HERE SHOULD NO LONGER START WITH
+    "-I" (for _IPATH) or "-L" (for _LPATH)
+    Just set them to the path you'd use with -I and -L
+-- teem/make/errorCheck.mk removed (the system became so simple, there was nothing left
+to error check)
+-- there is no effort to make the monolithic ("megalib") libteem library, or any kind of
+shared library (CMake can do that)
+-- also removed:
+env var TEEM_ARCH
+env var TEEM_DEST (because now any "install" should be done via CMake)
+make vars ARCH, SUBARCH
+everything about shared libraries: TEEM_LINK_SHARED, SHEXT
+make var KNOWN_ARCH,
+make funcs checkArchSet, checkArchValid,
+  checkArchLinux, checkArchLinux64, checkArchNetbsd64, checkArchDarwin
+
+• 2022-09-08 14:57:26 +0000 (Thu, 08 Sep 2022) svn Revision: 6818 ...
+  2022-09-08 11:39:47 +0000 (Thu, 08 Sep 2022) svn Revision: 6814
+Other improvements to CMakeLists.txt and how it tests the AIR_EXISTS macro
+- Used to have "project(Teem ... LANGUAGES C CXX)", even though there is no
+  C++ in Teem. Now fixed to be "LANGUAGES C"
+- CMake/testAirExists.cxx is now CMake/TestAIR_EXISTS.c, and it is a much more
+  complete test of AIR_EXISTS behavior on finite and non-finite values
+- CMakeLists.txt (finally) tests whether TestAIR_EXISTS.c could compile ok,
+  and makes it a FATAL_ERROR if not
+- Adds diagnostic messages about the outcome of the AIR_EXISTS test
+
+• 2019-09-16 21:39:15 +0000 (Mon, 16 Sep 2019) svn Revision: 6355 ...
+  2019-09-23 17:10:45 +0000 (Mon, 23 Sep 2019) svn Revision: 6356
+Major modernization of how CMake is used to build Teem, by Zhuokai Zhao (during his
+internship at Kitware). From the outside things should look the same, but now the
+per-libary "sources.cmake" file is a "CMakeLists.txt". Updated the required version of
+CMake from 2.8 to 3.13...3.15.
+
+========= how code is formatted =========
+
+• 2022-07-09 16:33:32 +0000 (Sat, 09 Jul 2022) svn Revision: 6503
+The formatting of code is now done via clang-format:
+  https://clang.llvm.org/docs/ClangFormat.htm
+This has been applied to all the .h and .c files in all the libraries (though not as yet
+to the .c files in the test or Testing directories).
+
+The new .clang-format file in top-level of this repo is used with:
+
+  clang-format -style=file
+
+This format file was developed to best approximate how formatting was already done in
+Teem; in some files the only changes relate to adding whitespace around operators.
+However, since clang-format works by parsing (with clang's parser) the code into an AST,
+and then re-writing it to respect the column limit, there are a number of places where
+clang-format can't preserve some important useful visual structure in the code created by
+whitespace or line breaks. This is especially true in the creation of airEnums (e.g. to
+clarify the relationship between equivalent strings and their enum values), and in the
+complicated declaration of gageKinds (as a kind of table). In these places the code is
+bracketed with:
+
+  /* clang-format off */
+  ...
+  /* clang-format on */
+
+There are other places where some empty comments /* */ have been added to the end of
+short lines to preserve the appearance of a list.  With time and experience the reliance
+on these tricks can hopefully be reduced. Despite these annoyances, GLK encourages you to
+use clang-format whenever you are editing Teem code, preferably with an editor that
+automatically applies formatting upon saves.
+
+As part of this reformatting, the number of columns for code has changed from 80 to
+90. Not even GLK is using an 80x24 terminal anymore, and 80 columns is quite limiting:
+many things that were awkward-looking in 80 columns look cleaner in 90 columns after
+clang reformatting. 100 columns might make even more sense (and changing 90-->100 columns
+will be a smaller change than 80-->90); time will tell.
+
+========= all libraries in general =========
+
+"teem/python" has long had a "ctypes" subdir for an (automatically generated)
+ctypes-based Python module for all of Teem. Unfortunately, this relied on a hacked up
+version of gcc-xml, but gcc-xml is longer maintained (Kitware has moved on to
+https://github.com/CastXML/CastXML), so it is no longer convenient to regenerate this
+wrapper.  There is a new clang-based approach: https://pypi.org/project/ctypeslib2/ but
+the scripts for massaging Teem header files will need to be updated to work with this.
+This hasn't happened yet.
+
+HOWEVER, there is a new/faster/better way of doing Python wrapping, via CFFI
+https://cffi.readthedocs.io/en/latest/; this is in teem/python/cffi
+Basically, you:
+- compile Teem with (cmake-powered) "make install"
+  (NOTE: with BUILD_SHARED_LIBS ON in CMake)
+- cd teem/python/cffi
+- ./build_teem.py <teem-install-dir> (or "python3 ./build_teem.py <teem-install-dir>)
+which will generate a _teem Python extension module as a .so shared object, which in turn
+will want to link (at run-time) with the cmake-compiled libteem shared library. Then, the
+already-existing teem.py wraps _teem, with the benefit of new machinery for turning biff
+error messages into Python exceptions (something the ctypes wrappers were always
+missing). build_teem.py depends on exult.py: CFFI EXtension module Utilities for
+Libraries depending on Teem in the same directory, which also facilitates creating
+extension modules for other libraries that depend on Teem.
+
+As part of working on the new CFFI python wrappers, a new systematic effort was made to
+make sure that source files do not needlessly leave symbols as externally visible (in the
+libteem library), by making functions "static" and data "static const" whenever possible;
+much older code in Teem was written before I (GLK) understood what "static" meant at the
+file scope.  Also, many variables that were intentionally global were unintentionally
+variable (you could change their value); which was fixed with adding many more "const"s.
+Also, this ensured that header files do not declare things that are never actually
+defined.  This is all in the new teem/src/_util/scan-symbols.py .  An analogous
+teem/src/_util/scan-defines.py makes sure that things #defined really start with an
+upper-case library name.
+
+========= air =========
+
+• Tue Oct 21 13:51:58 2025 -0500 git short hash: 232c896b
+API CHANGE: Ever since GLK learned about IEEE754 there have been these macros in air.h:
+   AIR_EXISTS_F, AIR_EXISTS_D, AIR_ISNAN_F
+which were completely sensitive to the argument being _F float or _D double because
+of the big-masking tricks involved.  These seemed useful.  But decades later they
+have gone completely unused within Teem, so it seems time to remove them.
+
+• 2025-09-29 06:27:50 +0000 (Mon, 29 Sep 2025) svn Revision: 7517
+API CHANGE: airMopDone now returns NULL, as do the wrapper functions airMopError and
+airMopOkay. When an airMop* is a field somewhere, it is good to NULL it out as soon as
+its done. Also renamed the new airStrtrunc to just airStrunc.
+
+• 2025-09-22 09:22:17 +0000 (Mon, 22 Sep 2025) svn Revision: 7464
+API CHANGE:
+* airParseStrT() are no longer var-args; it was a mistaken way to enforce uniformity
+  across parsers for different types, and it was really only airParseStrE (for
+  parsing airEnum values) that needed it.  Then airParseStrS sneakily used it for
+  its final "greedy" argument, which was also a bad idea to overcome bad ideas in
+  hestParse(), which have since been fixed with its 2025 re-write.
+* Renamed airParseStrLI, airParseStrULI --> airParseStrL, airParseStrUL
+* Added airParseStrH and airParseStrUH for signed and unsigned shorts
+* Removed airStrtokQuoting (another bad idea; used only for "unu make")
+* Moved the airTypeT enum values from air to hest, since hest was the motivation for
+  creating them so they should be localized to hest. To avoid needlessly breaking code
+  that uses hestOptAdd(), which depends on the airTypeT enum values, those have kept
+  their names, except:
+  *** added airTypeShort and airTypeUShort
+  *** renamed airTypeLongInt --> airTypeLong
+  *** renamed airTypeULongInt --> airTypeULong
+* Removed the following from air to hest, renamed them, and made them private.
+  They were only used to implement hest, no where else in Teem, so they never
+  deserved to be in air:
+    #define AIR_TYPE_MAX --> _HEST_TYPE_MAX
+    const char airTypeStr[HEST_TYPE_MAX + 1][AIR_STRLEN_SMALL + 1] --> _hestTypeStr
+    const size_t airTypeSize[HEST_TYPE_MAX + 1] --> _hestTypeSize
+    unsigned int (*const airParseStr[AIR_TYPE_MAX + 1])(void *,
+                                                        const char *, *const char *,
+                                                        *unsigned int);
+                     --> _hestParseStr
+
+• 2025-08-15 23:13:13 +0000 (Fri, 15 Aug 2025) svn Revision: 7275
+API CHANGE: Dropping quiet NaN (qnan) / signalling NaN (snan) distinction.
+Removed/renamed some things in air.h:
+  These enum values are gone:
+    airFP_SNAN,       /*  1: signalling NaN */
+    airInsane_QNaNHiBit,     /*  7: airMyQNaNHiBit is wrong */
+  with this enum value renamed:
+    airFP_QNAN --> airFP_NAN
+  #define AIR_FP_MAX changed 10 --> 9
+  #define AIR_INSANE_MAX changed 11 --> 10
+  Gone:
+    extern const unsigned int airMyQNaNHiBit;
+    #define AIR_QNANHIBIT (airMyQNaNHiBit)
+    extern const airFloat airFloatSNaN;
+    #define AIR_SNAN    (airFloatSNaN.f)
+  Renamed:
+    extern const airFloat airFloatQNaN --> airFloatNaN;
+    #define AIR_QNAN --> AIR_NAN
+
+• 2025-08-15 18:01:56 +0000 (Fri, 15 Aug 2025) svn Revision: 7273
+API CHANGE: Removed support for SGI IRIX Direct I/O (a faster data I/O to bypass kernel
+buffers), by removing air/dio.c, and everything related from air.h:
+  airInsane_dio enum value gone
+  #define AIR_DIO gone
+  #define AIR_INSANE_MAX 12 --> 11
+  These functions gone:
+  extern const char *airNoDioErr(int noDio);
+  extern const int airMyDio;
+  extern int airDisableDio;
+  extern void airDioInfo(int *align, int *min, int *max, int fd);
+  extern int airDioTest(int fd, const void *ptr, size_t size);
+  extern void *airDioMalloc(size_t size, int fd);
+  extern size_t airDioRead(int fd, void *ptr, size_t size);
+  extern size_t airDioWrite(int fd, const void *ptr, size_t size);
+Also, in nrrd.h's NrrdFormat struct, removed the third integer field:
+   usesDIO;   /* this format can use Direct IO */
+since it is moot now.
+The functions airDioTest(), airDioMalloc(), airDioRead(), and airDioWrite() involved
+calls to fcntl(fd, F_DIOINFO, &dioinfo) with a struct dioattr dioinfo to learn the
+DirectI/O specifics (of data size and pointer aligment), before calling fcntl(fd,
+F_SETFL, ... FDIRECT)) to enable it prior to read() and write() calls.  This API was
+different from and predates using the O_DIRECT flag to open(), which is current practice
+on Linux (at least). Given current differences in how various platforms do fast I/O, it
+would be nice if Teem had some functions for handling that in a platform-independent way.
+Some day.  Removing 25-year-old SGI IRIX Direct I/O code is not a step backward from that
+goal, because no current hardware uses that exact API.  Even if it's really IRIX running,
+but in emulation on non-SGI hardware, the concept of extra-fast I/O would be moot.
+
+• 2023-07-07 15:01:09 -0500 (Fri, 07 Jul 2023) svn Revision: 7034
+In air.h and in most other Teem libraries: something that is an API CHANGE (but weirdly
+not an ABI change) to fix a long-standing annoyance. air.h has always defined some hacky
+small, medium, large, and huge string lengths. The idea with these is that some code is
+simpler to write if string buffers don't have to be heap-allocated and later freed
+(buffers within stack go away on their own), and/or, calling string-handling functions is
+simpler if the function does not allocate strings that the caller has to free later. In
+the old code there was:
+  #define AIR_STRLEN_SMALL 129
+  #define AIR_STRLEN_MED   257
+  #define AIR_STRLEN_LARGE 513
+  #define AIR_STRLEN_HUGE  1025
+About these, air.h has long said:
+ * The possibly unfortunate convention that has become established in Teem is code using
+ * these tends to NOT add the +1 to explicitly indicate the space for 0-termination, and
+ * instead assumes it is part of the numbers below, even though this is at the cost of
+ * confusion about how the maximal strlen() will be less than each of
+ * these numbers. This will be addressed in Teem 2.0.
+Now is the time to fix this.  Now they are:
+  #define AIR_STRLEN_SMALL 128
+  #define AIR_STRLEN_MED   256
+  #define AIR_STRLEN_LARGE 512
+  #define AIR_STRLEN_HUGE  1024
+It was never the case that the memory-safety of Teem code rested on any numerical
+relationship between these lengths: Teem code that writes into a fixed-length buffer is
+still careful to not over-write the buffer (i.e. SMALL, MED, LARGE, HUGE merely describe
+the intended utility of the buffer).  However, now all Teem code has been revisited and
+revised so that any use of these now adds "+ 1" to the code, e.g.:
+-    char stmp[AIR_STRLEN_SMALL];
++    char stmp[AIR_STRLEN_SMALL + 1];
+So, the compiled buffer size ends up being the same (hence not an ABI change).  Still,
+any non-Teem Teem-using code that has explicitly used an AIR_STRLEN should now also add
+"+ 1". Specifically, existing code that calls Teem functions that take a pre-allocated
+string buffer (to write into) should be tweaked so that the passed buffer is matches the
+expected size. Here is a complete list:
+  int airEnumCheck(char err[AIR_STRLEN_LARGE + 1], const airEnum *enm);
+  void airTeemVersionSprint(char buff[AIR_STRLEN_LARGE + 1]);
+  char *airSprintSize_t(char str[AIR_STRLEN_SMALL + 1], size_t val);
+  char *airPrettySprintSize_t(char str[AIR_STRLEN_SMALL + 1], size_t v);
+  char *airSprintPtrdiff_t(char str[AIR_STRLEN_SMALL + 1], ptrdiff_t v);
+  const char airTypeStr[AIR_TYPE_MAX + 1][AIR_STRLEN_SMALL + 1];
+  int nrrdBoundarySpecSprint(char str[AIR_STRLEN_LARGE + 1],
+                             const NrrdBoundarySpec *bspec);
+  int nrrdBoundarySpecCompare(const NrrdBoundarySpec *bspecA,
+                              const NrrdBoundarySpec *bspecB,
+                              int *differ, char explain[AIR_STRLEN_LARGE + 1]);
+  int nrrdCompare(const Nrrd *ninA, const Nrrd *ninB, int onlyData,
+                  double epsilon, int *differ,
+                  char explain[AIR_STRLEN_LARGE + 1]);
+  int nrrdAxisInfoCompare(const NrrdAxisInfo *axisA,
+                          const NrrdAxisInfo *axisB,
+                          int *differ,
+                          char explain[AIR_STRLEN_LARGE + 1]);
+  int nrrdArrayCompare(int type, const void *valA, const void *valB,
+                       size_t valNum, double epsilon, int *differ,
+                       char explain[AIR_STRLEN_LARGE + 1]);
+  int nrrdKernelSpecSprint(char str[AIR_STRLEN_LARGE + 1],
+                           const NrrdKernelSpec *ksp);
+  int nrrdKernelSprint(char str[AIR_STRLEN_LARGE + 1],
+                       const NrrdKernel *kernel,
+                       const double kparm[NRRD_KERNEL_PARMS_NUM]);
+  int nrrdKernelCompare(const NrrdKernel *kernA,
+                        const double parmA[NRRD_KERNEL_PARMS_NUM],
+                        const NrrdKernel *kernB,
+                        const double parmB[NRRD_KERNEL_PARMS_NUM],
+                        int *differ,
+                        char explain[AIR_STRLEN_LARGE + 1]);
+  int nrrdKernelSpecCompare(const NrrdKernelSpec *aa,
+                            const NrrdKernelSpec *bb,
+                            int *differ,
+                            char explain[AIR_STRLEN_LARGE + 1]);
+  int gageStackBlurParmCompare(const gageStackBlurParm *sbpA,
+                               const char *nameA,
+                               const gageStackBlurParm *sbpB,
+                               const char *nameB,
+                               int *differ,
+                               char explain[AIR_STRLEN_LARGE + 1]);
+  int gageStackBlurParmSprint(char str[AIR_STRLEN_LARGE + 1],
+                              const gageStackBlurParm *sbp,
+                              int extraFlag[256],
+                              char *extraParm);
+  int pullInfoSpecSprint(char str[AIR_STRLEN_LARGE + 1],
+                         const pullContext *pctx,
+                         const pullInfoSpec *ispec);
+  int meetPullVolLeechable(const meetPullVol *lchr,
+                           const meetPullVol *orig,
+                           int *can,
+                           char explain[AIR_STRLEN_HUGE + 1]);
+
+There are also many Teem structs with buffers with an AIR_STRLEN size. Existing code
+using these structs does NOT have to be modified to use the new struct.  But if you are
+creating your own instances of these structs (e.g. creating your own hestCB to parse
+something weird from the command-line), then your definition of the struct should also be
+adjusted. Here is the full struct list:
+  hestCB: int (*parse)(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]);
+  NrrdFormat: char name[AIR_STRLEN_SMALL + 1];
+  NrrdEncoding: char name[AIR_STRLEN_SMALL + 1],
+                suffix[AIR_STRLEN_SMALL + 1];
+  NrrdKernel: char name[AIR_STRLEN_SMALL + 1];
+  gageContext: char errStr[AIR_STRLEN_LARGE + 1];
+  gageKind: char name[AIR_STRLEN_SMALL + 1];
+  baneRange: char name[AIR_STRLEN_SMALL + 1];
+  baneInc: char name[AIR_STRLEN_SMALL + 1];
+  baneClip: name[AIR_STRLEN_SMALL + 1];
+  baneMeasr: char name[AIR_STRLEN_SMALL + 1];
+  tenModelParmDesc: char name[AIR_STRLEN_SMALL + 1];
+  tenModel: char name[AIR_STRLEN_SMALL + 1],
+      char *(*sprint)(char str[AIR_STRLEN_MED + 1], const double *parm);
+  pullEnergy: char name[AIR_STRLEN_SMALL + 1];
+  coilKind: char name[AIR_STRLEN_SMALL + 1];
+  coilMethod: char name[AIR_STRLEN_SMALL + 1];
+  pushEnergy: char name[AIR_STRLEN_SMALL + 1];
+  miteUser: char shadeStr[AIR_STRLEN_MED + 1],
+            normalStr[AIR_STRLEN_MED + 1];
+
+• fixed BUG in airOneLinify reported by Michael Götz <m.goetz@*.de>: I found a bug in the
+  NrrdIO-library. It is in the file NrrdIO/string.c in the function airOneLinify() (be
+  more specific in line 274-278) If a non-printable character is in the given string,
+  every element it is replaced by copying the following elements back by one and reading
+  the given position again. The problem is, that \0 will also be copied and therefore
+  s[len-1] will be \0. Since \0 is non-printable the algorithm will continue to repeat
+  the "remove-nonprintable"-part again and again.  -> Endless loop.
+The same bug was reported 2014-04-02 (with patch) by dperry:
+https://sourceforge.net/p/teem/bugs/13/
+The fix currently in the code is based on the dperry patch.
+
+• 2014-01-27 06:01:56 +0000 (Mon, 27 Jan 2014) svn Revision: 6161
+Fixing long-standing BUG in airIndex(), seen when clamping output in nrrdArithAffine and
+nrrdArithIterAffine, in the case that the min output value is larger than the max output
+value (that is, the caller wishes, completely legitimately, to reverse the sense of the
+values).  Also affects "unu affine"
+
+• 2022-09-08 16:07:36 +0000 (Thu, 08 Sep 2022) svn Revision: 6820
+- removed from airSanity() the static int _airSanity, effectively a global variable that
+  meant that airSanity() could only do its work once.  Things like floating point
+  rounding mode can be changed at run-time, which makes it more reasonable to re-run the
+  FP-related tests. The non-FP tests are simple and should be fast to do. If profiling
+  reveals this to be a bottleneck we can reconsider.
+- air.h, sane.c: added airInsane_ExistsBad to airInsane enum, which airSanity
+  returns when some finite numbers are described by AIR_EXISTS as non-existant
+
+• 2022-08-16 06:36:42 -0500 (Tue, 16 Aug 2022) svn Revision: 6763
+Ever since this revision:
+  r5612 | kindlmann | 2012-09-23 17:05:07
+the FP_SET_F macro of 754.c was broken, because GLK used "<" instead of "<<" to create a
+bit mask.  The bit mask was apparently created to quiet some warnings, but it completely
+broke the code, 10 years ago (yikes).  As part of this BUG FIX, GLK added some things:
+- a new const airEnum *const airFPClass_ae to contain the values in the airFP_* enum
+- new AIR_FP_MAX #define in air.h for max valid value of airFP_* enum and changed
+  some things:
+- airMyQNaNHiBit [SINCE REMOVED!] changed from const int to const unsigned int, because
+  any kind of bit pattern useful for bit-level hacking should be unsigned (though that
+  became moot later, with dropping qnan-vs-snan support)
+- 754.c was largely re-written, to totally avoid the use of any endian- specific structs.
+  FP_SET_F no longer exists, replaced with PARTSHIFT_F.  There is much less copy-pasta as
+  a result, and the code is more legible.
+
+• API NEW: Added airTeemVersionSprint() as a uniform way to generate information about
+the Teem version.
+
+• 2023-08-04 17:18:29 +0000 (Fri, 04 Aug 2023) svn Revision: 7147
+API NEW: Added functions based on "Jenkins Fast Small" RNG:
+  http://burtleburtle.net/bob/rand/smallprng.html
+Timing tests haven't yet been done, but these are certainly much smaller, and likely
+faster than the Mersenne-Twister-based functions that have been in Teem for a long time
+(see air.h airRandMTState).  New tiny struct and functions:
+   (air.h)
+   typedef struct {
+     unsigned int a, b, c, d;
+   } airJSFRand;
+   airJSFRand *airJSFRandNew(unsigned int seed);
+   airJSFRand *airJSFRandNix(airJSFRand *jsf);
+   void airJSFRandSeed(airJSFRand *jsf, unsigned int seed);
+   unsigned int airJSFRandVal(airJSFRand *jsf);
+   unsigned int airJSFRandValMod(airJSFRand *jsf, unsigned int N);
+   float airJSFRandUni_f(airJSFRand *jsf);   /* [0,1) */
+   float airJSFRandBiUni_f(airJSFRand *jsf); /* (-1,1) */
+   float airJSFRandNormal_f(airJSFRand *jsf);
+   void airJSFRandNormal2_f(airJSFRand *jsf, float val[2]);
+   double airJSFRandUni_d(airJSFRand *jsf);   /* [0,1) */
+   double airJSFRandBiUni_d(airJSFRand *jsf); /* (-1,1) */
+   double airJSFRandNormal_d(airJSFRand *jsf);
+   void airJSFRandNormal2_d(airJSFRand *jsf, double val[2]);
+   int airJSFRandSanity(void);
+The airJSFRand{Uni,BiUni}_{f,d} functions use a very principled approach to generating
+random floats inside the interval: NOT simply taking the 32-bit unsigned int and dividing
+by 2^32.  This means they can in in principle generate denormal values, which means
+airJSFRandNormal_{f,d} can sample far into the tails of the Gaussian. Reproducibility
+concerns prevent the large-scale replacement of the airRandMTState based random number
+use in Teem with airJSFRand (at least in nrrd and unu), but changes may happen in other
+libraries.
+
+• Added new wrappers around AIR_CAST:
+   #define AIR_UCHAR(x) AIR_CAST(unsigned char, x)
+   #define AIR_USHORT(x) AIR_CAST(unsigned short, x)
+   #define AIR_FLOAT(x) AIR_CAST(float, x)
+   #define AIR_DOUBLE(x) AIR_CAST(double, x)
+Some of these are more used than others, but they do tend to make code less verbose, and
+the are pretty legible once you know about them. AIR_USHORT in particular is common when
+going from size_t values to uint values that are less annoying to print and work with.
+Some efforts have been made to make their use more uniform through-out the code, but
+these are incomplete and the results are likely insufficiently tested.
+
+• 2015-02-21 17:18:55 +0000 (Sat, 21 Feb 2015) Revision 6216
+Added airBitsSet() to count how many bits are set in an unsigned int
+
+• 2015-05-14 01:06:15 +0000 (Thu, 14 May 2015) svn Revision: 6249
+airSingleSscanf(), which handles parsing a floating-point value from a
+string, now parses "-pi" as -AIR_PI.
+
+• The body of some math functions have moved from gage to air:
+gageTauOfTee(tee) --> airTauOfTime(tee)
+gageTeeOfTau(tau) --> airTimeOfTau(tau)
+gageSigOfTau(tau) --> airSigmaOfTau(tau)
+gageTauOfSig(sig) --> airTauOfSigma(sig)
+The gage functions are now #defines for the air functions.
+This change allows unrrdu/unu to access these (see below).
+
+• 2018-01-02 22:42:59 +0000 (Tue, 02 Jan 2018) svn Revision: 6329
+Made airSanity() work even with floating-point rounding mode changes.
+Quoting from a comment:
+On at least one computer GLK used, if fesetround(FE_DOWNWARD) has been called, then the
+above run-time generation of positive infinity fails; it instead rounds down to
+DBL_MAX. We err on the side of permissiveness, and opt not to try to detect the current
+rounding mode (because doing so in a C89-compliant way would be a pain), and thus flag
+AIR_EXISTS(pinf) as a problem only if pinf != DBL_MAX. On that one computer,
+fesetround(FE_UPWARD) did not hamper the above run-time negative infinity generation
+
+• 2015-11-05 07:05:15 +0000 (Thu, 05 Nov 2015) svn Revision: 6257
+Added to airIndexULL and airIndexClampULL the logic for min > max that has
+already been part of airIndex and airIndexClamp since version 1.11
+
+• 2018-07-22 12:39:29 +0000 (Sun, 22 Jul 2018) svn Revision: 6333
+fixed airFPFprintf_f and airFPFprintf_d so that decimal expansion is of
+sufficient accuracy to indicate that same value
+
+• 2022-07-15 22:40:14 +0000 (Fri, 15 Jul 2022) svn Revision: 6511
+added airIndexMirror64 and airIndexMirror32 which are for "mirroring"
+an index I to be within valid indices [0...N-1], which is used
+for -b mirror with unu resample and unu pad
+
+========= biff =========
+
+• 2025-10-02 04:46:15 +0000 (Thu, 02 Oct 2025) svn Revision: 7560
+Fixed BUG (discovered by Jorik Blaas and communicated on the new Discord server
+https://discord.gg/xBBqZGXkF7 where you should be too if you're reading this): biff's
+error message handling should obviously be using snprintf/vsnprintf instead of
+sprintf/vsprintf; this is a super obvious buffer overflow attack opportunity.
+In this case a malformed NRRD header (with a very long bogus line) generated a biff
+error message that overflowed biff's handling of the error message.
+
+• 2013-10-25 07:51:39 +0000 (Fri, 25 Oct 2013) svn Revision: 6145
+Fixing huge BUGs (discovered by clang checker) in biffMsgAdd(), biffMsgMove(),
+biffMsgStrSet() (maybe others?): the exit(1)'s that had been removed on the principle
+that teem shouldn't exit, were NOT replaced with a return, or anything that would
+terminate function execution, so the function would continue onward past the fatal
+condition. wow
+
+• 2022-08-04 22:09:25 +0000 (Thu, 04 Aug 2022) svn Revision: 6691
+API CHANGE: moving all the biffMsg-related functions stuff into privateBiff.h, since
+nothing else outside of biff was using them (a few functions could then also become
+static).
+
+• Not in biff itself, but in how other Teem code uses biff, and self-documents its use:
+There is now an automated way (with teem/src/_util/scan-symbols.py -biff) to annotate
+functions, with a short comment at the start of their definition to document their usage
+(or not) of biff, and how to interpret the return values.  This is described in the new
+file teem/src/biff/README.txt .  This annotation allows the new CFFI Python wrappers to
+do error checking, and convert biff errors into Python exceptions. Developing this
+recovery of biff usage (called the "biff auto-scan" for no good reason) uncovered many
+many little BUGs throughout Teem (inconsistent return values upon error, or no return
+after a biff call, or biff message being added to wrong key, or biffAddf called instead
+of biffGetDone at end, ...); these were all fixed but no detailed log has been recorded
+here. A second script teem/src/_util/gen_biffdata.py generates
+teem/python/cffi/biffdata/*.csv files by scanning Biff annotations, and this also
+confirms that each biff-using functions correctly name itself with a static const char
+me[] definition (and this uncovered many other little BUGs). NOTE: A consequence of this
+annotation is that now the space after a function return type (and qualifiers), and
+before the next line with the start of the function definition, is now reserved for Biff:
+annotations, described in detail in teem/src/biff/README.txt.  In the future, other
+annotations may go there. The use of clang-format helps ensure that that space is
+uniformly created.
+
+========= hest =========
+
+* ... option section dividers ? ....
+* ... priority modifiers .....
+
+• Thu Oct 16 13:31:03 2025 -0500 git short hash: f081c284
+API CHANGE: hestParm->verbosity is now hestParm->verbose. Long ago all the other Teem
+libraries stopped using "verbosity" for their verbosity variables and instead used "verbose",
+hest for some reason was never updated. Time to fix it.
+
+• Wed Oct 15 15:22:09 2025 -0500 git short hash: eb02fd9b
+Having revisited hestParse (below), attention turned next to hestParseOrDie, which
+over the years had accumulated some weirdly complicated logic. Time to clean it up.
+* API CHANGE! hestParseOrDie had 3 final args doInfo, doUsage, doGlossary.
+  EVERY Teem use of this function passed these as AIR_TRUE, so there was apparently
+  not much information being carried by them. hestParseOrDie no longer has
+  the three final doInfo, doUsage, doGlossary arguments.
+* API CHANGE: The hestParm->dieLessVerbose option (specific to hestParseOrDie)
+  is removed. It was a response to info, usage, and glossary being printed every
+  time there was a parse error (perhaps because doInfo=doUsage=doGlossary=AIR_TRUE)
+  but now we just do the expected thing: in case of parse error (or empty argv
+  implicit ask for help) show the usage (but not info or glossary), and also print
+  a message about using --help for more info.
+* API NEW: hestParm->dieWithoutNewerFeatures control was added, to contol whether
+  the new hestParseOrDie would opportunistically turn on new features:
+  - set hparm->columns via hestParmColumnsIoctl(hparm, hestDefaultColumns)
+  - set hparm->respectDashDashHelp = AIR_TRUE
+  The recognition is that there is no new one-stop top-level hest parsing function
+  on the horizon, so any new features should be incorporated into hestParseOrDie.
+  If the given hestParm *_hparm is NULL, then we are free in spirit to enable some
+  new behavior, but if given _hparm is not NULL, then we don't want to override
+  specific preferences. hestParm->dieWithoutNewerFeatures says to hestParseOrDie:
+  "don't turn on any new features" (the future may include more newer features)
+
+• 2025-09-29 08:13:39 +0000 (Mon, 29 Sep 2025) svn Revision: 7520 ...
+  2025-10-08 13:14:45 -0500 git short hash: ba1022631
+The new implementation of hestParse seems to finally be working, but there is much
+testing still to be done.  The old hestParse remains for now as hestParseOld, although
+with some of the changes below it may leak memory in ways it previously didn't.
+The *motivation* for the hestParse re-write came from bugs like this:
+  % unu basinfo -i cmap.nrrd -kv space:=RGB "novalue:=0.3 0 0" -o tmp.nhdr
+  % more tmp.nhdr
+  NRRD0004
+  ...
+  data file: tmp.raw
+  space:=RGB
+  "novalue:=0.3
+There are two strings passed to -kv: "space:=RGB" and "novalue:=0.3 0 0"; the second
+needs to be quoted so that the shell interprets it as one argument because it contains
+a space. Looking at the resulting nhdr file, you can see that the two strings were
+not successfully passed to nrrdKeyValueAdd(). A " that got added to (part of) the second
+string ended up as part of the key; oops.  What it should look like:
+  % unu basinfo -i cmap.nrrd -kv space:=RGB "novalue:=0.3 0 0" -o tmp.nhdr
+  % more tmp.nhdr
+  NRRD0004
+  ...
+  data file: tmp.raw
+  space:=RGB
+  novalue:=0.3 0 0
+
+I admit that as a grad student writing hest, I did not actually understand what the shell
+was doing when tokenizing the typed command-line into argc,argv, and did not appreciate
+the value of keeping those arguments as they came. Instead, stupidly, hest would take all
+the arguments for an option and sprint them back into a single space-delimited string,
+and then use the strtok()-work-alike airStrtok to try to re-tokenize them. But that was
+stupid, and various hacks developed to try to compensate for args containing spaces, namely
+hestParm->greedySingleString and global variable (!) airStrtokQuoting, which changed the
+behavior of airStrtok. It seemed to work for things like `unu make -t "unsigned char"`,
+but it never really worked completely (witness the key/value problems above).
+
+The *requirement* of the hestParse re-write came from the recognition that the hest code
+was just too complex and opaque to maintain, so fixing the tokenization issue within the
+existing code was impossible. Grad-student GLK, writing hest during the 2002 Winter
+Olympics in SLC as a procrastination from doing the work of the ray-tracing graphics
+class for which some command-line control was needed, was unsustainably comfortable
+creating and navigating intricate code. The new code is comprehensible to and
+maintainable by professor/dad GLK, and finally gets the tokenizing right: it preserves
+the distinct arguments coming from argc/argv, and reimplements the DFA needed to handle
+both ''-quoted and ""-quoted strings (with \-escaped characters) to tokenize arguments
+coming from default strings and from response files. In the past, response files could
+not contain quoted spaces (BUG) and any '#', including a '#' inside a quoted string
+argument, would be interpreted as the start of a comment; that BUG is now fixed). This
+update also finally gets some other long-wanted things about hest (see "New Feature"s)
+
+What changed about how hest appears to users as a result of this work:
+* ABI CHANGE: since hest's birth, the hestOpt struct has had an `int alloc` that helped
+  keep track of what was allocated as a result of parsing, and what had to be freed.  It
+  could take on magic values 1, 2, 3, or 4, and the logic that hestParseFree had to
+  implement to keep track of all this (in a way that depended on the option type, and the
+  non-NULL-ity of CB->destroy in the case of airTypeOther) was just hideous.  Instead,
+  now a per-hestOpt `airArray *parseMop` is used, to remember what needs to be freed.
+  Free'ing or destroy'ing callbacks added here (by _hestParseSingle[type]) with
+  when=airMopAlways. And now, hestParse just adds hestParseFree to its
+  in-case-of-error mop. This is so so much simpler and easier than the original code.
+* API CHANGE: hestParseFree now returns the the given `hestOpt *hopt`, instead of
+  void. This facilitates its use in airMops.
+* API CHANGE: removed the void*-taking-and-returning hestParmFree_vp and
+  hestOptFree_vp. These were experiments to make their use with an airMop less clunky,
+  because you no longer need the `(airMopper)` cast, but this was a dumb idea: adding
+  these _vp variants is work, so hundreds of other functions in Teem do not have such a
+  _vp variant, plus the `(airMopper)` cast idiom is well-established.
+* hestParse still returns non-zero in case of error, but now it returns -1 (instead of 1)
+  if the problem is with the given hestOpt array, rather than anything to do with
+  processing the given command-line.  This more serious error may warrant different
+  handling.
+* API CHANGE?: Static option array construction in the style of argtable
+  https://argtable.sourceforge.io is no longer supported. Because of an internal change
+  (_hestPanic validator-plus-extras function became hestOptCheck that just does
+  validation), the hestOpt `kind` field is longer set as a side-effect of starting
+  parsing; it is set by hestOptSingleSet (which is the final call for all the hestOptAdd
+  family of functions). Hest was inspired by argtable so this is a bit of a loss, but all
+  Teem code had long ago switched over to hestOptAdd() (and now the type-safe variants)
+  so the loss of static creation is no change for Teem itself, or any of the Teem-using
+  code that GLK maintains.
+* API CHANGE?: The semantics for min=0 max=1 (kind=4) options have always been unusual,
+  because they rely on "inverting" the default value in the case of getting the flag
+  but not a value.  For TeemV2, GLK literally could not understand what the old code
+  was doing when the type was non-numeric (char, string, enum, and other), so now
+  those types are no longer allowed for this kind of option.
+* API/behavior CHANGE: The default string for a single fixed string (min=max=1 kind=2)
+  Was previously not tokenized (so internal spaces were fine), but nor was it left
+  as is: multiple leading spaces were compressed to a single space, and trailing space
+  was ignored.  Now, the default string is used as the string value, exactly.
+* New Feature: have you ever wanted to be able to comment out part of a command-line?
+  Not just '#' to comment to the end of the line for a shell script, but something
+  more like how /* ... */ comments out part of a line of C code?  Now you can, by using
+  the new -{ ... }- comments, which are respected if hestParm->respectDashBraceComments
+  (which is true by default).
+* New Feature: now @resp.txt response files can invoke other response files (but a
+  response files can not recursively invoke itself).
+
+• 2025-09-22 20:35:11 +0000 (Mon, 22 Sep 2025) svn Revision: 7467
+API CHANGE: hestMinNumArgs removed, because it was an old too-clever function,
+  and it stopped being used in Teem some time ago
+API NEW: added "int hestOptParmCheck(const hestOpt *opt, const hestParm *hparm, char **errP);
+ for checking a hestOpt and a non-NULL hestParm together
+
+• 2025-09-22 09:22:17 +0000 (Mon, 22 Sep 2025) svn Revision: 7464
+(work is ongoing on a hestParse re-write, but also this:)
+API CHANGE:
+* (as noted above: airType* enum values moved to hest.h)
+* removed field from hestParm in hest.h:
+      greedySingleString,    /* when parsing a single string, whether or not to be greedy
+                              (as per airParseStrS) */
+* removed the corresponding default from defaultsHest.c
+    HEST_EXPORT int hestDefaultGreedySingleString;
+Why: these only existed as part of a bad idea to overcome other bad ideas on how
+hestParse worked; those have been addressed with the re-write.
+
+• 2025-09-18 20:39:52 +0000 (Thu, 18 Sep 2025) svn Revision: 7456
+(work is ongoing on a hestParse re-write, but also this:)
+API CHANGE:
+ rename hestParm->respFileEnable --> hestParm->responseFileEnable
+ rename hestDefaultRespFileEnable --> hestDefaultResponseFileEnable
+because it was inconsistent to have that "response" abbreviated,
+when the pattern in hest has long bin to write out long things with whole words.
+ALSO API CHANGE:
+removing fields from hestParm in hest.h:
+  char respFileFlag,        /* the character at the beginning of an argument
+                               indicating that this is a response file name */
+    respFileComment,        /* comment character for the response files */
+    varParamStopFlag, /* prefixed by '-' to form the flag (usually "--") that signals the
+                         end of a *flagged* variable parameter option (single or
+                         multiple). This is important to use if there is a flagged
+                         variable parameter option preceeding an unflagged variable
+                         parameter option, because otherwise how will you know where the
+                         first stops and the second begins */
+    multiFlagSep;     /* character in flag which signifies that there is a long and short
+                         version, and which separates the two.  Or, can be set to '\0' to
+                         disable this behavior entirely. */
+and removing the corresponding defaults from defaultsHest.c
+  HEST_EXPORT char hestDefaultRespFileFlag;
+  HEST_EXPORT char hestDefaultRespFileComment;
+  HEST_EXPORT char hestDefaultVarParamStopFlag;
+  HEST_EXPORT char hestDefaultMultiFlagSep;
+Why the change: there is more confusion than utility created by allowing these
+special characters change. The actual value in giving these things names was in
+code legibility by removing magic constants. That's now the role of some new
+#defines in privateHest.h.
+
+• 2025-09-17 09:58:09 +0000 (Wed, 17 Sep 2025) svn Revision: 7440
+API CHANGE: is that the hestSource* enum no longer has hestSourceUser; it was split into
+hestSourceCommandLine and hestSourceReponseFile.  But to reduce disruption, a new
+hestSourceUser() helper function returns non-zero for those two source enum values; this
+affects lots of Teem-using code. This is part of the currently-ongoing rewrite of
+hestParse.
+
+• 2023-07-11 21:18:05 +0000 (Tue, 11 Jul 2023) svn Revision: 7071
+API NEW:Many (99, to be exact) non-var-args alternatives to hestOptAdd, also usefully
+type-specific for the type of value to be parsed in a way that (non-var-args)
+hestOptAdd_nva cannot match.  These capture all the common uses (and them some) of hest
+within Teem (and Teem-using non-Teem code that GLK maintains). They functions can be
+categorized, like hestOpt->kind, in terms of the min and max number of (type T)
+parameters to the option:
+   min == max == 0      hestOptAdd_Flag         stand-alone flag; no parameters
+   min == max == 1      hestOptAdd_1_T          single fixed parameter
+   min == max >= 2      hestOptAdd_{2,3,4,N}_T  multiple fixed parameters
+   min == 0; max == 1   hestOptAdd_1v_T         single variable parameter
+   min < max; max >= 2  hestOptAdd_Nv_T         multiple variable parameters
+T is one of: Bool (int), Short, UShort, Int, UInt, Long, ULong, Size_t, Float, Double,
+Char, String (char *), Enum (int), or Other (void*) (wherein the C type is either obvious
+or indicated parenthetically). These functions are generated mostly automatically by C
+pre-processor gymnastics (see src/hest/adder.c), but the resulting functions require no
+such trickery to use. An airEnum* is passed for _Enum options; or a hestCB* for _Other
+options. The number of parameters *sawP that hestParm saw on the command-line is passed
+for the _Nv_ options.  Using hestOptAdd() and even the non-var-args hestOptAdd_nva() has
+always been harrowing because they could do no useful typechecking on the arguments that
+received the values parsed from the command-line. Those days are now thankfully over.
+
+• 2023-06-24 15:48:11 +0000 (Sat, 24 Jun 2023) svn Revision: 6994
+ABI CHANGE and API NEW: FINALLY added consistent handling of "--help" as a command-line
+argument.  Embarrassing that it took this long. Implementing this was actually easy, once
+some hest code was reorganized and renamed in a more sensible way.  This is really a
+breaking ABI change (need to re-compiling and re-linking), but not a breaking API change:
+there are new struct members hestParm->respectDashDashHelp and hestOpt->helpWanted. GLK
+doesn't see a way of optionally enabling this functionality without adding struct
+members.
+
+However, hestParse still behaves the same way, in that it returns:
+- zero to mean that hestParse could set values for all the options (either
+  from the command-line or from supplied defaults), and
+- non-zero to mean that there was an error parsing the command-line arguments
+But seeing and recognizing "--help" means that options have NOT had values set, and yet,
+it's not an error, which is outside the zero/non-zero dichotomy.  But that dichotomy is
+the precedent, so we should work with it if possible.  Now, with
+hestParm->respectDashDashHelp (which is NOT true by default), upon seeing "--help",
+hestParse returns 0, and sets helpWanted in the first hestOpt, so the caller will have to
+know to check for that.  This logic is handled by (a completely re-written)
+hestParseOrDie, but maybe in the future there can be a different top-level parser
+function that turns on parm->respectDashDashHelp and knows how to check the results.
+[2025: nope, no new top-level parser is on the horizon: now hestParseOrDie now ~modifies
+respectDashDashHelp, as described above]
+
+Recall that hestParse is passed an array of hestOpt structs (not an array of pointers to
+hestOpt structs), like `hestOpt *hopt`.  Information is set inside each hestOpt by the
+action of hestParse, parsing the corresponding command-line option. There is no other
+top-level information for the outcome of hestParse, so GLK opted to add a "helpWanted"
+field to the hestOpt struct, so that the user of hestParse can then check
+`hopt[0].helpWanted` or `hopt->helpWanted`.
+
+With the re-write of hestParseOrDie, there another tiny change (API CHANGE?)
+  * the exit() status is now 0 (unix for "no error") in some cases when it used
+  to be 1 ("oops error"): when "--help" is the only element of the given argv,
+  and when the given argv is empty (the implicit request for usage info).
+
+• 2023-08-11 06:50:47 +0000 (Fri, 11 Aug 2023) svn Revision: 7152
+API NEW: added hestParmColumnsIoctl() as a function for containing all the smarts about
+using ioctl() to get the current terminal width, and set hestParm->columns to that, so
+that all the usage information looks more useful.  A few programs (mainly unu and tend)
+had contained the same smarts, but it makes much more sense to make it into a function.
+
+• 2023-06-23 18:25:02 +0000 (Fri, 23 Jun 2023) svn Revision: 6985
+Fixed a BUG that could cause hestParse() to crash when "--" (or rather "-" followed by
+hparm->varParamStopFlag) was seen prior to getting all the parameters to a flagged
+option. Later work (ending with r7018 on 2023-07-02) would clarify that "--" is the
+marker for the end of parameters to a *flagged* multiple variable parameter option, and
+can be used once per such option. It is not a brick wall that ends all hestParse action.
+
+• 2023-06-21 12:37:49 +0000 (Wed, 21 Jun 2023) svn Revision: 6964 ...
+  2023-06-21 13:50:33 +0000 (Wed, 21 Jun 2023) svn Revision: 6965
+As part of revisiting all hest code (with an eye to implementing --help), realized that
+hest was the only Teem library to have its default globals not named with "Def" or
+"Default". Rather than avoid fixing this (after a decade of no releases) for fear of the
+API CHANGE that it clearly is, GLK opted to fix it now, since likely zero other people
+will notice (all these controls were more likely set via the corresponding hestParm
+fields).  So these global variables are renamed:
+
+int hestVerbosity  -->  hestDefaultVerbosity
+int hestRespFileEnable -->  hestDefaultRespFileEnable
+int hestElideSingleEnumType  -->  hestDefaultElideSingleEnumType;
+int hestElideSingleOtherType  -->  hestDefaultElideSingleOtherType
+int hestElideSingleOtherDefault  -->  hestDefaultElideSingleOtherDefault
+int hestElideSingleNonExistFloatDefault  -->  hestDefaultElideSingleNonExistFloatDefault
+int hestElideMultipleNonExistFloatDefault  -->  hestDefaultElideMultipleNonExistFloatDefault
+int hestElideSingleEmptyStringDefault  -->  hestDefaultElideSingleEmptyStringDefault
+int hestElideMultipleEmptyStringDefault  -->  hestDefaultElideMultipleEmptyStringDefault
+int hestNoArgsIsNoProblem  -->  hestDefaultNoArgsIsNoProblem
+(since removed: int hestGreedySingleString  -->  hestDefaultGreedySingleString)
+int hestCleverPluralizeOtherY  -->  hestDefaultCleverPluralizeOtherY
+unsigned int hestColumns  -->  hestDefaultColumns
+char hestRespFileFlag  -->  hestDefaultRespFileFlag
+char hestRespFileComment  -->  hestDefaultRespFileComment
+char hestVarParamStopFlag  -->  hestDefaultVarParamStopFlag
+char hestMultiFlagSep  -->  hestDefaultMultiFlagSep
+
+• 2016-11-22 20:02:54 +0000 (Tue, 22 Nov 2016) svn Revision: 6295
+in hest/parseHest.c _hestSetValues(): fixed long-standing BUG: no longer call calloc(0,n)
+when there are zero items in a parse-0-or-more situation
+
+• 2013-09-02 22:53:38 -0500 (Mon, 02 Sep 2013) svn Revision: 6085
+Two small changes that facilitate some long-wanted functionality
+(1) ABI CHANGE: in the hestOpt struct there is now a new source field to indicate how
+it was that that option got its information.  The values come from the new hestSource*
+enum (e.g. hestSourceDefault vs hestSourceUser).
+
+(2) API CHANGE: hestOptAdd returns the index of the just-added option in the opt array;
+to facilitate accessing it and its source field later.  Now, its easy to see which
+options were actually satisfied by explicit info from the user, vs being filled with
+default info.  As previously noted in teem/src/TODO.txt; "hest NEEDS a way to learn if a
+given option was learned from the command-line, or from the given default string.
+Various tricks have been used to work around this limitation, but its gotten too
+annoying," so this is apparently a long-wanted improvement. It turns out that it only
+took a few lines of code.  The age and impenetrability of the hest code likely is at
+fault.
+
+• 2019-12-09 10:10:51 +0000 (Mon, 09 Dec 2019) svn Revision: 6382
+API NEW: added hestParm->dieLessVerbose and hestParm->noBlankLineBeforeUsage to permit
+tightening up how usage information is printed. dieLessVerbose works in hestParseOrDie to
+skip printing the info and the glossary in case of parse error; these are still shown
+with --help. noBlankLineBeforeUsage just skips printing the one blank line prior to
+Usage, but as a hack it is added to the end of Info to keep the two separated.  These are
+currently not actually used anywhere within Teem, but GLK uses them for his SciVis class
+code.
+
+• Added const-correctness to hestParm *hparm usage in hestParse(),
+hestUsage(), hestGlossary(), and hestInfo().  Some const-correctness for hestOpt *opt
+usage was also added for private functions.
+
+• 2019-08-07 22:37:37 +0000 (Wed, 07 Aug 2019) svn Revision: 6348
+More long overdue hest-related const correctness: the hestCB struct's parser function
+should have been taking a const char * as a second arg (various files in other libraries
+updated to conform).
+
+========= nrrd =========
+
+These first ~six are opportunistic fixes now that the major version is getting bumped:
+
+• 2025-09-09 15:18:04 +0000 (Tue, 09 Sep 2025) svn Revision: 7377
+API CHANGE: NrrdKernel->numParm (# parms to kernel) is now renamed NrrdKernel->parmNum
+This is for consistency with naming conventions everywhere else in Teem.
+
+• 2025-08-15 19:04:55 -0500 (Fri, 15 Aug 2025) svn Revision: 7283
+(related to Direct I/O change in "air" above)
+API CHANGE: In nrrd.h's NrrdFormat struct, removed the third integer field:
+   usesDIO;   /* this format can use Direct IO */
+since it is moot now.
+
+• Sun Oct 19 10:20:14 2025 -0500 git short hash: c99116ec
+API CHANGE for an over-due change: removing these globals naming environment variables:
+nrrdEnvVarDefaultWriteBareTextOld = "NRRD_DEF_WRITE_BARE_TEXT"
+nrrdEnvVarDefaultCenterOld = "NRRD_DEF_CENTER"
+Instead use nrrdEnvVarDefaultWriteBareText and nrrdEnvVarDefaultCenter, respectively.
+
+• Tue Oct 21 18:06:15 2025 -0500 git short hash: 5ce3a0d1
+API CHANGE: nrrdResampleNrrdSet(NrrdResampleContext *rsmc, const Nrrd *nin) is gone,
+instead use nrrdResampleInputSet(NrrdResampleContext *rsmc, const Nrrd *nin) which
+has been here already, and all Teem code already used it. nrrdResampleNrrdSet
+was a poor choice of function name when the new brains of "unu resample" was written.
+
+• Tue Oct 21 17:42:08 2025 -0500 git short hash: a07d436c
+API CHANGE: The max number of parameters that a NrrdKernel could use is renamed:
+  NRRD_KERNEL_PARMS_NUM --> NRRD_KERNEL_PARM_MAXNUM
+This is for consistency with GAGE_ITEM_PREREQ_MAXNUM, PULL_THREAD_MAXNUM,
+PULL_VOLUME_MAXNUM, PULL_BIN_MAXNUM, _PULL_NEIGH_MAXNUM, PUSH_THREAD_MAXNUM.
+
+API CHANGE: Similarly (and far less consequentially), the maximum number of
+empirically determined optimal scale-space sample locations is renamed:
+  GAGE_OPTIMSIG_SAMPLES_MAXNUM --> GAGE_OPTIMSIG_SAMPLE_MAXNUM
+(for same consistency reason as above)
+
+API CHANGE: The NrrdKernel has a new member "int parm0IsScale";
+which answers the question: does the kernel look at parm[0] and use parm[0]
+to scale the entire kernel function shape?  All the old NrrdKernels did this
+(could blur with a stretched out tent function with nrrdKernelTent), but many
+new kernels did not have this.  To help keep track of this, the function
+nrrdKernelParm0IsScale was created, but now it is redundant, so:
+API CHANGE: nrrdKernelParm0IsScale has been removed.
+Instead of nrrdKernelParm0IsScale(kern) use kern->parm0IsScale.
+
+API CHANGE: some related globals are now removed:
+  double nrrdDefaultKernelParm0 = 1.0  (code now uses 1.0 directly)
+  double nrrdDefaultSpacing = 1.0  (resampling code now uses 1.0 directly)
+  char *const nrrdEnvVarDefaultKernelParm0 = "NRRD_DEFAULT_KERNEL_PARM0";
+  char *const nrrdEnvVarDefaultSpacing = "NRRD_DEFAULT_SPACING";
+GLK created nrrdDefaultKernelParm0 and nrrdDefaultSpacing with the thinking
+that magic constants must be avoided, or at least localized to one place
+(like defaultsNrrd.c), but the likelihood of wanting to change these values
+is basically zero, at least zero compared to the total confusion created
+by these defaults getting accidentally set to something besides 1.
+
+• Sun Oct 19 09:51:15 2025 -0500 git short hash: 45f1ae4b
+A big over-due API CHANGE, plus other things related or done concurrently:
+** The global variable nrrdStateVerboseIO is gone,
+** replaced by NrrdIoState->verbose (usually nio->verbose)
+It was crazy madness that the verbosity of Nrrd IO functions was not part of the NrrdIoState struct
+that is nearly as old as the Nrrd struct; now that is fixed.
+There is instead a new global nrrdDefaultVerboseIO which initializes NrrdIoState->verbose;
+this is a real improvement: checking and tweaking nio->verbose inside the various IO functions
+is a lot closer to being thread-safe than checking and tweaking global nrrdStateVerboseIO.
+Related: the environment variable name nrrdEnvVarStateVerboseIO = "NRRD_STATE_VERBOSE_IO"
+used by nrrdStateGetenv to set nrrdStateVerboseIO can still be used to set nrrdDefaultVerboseIO;
+that functionality is entirely preserved, though with a deprecation warning from nrrdDefaultGetenv.
+Instead, use the new nrrdEnvVarDefaultVerboseIO = "NRRD_DEFAULT_VERBOSE_IO"
+
+Also, fixed a BUG in error messages when using "data file: LIST" or friends:
+unu project: error parsing "tmp.nhdr" as nrrd for -i,--input option:
+[nrrd] nrrdLoad: trouble reading "tmp.nhdr"
+[nrrd] nrrdRead: trouble
+[nrrd] _nrrdRead: trouble reading NRRD file
+[nrrd] _nrrdFormatNRRD_read: trouble parsing data file info |ata_159.raw|
+[nrrd] _nrrdReadNrrdParse_data_file: trouble with number of datafiles
+[nrrd] _nrrdDataFNCheck: number of datafiles (40) doesn't divide into number of axis 2 slices (570)
+See the bug?  What the heck is |ata_159.raw|?  It should have been |/path/to/data_159.raw|
+The issue was in now parseNrrd.c/_nrrdReadNrrdParse_data_file() over-wrote nio->line,
+so the string at nio->line + nio->pos passed to nrrdFieldInfoParse[nrrdField_data_file]
+is no longer the same afterwards, when the error message is generated.
+
+Also, fixed a BUG that no one noticed in now NRRD files are read.
+The file format spec https://teem.sourceforge.net/nrrd/format.html
+says: "Extra whitespace after the field descriptor and before the line termination is ignored."
+But that was either never implemented, or that functionality was lost long ago.
+It is now fixed, but in a conservative way: there are fields for which trailing white space MIGHT
+actually be an intended part of the data:
+nrrdField_comment, nrrdField_content, nrrdField_keyvalue, nrrdField_data_file
+so for those fields, the trailing white-space is NOT trimmed.  For other fields, it is (right-)trimmed.
+Also note that the NRRD format spec is vague on what counts as "whitespace" in this context;
+so this bug fix uses the same notion of whitespace as currently used to separate the info in
+per-axis field descriptors: space and tab.
+
+To help debug this:
+API NEW: nrrdDescribeMore() is a modern version of nrrdDescribe(), which is kept as is, and
+API NEW: "unu describe" is the command-line interface to nrrdDescribeMore()
+Unlike "unu head", the new ability is to scrutinize fields in the Nrrd struct as it was set up
+after nrrdRead(), rather than just printing text lines of a NRRD file header.
+
+unrelated concurrent change (I suppose an API CHANGE):
+change nrrdGetenvString(char **envStr, const char *envVar)
+--> nrrdGetenvString(const char **envStr, const char *envVar)
+because you shouldn't be modifying the value of the environment variable so learned
+
+• API NEW (ABI CHANGE): added new field to NrrdIoState: declineStdioOnTTY,
+described as follows in nrrd.h:
+      ON READ and ON WRITE: If nrrdLoad is about to read from
+      filename "-" (via nrrdRead), or nrrdSave is about to write to
+      "-" (via nrrdWrite), regardless of file format (which isn't
+      known on read, though may be known on write): if this is
+      non-zero, decline to nrrdRead from stdin or nrrdWrite to stdout
+      IF stdin/stdout seems to be a terminal (as per isatty()). On
+      read, this avoids cryptic stalls as something tries to read
+      from the terminal (where a human is unlikely to be typing the
+      file contents), and on write, this avoids clobbering the
+      terminal with screens of non-printing characters. Using
+      filename "-=" is a sneaky filename to name stdin/stdout while
+      over-riding this declination and force that IO to happen.
+While nrrdHestNrrdNoTTY largely handled this problem on input when a plain Nrrd is being
+read via hest, it didn't help with situations where the thing being input is a some
+struct different from but wrapped around Nrrd. The terminal being clobbered by a NRRD
+file being written is also a long-standing annoyance that really needed fixing.  Thus,
+the new (global!)  nrrdDefaultDeclineStdioOnTTY is set to AIR_TRUE, which sets the
+default value of NrrdIoState->declineStdioOnTTY.
+
+• NRRD FILE FORMAT CHANGE: There is a new "magic", NRRD0006, used for
+three new things:
+  - new ZRL encoding
+  - new 2D image orientation spaces nrrdSpaceRightUp and nrrdSpaceRightDown
+  - new "data file: SKIPLIST" capability, which is like "data file: LIST"
+    but every filename is preceded by a number of bytes to skip into that
+    file (and then a space)
+These are described more below
+
+• 2023-07-13 22:28:30 +0000 (Thu, 13 Jul 2023) svn Revision: 7092
+API NEW: nrrdHestNrrdNoTTY for parsing a Nrrd via hest callbacks (hestCB), but with the
+restriction that "-" does not work as a synonym for stdin if stdin is a terminal: we only
+want to try to read from files being piped in.  This enables some LONG-wanted
+functionality in unu, wherein the -i input can default to "-", while still allowing "unu
+cmd" to trigger some usage info. After this was implemented, similar functionality was
+added deeper, in nrrdLoad and nrrdSave, controlled by the NrrdIoState->declineStdioOnTTY
+(see above)
+
+• 2022-09-08 16:49:23 +0000 (Thu, 08 Sep 2022) svn Revision: 6822
+(similar change in airSanity() above) removing from nrrd/simple.c nrrdSanity() the static
+int _nrrdSanity which meant that nrrdSanity() can only go through its tests
+once. Considering that nrrdSanity() is called by _nrrdRead (which underlies nrrdRead and
+nrrdLoad, there is a small possibility that this slows down something that rapidly reads
+in many many files. It will be great to see profiling results that reveal nrrdSanity() to
+be a bottleneck; in the mean time it is much more sane to have less global state.
+
+• 2021-11-27 11:17:32 +0000 (Sat, 27 Nov 2021) svn Revision: 6485
+Adding long-wanted functionality in specifying ranges (for histograms and quantization):
+zero-centering, so that range is centered around zero even if input is not, because
+sometimes the values are logically centered around zero (e.g. an array of vorticity
+values) and processing should respect that.  New boolean-ish zeroCenter argument added to
+nrrdRangePercentileFromStringSet(), and accessed via new -zc command-line option to unu
+quantize, histo, histax
+
+• 2020-10-09 11:54:45 +0000 (Fri, 09 Oct 2020) svn Revision: 6435
+(BUG fixed) It turns out that nrrdSliceSelect (and the unu sselect that calls it) never
+fully worked: it only worked for slicing along the slowest axis.  It now seems to work
+along any axis
+
+• 2022-09-02 03:30:26 +0000 (Fri, 02 Sep 2022) svn Revision: 6796
+While using "unu subst" to help enumerate some possibilities for Wordle 439, GLK realized
+that nrrdApply1DSubstitution had a BUG from 2004: if value0 was mapped to value1 via the
+substitution table, you should stop traversing the table. Bug was that with continued
+table traversal, value1 could be mapped to something else, counter to intended semantics.
+
+• 2022-10-04 08:45:45 +0000 (Tue, 04 Oct 2022) svn Revision: 6839
+fixing very long-standing BUGs in the nrrdFClamp[] and nrrdDClamp[] function arrays,
+which are supposed to clamp float or double args to the representational range of a given
+nrrdType.  However, because, for example, the extrema INT_MAX is not exactly
+representable as a float, you could have the clamping completely failing, by creating a
+positive value that, upon casting to int, would overflow the representation and become
+negative.
+
+• (Jan 2015) added nrrdEncodingZRL, a very simple run-length encoding
+scheme, which only compresses strings of zeros, but not other values (ZRL = zero
+run-length). Based on code from (University of Chicago Physics) Prof.  William Irvine's
+lab.  NRRD headers can say "encoding: zrl" to use this.
+
+• 2015-01-19 16:24:09 +0000 (Mon, 19 Jan 2015) svn Revision: 6209
+for describing array orientation, added nrrdSpaceRightUp (oriented like upper right
+Cartesian quadrant, number I) and nrrdSpaceRightDown (oriented like typical raster
+coordinates)
+
+• 2016-05-25 13:07:59 -0500 (Wed, 25 May 2016) Revision 6287
+Added nrrdNaNSet() for setting all values in floating-point nrrd to NaN
+
+• 2019-12-01 23:33:30 +0000 (Sun, 01 Dec 2019) svn Revision: 6361
+fixing a REALLY (~20 year) old BUG in how single-precision floats are sprintf'ed to a
+string: should be using %.9g, not %.8g ! The consequence of this is that one array, saved
+a nrrdTypeFloat array to a NRRD file with ascii encoding would result in loss of
+information; yikes!  The same bug hobbled saving to plain text files, though until the
+NrrdIoState->moreThanFloatInText update, expectations for lossless representations in
+plain text were probably (hopefully?) low.
+
+• Fixing long-standing BUG when clamping output in nrrdArithAffine and
+nrrdArithIterAffine, in the case that the min output value is larger than the max output
+value (that is, the caller wishes, completely legitimately, to reverse the sense of the
+values).  Affects "unu affine"
+
+• Sun Mar 22 20:58:15 CDT 2015 revision 6220
+fixed BUG caused by saving a 3D 1-by-X-by-Y array to an image format like PNG, with
+fields like space directions that can be usefully preserved in the image meta data: 3
+space directions were saved in the image, not two.  This fix is a pretty simplistic one,
+but it is used in a very targeted way, so it seems safe
+
+• 2016-06-24 15:12:54 +0000 (Fri, 24 Jun 2016) svn Revision: 6289
+Fixed long-standing BUG that nrrdQuantize didn't corrently handle min > max.  These days
+airIndex and airIndexClamp do handle min > max, but old code in nrrdQuantize used
+AIR_CLAMP prior to airIndex, which defeated those smarts
+
+• 2017-03-24 19:13:31 +0000 (Fri, 24 Mar 2017) svn Revision: 6305
+in nrrdWrite: fixed basic BUG of unknown duration: units are only saved out if there were
+also labels. Now units are written if there are units to write
+
+• 2019-03-03 00:14:23 +0000 (Sun, 03 Mar 2019) svn Revision: 6346
+fixing what seems to be a long-standing BUG in nrrd/apply1D.c: unu rmap crashed when
+given a map with only a single control point
+
+• 2015-05-05 06:10:39 +0000 (Tue, 05 May 2015) svn Revision: 6246
+fixing long-standing BUG in nrrd/encodingAscii.c that put extra newline at end of ascii
+encoding of 2D array
+
+• 2015-01-26 16:27:48 +0000 (Mon, 26 Jan 2015) svn Revision: 6213
+fixed long-stading BUG in nrrd/formatText.c: key/value pairs were never saved correctly
+in "plain" text files
+
+• 2022-11-11 16:38:15 +0000 (Fri, 11 Nov 2022) svn Revision: 6863
+with revision 2368, which was part of adding new "space" orientation meta-data,
+nrrdField_space_directions WERE said to be valid in text files, but not space, space
+dimension, space units, or space origin; this was probably a BUG.  Now that nio->bareText
+can be false, these should all be allowed in text files.
+
+• 2019-12-01 23:54:30 +0000 (Sun, 01 Dec 2019) revision 6363
+API NEW (ABI CHANGE): Added NrrdIoState->moreThanFloatInText and associated enums and
+globals, as well as nrrdStringValsParse[] for parsing nrrdType values from a string, so
+that plain text files can have a "#type:" field that records the type of values in the
+text file being something other than just single-precision float.  This capability can be
+enabled per-shell with:
+    export NRRD_DEFAULT_WRITE_BARE_TEXT=false
+    export NRRD_DEFAULT_WRITE_MORE_THAN_FLOAT_IN_TEXT=true
+"unu env" now prints info about nrrdDefaultWriteMoreThanFloatInText.
+
+• 2016-02-19 06:37:10 +0000 (Fri, 19 Feb 2016) svn Revision: 6269
+Added nrrdBinaryOpAddClamp, nrrdBinaryOpSubtractClamp, nrrdBinaryOpMultiplyClamp
+(available as unu 2op +c, -c, xc) for clamping arithmetic output to value range of output
+type
+
+• 2016-02-14 03:59:58 +0000 (Sun, 14 Feb 2016) svn Revision: 6267
+- Added nrrdKernelParm0IsScale() to answer an important question about a NrrdKernel that
+is unfortunately not knowable from the kernel itself: is parm[0] something that behaves
+like a scale parameter (for stretching or shrinking the kernel) or is it some other
+parameter of kernel shape.  Various annoyances have originated with not remembering this
+about each kernel.
+- fixed long-standing BUG that prevented "unu resample" from correctly downsampling when
+using parameter-free kernels like ctmr or bspln3.  This in turn exposes a deficiency in
+the NrrdKernel struct: there's no reliable way to know if parm[0] has the same effect it
+does as with older kernels like nrrdKernelTent, which is what motivated adding
+nrrdKernelParm0IsScale(). The fact of needed such a function is a sign that the
+NrrdKernel should be more self-aware.
+
+• 2023-06-14 21:22:09 +0000 (Wed, 14 Jun 2023) svn Revision: 6933
+Added utility function nrrdKernelDerivative() which tries to determine the (1st)
+derivative of the given nrrdKernel. If it cannot (or doesn't know for sure), it returns a
+new fake kernel, nrrdKernelFlag.
+
+• 2023-06-20 09:24:42 +0000 (Tue, 20 Jun 2023) svn Revision: 6953
+Completely re-wrote:
+  nrrdKernelHann, nrrdKernelHannD, nrrdKernelHannDD
+  nrrdKernelBlackman, nrrdKernelBlackmanD, nrrdKernelBlackmanDD
+nrrdKernelHann had an incorrect Taylor expansion, which meant that for the past 20 years
+it evaluated to 1.1 near and at 0, not 1.0; yikes. But actually, no Taylor expansion was
+needed for nrrdKernelHann and nrrdKernelBlackman, and the Taylor approximations for the
+other kernels are now C0 with the correct formula, via a new mechanism for scaling the
+higher Taylor term. With the improved quality of these functions, and the new punting of
+doing purely single-precision evaluation (see the commit message), meetNrrdKernelAllCheck
+can stop giving such an usually huge margin-of-error to the test of these kernels (fixed
+with revision 6954).
+
+• 2015-03-23 01:56:42 +0000 (Mon, 23 Mar 2015) svn Revision: 6222
+fixed BUG caused by saving a 3D 1-by-X-by-Y array to an image format like PNG, with
+fields like space directions that can be usefully preserved in the image meta data: 3
+space directions were saved in the image, not two.
+
+• Added nrrdKernelDiscreteGaussianGoodSigmaMax and removed
+gageDefStackBlurSigmaMax (or gageDefStackBlurGoodSigmaMax?), which gave the same
+information but was stupidly named and located
+
+• Added nrrdCastClampRound(), which combines casting with optional clamping
+and optional rounding
+
+• Added nrrdMeasureL4 (basis of unu project -m l4): the L4 vector norm
+
+• The support of nrrdKernelDiscreteGaussian can now be no smaller than 2.5; it used to be
+as small as 0.5.  The problem is that the current calculation of the cutoff in terms of
+"sigma" presumes the property of the continuous Gaussian, but lead to problems with
+scale-space interpolation at small scales with typical cutoffs like 6. This needs
+revisiting: need to determine a better criterion for where the discrete gaussian kernels
+value fall the fraction implied by a sigma cutoff in the continuous case.
+
+• Added NrrdBoundarySpec. In its present state, this is almost not worth having, but it
+nicely addresses the repeated annoyance of sometimes needing both a nrrdBoundary enum
+value and a (scalar) padding value in a single place.  There may later be need for other
+kinds of parameterized boundary behaviors (such as padding with vector values, or some
+kind of parameterized high-order continuation).  Also added functions
+nrrdBoundarySpecNew, nrrdBoundarySpecNix, nrrdBoundarySpecCopy, nrrdBoundarySpecCheck,
+nrrdBoundarySpecParse, nrrdBoundarySpecSprint, and nrrdBoundarySpecCompare
+
+• 2016-08-18 18:06:28 +0000 (Thu, 18 Aug 2016) svn Revision: 6294
+Added nrrdMetaDataNormalize() to nrrd library, and moved brains of "unu dnorm" into
+that. Also added added forward-looking airEnum nrrdMetaDataCanonicalVersion
+
+• Added nrrdUnaryOpTauOfSigma and nrrdUnaryOpSigmaOfTau, as ways of accessing
+airTauOfSigma and airSigmaOfTau, respectively.
+
+• Added nrrdOrientationHave airEnum. This should enable some long-needed ways of changing
+the level of knowledge about orientation (nrrdOrientationReduce is too limited), but this
+has yet to actually be implemented
+
+• Added nrrdSpaceVectorParse for parsing the "(x,y,z)"-style formatting of vectors used
+for Nrrd's space origin and per-axis space directions
+
+• 2017-08-29 20:33:36 +0000 (Tue, 29 Aug 2017) svn Revision: 6313
+Added nrrdFormatPNGsRGBIntent* enum and nrrdFormatPNGsRGBIntent airEnum for representing
+sRGB rendering intent in PNG files, the PNGsRGBIntentKnown and PNGsRGBIntent fields in
+NrrdIoState for controlling their use in png_set_sRGB_gAMA_and_cHRM, the nrrdSRGBGamma
+and nrrdSRGBGammaInverse utility functions for doing sRGB gamma one value at a time, and
+nrrdArithSRGBGamma for doing sRGB gamma on a whole array
+
+• 2016-06-30 17:08:33 +0000 (Thu, 30 Jun 2016) svn Revision: 6291
+In nrrd/measure.c _nrrdMeasureVariance(): old idea for computing variance in a single
+pass was too clever: has terrible precision whenever mean is far from zero, so now
+variance computed in two passes (mean first, then variance), with a somewhat complicated
+macro.
+
+• 2016-02-22 09:14:48 +0000 (Mon, 22 Feb 2016) Revision 6271
+now nrrdCheapMedian can handle 4D arrays
+
+• now, nrrdMeasureHistoMode only looks at existing values, and, if
+input histogram was all zeros, the output value is nan
+
+• nrrdSpaceVecExists is now const-correct
+
+========= unrrdu / unu =========
+
+• Sun Oct 19 09:51:15 2025 -0500 git short hash: 45f1ae4b
+(as described above)
+Added "unu describe" to scrutinize Nrrd* struct after being nrrdRead in
+
+• 2025-08-15 16:43:53 +0000 (Fri, 15 Aug 2025) svn Revision: 7272
+Added "unu built" for a simple-to-parse display of the info that nrrdSanity prints (but
+now nrrdSanity is no longer part of what CMake builds).  HEY make note of new configure
+CMake stuff
+
+• 2023-07-13 22:46:18 +0000 (Thu, 13 Jul 2023) svn Revision: 7093
+Since pretty much forever, some commands like "unu unquantize" required the
+the -i input to NOT have a default; which meant you had to e.g.:
+   unu cmd ... | unu unquantize -i - | unu cmd ...
+The reason was that "unu foo" was the implicit request for help information about command
+foo, but if "-i" defaults to "-", and all other options had sensible defaults (as in unu
+unquantize) then there's no difference between running "unu foo" with all its sensible
+defaults, versus running "unu foo" hoping to get info about foo, which wouldn't work
+because it would hang, waiting expectantly on stdin for the -i input. So, in the past,
+one option had to artificially NOT have a default, just so that running without arguments
+would trigger help info.  BUT, now that some unu commands are aware of the cutting-edge
+technology of "isatty(STDIN_FILENO)" to see if stdin is a terminal (either directly in
+the unrrdu cmd code, or via the new nrrdHestNrrdNoTTY hest callback, this is no longer a
+problem. You can now:
+   unu cmd ... | unu unquantize | unu cmd ...
+and, running "unu unquantize" in the terminal will fail to read from "-" and will
+trigger minimal usage info, including:
+  For more info: "unu unquantize --help"
+which now works usefully (in part thanks to hestParm->respectDashDashHelp)
+The unu commands improved this way are:
+  unu block
+  unu ccsettle
+  unu cksum
+  unu dnorm
+  unu grid
+  unu head
+  unu minmax
+  unu unorient
+  unu unquantize
+
+• 2023-06-11 08:03:33 -0500 (Sun, 11 Jun 2023) svn Revision: 6889
+Added "unu uncmt" for altering comments and strings in a given C(99) file.  Arguably does
+not belong in unu, but neither does "unu undos". So be it: this is the swiss-army knife
+that GLK wants. "unu uncmt" arose from a need in GLK's SciVis class to check for explicit
+use of types "float" or "double" in student C code; but occurences of "float" or "double"
+in comments and string literals generate false positives. "unu uncmt" has also become part
+of pre-processing header files for Python's cffi.cdef() in python/cffi/exult.py
+
+• 2022-09-14 18:07:28 +0000 (Wed, 14 Sep 2022) svn Revision: 6830
+Since the beginning of "unu", if a command had an error parsing a non-empty command-line,
+it would print two things: the usage line, and then the glossary. GLK has decided that
+getting that glossary is too annoying.  The "tend" command-line tool has always abstained
+from showing the glossary, and that was the right choice. This chage was made to the
+PARSE() macro (privateUnrrdu.h, though now USAGE_OR_PARSE is used) that all the unu
+commands use.  To see the glossary use "unu <cmd> --help".
+
+• 2022-09-05 10:15:22 +0000 (Mon, 05 Sep 2022) svn Revision: 6801
+The "ninspect" volume inspection tool -- a handy way to make a single color image that
+summarizes the contents of a 3D scalar volume with different kinds of projections -- used
+to be an "experimental" application.  Now it has been removed as such, and has been
+converted to a new "unu ninspect" command.
+
+• See notes below about the new "unu ilk"
+
+• 2022-07-18 21:25:20 +0000 (Mon, 18 Jul 2022) svn Revision: 6515
+When "unu" starts, it now uses ioctl(TIOCGWINSZ) to learn the number of columns in the
+terminal, and then communicates that to hest so that usage info can now take up more than
+79 columns, in your terminal windows that are probably now wider than 79 columns.
+
+• Added unrrduCmdMain() to the unrrdu library.  With time, this could be the
+implementation of main() in unu and tend, though at least unu currently does some
+unu-specific things that wouldn't make sense in this function.  Can still be used by
+other programs (especially outside of Teem) that would benefit from this little bit of
+infrastructure.  unrrduCmdMain is currently used for the software that GLK writes for his
+SciVis class.
+
+• 2016-04-01 06:14:12 +0000 (Fri, 01 Apr 2016) svn Revision: 6274
+"unu resample" has a new way to specify resampling on an axis, by what the inter-sample
+spacing should be along that axis in the result, e.g. s1 or s2.5, even for axes that use
+the "space" fields (i.e. not just per-axis spacing)
+
+• 2021-11-27 11:17:32 +0000 (Sat, 27 Nov 2021) svn Revision: 6485
+"unu quantize", "unu histo", "unu histax" now have "-zc" argument to turn on zeroCenter
+passed to nrrdRangePercentileFromStringSet() (see above)
+
+• 2015-07-09 17:28:24 +0000 (Thu, 09 Jul 2015) svn Revision: 6252
+Since you often want to do multiple projections along multiple axes, now you can give
+multiple axes to -a (with matching number of outputs to -o) as well as multiple measures
+to -m
+
+• 2014-07-21 02:26:20 +0000 (Mon, 21 Jul 2014) svn Revision: 6207
+"unu quantize" now has -g gamma for darkening or brightening just prior to quantizing
+
+• 2022-09-03 11:57:43 +0000 (Sat, 03 Sep 2022) svn Revision: 6797
+"unu minmax" now has a "-sl" option for putting all output on a single line.
+With a single input, the line looks like:
+<min> <max> [non-existent]
+where the final "non-existent" only shows up if there are non-existent values.
+With multiiple inputs, this is prefixed by the filename.
+
+• Added "unu basinfo" for manipulating the basic (per-array, not per-axis) info about a
+nrrd.  Limited utility now, will expand later, but currently includes: setting "content",
+setting "space" and "space origin" fields, and manipulating the key/value pairs
+(including nixing them all).
+
+• "unu axinsert" has useful new options:
+  -k for setting the axis kind, making it easier to set it to something
+     other than the "stub" kind.
+  -mm for setting the axis min/max, which is useful if the output is
+     going to something like "unu dnorm" which behaves differently if
+     all input axes have the min/max set.
+  -s for padding after the axinsert (seeing that that is the most common
+     thing to happen after axinsert), using the boundary specification
+     given by -b.
+
+• "unu axinfo" has new -dir option for adding a space direction, and now
+  "-sp nan" can now unset spacings (thanks to hestSource)
+
+• Added "unu grid" for generating a list of grid locations in world space
+
+• Added "unu aabplot" (one of the hidden commands) for generating ASCII-art
+  box-plots
+
+• Added "unu hack" (another hidden commands) for facilitating one-off hacks
+
+• 2016-02-09 19:46:34 +0000 (Tue, 09 Feb 2016) svn Revision: 6265
+"unu join" now has -k option for setting kind on output
+
+• "unu dnorm", when dealing with an axis that had min/max info, used to treat the axis as
+node centered.  Now, it is created as node-centered only if the centering is set to
+nrrdCenterNode, otherwise it treats it as cell centered.
+
+• 2019-12-14 07:37:31 +0000 (Sat, 14 Dec 2019) svn Revision: 6383
+added unrrduHestFormatCB as a way to parse a nrrdFormatType airEnum value from a string,
+but with some extras (in same way as unrrduHestEncodingCB has long offered a way to parse
+a nrrdEncodingType with extra info). Now: "btext", "ptext", "baretext", and "plaintext"
+are all ways of saying: use nrrdFormatText, but force nrrdIOState->bareText = AIR_TRUE
+("unu save" help glossary only mentions "ptext"). This became needed now that some
+deployments of Teem (like for GLK's SciVis class) changed nrrdDefaultWriteBareText to
+AIR_FALSE.
+
+• "unu quantize" now has a -g option for setting gamma, after
+range determination and before quantization
+
+• "unu 1op taoofsig" (or just "unu 1op tos") and "unu 1op sigoftau" (or just
+"unu 1op sot") access nrrdUnaryOpTauOfSigma and nrrdUnaryOpSigmaOfTau
+
+• 2018-12-05 17:11:01 +0000 (Wed, 05 Dec 2018) svn Revision: 6342
+the nominal program self-identification, passed as 3rd arg to unrrduCmdMain,
+is now used for error reporting (as it always should have been)
+
+• "unu project" description of projections (from src/nrrd/nrrdEnums.h
+NRRD_MEASURE_DESC) now includes long-omitted "sum" and "project"
+
+• "unu sselect" error message improved
+
+• API CHANGE that likely no one cares about: unrrduUsageUnu(), which prints
+the list of the unu commands, now takes a final argument to allow also
+listing the hidden commands, now shown with "unu all"
+
+========= bane =========
+
+API CHANGE: renamed away some needless underscores:
+  _baneOpacCalcA --> baneOpacCalcA
+  _baneOpacCalcB --> baneOpacCalcB
+  _baneTRexRead --> baneTRexRead
+  _baneTRexDone --> baneTRexDone
+GLK is genuinely curious if anyone's code breaks because of this
+
+========= elf and tijk (Thomas Schultz) =========
+
+• elf: Support fitting spherical harmonics using double precision
+  elf: Can now perform Kernel Density Estimation of functions on the sphere
+  tijk: offers direct access to conversion matrices
+
+• tijk: Implemented tijk_8o3d_sym_approx
+
+========= ell =========
+
+• 2015-12-07 16:21:36 +0000 (Mon, 07 Dec 2015) svn Revision: 6262
+added ell_quadratic_root airEnum, ell_2v_angle_f, ell_2v_angle_d,
+ell_quadratic, ell_2m_eigenvalues_d, and ell_2m_eigensolve_d
+
+• Added ell_2m_1d_nullspace_d, ell_3m2sub_eigenvalues_d, and
+ell_3m2sub_eigensolve_d for working with 2x2 matrices, and the 2x2 upper
+sub-matrix of a 3x3 matrix. Used for gageParm.twoDimZeroZ
+
+• new macros in ell/ellMacros.h: ELL_2V_SCALE_ADD3, ELL_4V_NORM_TT,
+ELL_2V_EXISTS, ELL_4M_SET, ELL_2V_SCALE_TT, ELL_2V_NORM_TT,
+ELL_43M_INSET_TT, ELL_2M_INV and ELL_4V_ADD3
+
+========= gage =========
+
+• Wed Oct 22 06:05:31 2025 -0500 git short hash: 17230dd4
+API CHANGE: The gageScl item rename: gageSclGeomTensTen --> gageSclGeomTens7Ten
+(this had been flagged as needing attention for TeemV2).
+In the gageScl airEnum, "gtenten" and "geometry tensor tensor" still refer to this item, as
+do new equivalent names "gten7ten" and "geometry tensor
+
+• 2013-08-29 15:03:36 -0500 (Thu, 29 Aug 2013) svn Revision: 6065
+A big API CHANGE (except GLK would be shocked if anyone was using this code): interface
+to scale-space blurring, gageStackBlurParm in gage/stackBlur.c, has been reconstructed.
+This recognizes that there has to be the single way of completely representing how
+scale-space is sampled, and storing that representation.  Until now the "meet" library
+had its own terse text-based way of representing much of the same information (which
+seems to have originated in "Deft", a C++ Teem-based vis tool that is no longer
+developed) that gage and other gage-using tools (like gprobe) could not benefit from;
+instead relying on a sea of command-line options (like -ssn, -ssr, -ssu, -sso).  None of
+this would keep pace with ongoing and future expansions of how gage handled scale-space.
+
+* Created gageSigmaSampling: an enum (and airEnum) for the various possible strategies
+  for how a range of sigmas will be sampled to create a "stack".  This is better than the
+  previous awkward (and mutually exclusive) use of "uniform" (uniform in what? sigma, it
+  turns out) and "optimal" (optimal in what sense?) flags.
+
+* (the API CHANGE): The insides of gageStackBlurParm have been significantly re-arranged.
+  For example:
+  - the terribly named "sigmaMax" is now more specific: dgGoodSigmaMax
+    and gageStackBlurParmSigmaMaxSet has been replaced with
+    gageStackBlurParmDgGoodSigmaMaxSet
+  - the new NrrdBoundarySpec is now used
+  - the "scale" vector is now more specific: "sigma"
+  - dataCheck has been removed: it was a bad idea to allow turning
+  off a sanity check that a given stack actually came from a given
+  original volume.  Now this is done via checksum.
+
+* gageStackBlurParmSigmaSet is the new way of setting the sigmas to sampling, instead of
+  gageStackBlurParmScaleSet, which still works as before, but will probably be removed in
+  the next release
+
+* Now the whole gageStackBlurParm can be parsed from a single string via
+  gageStackBlurParmParse (and via the command line via gageHestStackBlurParm), and
+  written back to a single string gageStackBlurParmSprint.  This generalizes how meet, on
+  behalf of pull, had already contrived a text-based way of describing the scale-space
+  sampling that pull was doing.  The format is as follows:
+
+  <minSigma>-<#samples>-<maxSigma>[-flags][/parm[/parm...]]
+  flags (single chars only): -----------------------
+  '1' for one-dim blurring along fastest axis
+      (useful only for scale-space demos/experiments)
+  'r' turn OFF blurring kernel renormalization
+  'u' for uniform sigma -OR- 'o' for optimalL2L2
+      as the old-fashioned (meet-based) way of setting
+      the sigma sampling strategy
+  'p' for needSpatialBlur
+  parms (in any order): --------------------------
+  k=blurring kernel spec, e.g. dg:1,6
+  b=boundary spec, e.g. pad:10
+  s=sigma sampling, from the gageSigmaSampling airEnum
+  v=verbose
+  dggsm=dgGoodSigmaMax
+
+  Because meet has already been using this string for things that aren't specifically
+  about how to pre-compute blurrings, gageStackBlurParmParse and gageStackBlurParmSprint
+  can support learning and writing extra flags and extra parms.  These are:
+  extraFlag: 'n' for derivative renormalization by scale
+  extraParm: dnbias=bias on derivative normalization,
+  which replaces the old way of doing this via "+bias" after the flags
+
+* Blurring can now sometimes be done in frequency space: if the kernel is
+  nrrdKernelDiscreteGaussian and the boundary is wrap, and if Teem has been compiled with
+  FFTW compiled, then the blurring can be done in frequency space (which is MUCH more
+  efficient for large kernels). In the rare cases where spatial blurring is required, the
+  gageStackBlurParm->needSpatialBlur field can be set.
+
+* The key/value pairs that are saved to the blurring volumes have
+  been updated to reflect all the above changes.
+
+* API CHANGE: removed setting renormalization from gageStackBlurParmKernelSet;
+use gageStackBlurParmRenormalizeSet instead
+
+* API CHANGE: with addition of nrrdKernelDiscreteGaussianGoodSigmaMax,
+removing gageDefStackBlurSigmaMax
+
+* API CHANGE: rename gageOptimSigPlot() -> gageOptimSigErrorPlot(), and the
+guts of gageOptimSigCalculate have been completely re-implemented.
+
+* API NEW: Added gageStackBlurParmCopy and gageStackBlurParmCompare
+
+* API NEW: Added gageParm.twoDimZeroZ, which is a hacky way of getting gage to better
+conform to expectations when working with 2D data.  Rather than meddling with the
+underling convolution code, this is currently only for indicating the eigensystems really
+are 2D instead of 3D, which has implications for how eigenvalues are ordered.  Because
+this is a new feature, not all gageKinds know about it, and not all items within a
+gageKind that should respect it may actually respect it.  The utility of this for
+debugging things on 2D data outweighs the awkwardness of this hack.
+
+• 2015-08-08 02:31:36 +0000 (Sat, 08 Aug 2015) svn Revision: 6254
+Added a new gageKind, gageKind2Vec or 2vector, for 2-component vectors, unlike the
+3-component vector gageKindVec.  Not named gageKindVec2 in order to simplify
+searching/grepping
+
+* Added gageSclHessDotPeakness, a positive blobness measure based on simple
+dot-product with Hessian eigenvalues
+
+* gageStackBlurParmSigmaSet() now prints (if verbose > 1) more information
+about the scales used and the differences between them
+
+========= dye =========
+
+• 2016-01-21 23:51:45 +0000 (Thu, 21 Jan 2016) svn Revision: 6264
+Added dyeSpaceLCH for LAB LCH space (polar coords of LAB)
+
+========= limn =========
+
+• 2024-07-24 19:34:44 -0500 (Wed, 24 Jul 2024) svn Revision: 7233
+API NEW: Added implementation of:
+  Philip J. Schneider.
+  "An Algorithm for Automatically Fitting Digitized Curves".
+  In Graphics Gems, Academic Press, 1990, pp. 612–626.
+  https://dl.acm.org/doi/10.5555/90767.90941
+This is with everything starting with "limnCbf"; code in splineFit.c.  Even though the
+author shared code:
+http://www.realtimerendering.com/resources/GraphicsGems/gems/FitCurves.c this is a new
+implementation, which more capabilities driven by GLK's interests. The long comment at
+the start of splineFit.c describes more of the capabilities, but the main feature is
+cleanly handling closed loops of points.
+
+• 2015-12-03 04:12:25 +0000 (Thu, 03 Dec 2015) svn Revision: 6260
+Added limnPolyDataSuperquadric2D
+
+========= seek =========
+
+• 2023-07-21 23:00:04 -0500 (Fri, 21 Jul 2023) svn Revision: 7137
+API CHANGE: added another field to seekContext: double gradMagAvg to record the average
+(world-space) gradient magnitude, over the vertices in an isosurface (when there isn't a
+gageContext). This is useful for some computations on signed distance fields.
+
+========= ten / tend =========
+
+• 2025-09-14 09:28:38 +0000 (Sun, 14 Sep 2025) svn Revision: 7430
+Added "tend lmdemo" command as self-contained and hopefully instructive demo of the
+levmar library from https://users.ics.forth.gr/~lourakis/levmar/index.html.
+Levmar is a "dependency" enabled via CMake's TEEM_USE_LEVMAR or an "external"
+enabled via GNUmake's "TEEM_LEVMAR= make".
+
+• "tend satin" added "-scl" option for scaling object
+
+• restructured macros for how tend commands are defined as unrrduCmds
+(no functionaliy change)
+
+========= pull / puller =========
+
+• Adding pullFlagZeroZ and pullContext->flag.zeroZ, and "puller -zz", as a hacky way of
+working with 2-dimensional images: with this flag on, the 3rd world-space coordinate
+("z") of particles is contrained to be 0.0 at every iteration.  This also uses the new
+gageParm.twoDimZeroZ so that finally pull can be used to do 2D feature detection, like
+ridge or valley lines.
+
+• Added pullFlagConvergenceIgnoresPopCntl and pullContext->flag.convergenceIgnoresPopCntl
+and "puller -cipc": changes in population do not prevent convergence
+
+• changed required verbosity level to get the per-bin "." status update from 1 to 2,
+changed some other verbose messages
+
+• in puller, the new gageStackBlurParm-containing meetPullVol can be more completely set
+from the command-line.
+
+========= moss / ilk =========
+
+The moss library was created to contain a re-implementation of a project for warping and
+stitching images into mosaics, that GLK (as a PhD student) wrote for an image-processing
+class in ~2002. The "ilk" command-line tool was built around it.  Moving the project code
+into moss was never finished, and the result was kind of a confusing mess.  In July 2022,
+the moss library was largely re-written (though still incomplete: still no mosaic'ing).
+
+• 2022-07-18 18:20:26 +0000 (Mon, 18 Jul 2022) svn Revision: 6512
+API CHANGE: Hopefully finished re-visit/re-write of moss, to fix some very long-standing
+memory BUGs that hindered reliable use of "ilk" (now "unu ilk") Things like
+mossSamplerFill and mossSamplerEmpty are gone, and probably other changes.
+
+• 2022-07-18 21:28:08 +0000 (Mon, 18 Jul 2022) svn Revision: 6517
+Following through on long-intended addition of ilk image transformer into unu; "unu ilk"
+is the new command.
+
+• 2022-07-19 21:38:23 +0000 (Tue, 19 Jul 2022) svn Revision: 6522
+added mossFourPointTransform for sampling a rectangle that appears in some image under
+perspective distortion, as defined by the 4 apparent corners of the rectangle.  Available
+in "unu ilk" (but not plain "ilk") via the -xyc option.
+
+• 2022-07-19 22:43:25 +0000 (Tue, 19 Jul 2022) svn Revision: 6524
+in CMake's building of Teem, moved original "ilk" tool to "EXPERIMENTAL"
+
+========= coil =========
+
+• 2025-09-18 08:02:11 +0000 (Thu, 18 Sep 2025) svn Revision: 7453
+API CHANGE: renamed coilMethod->numParm --> parmNum (and used more uints)
+
+========= meet =========
+
+• API CHANGE: Consistent with the re-org of gageStackBlurParm as the single central place
+for everything about how to pre-compute a stack of blurred imags, the meetPullVol no
+longer contains fields redundant with gageStackBlurParm, and instead contains a
+gageStackBlurParm pointer (NULL if no scale-space is needed).
+
+• API CHANGE: meetPullVolLeechable has different parameters; now uses return value only
+for biff (cleaner that way), with separate parameters for learning leechability and why
+not, if not.
+
+• API CHANGE: meetPullVolLoadMulti no longer takes a gageStackBlurParm, but the sad new
+function meetPullVolStackBlurParmFinishMulti plays the role of setting the blurring
+kernel and the boundary behavior in those meetPullVol that didn't have one explicitly set
+in their command-line description
+
+• API CHANGE: The internals of parsing the "<minSigma>-<#samples>-<maxSigma>[-flags]"
+format string for specifying a scale-space blurring have been moved from meetPullVolParse
+to gageStackBlurParmParse.  Things should still work the same, except for setting the
+scale-space derivative normalization bias with "+bias" after the flags
+
+========= other command-line tools =========
+
+• Removed "undos" stand-alone tool (likely used by no-one other than GLK); functionality
+moved to "unu undos" (one of the hidden commands there; see all hidden commands with "unu
+all").  In the CMake build, undos was an "experimental application", now it is gone.
+
+• 2017-11-17 18:40:23 +0000 (Fri, 17 Nov 2017) svn Revision: 6326
+Fixed long-standing confused reversal of CR and LF in the description and variable naming
+in "unu undos" (unrrdu/undos.c) even if it operated mostly correctly.  Also, re-wrote and
+commented some of the logic so that the intended operation in all cases is clearer
+
+• 2019-11-23 23:29:52 +0000 (Sat, 23 Nov 2019) svn Revision: 6358
+In the "ilk" (now "unu ilk") image manipulation tool, now using hestSource to clean up
+logic of background parsing. Some long-standing memory bugs do not seem to be present
+anymore (so says valgrind)
+
+• "gprobe" now sometimes set orientation info in output; this needs to be revisited and
+expanded into something more general
+
+• 2017-08-29 20:41:04 +0000 (Tue, 29 Aug 2017) svn Revision: 6317 ...
+  2017-08-29 20:38:53 +0000 (Tue, 29 Aug 2017) svn Revision: 6315
+"overrgb" now has ability to parse srgb as -g gamma, and added -srgb intent
+option. Related: added -srgb intent to "unu quantize"
+
+• fixed use of uninitialized variable in src/bin/vprobe.c
+
+• fixed memory leak in nrrd's use of FFTW (hadn't been calling fftw_destroy_plan)
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Teem 1.11.0 (2012-12-21) https://sourceforge.net/projects/teem/files/teem/1.11.0/
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+It has been too long since the release of version 1.10 in Dec 10 2008.
+Below is a complete description of the work since then.  The files in this
+release are:
+
+teem-1.11.0-src.tar.gz    : The complete Teem source tree
+NrrdIO-1.11.0-src.tar.gz  : The source tree for NrrdIO, a minimal library
+                            for doing IO of NRRD files (a subset of Teem)
+
+========== Coding and Testing
+
+teem/src/Coding.txt is now an updated description of the basic coding
+coding conventions and rational that characterize Teem
+
+The teem/Testing directory has a growing number of tests.  Thanks to James
+Bigler there is now teem/testDataPath.h.in which provides a means for tests to
+load in test datasets from the teem/data directory.
+
+"TEEM_LIB_LIST" is now near places in code, makefiles, and any other file
+were all the Teem libraries are listed or named.  This helps make sure that
+all libraries are listed in the same consistent dependency order, and to
+identify what needs changing when libraries are added or removed.
+
+========== CMake building =========
+
+This is more mature now, thanks to work of David Cole at Kitware.  For
+example, he (quoting commit message) fixed problems when building applications
+on the Mac that try to use the Teem built into Slicer: Compute Teem_ROOT_DIR
+based on the detected location of TeemConfig.cmake and make all path
+references to files in the installed TeemConfig.cmake relative to
+Teem_ROOT_DIR.
+
+========== Python wrappers ==========
+
+teem/python and teem/python/ctypes are new directories;
+teem/python/ctypes includes "teem-gen.py" (thanks to Sam Quinan),
+which automatically generates "teem.py", a complete ctypes wrapper for
+all of Teem using ctypeslib (based on gccxml).
+
+========== command-line binaries ==========
+
+CHANGE: Removed affine, pos2idx, and idx2pos.  The exact same functionality is
+available in unu affine (that is, you can actually give it five constants, no
+nrrds necessary), unu w2i, and unu i2w, respectively.  Goal is to prune the
+total number of Teem binaries.
+
+NEW: Added a program called "gprobe" (general probe) which subsumes the
+functionality of vprobe and pprobe.  It allows you to probe on any grid of any
+dimension, or a point, or the original grid.  Eventually gprobe will be
+multi-threaded.  gprobe also supports (copied from pprobe) using discrete
+differences to measure derivatives of scalar quantities, in order to validate
+the items for the analytic derivatives
+
+NEW: miter now handles axis data that encodes the scaling in the
+spaceDirection vector
+
+NEW: unu commands or functionality:
+* setting the UNRRDU_QUIET_QUIT environment variable (just setting it,
+  or setting it to anything) now prevents a chain of unu commands from
+  generating a huge list of documentation for all the commands.
+* unu diff (nrrdCompare)
+* unu fft (nrrdFFT)
+* unu i2w and w2i new (see above)
+* unu axinfo: can now set per-axis kind with unu axinfo -k, and
+  can now set information for multiple axes by giving multiple
+  arguments to -a
+* unu affine (nrrdArithAffine and nrrdArithIterAffine)
+* unu quantize, unu histo, and unu histax: the -min and -max arguments now
+  accept things of the form "x%", where the "%" suffix indicates that the
+  bound is specified in terms of a percentile.  The percentiles are determined
+  with a histogram, the size of which in "unu quantize" can be set with "-hb"
+* unu acrop (nrrdCropAuto)
+* unu sselect (nrrdSliceSelect)
+* unu 1op expm1 (nrrdUnaryOpExpm1)
+* unu 2op -w and unu 3op -w for explicit selection of which argument
+  determines output shape.  Prior to this, the output shape was always
+  determined entirely by the first non-constant nrrd
+  (nrrdArithIterBinaryOpSelect and nrrdArithIterTernaryOpSelect)
+* unu 2op rrand (nrrdBinaryOpRicianRand)
+* unu 3op gauss (nrrdTernaryOpGaussian)
+* unu 3op rician (nrrdTernaryOpRician)
+* unu jhisto can take a single input and compute joint histogram of
+  slices along some axis (for example RGB color channels). This
+  removes the need to do a separate prior "unu dice". The functionality
+  may later migrate down to nrrdHistoJoint (by Benjamin Trofatter)
+* unu slice and unu project can usefully act on 1-D input.
+* unu resample's "-s" option now excepts "/<float>" for dividing number of
+  samples by something, "+=<uint>" and "-=<uint>" for adding or
+  subtracting some number of samples, as well as "a" for resampling
+  that preserves the aspect-ratio of the resampled axes
+* unu cksum (nrrdCRC32)
+Also, the end of the intro paragraph in the unu command usage/docs now
+identifies the underlying nrrd library function call that implements
+the command
+
+========== Changes with libraries  ==========
+
+Michel Audette made many code changes across Teem (no API changes) to fix
+Win64 warnings, and to bring Nrrd up to date with the NrrdIO in ITK, and
+then Gordon Kindlmann revisited these in 2012 to resynch again, prior
+to the 1.11 release.
+
+API NEW: All libraries have a const int named "<libname>Present"
+(e.g. airPresent, hestPresent, biffPresent, ...).  These can be used to
+programmatically asses which libraries are part of a given
+libteem shared library.  Can also look at meetTeemLibs.
+
+---------- meet ----------
+
+This is a new library, which by design depends on all the other libraries, and
+thereby can serve as a common point (one could say a meeting point) for
+accessing things uniformly through-out Teem, regardless of what library they
+are in.  For example:
+
+* meetAirEnumAll() allocates and populates an NULL-terminated array of all
+the airEnums in Teem (manually maintained).  meetAirEnumAllPrint() prints
+this array to a file.
+
+* meetNrrdKernelAll() allocates and returns a NULL-terminated array of all
+the NrrdKernels in Teem
+
+* meetHestGageKind() is a uniform way of parsing gageKind's from the
+command-line.  Now used by pprobe, vprobe, gprobe, deconv, and mrender.
+
+* meetAirEnumAllCheck() runs airEnumCheck() on all airEnums
+
+* meetTeemLibs is an argv-style (NULL-terminated array of char*) list of all
+the Teem libraries in this build
+
+* meetNrrdKernelAllCheck() runs nrrdKernelCheck on all kernels, and
+also numerically tests that nrrdKernelBlahD is in fact the derivative
+of nrrdKernelBlah.
+
+---------- elf, tijk ----------
+
+These are new libraries, created by Thomas Schultz to support visualization
+(elf) and computation (tijk) of high-order tensors and spherical harmonics.
+Elf depends on Tijk and will be the counterpart of ten for higher-order DW-MRI
+modeling (if you're wondering about the name, look up "elf" in a German
+dictionary ;-) Elf includes functions that implement the core of the recent
+EuroVis10 paper by Schultz and Kindlmann ("A Maximum Enhancing Higher-Order
+Tensor Glyph")
+
+---------- air ----------
+
+API CHANGE: removed AIR_32BIT and airMy32Bit from air.h, which had allowed
+Teem-using libraries to learn if they are on a 32-bit or 64-bit platform.
+Now, nothing in the Teem code is specific to this distinction, so learning it
+has been removed from the build process, and it is no longer available via
+AIR_32BIT or airMy32Bit.  Also, airInsane_32Bit has been removed as one of the
+possible returns of airSanity().
+
+API CHANGE, but not really:
+* removed _AIR_SIZE_T_CNV and _AIR_PTRDIFF_T_CNV, which were never intended to
+be in the public API anyway; these are the %-prefixed conversion or formatting
+sequences for size_t and ptrdiff_t.  Unfortunately these are
+platform-specific, and maintaining them on all platforms got to be too
+annoying.  So now its done via the new airSprintSize_t and airSprintPtrdiff_t
+and a tmp buffer
+* airMopAdd now returns 0. This facilitates its use in a sequence of calls
+being error-checked by looking for non-zero return values.
+
+API CHANGE: airEqvSettle, and hence airEqvMap, no longer return the maximum
+class ID after settling, they return the total number of different IDs
+
+API CHANGE: removed airEnumLast since it was never used in Teem
+
+API CHANGE: more removal of functions that aren't used or used only once in
+hest: airBinaryPrintUInt, airILoad, airFLoad, airDLoad, airIStore, airFStore,
+airDStore.  airIStore and airDLoad were created for hest, which is the only
+place they were used, now they have been moved to hest as static functions
+
+API CHANGE: (but actually not anything you would notice): Large patch for
+airEnum type. Use const char * instead of fixed length strings for the various
+airEnum components. This results in smaller library sizes and is more thread
+safe as those strings can be moved to the immutable read only parts of the
+teem library.
+
+API NEW: added airPtrPtrUnion which is a union of various pointers-to
+pointers, which exists solely for quieting compiler warnings about aliasing
+(often on the first argument to airArrayNew)
+
+API NEW: added airVanDerCorput() and airHalton() for Van Der Corput and Halton
+sequences, and a list of prime numbers in airPrimeList[].
+
+API NEW: airSprintSize_t and airSprintPtrdiff_t, for printing values of type
+size_t and ptrdif_t.
+
+API NEW: added airPrettySprintSize_t for printing a size_t value in a
+human-readable form, e.g. "3.3 MB" or "99 bytes"
+
+API NEW: added airSprintVecSize_t for printing a vector of size_t
+into a given (pre-allocated) string
+
+API NEW: added airStrcmp, which is like strcmp but safe to call on NULL
+strings
+
+API NEW: added airHeap, an implementation of a binary min-heap, built on top
+of airArray (by Thomas Schultz)
+
+API NEW: added airCrc32, for computing 32-bit CRCs on data, same what
+cksum does (made available via nrrdCRC32 and unu cksum)
+
+API NEW: Added airEnumCheck, a long-overdue function that checks on the
+construction and internal consistency of an airEnum. Given how tricky it can
+be to manually maintain these once they take up more than one page, this
+function is needed.  Many problems, some many years old, were fixed with this.
+
+API NEW: airRician and airLogRician computes Rician distribution function (and
+its log)
+
+API NEW: added AIR_ROUNDUP_UI and AIR_ROUNDDOWN_UI as unsigned int versions of
+rounding macros
+
+API NEW: added airEnumPrint to print contents of an airEnum. This has helped
+debug problems in the (compile-time) creation of the airEnums associated with
+gageKinds, many of which had long-standing errors.
+
+API NEW: added airRandMTStateGlobalInit() so that airRandMTStateGlobal could
+be used outside the context of the various random functions (like airDrandMT()
+or airSrandMT()) that normally allocate and initialize it as part of being
+called
+
+API NEW: added airStderr, airStdout, airStdin to give uniform access to the
+respective FILE *s from higher-level language wrappings around Teem (such as
+from python/ctypes, which doesn't automatically give you an easy way to refer
+to stdout/stderr/stdin)
+
+Bug fixes:
+ - airOneLine can now deal with legacy Mac text files, for which the line
+   termination is only a \r carraige return
+ - airStrcpy no longer has buffer over-runs.
+ - After some hand-wringing, removed run-time tests on signaling NaN
+(SNAN) from air/sane.c, since its too easy for the creation of an SNAN to
+generate warnings/errors that look like a real bug.  From r5258 commit:
+    As of July 4 2012 GLK decides that the signaling NaN tests are
+    more trouble than they're worth: the signal-ness of the NaN is not
+    preserved in double-float conversion for some platforms (so
+    airFP_SNAN == airFPClass_d(AIR_SNAN) has never been enforced), and
+    there are more platforms for which (apparently) passing AIR_SNAN to
+    airFPClass_d changes it to a quiet NaN, which defeats the purpose
+    of the test.  To summarize, given that:
+    ** AIR_NAN and AIR_QNAN are checked here to be quiet NaN, after
+       casting to both float and double,
+    ** quiet NaN "hi bit" is tested above, and that
+    ** quiet and signaling NaN are mutually exclusive,
+    skipping the signaling NaN tests is unlikely to undermine knowing
+    the correctness of the compile-time representation of NaNs.  So the
+    following line is now commented out for all platforms.
+
+Other:
+ - airSingleSscanf now recognizes "pi" as AIR_PI (adding to its special
+ handling of "inf" and "nan")
+
+---------- hest ----------
+Thanks to Bill Martin and Dave Weinstein, hest should now handle command-line
+options that contain spaces.  This had long been an annoyance with hest-based
+programs.  For example,
+
+  unu make -t "unsigned short"
+
+wouldn't work before, nor would
+
+  unu slice -i Picture\ 1.png      or    unu save -o Picture\ N.png
+
+But now they do work.
+[2025 GLK says: but that was a horrid hack, and for TeemV2 hestParse was re-written
+ from scratch, and now is a lot smarter about tokenizing and quoting]
+
+---------- biff ----------
+
+These changes are thanks to Michael Callahan, and represent the most
+systematic changes made in Teem to date.
+
+API CHANGE: BIFF_STRLEN is gone.  Because biffAddf exists (see next item),
+there is no reason for sprintf'ing into a local buffer, and then passing that
+to biffAdd.  The BIFF_STRLEN #define had existed previously as a convenience
+for this buffer length.
+
+API NEW: added biffMsgErrNum to learn (without looking inside biffMsg) number
+of error messages saved in a biffMsg
+
+API NEW: created the biffAddf function. This is biffAdd except that it takes
+in a format string and variable args, alleviating the need to build the error
+string before calling biffAdd.
+
+API NEW: created biffMovef and biffMaybeAddf functions to match the biffAddf
+function. Note that biffMovef requires the parameters to be reordered when
+moving from biffMove so that the error string is last.
+
+---------- hest ----------
+
+API CHANGE: added some long-overdue const-correctness to hest;
+argv and some other char* should be const.  Specifically:
+-HEST_EXPORT int hestParse(hestOpt *opt, int argc, char **argv,
++HEST_EXPORT int hestParse(hestOpt *opt, int argc, const char **argv,
+                           char **errP, hestParm *parm);
+-HEST_EXPORT void hestParseOrDie(hestOpt *opt, int argc, char **argv,
++HEST_EXPORT void hestParseOrDie(hestOpt *opt, int argc, const char **argv,
+                                 hestParm *parm,
+-                                char *me, char *info,
++                                const char *me, const char *info,
+
+API NEW: added hestParm->noArgsIsNoProblem, which makes it *not* an error for
+a hest-based program to be invoked with no command-line args, and to instead
+set all values entirely from given defaults.  This removes an annoying quirk
+in hest usage, whereby one of the command-line options had to be singled out
+as having no default value, even when a sensible default value exists, because
+running the program with no options would trigger printing usage info.  Now
+that you can use "--help" to get usage info, it should become more common to
+have programs that don't require any options and can be invoked without any.
+
+---------- nrrd ----------
+
+API CHANGE/NEW: made the NrrdKernelSpec* arg to nrrdKernelSpecSprint const,
+and added nrrdKernelSprint so that you can make a string representation of
+kernel/kparm pair, without having to create a NrrdKernelSpec
+
+API CHANGE: renaming nrrdKernelHermiteFlag to nrrdKernelHermiteScaleSpaceFlag
+
+API NEW: added nrrdRangePercentileSet and nrrdRangePercentileFromStringSet.
+These functions contain all the smarts previously located in unrrdu/quantize.c
+which handles range specifications in terms of percentiles of value
+distribution.
+
+API NEW: added nrrdArithIterBinaryOpSelect and nrrdArithIterTernaryOpSelect
+which are just like nrrdArithIterBinaryOp and nrrdArithIterTernaryOp, except
+that now you can explicitly specify which of the inputs is to be used as the
+template for the output array shape and size.  The logic with the old
+functions is that the first non-constant-valued nrrdIter determines the output
+shape, but this is limiting and led to some weird unu contortions. These are
+available via the "-w" options to "unu 2op" and "unu 3op"
+
+API NEW: nrrdCompare, nrrdAxisInfoCompare, and nrrdArrayCompare (available via
+"unu diff"). This was motivated by the desire to do more CTest tests, which
+depend on seeing if two given nrrds are really the same.  nrrdAxisInfoCompare
+compares fields in the NrrdAxisInfo structs, and nrrdArrayCompare compares
+values in an array.  nrrdCompare compares all fields in two nrrds.
+
+API NEW: added nrrdKernelCompare for determining two pairs of kernel/parms.
+This actually looks at the NrrdKernel pointer values, rather than comparing
+the results of evaluting the kernel methods.
+
+API NEW: added nrrdKernelCheck to make sure that a kernel is
+self-consistent.  Checks things like the kernel's reported support and
+integral, and making sure the various ways of evaluating the kernel
+all agree.
+
+API NEW: nrrdFFT as wrapper around new FFTW inclusion.  Uses
+fftw_plan_guru_dft so that you can compute the transform of any subset of the
+axes of a nrrd, which is not possible with fftw_plan_many_dft.  Accessible via
+"unu fft".
+
+API NEW: added nrrdCRC32 to call airCrc32 on nrrd->data (available via
+unu cksum)
+
+API NEW: added nrrdCropAuto. For doing cropping of a nrrd around some central
+portion that is interesting.  Projects slices down to a 1-D array of slice
+measurements, and measures cumulative sum of array starting from below and and
+from above, finding the cropping bounds in terms of some fraction of the total
+sum. Accessible via "unu acrop".
+
+API NEW: nrrdSliceSelect is effectively a combination of nrrdSlice and
+nrrdJoin, allowing one to create an output that is a collection of slices from
+some input (usable with unu sselect)
+
+API NEW: added nrrdArithAffine and nrrdArithIterAffine (accessible via unu
+affine), providing whole nrrd access to the AIR_AFFINE macro.
+
+API NEW: nrrdLoadMulti for reading a sequence of nrrds from similarly-named
+files, via a sprintf format string
+
+API NEW: NrrdResampleContext now has overrideCenter field, to be set via
+nrrdResampleOverrideCenterSet (available via unu resample -co).  The effect is
+to *over-ride* existing per-axis centering information, and use something
+else.  The existing NrrdResampleContext->center field (set via unu resample
+-c) was only to assert a centering when an input axis did know its centering.
+
+API NEW: NrrdResampleContext has a new nonExistent field, to hold value from
+new airEnum nrrdResampleContextNonExistent, to give more control over how
+resampling treats non-existent values (available via unu resample -ne).  Old
+behavior, and still the default behavior (as per
+nrrdDefaultResampleNonExistent) is a noop (nrrdResampleNonExistentNoop): let
+the non-existent values pollute the convolution sum.  Now, you can ignore
+non-existent values in two ways: nrrdResampleNonExistentRenormalize:
+renormalize weights of existent vals, nrrdResampleNonExistentWeight: just use
+weights of existent vals as is.
+
+API NEW: added nrrdSpacingStatus airEnum to help describe the possible
+nrrdSpacingStatus* enum values
+
+API NEW: nrrdUnaryOpExpm1, accessible via "unu 1op expm1", which is the
+inverse of nrrdUnaryOpLog1p (unu 1op log1p)
+
+API NEW: nrrdBinaryOpRicianRand is a binary op for adding Rician noise
+(available via unu 2op rrand)
+
+API NEW: nrrdTernaryOpGaussian and nrrdTernaryOpRician for evaluating Gaussian
+and Rician distributions; also available as "unu 3op gauss" and "unu 3op
+rician"
+
+API NEW: nrrdTernaryOpMaxSmooth and nrrdTernaryOpMinSmooth. These are like
+nrrdBinaryOpMax and nrrdBinaryOpMin, but the transition between the linear
+ramp and the constant value is smoothed by using erf(), where you control the
+width of the transition.  Available via "unu 3op max_sm" and "unu 3op min_sm"
+
+API NEW: nrrdTernaryOpLTSmooth and nrrdTernaryOpGTSmooth. These are like
+nrrdBinaryOpLT and nrrdBinaryOpGT, but the transition between 0 and 1 is
+smoothed by using erf(), where you control the width of the transition.
+Available via "unu 3op lt_sm" and "unu 3op gt_sm".
+
+API NEW: nrrdBoundaryMirror is a new behavior for dealing with samples outside
+the range of known samples, it implements mirroring.  Accessible via "unu
+resample -b mirror" and "unu pad -b mirror".  Like the other boundary methods,
+this isn't available in gage yet (gage only knows the equivalent of
+nrrdBoundaryBleed)
+
+API NEW: added some parameter-less kernels for Bsplines and their
+first, second, and third derivatives:
+cubic: nrrdKernelBSpline3, nrrdKernelBSpline3D, nrrdKernelBSpline3DD,
+       nrrdKernelBSpline3DDD (even though this is piece-wise constant)
+quintic: nrrdKernelBSpline5, nrrdKernelBSpline5D, nrrdKernelBSpline5DD,
+         nrrdKernelBSpline5DDD
+septic: nrrdKernelBSpline7, nrrdKernelBSpline7D, nrrdKernelBSpline7DD
+        nrrdKernelBSpline7DDD
+Also added third derivative of c4hexic, nrrdKernelC4HexicDDD
+
+API NEW: added nrrdKernelBSpline3ApproxInverse,
+nrrdKernelBSpline5ApproxInverse, nrrdKernelBSpline7ApproxInverse, and
+nrrdKernelC4HexicApproxInverse: Approximate numerical (but quite accurate)
+pre-filtering (inverse) discrete kernels that allow non-interpolating kernels
+nrrdKernelBSpline3, nrrdKernelBSpline5, nrrdKernelBSpline7, and
+nrrdKernelC4Hexic to interpolate.  There are better ways of doing these,
+especially for Bsplines (see Unser et al B-Spline Signal Processing IEEE TSP
+41(2)), but until that is implemented, these work fine, and trivially fit
+within the existing kernel framework
+
+API NEW: added nrrdKernelCatmullRom ("ctmr") and nrrdKernelCatmullRomD
+("ctmrd") kernels, which are parameter-less versions of "cubic:0,0.5" and
+"cubicd:0,0.5"
+
+API NEW: added nrrdKernelC5Septic (and nrrdKernelC5SepticD,
+nrrdKernelC5SepticDD, nrrdKernelC5SepticDDD), an 8-sample support piecewise
+septic (7th-order) polynomial which is C^5 continuous, and which accurately
+reconstructs up to quartic polynomials (errors show up when reconstructing
+quintics).  This is thus the most "accurate" kernel in Teem in the Taylor
+series sense.
+
+API NEW: added nrrdKernelBoxSupportDebug and nrrdKernelCos4SupportDebug,
+kernels with fixed shape of box and cos(pi*x)^4, respectively, with real
+support from -0.5 to 0.5, but with variable nominal support for exercising
+functions (like nrrd's resampling or gage's probing) that depend on kernel
+support. Also have nrrdKernelCos4SupportDebugD, nrrdKernelCos4SupportDebugDD,
+and nrrdKernelCos4SupportDebugDDD.
+
+API NEW: nrrdZeroSet zeros out the values in a nrrd
+
+API NEW: added nrrdMeasureNormalizedL2 and nrrdMeasureRootMeanSquare,
+available with "unu project -m nls" and "unu project -m rms".  With
+nrrdMeasureNormalizedL2 the division by N (the number of values) is
+outside the square root; with nrrdMeasureRootMeanSquare, its inside.
+
+API NEW: added nrrdMeasureCoV for coefficient of variation, available
+with "unu project -m cov"
+
+API NEW: nrrdProject and nrrdSlice (and unu project and unu slice) can
+now usefully act on 1-D arrays.  In these cases a new axis 1 is
+inserted prior to acting on them, which internalizes the "unu axinsert
+-a 1" idiom that had been the way of dealing with this in unu.
+
+BUG FIX: Fixed long-standing bug in nrrdShuffle: if the axis being shuffled
+had more than NRRD_DIM_MAX samples, nrrdShuffle was apt to write to the
+buff1[] string out of bounds as it documented (for the content string) how the
+samples were ordered. This was due to a cut-and-paste error using code from
+nrrdAxesPermute and nrrdReshape. Now, the permutation is documented only if
+the axis is shorter than some size, currently fixed at
+LONGEST_INTERESTING_AXIS==42
+
+BUG FIX: OS bug work-around from Dave Weinstein: There's a bug in fread/fwrite
+in gcc 4.2.1 (with OSX SnowLeopard). When it reads/writes a >=2GB data array,
+it pretends to succeed (i.e. the return value is the right number) but it
+hasn't actually read/written the data. The work-around is to loop over the
+data, reading/writing 1GB (or smaller) chunks.
+
+---------- ell ----------
+
+API NEW: added ell_3v_area_spherical_d, for computing area of spherical
+triangle spanned by given three vectors. Havent fully decided between
+requiring that vecs are normalized, versus normalizing them internally
+
+API NEW: added ell_3v_barycentric_spherical_d for barycentric coordinates (in
+triangles only) on the unit sphere
+
+API NEW: added ELL_4V_LERP_TT, ELL_2V_SET_TT, ELL_2V_COPY_TT, like all the
+other _TT macros it has a cast built-in.  Someday all the AIR_CASTs and
+_TTs need to be scrutinized.
+
+API NEW: added ell_4v_norm_f, and there are probably more like it coming
+
+API NEW: ELL_3MV_CONTR2, ELL_4V_ZERO_SET, ELL_2MV_MUL, ELL_2M_ROTATE_SET,
+ELL_9V_SUB, ELL_9V_LEN
+
+---------- gage ----------
+
+API CHANGE, sort of: the gageScl3PFilter_t function, which is the
+work-horse of how convolution is done to measure things, has a
+different API in order to gracefully support different derivatives.
+It is unlikely that this would be noticed outside Teem, so this is
+probably a non-issue.  Its part of the gage public API because other
+gageKinds (within Teem) use it.  This change was made in anticipation
+of gage supporting higher-order derivatives.
+
+API CHANGE(s), sort of: This is an API change in the sense that gage will work
+the same on most volumes, but will fail with error messages on some other
+volumes.  gage is now less permissive and less flexible about the types of
+volumes that it can work on: either per-axis spacings or space directions have
+to be set. All centerings, if known, have to be the same. This change created
+the oppportunity to basically rewrite gageShapeSet() and clean up its
+logic. Thus:
+
+* The gageParmDefaultSpacing, gageParmRequireAllSpacings and
+gageParmRequireEqualCenters values of the gageParm* enum have been removed,
+and so can't be used as arguments to gageParmSet()
+
+* The gageParm->defaultSpacing, gageParm->requireEqualCenters, and
+gageParm->requireAllSpacings fields have been removed from the gageParm
+struct.
+
+* The globals gageDefDefaultSpacing, gageDefRequireAllSpacings, and
+gageDefRequireEqualCenters are gone.
+
+The new behavior should be equivalent to both requireEqualCenters and
+requireAllSpacings being non-zero (true).
+
+Other API changes peripherally related to this:
+
+* The gageShape->volHalflen and gageShape->voxLen fields have been removed
+from gageShape; these were only set and meaningful in the context of when gage
+implicitly placed the volume in a bi-unit cube. Nothin in Teem (outside gage)
+used gageShape->volHalflen, and though something did use gageShape->voxLen, it
+was set the exact same values as gageShape->spacing, so anything using
+gageShape->voxLen can use gageShape->spacing instead.
+
+* void _gageShapeUnitItoW() in shape.c has been changed to static void
+shapeUnitItoW(), since nothing outside that source file needs to know about
+it.
+
+API NEW: added gageParmGenerateErrStr: a way of controlling if detailed errors
+are sprintfd to gage->errStr upon error (can slow things down)
+
+API CHANGE/NEW in some stack-related behavior. Now there is control over
+normalizing the weights in the reconstruction (of iv3s) across the stack
+(before this was always done, w/out any control), and, there is control over
+whether derivative measures are normalized stack position (scale). So:
+
+rename gageParmStackRenormalize --> gageParmStackNormalizeDeriv
+rename gageContext->stackRenormalize --> gageContext->stackNormalizeDeriv
+rename gageDefStackRenormalize --> gageDefStackNormalizeDeriv
+added gageParmStackNormalizeRecon
+added gageContext->stackNormalizeRecon
+added gageDefStackNormalizeRecon
+
+API CHANGE (but probably no one notices) gageStackBlur now takes gageKind
+instead of baseDim, and reports differences (in checking mode)
+accordingly. Also, gageStackBlur can now double as a checker on an existing
+array of pre-blurred volumes, at the cost of losing an opportunity for const
+correctness
+
+API CHANGE (unlikely to be noticed outside Teem): gagePoint's internal fields
+are no longer xi, yi, zi, xf, yf, zf; its been replaced by idx[4] and
+frac[4]. Internal to gage, this info is now properly used (fixing a bug!) to
+determine when the iv3s have to be refilled
+
+API CHANGE: NIXED globals gageErrStr and gageErrNum, which should have been
+removed a long time ago, with the intro of per-context errStr and errNum
+
+API NEW: two gageItems of interest to flow field vis were added (by Thomas
+Schultz) to the gageKindVec: gageVecStrain and gageVecSOmega
+
+API NEW: added gageItemPack, which stores a set of items related by
+ differentiation.
+
+API NEW: added orientationFromSpacing to gageParm, and to the gageShape. When
+enabled, gage respects the per-axis spacing settings, and uses that
+information to implicitly make an axis-aligned orientation definition, even if
+no full orientation info (as with space origin and space directions) is
+available. In pprobe/vprobe/gprobe, it is available via the -ofs command line
+flag.
+
+API NEW: the gageContext now has a new output field "double edgeFrac" which
+records, for the latest probe, the fraction of samples in the iv3 for which
+values had to be invented (currently always by bleeding) because the support
+of the kernels didn't fit completely inside the volume. This allows gage users
+to easily detect (without dealing with index space computations) whether the
+last probe location was at the edge of the volume.
+
+API NEW: gageStackVolumeGet which is first pass at function for facilitating
+caching of pre-blurred volumes for scale-space, encapsulating logic that had
+previously been handled individually by vprobe, main-pull, etc added some
+commented-out debugging printfs to gageShapeSet
+
+API NEW: ADDED gageErrStackSearch, a new error for failing to find the index
+position of a world-space stack probe position
+
+API NEW: added gageOptimalSigmaSet, to improve location of samples along sigma
+for Hermite-spline-based reconstruction of scale-space.  This smarts is
+available in vprobe and gprobe (and for some reason no pprobe) via "-sso"
+
+API NEW: added gageStackWtoI and gageStackItoW for doing world <--> index
+coordinate conversions along stack,
+
+---------- limn ----------
+
+API NEW: Added limnPolyDataCompress to prune unindexed vertices (By Thomas
+Schultz)
+
+API NEW: limnPolyDataJoin for concatenate any number of limnPolyDatas (By
+Thomas Schultz)
+
+API NEW: added limnPolyDataSpiralBetterquadric, made
+limnPolyDataSpiralSuperquadric be a wrapper around that
+
+API NEW: added limnPolyDataInfoTang for surface tangent aligned with the
+gradient of the first texture coordinate
+
+API NEW: limnPolyDataOctahedron, limnPolyDataCubeTriangles, limnPolyDataSquare
+
+API NEW: Added limnPolyDataNeighborList and limnPolyDataNeighborArray to find
+all vertex neighbors in a limnPolyData struct. (by Thomas Schultz)
+
+API NEW: limnPolyDataIcoSphere approximates the unit sphere by (repeatedly)
+subdividing the icosahedron. (by Thomas Schultz)
+
+API NEW: limnPolyDataSmoothHC: Simple method for mesh smoothing, implementing
+Vollmer et al., Improved Laplacian Smoothing of Noisy * Surface Meshes,
+Eurographics/CGF 18(3), 1999 (by Thomas Schultz)
+
+API NEW: limnPolyDataVertexNormalsNO: per-vertex normal generation for
+non-orientable surfaces (by Thomas Schultz)
+
+API NEW: Added limnPolyDataClipMulti to clip according to multiple values (to
+preserve a vertex, all thresholds have to be met). In contrast to the previous
+limnPolyDataClip, this actually clips triangles on the boundary.  Turned
+limnPolyDataClip into a wrapper to inherit this new functionality. (by Thomas
+Schultz)
+
+Fixed memory leak in limnPolyDataSpiralTubeWrap
+
+limnPolyDataVertexNormals now supports triangle strips and fans For
+unsupported types, an error is added to biff and 1 is returned
+
+---------- seek ----------
+
+API NEW/CHANGE: (Thanks to Thomas Schultz) Integrated code that implements
+Schultz/Theisel/Seidel: "Crease surfaces: From theory to extraction and
+application to diffusion tensor MRI." IEEE TVCG 2009.
+
+Main changes to the API:
+- Introduced seekType{Ridge,Valley}SurfaceT that implements the above paper
+(T stands for the transformed Hessian which is used in that approach)
+- Introduced seekType{Ridge,Valley}SurfaceOP that implements marching cubes
+based extraction with outer products for local orientations (for comparison)
+- Introduced seekItemHessSet (only required for T-based extraction; needs to
+be a gageItem that measures the Hessian in the scalar field)
+- Introduced seekEvalDiffThreshSet (only for T-based extraction; reasonable
+values are on the order of the strength parameter)
+- Added seekVertexStrength to simplify proper post-filtering of creases
+- Removed strengthMin (no longer needed)
+
+Implementation of marching cubes no longer has topology problems, and may have
+some other benefits, thanks to use of MC tables from the macet tool by Carlos
+Dietrich, described in, Dietrich et al. Edge Groups: an approach to
+understanding the mesh quality of marching methods. IEEE TVCG 2008 (Thanks to
+Carlos Dietrich and Thomas Schultz)
+
+---------- ten ----------
+
+API NEW: added tenGlyphBqd* functions to support T Schultz, GL Kindlmann.
+Superquadric Glyphs for Symmetric Second-Order Tensors. IEEE TVCG Nov/Dec
+2010, 16(6):1595-1604
+
+API NEW: added tenGageFiberCurving and tenGageFiberDispersion items to
+tenGageKind, to support P. Savadjiev, G. Kindlmann, S. Bouix, M. E. Shenton,
+C.-F. Westin Neuroimage Volume 49, pg 3175-3186 2010
+
+API NEW:
+int tenFiberProbeItemSet(tenFiberContext *tfx, int item);
+int tenFiberMultiProbeVals(tenFiberContext *tfx,
+                           Nrrd *nval, tenFiberMulti *tfml);
+Adds ability to set (via tenFiberProbeItemSet) a gage item that will be probed
+and saved at every vertex of a computed tractography path.  The probed values
+can be learned en masse via tenFiberMultiProbeVals.  This addition accompanied
+a significant change in the internal implementation of fiber tracking, but
+existing functionality should be all the same.
+
+API NEW: added two more items to tenGage: tenGageFARidgeLineAlignment and
+tenGageFARidgeSurfaceAlignment for looking at the alignment between
+eigenvectors of the Hessian of FA, and of the tensor itself
+
+API NEW: the tenModel struct is a way of describing multi-parameter models of
+the DWI signal, including single tensors, as well as other things.  Still very
+much under construction, API in flux
+
+API NEW: added tenRotateSingle_f for rotating a single tensor
+
+BUG FIX (or rather a 99% fix):
+ten/experSpec.c/tenDWMRIKeyValueFromExperSpecSet() had been saving DWI
+gradient directions to KVPs in the NRRD header with only "%g %g %g"
+instead of "%.17g %.17g %.17g" (the analog of which has been used for
+the rest of the floating-point nrrd meta-data for quite awhile).  This
+caused needless significant precision loss in how the gradients were
+saved. However, there is a still a subtle (almost negligible) change,
+caused by the normalization done at the end of
+ten/chan.c/tenDWMRIKeyValueParse().  The problem is that the computed
+norm of what should be a unit length vector is not *exactly*
+unit-length, so the normalization, which should sometimes be a no-op,
+actually changes the values very slightly.  Fixing this will require
+more thought or an API change.
+
+---------- mite/miter/mrender ----------
+
+Possible behavior change: Because of changes to gage above, miter and mrender
+can no longer render volumes that don't have any spacing or orientation info,
+as they could before.
+
+---------- pull ----------
+
+The "pull" library actually existed in release 1.10, but never quite
+worked.  Much of the Teem development since the last release has been
+for this library, and Raul San Jose Estepar has done a good chunk of
+this.  Now the pull library is the basis of:
+
+GL Kindlmann, R San Jose, SM Smith, C-F Westin.  Sampling and
+Visualizing Creases with Scale-Space Particles.  IEEE Trans. on
+Visualization and Computer Graphics, 15(6):1415-1424, 2009.
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Teem 1.10.0 (2012-12-20) https://sourceforge.net/projects/teem/files/teem/1.10.0/
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+It has been about three years since the last release 1.9.  Since that
+time, Gordon has been working on getting publications and a job (bye
+Red Sox, hello White Sox), but Teem development has continued.  Here
+is a summary of the changes that people might notice since Teem 1.9.
+The major API changes are likely to affect Teem-using software, the
+smaller API changes less so.  Only the most important API additions
+are listed.
+
+It is unlikely that there are functionality changes that are not
+accompanied by an API change.  So teem-using code should break first
+because of failures to link, not because of subtler behavioral chages.
+Best of luck, and remember to email teem-users:
+
+http://lists.sourceforge.net/lists/listinfo/teem-users
+
+in case of problems or questions.
+
+====================================================================
+Over-all Changes ===================================================
+====================================================================
+
+Thanks to the efforts of James Bigler and Andy Cedilnik, The CMake
+build system for Teem is mature, and should most certainly be used
+instead of the old GNUMakefiles.
+
+In particular, CMake now builds for Teem a single "mega" library that
+puts all the sub-libraries (air, biff, hest, etc) into a single place.
+There is currently no single "mega" *header* file.
+
+Thanks to Steve Pieper, there's a new demo of how CMake projects can
+use Teem in teem/UseTeemCMakeDemo
+
+Also thanks to Steve Pieper, Teem can now link with VTK's name-mangled
+versions of the PNG and zlib libraries, via the TEEM_VTK_* options in
+CMakeLists.txt
+
+Teem's CMake now generally refers to Teem as "Teem" instead of "TEEM".
+This may break existing things that used CMake to build and use Teem.
+
+Teem now optionally uses the "levmar" library from
+http://www.ics.forth.gr/~lourakis/levmar/
+as a new "external" for non-linear least-squares fitting.
+
+Anticipating the eventual removal of the GNUMakefile-based system for
+building Teem, all the architecture-specific directories (darwin.32,
+irix6.64, linux.32, linux.ia64, cygwin, darwin.64, irix6.n32,
+linux.amd64, solaris) have beem moved from the top-level teem
+directory into a new teem/arch subdirectory.  Perhaps confusingly,
+this includes the win32 directory, even though that was (directly)
+handled by GNUMake.
+
+====================================================================
+Major API Change ==================================================-
+====================================================================
+
+gage ---------
+
+gage_t is gone.  Use "double" instead.
+
+GAGE_ITEM_PREREQ_NUM changed from 5 to 6, then to 8, and also
+renamed to GAGE_ITEM_PREREQ_MAXNUM
+
+If a volume doesn't identify itself as cell- or node-centered, gage
+now assumes cell-centered (in Teem 1.9 gaged assumed node-centered).
+
+GAGE_KERNEL_NUM #define gone, now GAGE_KERNEL_MAX+1 plays its role
+
+rename GAGE_PERVOLUME_NUM --> GAGE_PERVOLUME_MAXNUM
+rename GAGE_ITEM_PREREQ_NUM --> GAGE_ITEM_PREREQ_MAXNUM
+rename GAGE_KERNEL_NUM --> GAGE_KERNEL_MAX
+rename GAGE_CTX_FLAG_NUM --> GAGE_CTX_FLAG_MAX
+rename GAGE_PVL_FLAG_NUM --> GAGE_PVL_FLAG_MAX
+
+The GAGE_PERVOLUME_MAXNUM (called GAGE_PERVOLUME_NUM in Teem-1.9) #define
+compile-time limit on the number of pervolumes in a context is
+gone. The pvl[] array (and ctx->pvlNum) is now dynamically managed
+with an airArray (ctx->pvlArr). As a result, the stackFslw[] array is
+now also allocated dynamically (whenever the stack is attached)
+
+FIXED long-standing bug (how long I don't know) in how the derivatives
+were normalized in volumes with only per-axis spacing (that is,
+lacking full orientation info)- some users have noticed this change
+
+added matrices ItoWSubInvTransp and ItoWSubInv to gageShape, to handle
+more general transforms from index to world space (now gage correctly
+handles shear from gantry tilt, for example).  Thus, REMOVED fwScale[]
+from gageShape, because its role has been taken over by
+ItoWSubInvTransp and ItoWSubInv.
+
+gageScl3PFilter2, gageScl3PFilter4, and gageScl3PFilterN now take a
+gageShape* as a mandatory first argument, because this stores the
+ItoWSubInvTransp and ItoWSubInv matrices used to transform gradients
+and hessians from index space to world space.  Note that this also
+shifts the responsibility for this transform from something that is
+strictly internal to gage, to something that is not strictly internal:
+each gageKind is now responsible for doing this transform as part of
+its filter() callback. In practice, there is no real change, because
+all existing kinds ended calling the same gageScl3PFilter2,
+gageScl3PFilter4, and gageScl3PFilterN functions, since they all
+operate per-component.
+
+ten -----------
+
+renamed enum value tenEstimateMethod* -> tenEstimate1Method*
+
+tenFiberTypeEvec1 now refers to the medium eigenvector NOT the
+principal one (that's tenFiberTypeEvec0)
+
+tenInvariantGradients_d() gone, replaced by more specific
+tenInvariantGradientsK_d() and tenInvariantGradientsR_d()
+
+The tenAnisoCalc_f function has been removed. It was one of the earliest
+and stupidest functions in the ten library, it was incapable of high accuracy
+for mode-related invariants, and it has been superceded by other functions.
+
+Specifically, use tenAnisoEval_f() or tenAnisoEval_d() to go from pre-computed
+eigenvalues to a particular anisotropy value, or use tenAnisoTen_f() or
+tenAnisoTen_d() to go from the full tensor value to an anisotropy value.
+Some functions (like tenAniso_Cl1 and related) make more sense computed from
+the individual eigenvalues, but others (like tenAniso_FA) can be quickly
+computed directly from the tensor value, no eigensolution required.
+
+The tenAniso_* enum and tenAniso airEnum are alive and well, and are used
+with the tenAniso{Eval,Ten}_{f,d} to identify which anisotropy to compute.
+
+====================================================================
+Minor API change, no one probably notices ==========================
+====================================================================
+
+air ---------
+airRandMTStateGlobal is no longer allocated at compile time. Now it is
+both allocated and initialized as needed at run time. This will create
+a memory-in-use-at-exit situation in valgrind.
+
+renames
+airBesselI0Scaled --> airBesselI0ExpScaled
+airBesselI1Scaled --> airBesselI1ExpScaled
+airBesselInScaled --> airBesselInExpScaled
+
+nrrd ------
+removed nrrdSpaceGet() (or its public declaration)- Teem's structs
+are open for reading.
+
+changed nrrdResample_t from float to double; whatever is released
+should use higher precision by default; other people can make it lower
+precision for their own builds if they want.
+
+changed NrrdIoState->byteSkip from int to long int, in keeping with
+type of offset argument to fseek
+
+changed _nrrdContainsPercentDAndMore(const char *str) to the slightly
+more general purpose: _nrrdContainsPercentThisAndMore(const char *str,
+char this) The only reason this was a public function was so that
+unrrdu/dice could use it, but unrrdu/dice should be changed to use the
+new nrrdSaveMulti anyway.
+
+As part of cleaning up kernels, some single-letter kernel
+identifications were removed from _nrrdKernelStrToKern(), because they
+were too clever, and too apt to be confused:
+
+- if (!strcmp("z", str)) return nrrdKernelZero;
+- if (!strcmp("b", str)) return nrrdKernelBox;
+- if (!strcmp("t", str)) return nrrdKernelTent;
+- if (!strcmp("c", str)) return nrrdKernelBCCubic;
+- if (!strcmp("cd", str)) return nrrdKernelBCCubicD;
+- if (!strcmp("cdd", str)) return nrrdKernelBCCubicDD;
+- if (!strcmp("q", str)) return nrrdKernelAQuartic;
+- if (!strcmp("qd", str)) return nrrdKernelAQuarticD;
+- if (!strcmp("qdd", str)) return nrrdKernelAQuarticDD;
+- if (!strcmp("g", str)) return nrrdKernelGaussian;
+
+unrrdu / unu -------
+
+nrrdStateKeyValuePairsPropagate is now set to AIR_TRUE if user hasn't
+already tried to set it via environment variable
+NRRD_STATE_KEYVALUEPAIRS_PROPAGATE
+
+gage --------
+
+GAGE_QUERY_BYTES_NUM changed from 8 to 16, then to 24
+
+Some variables in the gageContext that were "int" have now been
+changed to "unsigned int"; should have been done a lot time ago.
+* gageContext->fd
+* gagePoint->xi, yi, zi
+
+removed gageShapeUnitWtoI() and gageShapeUnitItoW() (the latter is
+still used internally as _gageShapeUnitItoW) because they were never
+outside of gage
+
+tweaked the logic of how continuous index-space space positions are
+mapped to discrete index space and offsets (in _gageLocationSet),
+and added test/indx function for debugging it.
+
+nixed the _gageStandardPadder() and _gageStandardNixer() functions
+that have long since been made obsolete (ever since gage stopped doing
+its own padding prior to probing)
+
+limn ---------
+limnPolyData completely reorganized to have multiple per-attribute
+arrays, but hopefully no one is using this as yet.
+
+limn now depends on gage.  In previous Teem versions, this was because
+of how the feaure extraction needed gage, but now it is simply because
+there is some plan of having more gage-specific per-vertex attribute
+information stored in the limnPolyData
+
+renames:
+limnObjectOFFRead -> limnObjectReadOFF
+limnObjectOFFWrite -> limnObjectWriteOFF
+limnPolyDataIVWrite -> limnPolyDataWriteIV
+limnPolyDataLMPDRead -> limnPolyDataReadLMPD
+limnPolyDataLMPDWrite -> limnPolyDataWriteLMPD
+limnPolyDataVTKWrite -> limnPolyDataWriteVTK
+limnPolyDataOFFRead -> limnPolyDataReadOFF
+
+ten ---------
+
+tenGradientParm no longer has "srand" flag, and now has an explicit
+"seed" value, to allow reproducible results. "tend grads" has different
+command-line options accordingly
+
+tenAnisoPlot(Nrrd *nout, int aniso, unsigned int res,
+int hflip, int whole, int nanout) now has the "hflip" horizontal
+flip flag.
+
+Removed the tenAniso_Cz anisotropy measure. It was never used in Teem,
+its not used in the literature, and its odd because its unbounded.
+
+renames:
+tenEvqOne --> tenEvqSingle
+tenMakeOne_f --> tenMakeSingle_f
+tenMakeOne_d --> tenMakeSingle_d
+tenSimulateOne_f --> tenSimulateSingle_f
+various tenPath... -> tenInterp...
+
+push -------
+The whole library is still under major revision, may get nixed
+entirely if "pull" does everythings its supposed to
+
+====================================================================
+Major API New ======================================================
+====================================================================
+
+nrrd -------
+negative byteskip now compatible with gzip encoding. Functionality
+contributed by Katharina Quintus
+
+nrrdDistanceL2() and nrrdDistanceL2Signed() are fast separable
+Euclidean distance transforms, based on code by Pedro Felzenszwalb,
+accessible in "unu dist"
+
+added nrrdKernelDiscreteGaussian, which implements the discrete
+Gaussian described by Lindeberg.  Thanks to Raul San Jose.
+
+added nrrdKernelSpecSprint(), which is like the opposite of
+nrrdKernelSpecParse(): it prints the kernel specification to a
+string. New code added to test/tkernel.c to demo this (as well as
+adding airMop use).  To make the sprinted result parse'able, it was
+discovered that sometimes the kernel's self-identification wasn't
+actually recognized as identifying that kernel by
+nrrdKernelParse(). This has been fixed
+
+gage -------
+
+added the ability to probe in "stacks"- where a single volume is
+replaced by an array of volumes, with some kind of kernel-based
+interpolation between volumes.  This could be used for generic 4-D
+volumes, but more importantly it allows probing in scale-space.
+Implementing this functionality was made possibly only because gage
+has always allowed multiple per-volumes to be probed simultaneously
+in a single context.  This needs to be documented elsewhere in detail,
+but briefly:
+gageStackBlur() pre-computes the stack with different blurring levels,
+gageStackPerVolumeNew() allocates the per-volume array
+gageStackPerVolumeAttach() attaches the per-volume array
+gageStackProbe() does the probing at given 4-D position
+gageStackProbeSpace() does 4-D probing, with extra tricks
+
+Internal change that shouldn't be much of an API change if at all: the
+value of the first, unknown, item (e.g. gageSclUnknown) changes from
+-1 to 0, and gageKinds have a new dynamicAlloc member to indicate if
+the kind is dynamically allocated. The semantics of other gageKind
+members has been clarified relative to this, and the initialization of
+the item tables (e.g. _gageSclTable in teem/src/gage/scl.c) is simpler
+now that the pre-requisite lists don't have to be filled out with -1s
+(because C guarantees that uninitialized struct members will be
+zero). If gage users assumed that the unknown item had value -1 (and
+in fact, vprobe and pprobe stupidly did make this assumption), then
+your code has to change.
+
+The reason that gageSclUnknown used to be -1 was that in the earliest
+days of gage (when its brains were actually part of the bane library),
+queries were represented by bitflags stored in int or a long long int,
+and I didn't want to waste a bit (the first one) on representing an
+item value that would never be used.
+
+limn ----------
+
+limnPolyDataSave() does auto-magic format detection based on filename
+suffix.
+
+ten --------
+
+tenDwiGageKind is the first dynamic gageKind, meaning that information
+is actually allocated in the gageKind, rather than being completely
+set at compile time (as is gageKindScl, gageKindScl, and tenGage).
+This is because the number of DWIs is set at run-time.  You currently
+create a tenDwiGageKind with tenDwiGageKindNew() and kill it with
+tenDwiGageKindNix().  You set all the stuff that needs to be set at
+run-time with tenDwiGageKindSet(), but the API of this function is
+pretty much guaranteed to change in future releases.  tenDwiGageKind
+also represents the first use of gageKind->data and
+gagePerVolume->data, which were added to gage long ago, but never
+exploited until now.
+
+added tenFiberSingle, a new struct (based on a class previously in
+Deft) for handling all information about a single tractography result
+(following a single direction from a single seedpoint). Also added
+functions for this: tenFiberSingleInit(), tenFiberSingleDone(),
+tenFiberSingleNew(), tenFiberSingleNix(), and most importantly,
+tenFiberSingleTrace(), which actually does tractography.
+
+added tenFiberMulti, a new struct for containing an array of
+tenFiberSingles (basically an airArray), which is the output of
+tenFiberMultiTrace().  The main purpose of this function is to break
+the existing one-to-one correspondance between seed points and fibers,
+which happens with multi-fiber tractography.
+
+added tenFiberMultiPolyData(), which converts an airArray of
+tenFiberSingle's into limnPolyData. Like the tenFiberSingle, this is
+another example of code moving from Deft into Teem.
+
+"tend fiber" has been enhanced to make more of this functionality
+available, so it is finally able to do multiple tracts from a
+given list of seedpoints, instead of being merely a one-track-pony.
+
+There are many, many more tenGage items now, including some from
+Thomas Schultz, see teem/src/ten/ten.h for the full details.  The
+proliferation of these has actually led to some changes in gage's
+compile-time limits, and in the future we may have to move to a more
+modular system where items are added dynamically at run-time.  How to
+do this without breaking the existing API will be tricky.
+
+seek --------
+New library for doing things like isosurfacing and ridge surface
+extraction.  API will be in flux for some time.
+
+pull --------
+New library for particle systems. API will be in flux.
+
+====================================================================
+Minor API New, not such a big deal =================================
+====================================================================
+
+air ---------
+addded airRandMTSanity() to check return of airUIrandMT_r against
+sequence of known values
+
+airInsane_AIR_NAN_f, and airInsane_AIR_NAN_d represent new ways that
+airSanity() can fail
+
+airMode3_d() returns the "mode" of three values- really the skewness
+scaled to fit in [-1,1]
+
+airEqvAdd() and airEqvSettle() might be useful for managing information
+about equivalence classes
+
+airIntPow(v,p) == pow(v,p), but optimized for integral p
+
+airEnumLast() returns the last (valid) value in an airEnum
+
+airFastExp(), a fast but crude (and buggy?) approximation to exp()
+
+nrrd --------
+
+added nrrdUnaryOpIf and "unu 1op if"
+
+nrrdFormatEPS (an output-only format) now understands 4-channel
+images as CMYK, exploiting the same implicit semantics as the
+PostScript colorimage operator, it turns out.
+
+nrrdClampConvert() is like nrrdConvert() (which is essentially per-value
+casting), but now values are clamped so that they don't wrap-around
+due to casting.  "unu convert -clamp" calls this.
+
+Fixed memory leak in nrrdProject(): scan-line buffer wasn't being
+freed (reported by Jorik Blaas)
+
+added nrrdKernelC4Hexic, nrrdKernelC4HexicD, nrrdKernelC4HexicDD- the
+unique 6-sample support C4 3rd-order accurate 6th-order polynomial
+
+added nrrdSaveMulti(), which is like nrrdSave(), but saves
+an array of Nrrds to some set of files, based on a sprintf-style
+formatted string.  Eventually "unu dice" will use this.
+
+added nrrdBinaryOpNormalRandScaleAdd, for adding scaled gaussian noise
+to given data.  Accessible with "unu 2op nrand"
+
+gage --------
+
+gageDeconvolve is a super-dumb way to deconvolve a given volume
+(of any gageKind) with a given kernel.  Can be used to pre-sharpen
+an image so that convolution with, e.g., cubic:1,0 is interpolating.
+
+"vprobe" program now has TEEM_VPROBE_HACK_ZI environmental variable
+hack which allows probing to only be done on a single Z slice
+
+added gageScl3PFilter_t typedef, which simplifies the declaration of
+gageScl3PFilter2 and gageScl3PFilter4 and: added gageScl3PFilter6,
+gageScl3PFilter8, which were easy to implement now that the body of
+these functions is in the new file scl3pfilterbody.c, which is
+included as if its a macro (bad hack!)
+
+added gageErr airEnum, and now gage's ctx->errNum takes values from
+the gageErr* enum
+
+ell --------
+
+added ell_3v_angle_f() and ell_3v_angle_d() for properly measuring
+angle between two unit vectors
+
+more stupid macros
+ELL_3V_SCALE_ADD2_TT, ELL_3V_SCALE_ADD3_TT, ELL_3M_SCALE_INCR
+ELL_3M_SCALE_ADD3, ELL_3MV_SCALE_OUTER_INCR, ELL_2V_COPY, ELL_4V_INCR,
+ELL_3M_LERP, ELL_3MV_CONTR
+
+added ell_6m_mul_d, and ell_6ms_eigensolve_d for doing Jacobi-based
+eigensolves of symmetric 6-by-6 matrices
+
+limn --------
+
+limnPolyDataVertexWindingFix() might work to fix vertex winding problems
+
+limnPolyDataVertexNormals() might compute per-vertex normals
+
+limnPolyDataCCFind() might find connected components in polydata
+
+limnPolyDataWriteIV() can kind of save polydata to Inventor files
+
+limnPolyDataLMPDRead() and limnPolyDataLMPDWrite() read and write a
+stupid new "LMPD" polydata format, which will probably change a lot,
+but I needed a way of saving limnPolyData that took a long time to compute
+
+limnPolyDataVTKWrite() is mostly a VTK writer for limnPolyData
+
+limnPolyDataOFFRead() is mostly a OFF reader of limnPolyData
+
+limnPolyDataClip(), limnPolyDataVertexWindingSplit() do what the names
+suggest, but badly
+
+limnPolyDataSpiralTubeWrap() is new Teem home for the clever single
+tri-strip tube wrapping that used to be in Deft.
+
+ten ---------
+
+"tend grads" is now based on a much faster gradient descent algorithm
+
+added teem/src/ten/test/tensorDotDat, which is designed to generate
+the information that can replace GE's broken tensor.dat DWI gradient
+list file
+
+tenEstimateContext functionality can now handle skipping some of the
+data
+
+various strings associated with key/value pairs in DWMRI headers
+TEN_EXPORT const char *tenDWMRIModalityKey;
+TEN_EXPORT const char *tenDWMRIModalityVal;
+TEN_EXPORT const char *tenDWMRIBValueKey;
+TEN_EXPORT const char *tenDWMRIGradKeyFmt;
+TEN_EXPORT const char *tenDWMRIBmatKeyFmt;
+TEN_EXPORT const char *tenDWMRINexKeyFmt;
+
+tenFiber: added tenFiberStopRadius termination criterion based on
+radius of curvature of fiber tracks, and tenFiberStopStub to represent
+the fact that although the seedpoint was okay, neither direction of
+the fiber went far enough to matter.
+
+Added midpoint integration (AKA 2nd order Runge-Kutta)
+tenFiberIntgMidpoint, and an airEnum for tenFiberIntg
+
+"tend satin" teem/src/ten/tendSatin.c now uses full orientation,
+instead of just axis-aligned spacing
+
+tenExp() and tenLog() take exp() and log() of tensors
+
+added enum values tenEstimate2Method*
+
+more macros:
+TEN_T_SUB, TEN_T_AFFINE, TEN_T_ADD, TEN_T_LERP, and TEN_T_INCR
+
+Added the _tenAnisoTen_f[] and _tenAnisoTen_d[] arrays of functions,
+and the associated tenAnisoTen_f() and tenAnisoTen_d() function wrappers,
+to complement tenAnisoEval_{f,d}(): these provide a way of evaluating a
+given anisotropy measure given the tensor, whereas tenAnisoEval_{f,d}()
+provide a way of evaluating a given aniosotropy given the soted eigenvalues.
+
+added tenPath* functions and enums, including geodesic-loxodrome
+functionality.  All still very much under construction...
+
+tenFiberContextDwiNew() returns a fiber context wrapped around a DWI
+volume, instead of a tensor volume, for some new functionality of
+deterministic tractography on DWIs instead of single tensors.
+
+added tenTripleConvert_d() and tenTripleConvert_f() for converting
+between the various triples of scalars that come up in DTI
+(J, R, and K invariants, eigenvalues)
+
+tenDoubleContract_d() for double contraction of a fourth-order
+tensor with two 2nd-order tensors
+
+added tenFiberStopAnisoSet(), tenFiberStopDoubleSet(),
+tenFiberStopUIntSet() so that stop criteria can be set without using
+var-args
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Teem 1.9.0 (2005-12-25) https://sourceforge.net/projects/teem/files/teem/1.9.0/
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+[2025 GLK here: Version 1.9.0 was the transition from having
+per-library CHANGES.txt files, inserted below as
+==> lib/CHANGES.txt <==
+to having a single top-level changefile, used for the releases described above.
+I have not tried to re-organize these per-library changes into complete
+per-release change descriptions.  For completeness here are the previous
+release dates and links:]
+Teem 1.8.0 (2005-03-08) https://sourceforge.net/projects/teem/files/teem/1.8.0/
+Teem 1.7.0 (2004-05-16) https://sourceforge.net/projects/teem/files/teem/1.7.0/
+Teem 1.6.0 (2003-10-29) https://sourceforge.net/projects/teem/files/teem/1.6.0/
+Teem 1.5.0 (2003-09-12) https://sourceforge.net/projects/teem/files/teem/1.5.0/
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+(this is only a high-level description, see CHANGES.txt in
+the individual library directories)
+
+Changes from 1.5beta1 ----------------------------------------------
+
+Many big changes.  Forgot to document them.
+
+All TEEM_USABLE-related stuff nixed from GNUmakefiles.  Dumb idea.
+
+Ray tracer "echo" resurrected, and ten now depends on it.
+
+Changes from 1.5beta0 ----------------------------------------------
+
+The complete HTML documentation is now in a seperate CVS tree, called
+"teemdoc", because it was getting too big.
+
+Added the "moss" library for image manipulation, and the command-line
+"ilk" program for doing geometric transforms on images.
+
+"gkms" has been hest-ified.
+
+"unu save" can now take arguments controlling the compression
+encodings: level and strategy.
+
+Various "unu" commands' usage information expanded.
+
+New measures have been added to gage's gageVec kind, enabling
+multi-gradient measures in volumes of RGB, for instance.  These are
+accessible from the "vprobe" binary as well.
+
+The "usable" notion in the GNUmakefiles, described below, is still
+broken, but the broken functionality is not invoked unless TEEM_USABLE
+is set.  This hasn't been a problem.
+
+Changes from 1.4 ---------------------------------------------------
+
+The complete HTML documentation for teem is now included with the
+distribution.  What is online at <http://www.cs.utah.edu/~gk/teem/>
+is a snapshot of the web pages included in the CVS tree.
+
+Makefiles have been completely rewritten, to avoid use of recursive
+make, and to support the notion of a library being "usable": somewhere
+between installed and in-development.  New makefile bits: "setenv
+TEEM_DEST" to a directory with lib, bin, and include subdirectories,
+and all the install teem stuff will be put there.  Creating megalibs
+libteem.a and libteem.so is now part of doing a "make install" in the
+top-level source directory.  Support for optional external libraries
+(like zlib) is not handled in the makefiles; "setenv TEEM_ZLIB" turns
+on compilation with zlib.
+
+Along with TEEM_DIO, TEEM_ENDIAN, TEEM_QNANHIBIT, there is now also
+TEEM_32BIT, which is 1 if 4 == sizeof(size_t) and 0 if 8 ==
+sizeof(size_t).  Accordingly, there is also now AIR_32BIT which is
+available simply by including air.h and linking against the air
+library.
+
+Top-level Makefile now correctly handles "-j" option on recursive
+makes.
+
+mite: a new library, with "miter" program: simple scalar volume
+renderer.
+
+nrrd: can now read and write 1D data from plain text files, known as
+"tables", since previously the data read from plain text files was
+strictly 2D.
+
+nrrd: can now do irregular as well as regular univariate colormaps.
+Can do gzip + gzip2 compression, and hex encoding.
+
+gage: total re-write, so that now gageUpdate() does the padding
+necessary based on query and kernels.  This makes using gage much much
+simpler.  bane, mite, mrender, and qbert all cheer.
+
+It is no longer the case that library can have their functions and
+#defines use a shorter prefix.  hoovRender --> hooverRender, unuCmd
+--> unrrduCmd.  No one is using these libraries besides teem, probably,
+but at least now the policy is absolutely consistent.
+
+==> air/CHANGES.txt <==
+Changes from 1.4:
+
+- API RENAME: airMopInit --> airMopNew
+- API RENAME: airEnumValidVal --> airEnumValValid
+- API RENAME: AIR_INSIDE --> AIR_IN_CL, AIR_BETWEEN --> AIR_IN_OP
+- API CHANGE: On Windows, AIR_EXISTS expands to airExist_d(), which
+may be slow, because it uses 64-bit integer bit-masking operations,
+but we'll have to find out.  Non-Windows: use !((x)-(x)).
+- API CHANGE: airSanity() makes sure that sizeof(float)==sizeof(int)==4
+and sizeof(double)==sizeof(long long)==8, in order to justify the
+bitmasking behind AIR_EXISTS_F() and AIR_EXISTS_D().
+- API NEW: added AIR_EXISTS_F(), a macro for testing non-specialness which
+uses bit masking instead of the !((x)-(x)) trick.  Is therefore robust
+against all stripes of optimizing compilers, but unfortunately can ONLY
+take a "float" as argument.  Basis of airExists_f().
+- API NEW: added AIR_EXISTS_D(), like AIR_EXISTS_F(), but for doubles.
+Basis of airExists_d().
+- API NEW: airFPGen_d(), airFPClass_d(), airFPFprintf_d()
+- API NEW: airFPPartsToVal_d(), airFPValToParts_d().
+- API NEW: added airMy32Bit and AIR_32BIT
+- API NEW: added AIR_SIZE_T_FMT which is the format string you need to
+print something of type size_t.  But you need to compile with
+TEEM_32BIT defined to 0 or 1
+- API NEW: airEnumDesc, airEnumFmtDesc
+
+754.c:
+- NEW: _airDouble allows accessing a double as a double, as one
+airULLong, as two unsigned ints, or as the three fields (sign,
+exp, frac).  These are used in airFPFprintf_d().
+
+
+==> hest/CHANGES.txt <==
+Changes from 1.4:
+
+- added hestParseOrDie(), which basically encapsulates the way
+that everything else in Teem uses hest: if they didn't give you
+command-line args, or the args can't be parsed, then complain
+and exit(1).
+- added hestElideSingleEmptyStringDefault and the associated
+member of the hparm struct, elideSingleEmptyStringDefault.
+With this true, if parsing a single string, and the default
+is "", then the default will not be displayed in the glossary.
+
+from 1.5beta0:
+- added hestCleverPluralizeOtherY, which is smartness on how
+to pluralize callback objects, when their name ends with Y
+
+==> nrrd/CHANGES.txt <==
+Changes from 1.5beta2: ---------------------------------
+
+- API CHANGE : nrrdHistoDraw now takes a new final argument,
+the maximum bin count to place at the top of the drawn histogram.
+This facilitates more meaningful visual comparison between
+different histograms.
+- API RENAME (macro): NRRD_COORD_INDEX --> NRRD_INDEX_GEN
+- API RENAME: nrrdSwapAxes --> nrrdAxesSwap
+- API RENAME: nrrdPermuteAxes --> nrrdAxesPermute
+- API NEW: nrrdSplice() and nrrdInset() are the functional
+opposites of nrrdSlice and nrrdCrop, respectively.  They are
+for modifying a larger nrrd by replacing with value from a
+smaller nrrd.
+- API NEW: nrrdAxesInsert() adds a stub axis and (unlike
+nrrdReshape) preserves the axis attributes of the other axes
+
+Changes from 1.5beta1: ---------------------------------
+
+- BUG FIX (read.c, parseNrrd.c): when doing detached headers
+and io->skipData, io->dir won't be set (won't know directory
+of header), but that's not an error. _nrrdReadNrrdParse_data_file
+no longer complains in this case.  Also, the io->dataFile is
+not airFclosed if io->skipdata after the data has (not) been
+read if io->skipData.
+
+Changes from 1.5beta0: ---------------------------------
+
+- BUG FIX (apply1D.c): in setting colSize for 1D maps, when output
+type and map type are different sizes
+- API CHANGE (nrrd.h, map.c): nrrdHistoEq() now takes a new final
+argument, "amount", which tell the extent to which the equalizing
+correction should be applied.
+- API CHANGE (simple.c, write.c): 3D grayscale images
+(dimensions=(1,X,Y)) now "fit" in PGM, and are silently reshaped on
+write
+- API CHANGE (simple.c): nrrdPeripheralInit() and nrrdPeripheralCopy()
+now return an int instead of void.
+- API NEW (nrrd.h, defaultsNrrd.c): added nrrdStateGrayscaleImage3D,
+which causes reshape of grayscale images to 3D (1,X,Y) on read
+- API NEW (nrrd.h, methodsNrrd.c): nrrdKernelSpecSet() and
+nrrdKernelParmSet() are ways of setting a kernel/parm pair and a
+nrrdKernelSpec from one another
+
+Changes from 1.4: ----------------------------------------
+
+nrrd.h (and nrrd as a whole):
+- API CHANGE: the evalN_f and evalN_d methods of NrrdKernel
+now use size_t to indicate how many samples to evaluate,
+instead of int.
+- API CHANGE: there is no more nrrdBigInt.  It was stupid.
+It should have been size_t all along, because the way I was
+using nrrdBigInt is exactly the way that size_t is intended
+to be used.  Basically, all functions that linearly iterate
+through all elements of a nrrd use a variable of type size_t.
+On 32-bit architectures, using size_t means you use an
+unsigned int instead of an unsigned long long int, which is
+probably faster.  Associated with this is the demise of
+NRRD_BIG_INT_PRINTF; its usage is replaced by AIR_SIZE_T_FMT
+- API CHANGE: nrrdMinMaxClever() renamed to
+nrrdMinMaxCleverSet()
+- API CHANGE: nrrdApply1DLut() and nrrdApply1DRegMap() now
+take two final int arguments:
+  typeOut: what type should output be
+  rescale: values from input nrrd should be affine-rescaled
+           from nrrd range to lut/map domain.
+nrrdApply1DIrregMap() uses the same two arguments.
+- API CHANGE: nrrdHistoEq() can no longer allow nin==nout,
+because of restrictions in nrrdApply1DRegMap().  This may
+be fixed some day.
+- API CHANGE: "longlong" new name for nrrdTypeLLong;
+"ulonglong" new name for nrrdTypeULLong
+- API CHANGE: (but no one should notice): added dataFN[]
+(data filename) to NrrdIO struct, basically so that
+"unu make -h" can subvert _nrrdWriteNrrd().
+- API CHANGE: (but no one should notice): there are no
+more statically allocated strings in the NrrdIO, and
+no more NRRD_STRLEN_LINE.  Everything is dynamically
+allocated to allow arbitrarily long lines.
+- API NEW: added nrrdPad_nva, and nrrdSimplePad_nva
+- API NEW: added nrrdUnquantize(), which provides a way of
+approximating floating point data prior to a quantization.
+- API NEW: the floating point type that nrrdSpatialResample()
+uses for all intermediate value representation has been
+generalized from float only to nrrdResample_t, which can
+be set to float or double by controlling an #if in nrrd.h
+- API NEW: added nrrdTypeMin[], nrrdTypeMax[], and
+nrrdTypeNumberValues[], arrays which represent for the
+*fixed*point* types the lowest and highest representable
+values, and the number of different possible values.
+- API NEW: added nrrdApply1DIrregMap(), for "colormapping"
+with irregular univariate maps
+- API NEW: added nrrd1DIrregMapValid(),
+nrrd1DIrregAclValid() which may be useful for verifying
+suitability of nrrds used in nrrdApply1DIrregMap().
+- API NEW: added _nrrdFieldOnePerAxis[NRRD_FIELD_MAX+1],
+which is non-zero for nrrdField_{sizes,spacings,etc.}:
+those things for which you need as many values as there
+are axes in the nrrd.
+- API NEW: added nrrdTypeUnsigned[], which is non-zero for
+things like unsigned chars and unsigned shorts
+- FUNCTIONALITY CHANGE: tables can now hold 1D data, see
+info for read.c and simple.c
+- FUNCTIONALITY CHANGE: nrrdHistoEq() now permits learning
+not the histogram ("nhistP"), but the transform used to
+shift values ("nmapP") in a form suitable for
+nrrdApply1DRegMap(); in fact that is what nrrdHistoEq() calls
+itself.  This way one mapping can be applied to other nrrds.
+- FILE FORMAT CHANGE: this was supposed to have been done
+for Teem-1.4: default nrrd magic is "NRRD0001", instead of
+"NRRD00.01"
+- fixed comment typos and spacing
+
+nrrdMacros.h:
+- API NEW: created NRRD_AXIS_CELL_POS(),
+NRRD_AXIS_NODE_POS(), NRRD_AXIS_CELL_IDX(),
+NRRD_AXIS_NODE_IDX(), which are special case versions of
+NRRD_AXIS_POS() and NRRD_AXIS_IDX()
+
+methods.c:
+- BUG FIX: nrrdMaybeAlloc_nva() was not correctly calculating
+the allocated size of the desired output- using
+nrrdElementSize(nrrd) instead of nrrdTypeSize[type].  This
+meant that situations requiring a bigger allocation were
+not always detected as such, causing a later segfault.
+Also, nrrdAxesSet_nva(nrrdAxesInfoSize) was not being
+called on the newly allocated output.
+
+apply1D.c:
+- API CHANGE: in nrrdApply1DLut() and nrrdApply1DRegMap(),
+allowing specification of output type (as does
+nrrdApply1DIrregMap())
+
+arrays.c:
+- added nrrdTypeMin[], nrrdTypeMax[], nrrdTypeNumberValues[]
+- added _nrrdFieldOnePerAxis[NRRD_FIELD_MAX+1]
+- reformatted/respelled comments
+- allowed dimension field in tables, see read.c changelog
+
+filt.c:
+- changed NRRD_AXIS_POS macro usage to NRRD_AXIS_CELL_POS
+macro
+- nrrdMinMaxClever() renamed to nrrdMinMaxCleverSet()
+
+histogram.c:
+- nrrdMinMaxClever() renamed to nrrdMinMaxCleverSet()
+
+map.c:
+- changed nrrdHistoEq() to use nrrdApply1DRegMap(),
+changed type of "steady" array to uint, changed type
+of non-smart histogram to uint.  One result of this is
+that current limitations in nrrdApply1DRegMap() disallow
+nin == nout, which also imposes this (new) restriction
+on nrrdHistoEq(), alas.
+- fixed badness in the map generated by nrrdHistoEq() to
+transform values with smartness on: values one bin higher
+than a bin ignored via smartness were mapped too low.
+- nrrdMinMaxClever() renamed to nrrdMinMaxCleverSet()
+
+measure.c:
+- changed NRRD_AXIS_POS macro usage to NRRD_AXIS_CELL_POS
+macro
+
+parse.c:
+- clarified text of biff error message about failure in
+parsing all per-axis fields
+
+private.h:
+- added _nrrdFieldOnePerAxis[NRRD_FIELD_MAX+1]
+
+read.c:
+- FUNCTIONALITY CHANGE: Previously, "tables" were text files
+holding data which was strictly two-dimensional.  When using
+"unu lut" and "unu rmap", its often very conveniant to put
+the lut/map in a text file, but these are 1D, not 2D.  So,
+now tables can represent 1D data.  This has been implemented
+by allowing
+
+  # dimension: 1
+
+to be a "comments" preceeding the table data.  The default
+dimension for tables is still 2, the line above will
+explicitly set it to 1.  But the dimension can not be set to
+anything other than 1 and 2, because these are the only
+dimensions in which we can imply the axis sizes by the text
+layout of the numbers.  Also, "# dimension: 1" can not
+appear in the comments *after* a per-axis field, such as
+"# spacings: 1 2".
+
+simple.c:
+- FUNCTIONALITY CHANGE: nrrdFitsInFormat() now allows 1D
+data to be in a table, see info in read.c changelog.
+- clarified comment about action of nrrdHasNonExistSet()
+
+write.c:
+- _nrrdWriteNrrd() now takes a "writeData" boolean argument,
+which is used by "unu make -h".  This complicates the logic,
+but if writeData is zero, you never write data, and the
+"data file:" field becomes interesting enough to print,
+giving the value of io->dataFN.
+- FILE FORMAT CHANGE: this was supposed to have been done
+for Teem-1.4: normal nrrd magic is "NRRD0001", instead of
+"NRRD00.01"
+- changes in writing of tables associated with allowing
+1D data in tables
+
+test/minmax.c:
+- nrrdMinMaxClever() renamed to nrrdMinMaxCleverSet()
+
+
+==> unrrdu/CHANGES.txt <==
+Changes from 1.5beta0 ----------------------------------------
+
+- INTERFACE NEW (lut.c, rmap.c, imap.c): added -min and -max flags
+to allow specifying the used input range
+- INTERFACE NEW (unrrdu.h flotsam.c, save.c): now allow specifying
+flags for gzip and bzip2 compression
+- INTERFACE NEW (heq.c): added -a flag for new "amount" argument to
+nrrdHistoEq()
+- convert.c, quantize.c, resample.c: more usage info
+
+Changes from 1.4 ------------------------------------------
+
+private.h:
+- changed SAVE macro to take file name as first arg, this
+change affected all *.c files.
+
+unu.c, Makefile:
+- removed "(unrrdu)" from main unu banner
+- added imap.c and with that, "unu imap", for applying
+irregular maps
+
+gamma.c, histo.c, jhisto.c, quantize.c:
+- nrrdMinMaxClever() renamed to nrrdMinMaxCleverSet()
+
+heq.c:
+- added "-m" flag to allow learning of the regular map
+used to achieve histogram equalization
+
+lut.c, rmap.c, imap.c:
+- added "-t" flag to specify output type (previously always
+used map type), and in lut and rmap, added proper handling
+of the "-r" rescaling flag.
+
+lut.c:
+- INTERFACE CHANGE: "-l" flag changed to "-m", in order to
+agree with flag for unu rmap and unu imap.
+- change to nrrdApply1DLut() call: added "rescale" argument.
+
+make.c:
+- added "-c" flag to allow setting the content
+- added "-h" flag to allow generation of detached header
+files; this turned out to be rather annoying.
+
+rmap.c:
+- change to nrrdApply1DRegMap() call: added "rescale" argument.
+
+
+==> bane/CHANGES.txt <==
+
+Changes from 1.5beta0 ---------------------------------------------
+
+- BUG FIX (inc.c): the min and max increments use to nibble at the
+histogram in percentile-based inclusion were set wrong, meaning that
+only baneRangeFloat ranges were computed correctly.
+- API NEW (gkms*.c): all the smarts of the "gkms" program are now in
+the bane library, just like unrrdu commands
+
+==> gage/CHANGES.txt <==
+Changes from 1.5beta0: ------------------------------------------
+
+- API NEW: added new measures to the gageVec kind for dealing with
+3-scalar datasets, such as RGB color volumes:
+  gageVecGradient0,   /*  6: gradient of 1st component of vector: GT[3] */
+  gageVecGradient1,   /*  7: gradient of 2nd component of vector: GT[3] */
+  gageVecGradient2,   /*  8: gradient of 3rd component of vector: GT[3] */
+  gageVecMultiGrad,   /*  9: sum of outer products of gradients: GT[9] */
+  gageVecL2MG,        /* 10: L2 norm of multi-gradient: *GT */
+  gageVecMGEval,      /* 11: eigenvalues of multi-gradient: GT[3] */
+  gageVecMGEvec,      /* 12: eigenvectors of multi-gradient: GT[9] */
+
+Changes from 1.4: -----------------------------------------------
+
+- TOTAL API CHANGE: All but the low-level filtering code has been
+re-written.  Basically, whereas before I refused to have gage do any
+of the padding required to produce the volume that was probed, now
+gage has _gageStandardPadder() and _gageStandardNixer() as the default
+means of creating and destroying padded volumes.  Alternate padders
+and nixers could be set, but this has yet to be exploited or tested.
+This change means that gage can be more automated, so as to keep track
+of all the dependencies (like query, kernels, and k3pack) which
+determine how much padding is needed, and can generate the padded
+volume as part of gageUpdate().  This allows you to change querying
+parameters after gageProbe(), then call gageUpdate(), and then go back
+to probing.  A new flag in the gageContext, noRepadWhenSmaller, does
+what it says, so that one padding can be used for queries requiring
+different amounts of padding.
+- API NEW: there are now GAGE_SCL_*_BIT and GAGE_VEC_*_BIT #defines
+which are the bit-shifted enum values, ready to by |'ed together to
+make a query
+
+==> hoover/CHANGES.txt <==
+Changes from 1.4:
+
+hoover.h:
+- API NEW: created typedefs for hoovRenderBegin_t,
+hoovThreadBegin_t, hoovRayBegin_t, hoovSample_t,
+hoovRayEnd_t, hoovThreadEnd_t, and hoovRenderEnd_t.
+This doesn't change the type of any of the callbacks,
+but it makes it allows a hoover user to write
+callbacks which have specific struct pointers as
+arguments, instead of just void*, since the callback
+can be cast to one of the types above.
+
+Makefile:
+- FILENAME CHANGE: bin/measurend.c --> bin/mrender.c
+
+bin/mrender.c
+- callbacks don't have void* args anymore.
+
+
+==> limn/CHANGES.txt <==
+Changes from 1.4:
+
+limn.h:
+- API CHANGE: limn is stupider about lights- there is no more
+notion of have a collection of "set" lights, and no more
+ability to turn on lights without knowing the index of the
+light.  So now limnLightSet() requires an index "which".
+Also, in the limnLight struct, it is the _dir vector which
+is set by the user (via limnLightSet()), and then the
+dir vector is either copied from _dir (world space lights)
+or transformed through V2W (view space lights).
+- API CHANGE: limnLightToggle() renamed limnLightSwitch()
+- #DEFINE RENAME: LIMN_MAXLIT --> LIMN_LITE_NUM
+- API NEW: limnLightReset() initializes lights
+
+light.c:
+- all changes associated with simplifying the limnLight
+struct, and swapping roles of _dir and dir; see limn.h
+changelog
+
+Makefile:
+- added test/tcam.c, a little program for demonstrating
+calculation of world-to-view and view-to-world transforms
+given from,at,up locations
+
+hest.c:
+- clarified command-line flags for limn cam parameters
+
+test/light.c
+- fixed to comply with Teem-1.4 limnCam, and with post-1.4
+changes described elsewhere
+
+==> bin/CHANGES.txt <==
+Changes from 1.5beta0 -----------------------------------------------
+
+- INTERFACE CHANGE (unu.c): when you type "unu bcmd" where bcmd is not a
+recognized command, you don't get the whole unu command listing
+- INTERFACE CHANGE (gkms.c): completely re-written, now based on hest.
+All the functionality should still be there, and then some.
