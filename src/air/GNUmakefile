@@ -51,7 +51,7 @@ $(L).Obj = $(patsubst %.c,%.o, \
     randJSF.c randMT.c sane.c string.c threadAir.c \
   )
 $(L).Test = floatprint doubleprint tok tmop tline fp trand trandJSF tmisc \
-	bessy tarr texp logrice tprint
+	bessy tarr texp logrice tprint asprint
 ####
 ####
 ####
