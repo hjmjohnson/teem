@@ -1150,7 +1150,7 @@ is basically zero, at least zero compared to the total confusion created
 by these defaults getting accidentally set to something besides 1.
 
 • Sun Oct 19 09:51:15 2025 -0500 git short hash: 45f1ae4b
-  (and variable naming fixed by WHICH?)
+ (and variable naming fixed by week-later commit d5a2fc5c)
 A big over-due API CHANGE, plus other things related or done concurrently:
 ** The global variable nrrdStateVerboseIO is gone,
 ** replaced by NrrdIoState->verbose (usually nio->verbose)
