@@ -26,8 +26,8 @@
 
 static void
 usage(const char *me) {
-  /*                      0   1     2       3      4  (5) */
-  fprintf(stderr, "usage: %s f|d <FPval> <log2> <conv>\n", me);
+  /*                      0     1       2       3     4  (5) */
+  fprintf(stderr, "usage: %s f|d|F|D <FPval> <log2> <fmt>\n", me);
   exit(1);
 }
 
@@ -37,19 +37,26 @@ main(int argc, const char *argv[]) {
 
   me = argv[0];
   if (5 != argc) usage(me);
+  int verbose = 0;
   int dblPrec;
   if (!strcmp(argv[1], "f")) {
     dblPrec = 0;
   } else if (!strcmp(argv[1], "d")) {
+    dblPrec = 1;
+  } else if (!strcmp(argv[1], "F")) {
+    verbose = 1;
+    dblPrec = 0;
+  } else if (!strcmp(argv[1], "D")) {
+    verbose = 1;
     dblPrec = 1;
   } else {
     usage(me);
   }
   const char *dblStr = argv[2];
   const char *lgStr = argv[3];
-  const char *conv = argv[4];
+  const char *fmt = argv[4];
 
-  double dbl0;
+  double dbl0, dbl1;
   if (1 != airSingleSscanf(dblStr, "%lf", &dbl0)) {
     fprintf(stderr, "%s: couldn't parse \"%s\" as double\n", me, dblStr);
     exit(1);
@@ -65,32 +72,60 @@ main(int argc, const char *argv[]) {
   }
   size_t I, N = ((size_t)1) << lg;
 
-  char buff[AIR_STRLEN_SMALL + 1];
-  for (I = 0; I < N; I++) {
-    if (dblPrec) {
-      double dbl1;
-      airSinglePrintf(NULL, buff, conv, adbl.d);
-      airSingleSscanf(buff, "%lf", &dbl1);
-      if (dbl1 != adbl.d) {
-        printf("%s: %.17g ---sprint(%s)---> %s ---sscanf---> %.17g\n", me, adbl.d, conv,
-               buff, dbl1);
-        break;
+  if ('%' != fmt[0]) {
+    /* some whole string to test with */
+    char *buff = AIR_CALLOC(2 * strlen(fmt) + 1, char);
+    airSinglePrintf(NULL, buff, fmt, dbl0);
+    printf("%s: sprint(buff, |%s|, %.17g) = |%s|\n", me, fmt, dbl0, buff);
+    free(buff);
+  } else {
+    /* assuming `fmt` is JUST the conversion sequence, most usefully %g or %lg, and scan
+       values to test */
+    printf("%s: we shall begin scanning\n", me);
+    char buff[AIR_STRLEN_SMALL + 1];
+    char buff2[AIR_STRLEN_SMALL + 1];
+    for (I = 0; I < N; I++) {
+      if (dblPrec) {
+        airSinglePrintf(NULL, buff, fmt, adbl.d);
+        if (verbose) {
+          printf("%s: %.17g ---aSPrint(%s)---> \"%s\"\n", me, adbl.d, fmt, buff);
+          sprintf(buff2, fmt, adbl.d);
+          printf("%s: %.17g ---sprintf(%s)---> \"%s\"\n\n", me, adbl.d, fmt, buff2);
+        }
+        airSingleSscanf(buff, "%lf", &dbl1);
+        if (AIR_EXISTS(dbl0) && dbl1 != adbl.d) {
+          printf(
+            "%s: %.17g ---aSPrint(%s)---> \"%s\" ---sscanf---> %.17g != start val!\n",
+            me, adbl.d, fmt, buff, dbl1);
+          break;
+        }
+        adbl.i++;
+      } else {
+        float flt1;
+        airSinglePrintf(NULL, buff, fmt, aflt.f);
+        airSingleSscanf(buff, "%f", &flt1);
+        if (verbose) {
+          printf("%s: %.9g ---aSPrint(%s)---> \"%s\"\n", me, aflt.f, fmt, buff);
+          sprintf(buff2, fmt, aflt.f);
+          printf("%s: %.9g ---sprintf(%s)---> \"%s\"\n\n", me, aflt.f, fmt, buff2);
+        }
+        if (AIR_EXISTS(dbl0) && flt1 != aflt.f) {
+          printf("%s: %.9g ---aSPrint(%s)---> \"%s\" ---sscanf---> %.9g != start val!\n",
+                 me, aflt.f, fmt, buff, flt1);
+          break;
+        }
+        aflt.i++;
       }
-      adbl.i++;
-    } else {
-      float flt1;
-      airSinglePrintf(NULL, buff, conv, aflt.f);
-      airSingleSscanf(buff, "%f", &flt1);
-      if (flt1 != aflt.f) {
-        printf("%s: %.9g ---sprint(%s)---> %s ---sscanf---> %.9g\n", me, aflt.f, conv,
-               buff, flt1);
-        break;
+      if (!AIR_EXISTS(dbl0)) {
+        printf("%s: special value \"%s\" --> %g --> \"%s\" --> %g (done)\n", me, dblStr,
+               dbl0, buff, dbl1);
+        exit(0);
       }
-      aflt.i++;
     }
-  }
-  if (I == N) {
-    printf("%s: good round-trip for 2^%u values in [ %s , %s ]\n", me, lg, dblStr, buff);
+    if (I == N) {
+      printf("%s: good round-trip for 2^%u values in [ %s , %s ]\n", me, lg, dblStr,
+             buff);
+    }
   }
 
   exit(0);

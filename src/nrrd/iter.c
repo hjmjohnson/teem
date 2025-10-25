@@ -130,7 +130,8 @@ nrrdIterContent(NrrdIter *iter) {
     if (_NRRD_ITER_NRRD(iter)) {
       ret = _nrrdContentGet(_NRRD_ITER_NRRD(iter));
     } else {
-      airSinglePrintf(NULL, buff, "%g", iter->val);
+      /* (using TeemV2 airSinglePrintf) */
+      airSinglePrintf(NULL, buff, "%lg", iter->val);
       ret = airStrdup(buff);
     }
   }

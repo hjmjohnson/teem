@@ -318,6 +318,7 @@ nrrdIoStateNew(void) {
     nio->dataFSkip = NULL;
     appu.li = &(nio->dataFSkip);
     nio->dataFSkipArr = airArrayNew(appu.v, NULL, sizeof(long int), NRRD_FILENAME_INCR);
+    nio->headerDoubleExcessPrecision = nrrdDefaultIoHeaderDoubleExcessPrecision;
     nio->format = nrrdFormatUnknown;
     nio->encoding = nrrdEncodingUnknown;
     nrrdIoStateInit(nio);

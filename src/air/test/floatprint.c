@@ -49,11 +49,11 @@ main(int argc, char *argv[]) {
     printf("\n");
   }
   d = f;
-  airSinglePrintf(NULL, buff, "%f", f);
-  printf("%s: printf/airSinglePrintf as float:\n%f\n%s\n", me, f, buff);
-  airSinglePrintf(NULL, buff, "%f", d);
+  airSinglePrintf(NULL, buff, "%g", f);
+  printf("%s: printf/airSinglePrintf as float:\n%g\n%s\n", me, f, buff);
+  airSinglePrintf(NULL, buff, "%lg", d);
   printf("\n");
-  printf("%s: printf/airSinglePrintf as double:\n%f\n%s\n", me, d, buff);
+  printf("%s: printf/airSinglePrintf as double:\n%g\n%s\n", me, d, buff);
   printf("\n");
   printf("%s: airFPFprintf_f:\n", me);
   airFPFprintf_f(stderr, f);

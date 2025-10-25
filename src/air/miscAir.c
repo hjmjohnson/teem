@@ -151,6 +151,17 @@ airFclose(FILE *file) {
   return NULL;
 }
 
+/* helper function for airSinglePrintf:
+   shift characters between clo and chi (inclusive) up by 2 */
+static void
+shift2(char *clo, char *chi) {
+  while (chi >= clo) {
+    *(chi + 2) = *chi;
+    chi--;
+  }
+  return;
+}
+
 /*
  ******* airSinglePrintf
  *
@@ -158,104 +169,170 @@ airFclose(FILE *file) {
  * exactly one conversion sequence, and does use any precision modifiers.  The utility of
  * this is to standardize the printing of IEEE 754 special values:
  * NAN (any kind) -> "NaN"
- * POS_INF -> "+inf"
+ * POS_INF -> "inf"   <-- TeemV2 change: was "+inf"
  * NEG_INF -> "-inf"
  * The format string can contain other things besides just the conversion sequence:
- * airSinglePrintf(f, NULL, " (%f)\n", AIR_NAN) will be the same as:
- * fprintf(f, " (%s)\n", "NaN");
+ * airSinglePrintf(f, NULL, "This %f isn't a number\n", AIR_NAN) will be the same as:
+ * fprintf(f, "This %s isn't a number\n", "NaN");
  *
  * To get fprintf behavior, pass "str" as NULL
  * to get sprintf bahavior, pass "file" as NULL. AND NOTE THAT THIS DOES USE sprintf
  * and not snprintf because we're not in a position to know what the buffer size is.
  *
  * Finding a complete {f|s|}printf replacement would be great, but finding one compatible
- * with our LGPL+linking exception is hard.
+ * with our LGPL+linking exception licensing is hard.
+ *
+ * 2025 scrutiny: The apparent intent of the old code was that with conversion sequence
+ * "%g" (in the case of printing a single-precision float) or "%lg" (for a double), then
+ * the code used a different conversion sequence when necessary to ensure that upon
+ * sscanf parsing, would get back to the original value. HOWEVER: some of the code
+ * comments acknowledged that after going through var-args the float becomes a double
+ * (so `isF`,`isD` variable names risk being delusional). But the BUG was that the
+ * strategy for ensuring accuracy was broken: 0.10000000000000002 (which parses to the
+ * next double after the one parsed from 0.1) would also be printed as "0.1".
+ * Also, NaN values were printed as " NaN" (with needless leading space)
+ *
+ * So, for the TeemV2 re-write: now NaN is printed as "NaN", and now "%g" means: "I'm
+ * sending in a float (and I know you'll get it as a double), but can you print it with a
+ * concise string that parses back to the same float". "%lg" means the same for a double.
+ * Round-trip accuracy is ensured by internally changing "%g" to "%.9g" or from "%lg" to
+ * "%.17g" when sscanf shows it to be necessary.
  */
 int
 airSinglePrintf(FILE *file, char *str, const char *_fmt, ...) {
-  char *fmt, buff[AIR_STRLEN_LARGE + 1];
-  double val = 0, gVal, fVal;
-  int ret, isF, isD, cls;
-  char *conv = NULL, *p0, *p1, *p2, *p3, *p4, *p5;
+  int ret, isF, isD;
+  const char *_p0, *_p1, *_p2, *_p3, *_p4, *_p5;
   va_list ap;
 
   va_start(ap, _fmt);
-  fmt = airStrdup(_fmt);
 
-  /* this is needlessly complicated; the "l" modifier is a no-op */
-  p0 = strstr(fmt, "%e");
-  p1 = strstr(fmt, "%f");
-  p2 = strstr(fmt, "%g");
-  p3 = strstr(fmt, "%le");
-  p4 = strstr(fmt, "%lf");
-  p5 = strstr(fmt, "%lg");
-  isF = p0 || p1 || p2;
-  isD = p3 || p4 || p5;
-  /* the code here says "isF" and "isD" as if it means "is float" or
-     "is double".  It really should be "is2" or "is3", as in,
-     "is 2-character conv. seq., or "is 3-character conv. seq." */
-  if (isF) {
-    conv = p0 ? p0 : (p1 ? p1 : p2);
-  }
-  if (isD) {
-    conv = p3 ? p3 : (p4 ? p4 : p5);
-  }
+  /* look for unmodified floating point conversion sequences */
+  _p0 = strstr(_fmt, "%e");
+  _p1 = strstr(_fmt, "%f");
+  _p2 = strstr(_fmt, "%g");
+  _p3 = strstr(_fmt, "%le");
+  _p4 = strstr(_fmt, "%lf");
+  _p5 = strstr(_fmt, "%lg");
+  isF = _p0 || _p1 || _p2;
+  isD = _p3 || _p4 || _p5;
+  /* the code here says `isF` and `isD` as if it means "is float" or "is double".
+     It would more accurately be `is2` or `is3`, as in, "is 2-character conv. seq., or
+     "is 3-character conv. seq."
+     (but for TeemV2 we run with that type implication for "%g" and "%lg") */
   if (isF || isD) {
-    /* use "double" instead of "float" because var args are _always_
-       subject to old-style C type promotions: float promotes to double */
-    val = va_arg(ap, double);
-    cls = airFPClass_d(val);
-    switch (cls) {
-    case airFP_NAN:
-    case airFP_POS_INF:
-    case airFP_NEG_INF:
+#define PRINT(F, S, C, V) ((F) ? fprintf((F), (C), (V)) : sprintf((S), (C), (V)))
+    double val0;
+    const char *_conv;
+    unsigned int szfmt;
+    char *fmt, *conv;
+    int cls;
+    if (isF) {
+      _conv = _p0 ? _p0 : (_p1 ? _p1 : _p2);
+    } else {
+      _conv = _p3 ? _p3 : (_p4 ? _p4 : _p5);
+    }
+    /* allocate our own copy of _fmt, with length increase by the most we might need to
+       add with |%g|=2 --> |%.9g|=4 or |%lg|=3 --> |%.17g|=5, namely 2 */
+    szfmt = (unsigned int)strlen(_fmt) + 2 + 1;
+    fmt = AIR_CALLOC(szfmt, char);
+    assert(fmt);
+    strncpy(fmt, _fmt, szfmt);
+    conv = fmt + (_conv - _fmt); /* conv points into fmt like _conv points into _fmt */
+    /* must use "double" here to consume var-arg instead of "float" because var args are
+       _always_ subject to old-style C type promotions: float promotes to double */
+    val0 = va_arg(ap, double);
+    /* printf("!%s: hello val0 = %.17g\n", __func__, val0); */
+    cls = airFPClass_d(val0);
+    if (airFP_NAN == cls || airFP_POS_INF == cls || airFP_NEG_INF == cls) {
+      /* we do not need to rebuild the `fmt` string in parts, just sneakily tweak it */
       if (isF) {
+        /* started with a 2-char conversion sequence, use a different one */
         memcpy(conv, "%s", 2);
       } else {
-        /* this sneakiness allows us to replace a 3-character conversion
-           sequence for a double (such as %lg) with a 3-character conversion
-           for a string, which we know has at most 4 characters */
-        memcpy(conv, "%4s", 3);
+        /* isD: we started with a 3-char conversion sequence, replaces it with
+           another 3-char sequence for the special value string (3 or 4 chars).
+           {f,s}printf would print the string correctly with plain `%s` but we're
+           just filling out three characters of a conversion sequence to avoid having to
+           change any other characters in `fmt`. */
+        memcpy(conv, airFP_NEG_INF == cls ? "%4s" : "%3s", 3);
       }
-      break;
-    }
-#define PRINT(F, S, C, V) ((F) ? fprintf((F), (C), (V)) : sprintf((S), (C), (V)))
-    switch (cls) {
-    case airFP_NAN:
-      ret = PRINT(file, str, fmt, "NaN");
-      break;
-    case airFP_POS_INF:
-      ret = PRINT(file, str, fmt, "+inf");
-      break;
-    case airFP_NEG_INF:
-      ret = PRINT(file, str, fmt, "-inf");
-      break;
-    default:
-      if (p2 || p5) {
-        /* got "%g" or "%lg", see if it would be better to use "%f" */
-        sprintf(buff, "%f", val);
-        sscanf(buff, "%lf", &fVal);
-        sprintf(buff, "%g", val);
-        sscanf(buff, "%lf", &gVal);
-        if (fVal != gVal) {
-          /* using %g (or %lg) lost precision!! Use %f (or %lf) instead */
-          if (p2) {
-            memcpy(conv, "%f", 2);
-          } else {
-            memcpy(conv, "%lf", 3);
+      /* now print with the string conversion sequence just set */
+      switch (cls) {
+      case airFP_NAN:
+        ret = PRINT(file, str, fmt, "NaN");
+        break;
+      case airFP_POS_INF:
+        ret = PRINT(file, str, fmt, "inf");
+        break;
+      case airFP_NEG_INF:
+        ret = PRINT(file, str, fmt, "-inf");
+        break;
+      }
+    } else { /* not IEEE754 special value */
+      if (_p2 || _p5) {
+        /* 2025 Prof GLK revisiting this post-doc GLK code (svn r2879 2005-09-21)
+        and comments with better floating-point experience and understanding:
+           / * got "%g" or "%lg", see if it would be better to use "%f" * /
+           sprintf(buff, "%f", val);
+           sscanf(buff, "%lf", &fVal);
+           sprintf(buff, "%g", val);
+           sscanf(buff, "%lf", &gVal);
+           if (fVal != gVal) ... / * using %g/%lg lost precision, use %f/%lf instead * /
+        NO, and NO.
+        NO#1: The relevant test for the insufficient precision of %g/%lg for the round-
+           trip val-sprintf->buff-sscanf->val is whether val == gVal, NOT fVal != gVal.
+        NO#2: %f/%lf do *not* ensure round-trip accuracy. The r2879 commit message
+           "fixed bug in handling of loss of precision with %g/%lg" was ignorant.
+        So what to do: we rescue+extend the apparent intent of this code and implement:
+         - if got %g, assume value came from a (single-precision) float, and find a
+           string that ensures round-trip accuracy for a float
+         - if got %lg, assume value came as a double, and find a string that ensures
+           round-trip accuracy for a double
+         - (the `isF` and `isD` variable names indicate the original code intent)
+        Teem code using this function was updated to work with this behavior.
+        See new test program teem/src/air/test/asprint */
+        char buff[AIR_STRLEN_SMALL + 1];
+        if (_p2) /* got "%g" intended for float */ {
+          float fltval1, fltval0 = (float)val0;
+          sprintf(buff, "%g", fltval0);
+          sscanf(buff, "%f", &fltval1);
+          if (fltval1 != fltval0) {
+            /* "%g" by itself did NOT gave round-trip single-precision accuracy;
+               assemble new format string with |%g|=2 --> |%.9g|=4 */
+            shift2(conv + 2 /* first char after %g */,
+                   fmt + strlen(fmt) - 1 /* last char in fmt */);
+            memcpy(conv, "%.9g", 4);
           }
+          /* else "%g" gave round-trip single-precision accuracy; use `fmt` as is */
+        } else /* _p5: got "%lg% intended for double */ {
+          double val1;
+          sprintf(buff, "%g", val0);
+          sscanf(buff, "%lf", &val1);
+          if (val1 != val0) { /* SORRY COPY PASTA */
+            shift2(conv + 3 /* first char after %lg */,
+                   fmt + strlen(fmt) - 1 /* last char in `fmt` */);
+            memcpy(conv, "%.17g", 5);
+          }
+          /* else "%lg" gave round-trip double-precision accuracy; use `fmt` as is */
         }
-      }
-      ret = PRINT(file, str, fmt, val);
-      break;
-    }
+        /* printf("!%s: fmt=|%s|\n", __func__, fmt); */
+        /* end of possible fiddling `fmt` to ensure roung-trip accuracy */
+      } /* else `isF || isD` but not _p2="%g" and not _p5="%lg": got non-special value
+           to print with _p0="%e", _p1="%f", _p3="%le", or _p4="%lf"
+           ==> can use `fmt` as is */
+      ret = PRINT(file, str, fmt, val0);
+    } /* end of else !special */
+    free(fmt);
+#undef PRINT
   } else {
-    /* conversion sequence is neither for float nor double */
-    ret = file ? vfprintf(file, fmt, ap) : vsprintf(str, fmt, ap);
+    /* `!isF && !isD`: conversion sequence is either for float or double but something
+       more specific like "%.17g" (which NOTE does not get the above special treatment of
+       IEEE754 special values!s), or, it isn't for any kind of floating point value.
+       We can use the given `_fmt` as is (no local allocation of `fmt`) */
+    ret = file ? vfprintf(file, _fmt, ap) : vsprintf(str, _fmt, ap);
   }
 
   va_end(ap);
-  free(fmt);
   return ret;
 }
 

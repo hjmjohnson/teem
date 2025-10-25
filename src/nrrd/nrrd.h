@@ -293,7 +293,7 @@ typedef struct NrrdEncoding_t {
 ** it took to read it in.
 */
 typedef struct NrrdIoState_t {
-  int verbose;                  /* new for TeemV2: replacing the old global
+  int verbose;                  /* (new for TeemV2) replaces the old global
                                    nrrdStateVerboseIO */
   char *path,                   /* allows us to remember the directory
                                    from whence this nrrd was "load"ed, or
@@ -457,12 +457,23 @@ typedef struct NrrdIoState_t {
     PNGsRGBIntent,      /* ON READ+WRITE: iff sRGBIntentKnown, the intent
                            itself, from nrrdFormatPNGsRGBIntent* enum */
     /* ---- END non-NrrdIO */
-    learningHeaderStrlen; /* ON WRITE, for nrrds, learn and save the total
-                             length of header into headerStrlen. This is
-                             used to allocate a buffer for header */
-  void *oldData;          /* ON READ: if non-NULL, pointer to space that
-                             has already been allocated for oldDataSize */
-  size_t oldDataSize;     /* ON READ: size of mem pointed to by oldData */
+    learningHeaderStrlen,        /* ON WRITE, for nrrds, learn and save the total
+                                    length of header into headerStrlen. This is
+                                    used to allocate a buffer for header */
+    headerDoubleExcessPrecision; /* (new for TeemV2) ON WRITE, how to write out the
+                                    `double`s in the Nrrd struct into the NRRD header.
+                                    Turning headerDoubleExcessPrecision ON is the
+                                    pre-TeemV2 behavior of using `sprintf` conversion
+                                    sequence "%.17g", which means getting digit strings
+                                    that are sometimes longer than necessary to specify
+                                    all bits of a `double` (e.g. "0.10000000000000001"
+                                    instead of "0.1": both parse to same `double`).
+                                    Turning headerDoubleExcessPrecision OFF enables new
+                                    TeemV2 ways of writing a shorter but equivalent
+                                    (modulo parsing to `double`) digit strings */
+  void *oldData;                 /* ON READ: if non-NULL, pointer to space that
+                                    has already been allocated for oldDataSize */
+  size_t oldDataSize;            /* ON READ: size of mem pointed to by oldData */
 
   /* The format and encoding.  These are initialized to nrrdFormatUnknown
      and nrrdEncodingUnknown, respectively. USE THESE VALUES for
@@ -734,6 +745,7 @@ NRRD_EXPORT int nrrdDefaultCenter;
 /* TeemV2: nrrdStateVerboseIO --> nrrdDefaultVerboseIO,
    and added NrrdIoState->verbose which is initialized by this */
 NRRD_EXPORT int nrrdDefaultVerboseIO;
+NRRD_EXPORT int nrrdDefaultIoHeaderDoubleExcessPrecision;
 NRRD_EXPORT int nrrdStateKeyValuePairsPropagate;
 /* ---- BEGIN non-NrrdIO */
 NRRD_EXPORT int nrrdStateBlind8BitRange;

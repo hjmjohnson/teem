@@ -21,6 +21,8 @@
 extern "C" {
 #endif
 
+#include <assert.h> /* at least for miscAir.c/airSinglePrintf */
+
 /* miscAir.c */
 extern double _airSanityHelper(double val);
 

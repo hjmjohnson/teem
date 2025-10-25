@@ -51,8 +51,6 @@ air:
   "inf", "-inf", "nan", and now "pi" on parsing.  And this will be a
   place to handle setlocale weirness.  However, the "Single"
   restriction is too cumbersome.
-******* Hey, what does airSinglePrintf do with the common "%.17g" for a double?
-  It seems to not have the smarts to see that it is fact for a double.
 * airArray->len should probably be size_t, not unsigned int. Along with
 this is biffMsgErrNum and nrrdKeyValueSize.
 * consider changing airIndexULL and airIndexClampULL to work with

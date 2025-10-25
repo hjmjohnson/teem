@@ -224,10 +224,12 @@ static int _nrrdSprintUL(char *s, const UL *v) {
   return sprintf(s, AIR_ULLONG_FMT, *v);
 }
 static int _nrrdSprintFL(char *s, const FL *v) {
-  /* having %.8g instead of %.9g was a roughly 20-year old bug */
-  return airSinglePrintf(NULL, s, "%.9g", (double)(*v)); }
+  /* having %.8g instead of %.9g was a roughly 20-year old bug,
+     but now using %g with TeemV2 airSinglePrintf */
+  return airSinglePrintf(NULL, s, "%g", *v); }
 static int _nrrdSprintDB(char *s, const DB *v) {
-  return airSinglePrintf(NULL, s, "%.17g", *v); }
+  /* not with %.17g thanks to TeemV2 airSinglePrintf */
+  return airSinglePrintf(NULL, s, "%lg", *v); }
 int (* const
 nrrdSprint[NRRD_TYPE_MAX+1])(char *, const void *) = {
   NULL,
@@ -264,9 +266,12 @@ static int _nrrdFprintUL(FILE *f, const UL *v) {
   return fprintf(f, AIR_ULLONG_FMT, *v);
 }
 static int _nrrdFprintFL(FILE *f, const FL *v) {
-  return airSinglePrintf(f, NULL, "%.8g", (double)(*v)); }
+  /* had %.8g here since r427 2002-04-29 (23-year old bug)
+     now using %g with TeemV2 airSinglePrintf instead of %.9g */
+  return airSinglePrintf(f, NULL, "%g", (double)(*v)); }
 static int _nrrdFprintDB(FILE *f, const DB *v) {
-  return airSinglePrintf(f, NULL, "%.17g", *v); }
+  /* not with %.17g thanks to TeemV2 airSinglePrintf */
+  return airSinglePrintf(f, NULL, "%lg", *v); }
 int (* const
 nrrdFprint[NRRD_TYPE_MAX+1])(FILE *, const void *) = {
   NULL,

@@ -348,12 +348,62 @@ upper-case library name.
 
 ========= air =========
 
+• (which commit?)
+BUG FIXES / behavior change in airSinglePrintf: The purpose of the function is to be like
+printf (either fprintf to FILE* or sprintf to char*, depending on which given pointer is
+non-NULL), with the harsh limit that there can only be a Single "%" conversion sequence
+(hence the name), but with useful handling of floating point (FP) values: ensuring that
+IEEE754 values are printed consistently, and some provision for printing FP values so
+that upon sscanf parsing you get back the value you started with (called round-trip
+accuracy). The FP-specific behavior was triggered by using conversion sequences %e, %f,
+%g, %le, %lf, or %lg.
+
+HOWEVER, the code had the mistaken belief that %f,%lf print `double`-type values with
+round-trip accuracy (they do not), and the logic for detecting inaccuracy in the case of
+%g,%lg was broken (BUG). E.g. the double parsed from 0.10000000000000002 (which is the
+next double after the one parsed from 0.1) would also be printed as "0.1".
+Also, for NaN it printed " NaN" instead of "NaN" (BUG),
+and "+inf" instead of "inf" (maybe not a bug but weird).
+
+So, for the 2025 re-write: now NaN is printed as "NaN", positive inf as "inf", and now
+%g,%lg gain new utility:
+* %g means: "Here's a float, I know you'll get it as a double through var-args,
+but I want you to print it with a concise string that parses back to the same float"
+* "%lg" means similarly: "Print this double to ensure round-trip accuracy"
+Round-trip accuracy is ensured by internally changing "%g" to "%.9g", or from "%lg" to
+"%.17g", when sscanf shows it to be necessary.
+
+As part of making this fix/change, Teem code using airSinglePrintf was updated
+from using %.9g and %.17g to %g and %lg. Thus, the double parsed from "0.1"
+was previously printed as "0.10000000000000001" (annoying) but is now printed
+as "0.1" (not annnoying and NO LESS ACCURATE! It parses to the same double!)
+This means possible changes in the string or printed output of the following:
+* (unrrdu/minmax.c) "unu minmax"
+* (nrrd/iter.c) nrrdIterContent() sprintf string for content of NrrdIter
+* (nrrd/accessors.c)
+  the nrrdSprint[NRRD_TYPE_MAX+1])(char *, const void *) and
+      nrrdFprint[NRRD_TYPE_MAX+1])(FILE *, const void *) arrays of value printers.
+  nrrdFprint[] is not used in Teem (but fixed BUG: used "%.8g" for floats(!) now "%g")
+  nrrdSprint[] is used in
+  - nrrd/formatText.c/_nrrdFormatText_write() (part of nrrdFormatText)
+  - nrrd/encodingAscii.c/_nrrdEncodingAscii_write() (part of nrrdEncodingAscii)
+  to save data values (as decimals strings) to file
+  Whether or not code using (directly or indirectly) will show these changes
+  is unfortunately not controllable because the nrrdFprint[],nrrdSprint[] value
+  printers don't take any other parameters like a NrrdIoState*.
+* (nrrd/write.c) _nrrdSprintFieldInfo() generates strings from Nrrd struct elements
+  for writing to a NRRD file, for fields like "spacings: ". Whether to use the new
+  behavior is controllable, via new field NrrdIoState->headerDoubleExcessPrecision
+  which defaults (via nrrdDefaultIoHeaderDoubleExcessPrecision) to AIR_FALSE;
+  pre-TeemV2 was equivalent to NrrdIoState->headerDoubleExcessPrecision = AIR_TRUE
+  Also noted below in "== nrrd =="
+
 • Tue Oct 21 13:51:58 2025 -0500 git short hash: 232c896b
 API CHANGE: Ever since GLK learned about IEEE754 there have been these macros in air.h:
    AIR_EXISTS_F, AIR_EXISTS_D, AIR_ISNAN_F
 which were completely sensitive to the argument being _F float or _D double because
 of the big-masking tricks involved.  These seemed useful.  But decades later they
-have gone completely unused within Teem, so it seems time to remove them.
+have gone completely unused within Teem, so it seems time to remove this cleverness.
 
 • 2025-09-29 06:27:50 +0000 (Mon, 29 Sep 2025) svn Revision: 7517
 API CHANGE: airMopDone now returns NULL, as do the wrapper functions airMopError and
@@ -1044,7 +1094,7 @@ updated to conform).
 
 ========= nrrd =========
 
-These first ~six are opportunistic fixes now that the major version is getting bumped:
+These first six • are opportunistic fixes now that the major version is getting bumped:
 
 • 2025-09-09 15:18:04 +0000 (Tue, 09 Sep 2025) svn Revision: 7377
 API CHANGE: NrrdKernel->numParm (# parms to kernel) is now renamed NrrdKernel->parmNum
@@ -1148,6 +1198,34 @@ unrelated concurrent change (I suppose an API CHANGE):
 change nrrdGetenvString(char **envStr, const char *envVar)
 --> nrrdGetenvString(const char **envStr, const char *envVar)
 because you shouldn't be modifying the value of the environment variable so learned
+
+• (which commit?)
+API NEW (ABI CHANGE) and NRRD format output change
+Added new field to NrrdIoState: headerDoubleExcessPrecision
+initialized via new default nrrdDefaultIoHeaderDoubleExcessPrecision
+(there is currently no corresponding environment variable for setting this).
+Connected to airSinglePrintf fixes described above. nrrd.h describes this as:
+    headerDoubleExcessPrecision; /* (new for TeemV2) ON WRITE, how to write out the
+                                    `double`s in the Nrrd struct into the NRRD header.
+                                    Turning headerDoubleExcessPrecision ON is the
+                                    pre-TeemV2 behavior of using `sprintf` conversion
+                                    sequence "%.17g", which means getting digit strings
+                                    that are sometimes longer than necessary to specify
+                                    all bits of a `double` (e.g. "0.10000000000000001"
+                                    instead of "0.1": both parse to same `double`).
+                                    Turning headerDoubleExcessPrecision OFF enables new
+                                    TeemV2 ways of writing a shorter but equivalent
+                                    (modulo parsing to `double`) digit strings */
+This affects many NRRD file headers i.e. everything stored as `double` in the Nrrd struct:
+  spacings:
+  thicknesses:
+  axis mins:
+  axis maxs:
+  old min:
+  old max:
+  space directions:
+  space origin:
+  measurement frame:
 
 • API NEW (ABI CHANGE): added new field to NrrdIoState: declineStdioOnTTY,
 described as follows in nrrd.h:

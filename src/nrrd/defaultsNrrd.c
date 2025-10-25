@@ -52,8 +52,10 @@ int nrrdDefaultResampleNonExistent = nrrdResampleNonExistentNoop;
 int nrrdDefaultDeclineStdioOnTTY = AIR_TRUE;
 /* ---- END non-NrrdIO */
 int nrrdDefaultCenter = nrrdCenterCell;
-/* matches how nrrdStateVerboseIO (gone in Teem2) was initialized */
+/* new for TeemV2; emulate pre-TeemV2 nrrdStateVerboseIO=1 initialization */
 int nrrdDefaultVerboseIO = 1; /* NrrdIO-hack-003 */
+/* new for TeemV2; pre-TeemV2 behavior equivalent to this being AIR_TRUE */
+int nrrdDefaultIoHeaderDoubleExcessPrecision = AIR_FALSE;
 
 /* these aren't really "defaults" because there's no other channel for
    specifying this information.  It is just global state.  Obviously,

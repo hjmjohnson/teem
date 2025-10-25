@@ -213,7 +213,7 @@ nrrdIoStateFormatGet(NrrdIoState *nio) {
 
 static void
 _nrrdStrcatSpaceVector(char *str, unsigned int spaceDim,
-                       const double val[NRRD_SPACE_DIM_MAX]) {
+                       const double val[NRRD_SPACE_DIM_MAX], int hdep) {
   char buff[AIR_STRLEN_MED + 1]; /* bad Gordon */
   unsigned int dd;
 
@@ -221,7 +221,7 @@ _nrrdStrcatSpaceVector(char *str, unsigned int spaceDim,
     strcat(str, "(");
     for (dd = 0; dd < spaceDim; dd++) {
       strcpy(buff, "");
-      airSinglePrintf(NULL, buff, "%.17g", val[dd]);
+      airSinglePrintf(NULL, buff, hdep ? "%.17g" : "%lg", val[dd]);
       strcat(str, buff);
       sprintf(buff, "%s", dd + 1 < spaceDim ? "," : ")");
       strcat(str, buff);
@@ -403,7 +403,7 @@ _nrrdSprintFieldInfo(char **strP, const char *prefix, const Nrrd *nrrd, NrrdIoSt
   const char *fs;
   unsigned int ii, dd, uintStrlen = 11, size_tStrlen = 33, doubleStrlen = 513;
   size_t fslen, fdlen, maxl;
-  int endi;
+  int endi, hdep;
 
   if (!(strP && prefix && nrrd && AIR_IN_CL(1, nrrd->dim, NRRD_DIM_MAX)
         && AIR_IN_OP(nrrdField_unknown, field, nrrdField_last))) {
@@ -424,6 +424,7 @@ _nrrdSprintFieldInfo(char **strP, const char *prefix, const Nrrd *nrrd, NrrdIoSt
      set *strP to NULL (all the other cases set it), to smoke out
      errors in how this function is called */
 
+  hdep = nio->headerDoubleExcessPrecision;
   fs = airEnumStr(nrrdField, field);
   fslen = strlen(prefix) + strlen(fs) + strlen(": ") + 1;
   switch (field) {
@@ -478,7 +479,7 @@ _nrrdSprintFieldInfo(char **strP, const char *prefix, const Nrrd *nrrd, NrrdIoSt
     *strP = AIR_CALLOC(fslen + nrrd->dim * (doubleStrlen + 1), char);
     sprintf(*strP, "%s%s:", prefix, fs);
     for (ii = !!dropAxis0; ii < nrrd->dim; ii++) {
-      airSinglePrintf(NULL, buff, " %.17g", nrrd->axis[ii].spacing);
+      airSinglePrintf(NULL, buff, hdep ? " %.17g" : " %lg", nrrd->axis[ii].spacing);
       strcat(*strP, buff);
     }
     break;
@@ -486,7 +487,7 @@ _nrrdSprintFieldInfo(char **strP, const char *prefix, const Nrrd *nrrd, NrrdIoSt
     *strP = AIR_CALLOC(fslen + nrrd->dim * (doubleStrlen + 1), char);
     sprintf(*strP, "%s%s:", prefix, fs);
     for (ii = !!dropAxis0; ii < nrrd->dim; ii++) {
-      airSinglePrintf(NULL, buff, " %.17g", nrrd->axis[ii].thickness);
+      airSinglePrintf(NULL, buff, hdep ? " %.17g" : " %lg", nrrd->axis[ii].thickness);
       strcat(*strP, buff);
     }
     break;
@@ -494,7 +495,7 @@ _nrrdSprintFieldInfo(char **strP, const char *prefix, const Nrrd *nrrd, NrrdIoSt
     *strP = AIR_CALLOC(fslen + nrrd->dim * (doubleStrlen + 1), char);
     sprintf(*strP, "%s%s:", prefix, fs);
     for (ii = !!dropAxis0; ii < nrrd->dim; ii++) {
-      airSinglePrintf(NULL, buff, " %.17g", nrrd->axis[ii].min);
+      airSinglePrintf(NULL, buff, hdep ? " %.17g" : " %lg", nrrd->axis[ii].min);
       strcat(*strP, buff);
     }
     break;
@@ -502,7 +503,7 @@ _nrrdSprintFieldInfo(char **strP, const char *prefix, const Nrrd *nrrd, NrrdIoSt
     *strP = AIR_CALLOC(fslen + nrrd->dim * (doubleStrlen + 1), char);
     sprintf(*strP, "%s%s:", prefix, fs);
     for (ii = !!dropAxis0; ii < nrrd->dim; ii++) {
-      airSinglePrintf(NULL, buff, " %.17g", nrrd->axis[ii].max);
+      airSinglePrintf(NULL, buff, hdep ? " %.17g" : " %lg", nrrd->axis[ii].max);
       strcat(*strP, buff);
     }
     break;
@@ -512,7 +513,7 @@ _nrrdSprintFieldInfo(char **strP, const char *prefix, const Nrrd *nrrd, NrrdIoSt
                        char);
     sprintf(*strP, "%s%s: ", prefix, fs);
     for (ii = !!dropAxis0; ii < nrrd->dim; ii++) {
-      _nrrdStrcatSpaceVector(*strP, nrrd->spaceDim, nrrd->axis[ii].spaceDirection);
+      _nrrdStrcatSpaceVector(*strP, nrrd->spaceDim, nrrd->axis[ii].spaceDirection, hdep);
       if (ii < nrrd->dim - 1) {
         strcat(*strP, " ");
       }
@@ -585,13 +586,13 @@ _nrrdSprintFieldInfo(char **strP, const char *prefix, const Nrrd *nrrd, NrrdIoSt
   case nrrdField_old_min:
     *strP = AIR_CALLOC(fslen + doubleStrlen, char);
     sprintf(*strP, "%s%s: ", prefix, fs);
-    airSinglePrintf(NULL, buff, "%.17g", nrrd->oldMin);
+    airSinglePrintf(NULL, buff, hdep ? "%.17g" : "%lg", nrrd->oldMin);
     strcat(*strP, buff);
     break;
   case nrrdField_old_max:
     *strP = AIR_CALLOC(fslen + doubleStrlen, char);
     sprintf(*strP, "%s%s: ", prefix, fs);
-    airSinglePrintf(NULL, buff, "%.17g", nrrd->oldMax);
+    airSinglePrintf(NULL, buff, hdep ? "%.17g" : "%lg", nrrd->oldMax);
     strcat(*strP, buff);
     break;
   case nrrdField_endian:
@@ -652,7 +653,7 @@ _nrrdSprintFieldInfo(char **strP, const char *prefix, const Nrrd *nrrd, NrrdIoSt
   case nrrdField_space_origin:
     *strP = AIR_CALLOC(fslen + nrrd->spaceDim * (doubleStrlen + strlen("(,) ")), char);
     sprintf(*strP, "%s%s: ", prefix, fs);
-    _nrrdStrcatSpaceVector(*strP, nrrd->spaceDim, nrrd->spaceOrigin);
+    _nrrdStrcatSpaceVector(*strP, nrrd->spaceDim, nrrd->spaceOrigin, hdep);
     break;
   case nrrdField_measurement_frame:
     *strP = AIR_CALLOC(fslen
@@ -664,7 +665,7 @@ _nrrdSprintFieldInfo(char **strP, const char *prefix, const Nrrd *nrrd, NrrdIoSt
       for (ii = 0; ii < nrrd->spaceDim; ii++) {
         colvec[ii] = nrrd->measurementFrame[dd][ii];
       }
-      _nrrdStrcatSpaceVector(*strP, nrrd->spaceDim, colvec);
+      _nrrdStrcatSpaceVector(*strP, nrrd->spaceDim, colvec, hdep);
       if (dd < nrrd->spaceDim - 1) {
         strcat(*strP, " ");
       }

@@ -53,8 +53,9 @@ unrrdu_minmaxDoit(const char *me, char *inS, int blind8BitRange, int singleLine,
   airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
   if (singleLine) {
     char minStr[128], maxStr[128], nexStr[128];
-    airSinglePrintf(NULL, minStr, "%.17g", range->min);
-    airSinglePrintf(NULL, maxStr, "%.17g", range->max);
+    /* (using TeemV2 airSinglePrintf) */
+    airSinglePrintf(NULL, minStr, "%lg", range->min);
+    airSinglePrintf(NULL, maxStr, "%lg", range->max);
     if (range->hasNonExist) {
       strcpy(nexStr, " non-existent");
     } else {
@@ -62,8 +63,9 @@ unrrdu_minmaxDoit(const char *me, char *inS, int blind8BitRange, int singleLine,
     }
     fprintf(fout, "%s %s%s\n", minStr, maxStr, nexStr);
   } else {
-    airSinglePrintf(fout, NULL, "min: %.17g\n", range->min);
-    airSinglePrintf(fout, NULL, "max: %.17g\n", range->max);
+    /* (using TeemV2 airSinglePrintf) */
+    airSinglePrintf(fout, NULL, "min: %lg\n", range->min);
+    airSinglePrintf(fout, NULL, "max: %lg\n", range->max);
     if (range->min == range->max) {
       if (0 == range->min) {
         fprintf(fout, "# min == max == 0.0 exactly\n");
