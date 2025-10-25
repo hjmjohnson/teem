@@ -34,7 +34,7 @@ static const char *_unrrdu_describeInfoL
 
 static int /* Biff: 1 */
 unrrdu_describeDoit(const char *me, char *fname, int skipData, int showPtrs,
-                    const char *sepStr, unsigned int sepWidth) {
+                    int elideNonExist, const char *sepStr, unsigned int sepWidth) {
   if (!strcmp("-", fname) && isatty(STDIN_FILENO)) {
     biffAddf(me, "declining to try reading Nrrd from stdin as tty (terminal)");
     return 1;
@@ -54,9 +54,8 @@ unrrdu_describeDoit(const char *me, char *fname, int skipData, int showPtrs,
     airMopError(mop);
     return 1;
   }
-  nrrdDescribeMore(stdout, nrrd, NULL /* prefix */, showPtrs,
-                   AIR_TRUE /* elideNonExist */, AIR_TRUE /* elideUnknown */, sepStr,
-                   sepWidth);
+  nrrdDescribeMore(stdout, nrrd, NULL /* prefix */, showPtrs, elideNonExist,
+                   AIR_TRUE /* elideUnknown */, sepStr, sepWidth);
   airMopOkay(mop);
   return 0;
 }
@@ -84,6 +83,10 @@ unrrdu_describeMain(int argc, const char **argv, const char *me, hestParm *hparm
   int showPtr;
   hestOptAdd_1_Bool(&opt, "ptr,showptr", "bool", &showPtr, "false",
                     "show actual hex values for pointers into memory");
+  int elideNonExist;
+  hestOptAdd_1_Bool(&opt, "ene,elidenonexist", "bool", &elideNonExist, "true",
+                    "if a Nrrd struct field is NaN meaning \"not set\" or \"unknown\", "
+                    "then don't print it");
   unsigned int inLen;
   hestOptAdd_Nv_String(&opt, NULL, "nin1", 1, -1, &inS, "-", "input nrrd filename(s)",
                        &inLen);
@@ -100,7 +103,8 @@ unrrdu_describeMain(int argc, const char **argv, const char *me, hestParm *hparm
       fprintf(stdout, "==> %s <==\n", inS[ni]);
     }
     char *err;
-    if (unrrdu_describeDoit(me, inS[ni], skipData, showPtr, sepStr, sepWidth)) {
+    if (unrrdu_describeDoit(me, inS[ni], skipData, showPtr, elideNonExist, sepStr,
+                            sepWidth)) {
       airMopAdd(mop, err = biffGetDone(me), airFree, airMopAlways);
       fprintf(stderr, "%s: trouble with \"%s\":\n%s", me, inS[ni], err);
       /* continue working on the remaining files */
