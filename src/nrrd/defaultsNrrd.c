@@ -53,7 +53,7 @@ int nrrdDefaultDeclineStdioOnTTY = AIR_TRUE;
 /* ---- END non-NrrdIO */
 int nrrdDefaultCenter = nrrdCenterCell;
 /* new for TeemV2; emulate pre-TeemV2 nrrdStateVerboseIO=1 initialization */
-int nrrdDefaultVerboseIO = 1; /* NrrdIO-hack-003 */
+int nrrdDefaultIoVerbose = 1; /* NrrdIO-hack-003 */
 /* new for TeemV2; pre-TeemV2 behavior equivalent to this being AIR_TRUE */
 int nrrdDefaultIoHeaderDoubleExcessPrecision = AIR_FALSE;
 
@@ -112,11 +112,11 @@ const char *const nrrdEnvVarDefaultCenter = "NRRD_DEFAULT_CENTER";
 const char *const nrrdEnvVarDefaultWriteCharsPerLine
   = "NRRD_DEFAULT_WRITE_CHARS_PER_LINE";
 const char *const nrrdEnvVarDefaultWriteValsPerLine = "NRRD_DEFAULT_WRITE_VALS_PER_LINE";
-/* over-writes nrrdEnvVarStateVerboseIO for setting nrrdDefaultVerboseIO */
-const char *const nrrdEnvVarDefaultVerboseIO = "NRRD_DEFAULT_VERBOSE_IO";
+/* over-writes _EnvVarStateVerboseIO for setting nrrdDefaultIoVerbose */
+const char *const nrrdEnvVarDefaultIoVerbose = "NRRD_DEFAULT_IO_VERBOSE";
 
 const char *const nrrdEnvVarStateKindNoop = "NRRD_STATE_KIND_NOOP";
-/* nrrdStateVerboseIO gone but still respect this to set nrrdDefaultVerboseIO */
+/* nrrdStateVerboseIO gone but still respect this to set nrrdDefaultIoVerbose */
 static const char *const _EnvVarStateVerboseIO = "NRRD_STATE_VERBOSE_IO";
 const char *const nrrdEnvVarStateKeyValuePairsPropagate
   = "NRRD_STATE_KEYVALUEPAIRS_PROPAGATE";
@@ -298,26 +298,26 @@ nrrdDefaultGetenv(void) {
   nrrdGetenvUInt(/**/ &nrrdDefaultWriteValsPerLine, NULL,
                  nrrdEnvVarDefaultWriteValsPerLine);
 
-  /* for TeemV2 nrrdStateVerboseIO --> nrrdDefaultVerboseIO but we'll
+  /* for TeemV2 nrrdStateVerboseIO --> nrrdDefaultIoVerbose but we'll
    still honor the old env var name if new env var name is not given */
   setOldWay = (AIR_TRUE == nrrdGetenvInt(&oldVal, NULL, _EnvVarStateVerboseIO));
-  setNewWay = (AIR_TRUE == nrrdGetenvInt(&newVal, NULL, nrrdEnvVarDefaultVerboseIO));
+  setNewWay = (AIR_TRUE == nrrdGetenvInt(&newVal, NULL, nrrdEnvVarDefaultIoVerbose));
   if (setOldWay) {
     if (!setNewWay) {
       fprintf(stderr,
               "%s: WARNING environment variable \"%s\" deprecated, "
               "use \"%s\" instead\n",
-              me, _EnvVarStateVerboseIO, nrrdEnvVarDefaultVerboseIO);
-      nrrdDefaultVerboseIO = oldVal;
+              me, _EnvVarStateVerboseIO, nrrdEnvVarDefaultIoVerbose);
+      nrrdDefaultIoVerbose = oldVal;
     } else if (setNewWay) {
       fprintf(stderr,
               "%s: WARNING environment variable \"%s\" "
               "over-riding deprecated \"%s\"\n",
-              me, nrrdEnvVarDefaultVerboseIO, _EnvVarStateVerboseIO);
-      nrrdDefaultVerboseIO = newVal;
+              me, nrrdEnvVarDefaultIoVerbose, _EnvVarStateVerboseIO);
+      nrrdDefaultIoVerbose = newVal;
     }
   } else if (setNewWay) {
-    nrrdDefaultVerboseIO = newVal;
+    nrrdDefaultIoVerbose = newVal;
   }
   return;
 }

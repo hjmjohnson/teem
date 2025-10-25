@@ -348,7 +348,7 @@ upper-case library name.
 
 ========= air =========
 
-• (which commit?)
+• Sat Oct 25 07:07:14 2025 -0500 git short hash 9b821d47
 BUG FIXES / behavior change in airSinglePrintf: The purpose of the function is to be like
 printf (either fprintf to FILE* or sprintf to char*, depending on which given pointer is
 non-NULL), with the harsh limit that there can only be a Single "%" conversion sequence
@@ -1150,18 +1150,19 @@ is basically zero, at least zero compared to the total confusion created
 by these defaults getting accidentally set to something besides 1.
 
 • Sun Oct 19 09:51:15 2025 -0500 git short hash: 45f1ae4b
+  (and variable naming fixed by WHICH?)
 A big over-due API CHANGE, plus other things related or done concurrently:
 ** The global variable nrrdStateVerboseIO is gone,
 ** replaced by NrrdIoState->verbose (usually nio->verbose)
 It was crazy madness that the verbosity of Nrrd IO functions was not part of the NrrdIoState struct
 that is nearly as old as the Nrrd struct; now that is fixed.
-There is instead a new global nrrdDefaultVerboseIO which initializes NrrdIoState->verbose;
+There is instead a new global nrrdDefaultIoVerbose which initializes NrrdIoState->verbose;
 this is a real improvement: checking and tweaking nio->verbose inside the various IO functions
 is a lot closer to being thread-safe than checking and tweaking global nrrdStateVerboseIO.
-Related: the environment variable name nrrdEnvVarStateVerboseIO = "NRRD_STATE_VERBOSE_IO"
-used by nrrdStateGetenv to set nrrdStateVerboseIO can still be used to set nrrdDefaultVerboseIO;
+Related: the environment variable "NRRD_STATE_VERBOSE_IO" used previously by nrrdStateGetenv
+to set nrrdStateVerboseIO can still be used to set nrrdDefaultIoVerbose;
 that functionality is entirely preserved, though with a deprecation warning from nrrdDefaultGetenv.
-Instead, use the new nrrdEnvVarDefaultVerboseIO = "NRRD_DEFAULT_VERBOSE_IO"
+Instead, use the new nrrdEnvVarDefaultIoVerbose = "NRRD_DEFAULT_IO_VERBOSE"
 
 Also, fixed a BUG in error messages when using "data file: LIST" or friends:
 unu project: error parsing "tmp.nhdr" as nrrd for -i,--input option:
@@ -1199,7 +1200,7 @@ change nrrdGetenvString(char **envStr, const char *envVar)
 --> nrrdGetenvString(const char **envStr, const char *envVar)
 because you shouldn't be modifying the value of the environment variable so learned
 
-• (which commit?)
+• Sat Oct 25 07:07:14 2025 -0500 git short hash 9b821d47  (also in air above)
 API NEW (ABI CHANGE) and NRRD format output change
 Added new field to NrrdIoState: headerDoubleExcessPrecision
 initialized via new default nrrdDefaultIoHeaderDoubleExcessPrecision

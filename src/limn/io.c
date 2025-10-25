@@ -722,9 +722,9 @@ limnPolyDataReadLMPD(limnPolyData *pld, FILE *file) {
   mop = airMopNew();
   nrrd = nrrdNew();
   airMopAdd(mop, nrrd, (airMopper)nrrdNuke, airMopAlways);
-  hackhack = nrrdDefaultVerboseIO;
+  hackhack = nrrdDefaultIoVerbose;
   // to stop notices of file position not being at end, post-fread
-  nrrdDefaultVerboseIO = 0;
+  nrrdDefaultIoVerbose = 0;
   if (nrrdRead(nrrd, file, NULL)) {
     biffMovef(LIMN, NRRD, "%s: trouble reading %s data", me, name);
     airMopError(mop);
@@ -862,7 +862,7 @@ limnPolyDataReadLMPD(limnPolyData *pld, FILE *file) {
   }
 
   airMopOkay(mop);
-  nrrdDefaultVerboseIO = hackhack;
+  nrrdDefaultIoVerbose = hackhack;
   return 0;
 }
 

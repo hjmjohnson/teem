@@ -243,7 +243,7 @@ void
 nrrdIoStateInit(NrrdIoState *nio) {
 
   if (nio) {
-    nio->verbose = nrrdDefaultVerboseIO;
+    nio->verbose = nrrdDefaultIoVerbose;
     nio->path = (char *)airFree(nio->path);
     nio->base = (char *)airFree(nio->base);
     nio->line = (char *)airFree(nio->line);
@@ -291,6 +291,7 @@ nrrdIoStateInit(NrrdIoState *nio) {
     nio->learningHeaderStrlen = AIR_FALSE;
     nio->oldData = NULL;
     nio->oldDataSize = 0;
+    nio->headerDoubleExcessPrecision = nrrdDefaultIoHeaderDoubleExcessPrecision;
     nio->format = nrrdFormatUnknown;
     nio->encoding = nrrdEncodingUnknown;
   }
@@ -304,7 +305,7 @@ nrrdIoStateNew(void) {
   nio = (NrrdIoState *)calloc(1, sizeof(NrrdIoState));
   if (nio) {
     airPtrPtrUnion appu;
-    nio->verbose = nrrdDefaultVerboseIO;
+    nio->verbose = nrrdDefaultIoVerbose;
     nio->path = NULL;
     nio->base = NULL;
     nio->line = NULL;

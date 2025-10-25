@@ -670,9 +670,9 @@ extern int nrrdDefaultResampleNonExistent;
 extern int nrrdDefaultDeclineStdioOnTTY;
 /* ---- END non-NrrdIO */
 extern int nrrdDefaultCenter;
-/* TeemV2: nrrdStateVerboseIO --> nrrdDefaultVerboseIO,
+/* TeemV2: nrrdStateVerboseIO --> nrrdDefaultIoVerbose,
    and added NrrdIoState->verbose which is initialized by this */
-extern int nrrdDefaultVerboseIO;
+extern int nrrdDefaultIoVerbose;
 extern int nrrdDefaultIoHeaderDoubleExcessPrecision;
 extern int nrrdStateKeyValuePairsPropagate;
 /* ---- BEGIN non-NrrdIO */
@@ -695,8 +695,8 @@ extern const char *const nrrdEnvVarDefaultWriteMoreThanFloatInText;
 extern const char *const nrrdEnvVarDefaultCenter;
 extern const char *const nrrdEnvVarDefaultWriteCharsPerLine;
 extern const char *const nrrdEnvVarDefaultWriteValsPerLine;
-/* TeemV2: nrrdEnvVarStateVerboseIO --> nrrdEnvVarDefaultVerboseIO */
-extern const char *const nrrdEnvVarDefaultVerboseIO;
+/* TeemV2: nrrdEnvVarStateVerboseIO --> nrrdEnvVarDefaultIoVerbose */
+extern const char *const nrrdEnvVarDefaultIoVerbose;
 extern const char *const nrrdEnvVarStateKindNoop;
 extern const char *const nrrdEnvVarStateKeyValuePairsPropagate;
 extern const char *const nrrdEnvVarStateBlind8BitRange;

@@ -1082,12 +1082,12 @@ traceread(pullTrace *trc, FILE *file, unsigned int _ti) {
   } else {                                                                              \
     airOneLine(file, line, AIR_STRLEN_MED + 1);                                         \
   }
-  hackhack = nrrdDefaultVerboseIO;
-  nrrdDefaultVerboseIO = 0;
+  hackhack = nrrdDefaultIoVerbose;
+  nrrdDefaultIoVerbose = 0;
   READ(vert);
   READ(strn);
   READ(stab);
-  nrrdDefaultVerboseIO = hackhack;
+  nrrdDefaultIoVerbose = hackhack;
 
   sprintf(name, "seed idx");
   lineLen = airOneLine(file, line, AIR_STRLEN_MED + 1);

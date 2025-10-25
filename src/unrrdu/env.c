@@ -247,9 +247,9 @@ unrrdu_envMain(int argc, const char **argv, const char *me, hestParm *hparm) {
           "some operation that modified its samples.",
           hparm->columns);
   envInt(out,                                                            /* */
-         nrrdEnvVarDefaultVerboseIO,                                     /* */
-         nrrdDefaultVerboseIO,                                           /* */
-         "nrrdDefaultVerboseIO",                                         /* */
+         nrrdEnvVarDefaultIoVerbose,                                     /* */
+         nrrdDefaultIoVerbose,                                           /* */
+         "nrrdDefaultIoVerbose",                                         /* */
          "The default verbosity level of Nrrd input/output operations.", /* */
          hparm->columns);
   envBool(out,
