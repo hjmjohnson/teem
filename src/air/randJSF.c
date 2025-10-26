@@ -312,7 +312,7 @@ airJSFRandNormal2_f(airJSFRand *rng, float val[2]) {
     xx = airJSFRandBiUni_f(rng);
     yy = airJSFRandBiUni_f(rng);
     rr = xx * xx + yy * yy;
-  } while (!rr || rr >= 1);
+  } while (rr == 0 || rr >= 1);
   rr = sqrtf((-2 * logf(rr)) / rr);
   val[0] = xx * rr;
   val[1] = yy * rr;
@@ -327,7 +327,7 @@ airJSFRandNormal_f(airJSFRand *rng) {
     xx = airJSFRandBiUni_f(rng);
     yy = airJSFRandBiUni_f(rng);
     rr = xx * xx + yy * yy;
-  } while (!rr || rr >= 1);
+  } while (rr == 0 || rr >= 1);
   rr = sqrtf((-2 * logf(rr)) / rr);
   /* sum of two normals has variance 2 or stdv sqrt(2) */
   return rr * (xx + yy) * 0.7071067811865475244f;
@@ -341,7 +341,7 @@ airJSFRandNormal2_d(airJSFRand *rng, double val[2]) {
     xx = airJSFRandBiUni_d(rng);
     yy = airJSFRandBiUni_d(rng);
     rr = xx * xx + yy * yy;
-  } while (!rr || rr >= 1);
+  } while (rr == 0 || rr >= 1);
   rr = sqrt((-2 * log(rr)) / rr);
   val[0] = xx * rr;
   val[1] = yy * rr;
@@ -355,7 +355,7 @@ airJSFRandNormal_d(airJSFRand *rng) {
     xx = airJSFRandBiUni_d(rng);
     yy = airJSFRandBiUni_d(rng);
     rr = xx * xx + yy * yy;
-  } while (!rr || rr >= 1);
+  } while (rr == 0 || rr >= 1);
   rr = sqrt((-2 * log(rr)) / rr);
   /* sum of two normals has variance 2 or stdv sqrt(2) */
   return rr * (xx + yy) * 0.7071067811865475244;

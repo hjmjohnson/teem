@@ -413,7 +413,7 @@ histPushCommandLine(hestInputStack *hist, int argc, const char **argv,
     printf("%s: new hinTop = %p\n", __func__, AIR_VOIDP(hist->hin + idx));
   }
   hist->hin[idx].source = hestSourceCommandLine;
-  hist->hin[idx].argc = argc;
+  hist->hin[idx].argc = AIR_UINT(argc);
   hist->hin[idx].argv = argv;
   hist->hin[idx].argIdx = 0;
   return 0;
@@ -504,7 +504,7 @@ histPushDefault(hestInputStack *hist, const char *dflt, const hestParm *hparm) {
   uint idx = airArrayLenIncr(hist->hinArr, 1);
   hist->hin[idx].source = hestSourceDefault;
   hist->hin[idx].dfltStr = dflt;
-  hist->hin[idx].dfltLen = strlen(dflt);
+  hist->hin[idx].dfltLen = AIR_UINT(strlen(dflt));
   hist->hin[idx].carIdx = 0;
   return 0;
 }

@@ -214,7 +214,7 @@ int (*const _hestParseSingle[_HEST_TYPE_MAX + 1])(void *, const char *, _hestPPa
   static void _invertScalar##TT(void *_valP) {                                          \
     ctype *valP = (ctype *)_valP;                                                       \
     ctype val = *valP;                                                                  \
-    *valP = !val;                                                                       \
+    *valP = (val == 0);                                                                 \
   }
 _INVERT_SCALAR(B, int)
 _INVERT_SCALAR(H, short)
