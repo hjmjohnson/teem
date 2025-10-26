@@ -193,13 +193,13 @@ def proc_hdr(fout, fin, hname: str) -> None:  # out, fin: files
         # air.h's inclusion of teem/airExistsConf.h moot for cdef
         drop_at('#if !defined(TEEM_NON_CMAKE)', 3, lines)
         # drop AIR_EXISTS definition UGH HEY HEY YOOHOOO THIS IS SO TERRIBLY FRAGILE!!
-        # Even if you count the (currently!) 45 lines in that make up the too-long
+        # Even if you count the (currently!) 40 lines in that make up the too-long
         # commentary about AIR_EXISTS in air.h, that's not the right count because
         # of previous processing, probably the unmacro() invocation above. Had to
-        # find this 38 number by experimentation YIKES
+        # find this number by experimentation YIKES
         drop_at(
             '/* NrrdIO-hack-002 */ /* simpler AIR_EXISTS for NrrdIO */',
-            38,
+            35,
             lines,
         )
     elif hname == 'biff.h':

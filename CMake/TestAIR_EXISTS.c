@@ -25,7 +25,7 @@ static const airFloat airFloatNegInf = {0xff800000};
 
 #define AIR_CAST(t, v) ((t)(v))
 /* MUST BE COPIED DIRECTLY FROM from air.h !! */
-#define AIR_EXISTS(x)  (AIR_CAST(int, !((x) - (x))))
+#define AIR_EXISTS(x)  (((x) - (x)) == 0)
 
 int
 main(int argc, char *argv[]) {

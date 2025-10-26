@@ -735,28 +735,25 @@ AIR_EXPORT void airMopSingleOkay(airArray *arr, void *ptr);
 ** than "finite" now pervades Teem source code.
 **
 ** Much commentary, from a wide-eyed student GLK, used to be here.  The upshot:
-** - Some compilers, with some options, violate IEEE 754 on x == x being false for NaNs
+** - Some compilers, with some options, violate IEEE754 by saying that Nan == NaN
 **   (but, that's moot for this macro because inf == inf).
 ** - GLK now believes that whether denormals are flushed to zero, and the role of
 **   extended precision FP registers, are also moot for this macro, but welcomes
 **   counterexamples or expert guidance.
 **
-** The current definition based on "!(x-x)" has seemed to work since 2012.  With
-** -Wfloat-conversion, Clang warns that "implicit conversion turns floating-point number
-** into integer" with x-x being the operand of "!", which is unfortunate. But there is
-** no undefined behavior, at least as detected by clang -fsanitize=undefined, in !NaN
-** (as arising from !(NaN-NaN) or !(inf-inf)). BTW GLK is unsure why the current macro
-** explicitly casts the result of "!" to int, since "!" already produces an int:
-** https://en.cppreference.com/w/c/language/operator_logical. A more straight-forward
-** alternative, which avoids float conversion warnings, would be to use "x-x == x-x"
+** This used to use `!((x)-(x))` but Clang -Wfloat-conversion warns about
+** "implicit conversion turns floating-point number into integer" with x-x being the
+** operand of `!`. The current `((x)-(x))==0` avoids that since 0 is promoted to the
+** floating-point type of x-x. One alternative that avoids all possible conversion
+** and promotion is (x-x)==(x-x).
 **
 ** Configuring with CMake uses teem/CMake/TestAIR_EXISTS.c (and tries to compile it the
 ** same as the rest of Teem will be compiled) to test this macro (but NOTE: it has to be
 ** copy-pasted to there since it can't read air.h), which then produces
 ** teem-install-dir/include/teem/airExistsConf.h, which #define's AIR_EXISTS_MACRO_FAILS
 ** or not, which controls whether AIR_EXISTS here uses the clever macro or the more
-** reliable function call airExists. There may yet be failure modes untested by
-** TestAIR_EXISTS.c, and by the tests in air/airSanity().
+** reliable function call airExists. There may be yet more failure modes untested by
+** TestAIR_EXISTS.c and untested by the tests in air/airSanity().
 */
 #if !defined(TEEM_NON_CMAKE)
 #  include "teem/airExistsConf.h"
@@ -766,7 +763,7 @@ AIR_EXPORT void airMopSingleOkay(airArray *arr, void *ptr);
 #if defined(_WIN32) || defined(__ECC) || defined(AIR_EXISTS_MACRO_FAILS)
 #define AIR_EXISTS(x) (airExists(x))
 #else
-#define AIR_EXISTS(x) (AIR_CAST(int, !((x) - (x))))
+#define AIR_EXISTS(x) (((x) - (x)) == 0)
 #endif
 /* clang-format on */
 
