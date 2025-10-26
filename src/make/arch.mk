@@ -20,7 +20,7 @@
 #### See NOTE in ../GNUMakefile about the big simplification to the non-CMake build
 #### process made for TeemV2.  This new file contains all the architecture-specific
 #### details about how to compile (on a non-Windows machine). Here there is only the
-#### most bare-bones platform-specific logic: some variables are differently for
+#### most bare-bones platform-specific logic: some variables are set differently for
 #### Mac vs Linux
 
 # yes, we should probably be using ?= instead = for the assingments below, but
