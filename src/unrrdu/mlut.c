@@ -68,7 +68,7 @@ unrrdu_mlutMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                      "specify the type (\"int\", \"float\", etc.) of the "
                      "output nrrd. "
                      "By default (not using this option), the output type "
-                     "is the lut's type.",
+                     "is the lut's type",
                      &unrrduHestMaybeTypeCB);
   OPT_ADD_NIN(nin, "input nrrd");
   OPT_ADD_NOUT(out, "output nrrd");

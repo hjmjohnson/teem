@@ -69,7 +69,7 @@ unrrdu_imapMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   hestOptAdd_1_Other(&opt, "t,type", "type", &typeOut, "default",
                      "specify the type (\"int\", \"float\", etc.) of the output "
                      "nrrd. By default (not using this option), the output type "
-                     "is the map's type.",
+                     "is the map's type",
                      &unrrduHestMaybeTypeCB);
   OPT_ADD_NIN(nin, "input nrrd");
   OPT_ADD_NOUT(out, "output nrrd");
