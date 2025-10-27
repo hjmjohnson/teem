@@ -298,7 +298,7 @@ hestArgVecPrint(const char *caller, const char *info, const hestArgVec *havec) {
   };
   printf("%s%s%s hestArgVec %p has %u args:\n   ", airStrlen(caller) ? caller : "", //
          airStrlen(caller) ? ": " : "",                                             //
-         info, AIR_VOIDP(havec), havec->len);
+         info, AIR_CVOIDP(havec), havec->len);
   for (uint idx = 0; idx < havec->hargArr->len; idx++) {
     const hestArg *harg;
     harg = havec->harg[idx];

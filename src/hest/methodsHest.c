@@ -706,8 +706,8 @@ off the possibility of doing an argtable-style static creation of a hestOpt arra
 int /* Biff: (private) 1 */
 _hestOPCheck(const hestOpt *hopt, const hestParm *hparm) {
   if (!(hopt && hparm)) {
-    biffAddf(HEST, "%s%sgot NULL hopt (%p) or hparm (%p)", _ME_, AIR_VOIDP(hopt),
-             AIR_VOIDP(hparm));
+    biffAddf(HEST, "%s%sgot NULL hopt (%p) or hparm (%p)", _ME_, AIR_CVOIDP(hopt),
+             AIR_CVOIDP(hparm));
     return 1;
   }
   uint optNum = hopt->arrLen;

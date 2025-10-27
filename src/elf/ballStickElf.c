@@ -30,6 +30,14 @@
  * 2010, Part I, LNCS 6361, pp. 673-680. Springer, 2010
  */
 
+#if defined(__clang__)
+#  pragma clang diagnostic push
+/* elfBallStickOptimize_f(elfBallStickParms *parms, const elfSingleShellDWI *dwi)
+   calls dlevmar_der() with `dwi` as last (non-const) `void*` arg;
+   this warning is about that loss of const-ness */
+#  pragma clang diagnostic ignored "-Wcast-qual"
+#endif
+
 /* elfKernelStick:
  *
  * Computes the deconvolution kernel corresponding to a single stick, for
@@ -421,4 +429,9 @@ elfBallStickOptimize_f(elfBallStickParms *parms,
   return 3;
 #endif
 }
+
+#if defined(__clang__)
+#  pragma clang diagnostic pop
+#endif
+
 /* clang-format on */
