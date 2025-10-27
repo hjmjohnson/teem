@@ -20,7 +20,7 @@
 #include "../hest.h"
 
 int
-main() {
+main(void) {
   printf("Writing decls.h and then bailing\n");
   FILE *ff = fopen("decls.h", "w");
   hestOptAddDeclsPrint(ff);

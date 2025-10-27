@@ -21,7 +21,7 @@
 #include "../privateBiff.h"
 
 int
-main() {
+main(void) {
   char *tmp, *s1, *s2;
   biffMsg *msg1, *msg2;
 

@@ -25,7 +25,7 @@ main(int argc, const char **argv) {
   AIR_UNUSED(argc);
   printf("%s: yo\n", argv[0]);
   hestArg *harg = hestArgNew();
-  printf("%s: harg = %p\n", argv[0], harg);
+  printf("%s: harg = %p\n", argv[0], AIR_CVOIDP(harg));
   printf("%s: |%s|\n", argv[0], harg->str);
   hestArgAddChar(harg, 'c');
   printf("%s: |%s|\n", argv[0], harg->str);

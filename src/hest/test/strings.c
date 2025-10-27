@@ -24,7 +24,7 @@ char *me;
 extern void _airCloPrintStr(FILE *f, int indent, int already, int width, char *_str);
 
 int
-main() {
+main(void) {
   char line[1025];
 
   strcpy(line, "bingo  \t\t   bob    \t   boasts   \n   bumperstickers  \n  ");

@@ -22,7 +22,7 @@
 char *me;
 
 void
-usage() {
+usage(void) {
   /*                      0     1       2     3    (4)  */
   fprintf(stderr, "usage: %s <hvolin> <dim> <nout>\n", me);
   exit(1);

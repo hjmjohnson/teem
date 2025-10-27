@@ -22,7 +22,7 @@
 char *me;
 
 void
-usage() {
+usage(void) {
   /*                      0     1        2       (3) */
   fprintf(stderr, "usage: %s <colIn> <spaceOut> \n", me);
   exit(1);
