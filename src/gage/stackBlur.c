@@ -96,7 +96,7 @@ gageStackBlurParmInit(gageStackBlurParm *parm) {
 ** does not use biff
 */
 gageStackBlurParm * /* Biff: nope */
-gageStackBlurParmNew() {
+gageStackBlurParmNew(void) {
   gageStackBlurParm *parm;
 
   parm = AIR_CALLOC(1, gageStackBlurParm);

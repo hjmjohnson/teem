@@ -263,7 +263,7 @@ const pushEnergy *const pushEnergyAll[PUSH_ENERGY_TYPE_MAX + 1] = {
 };
 
 pushEnergySpec * /* Biff: nope */
-pushEnergySpecNew() {
+pushEnergySpecNew(void) {
   pushEnergySpec *ensp;
   int pi;
 

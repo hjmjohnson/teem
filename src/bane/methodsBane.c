@@ -38,7 +38,7 @@ _axisEmpty(baneAxis *axis) {
 }
 
 baneHVolParm * /* Biff: nope */
-baneHVolParmNew() {
+baneHVolParmNew(void) {
   baneHVolParm *hvp;
   int i, j;
 

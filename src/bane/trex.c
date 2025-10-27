@@ -53,7 +53,7 @@ baneTRexRead(char *fname) {
 }
 
 void
-baneTRexDone() {
+baneTRexDone(void) {
 
   nrrdNuke(baneNpos);
 }

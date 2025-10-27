@@ -153,7 +153,7 @@ dyeColorGetAs(float *v0P, float *v1P, float *v2P, dyeColor *colIn, int space) {
 }
 
 dyeColor * /* Biff: nope */
-dyeColorNew() {
+dyeColorNew(void) {
   dyeColor *col;
 
   col = (dyeColor *)calloc(1, sizeof(dyeColor));

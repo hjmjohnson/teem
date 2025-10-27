@@ -955,7 +955,7 @@ typedef union {
 
 /* uses biff */
 tenFiberMulti * /* Biff: NULL */
-tenFiberMultiNew() {
+tenFiberMultiNew(void) {
   static const char me[] = "tenFiberMultiNew";
   tenFiberMulti *ret;
   fiberunion tfu;

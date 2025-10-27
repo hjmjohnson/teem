@@ -136,7 +136,7 @@ resampleContextInit(NrrdResampleContext *rsmc) {
 }
 
 NrrdResampleContext * /* Biff: nope */
-nrrdResampleContextNew() {
+nrrdResampleContextNew(void) {
   NrrdResampleContext *rsmc;
 
   rsmc = AIR_CALLOC(1, NrrdResampleContext);

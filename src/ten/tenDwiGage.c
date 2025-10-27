@@ -1003,7 +1003,7 @@ _tenDwiGageKindTmpl = {
 };
 
 gageKind * /* Biff: nope */
-tenDwiGageKindNew() {
+tenDwiGageKindNew(void) {
   gageKind *kind;
 
   kind = AIR_CALLOC(1, gageKind);

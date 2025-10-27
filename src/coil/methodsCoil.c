@@ -46,7 +46,7 @@ coilVolumeCheck(const Nrrd *nin, const coilKind *kind) {
 }
 
 coilContext * /* Biff: nope */
-coilContextNew() {
+coilContextNew(void) {
   coilContext *cctx;
 
   cctx = (coilContext *)calloc(1, sizeof(coilContext));

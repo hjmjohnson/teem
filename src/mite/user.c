@@ -21,7 +21,7 @@
 #include "privateMite.h"
 
 miteUser * /* Biff: nope */
-miteUserNew() {
+miteUserNew(void) {
   miteUser *muu;
   int i;
 

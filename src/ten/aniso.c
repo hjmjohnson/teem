@@ -1279,7 +1279,7 @@ tenAnisoHistogram(Nrrd *nout, const Nrrd *nin, const Nrrd *nwght, int right, int
 }
 
 tenEvecRGBParm * /* Biff: nope */
-tenEvecRGBParmNew() {
+tenEvecRGBParmNew(void) {
   tenEvecRGBParm *rgbp;
 
   rgbp = AIR_CAST(tenEvecRGBParm *, calloc(1, sizeof(tenEvecRGBParm)));

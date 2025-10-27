@@ -21,7 +21,7 @@
 #include "privateTen.h"
 
 tenEMBimodalParm * /* Biff: nope */
-tenEMBimodalParmNew() {
+tenEMBimodalParmNew(void) {
   tenEMBimodalParm *biparm;
 
   biparm = (tenEMBimodalParm *)calloc(1, sizeof(tenEMBimodalParm));

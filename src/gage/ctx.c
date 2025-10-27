@@ -29,7 +29,7 @@ typedef union {
 ******** gageContextNew()
 */
 gageContext * /* Biff: nope */
-gageContextNew() {
+gageContextNew(void) {
   gageContext *ctx;
   perVolumeUnion pvu;
   int ii;

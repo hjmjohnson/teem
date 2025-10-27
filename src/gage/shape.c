@@ -52,7 +52,7 @@ _mopShapeReset(void *_shape) {
 }
 
 gageShape * /* Biff: nope */
-gageShapeNew() {
+gageShapeNew(void) {
   gageShape *shape;
 
   shape = (gageShape *)calloc(1, sizeof(gageShape));

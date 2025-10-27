@@ -21,7 +21,7 @@
 #include "privateMite.h"
 
 miteThread * /* Biff: NULL */
-miteThreadNew() {
+miteThreadNew(void) {
   static const char me[] = "miteThreadNew";
   miteThread *mtt;
   int ii;

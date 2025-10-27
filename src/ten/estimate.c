@@ -191,7 +191,7 @@ _tenEstimateOutputInit(tenEstimateContext *tec) {
 }
 
 tenEstimateContext * /* Biff: nope */
-tenEstimateContextNew() {
+tenEstimateContextNew(void) {
   tenEstimateContext *tec;
   unsigned int fi;
   airPtrPtrUnion appu;

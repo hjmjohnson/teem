@@ -577,7 +577,7 @@ const pullEnergy *const pullEnergyAll[PULL_ENERGY_TYPE_MAX + 1] = {
 };
 
 pullEnergySpec * /* Biff: nope */
-pullEnergySpecNew() {
+pullEnergySpecNew(void) {
   pullEnergySpec *ensp;
   int pi;
 

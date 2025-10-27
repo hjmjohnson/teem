@@ -21,7 +21,7 @@
 #include "privateTen.h"
 
 tenGlyphParm * /* Biff: nope */
-tenGlyphParmNew() {
+tenGlyphParmNew(void) {
   tenGlyphParm *parm;
 
   parm = (tenGlyphParm *)calloc(1, sizeof(tenGlyphParm));

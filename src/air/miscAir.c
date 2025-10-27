@@ -688,7 +688,7 @@ airDoneStr(double start, double here, double end, char *str) {
 ** hour), January 1, 1970.
 */
 double
-airTime() {
+airTime(void) {
 #ifdef _WIN32
   /* HEY: this has crummy precision */
   return (double)clock() / CLOCKS_PER_SEC;

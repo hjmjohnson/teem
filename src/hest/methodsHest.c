@@ -304,7 +304,7 @@ this avoids all the reallocations in the past action of hestOptAdd and the like.
 #define INCR 32
 
 hestParm * /* Biff: nope */
-hestParmNew() {
+hestParmNew(void) {
   hestParm *hparm;
 
   hparm = AIR_CALLOC(1, hestParm);

@@ -153,7 +153,7 @@ _TIJK_INIT_MAX(float, f, 3)
 static const tijk_refine_rank1_parm refine_rank1_parm_default = {
   1e-10, 1e-6, 0.3, 0.9, 0.5, 50};
 
-tijk_refine_rank1_parm *tijk_refine_rank1_parm_new() {
+tijk_refine_rank1_parm *tijk_refine_rank1_parm_new(void) {
   tijk_refine_rank1_parm *parm;
   parm = (tijk_refine_rank1_parm *)malloc(sizeof(tijk_refine_rank1_parm));
   if (parm) {
@@ -277,7 +277,7 @@ _TIJK_REFINE_MAX(float, f, 3)
 static const tijk_refine_rankk_parm refine_rankk_parm_default = {
   1e-10, 1e-4, 0, NULL};
 
-tijk_refine_rankk_parm *tijk_refine_rankk_parm_new() {
+tijk_refine_rankk_parm *tijk_refine_rankk_parm_new(void) {
   tijk_refine_rankk_parm *parm;
   parm = (tijk_refine_rankk_parm *)malloc(sizeof(tijk_refine_rankk_parm));
   if (parm) {
@@ -367,7 +367,7 @@ _TIJK_REFINE_RANKK(float, f, 3)
 static const tijk_approx_heur_parm approx_heur_parm_default = {
   1e-10, 0.1, NULL, NULL};
 
-tijk_approx_heur_parm *tijk_approx_heur_parm_new() {
+tijk_approx_heur_parm *tijk_approx_heur_parm_new(void) {
   tijk_approx_heur_parm *parm;
   parm = (tijk_approx_heur_parm *)malloc(sizeof(tijk_approx_heur_parm));
   if (parm) {

@@ -49,7 +49,7 @@ tenFiberSingleDone(tenFiberSingle *tfbs) {
 }
 
 tenFiberSingle * /* Biff: nope */
-tenFiberSingleNew() {
+tenFiberSingleNew(void) {
   tenFiberSingle *ret;
 
   ret = AIR_CALLOC(1, tenFiberSingle);

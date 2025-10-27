@@ -21,7 +21,7 @@
 #include "privateNrrd.h"
 
 NrrdIter * /* Biff: nope */
-nrrdIterNew() {
+nrrdIterNew(void) {
   NrrdIter *iter;
 
   if ((iter = (NrrdIter *)calloc(1, sizeof(NrrdIter)))) {

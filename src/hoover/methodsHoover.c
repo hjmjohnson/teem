@@ -20,7 +20,7 @@
 #include "hoover.h"
 
 hooverContext * /* Biff: nope */
-hooverContextNew() {
+hooverContextNew(void) {
   hooverContext *ctx;
 
   ctx = (hooverContext *)calloc(1, sizeof(hooverContext));

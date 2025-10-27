@@ -355,7 +355,7 @@ ctxInit(limnCbfCtx *fctx) {
 }
 
 limnCbfCtx * /* Biff: nope */
-limnCbfCtxNew() {
+limnCbfCtxNew(void) {
   limnCbfCtx *ret;
 
   ret = AIR_CALLOC(1, limnCbfCtx);

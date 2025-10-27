@@ -21,7 +21,7 @@
 #include "privatePull.h"
 
 pullVolume * /* Biff: nope */
-pullVolumeNew() {
+pullVolumeNew(void) {
   pullVolume *vol;
 
   vol = AIR_CAST(pullVolume *, calloc(1, sizeof(pullVolume)));

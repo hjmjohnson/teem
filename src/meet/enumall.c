@@ -52,7 +52,7 @@ grep "airEnum *" {air,biff,hest,nrrd,ell,moss,unrrdu,alan,tijk,gage,dye,bane,lim
 */
 /* clang-format on */
 const airEnum ** /* Biff: nope */
-meetAirEnumAll() {
+meetAirEnumAll(void) {
   airArray *arr;
   const airEnum **enm;
   unsigned int ii;
