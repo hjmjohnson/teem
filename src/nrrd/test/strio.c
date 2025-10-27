@@ -43,7 +43,7 @@ main(int argc, char **argv) {
   AIR_UNUSED(argc);
   me = argv[0];
 
-  nrrdDefaultVerboseIO = 10;
+  nrrdDefaultIoVerbose = 10;
 
   nio = nrrdIoStateNew();
   nrrd = nrrdNew();

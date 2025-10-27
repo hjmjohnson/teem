@@ -37,7 +37,7 @@ main(int argc, char **argv) {
     usage(me);
   }
 
-  nrrdDefaultVerboseIO = 10;
+  nrrdDefaultIoVerbose = 10;
 
   if (nrrdLoad(nrrd = nrrdNew(), argv[1], NULL)) {
     fprintf(stderr, "%s: trouble loading \"%s\":\n%s", me, argv[1], err = biffGet(NRRD));
