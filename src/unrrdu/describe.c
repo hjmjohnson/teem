@@ -102,7 +102,6 @@ unrrdu_describeMain(int argc, const char **argv, const char *me, hestParm *hparm
     if (inLen > 1) {
       fprintf(stdout, "==> %s <==\n", inS[ni]);
     }
-    char *err;
     if (unrrdu_describeDoit(me, inS[ni], skipData, showPtr, elideNonExist, sepStr,
                             sepWidth)) {
       airMopAdd(mop, err = biffGetDone(me), airFree, airMopAlways);

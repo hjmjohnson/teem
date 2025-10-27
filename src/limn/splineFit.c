@@ -479,7 +479,7 @@ ctxBuffersSet(limnCbfCtx *fctx, uint pNum) {
        1 = sum_i(tw[i]) for i=0...len-1 */
     vsum = tsum = 0;
     for (ii = 0; ii < wlen; ii++) {
-      double kw = nrrdKernelDiscreteGaussian->eval1_d(ii, kparm);
+      kw = nrrdKernelDiscreteGaussian->eval1_d(ii, kparm);
       vsum += (!ii ? 1 : 2) * (fctx->vw[ii] = kw);
       tsum += (fctx->tw[ii] = ii * kw);
     }

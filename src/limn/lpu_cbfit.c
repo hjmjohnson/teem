@@ -209,7 +209,7 @@ limnPu_cbfitMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   }
   if (roll) {
     Nrrd *ntmp;
-    double *xy, *tmp;
+    double *tmp;
     int pnum, pi;
     if (airStrlen(synthOut)) {
       fprintf(stderr, "%s: can only roll (%d) input XY points, not splines\n", me, roll);
@@ -403,12 +403,12 @@ limnPu_cbfitMain(int argc, const char **argv, const char *me, hestParm *hparm) {
       printf("%s: Zero corners found!\n", me);
     } else {
       unsigned int ci;
-      const double *tvt;
+      const double *ctvt;
       printf("%s: %u corners found:\n", me, fctx->cnum);
       for (ci = 0; ci < fctx->cnum; ci++) {
-        tvt = fctx->ctvt + 6 * ci;
+        ctvt = fctx->ctvt + 6 * ci;
         printf("%3u: vi=%3u  lt=(%g,%g)  vv=(%g,%g)  rt=(%g,%g)\n", ci, fctx->cidx[ci],
-               tvt[0], tvt[1], tvt[2], tvt[3], tvt[4], tvt[5]);
+               ctvt[0], ctvt[1], ctvt[2], ctvt[3], ctvt[4], ctvt[5]);
       }
     }
     airMopOkay(mop);
