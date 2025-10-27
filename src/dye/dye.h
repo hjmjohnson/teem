@@ -69,7 +69,7 @@ typedef struct {
 /* methodsDye.c */
 DYE_EXPORT const int dyePresent;
 DYE_EXPORT const char *const dyeBiffKey;
-DYE_EXPORT const char *const dyeSpaceToStr[DYE_MAX_SPACE + 1];
+DYE_EXPORT const char * /* const */ dyeSpaceToStr[DYE_MAX_SPACE + 1];
 DYE_EXPORT const airEnum *const dyeSpace;
 DYE_EXPORT int dyeStrToSpace(char *str);
 DYE_EXPORT dyeColor *dyeColorInit(dyeColor *col);

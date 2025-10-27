@@ -24,7 +24,8 @@ const int dyePresent = 42;
 const char *const dyeBiffKey = "dye";
 
 /* clang-format off */
-const char *const
+const char * /* const */ /* See Hmmm below about missed
+                            opportunity for const-correctness in airEnum*/
 dyeSpaceToStr[DYE_MAX_SPACE+1] = {
   "(unknown)",
   "HSV",
