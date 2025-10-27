@@ -217,7 +217,7 @@ airDrandMT53_r(airRandMTState *rng) {
 ** that use airRandMTStateGlobal
 */
 void
-airRandMTStateGlobalInit() {
+airRandMTStateGlobalInit(void) {
   _GLOBAL_ALLOC;
   _GLOBAL_INIT;
 }
@@ -230,7 +230,7 @@ airSrandMT(unsigned int seed) {
 }
 
 double
-airDrandMT() {
+airDrandMT(void) {
   _GLOBAL_ALLOC;
   _GLOBAL_INIT;
   return airDrandMT_r(airRandMTStateGlobal);
