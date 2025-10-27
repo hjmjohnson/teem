@@ -40,7 +40,8 @@ hestArgNew(void) {
   harg->len = 0;
   airPtrPtrUnion appu;
   appu.c = &(harg->str);
-  harg->strArr = airArrayNew(appu.v, &(harg->len), sizeof(char), INCR);
+  harg->strArr = airArrayNew(appu.v, NULL, sizeof(char), INCR);
+  harg->strArr->uintLenP = &(harg->len);
   // underlying array harg->str will not be reallocated if shrunk
   harg->strArr->noReallocWhenSmaller = AIR_TRUE;
   airArrayStructCB(harg->strArr, setNul, NULL);
@@ -134,7 +135,8 @@ hestArgVecNew(void) {
   havec->len = 0;
   hestPtrPtrUnion hppu;
   hppu.hargP = &(havec->harg);
-  havec->hargArr = airArrayNew(hppu.v, &(havec->len), sizeof(hestArg *), INCR);
+  havec->hargArr = airArrayNew(hppu.v, NULL, sizeof(hestArg *), INCR);
+  havec->hargArr->uintLenP = &(havec->len);
   // underlying array havec->harg will not be reallocated if shrunk
   havec->hargArr->noReallocWhenSmaller = AIR_TRUE;
   // airArrayStructCB(havec->hargArr, hargInit, hargDone);
@@ -365,7 +367,8 @@ hestInputStackNew(void) {
   hist->len = 0;
   hestPtrPtrUnion hppu;
   hppu.hin = &(hist->hin);
-  hist->hinArr = airArrayNew(hppu.v, &(hist->len), sizeof(hestInput), INCR);
+  hist->hinArr = airArrayNew(hppu.v, NULL, sizeof(hestInput), INCR);
+  hist->hinArr->uintLenP = &(hist->len);
   airArrayStructCB(hist->hinArr, hinInit, hinDone);
   hist->stdinRead = AIR_FALSE;
   return hist;
