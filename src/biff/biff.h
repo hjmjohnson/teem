@@ -35,7 +35,12 @@
 #    define BIFF_EXPORT extern __declspec(dllimport)
 #  endif
 #else /* TEEM_STATIC || UNIX */
-#  define BIFF_EXPORT extern
+#  if !defined(TEEM_STATIC)
+/*   Explicitly set visibility to "default" for builds with -fvsibility=hidden */
+#    define BIFF_EXPORT extern __attribute__((visibility("default")))
+#  else
+#    define BIFF_EXPORT extern
+#  endif
 #endif
 /* ---- END non-NrrdIO */
 

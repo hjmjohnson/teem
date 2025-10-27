@@ -40,7 +40,12 @@
 #    define TEN_EXPORT extern __declspec(dllimport)
 #  endif
 #else /* TEEM_STATIC || UNIX */
-#  define TEN_EXPORT extern
+#  if !defined(TEEM_STATIC)
+/*   Explicitly set visibility to "default" for builds with -fvsibility=hidden */
+#    define TEN_EXPORT extern __attribute__((visibility("default")))
+#  else
+#    define TEN_EXPORT extern
+#  endif
 #endif
 
 #ifdef __cplusplus

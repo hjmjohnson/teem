@@ -65,7 +65,12 @@ extern "C" {
 #    define AIR_EXPORT extern __declspec(dllimport)
 #  endif
 #else /* TEEM_STATIC || UNIX */
-#  define AIR_EXPORT extern
+#  if !defined(TEEM_STATIC)
+/*   Explicitly set visibility to "default" for builds with -fvsibility=hidden */
+#    define AIR_EXPORT extern __attribute__((visibility("default")))
+#  else
+#    define AIR_EXPORT extern
+#  endif
 #endif
 
 #if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MINGW32__)

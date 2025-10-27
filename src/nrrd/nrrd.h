@@ -47,7 +47,12 @@
 #    define NRRD_EXPORT extern __declspec(dllimport)
 #  endif
 #else /* TEEM_STATIC || UNIX */
-#  define NRRD_EXPORT extern
+#  if !defined(TEEM_STATIC)
+/*   Explicitly set visibility to "default" for builds with -fvsibility=hidden */
+#    define NRRD_EXPORT extern __attribute__((visibility("default")))
+#  else
+#    define NRRD_EXPORT extern
+#  endif
 #endif
 /* ---- END non-NrrdIO */
 
