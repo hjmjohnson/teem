@@ -191,7 +191,7 @@ makeVolume(Nrrd *nin, unsigned int sx, unsigned int sy, unsigned int sz,
 }
 
 int
-main() {
+main(void) {
   airArray *mop;
   char *err;
 
