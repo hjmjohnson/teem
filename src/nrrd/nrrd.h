@@ -47,7 +47,12 @@
 #    define NRRD_EXPORT extern __declspec(dllimport)
 #  endif
 #else /* TEEM_STATIC || UNIX */
-#  define NRRD_EXPORT extern
+#  if !defined(TEEM_STATIC)
+/*   shared library built w/ -fvisibility=hidden will hide symbols not EXPORTed here */
+#    define NRRD_EXPORT extern __attribute__((visibility("default")))
+#  else
+#    define NRRD_EXPORT extern
+#  endif
 #endif
 /* ---- END non-NrrdIO */
 

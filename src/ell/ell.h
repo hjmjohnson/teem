@@ -35,7 +35,12 @@
 #    define ELL_EXPORT extern __declspec(dllimport)
 #  endif
 #else /* TEEM_STATIC || UNIX */
-#  define ELL_EXPORT extern
+#  if !defined(TEEM_STATIC)
+/*   shared library built w/ -fvisibility=hidden will hide symbols not EXPORTed here */
+#    define ELL_EXPORT extern __attribute__((visibility("default")))
+#  else
+#    define ELL_EXPORT extern
+#  endif
 #endif
 
 #ifdef __cplusplus
