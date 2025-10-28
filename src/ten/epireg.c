@@ -698,7 +698,7 @@ _tenEpiRegEstimHST(Nrrd *nhst, Nrrd *npxfr, int ninLen, Nrrd *ngrad) {
       }
     }
     if (ell_Nm_mul(nans, ninv[z], nvec)) {
-      biffAddf(TEN, ELL, "%s: trouble estimating model (slice %d): Hx, Hy, Hz", me, z);
+      biffMovef(TEN, ELL, "%s: trouble estimating model (slice %d): Hx, Hy, Hz", me, z);
       airMopError(mop);
       return 1;
     }

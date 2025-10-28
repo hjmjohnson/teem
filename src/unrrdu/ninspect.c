@@ -315,7 +315,7 @@ doit(Nrrd *nout, const Nrrd *nin, int smart, float amount, unsigned int margin,
   }
   if (!E) E |= nrrdInset(nout, nout, nproj[0], min);
   if (E) {
-    biffAddf(UNRRDU, NRRD, "%s: couldn't composite output (which = %d)", me, which);
+    biffMovef(UNRRDU, NRRD, "%s: couldn't composite output (which = %d)", me, which);
     airMopError(mop);
     return 1;
   }

@@ -216,7 +216,7 @@ gageStructureTensor(Nrrd *nout, const Nrrd *nin, int dScale, int iScale, int dsm
   osz = AIR_INT((nin->axis[2].size) / dsmp);
   if (nrrdMaybeAlloc_va(nout, nrrdTypeDouble, 4, AIR_SIZE_T(7), AIR_SIZE_T(osx),
                         AIR_SIZE_T(osy), AIR_SIZE_T(osz))) {
-    biffAddf(GAGE, NRRD, "%s: couldn't allocate output", me);
+    biffMovef(GAGE, NRRD, "%s: couldn't allocate output", me);
     airMopError(mop);
     return 1;
   }
