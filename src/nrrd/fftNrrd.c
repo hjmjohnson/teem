@@ -20,7 +20,7 @@
 #include "nrrd.h"
 #include "privateNrrd.h"
 
-#if TEEM_FFTW3 /* ============================================ */
+#ifdef TEEM_FFTW3 /* ============================================ */
 
 #  include <fftw3.h>
 

@@ -18,7 +18,7 @@
 #include "elf.h"
 /* clang-format off */
 
-#if TEEM_LEVMAR
+#ifdef TEEM_LEVMAR
 #  include <levmar.h>
 #endif
 
@@ -192,7 +192,7 @@ elfBallStickPredict_f(elfBallStickParms *parms, float *odf,
   return 0;
 }
 
-#if TEEM_LEVMAR
+#ifdef TEEM_LEVMAR
 /* Callbacks for levmar-based optimization of ball-and-stick model */
 
 /* pp[0]: log(d) pp[1]: VF1 pp[2]: theta1 pp[3]: phi1
@@ -330,7 +330,7 @@ _levmarBallStickJacCB(double *p, double *jac, int m, int n, void *_data) {
 int /* Biff: nope */
 elfBallStickOptimize_f(elfBallStickParms *parms,
                        const elfSingleShellDWI *dwi) {
-#if TEEM_LEVMAR
+#ifdef TEEM_LEVMAR
   double lmparms[10], *dwis;
   int lmret=0;
   unsigned int k;

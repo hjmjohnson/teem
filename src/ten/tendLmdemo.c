@@ -21,11 +21,11 @@
 
 #include "ten.h"
 #include "privateTen.h"
-#if TEEM_LEVMAR
+#ifdef TEEM_LEVMAR
 #  include <levmar.h>
 #endif
 
-#if TEEM_LEVMAR
+#ifdef TEEM_LEVMAR
 #  define INFO "Demonstrates using levmar "
 static const char *_tend_lmdemoInfoL
   = (INFO " https://users.ics.forth.gr/~lourakis/levmar/ implementation of "
@@ -193,7 +193,7 @@ Set to opts=NULL for defaults to be used (listed above)
 GLK's understanding of these functions is also in the `if (bag->verb)` diagnostics
 about the info[LM_INFO_SZ] vector and interpreting the stopping info[6]
 */
-#if TEEM_LEVMAR
+#ifdef TEEM_LEVMAR
 // these constants come from levmar.h
 static double optsDefault[5] = {LM_INIT_MU,     // 0  (from looking at lm_core.c)
                                 LM_STOP_THRESH, // 1
@@ -217,6 +217,8 @@ levmarCall(Nrrd *ndata, int ajac, int itmax,
   }
   int M = (int)(bag->M);
   int N = (int)(bag->N);
+  /* assert() gives our intent, but with NDEBUG assert() is moot, and without
+     using both bndLo and bndHi we'll get unused parameter warnings */
   assert(!!bndLo == !!bndHi);           // either have both bndLo and bndHi or neither
   double *ym = (double *)(ndata->data); // measured y values
   AIR_UNUSED(ndata);
@@ -225,15 +227,15 @@ levmarCall(Nrrd *ndata, int ajac, int itmax,
   AIR_UNUSED(N);
   AIR_UNUSED(ym);
   char lmfname[AIR_STRLEN_SMALL + 1];
-  if (ajac) {     // analytic Jacobian
-    if (!bndLo) { // no lower bounds or upper bounds
+  if (ajac) {               // analytic Jacobian
+    if (!bndLo && !bndHi) { // no lower bounds nor upper bounds
       strcpy(lmfname, "dlevmar_der");
       /* extern int dlevmar_der(
          void (*func)(double *p, double *hx, int m, int n, void *adata),
          void (*jacf)(double *p, double *j, int m, int n, void *adata),
          double *p, double *x, int m, int n, int itmax, double *opts,
          double *info, double *work, double *covar, void *adata); */
-#if TEEM_LEVMAR
+#ifdef TEEM_LEVMAR
       IT = dlevmar_der(funcPredict,                          //
                        funcJacobian,                         //
                        bag->parmCurr, ym, M, N, itmax, opts, //
@@ -259,7 +261,7 @@ levmarCall(Nrrd *ndata, int ajac, int itmax,
       double *p, double *x, int m, int n, double *lb, double *ub, double *dscl,
       int itmax, double *opts, double *info, double *work, double *covar, void *adata);
       */
-#if TEEM_LEVMAR
+#ifdef TEEM_LEVMAR
       IT = dlevmar_bc_der(funcPredict,                                 //
                           funcJacobian,                                //
                           bag->parmCurr, ym, M, N, bndLo, bndHi, NULL, //
@@ -267,13 +269,13 @@ levmarCall(Nrrd *ndata, int ajac, int itmax,
 #endif
     }
   } else { // !ajac: numerical derivatives of predicted data
-    if (!bndLo) {
+    if (!bndLo && !bndHi) {
       strcpy(lmfname, "dlevmar_dif");
       /* extern int dlevmar_dif(
          void (*func)(double *p, double *hx, int m, int n, void *adata),
          double *p, double *x, int m, int n, int itmax, double *opts,
          double *info, double *work, double *covar, void *adata); */
-#if TEEM_LEVMAR
+#ifdef TEEM_LEVMAR
       IT = dlevmar_dif(funcPredict,                          //
                        bag->parmCurr, ym, M, N, itmax, opts, //
                        info, NULL, NULL, AIR_VOIDP(bag));
@@ -285,14 +287,14 @@ levmarCall(Nrrd *ndata, int ajac, int itmax,
       double *p, double *x, int m, int n, double *lb, double *ub, double *dscl,
       int itmax, double *opts, double *info, double *work, double *covar, void *adata);
       */
-#if TEEM_LEVMAR
+#ifdef TEEM_LEVMAR
       IT = dlevmar_bc_dif(funcPredict,                                 //
                           bag->parmCurr, ym, M, N, bndLo, bndHi, NULL, //
                           itmax, opts, info, NULL, NULL, AIR_VOIDP(bag));
 #endif
     }
   }
-#if !(TEEM_LEVMAR)
+#ifndef TEEM_LEVMAR
   printf("%s: Did NOT call %s() because we don't have TEEM_LEVMAR\n", __func__, lmfname);
 #endif
   printf("%s: After %d iters, %s ended at parmCurr =\n", __func__, IT, lmfname);
@@ -382,7 +384,7 @@ tend_lmdemoMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   int itmax;
   hestOptAdd_1_Int(&hopt, "itmax", "# iters", &itmax, "100", "cap on # iterations");
 // https://gcc.gnu.org/onlinedocs/cpp/Stringizing.html#Stringizing
-#if TEEM_LEVMAR
+#ifdef TEEM_LEVMAR
 #  define _str(s) #s
 #  define str(s)  _str(s)
 #else

@@ -20,14 +20,14 @@
 #include "nrrd.h"
 #include "privateNrrd.h"
 
-#if TEEM_BZIP2
+#ifdef TEEM_BZIP2
 #  include <bzlib.h>
 #endif
 
 static int
 _nrrdEncodingBzip2_available(void) {
 
-#if TEEM_BZIP2
+#ifdef TEEM_BZIP2
   return AIR_TRUE;
 #else
   return AIR_FALSE;
@@ -38,7 +38,7 @@ static int /* Biff: 1 */
 _nrrdEncodingBzip2_read(FILE *file, void *_data, size_t elNum, Nrrd *nrrd,
                         NrrdIoState *nio) {
   static const char me[] = "_nrrdEncodingBzip2_read";
-#if TEEM_BZIP2
+#ifdef TEEM_BZIP2
   size_t bsize, total_read, block_size;
   int read, bzerror = BZ_OK;
   long int bi;
@@ -137,7 +137,7 @@ static int /* Biff: 1 */
 _nrrdEncodingBzip2_write(FILE *file, const void *_data, size_t elNum, const Nrrd *nrrd,
                          NrrdIoState *nio) {
   static const char me[] = "_nrrdEncodingBzip2_write";
-#if TEEM_BZIP2
+#ifdef TEEM_BZIP2
   size_t bsize, total_written, block_size;
   int bs, bzerror = BZ_OK;
   char *data;

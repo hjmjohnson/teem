@@ -19,7 +19,7 @@
 
 #include "ten.h"
 #include "privateTen.h"
-#if TEEM_LEVMAR
+#ifdef TEEM_LEVMAR
 #  include <levmar.h>
 #endif
 
@@ -244,7 +244,7 @@ _tenDwiGageFilter(gageContext *ctx, gagePerVolume *pvl) {
 ** n: number of observations: number of DWI's in our case
 ** k: number of parameters: number of tensor components in our case
 */
-#if TEEM_LEVMAR
+#ifdef TEEM_LEVMAR
 #if 0 /* not used anymore? */
 static double
 _tenComputeAIC(double residual, int n, int k) {
@@ -320,7 +320,7 @@ _tenLevmarPeledCB(double *pp, double *xx, int mm, int nn, void *_pvlData) {
   }
   return;
 }
-#endif /* #if TEEM_LEVMAR */
+#endif /* #ifdef TEEM_LEVMAR */
 
 static void
 _tenDwiGageAnswer(gageContext *ctx, gagePerVolume *pvl) {
@@ -572,7 +572,7 @@ _tenDwiGageAnswer(gageContext *ctx, gagePerVolume *pvl) {
   }
 
   if (GAGE_QUERY_ITEM_TEST(pvl->query, tenDwiGage2TensorPeled)) {
-#if TEEM_LEVMAR
+#ifdef TEEM_LEVMAR
 #define PARAMS 4
     double *twoTen, Cp /* , residual, AICSingFit, AICTwoFit */;
     /* Vars for the NLLS */
@@ -823,7 +823,7 @@ _tenDwiGagePvlDataNew(const gageKind *kind) {
 
   /* here's an okay spot to check our compile-time assumptions
      about the levmar library */
-#if TEEM_LEVMAR
+#ifdef TEEM_LEVMAR
   /* this is needed to make sure that the tenDwiGage2TensorPeledLevmarInfo
      item definition above is valid */
   if (5 != LM_OPTS_SZ) {

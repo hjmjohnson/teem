@@ -20,7 +20,7 @@
 #include "nrrd.h"
 #include "privateNrrd.h"
 
-#if TEEM_BZIP2
+#ifdef TEEM_BZIP2
 #  include <bzlib.h>
 #endif
 

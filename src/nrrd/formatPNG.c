@@ -21,7 +21,7 @@
 #include "privateNrrd.h"
 
 #include <teemPng.h>
-#if TEEM_PNG
+#ifdef TEEM_PNG
 #  include <png.h>
 #endif
 
@@ -30,7 +30,7 @@
 static int
 _nrrdFormatPNG_available(void) {
 
-#if TEEM_PNG
+#ifdef TEEM_PNG
   return AIR_TRUE;
 #else
   return AIR_FALSE;
