@@ -36,7 +36,7 @@
 #  endif
 #else /* TEEM_STATIC || UNIX */
 #  if !defined(TEEM_STATIC)
-/*   building with -fvisibility=hidden will hide symbols not EXPORTed here */
+/*   shared library built w/ -fvisibility=hidden will hide symbols not EXPORTed here */
 #    define ELL_EXPORT extern __attribute__((visibility("default")))
 #  else
 #    define ELL_EXPORT extern
