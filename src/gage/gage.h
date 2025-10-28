@@ -38,7 +38,7 @@
 #  endif
 #else /* TEEM_STATIC || UNIX */
 #  if !defined(TEEM_STATIC)
-/*   shared library built w/ -fvisibility=hidden will hide symbols not EXPORTed here */
+/*   If built w/ -fvisibility=hidden, only EXPORTed symbols are visible in shared lib */
 #    define GAGE_EXPORT extern __attribute__((visibility("default")))
 #  else
 #    define GAGE_EXPORT extern

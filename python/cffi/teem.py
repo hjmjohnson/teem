@@ -481,7 +481,7 @@ _BIFF_DICT = {  # contents here are filled in by teem/python/cffi/exult.py Tffi.
     'gageStackBlurManage': (_equals_one, 0, b'gage', 'gage/stackBlur.c:1700'),
     'gageUpdate': (_equals_one, 0, b'gage', 'gage/update.c:311'),
     'dyeConvert': (_equals_one, 0, b'dye', 'dye/convertDye.c:349'),
-    'dyeColorParse': (_equals_one, 0, b'dye', 'dye/methodsDye.c:183'),
+    'dyeColorParse': (_equals_one, 0, b'dye', 'dye/methodsDye.c:184'),
     'baneClipNew': (_equals_null, 0, b'bane', 'bane/clip.c:100'),
     'baneClipAnswer': (_equals_one, 0, b'bane', 'bane/clip.c:150'),
     'baneClipCopy': (_equals_null, 0, b'bane', 'bane/clip.c:165'),

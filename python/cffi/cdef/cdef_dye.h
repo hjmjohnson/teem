@@ -41,7 +41,7 @@ typedef struct {
 /* methodsDye.c */
 extern const int dyePresent;
 extern const char *const dyeBiffKey;
-extern const char *const dyeSpaceToStr[DYE_MAX_SPACE + 1];
+extern const char * /* const */ dyeSpaceToStr[DYE_MAX_SPACE + 1];
 extern const airEnum *const dyeSpace;
 extern int dyeStrToSpace(char *str);
 extern dyeColor *dyeColorInit(dyeColor *col);

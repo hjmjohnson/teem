@@ -179,8 +179,8 @@ def proc_hdr(fout, fin, hname: str) -> None:  # out, fin: files
     lines = list(filter(None, [proc_line(line) for line in lines]))
     # remove sets of 3 lines, starting with '#ifdef __cplusplus'
     drop_at_all('#ifdef __cplusplus', 3, lines)
-    # remove sets of 9 lines that define <LIB>_EXPORT
-    drop_at_all('#if defined(_WIN32) && !defined(__CYGWIN__) && !defined(TEEM_STATIC)', 9, lines)
+    # remove sets of 14 lines (FOR NOW!) that define <LIB>_EXPORT
+    drop_at_all('#if defined(_WIN32) && !defined(__CYGWIN__) && !defined(TEEM_STATIC)', 14, lines)
     if hname == 'air.h':  # handling specific to air.h
         # air.h has a set of 15 lines around airLLong, airULLong typedefs
         # this currently signals it's start, though (HEY) seems fragile
