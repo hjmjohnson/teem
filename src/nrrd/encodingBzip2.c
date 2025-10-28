@@ -133,6 +133,16 @@ _nrrdEncodingBzip2_read(FILE *file, void *_data, size_t elNum, Nrrd *nrrd,
 #endif
 }
 
+/* Considering BZ2_bzWrite https://sourceware.org/pub/bzip2/docs/v101/manual_3.html
+   The third arg is `void *data`.
+   It should be `const void *data`, no?
+   Meanwhile, we need a local `const char *` pointer to point to the part of the
+   data not yet written.  So we sneakily alias these two kinds of pointers together. */
+typedef union {
+  void *vvp;       /* volatile void pointer */
+  const char *ccp; /* const char * pointer */
+} ptrAlias;
+
 static int /* Biff: 1 */
 _nrrdEncodingBzip2_write(FILE *file, const void *_data, size_t elNum, const Nrrd *nrrd,
                          NrrdIoState *nio) {
@@ -140,7 +150,7 @@ _nrrdEncodingBzip2_write(FILE *file, const void *_data, size_t elNum, const Nrrd
 #ifdef TEEM_BZIP2
   size_t bsize, total_written, block_size;
   int bs, bzerror = BZ_OK;
-  char *data;
+  ptrAlias dataAlias;
   BZFILE *bzfout;
 
   bsize = nrrdElementSize(nrrd) * elNum;
@@ -174,22 +184,22 @@ _nrrdEncodingBzip2_write(FILE *file, const void *_data, size_t elNum, const Nrrd
      as we think we should. */
   total_written = 0;
   /* Pointer to the blocks as we write them. */
-  data = (char *)_data;
+  dataAlias.ccp = (const char *)_data;
 
   /* Ok, now we can begin writing. */
   bzerror = BZ_OK;
   while (bsize - total_written > block_size) {
-    BZ2_bzWrite(&bzerror, bzfout, data, block_size);
+    BZ2_bzWrite(&bzerror, bzfout, dataAlias.vvp, block_size);
     if (BZ_OK != bzerror) break;
     /* Increment the data pointer to the next available spot. */
-    data += block_size;
+    dataAlias.ccp += block_size;
     total_written += block_size;
   }
   /* write the last (possibly smaller) block when its humungous data;
      write the whole data when its small */
   if (BZ_OK == bzerror) {
     block_size = bsize >= total_written ? bsize - total_written : 0;
-    BZ2_bzWrite(&bzerror, bzfout, data, block_size);
+    BZ2_bzWrite(&bzerror, bzfout, dataAlias.vvp, block_size);
     total_written += block_size;
   }
 
