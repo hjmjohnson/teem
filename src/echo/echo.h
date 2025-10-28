@@ -41,7 +41,7 @@
 #  endif
 #else /* TEEM_STATIC || UNIX */
 #  if !defined(TEEM_STATIC)
-/*   Explicitly set visibility to "default" for builds with -fvsibility=hidden */
+/*   building with -fvisibility=hidden will hide symbols not EXPORTed here */
 #    define ECHO_EXPORT extern __attribute__((visibility("default")))
 #  else
 #    define ECHO_EXPORT extern
