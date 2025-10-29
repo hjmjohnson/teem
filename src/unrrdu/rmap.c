@@ -92,8 +92,6 @@ unrrdu_rmapMain(int argc, const char **argv, const char *me, hestParm *hparm) {
 
   unrrduGetenvDefaultImplicitLutRmapRescale();
   /* NOTE: comment in lut.c describes logic for how rescale is set */
-  fprintf(stderr, "!%s: unrrduDefaultImplicitLutRmapRescale = %d\n", me,
-          unrrduDefaultImplicitLutRmapRescale);
   if (!(AIR_EXISTS(nmap->axis[nmap->dim - 1].min)
         && AIR_EXISTS(nmap->axis[nmap->dim - 1].max))) {
     rescale = unrrduDefaultImplicitLutRmapRescale;
