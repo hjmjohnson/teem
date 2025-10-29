@@ -310,7 +310,7 @@ many things that were awkward-looking in 80 columns look cleaner in 90 columns a
 clang reformatting. 100 columns might make even more sense (and changing 90-->100 columns
 will be a smaller change than 80-->90); time will tell.
 
-========= all libraries in general =========
+========= all or many libraries in general =========
 
 "teem/python" has long had a "ctypes" subdir for an (automatically generated)
 ctypes-based Python module for all of Teem. Unfortunately, this relied on a hacked up
@@ -345,6 +345,96 @@ Also, this ensured that header files do not declare things that are never actual
 defined.  This is all in the new teem/src/_util/scan-symbols.py .  An analogous
 teem/src/_util/scan-defines.py makes sure that things #defined really start with an
 upper-case library name.
+
+• Wed Oct 29 11:44:47 2025 -0500 git short hash: 116c6cbd
+API CHANGE: Finishing the `Default` global variable naming that should have been done
+with r6964 and r6965 that was focused on hest.
+libDefFoo is now libDefaultFao, as itemized below.
+Why: Is "Def" "Define" or "Default"? Removing clever-but-ambiguous brevity is a TeemV2 goal.
+Also: revisiting these global (grumble) variables revealed that some of them have over-stayed
+their welcome, so they were REMOVED as noted below.
+Affects: moss, unrrdu, gage, bane, limn, hoover, ten, mite
+
+* moss (used in "unu ilk"):
+mossDefCenter --> mossDefaultCenter
+
+* unrrdu (for "unu"):
+unrrduDefNumColumns --> unrrduDefaultNumColumns
+
+* gage:
+gageDefVerbose --> gageDefaultVerbose
+gageDefGradMagCurvMin --> gageDefaultGradMagCurvMin
+gageDefRenormalize --> gageDefaultRenormalize
+gageDefCheckIntegrals --> gageDefaultCheckIntegrals
+gageDefK3Pack --> gageDefaultK3Pack
+gageDefCurvNormalSide --> gageDefaultCurvNormalSide
+gageDefKernelIntegralNearZero --> gageDefaultKernelIntegralNearZero
+gageDefStackUse --> gageDefaultStackUse
+gageDefStackNormalizeRecon --> gageDefaultStackNormalizeRecon
+gageDefStackNormalizeDeriv --> gageDefaultStackNormalizeDeriv
+gageDefStackNormalizeDerivBias --> gageDefaultStackNormalizeDerivBias
+gageDefOrientationFromSpacing --> gageDefaultOrientationFromSpacing
+gageDefGenerateErrStr --> gageDefaultGenerateErrStr
+gageDefTwoDimZeroZ --> gageDefaultTwoDimZeroZ
+
+REMOVED: gageDefDefaultCenter (rather than rename to gageDefaultDefaultCenter):.
+This was getting silly.  This variable had a greater role when volume data genuinely had no idea
+what its sample centerings were and nrrdCenterNode was just as likely as nrrdCenterCell.
+Real-world imaging is nrrdCenterCell (which is how gageDefDefaultCenter was initialized),
+so that is used instead of a default variable.
+REMOVED: gageDefStackUse (though gageParm->stackUse remains).
+This default never made any sense.  As noted in defaultsGage.c:
+        /* GLK doesn't see any reasonable circumstance
+           where this could be AIR_TRUE, since it
+           significantly changes the behavior of gage */
+REMOVED: gageDefTwoDimZeroZ (though gageParm->twoDimZeroZ remains):
+This default also never made any sense.  As noted in defaultsGage.c:
+        /* no way this can default to true */
+REMOVED: gageDefStackNormalizeRecon (though gageParm->stackNormalizeRecon remains)
+REMOVED: gageDefStackNormalizeDeriv (though gageParm->stackNormalizeDeriv remains)
+REMOVED: gageDefStackNormalizeDerivBias (though gageParm->stackNormalizeDerivBias remains)
+There is no reason to have global default variables for such incredibly niche aspects of gage behavior,
+which were only added for very experimental purposes.
+For the gageParm elements that now lack default global variables, gageParmReset initializes them
+to the value of how the default global variable was initialized.
+
+* bane:
+baneDefVerbose --> baneDefaultVerbose
+baneDefMakeMeasrVol --> baneDefaultMakeMeasrVol
+baneDefIncLimit --> baneDefaultIncLimit
+baneDefRenormalize --> baneDefaultRenormalize
+baneDefPercHistBins --> baneDefaultPercHistBins
+
+* limn:
+limnDefCameraAtRelative --> limnDefaultCameraAtRelative
+limnDefCameraOrthographic --> limnDefaultCameraOrthographic
+limnDefCameraRightHanded --> limnDefaultCameraRightHanded
+
+* hoover:
+actually REMOVED rather than rename:
+int hooverDefVolCentering = nrrdCenterNode;
+int hooverDefImgCentering = nrrdCenterCell;
+There is much less role for these defaults given that will be set from gageContext->shape.
+Their use in hoover has been replace with the values above
+(despite nrrdCenterNode being an odd choice for default volume centering)
+
+* ten (for "tend"):
+tenDefFiberKernel --> tenDefaultFiberKernel
+tenDefFiberStepSize --> tenDefaultFiberStepSize
+tenDefFiberUseIndexSpace --> tenDefaultFiberUseIndexSpace
+tenDefFiberMaxNumSteps --> tenDefaultFiberMaxNumSteps
+tenDefFiberMaxHalfLen --> tenDefaultFiberMaxHalfLen
+tenDefFiberAnisoStopType --> tenDefaultFiberAnisoStopType
+tenDefFiberAnisoThresh --> tenDefaultFiberAnisoThresh
+tenDefFiberIntg --> tenDefaultFiberIntg
+tenDefFiberWPunct --> tenDefaultFiberWPunct
+
+* mite:
+miteDefRefStep --> miteDefaultRefStep
+miteDefRenorm --> miteDefaultRenorm
+miteDefNormalSide --> miteDefaultNormalSide
+miteDefOpacNear1 --> miteDefaultOpacNear1
+miteDefOpacMatters --> miteDefaultOpacMatters
 
 ========= air =========
 
@@ -1472,6 +1562,43 @@ input histogram was all zeros, the output value is nan
 • nrrdSpaceVecExists is now const-correct
 
 ========= unrrdu / unu =========
+
+• Wed Oct 29 13:34:27 2025 -0500 git short hash: fac4bdf5
+API NEW: "unu lut", "unu lut2", "unu rmap", "unu mlut", and "unu mrmap" all have a "-r"
+rescale option which controls something important about how they work: whether to
+transform (via something akin to AIR_AFFINE or a 5-argument lerp) values FROM the data
+range (either learned or explicit) TO the lut/rmap domain (either explicit or implicit).
+All of these commands have historically turned ON this rescaling any time that the
+lut/map domain is implicit.  This is the right default (because it is the most common
+use-case scenario), but it is confusing for debugging the underlying nrrd functions
+nrrdApply1DLut, nrrdApply2DLut, nrrdApply1DRegMap, nrrdApplyMulti1DLut, and
+nrrdApplyMulti1DRegMap.
+
+So, to offer more direct control over this behavior, there is a new global default
+initialized as:
+
+   int unrrduDefaultImplicitLutRmapRescale = AIR_TRUE
+
+(which emulates previous behavior in these unu commands)
+However, you can change this via an invariant variable:
+
+   const char *const unrrduEnvVarDefaultImplicitLutRmapRescale
+      = "UNRRDU_DEFAULT_IMPLICIT_LUT_RMAP_RESCALE"
+
+The unu command implementation in unrrdu/{lut,lut2,rmap,mlut,mrmap}.c all call new
+function:
+
+   extern void unrrduGetenvDefaultImplicitLutRmapRescale(void);
+
+to set this variable.
+
+Why this new one-off function unrrduGetenvDefaultImplicitLutRmapRescale() instead of
+something akin to nrrdDefaultGetenv() (called by unu.c) upon startup?  Because it seems
+that aside from "UNRRDU_QUIET_QUIT_ENV", which has special behavior for parse failures,
+unrrdu has not needed the same army of default variables that nrrd has, and now is not
+the time to start.  The implicit rescaling in these unu commands has (to GLK) always been
+one of the most sneaky and confusing things about how unu works, so this is seen as
+exceptional handling of an exceptional problem.
 
 • Sun Oct 19 09:51:15 2025 -0500 git short hash: 45f1ae4b
 (as described above)
