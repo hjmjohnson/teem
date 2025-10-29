@@ -47,14 +47,6 @@ extern "C" {
 
 /* ---- END non-NrrdIO */
 
-/*
-** _NRRD_SPACING
-**
-** returns nrrdDefSpacing if the argument doesn't exist, otherwise
-** returns the argument
-*/
-#define _NRRD_SPACING(spc) (AIR_EXISTS(spc) ? spc : nrrdDefSpacing)
-
 typedef union {
   char **CP;
   int *I;
