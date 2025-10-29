@@ -79,7 +79,7 @@ unrrdu_lutMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
 
-  /* see comment rmap.c */
+  /* see comment in rmap.c about why this happens */
   if (!(AIR_EXISTS(nlut->axis[nlut->dim - 1].min)
         && AIR_EXISTS(nlut->axis[nlut->dim - 1].max))) {
     rescale = AIR_TRUE;
