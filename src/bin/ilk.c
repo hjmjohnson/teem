@@ -161,10 +161,10 @@ main(int argc, const char *argv[]) {
 
   ax0 = MOSS_AXIS0(nin);
   if (!(AIR_EXISTS(nin->axis[ax0 + 0].min) && AIR_EXISTS(nin->axis[ax0 + 0].max))) {
-    nrrdAxisInfoMinMaxSet(nin, ax0 + 0, mossDefCenter);
+    nrrdAxisInfoMinMaxSet(nin, ax0 + 0, mossDefaultCenter);
   }
   if (!(AIR_EXISTS(nin->axis[ax0 + 1].min) && AIR_EXISTS(nin->axis[ax0 + 1].max))) {
-    nrrdAxisInfoMinMaxSet(nin, ax0 + 1, mossDefCenter);
+    nrrdAxisInfoMinMaxSet(nin, ax0 + 1, mossDefaultCenter);
   }
   min[0] = AIR_EXISTS(min[0]) ? min[0] : nin->axis[ax0 + 0].min;
   max[0] = AIR_EXISTS(max[0]) ? max[0] : nin->axis[ax0 + 0].max;
@@ -221,10 +221,10 @@ main(int argc, const char *argv[]) {
   mossMatLeftMultiply(mat, origInvMat);
 
   if (!AIR_EXISTS(nin->axis[ax0 + 0].min) || !AIR_EXISTS(nin->axis[ax0 + 0].max)) {
-    nrrdAxisInfoMinMaxSet(nin, ax0 + 0, mossDefCenter);
+    nrrdAxisInfoMinMaxSet(nin, ax0 + 0, mossDefaultCenter);
   }
   if (!AIR_EXISTS(nin->axis[ax0 + 1].min) || !AIR_EXISTS(nin->axis[ax0 + 1].max)) {
-    nrrdAxisInfoMinMaxSet(nin, ax0 + 1, mossDefCenter);
+    nrrdAxisInfoMinMaxSet(nin, ax0 + 1, mossDefaultCenter);
   }
   if (avgNum > 1) {
     /* GLK is not sure what the original purpose of this was: if transform is a single

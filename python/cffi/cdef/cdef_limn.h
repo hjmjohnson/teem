@@ -582,9 +582,9 @@ typedef struct {
 /* defaultsLimn.c */
 extern const int limnPresent;
 extern const char *const limnBiffKey;
-extern int limnDefCameraAtRelative;
-extern int limnDefCameraOrthographic;
-extern int limnDefCameraRightHanded;
+extern int limnDefaultCameraAtRelative;
+extern int limnDefaultCameraOrthographic;
+extern int limnDefaultCameraRightHanded;
 /* enumsLimn.c */
 extern const airEnum *const limnSpace;
 extern const airEnum *const limnPolyDataInfo;

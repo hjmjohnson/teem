@@ -28,10 +28,13 @@ hooverContextNew(void) {
     ctx->cam = limnCameraNew();
     ELL_3V_SET(ctx->volSize, 0, 0, 0);
     ELL_3V_SET(ctx->volSpacing, AIR_NAN, AIR_NAN, AIR_NAN);
-    ctx->volCentering = hooverDefVolCentering;
+    /* TeemV2 removed hooverDefVolCentering, initialized to nrrdCenterNode (!)
+       probabably reflecting student GLK's ignorance of real-world imaging */
+    ctx->volCentering = nrrdCenterNode;
     ctx->shape = NULL;
     ctx->imgSize[0] = ctx->imgSize[1] = 0;
-    ctx->imgCentering = hooverDefImgCentering;
+    /* TeemV2 removed hooverDefImgCentering, initialized to nrrdCenterCell */
+    ctx->imgCentering = nrrdCenterCell;
     ctx->user = NULL;
     ctx->numThreads = 1;
     ctx->workIdx = 0;

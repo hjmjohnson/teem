@@ -22,41 +22,33 @@
 
 const char *const gageBiffKey = "gage";
 
-int gageDefVerbose = 0;
+int gageDefaultVerbose = 0;
 
-double gageDefGradMagCurvMin = 0.0;
+double gageDefaultGradMagCurvMin = 0.0;
 
-int gageDefRenormalize = AIR_FALSE;
+int gageDefaultRenormalize = AIR_FALSE;
 
-int gageDefCheckIntegrals = AIR_TRUE;
+int gageDefaultCheckIntegrals = AIR_TRUE;
 
-int gageDefK3Pack = AIR_TRUE;
+int gageDefaultK3Pack = AIR_TRUE;
 
-int gageDefCurvNormalSide = 1;
+int gageDefaultCurvNormalSide = 1;
 
-double gageDefKernelIntegralNearZero = 0.0001;
+double gageDefaultKernelIntegralNearZero = 0.0001;
 
-int gageDefDefaultCenter = nrrdCenterCell;
+int gageDefaultStackNormalizeRecon = AIR_FALSE;
 
-int gageDefStackUse = AIR_FALSE; /* GLK doesn't see any reasonable circumstance
-                                    where this could be AIR_TRUE, since it
-                                    significantly changes the behavior of gage */
+int gageDefaultStackNormalizeDeriv = AIR_FALSE;
 
-int gageDefStackNormalizeRecon = AIR_FALSE;
+double gageDefaultStackNormalizeDerivBias = 0.0;
 
-int gageDefStackNormalizeDeriv = AIR_FALSE;
-
-double gageDefStackNormalizeDerivBias = 0.0;
-
-int gageDefOrientationFromSpacing = AIR_FALSE;
+int gageDefaultOrientationFromSpacing = AIR_FALSE;
 /* Before teem 1.10.0, gage behaved inconsistently: Derivatives were
    taken as if orientationFromSpacing were TRUE, the index space to
    world space mapping acted as if it were FALSE. Now, you have the
    choice and get consistent results in either case. */
 
-int gageDefGenerateErrStr = AIR_TRUE;
+int gageDefaultGenerateErrStr = AIR_TRUE;
 /* Before Teem 1.11, error strings were always sprintf, which can easily
    become a bottleneck in some situations, but this should still stay
    the default behavior */
-
-int gageDefTwoDimZeroZ = AIR_FALSE; /* no way this can default to true */

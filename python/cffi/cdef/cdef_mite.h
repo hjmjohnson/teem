@@ -371,11 +371,11 @@ typedef struct miteThread_t {
 /* defaultsMite.c */
 extern const int mitePresent;
 extern const char *const miteBiffKey;
-extern double miteDefRefStep;
-extern int miteDefRenorm;
-extern int miteDefNormalSide;
-extern double miteDefOpacNear1;
-extern double miteDefOpacMatters;
+extern double miteDefaultRefStep;
+extern int miteDefaultRenorm;
+extern int miteDefaultNormalSide;
+extern double miteDefaultOpacNear1;
+extern double miteDefaultOpacMatters;
 /* kindnot.c */
 extern const airEnum *const miteVal;
 extern const gageKind *const miteValGageKind;

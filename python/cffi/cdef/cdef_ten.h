@@ -1100,15 +1100,15 @@ typedef struct tenModel_t {
 /* defaultsTen.c */
 extern const int tenPresent;
 extern const char *const tenBiffKey;
-extern const char tenDefFiberKernel[];
-extern double tenDefFiberStepSize;
-extern int tenDefFiberUseIndexSpace;
-extern int tenDefFiberMaxNumSteps;
-extern double tenDefFiberMaxHalfLen;
-extern int tenDefFiberAnisoStopType;
-extern double tenDefFiberAnisoThresh;
-extern int tenDefFiberIntg;
-extern double tenDefFiberWPunct;
+extern const char tenDefaultFiberKernel[];
+extern double tenDefaultFiberStepSize;
+extern int tenDefaultFiberUseIndexSpace;
+extern int tenDefaultFiberMaxNumSteps;
+extern double tenDefaultFiberMaxHalfLen;
+extern int tenDefaultFiberAnisoStopType;
+extern double tenDefaultFiberAnisoThresh;
+extern int tenDefaultFiberIntg;
+extern double tenDefaultFiberWPunct;
 /* triple.c */
 extern void tenTripleConvertSingle_d(double dst[3],
                                          int dstType,

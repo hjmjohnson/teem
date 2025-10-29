@@ -44,11 +44,11 @@ miteUserNew(void) {
   for (i = 0; i < MITE_RANGE_NUM; i++) {
     muu->rangeInit[i] = 1.0;
   }
-  muu->normalSide = miteDefNormalSide;
-  muu->refStep = miteDefRefStep;
+  muu->normalSide = miteDefaultNormalSide;
+  muu->refStep = miteDefaultRefStep;
   muu->rayStep = AIR_NAN;
-  muu->opacMatters = miteDefOpacMatters;
-  muu->opacNear1 = miteDefOpacNear1;
+  muu->opacMatters = miteDefaultOpacMatters;
+  muu->opacNear1 = miteDefaultOpacNear1;
   muu->hctx = hooverContextNew();
   ELL_3V_SET(muu->fakeFrom, AIR_NAN, AIR_NAN, AIR_NAN);
   ELL_3V_SET(muu->vectorD, 0, 0, 0);
@@ -63,7 +63,7 @@ miteUserNew(void) {
   /* gageParmSet(muu->gctx0, gageParmRequireAllSpacings, AIR_FALSE); */
   muu->lit = limnLightNew();
   airMopAdd(muu->umop, muu->lit, (airMopper)limnLightNix, airMopAlways);
-  muu->normalSide = miteDefNormalSide;
+  muu->normalSide = miteDefaultNormalSide;
   muu->verbUi = muu->verbVi = -1;
   muu->rendTime = 0;
   muu->sampRate = 0;

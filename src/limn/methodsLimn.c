@@ -40,9 +40,9 @@ void
 limnCameraInit(limnCamera *cam) {
 
   if (cam) {
-    cam->atRelative = limnDefCameraAtRelative;
-    cam->orthographic = limnDefCameraOrthographic;
-    cam->rightHanded = limnDefCameraRightHanded;
+    cam->atRelative = limnDefaultCameraAtRelative;
+    cam->orthographic = limnDefaultCameraOrthographic;
+    cam->rightHanded = limnDefaultCameraRightHanded;
     cam->uRange[0] = cam->uRange[1] = AIR_NAN;
     cam->vRange[0] = cam->vRange[1] = AIR_NAN;
     cam->fov = AIR_NAN;

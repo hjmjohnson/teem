@@ -23,4 +23,4 @@
 const char *const mossBiffKey = "moss";
 
 /* must be a valid centering (nrrdCenterCell or nrrdCenterNode) */
-int mossDefCenter = nrrdCenterCell;
+int mossDefaultCenter = nrrdCenterCell;

@@ -44,8 +44,8 @@ baneHVolParmNew(void) {
 
   hvp = (baneHVolParm *)calloc(1, sizeof(baneHVolParm));
   if (hvp) {
-    hvp->verbose = baneDefVerbose;
-    hvp->makeMeasrVol = baneDefMakeMeasrVol;
+    hvp->verbose = baneDefaultVerbose;
+    hvp->makeMeasrVol = baneDefaultMakeMeasrVol;
     hvp->measrVol = NULL;
     hvp->measrVolDone = AIR_FALSE;
     _axisInit(hvp->axis + 0);
@@ -57,9 +57,9 @@ baneHVolParmNew(void) {
       for (j = 0; j < NRRD_KERNEL_PARM_MAXNUM; j++)
         hvp->kparm[i][j] = AIR_NAN;
     }
-    hvp->renormalize = baneDefRenormalize;
+    hvp->renormalize = baneDefaultRenormalize;
     hvp->clip = NULL;
-    hvp->incLimit = baneDefIncLimit;
+    hvp->incLimit = baneDefaultIncLimit;
   }
   return hvp;
 }

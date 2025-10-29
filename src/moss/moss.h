@@ -94,7 +94,7 @@ typedef struct {
 
 /* defaultsMoss.c */
 MOSS_EXPORT const char *const mossBiffKey;
-MOSS_EXPORT int mossDefCenter;
+MOSS_EXPORT int mossDefaultCenter;
 
 /* methodsMoss.c */
 MOSS_EXPORT const int mossPresent;

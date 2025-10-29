@@ -215,8 +215,6 @@ enum {
 /* defaultsHoover.c */
 extern const int hooverPresent;
 extern const char *const hooverBiffKey;
-extern int hooverDefVolCentering;
-extern int hooverDefImgCentering;
 extern const airEnum *const hooverErr;
 /* methodsHoover.c */
 extern hooverContext *hooverContextNew(void);

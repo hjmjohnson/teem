@@ -140,9 +140,9 @@ _tenFiberContextCommonNew(const Nrrd *vol, int useDwi, double thresh, double sof
   tfx->nin = vol;
   tfx->ksp = nrrdKernelSpecNew();
   airMopAdd(mop, tfx->ksp, (airMopper)nrrdKernelSpecNix, airMopOnError);
-  if (nrrdKernelSpecParse(tfx->ksp, tenDefFiberKernel)) {
-    biffMovef(TEN, NRRD, "%s: couldn't parse tenDefFiberKernel \"%s\"", me,
-              tenDefFiberKernel);
+  if (nrrdKernelSpecParse(tfx->ksp, tenDefaultFiberKernel)) {
+    biffMovef(TEN, NRRD, "%s: couldn't parse tenDefaultFiberKernel \"%s\"", me,
+              tenDefaultFiberKernel);
     airMopError(mop);
     return NULL;
   }
@@ -153,28 +153,28 @@ _tenFiberContextCommonNew(const Nrrd *vol, int useDwi, double thresh, double sof
   }
   tfx->fiberProbeItem = 0; /* unknown for any gageKind */
   /* looks to GK like GK says that we must set some stop criterion */
-  tfx->intg = tenDefFiberIntg;
-  tfx->anisoStopType = tenDefFiberAnisoStopType;
+  tfx->intg = tenDefaultFiberIntg;
+  tfx->anisoStopType = tenDefaultFiberAnisoStopType;
   tfx->anisoSpeedType = tenAnisoUnknown;
   tfx->stop = 0;
-  tfx->anisoThresh = tenDefFiberAnisoThresh;
+  tfx->anisoThresh = tenDefaultFiberAnisoThresh;
   /* so I'm not using the normal default mechanism, shoot me */
   tfx->anisoSpeedFunc[0] = 0;
   tfx->anisoSpeedFunc[1] = 0;
   tfx->anisoSpeedFunc[2] = 0;
-  tfx->maxNumSteps = tenDefFiberMaxNumSteps;
+  tfx->maxNumSteps = tenDefaultFiberMaxNumSteps;
   tfx->minNumSteps = 0;
-  tfx->useIndexSpace = tenDefFiberUseIndexSpace;
+  tfx->useIndexSpace = tenDefaultFiberUseIndexSpace;
   tfx->verbose = 0;
-  tfx->stepSize = tenDefFiberStepSize;
-  tfx->maxHalfLen = tenDefFiberMaxHalfLen;
+  tfx->stepSize = tenDefaultFiberStepSize;
+  tfx->maxHalfLen = tenDefaultFiberMaxHalfLen;
   tfx->minWholeLen = 0.0;
   tfx->confThresh = 0.5;  /* why do I even bother setting these- they'll
                              only get read if the right tenFiberStopSet has
                              been called, in which case they'll be set... */
   tfx->minRadius = 1;     /* above lament applies here as well */
   tfx->minFraction = 0.5; /* and here */
-  tfx->wPunct = tenDefFiberWPunct;
+  tfx->wPunct = tenDefaultFiberWPunct;
 
   GAGE_QUERY_RESET(tfx->query);
   tfx->mframe[0] = vol->measurementFrame[0][0];

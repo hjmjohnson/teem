@@ -54,7 +54,7 @@ enum {
 /* flotsam.c */
 extern const int unrrduPresent;
 extern const char *const unrrduBiffKey;
-extern unsigned int unrrduDefNumColumns;
+extern unsigned int unrrduDefaultNumColumns;
 /* unrrduCmdList[] gives addresses of unrrdu_fooCmd for all commands "unu foo".
    The list of all commands is maintained in privateUnrrdu.h */
 extern const unrrduCmd *const unrrduCmdList[];

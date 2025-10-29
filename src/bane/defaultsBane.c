@@ -21,15 +21,15 @@
 
 const char *const baneBiffKey = "bane";
 
-int baneDefVerbose = 0;
+int baneDefaultVerbose = 0;
 
-int baneDefMakeMeasrVol = AIR_TRUE;
+int baneDefaultMakeMeasrVol = AIR_TRUE;
 
-double baneDefIncLimit = 0.80; /* throwing away more than 20% is too much */
+double baneDefaultIncLimit = 0.80; /* throwing away more than 20% is too much */
 
-int baneDefRenormalize = AIR_TRUE;
+int baneDefaultRenormalize = AIR_TRUE;
 
-int baneDefPercHistBins = 1024;
+int baneDefaultPercHistBins = 1024;
 
 int baneStateHistEqBins = 4096;
 

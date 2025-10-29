@@ -63,7 +63,7 @@ CFFI, within its many limitations, specifically lacking a C pre-processor
 ** The following things have to agree:
 ** - gageParm* enum
 ** - fields of gageParm struct
-** - analogous gageDef* defaults (their declaration and setting)
+** - analogous gageDefault* defaults (their declaration and setting)
 ** - action of gageParmSet (ctx.c)
 ** - action of gageParmReset (miscGage.c)
 */
@@ -76,7 +76,6 @@ enum {
   gageParmGradMagCurvMin,          /* double */
   gageParmCurvNormalSide,          /* int */
   gageParmKernelIntegralNearZero,  /* double */
-  gageParmDefaultCenter,           /* int */
   gageParmStackUse,                /* int */
   gageParmStackNormalizeDeriv,     /* int; does NOT imply gageParmStackUse */
   gageParmStackNormalizeDerivBias, /* double; does NOT imply      "        */
@@ -392,9 +391,9 @@ enum {
 */
 typedef struct gageShape_t {
   /* ========= INPUT ========= (controls for _gageShapeSet) */
-  int defaultCenter,        /* default centering to use when given volume
-                               has no centering set. */
-    orientationFromSpacing; /* only meaningful if nrrd has per-axis spacing,
+  /* TeemV2 nixed defaultCenter = default centering to use when given volume
+                                  has no centering set (its nrrdCenterCell now) */
+  int orientationFromSpacing; /* only meaningful if nrrd has per-axis spacing,
                                but not full orientation info. If zero, the
                                volume is crammed into the bi-unit cube.
                                If non-zero, gage treats the volume as if it
@@ -461,9 +460,10 @@ typedef struct gageParm_t {
                                 normal pointing to lower values (higher
                                 values are more "inside"); -1 for normal
                                 pointing to higher values (low values more
-                                "inside") */
-    defaultCenter,           /* what centering to use when you have to invent
-                                one, because its not set on any axis */
+                                "inside").
+                                TeemV2 nixed defaultCenter: centering to use when
+                                you have to invent one, because its not set on any
+                                axis (its nrrdCenterCell now) */
     stackUse,                /* if non-zero: treat the pvl's (all same kind)
                                 as multiple values of a single logical volume
                                 (e.g. for approximating scale space).
@@ -900,21 +900,15 @@ typedef struct {
 } gageOptimSigContext;
 /* defaultsGage.c */
 extern const char *const gageBiffKey;
-extern int gageDefVerbose;
-extern double gageDefGradMagCurvMin;
-extern int gageDefRenormalize;
-extern int gageDefCheckIntegrals;
-extern int gageDefK3Pack;
-extern int gageDefCurvNormalSide;
-extern double gageDefKernelIntegralNearZero;
-extern int gageDefDefaultCenter;
-extern int gageDefStackUse;
-extern int gageDefStackNormalizeRecon;
-extern int gageDefStackNormalizeDeriv;
-extern double gageDefStackNormalizeDerivBias;
-extern int gageDefOrientationFromSpacing;
-extern int gageDefGenerateErrStr;
-extern int gageDefTwoDimZeroZ;
+extern int gageDefaultVerbose;
+extern double gageDefaultGradMagCurvMin;
+extern int gageDefaultRenormalize;
+extern int gageDefaultCheckIntegrals;
+extern int gageDefaultK3Pack;
+extern int gageDefaultCurvNormalSide;
+extern double gageDefaultKernelIntegralNearZero;
+extern int gageDefaultOrientationFromSpacing;
+extern int gageDefaultGenerateErrStr;
 /* miscGage.c */
 extern const int gagePresent;
 extern double gageZeroNormal[3];

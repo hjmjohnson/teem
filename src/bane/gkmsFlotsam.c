@@ -53,7 +53,7 @@ baneGkmsParseIncStrategy(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 
   if (1 == sscanf(str, "p:%lg", incParm + 1)
       || 2 == sscanf(str, "p:%lg,%lg", incParm + 1, incParm + 2)) {
     inc[0] = baneIncPercentile;
-    incParm[0] = baneDefPercHistBins;
+    incParm[0] = baneDefaultPercHistBins;
     return 0;
   }
   if (3 == sscanf(str, "p:%d,%lg,%lg", &bins, incParm + 1, incParm + 2)) {

@@ -24,12 +24,12 @@ const int mitePresent = 42;
 
 const char *const miteBiffKey = "mite";
 
-double miteDefRefStep = 0.01;
+double miteDefaultRefStep = 0.01;
 
-int miteDefRenorm = AIR_FALSE;
+int miteDefaultRenorm = AIR_FALSE;
 
-int miteDefNormalSide = 1;
+int miteDefaultNormalSide = 1;
 
-double miteDefOpacNear1 = 0.98;
+double miteDefaultOpacNear1 = 0.98;
 
-double miteDefOpacMatters = 0.05;
+double miteDefaultOpacMatters = 0.05;

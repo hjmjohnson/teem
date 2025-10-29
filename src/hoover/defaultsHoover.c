@@ -22,8 +22,6 @@
 const int hooverPresent = 42;
 
 const char *const hooverBiffKey = "hoover";
-int hooverDefVolCentering = nrrdCenterNode;
-int hooverDefImgCentering = nrrdCenterCell;
 
 /* clang-format off */
 static const char *

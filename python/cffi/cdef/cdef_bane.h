@@ -244,11 +244,11 @@ typedef struct {
 } baneHVolParm;
 /* defaultsBane.c */
 extern const char *const baneBiffKey;
-extern int baneDefVerbose;
-extern int baneDefMakeMeasrVol;
-extern double baneDefIncLimit;
-extern int baneDefRenormalize;
-extern int baneDefPercHistBins;
+extern int baneDefaultVerbose;
+extern int baneDefaultMakeMeasrVol;
+extern double baneDefaultIncLimit;
+extern int baneDefaultRenormalize;
+extern int baneDefaultPercHistBins;
 extern int baneStateHistEqBins;
 extern int baneStateHistEqSmart;
 extern int baneHack;

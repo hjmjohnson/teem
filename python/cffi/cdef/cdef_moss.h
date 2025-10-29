@@ -59,7 +59,7 @@ typedef struct {
 } mossSampler;
 /* defaultsMoss.c */
 extern const char *const mossBiffKey;
-extern int mossDefCenter;
+extern int mossDefaultCenter;
 /* methodsMoss.c */
 extern const int mossPresent;
 extern mossSampler *mossSamplerNew(void);

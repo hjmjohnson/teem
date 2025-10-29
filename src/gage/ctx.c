@@ -36,7 +36,7 @@ gageContextNew(void) {
 
   ctx = AIR_CALLOC(1, gageContext);
   if (ctx) {
-    ctx->verbose = gageDefVerbose;
+    ctx->verbose = gageDefaultVerbose;
     gageParmReset(&ctx->parm);
     for (ii = gageKernelUnknown + 1; ii < gageKernelLast; ii++) {
       ctx->ksp[ii] = NULL;
@@ -329,11 +329,7 @@ gageParmSet(gageContext *ctx, int which, double val) {
     ctx->parm.kernelIntegralNearZero = val;
     /* no flag to set, simply affects future calls to gageKernelSet() */
     break;
-  case gageParmDefaultCenter:
-    ctx->parm.defaultCenter = AIR_INT(val);
-    /* no flag to set, I guess, although the value here effects the
-       action of _gageShapeSet when called by gagePerVolumeAttach . . . */
-    break;
+  /* TeemV2 nixed: case gageParmDefaultCenter: ctx->parm.defaultCenter */
   case gageParmStackUse:
     ctx->parm.stackUse = AIR_INT(val);
     /* no flag to set, right? simply affects future calls to gageProbe()? */

@@ -292,11 +292,11 @@ typedef struct {
 
 /* defaultsBane.c */
 BANE_EXPORT const char *const baneBiffKey;
-BANE_EXPORT int baneDefVerbose;
-BANE_EXPORT int baneDefMakeMeasrVol;
-BANE_EXPORT double baneDefIncLimit;
-BANE_EXPORT int baneDefRenormalize;
-BANE_EXPORT int baneDefPercHistBins;
+BANE_EXPORT int baneDefaultVerbose;
+BANE_EXPORT int baneDefaultMakeMeasrVol;
+BANE_EXPORT double baneDefaultIncLimit;
+BANE_EXPORT int baneDefaultRenormalize;
+BANE_EXPORT int baneDefaultPercHistBins;
 BANE_EXPORT int baneStateHistEqBins;
 BANE_EXPORT int baneStateHistEqSmart;
 BANE_EXPORT int baneHack;

@@ -80,7 +80,7 @@ gagePerVolumeNew(gageContext *ctx, const Nrrd *nin, const gageKind *kind) {
   }
   mop = airMopNew();
   airMopAdd(mop, pvl, airFree, airMopOnError);
-  pvl->verbose = gageDefVerbose;
+  pvl->verbose = gageDefaultVerbose;
   pvl->kind = kind;
   GAGE_QUERY_RESET(pvl->query);
   for (ii = 0; ii <= GAGE_DERIV_MAX; ii++) {

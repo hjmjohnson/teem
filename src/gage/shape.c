@@ -26,8 +26,7 @@ gageShapeReset(gageShape *shape) {
   /* NOTE this guards against NULL */
   if (shape) {
     /* input */
-    shape->defaultCenter = gageDefDefaultCenter;
-    shape->orientationFromSpacing = gageDefOrientationFromSpacing;
+    shape->orientationFromSpacing = gageDefaultOrientationFromSpacing;
     /* output; setting this in ways that can be used to test
        whether the shape has been set */
     shape->center = nrrdCenterUnknown;
@@ -255,11 +254,10 @@ _gageShapeSet(const gageContext *ctx, gageShape *shape, const Nrrd *nin,
     airMopError(mop);
     return 1;
   }
-  /* Hopefully, ctx->parm.defaultCenter == shape->defaultCenter; and this
-     worry will be moot if ctx->parm.defaultCenter goes away */
-  shape->center = (nrrdCenterUnknown != cx
-                     ? cx /* cx == cy == cz, by above */
-                     : (ctx ? ctx->parm.defaultCenter : shape->defaultCenter));
+  // TeemV2 nixed gageShape->defaultCenter and gageContext->defaultCenter
+  shape->center = (nrrdCenterUnknown != cx /* */
+                     ? cx                  /* cx == cy == cz, by above */
+                     : nrrdCenterCell);
 
   /* ------ find sizes (set shape->size[0,1,2]) */
   shape->size[0] = AIR_UINT(ax[0]->size);

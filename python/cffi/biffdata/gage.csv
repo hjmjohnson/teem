@@ -1,8 +1,8 @@
 func_name,return_type,error_val(s),mubi,biff_key,cfile:linenumber
 gageContextCopy,gageContext *,NULL,0,gage,gage/ctx.c:86
 gageKernelSet,int,1,0,gage,gage/ctx.c:197
-gagePerVolumeAttach,int,1,0,gage,gage/ctx.c:396
-gagePerVolumeDetach,int,1,0,gage,gage/ctx.c:455
+gagePerVolumeAttach,int,1,0,gage,gage/ctx.c:392
+gagePerVolumeDetach,int,1,0,gage,gage/ctx.c:451
 gageDeconvolve,int,1,0,gage,gage/deconvolve.c:24
 gageDeconvolveSeparable,int,1,0,gage,gage/deconvolve.c:206
 gageKindCheck,int,1,0,gage,gage/kind.c:31
@@ -18,8 +18,8 @@ gageQueryReset,int,1,0,gage,gage/pvl.c:259
 gageQuerySet,int,1,0,gage,gage/pvl.c:285
 gageQueryAdd,int,1,0,gage,gage/pvl.c:341
 gageQueryItemOn,int,1,0,gage,gage/pvl.c:359
-gageShapeSet,int,1,0,gage,gage/shape.c:403
-gageShapeEqual,int,0,0,gage,gage/shape.c:466
+gageShapeSet,int,1,0,gage,gage/shape.c:401
+gageShapeEqual,int,0,0,gage,gage/shape.c:464
 gageStructureTensor,int,1,0,gage,gage/st.c:81
 gageStackPerVolumeNew,int,1,0,gage,gage/stack.c:96
 gageStackPerVolumeAttach,int,1,0,gage,gage/stack.c:125

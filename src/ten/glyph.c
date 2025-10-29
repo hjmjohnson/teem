@@ -194,7 +194,6 @@ tenGlyphGen(limnObject *glyphsLimn, echoScene *glyphsEcho, tenGlyphParm *parm,
   }
   mop = airMopNew();
   shape = gageShapeNew();
-  shape->defaultCenter = nrrdCenterCell;
   airMopAdd(mop, shape, (airMopper)gageShapeNix, airMopAlways);
   if (npos) {
     if (!(2 == nten->dim && 7 == nten->axis[0].size)) {

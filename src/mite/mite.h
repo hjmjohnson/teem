@@ -424,11 +424,11 @@ typedef struct miteThread_t {
 /* defaultsMite.c */
 MITE_EXPORT const int mitePresent;
 MITE_EXPORT const char *const miteBiffKey;
-MITE_EXPORT double miteDefRefStep;
-MITE_EXPORT int miteDefRenorm;
-MITE_EXPORT int miteDefNormalSide;
-MITE_EXPORT double miteDefOpacNear1;
-MITE_EXPORT double miteDefOpacMatters;
+MITE_EXPORT double miteDefaultRefStep;
+MITE_EXPORT int miteDefaultRenorm;
+MITE_EXPORT int miteDefaultNormalSide;
+MITE_EXPORT double miteDefaultOpacNear1;
+MITE_EXPORT double miteDefaultOpacMatters;
 
 /* kindnot.c */
 MITE_EXPORT const airEnum *const miteVal;
