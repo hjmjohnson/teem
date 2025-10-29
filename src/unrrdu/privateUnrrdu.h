@@ -26,6 +26,13 @@
 extern "C" {
 #endif
 
+#define UNRRDU_DILRR "UNRRDU_DEFAULT_IMPLICIT_LUT_RMAP_RESCALE"
+
+#define UNRRDU_DILRR_INFO(WUT)                                                          \
+  "You can set the " UNRRDU_DILRR " environment variable to "                           \
+  "control whether to rescale data values to the domain of a " WUT " with an "          \
+  "implicit domain (by default rescaling does happen).\n "
+
 /*
 Twisted C-preprocessor tricks.  The idea is to make it as simple as possible to add new
 commands to unu, so that the new commands have to be added to only one thing in this

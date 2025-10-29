@@ -27,8 +27,9 @@ static const char *_unrrdu_lut2InfoL
           "has the same dimension as the input, or 3D, in which case "
           "the output has one more dimension than the input, and each "
           "pair of values is mapped to a scanline (along axis 0) from the "
-          "lookup table.  In any case, axis 0 of the input must have length two.\n "
-          "* Uses nrrdApply2DLut");
+          "lookup table.  In any case, axis 0 of the input must have length "
+          "two.\n " UNRRDU_DILRR_INFO("lut2") /* */
+     "* Uses nrrdApply2DLut");
 
 static int
 unrrdu_lut2Main(int argc, const char **argv, const char *me, hestParm *hparm) {
@@ -96,11 +97,12 @@ unrrdu_lut2Main(int argc, const char **argv, const char *me, hestParm *hparm) {
     return 1;
   }
 
-  /* see comment in rmap.c */
+  unrrduGetenvDefaultImplicitLutRmapRescale();
+  /* NOTE: comment in lut.c describes logic for how rescale is set */
   for (rai = 0; rai <= 1; rai++) {
     if (!(AIR_EXISTS(nlut->axis[mapAxis + rai].min)
           && AIR_EXISTS(nlut->axis[mapAxis + rai].max))) {
-      rescale[rai] = AIR_TRUE;
+      rescale[rai] = unrrduDefaultImplicitLutRmapRescale;
     }
     if (rescale[rai]) {
       ntmp[rai] = nrrdNew();

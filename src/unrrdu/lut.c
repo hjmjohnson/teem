@@ -27,8 +27,8 @@ static const char *_unrrdu_lutInfoL
           "has the same dimension as the input, or 2D, in which case "
           "the output has one more dimension than the input, and each "
           "value is mapped to a scanline (along axis 0) from the "
-          "lookup table.\n "
-          "* Uses nrrdApply1DLut");
+          "lookup table.\n " UNRRDU_DILRR_INFO("lut") /* */
+     "* Uses nrrdApply1DLut");
 
 static int
 unrrdu_lutMain(int argc, const char **argv, const char *me, hestParm *hparm) {
@@ -79,10 +79,19 @@ unrrdu_lutMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
 
-  /* see comment in rmap.c about why this happens */
+  unrrduGetenvDefaultImplicitLutRmapRescale();
+  /* Pre-TeemV2: "here is a big difference between unu and nrrd: we enforce rescaling any
+  time that the map domain is implicit.  This is how the pre-1.6 functionality is
+  recreated."
+  TeemV2: Given an implicit map domain, rescale is set to
+  unrrduDefaultImplicitLutRmapRescale (initialized to AIR_TRUE) which can be controlled
+  by envvar "UNRRDU_DEFAULT_IMPLICIT_LUT_RMAP_RESCALE".
+  Also, whenever there is rescaling we pass a NrrdRange to reflect the (optional) user
+  range specification, instead of letting nrrdApply1DRegMap find the input range itself
+  (by passing a NULL NrrdRange). */
   if (!(AIR_EXISTS(nlut->axis[nlut->dim - 1].min)
         && AIR_EXISTS(nlut->axis[nlut->dim - 1].max))) {
-    rescale = AIR_TRUE;
+    rescale = unrrduDefaultImplicitLutRmapRescale;
   }
   if (rescale) {
     range = nrrdRangeNew(min, max);

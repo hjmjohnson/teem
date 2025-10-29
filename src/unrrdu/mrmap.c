@@ -25,8 +25,9 @@ static const char *_unrrdu_mrmapInfoL
   = (INFO ", one map per sample in input. The \"mrmap\" nrrd has the same dimensional "
           "constraints as the \"mlut\" nrrd for \"unu mlut\".  This functionality "
           "is a generalization of \"unu 3op lerp\": it allows you to lerp through "
-          "multiple nrrds, instead of just two.\n "
-          "* Uses nrrdApplyMulti1DRegMap");
+          "multiple nrrds, instead of just two.\n " /* */
+     UNRRDU_DILRR_INFO("mrmap")                     /* */
+     "* Uses nrrdApplyMulti1DRegMap");
 
 static int
 unrrdu_mrmapMain(int argc, const char **argv, const char *me, hestParm *hparm) {
@@ -113,8 +114,10 @@ unrrdu_mrmapMain(int argc, const char **argv, const char *me, hestParm *hparm) {
     nmmap->axis[mapAxis].max = max;
   }
 
+  unrrduGetenvDefaultImplicitLutRmapRescale();
+  /* NOTE: comment in lut.c describes logic for how rescale is set */
   if (!(AIR_EXISTS(nmmap->axis[mapAxis].min) && AIR_EXISTS(nmmap->axis[mapAxis].max))) {
-    rescale = AIR_TRUE;
+    rescale = unrrduDefaultImplicitLutRmapRescale;
   }
   if (rescale) {
     range = nrrdRangeNew(min, max);

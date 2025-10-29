@@ -34,8 +34,8 @@ static const char *_unrrdu_rmapInfoL
           "either case, the output is the result of linearly "
           "interpolating between map points, either scalar values "
           "(\"grayscale\"), or scanlines along axis 0 "
-          "(\"color\").\n "
-          "* Uses nrrdApply1DRegMap");
+          "(\"color\").\n " UNRRDU_DILRR_INFO("rmap") /* */
+     "* Uses nrrdApply1DRegMap");
 
 static int
 unrrdu_rmapMain(int argc, const char **argv, const char *me, hestParm *hparm) {
@@ -90,16 +90,13 @@ unrrdu_rmapMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
 
-  /* here is a big difference between unu and nrrd: we enforce
-     rescaling any time that the map domain is implicit.  This
-     is how the pre-1.6 functionality is recreated.  Also, whenever
-     there is rescaling we pass a NrrdRange to reflect the (optional)
-     user range specification, instead of letting nrrdApply1DRegMap
-     find the input range itself (by passing a NULL NrrdRange).
-  */
+  unrrduGetenvDefaultImplicitLutRmapRescale();
+  /* NOTE: comment in lut.c describes logic for how rescale is set */
+  fprintf(stderr, "!%s: unrrduDefaultImplicitLutRmapRescale = %d\n", me,
+          unrrduDefaultImplicitLutRmapRescale);
   if (!(AIR_EXISTS(nmap->axis[nmap->dim - 1].min)
         && AIR_EXISTS(nmap->axis[nmap->dim - 1].max))) {
-    rescale = AIR_TRUE;
+    rescale = unrrduDefaultImplicitLutRmapRescale;
   }
   if (rescale) {
     range = nrrdRangeNew(min, max);

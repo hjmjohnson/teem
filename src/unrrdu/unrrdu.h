@@ -84,6 +84,9 @@ enum {
 UNRRDU_EXPORT const int unrrduPresent;
 UNRRDU_EXPORT const char *const unrrduBiffKey;
 UNRRDU_EXPORT unsigned int unrrduDefaultNumColumns;
+UNRRDU_EXPORT int unrrduDefaultImplicitLutRmapRescale;
+UNRRDU_EXPORT const char *const unrrduEnvVarDefaultImplicitLutRmapRescale;
+UNRRDU_EXPORT void unrrduGetenvDefaultImplicitLutRmapRescale(void);
 /* unrrduCmdList[] gives addresses of unrrdu_fooCmd for all commands "unu foo".
    The list of all commands is maintained in privateUnrrdu.h */
 UNRRDU_EXPORT const unrrduCmd *const unrrduCmdList[];

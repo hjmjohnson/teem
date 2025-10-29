@@ -26,8 +26,8 @@ static const char *_unrrdu_mlutInfoL
           "tables are stored in a nrrd with a dimension which is either 1 or 2 "
           "more than the dimension of the input nrrd, resulting in an output "
           "which has either the same or one more dimension than the input, "
-          "resptectively.\n "
-          "* Uses nrrdApplyMulti1DLut");
+          "resptectively.\n " UNRRDU_DILRR_INFO("mlut") /* */
+     "* Uses nrrdApplyMulti1DLut");
 
 static int
 unrrdu_mlutMain(int argc, const char **argv, const char *me, hestParm *hparm) {
@@ -107,8 +107,10 @@ unrrdu_mlutMain(int argc, const char **argv, const char *me, hestParm *hparm) {
     nmlut->axis[mapAxis].max = max;
   }
 
+  unrrduGetenvDefaultImplicitLutRmapRescale();
+  /* NOTE: comment in lut.c describes logic for how rescale is set */
   if (!(AIR_EXISTS(nmlut->axis[mapAxis].min) && AIR_EXISTS(nmlut->axis[mapAxis].max))) {
-    rescale = AIR_TRUE;
+    rescale = unrrduDefaultImplicitLutRmapRescale;
   }
   if (rescale) {
     range = nrrdRangeNew(min, max);

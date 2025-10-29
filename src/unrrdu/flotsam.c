@@ -29,12 +29,32 @@ const char *const unrrduBiffKey = "unrrdu";
 /* number of columns that hest will used */
 unsigned int unrrduDefaultNumColumns = 78;
 
+/* how rescale was set in {lut,rmap,mlut,mrmap}.c when
+   lut,rmap,mlut,mrmap domain is implicit */
+int unrrduDefaultImplicitLutRmapRescale = AIR_TRUE;
+const char *const unrrduEnvVarDefaultImplicitLutRmapRescale = UNRRDU_DILRR;
+
 /*
 ******** unrrduCmdList[]
 **
 ** NULL-terminated array of unrrduCmd pointers, as ordered by UNRRDU_MAP macro
 */
 const unrrduCmd *const unrrduCmdList[] = {UNRRDU_MAP(UNRRDU_LIST) NULL};
+
+void
+unrrduGetenvDefaultImplicitLutRmapRescale(void) {
+  char *envStr = NULL;
+  if (AIR_FALSE
+      == nrrdGetenvBool(&unrrduDefaultImplicitLutRmapRescale, &envStr,
+                        unrrduEnvVarDefaultImplicitLutRmapRescale)) {
+    fprintf(stderr,
+            "WARNING: envvar \"%s\" set to \"%s\" which could not be parsed as "
+            "a bool, so unrrduDefaultImplicitLutRmapRescale=%d unchanged\n",
+            unrrduEnvVarDefaultImplicitLutRmapRescale, envStr ? envStr : "(null)",
+            unrrduDefaultImplicitLutRmapRescale);
+  }
+  return;
+}
 
 /*
 ******** unrrduCmdMain
