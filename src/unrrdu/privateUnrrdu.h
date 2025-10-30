@@ -30,8 +30,9 @@ extern "C" {
 
 #define UNRRDU_DILRR_INFO(WUT)                                                          \
   "You can set the " UNRRDU_DILRR " environment variable to "                           \
-  "control whether to rescale data values to the domain of a " WUT " with an "          \
-  "implicit domain (by default rescaling does happen).\n "
+  "control whether, with the \"-r\" option is not used, to rescale "                    \
+  "data values to the domain of a " WUT " with an implicit domain "                     \
+  "(by default rescaling does happen in this case).\n "
 
 /*
 Twisted C-preprocessor tricks.  The idea is to make it as simple as possible to add new

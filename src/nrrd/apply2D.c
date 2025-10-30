@@ -26,18 +26,17 @@ enum {
 };
 
 /*
-** _nrrdApply2DSetUp()
-**
-** some error checking and initializing needed for 2D LUTS and regular
-** maps.  The intent is that if this succeeds, then there is no need
-** for any further error checking.
-**
-** The only thing this function DOES is allocate the output nrrd, and
-** set meta information.  The rest is just error checking.
-**
-** The given NrrdRange has to be fleshed out by the caller: it can't
-** be NULL, and both range->min and range->max must exist.
-*/
+ * _nrrdApply2DSetUp()
+ *
+ * some error checking and initializing needed for 2D LUTS and regular maps.  The intent
+ * is that if this succeeds, then there is no need for any further error checking.
+ *
+ * The only thing this function DOES is allocate the output nrrd, and set meta
+ * information.  The rest is just error checking.
+ *
+ * The given NrrdRange has to be fleshed out by the caller: it can't be NULL, and both
+ * range->min and range->max must exist.
+ */
 static int /* Biff: 1 */
 _nrrdApply2DSetUp(Nrrd *nout, const Nrrd *nin, const NrrdRange *range0,
                   const NrrdRange *range1, const Nrrd *nmap, int kind, int typeOut,
@@ -46,8 +45,8 @@ _nrrdApply2DSetUp(Nrrd *nout, const Nrrd *nin, const NrrdRange *range0,
   char *mapcnt;
   char nounStr[][AIR_STRLEN_SMALL + 1] = {"2D lut", "2D regular map"};
   char verbStr[][AIR_STRLEN_SMALL + 1] = {"lut2", "rmap2"};
-  int mapAxis, copyMapAxis0 = AIR_FALSE, axisMap[NRRD_DIM_MAX];
-  unsigned int dim, entLen;
+  int copyMapAxis0 = AIR_FALSE, axisMap[NRRD_DIM_MAX];
+  unsigned int dim, entLen, mapAxis;
   size_t size[NRRD_DIM_MAX];
   double domMin, domMax;
 
@@ -127,7 +126,7 @@ _nrrdApply2DSetUp(Nrrd *nout, const Nrrd *nin, const NrrdRange *range0,
   }
   for (dim = 1; dim < nin->dim; dim++) {
     size[dim - 1 + mapAxis] = nin->axis[dim].size;
-    axisMap[dim - 1 + mapAxis] = dim;
+    axisMap[dim - 1 + mapAxis] = AIR_INT(dim);
   }
   /*
   fprintf(stderr, "##%s: pre maybe alloc: nout->data = %p\n", me, nout->data);

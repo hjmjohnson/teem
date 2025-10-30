@@ -44,12 +44,13 @@ unrrdu_lut2Main(int argc, const char **argv, const char *me, hestParm *hparm) {
 
   hestOptAdd_1_Other(&opt, "m,map", "lut", &nlut, NULL,
                      "lookup table to map input nrrd through", nrrdHestNrrdNoTTY);
-  hestOptAdd_2_Bool(&opt, "r,rescale", "bool bool", rescale, "false false",
-                    "rescale one or both of the input values from the "
-                    "input range to the lut domain.  The lut domain is either "
-                    "explicitly defined by the axis min,max along axis 0 or 1, "
-                    "or, it is implicitly defined as zero to the length of that axis "
-                    "minus one.");
+  int rsclOptIdx
+    = hestOptAdd_2_Bool(&opt, "r,rescale", "bool bool", rescale, "false false",
+                        "rescale one or both of the input values from the "
+                        "input range to the lut domain.  The lut domain is either "
+                        "explicitly defined by the axis min,max along axis 0 or 1, "
+                        "or, it is implicitly defined as zero to the length of that "
+                        "axis minus one.");
   hestOptAdd_2_Double(&opt, "min,minimum", "min0 min1", min, "nan nan",
                       "Low ends of input range. Defaults to lowest values "
                       "found in input nrrd.  Explicitly setting this is useful "
@@ -100,9 +101,11 @@ unrrdu_lut2Main(int argc, const char **argv, const char *me, hestParm *hparm) {
   unrrduGetenvDefaultImplicitLutRmapRescale();
   /* NOTE: comment in lut.c describes logic for how rescale is set */
   for (rai = 0; rai <= 1; rai++) {
-    if (!(AIR_EXISTS(nlut->axis[mapAxis + rai].min)
-          && AIR_EXISTS(nlut->axis[mapAxis + rai].max))) {
-      rescale[rai] = unrrduDefaultImplicitLutRmapRescale;
+    if (!hestSourceUser(opt[rsclOptIdx].source)) {
+      if (!(AIR_EXISTS(nlut->axis[mapAxis + rai].min)
+            && AIR_EXISTS(nlut->axis[mapAxis + rai].max))) {
+        rescale[rai] = unrrduDefaultImplicitLutRmapRescale;
+      }
     }
     if (rescale[rai]) {
       ntmp[rai] = nrrdNew();

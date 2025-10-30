@@ -176,8 +176,8 @@ extern int _nrrdGzDummySymbol(void);
 
 /* ---- BEGIN non-NrrdIO */
 /* apply1D.c */
-extern double _nrrdApplyDomainMin(const Nrrd *nmap, int ramps, int mapAxis);
-extern double _nrrdApplyDomainMax(const Nrrd *nmap, int ramps, int mapAxis);
+extern double _nrrdApplyDomainMin(const Nrrd *nmap, int ramps, unsigned int mapAxis);
+extern double _nrrdApplyDomainMax(const Nrrd *nmap, int ramps, unsigned int mapAxis);
 
 /* ---- END non-NrrdIO */
 

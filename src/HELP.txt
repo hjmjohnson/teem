@@ -18,12 +18,6 @@ caused at least one tricky memory bug, when the variable type changed.
 Scrutinize all use strncpy. Why not use airStrcpy?
 
 
-All of the code in teem/src/nrrd/apply1D.c is ancient, and has not
-been brought into the modern world of using unsigned int and size_t.
-Also its very confusing. Needs to be walked through and tested
-thoroughly (with new tests in teem/Testing/nrrd)
-
-
 There should be something called airBuff which can be generally used
 for reading and writing data, from/to strings or files, raw or compressed.
 Desirable features:

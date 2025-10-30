@@ -46,12 +46,13 @@ unrrdu_mrmapMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                       "list of nrrds which contain the individual entries of the map "
                       "at each voxel, which will be joined together.",
                       &_nmmapLen, nrrdHestNrrdNoTTY);
-  hestOptAdd_Flag(&opt, "r,rescale", &rescale,
-                  "rescale the input values from the input range to the "
-                  "map domain.  The map domain is either explicitly "
-                  "defined by the axis min,max along axis 0 or 1, or, it "
-                  "is implicitly defined as zero to one minus the length of "
-                  "that axis.");
+  int rsclOptIdx
+    = hestOptAdd_1v_Bool(&opt, "r,rescale", "bool", &rescale, "false",
+                         "rescale the input values from the input range to the "
+                         "map domain.  The map domain is either explicitly "
+                         "defined by the axis min,max along axis 0 or 1, or, it "
+                         "is implicitly defined as zero to one minus the length of "
+                         "that axis.");
   hestOptAdd_1_Double(&opt, "min,minimum", "value", &min, "nan",
                       "Low end of input range. Defaults to lowest value "
                       "found in input nrrd.  Explicitly setting this is useful "
@@ -116,8 +117,11 @@ unrrdu_mrmapMain(int argc, const char **argv, const char *me, hestParm *hparm) {
 
   unrrduGetenvDefaultImplicitLutRmapRescale();
   /* NOTE: comment in lut.c describes logic for how rescale is set */
-  if (!(AIR_EXISTS(nmmap->axis[mapAxis].min) && AIR_EXISTS(nmmap->axis[mapAxis].max))) {
-    rescale = unrrduDefaultImplicitLutRmapRescale;
+  if (!hestSourceUser(opt[rsclOptIdx].source)) {
+    if (!(AIR_EXISTS(nmmap->axis[mapAxis].min)
+          && AIR_EXISTS(nmmap->axis[mapAxis].max))) {
+      rescale = unrrduDefaultImplicitLutRmapRescale;
+    }
   }
   if (rescale) {
     range = nrrdRangeNew(min, max);
