@@ -1127,13 +1127,13 @@ tenEstimate1TensorSimulateVolume(tenEstimateContext *tec, Nrrd *ndwi, double sig
     char keystr[AIR_STRLEN_MED + 1], valstr[AIR_STRLEN_MED + 1];
 
     nrrdKeyValueAdd(ndwi, tenDWMRIModalityKey, tenDWMRIModalityVal);
-    sprintf(valstr, "%g", bValue);
+    snprintf(valstr, AIR_STRLEN_MED + 1, "%g", bValue);
     nrrdKeyValueAdd(ndwi, tenDWMRIBValueKey, valstr);
     if (tec->_ngrad) {
       lup = nrrdDLookup[tec->_ngrad->type];
       for (allIdx = 0; allIdx < tec->allNum; allIdx++) {
-        sprintf(keystr, tenDWMRIGradKeyFmt, allIdx);
-        sprintf(valstr, "%g %g %g", lup(tec->_ngrad->data, 0 + 3 * allIdx),
+        snprintf(keystr, AIR_STRLEN_MED + 1, tenDWMRIGradKeyFmt, allIdx);
+        snprintf(valstr, AIR_STRLEN_MED + 1, "%g %g %g", lup(tec->_ngrad->data, 0 + 3 * allIdx),
                 lup(tec->_ngrad->data, 1 + 3 * allIdx),
                 lup(tec->_ngrad->data, 2 + 3 * allIdx));
         nrrdKeyValueAdd(ndwi, keystr, valstr);
@@ -1141,8 +1141,8 @@ tenEstimate1TensorSimulateVolume(tenEstimateContext *tec, Nrrd *ndwi, double sig
     } else {
       lup = nrrdDLookup[tec->_nbmat->type];
       for (allIdx = 0; allIdx < tec->allNum; allIdx++) {
-        sprintf(keystr, tenDWMRIBmatKeyFmt, allIdx);
-        sprintf(valstr, "%g %g %g %g %g %g", lup(tec->_nbmat->data, 0 + 6 * allIdx),
+        snprintf(keystr, AIR_STRLEN_MED + 1, tenDWMRIBmatKeyFmt, allIdx);
+        snprintf(valstr, AIR_STRLEN_MED + 1, "%g %g %g %g %g %g", lup(tec->_nbmat->data, 0 + 6 * allIdx),
                 lup(tec->_nbmat->data, 1 + 6 * allIdx),
                 lup(tec->_nbmat->data, 2 + 6 * allIdx),
                 lup(tec->_nbmat->data, 3 + 6 * allIdx),

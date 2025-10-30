@@ -369,7 +369,7 @@ _limnHestSplineTypeSpecParse(void *ptr, const char *str, char err[AIR_STRLEN_HUG
   limnSplineTypeSpec **specP;
 
   if (!(ptr && str && airStrlen(str))) {
-    sprintf(err, "%s: got NULL pointer", me);
+    snprintf(err, AIR_STRLEN_HUGE + 1, "%s: got NULL pointer", me);
     return 1;
   }
   specP = (limnSplineTypeSpec **)ptr;

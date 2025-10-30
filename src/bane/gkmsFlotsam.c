@@ -37,7 +37,7 @@ baneGkmsParseIncStrategy(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 
   int i, bins;
 
   if (!(ptr && str)) {
-    sprintf(err, "%s: got NULL pointer", me);
+    snprintf(err, AIR_STRLEN_HUGE + 1, "%s: got NULL pointer", me);
     return 1;
   }
   inc = (double *)ptr;
@@ -73,7 +73,7 @@ baneGkmsParseIncStrategy(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 
 
   /* else its no good */
 
-  sprintf(err, "%s: \"%s\" not recognized", me, str);
+  snprintf(err, AIR_STRLEN_HUGE + 1, "%s: \"%s\" not recognized", me, str);
   return 1;
 }
 
@@ -96,7 +96,7 @@ baneGkmsParseBEF(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
   airArray *mop;
 
   if (!(ptr && str)) {
-    sprintf(err, "%s: got NULL pointer", me);
+    snprintf(err, AIR_STRLEN_HUGE + 1, "%s: got NULL pointer", me);
     return 1;
   }
   mop = airMopNew();
@@ -134,7 +134,7 @@ baneGkmsParseBEF(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
   } else {
     if (nrrdLoad(*nrrdP, str, NULL)) {
       airMopAdd(mop, nerr = biffGetDone(NRRD), airFree, airMopOnError);
-      sprintf(mesg,
+      snprintf(mesg, AIR_STRLEN_MED + 1,
               "%s: couldn't parse \"%s\" as four-parameter BEF or "
               "as a nrrd filename\n",
               me, str);

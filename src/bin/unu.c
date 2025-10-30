@@ -26,6 +26,7 @@ main(int argc, const char **argv) {
   int i, ret, listAll;
   const char *me;
   char *argv0 = NULL;
+  size_t argv0_SIZE=0;
   hestParm *hparm;
   airArray *mop;
 
@@ -104,9 +105,10 @@ main(int argc, const char **argv) {
   if (unrrduCmdList[i]) {
     /* yes, we have that command */
     /* initialize variables used by the various commands */
-    argv0 = AIR_CALLOC(strlen(UNU) + strlen(argv[1]) + 2, char);
+    argv0_SIZE = strlen(UNU) + strlen(argv[1]) + 2;
+    argv0 = AIR_CALLOC(argv0_SIZE, char);
     airMopMem(mop, &argv0, airMopAlways);
-    sprintf(argv0, "%s %s", UNU, argv[1]);
+    snprintf(argv0,argv0_SIZE, "%s %s", UNU, argv[1]);
 
     /* run the individual unu program, saving its exit status */
     ret = unrrduCmdList[i]->main(argc - 2, argv + 2, argv0, hparm);

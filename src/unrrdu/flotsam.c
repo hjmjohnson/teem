@@ -128,12 +128,14 @@ unrrduCmdMain(int argc, const char **argv, const char *cmd, const char *title,
       airMopError(mop);
       return 1;
     }
-    buff = AIR_CALLOC(strlen(tdash) + strlen(title) + 1, char);
+    size_t buffSize = strlen(tdash) + strlen(title) + 1;
+    buff = AIR_CALLOC(buffSize, char);
     airMopAdd(mop, buff, airFree, airMopAlways);
-    sprintf(buff, tdash, title);
-    fmt = AIR_CALLOC(hparm->columns + strlen(buff) + 1, char); /* generous */
+    snprintf(buff, buffSize, tdash, title);
+    size_t fmtSize = hparm->columns + strlen(buff) + 1; /* generous */
+    fmt = AIR_CALLOC(fmtSize, char);
     airMopAdd(mop, buff, airFree, airMopAlways);
-    sprintf(fmt, "%%%us\n",
+    snprintf(fmt, fmtSize, "%%%us\n",
             AIR_UINT((hparm->columns - strlen(buff)) / 2 + strlen(buff) - 1));
     fprintf(fusage, fmt, buff);
 
@@ -181,7 +183,7 @@ unrrduCmdMain(int argc, const char **argv, const char *cmd, const char *title,
     argv0 = AIR_CALLOC(strlen(cmd) + strlen(argv[1]) + 2, char);
 
     airMopMem(mop, &argv0, airMopAlways);
-    sprintf(argv0, "%s %s", cmd, argv[1]);
+    snprintf(argv0, strlen(cmd) + strlen(argv[1]) + 2, "%s %s", cmd, argv[1]);
 
     /* run the individual command, saving its exit status */
     ret = cmdList[i]->main(argc - 2, argv + 2, argv0, hparm);
@@ -213,15 +215,15 @@ unrrduUsageUnu(const char *me, hestParm *hparm, int alsoHidden) {
     maxlen = AIR_MAX(maxlen, AIR_UINT(strlen(unrrduCmdList[cmdi]->name)));
   }
 
-  sprintf(buff, "--- unu: Utah Nrrd Utilities command-line interface ---");
+  snprintf(buff, AIR_STRLEN_LARGE + 1, "--- unu: Utah Nrrd Utilities command-line interface ---");
   len = AIR_UINT(strlen(buff));
-  sprintf(fmt, "%%%us\n",
+  snprintf(fmt, AIR_STRLEN_LARGE + 1, "%%%us\n",
           (hparm->columns > len ? hparm->columns - len : 0) / 2 + len - 1);
   printf(fmt, buff);
   if (alsoHidden) {
-    sprintf(buff, "(hidden commands have \" : \" in listing)");
+    snprintf(buff, AIR_STRLEN_LARGE + 1, "(hidden commands have \" : \" in listing)");
     len = AIR_UINT(strlen(buff));
-    sprintf(fmt, "%%%us\n",
+    snprintf(fmt, AIR_STRLEN_LARGE + 1, "%%%us\n",
             (hparm->columns > len ? hparm->columns - len : 0) / 2 + len - 1);
     printf(fmt, buff);
   }
@@ -259,8 +261,9 @@ unrrduUsageUnu(const char *me, hestParm *hparm, int alsoHidden) {
       char *infop;
       /* luckily, still fits within 80 columns */
       fprintf(stdout, "Not Enabled: ");
-      infop = AIR_CALLOC(strlen(unrrduCmdList[cmdi]->info) + 2, char);
-      sprintf(infop, "%s)", unrrduCmdList[cmdi]->info);
+      size_t infopSize = strlen(unrrduCmdList[cmdi]->info) + 2;
+      infop = AIR_CALLOC(infopSize, char);
+      snprintf(infop, infopSize, "%s)", unrrduCmdList[cmdi]->info);
       hestPrintStr(stdout, len, len, hparm->columns, infop, AIR_FALSE);
       free(infop);
     } else {
@@ -294,9 +297,9 @@ unrrduUsage(const char *me, hestParm *hparm, const char *title,
     maxlen = AIR_MAX(maxlen, AIR_UINT(strlen(cmdList[cmdi]->name)));
   }
 
-  sprintf(buff, "--- %s ---", title);
+  snprintf(buff, AIR_STRLEN_LARGE + 1, "--- %s ---", title);
   len = AIR_UINT(strlen(buff));
-  sprintf(fmt, "%%%us\n",
+  snprintf(fmt, AIR_STRLEN_LARGE + 1, "%%%us\n",
           (hparm->columns > len ? hparm->columns - len : 0) / 2 + len - 1);
   fprintf(stdout, fmt, buff);
   for (cmdi = 0; cmdList[cmdi]; cmdi++) {
@@ -346,7 +349,7 @@ parsePos(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
   long int *pos;
 
   if (!(ptr && str)) {
-    sprintf(err, "%s: got NULL pointer", me);
+    snprintf(err, AIR_STRLEN_HUGE + 1, "%s: got NULL pointer", me);
     return 1;
   }
   pos = (long int *)ptr;
@@ -357,28 +360,28 @@ parsePos(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
   }
   if ('M' == str[0]) {
     if (!('-' == str[1] || '+' == str[1])) {
-      sprintf(err, "%s: \'M\' can be followed only by \'+\' or \'-\'", me);
+      snprintf(err, AIR_STRLEN_HUGE + 1, "%s: 'M' can be followed only by '+' or '-'", me);
       return 1;
     }
     pos[0] = 1;
     if (1 != sscanf(str + 1, "%ld", &(pos[1]))) {
-      sprintf(err, "%s: can't parse \"%s\" as M+<int> or M-<int>", me, str);
+      snprintf(err, AIR_STRLEN_HUGE + 1, "%s: can't parse \"%s\" as M+<int> or M-<int>", me, str);
       return 1;
     }
     return 0;
   }
   if ('m' == str[0]) {
     if ('+' != str[1]) {
-      sprintf(err, "%s: \'m\' can only be followed by \'+\'", me);
+      snprintf(err, AIR_STRLEN_HUGE + 1, "%s: 'm' can only be followed by '+'", me);
       return 1;
     }
     pos[0] = -1;
     if (1 != sscanf(str + 1, "%ld", &(pos[1]))) {
-      sprintf(err, "%s: can't parse \"%s\" as m+<int>", me, str);
+      snprintf(err, AIR_STRLEN_HUGE + 1, "%s: can't parse \"%s\" as m+<int>", me, str);
       return 1;
     }
     if (pos[1] < 0) {
-      sprintf(err, "%s: int in m+<int> must be non-negative (not %ld)", me, pos[1]);
+      snprintf(err, AIR_STRLEN_HUGE + 1, "%s: int in m+<int> must be non-negative (not %ld)", me, pos[1]);
       return 1;
     }
     return 0;
@@ -386,7 +389,7 @@ parsePos(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
   /* else its just a plain unadorned integer */
   pos[0] = 0;
   if (1 != sscanf(str, "%ld", &(pos[1]))) {
-    sprintf(err, "%s: can't parse \"%s\" as int", me, str);
+    snprintf(err, AIR_STRLEN_HUGE + 1, "%s: can't parse \"%s\" as int", me, str);
     return 1;
   }
   return 0;
@@ -421,7 +424,7 @@ parseMaybeType(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
 
   /* fprintf(stderr, "!%s: str = \"%s\"\n", me, str); */
   if (!(ptr && str)) {
-    sprintf(err, "%s: got NULL pointer", me);
+    snprintf(err, AIR_STRLEN_HUGE + 1, "%s: got NULL pointer", me);
     return 1;
   }
   typeP = (int *)ptr;
@@ -432,7 +435,7 @@ parseMaybeType(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
   } else {
     *typeP = airEnumVal(nrrdType, str);
     if (nrrdTypeUnknown == *typeP) {
-      sprintf(err, "%s: can't parse \"%s\" as type", me, str);
+      snprintf(err, AIR_STRLEN_HUGE + 1, "%s: can't parse \"%s\" as type", me, str);
       return 1;
     }
   }
@@ -457,16 +460,16 @@ parseBits(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
   unsigned int *bitsP;
 
   if (!(ptr && str)) {
-    sprintf(err, "%s: got NULL pointer", me);
+    snprintf(err, AIR_STRLEN_HUGE + 1, "%s: got NULL pointer", me);
     return 1;
   }
   bitsP = (unsigned int *)ptr;
   if (1 != sscanf(str, "%u", bitsP)) {
-    sprintf(err, "%s: can't parse \"%s\" as int", me, str);
+    snprintf(err, AIR_STRLEN_HUGE + 1, "%s: can't parse \"%s\" as int", me, str);
     return 1;
   }
   if (!(8 == *bitsP || 16 == *bitsP || 32 == *bitsP)) {
-    sprintf(err, "%s: bits (%u) not 8, 16, or 32", me, *bitsP);
+    snprintf(err, AIR_STRLEN_HUGE + 1, "%s: bits (%u) not 8, 16, or 32", me, *bitsP);
     return 1;
   }
   return 0;
@@ -501,7 +504,7 @@ parseScale(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
   unsigned int num;
 
   if (!(ptr && str)) {
-    sprintf(err, "%s: got NULL pointer", me);
+    snprintf(err, AIR_STRLEN_HUGE + 1, "%s: got NULL pointer", me);
     return 1;
   }
   scale = AIR_CAST(double *, ptr);
@@ -513,25 +516,24 @@ parseScale(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
     scale[1] = 0.0;
   } else if (strlen(str) > 2 && ('x' == str[0] || '/' == str[0]) && '=' == str[1]) {
     if (1 != sscanf(str + 2, "%lf", scale + 1)) {
-      sprintf(err, "%s: can't parse \"%s\" as x=<float> or /=<float>", me, str);
+      snprintf(err, AIR_STRLEN_HUGE + 1, "%s: can't parse \"%s\" as x=<float> or /=<float>", me, str);
       return 1;
     }
     if (!(scale[1] > 0)) {
-      sprintf(err, "%s: need positive float from \"%s\" (not %g)", me, str, scale[1]);
+      snprintf(err, AIR_STRLEN_HUGE + 1, "%s: need positive float from \"%s\" (not %g)", me, str, scale[1]);
       return 1;
     }
     scale[0] = AIR_CAST(double,
                         ('x' == str[0] ? unrrduScaleMultiply : unrrduScaleDivide));
   } else if (strlen(str) > 1 && ('x' == str[0] || '/' == str[0] || 's' == str[0])) {
     if (1 != sscanf(str + 1, "%lf", scale + 1)) {
-      sprintf(err,
-              "%s: can't parse \"%s\" as x<float>, /<float>, "
-              "or s<float>",
+      snprintf(err, AIR_STRLEN_HUGE + 1,
+              "%s: can't parse \"%s\" as x<float>, /<float>, or s<float>",
               me, str);
       return 1;
     }
     if (!(scale[1] > 0)) {
-      sprintf(err, "%s: need positive float from \"%s\" (not %g)", me, str, scale[1]);
+      snprintf(err, AIR_STRLEN_HUGE + 1, "%s: need positive float from \"%s\" (not %g)", me, str, scale[1]);
       return 1;
     }
     scale[0] = AIR_CAST(double,
@@ -540,14 +542,14 @@ parseScale(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
                                                         : unrrduScaleSpacingTarget)));
   } else if (strlen(str) > 2 && ('+' == str[0] || '-' == str[0]) && '=' == str[1]) {
     if (1 != sscanf(str + 2, "%u", &num)) {
-      sprintf(err, "%s: can't parse \"%s\" as +=<uint> or -=<uint>", me, str);
+      snprintf(err, AIR_STRLEN_HUGE + 1, "%s: can't parse \"%s\" as +=<uint> or -=<uint>", me, str);
       return 1;
     }
     scale[0] = AIR_CAST(double, ('+' == str[0] ? unrrduScaleAdd : unrrduScaleSubtract));
     scale[1] = AIR_CAST(double, num);
   } else {
     if (1 != sscanf(str, "%u", &num)) {
-      sprintf(err, "%s: can't parse \"%s\" as uint", me, str);
+      snprintf(err, AIR_STRLEN_HUGE + 1, "%s: can't parse \"%s\" as uint", me, str);
       return 1;
     }
     scale[0] = AIR_CAST(double, unrrduScaleExact);
@@ -587,12 +589,12 @@ parseFile(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
   FILE **fileP;
 
   if (!(ptr && str)) {
-    sprintf(err, "%s: got NULL pointer", me);
+    snprintf(err, AIR_STRLEN_HUGE + 1, "%s: got NULL pointer", me);
     return 1;
   }
   fileP = (FILE **)ptr;
   if (!(*fileP = airFopen(str, stdin, "rb"))) {
-    sprintf(err, "%s: fopen(\"%s\",\"rb\") failed: %s", me, str, strerror(errno));
+    snprintf(err, AIR_STRLEN_HUGE + 1, "%s: fopen(\"%s\",\"rb\") failed: %s", me, str, strerror(errno));
     return 1;
   }
   return 0;
@@ -625,7 +627,7 @@ parseEncoding(void *ptr, const char *_str, char err[AIR_STRLEN_HUGE + 1]) {
   airArray *mop;
 
   if (!(ptr && _str)) {
-    sprintf(err, "%s: got NULL pointer", me);
+    snprintf(err, AIR_STRLEN_HUGE + 1, "%s: got NULL pointer", me);
     return 1;
   }
   enc = (int *)ptr;
@@ -644,7 +646,7 @@ parseEncoding(void *ptr, const char *_str, char err[AIR_STRLEN_HUGE + 1]) {
   opt = strchr(str, ':');
   if (!opt) {
     /* couldn't parse string as nrrdEncodingType, but there wasn't a colon */
-    sprintf(err, "%s: didn't recognize \"%s\" as an encoding", me, str);
+    snprintf(err, AIR_STRLEN_HUGE + 1, "%s: didn't recognize \"%s\" as an encoding", me, str);
     airMopError(mop);
     return 1;
   } else {
@@ -652,12 +654,12 @@ parseEncoding(void *ptr, const char *_str, char err[AIR_STRLEN_HUGE + 1]) {
     opt++;
     enc[0] = airEnumVal(nrrdEncodingType, str);
     if (nrrdEncodingTypeUnknown == enc[0]) {
-      sprintf(err, "%s: didn't recognize \"%s\" as an encoding", me, str);
+      snprintf(err, AIR_STRLEN_HUGE + 1, "%s: didn't recognize \"%s\" as an encoding", me, str);
       airMopError(mop);
       return 1;
     }
     if (!nrrdEncodingArray[enc[0]]->isCompression) {
-      sprintf(err, "%s: only compression encodings have parameters", me);
+      snprintf(err, AIR_STRLEN_HUGE + 1, "%s: only compression encodings have parameters", me);
       airMopError(mop);
       return 1;
     }
@@ -672,7 +674,7 @@ parseEncoding(void *ptr, const char *_str, char err[AIR_STRLEN_HUGE + 1]) {
       } else if ('f' == tolower(opti)) {
         enc[2] = nrrdZlibStrategyFiltered;
       } else {
-        sprintf(err, "%s: parameter char \"%c\" not a digit or 'd','h','f'", me, *opt);
+        snprintf(err, AIR_STRLEN_HUGE + 1, "%s: parameter char \"%c\" not a digit or 'd','h','f'", me, *opt);
         airMopError(mop);
         return 1;
       }

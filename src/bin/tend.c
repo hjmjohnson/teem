@@ -25,6 +25,7 @@ int
 main(int argc, const char **argv) {
   int i, ret;
   const char *me;
+  size_t argv0_SIZE=0;
   char *argv0 = NULL;
   hestParm *hparm;
   airArray *mop;
@@ -83,9 +84,10 @@ main(int argc, const char **argv) {
   if (tendCmdList[i]) {
     /* yes, we have that command */
     /* initialize variables used by the various commands */
-    argv0 = (char *)calloc(strlen(TEND) + strlen(argv[1]) + 2, sizeof(char));
+    argv0_SIZE = strlen(TEND) + strlen(argv[1]) + 2;
+    argv0 = (char *)calloc(argv0_SIZE, sizeof(char));
     airMopMem(mop, &argv0, airMopAlways);
-    sprintf(argv0, "%s %s", TEND, argv[1]);
+    snprintf(argv0, argv0_SIZE, "%s %s", TEND, argv[1]);
 
     /* run the individual tend program, saving its exit status */
     ret = tendCmdList[i]->main(argc - 2, argv + 2, argv0, hparm);

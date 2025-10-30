@@ -399,7 +399,7 @@ gageStackProbe(gageContext *ctx, double xi, double yi, double zi, double stackId
   }
   if (!ctx->parm.stackUse) {
     if (ctx->parm.generateErrStr) {
-      sprintf(ctx->errStr, "%s: can't probe stack without parm.stackUse", me);
+      snprintf(ctx->errStr, AIR_STRLEN_LARGE + 1, "%s: can't probe stack without parm.stackUse", me);
     } else {
       strcpy(ctx->errStr, _GAGE_NON_ERR_STR);
     }
@@ -426,7 +426,7 @@ gageStackProbeSpace(gageContext *ctx, double xx, double yy, double zz, double ss
   }
   if (!ctx->parm.stackUse) {
     if (ctx->parm.generateErrStr) {
-      sprintf(ctx->errStr, "%s: can't probe stack without parm.stackUse", me);
+      snprintf(ctx->errStr, AIR_STRLEN_LARGE + 1, "%s: can't probe stack without parm.stackUse", me);
     } else {
       strcpy(ctx->errStr, _GAGE_NON_ERR_STR);
     }

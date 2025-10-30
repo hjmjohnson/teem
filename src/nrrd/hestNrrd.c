@@ -42,14 +42,14 @@ parserBoth(void *ptr,
   airArray *mop;
 
   if (!(ptr && filename)) {
-    sprintf(err, "%s: got NULL pointer", me);
+    snprintf(err, AIR_STRLEN_HUGE + 1, "%s: got NULL pointer", me);
     return 1;
   }
   nrrdP = (Nrrd **)ptr;
   *nrrdP = NULL;
   if (airStrlen(filename)) {
     if (disallowTTY && !strcmp("-", filename) && isatty(STDIN_FILENO)) {
-      sprintf(err, "%s: declining to try reading Nrrd from stdin as tty (terminal)", me);
+      snprintf(err, AIR_STRLEN_HUGE + 1, "%s: declining to try reading Nrrd from stdin as tty (terminal)", me);
       return 1;
     }
     mop = airMopNew();
