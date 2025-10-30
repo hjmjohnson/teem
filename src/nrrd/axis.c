@@ -1499,7 +1499,7 @@ nrrdMetaDataNormalize(Nrrd *nout, const Nrrd *nin, int version, int trivialOrien
       }
     }
   } else if (haveMM && !trivialOrient) {
-    int saxi = 0;
+    unsigned int saxi = 0;
     size_t N;
     double rng;
     for (axi = 0; axi < ntmp->dim; axi++) {
@@ -1526,7 +1526,7 @@ nrrdMetaDataNormalize(Nrrd *nout, const Nrrd *nin, int version, int trivialOrien
     ntmp->spaceDim = saxi;
   } else {
     /* either trivialOrient, or, not spaceDim and not haveMM */
-    int saxi = 0;
+    unsigned int saxi = 0;
     nrrdSpaceVecSetZero(ntmp->spaceOrigin);
     for (axi = 0; axi < ntmp->dim; axi++) {
       if (nrrdKindUnknown == kindOut || kindAxis != axi) {

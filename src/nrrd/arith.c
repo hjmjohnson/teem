@@ -284,7 +284,7 @@ _nrrdUnaryOpNormalRand(double a) {
 }
 static double
 _nrrdUnaryOpIf(double a) {
-  return (a ? 1 : 0);
+  return (a != 0 ? 1 : 0);
 }
 static double
 _nrrdUnaryOpZero(double a) {
@@ -411,7 +411,7 @@ static double _nrrdBinaryOpEqual(double a, double b)     {return (a == b);}
 static double _nrrdBinaryOpNotEqual(double a, double b)  {return (a != b);}
 static double _nrrdBinaryOpExists(double a, double b)  {return (AIR_EXISTS(a)
                                                                 ? a : b);}
-static double _nrrdBinaryOpIf(double a, double b)        {return (a ? a : b);}
+static double _nrrdBinaryOpIf(double a, double b)        {return (a != 0 ? a : b);}
 /* clang-format on */
 static double
 _nrrdBinaryOpNormalRandScaleAdd(double a, double b) {
@@ -467,8 +467,8 @@ _nrrdBinaryOpULPDistance(double dA, double dB) {
   switch (Anf + Bnf) {
   case 0:
     /* both values finite; computing distance is straightforward */
-    FA.f = fabs(A);
-    FB.f = fabs(B);
+    FA.f = fabsf(A);
+    FB.f = fabsf(B);
     Ai = FA.i;
     Bi = FB.i;
     if ((A >= 0) == (B >= 0)) {
@@ -807,7 +807,7 @@ _nrrdTernaryOpClamp(double a, double b, double c) {
 }
 static double
 _nrrdTernaryOpIfElse(double a, double b, double c) {
-  return (a ? b : c);
+  return (a != 0 ? b : c);
 }
 static double
 _nrrdTernaryOpLerp(double a, double b, double c) {
