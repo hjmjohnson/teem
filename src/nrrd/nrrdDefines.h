@@ -27,9 +27,9 @@ extern "C" {
 #endif
 
 /* feel free to set these to higher values and recompile */
-#define NRRD_DIM_MAX       16
+#define NRRD_DIM_MAX       16u
 /*                             Max array dimension (nrrd->dim) */
-#define NRRD_SPACE_DIM_MAX 8
+#define NRRD_SPACE_DIM_MAX 8u
 /*                             Max dimension of "space" around array
                                (nrrd->spaceDim) */
 
@@ -43,7 +43,7 @@ extern "C" {
 #define NRRD_EXT_EPS  ".eps"
 
 /* ---- BEGIN non-NrrdIO */
-#define NRRD_KERNEL_PARM_MAXNUM 8
+#define NRRD_KERNEL_PARM_MAXNUM 8u
 /*                              max # parameters in a kernel- this is weird: it
                                 isn't the max of any of the NrrdKernels defined
                                 by the nrrd library (that is more like 3), but
@@ -76,9 +76,9 @@ extern "C" {
 #define NRRD_MINMAX_PERC_SUFF "%"
 /* ---- END non-NrrdIO */
 #define NRRD_COMMENT_CHAR     '#'
-#define NRRD_FILENAME_INCR    32
-#define NRRD_COMMENT_INCR     16
-#define NRRD_KEYVALUE_INCR    32
+#define NRRD_FILENAME_INCR    32u
+#define NRRD_COMMENT_INCR     16u
+#define NRRD_KEYVALUE_INCR    32u
 #define NRRD_LIST_FLAG        "LIST"
 #define NRRD_SKIPLIST_FLAG    "SKIPLIST"
 #define NRRD_PNM_COMMENT      "# NRRD>"
