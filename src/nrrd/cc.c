@@ -28,11 +28,10 @@
 ** (much later) but these don't need to be globals!
 */
 static int _nrrdCC_verb = 0;
-static int _nrrdCC_EqvIncr = 10000; /* HEY: this has to be big so that ccfind is not
-                                stuck constantly re-allocating the eqv array.
-                                This is will be one of the best places to
-                                test the new multiplicative reallocation
-                                strategy, planned for Teem 2.0 */
+static const int _nrrdCC_EqvIncr
+  = 10000; /* HEY: this has to be big so that ccfind is not stuck constantly
+ re-allocating the eqv array. This is will be one of the best places to test the new
+ multiplicative reallocation strategy, planned for Teem 2 */
 
 static int
 _nrrdCCFind_1(Nrrd *nout, unsigned int *numid, const Nrrd *nin) {
@@ -60,70 +59,87 @@ _nrrdCCFind_1(Nrrd *nout, unsigned int *numid, const Nrrd *nin) {
 }
 
 /*
-** layout of value (pvl) and index (pid) cache:
-**
-**  2  3  4 --> X
-**  1  .  .     oddly, index 0 is never used
-**  .  .  .
-**  |
-**  v Y
-*/
+ * visualization of layout of previously value (integral) `pvl` and CC ID `pid` cache,
+ * which are incrementally updated as we sweep along faster "x" axis
+ * with a little 3x3 window around the center, where we have to assign a CC ID:
+ *
+ *  2  3  4 --> X
+ *  1  .  .
+ *  .  .  .
+ *  |
+ *  v Y
+ *
+ * Note: 0 is not a valid index (into `pvl` and `pid`), so 0 means: invalid/unknown index
+ * Also, constraints in how we're called ensure that `nin` is some unsigned integer type.
+ */
 static int
 _nrrdCCFind_2(Nrrd *nout, unsigned int *numid, airArray *eqvArr, const Nrrd *nin,
               unsigned int conny) {
   static const char me[] = "_nrrdCCFind_2";
-  double vl = 0, pvl[5] = {0, 0, 0, 0, 0};
-  unsigned int id, pid[5] = {0, 0, 0, 0, 0}, (*lup)(const void *, size_t), *out;
-  unsigned int p, x, y, sx, sy;
+  double vl = 0,                  /* value from data at center */
+    pvl[5] = {0, 0, 0, 0, 0};     /* cache of previous values */
+  unsigned int id,                /* CC ID to assign at center  */
+    sx, sy,                       /* for data indexing */
+    pid[5] = {0, 0, 0, 0, 0},     /* cache of previous IDs */
+    (*lup)(const void *, size_t), /* how to get integral data value */
+    *out;                         /* output data */
 
-  id = 0; /* sssh! compiler warnings */
   lup = nrrdUILookup[nin->type];
+  /* these macro started innocently enough for the sake of brevity,
+     but then expanded to include all the casting needed to silence warnings from
+     -Wsign-conversion about implicit conversions across signednesses
+     The macros are terrible examples of assuming various local variables,
+     and yet they are used not just in this function but others in this file. */
+#define LUP(D, I) (lup((D), AIR_SIZE_T(I)))
   out = AIR_CAST(unsigned int *, nout->data);
   sx = AIR_UINT(nin->axis[0].size);
   sy = AIR_UINT(nin->axis[1].size);
-#define GETV_2(x, y)                                                                    \
-  ((AIR_IN_CL(0, AIR_INT(x), AIR_INT(sx - 1))                                           \
-    && AIR_IN_CL(0, AIR_INT(y), AIR_INT(sy - 1)))                                       \
-     ? lup(nin->data, (x) + sx * (y))                                                   \
-     : 0.5) /* value that can't come from an array of uints */
-#define GETI_2(x, y)                                                                    \
-  ((AIR_IN_CL(0, AIR_INT(x), AIR_INT(sx - 1))                                           \
-    && AIR_IN_CL(0, AIR_INT(y), AIR_INT(sy - 1)))                                       \
-     ? out[(x) + sx * (y)]                                                              \
-     : AIR_UINT(-1)) /* CC index (probably!) never assigned */
+#define IOK(I, S)       (0 <= (I) && (I) < (S))
+#define VI2(XI, SX, YI) (AIR_INT(XI) + AIR_INT((SX) * (YI)))
+  double noVal = 0.5; /* value different from any integer */
+#define GET_V_2(XI, YI)                                                                 \
+  ((IOK(XI, sx) && IOK(YI, sy)) /* */                                                   \
+     ? LUP(nin->data, VI2(XI, sx, YI))                                                  \
+     : noVal)
+#define GET_I_2(XI, YI)                                                                 \
+  ((IOK(XI, sx) && IOK(YI, sy)) /* */                                                   \
+     ? out[VI2(XI, sx, YI)]                                                             \
+     : UINT_MAX) /* ID different (fingers crossed) from any real CC ID */
 
+  id = UINT_MAX;
   *numid = 0;
-  for (y = 0; y < sy; y++) {
-    for (x = 0; x < sx; x++) {
+  for (unsigned int yi = 0; yi < sy; yi++) {
+    for (unsigned int xi = 0; xi < sx; xi++) {
+      unsigned int midx; /* index (into pvl, pid) of match with center pixel */
       if (_nrrdCC_verb) {
-        fprintf(stderr, "%s(%d,%d) -----------\n", me, x, y);
+        fprintf(stderr, "%s(%u,%u) -----------\n", me, xi, yi);
       }
       /* clang-format off */
-      if (!x) {
-        pvl[1] = GETV_2(-1, y);   pid[1] = GETI_2(-1, y);
-        pvl[2] = GETV_2(-1, y-1); pid[2] = GETI_2(-1, y-1);
-        pvl[3] = GETV_2(0, y-1);  pid[3] = GETI_2(0, y-1);
+      if (xi == 0) { /* on left edge */
+        pvl[1] = GET_V_2(-1, yi);    pid[1] = GET_I_2(-1, yi);
+        pvl[2] = GET_V_2(-1, yi-1);  pid[2] = GET_I_2(-1, yi-1);
+        pvl[3] = GET_V_2( 0, yi-1);  pid[3] = GET_I_2( 0, yi-1);
 
-      } else {
-        pvl[1] = vl;              pid[1] = id;
-        pvl[2] = pvl[3];          pid[2] = pid[3];
-        pvl[3] = pvl[4];          pid[3] = pid[4];
+      } else { /* past left edge: shift known values */
+        pvl[1] = vl;                 pid[1] = id;
+        pvl[2] = pvl[3];             pid[2] = pid[3];
+        pvl[3] = pvl[4];             pid[3] = pid[4];
       }
-      pvl[4] = GETV_2(x+1, y-1);  pid[4] = GETI_2(x+1, y-1);
+      pvl[4] = GET_V_2(xi+1, yi-1);  pid[4] = GET_I_2(xi+1, yi-1);
       /* clang-format on */
-      vl = GETV_2(x, y);
-      p = 0;
-      if (vl == pvl[1]) {
-        id = pid[p = 1];
+      vl = GET_V_2(xi, yi); /* get value at center */
+      midx = 0;             /* initialize neighborhood search with: no match known */
+      if (vl == pvl[1]) {   /* a value match at 1 means we re-use the ID at 1 */
+        id = pid[midx = 1];
       }
 #define TEST(P)                                                                         \
-  if (vl == pvl[(P)]) {                                                                 \
-    if (p) { /* we already had a value match */                                         \
-      if (id != pid[(P)]) {                                                             \
+  if (vl == pvl[(P)]) {     /* we have a value match at P */                            \
+    if (midx) {             /* but we already had a value match */                      \
+      if (id != pid[(P)]) { /* so maybe learn new equivalence */                        \
         airEqvAdd(eqvArr, pid[(P)], id);                                                \
       }                                                                                 \
-    } else {                                                                            \
-      id = pid[p = (P)];                                                                \
+    } else { /* this is the first value match, re-used ID at P */                       \
+      id = pid[midx = (P)];                                                             \
     }                                                                                   \
   }
       TEST(3);
@@ -131,18 +147,18 @@ _nrrdCCFind_2(Nrrd *nout, unsigned int *numid, airArray *eqvArr, const Nrrd *nin
         TEST(2);
         TEST(4);
       }
-      if (!p) {
-        /* didn't match anything previous */
+      if (!midx) {
+        /* value `vl` didn't match anything in `pvl`: create new CC ID */
         id = *numid;
         (*numid)++;
       }
       if (_nrrdCC_verb) {
         fprintf(stderr, "%s: pvl: %g %g %g %g (vl = %g)\n", me, pvl[1], pvl[2], pvl[3],
                 pvl[4], vl);
-        fprintf(stderr, "        pid: %d %d %d %d\n", pid[1], pid[2], pid[3], pid[4]);
-        fprintf(stderr, "    --> p = %d, id = %d, *numid = %d\n", p, id, *numid);
+        fprintf(stderr, "        pid: %u %u %u %u\n", pid[1], pid[2], pid[3], pid[4]);
+        fprintf(stderr, "    --> midx = %u, id = %u, *numid = %u\n", midx, id, *numid);
       }
-      out[x + sx * y] = id;
+      out[xi + sx * yi] = id;
     }
   }
 
@@ -150,16 +166,19 @@ _nrrdCCFind_2(Nrrd *nout, unsigned int *numid, airArray *eqvArr, const Nrrd *nin
 }
 
 /*
-**
-**       5  6  7 --> X
-**       8  9 10
-**      11 12 13
-**      |
-**      v Y
-**    2  3  4
-**  / 1  .  .  again, 0 index never used, for reasons forgotten
-** Z  .  .  .
-*/
+ * Visualization of 3D 3x3x3 indices into previous value `pvl` and CC ID `pid` caches:
+ *
+ *          5    6    7 --> X
+ *        8    9   10
+ *     11   12   13
+ *    /
+ *   v Y    |
+ *          2    3    4
+ *        1    .    .
+ *      .    .    .
+ *          |
+ *          v Z            as above, 0 index not used, so it can mean unknown/unset
+ */
 static int
 _nrrdCCFind_3(Nrrd *nout, unsigned int *numid, airArray *eqvArr, const Nrrd *nin,
               unsigned int conny) {
@@ -167,61 +186,59 @@ _nrrdCCFind_3(Nrrd *nout, unsigned int *numid, airArray *eqvArr, const Nrrd *nin
   double pvl[14] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, vl = 0;
   unsigned int id, *out, (*lup)(const void *, size_t),
     pid[14] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  unsigned int p, x, y, z, sx, sy, sz;
+  unsigned int midx, sx, sy, sz;
 
-  id = 0; /* sssh! compiler warnings */
   lup = nrrdUILookup[nin->type];
   out = AIR_CAST(unsigned int *, nout->data);
   sx = AIR_UINT(nin->axis[0].size);
   sy = AIR_UINT(nin->axis[1].size);
   sz = AIR_UINT(nin->axis[2].size);
-#define GETV_3(x, y, z)                                                                 \
-  ((AIR_IN_CL(0, AIR_INT(x), AIR_INT(sx - 1))                                           \
-    && AIR_IN_CL(0, AIR_INT(y), AIR_INT(sy - 1))                                        \
-    && AIR_IN_CL(0, AIR_INT(z), AIR_INT(sz - 1)))                                       \
-     ? lup(nin->data, (x) + sx * ((y) + sy * (z)))                                      \
-     : 0.5)
-#define GETI_3(x, y, z)                                                                 \
-  ((AIR_IN_CL(0, AIR_INT(x), AIR_INT(sx - 1))                                           \
-    && AIR_IN_CL(0, AIR_INT(y), AIR_INT(sy - 1))                                        \
-    && AIR_IN_CL(0, AIR_INT(z), AIR_INT(sz - 1)))                                       \
-     ? out[(x) + sx * ((y) + sy * (z))]                                                 \
-     : AIR_UINT(-1))
+#define VI3(XI, SX, YI, SY, ZI) (AIR_INT(XI) + AIR_INT(SX) * VI2(YI, SY, ZI))
+  double noVal = 0.5; /* value different from any integer */
+#define GET_V_3(XI, YI, ZI)                                                             \
+  ((IOK(XI, sx) && IOK(YI, sy) && IOK(ZI, sz))                                          \
+     ? LUP(nin->data, VI3(XI, sx, YI, sy, ZI))                                          \
+     : noVal)
+#define GET_I_3(XI, YI, ZI)                                                             \
+  ((IOK(XI, sx) && IOK(YI, sy) && IOK(ZI, sz)) /* */                                    \
+     ? out[VI3(XI, sx, YI, sy, ZI)]                                                     \
+     : UINT_MAX)
 
+  id = UINT_MAX;
   *numid = 0;
-  for (z = 0; z < sz; z++) {
-    for (y = 0; y < sy; y++) {
-      for (x = 0; x < sx; x++) {
+  for (unsigned int zi = 0; zi < sz; zi++) {
+    for (unsigned int yi = 0; yi < sy; yi++) {
+      for (unsigned int xi = 0; xi < sx; xi++) {
         /* clang-format off */
-        if (!x) {
-          pvl[ 1] = GETV_3( -1,   y,   z); pid[ 1] = GETI_3( -1,   y,   z);
-          pvl[ 2] = GETV_3( -1, y-1,   z); pid[ 2] = GETI_3( -1, y-1,   z);
-          pvl[ 3] = GETV_3(  0, y-1,   z); pid[ 3] = GETI_3(  0, y-1,   z);
-          pvl[ 5] = GETV_3( -1, y-1, z-1); pid[ 5] = GETI_3( -1, y-1, z-1);
-          pvl[ 8] = GETV_3( -1,   y, z-1); pid[ 8] = GETI_3( -1,   y, z-1);
-          pvl[11] = GETV_3( -1, y+1, z-1); pid[11] = GETI_3( -1, y+1, z-1);
-          pvl[ 6] = GETV_3(  0, y-1, z-1); pid[ 6] = GETI_3(  0, y-1, z-1);
-          pvl[ 9] = GETV_3(  0,   y, z-1); pid[ 9] = GETI_3(  0,   y, z-1);
-          pvl[12] = GETV_3(  0, y+1, z-1); pid[12] = GETI_3(  0, y+1, z-1);
+        if (xi == 0) {
+          pvl[ 1] = GET_V_3(  -1,   yi,   zi);  pid[ 1] = GET_I_3(  -1,   yi,   zi);
+          pvl[ 2] = GET_V_3(  -1, yi-1,   zi);  pid[ 2] = GET_I_3(  -1, yi-1,   zi);
+          pvl[ 3] = GET_V_3(   0, yi-1,   zi);  pid[ 3] = GET_I_3(   0, yi-1,   zi);
+          pvl[ 5] = GET_V_3(  -1, yi-1, zi-1);  pid[ 5] = GET_I_3(  -1, yi-1, zi-1);
+          pvl[ 8] = GET_V_3(  -1,   yi, zi-1);  pid[ 8] = GET_I_3(  -1,   yi, zi-1);
+          pvl[11] = GET_V_3(  -1, yi+1, zi-1);  pid[11] = GET_I_3(  -1, yi+1, zi-1);
+          pvl[ 6] = GET_V_3(   0, yi-1, zi-1);  pid[ 6] = GET_I_3(   0, yi-1, zi-1);
+          pvl[ 9] = GET_V_3(   0,   yi, zi-1);  pid[ 9] = GET_I_3(   0,   yi, zi-1);
+          pvl[12] = GET_V_3(   0, yi+1, zi-1);  pid[12] = GET_I_3(   0, yi+1, zi-1);
         } else {
-          pvl[ 1] = vl;                    pid[ 1] = id;
-          pvl[ 2] = pvl[ 3];               pid[ 2] = pid[ 3];
-          pvl[ 3] = pvl[ 4];               pid[ 3] = pid[ 4];
-          pvl[ 5] = pvl[ 6];               pid[ 5] = pid[ 6];
-          pvl[ 8] = pvl[ 9];               pid[ 8] = pid[ 9];
-          pvl[11] = pvl[12];               pid[11] = pid[12];
-          pvl[ 6] = pvl[ 7];               pid[ 6] = pid[ 7];
-          pvl[ 9] = pvl[10];               pid[ 9] = pid[10];
-          pvl[12] = pvl[13];               pid[12] = pid[13];
+          pvl[ 1] = vl;                         pid[ 1] = id;
+          pvl[ 2] = pvl[ 3];                    pid[ 2] = pid[ 3];
+          pvl[ 3] = pvl[ 4];                    pid[ 3] = pid[ 4];
+          pvl[ 5] = pvl[ 6];                    pid[ 5] = pid[ 6];
+          pvl[ 8] = pvl[ 9];                    pid[ 8] = pid[ 9];
+          pvl[11] = pvl[12];                    pid[11] = pid[12];
+          pvl[ 6] = pvl[ 7];                    pid[ 6] = pid[ 7];
+          pvl[ 9] = pvl[10];                    pid[ 9] = pid[10];
+          pvl[12] = pvl[13];                    pid[12] = pid[13];
         }
-        pvl[ 4] = GETV_3(x+1, y-1,   z);   pid[ 4] = GETI_3(x+1, y-1,   z);
-        pvl[ 7] = GETV_3(x+1, y-1, z-1);   pid[ 7] = GETI_3(x+1, y-1, z-1);
-        pvl[10] = GETV_3(x+1,   y, z-1);   pid[10] = GETI_3(x+1,   y, z-1);
-        pvl[13] = GETV_3(x+1, y+1, z-1);   pid[13] = GETI_3(x+1, y+1, z-1);
-        vl = GETV_3(x, y, z);
-        p = 0;
+        pvl[ 4]   = GET_V_3(xi+1, yi-1,   zi);  pid[ 4] = GET_I_3(xi+1, yi-1,   zi);
+        pvl[ 7]   = GET_V_3(xi+1, yi-1, zi-1);  pid[ 7] = GET_I_3(xi+1, yi-1, zi-1);
+        pvl[10]   = GET_V_3(xi+1,   yi, zi-1);  pid[10] = GET_I_3(xi+1,   yi, zi-1);
+        pvl[13]   = GET_V_3(xi+1, yi+1, zi-1);  pid[13] = GET_I_3(xi+1, yi+1, zi-1);
+        vl = GET_V_3(xi, yi, zi);
+        midx = 0;
         if (vl == pvl[1]) {
-          id = pid[p=1];
+          id = pid[midx=1];
         }
         TEST(3);
         TEST(9);
@@ -233,12 +250,12 @@ _nrrdCCFind_3(Nrrd *nout, unsigned int *numid, airArray *eqvArr, const Nrrd *nin
           }
         }
         /* clang-format on */
-        if (!p) {
+        if (!midx) {
           /* didn't match anything previous */
           id = *numid;
           (*numid)++;
         }
-        out[x + sx * (y + sy * z)] = id;
+        out[xi + sx * (yi + sy * zi)] = id;
       }
     }
   }
@@ -261,24 +278,23 @@ _nrrdCCFind_N(Nrrd *nout, unsigned int *numid, airArray *eqvArr, const Nrrd *nin
 }
 
 /*
-******** nrrdCCFind
-**
-** finds connected components (CCs) in given integral type nrrd "nin",
-** according to connectivity "conny", putting the results in "nout".
-** The "type" argument controls what type the output will be.  If
-** type == nrrdTypeDefault, the type used will be the smallest that
-** can contain the CC id values.  Otherwise, the specified type "type"
-** will be used, assuming that it is large enough to hold the CC ids.
-**
-** "conny": the number of coordinates that need to varied together in
-** order to reach all the samples that are to consitute the neighborhood
-** around a sample.  For 2-D, conny==1 specifies the 4 edge-connected
-** pixels, and 2 specifies the 8 edge- and corner-connected.
-**
-** The caller can get a record of the values in each CC by passing a
-** non-NULL nval, which will be allocated to an array of the same type
-** as nin, so that nval->data[I] is the value in nin inside CC #I.
-*/
+ ******** nrrdCCFind
+ *
+ * finds connected components (CCs) in given integral type nrrd `nin`, according to
+ * connectivity `conny`, putting the results in output `nout` with output type `type`.
+ * If `type` == nrrdTypeDefault, the type used will be the smallest that can contain the
+ * CC ID values.  Otherwise, the specified type `type` will be used (we assume that it is
+ * large enough to hold the CC IDs).
+ *
+ * `conny` == the number of coordinates that need to varied together in order to reach
+ * all the samples that are to consitute the neighborhood around a sample.  For 2-D,
+ * conny==1 specifies the 4 edge-connected pixels, and 2 specifies the 8 edge- and
+ * corner-connected pixels.
+ *
+ * The caller can get a record of the values in each CC by passing a non-NULL nval, which
+ * will be allocated to an array of the same type as nin, so that nval->data[I] is the
+ * value in nin inside CC #I.
+ */
 int /* Biff: 1 */
 nrrdCCFind(Nrrd *nout, Nrrd **nvalP, const Nrrd *nin, int type, unsigned int conny) {
   static const char me[] = "nrrdCCFind", func[] = "ccfind";
@@ -326,8 +342,8 @@ nrrdCCFind(Nrrd *nout, Nrrd **nvalP, const Nrrd *nin, int type, unsigned int con
   }
   if (!(conny <= nin->dim)) {
     biffAddf(NRRD,
-             "%s: connectivity value must be in [1..%d] for %d-D "
-             "data (not %d)",
+             "%s: connectivity value must be in [1..%u] for %u-D "
+             "data (not %u)",
              me, nin->dim, nin->dim, conny);
     return 1;
   }
@@ -418,13 +434,18 @@ nrrdCCFind(Nrrd *nout, Nrrd **nvalP, const Nrrd *nin, int type, unsigned int con
     nrrdAxisInfoCopy(nout, nin, NULL, NRRD_AXIS_INFO_NONE);
   }
   /* basic info handled by nrrdConvert */
+  /* but we can invalidate a field that is definitely no longer descriptive:
+     oldMin and oldMax document a scalar value range prior to quantization.
+     But here we no longer have anything like scalar values; we have CC IDs.
+     oldMin and oldMax can't help usefully interpret the CC IDs */
+  nout->oldMin = nout->oldMax = AIR_NAN;
 
   airMopOkay(mop);
   return 0;
 }
 
 static int
-_nrrdCCAdj_1(unsigned char *out, int numid, const Nrrd *nin) {
+_nrrdCCAdj_1(unsigned char *out, unsigned int numid, const Nrrd *nin) {
 
   AIR_UNUSED(out);
   AIR_UNUSED(numid);
@@ -432,31 +453,34 @@ _nrrdCCAdj_1(unsigned char *out, int numid, const Nrrd *nin) {
   return 0;
 }
 
+/* For the `Adj` adjacency functions, nin is an array of integral CC IDs */
 static int
 _nrrdCCAdj_2(unsigned char *out, unsigned int numid, const Nrrd *nin,
              unsigned int conny) {
-  unsigned int (*lup)(const void *, size_t), x, y, sx, sy, id = 0;
-  double pid[5] = {0, 0, 0, 0, 0};
+  unsigned int (*lup)(const void *, size_t), sx, sy,
+    id = UINT_MAX, pid[5] = {0, 0, 0, 0, 0},
+    noVal = UINT_MAX; /* for GET_V_2: different (we hope) from any CC ID */
 
   lup = nrrdUILookup[nin->type];
   sx = AIR_UINT(nin->axis[0].size);
   sy = AIR_UINT(nin->axis[1].size);
-  for (y = 0; y < sy; y++) {
-    for (x = 0; x < sx; x++) {
-      if (!x) {
-        pid[1] = GETV_2(-1, y);
-        pid[2] = GETV_2(-1, y - 1);
-        pid[3] = GETV_2(0, y - 1);
+  for (unsigned int yi = 0; yi < sy; yi++) {
+    for (unsigned int xi = 0; xi < sx; xi++) {
+      if (!xi) {
+        pid[1] = GET_V_2(-1, yi);
+        pid[2] = GET_V_2(-1, yi - 1);
+        pid[3] = GET_V_2(0, yi - 1);
       } else {
         pid[1] = id;
         pid[2] = pid[3];
         pid[3] = pid[4];
       }
-      pid[4] = GETV_2(x + 1, y - 1);
-      id = AIR_UINT(GETV_2(x, y));
+      pid[4] = GET_V_2(xi + 1, yi - 1);
+      id = GET_V_2(xi, yi);
 #define TADJ(P)                                                                         \
-  if (pid[(P)] != 0.5 && id != pid[(P)]) {                                              \
-    out[id + numid * AIR_UINT(pid[(P)])] = out[AIR_UINT(pid[(P)]) + numid * id] = 1;    \
+  if (pid[(P)] != UINT_MAX && id != pid[(P)]) {                                         \
+    /* ID at the center != ID at P, but they are adjacent, so record that */            \
+    out[id + numid * pid[(P)]] = out[pid[(P)] + numid * id] = 1;                        \
   }
       TADJ(1);
       TADJ(3);
@@ -471,28 +495,30 @@ _nrrdCCAdj_2(unsigned char *out, unsigned int numid, const Nrrd *nin,
 }
 
 static int
-_nrrdCCAdj_3(unsigned char *out, int numid, const Nrrd *nin, unsigned int conny) {
-  unsigned int (*lup)(const void *, size_t), x, y, z, sx, sy, sz, id = 0;
-  double pid[14] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+_nrrdCCAdj_3(unsigned char *out, unsigned int numid, const Nrrd *nin,
+             unsigned int conny) {
+  unsigned int (*lup)(const void *, size_t), sx, sy, sz,
+    id = UINT_MAX, pid[14] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    noVal = UINT_MAX; /* for GET_V_2: different (we hope) from any CC ID */
 
   lup = nrrdUILookup[nin->type];
   sx = AIR_UINT(nin->axis[0].size);
   sy = AIR_UINT(nin->axis[1].size);
   sz = AIR_UINT(nin->axis[2].size);
-  for (z = 0; z < sz; z++) {
-    for (y = 0; y < sy; y++) {
-      for (x = 0; x < sx; x++) {
+  for (unsigned int zi = 0; zi < sz; zi++) {
+    for (unsigned int yi = 0; yi < sy; yi++) {
+      for (unsigned int xi = 0; xi < sx; xi++) {
         /* clang-format off */
-        if (!x) {
-          pid[ 1] = GETV_3(-1,   y,   z);
-          pid[ 2] = GETV_3(-1, y-1,   z);
-          pid[ 3] = GETV_3( 0, y-1,   z);
-          pid[ 5] = GETV_3(-1, y-1, z-1);
-          pid[ 8] = GETV_3(-1,   y, z-1);
-          pid[11] = GETV_3(-1, y+1, z-1);
-          pid[ 6] = GETV_3( 0, y-1, z-1);
-          pid[ 9] = GETV_3( 0,   y, z-1);
-          pid[12] = GETV_3( 0, y+1, z-1);
+        if (!xi) {
+          pid[ 1] = GET_V_3(-1,   yi,   zi);
+          pid[ 2] = GET_V_3(-1, yi-1,   zi);
+          pid[ 3] = GET_V_3( 0, yi-1,   zi);
+          pid[ 5] = GET_V_3(-1, yi-1, zi-1);
+          pid[ 8] = GET_V_3(-1,   yi, zi-1);
+          pid[11] = GET_V_3(-1, yi+1, zi-1);
+          pid[ 6] = GET_V_3( 0, yi-1, zi-1);
+          pid[ 9] = GET_V_3( 0,   yi, zi-1);
+          pid[12] = GET_V_3( 0, yi+1, zi-1);
         } else {
           pid[ 1] = id;
           pid[ 2] = pid[ 3];
@@ -504,11 +530,11 @@ _nrrdCCAdj_3(unsigned char *out, int numid, const Nrrd *nin, unsigned int conny)
           pid[ 9] = pid[10];
           pid[12] = pid[13];
         }
-        pid[ 4] = GETV_3(x+1, y-1,   z);
-        pid[ 7] = GETV_3(x+1, y-1, z-1);
-        pid[10] = GETV_3(x+1,   y, z-1);
-        pid[13] = GETV_3(x+1, y+1, z-1);
-        id = AIR_UINT(GETV_3(x, y, z));
+        pid[ 4] = GET_V_3(xi+1, yi-1,   zi);
+        pid[ 7] = GET_V_3(xi+1, yi-1, zi-1);
+        pid[10] = GET_V_3(xi+1,   yi, zi-1);
+        pid[13] = GET_V_3(xi+1, yi+1, zi-1);
+        id = AIR_UINT(GET_V_3(xi, yi, zi));
         TADJ(1);
         TADJ(3);
         TADJ(9);
@@ -528,7 +554,8 @@ _nrrdCCAdj_3(unsigned char *out, int numid, const Nrrd *nin, unsigned int conny)
 }
 
 static int /* Biff: 1 */
-_nrrdCCAdj_N(unsigned char *out, int numid, const Nrrd *nin, unsigned int conny) {
+_nrrdCCAdj_N(unsigned char *out, unsigned int numid, const Nrrd *nin,
+             unsigned int conny) {
   static const char me[] = "_nrrdCCAdj_N";
 
   AIR_UNUSED(out);
@@ -556,8 +583,8 @@ nrrdCCAdjacency(Nrrd *nout, const Nrrd *nin, unsigned int conny) {
   }
   if (!(AIR_IN_CL(1, conny, nin->dim))) {
     biffAddf(NRRD,
-             "%s: connectivity value must be in [1..%d] for %d-D "
-             "data (not %d)",
+             "%s: connectivity value must be in [1..%u] for %u-D "
+             "data (not %u)",
              me, nin->dim, nin->dim, conny);
     return 1;
   }
@@ -601,44 +628,42 @@ nrrdCCAdjacency(Nrrd *nout, const Nrrd *nin, unsigned int conny) {
 }
 
 /*
-******** nrrdCCMerge
-**
-** Slightly-too-multi-purpose tool for merging small connected components
-** (CCs) into larger ones, according to a number of possible different
-** constraints, as explained below.
-**
-** valDir: (value direction) uses information about the original values
-** in the CC to constrain whether darker gets merged into brighter, or vice
-** versa, or neither.  For non-zero valDir values, a non-NULL _nval (from
-** nrrdCCFind) must be passed.
-**   valDir > 0 : merge dark CCs into bright, but not vice versa
-**   valDir = 0 : merge either way, values are irrelevant
-**   valDir < 0 : merge bright CCs into dark, but not vice versa
-** When merging with multiple neighbors (maxNeighbor > 1), the value
-** of the largest neighbor is considered.
-**
-** maxSize: a cap on how large "small" is- CCs any larger than maxSize are
-** not merged, as they are deemed too significant.  Or, a maxSize of 0 says
-** size is no object for merging CCs.
-**
-** maxNeighbor: a maximum number of neighbors that a CC can have (either
-** bigger than the CC or not) if it is to be merged.  Use 1 to merge
-** isolated islands into their surrounds, 2 to merge CC with the larger
-** of their two neighbors, etc., or 0 to allow any number of neighbors.
-**
-** conny: passed to nrrdCCAdjacency() when determining neighbors
-**
-** In order to prevent weirdness, the merging done in one call to this
-** function is not transitive: if A is merged to B, then B will not be
-** merged to anything else, even if meets all the requirements defined
-** by the given parameters.  This is accomplished by working from the
-** smallest CCs to the largest. Iterated calls may be needed to acheive
-** the desired effect.
-**
-** Note: the output of this is not "settled"- the CC id values are not
-** shiftward downwards to their lowest possible values, since this would
-** needlessly invalidate the nval value store.
-*/
+ ******** nrrdCCMerge
+ *
+ * Slightly-too-multi-purpose tool for merging small connected components (CCs) into
+ * larger ones, according to a number of possible different constraints, as explained
+ * below.
+ *
+ * `valDir`: (value direction) uses information about the original values in the CC to
+ * constrain whether darker gets merged into brighter, or vice versa, or neither.  For
+ * non-zero `valDir` values, a non-NULL _nval (from nrrdCCFind) must be passed:
+ *   valDir > 0 : merge dark CCs into bright, but not vice versa
+ *   valDir = 0 : merge either way, values are irrelevant
+ *   valDir < 0 : merge bright CCs into dark, but not vice versa
+ * When merging with multiple neighbors (maxNeighbor > 1), the value of the largest
+ * neighbor is considered.
+ *
+ * `maxSize`: a cap on how big "small" is- CCs any larger than `maxSize` are not merged,
+ * as they are deemed too significant.  Or, a `maxSize` of 0 says size is no object for
+ * merging CCs.
+ *
+ * `maxNeighbor`: a maximum number of neighbors that a CC can have (either bigger than
+ * the CC or not) if it is to be merged.  Use 1 to merge isolated islands into their
+ * surrounds, 2 to merge CC with the larger of their two neighbors, etc., or 0 to allow
+ * any number of neighbors.
+ *
+ * `conny`: passed to nrrdCCAdjacency() when determining neighbors
+ *
+ * In order to prevent weirdness, the merging done in one call to this function is not
+ * transitive: if A is merged to B, then B will not be merged to anything else, even if
+ * meets all the requirements defined by the given parameters.  This is accomplished by
+ * working from the smallest CCs to the largest. Iterated calls may be needed to acheive
+ * the desired effect.
+ *
+ * Note: the output of this is not "settled"- the CC id values are not shiftward
+ * downwards to their lowest possible values, since this would needlessly invalidate the
+ * nval value store.
+ */
 int /* Biff: 1 */
 nrrdCCMerge(Nrrd *nout, const Nrrd *nin, Nrrd *_nval, int valDir, unsigned int maxSize,
             unsigned int maxNeighbor, unsigned int conny) {
@@ -783,12 +808,12 @@ nrrdCCMerge(Nrrd *nout, const Nrrd *nin, Nrrd *_nval, int valDir, unsigned int m
 }
 
 /*
-******** nrrdCCRevalue()
-**
-** assigns the original values back to the connected components
-** obviously, this could be subsumed by nrrdApply1DLut(), but this
-** is so special purpose that it seemed simpler to code from scratch
-*/
+ ******** nrrdCCRevalue()
+ *
+ * assigns the original values back to the connected components obviously, this could be
+ * subsumed by nrrdApply1DLut(), but this is so special purpose that it seemed simpler to
+ * code from scratch
+ */
 int /* Biff: 1 */
 nrrdCCRevalue(Nrrd *nout, const Nrrd *nin, const Nrrd *nval) {
   static const char me[] = "nrrdCCRevalue";
