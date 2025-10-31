@@ -101,15 +101,15 @@ typedef unsigned long long airULLong;
  * distracts from more urgent implementation goals.  In the mean time, these can be used
  * safely as long as the lengths are used consistently.
  */
-#define AIR_STRLEN_SMALL 128
+#define AIR_STRLEN_SMALL 128u
 /* SMALL has to be big enough to hold:
    - printed value of size_t and
    - ptrdiff_t, line of text that
    - should contain file format "magic"
 */
-#define AIR_STRLEN_MED   256
-#define AIR_STRLEN_LARGE 512
-#define AIR_STRLEN_HUGE  1024
+#define AIR_STRLEN_MED   256u
+#define AIR_STRLEN_LARGE 512u
+#define AIR_STRLEN_HUGE  1024u
 /* HUGE has to be big enough to hold one line of biff error message */
 
 /*

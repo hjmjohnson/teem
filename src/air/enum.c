@@ -321,7 +321,7 @@ airEnumCheck(char err[AIR_STRLEN_LARGE + 1], const airEnum *enm) {
       }
       if (!strcmp(enm->str[ii], enm->str[jj])) {
         if (err) {
-          snprintf(err, ASL, "%s(%s): str[%d] and [%u] both \"%s\"", me, enm->name, ii,
+          snprintf(err, ASL, "%s(%s): str[%u] and [%u] both \"%s\"", me, enm->name, ii,
                    jj, enm->str[jj]);
         }
         return 1;
@@ -336,7 +336,7 @@ airEnumCheck(char err[AIR_STRLEN_LARGE + 1], const airEnum *enm) {
           if (err) {
             snprintf(err, ASL,
                      "%s(%s): after case-lowering, "
-                     "str[%d] and [%u] both \"%s\"",
+                     "str[%u] and [%u] both \"%s\"",
                      me, enm->name, ii, jj, bb[0]);
           }
           return 1;
@@ -349,8 +349,8 @@ airEnumCheck(char err[AIR_STRLEN_LARGE + 1], const airEnum *enm) {
       if (enm->val[0] == enm->val[ii]) {
         if (err) {
           snprintf(err, ASL,
-                   "%s(%s): val[%u] %u same as "
-                   "unknown/invalid val[0] %u",
+                   "%s(%s): val[%u] %d same as "
+                   "unknown/invalid val[0] %d",
                    me, enm->name, ii, enm->val[ii], enm->val[0]);
         }
         return 1;
@@ -358,7 +358,7 @@ airEnumCheck(char err[AIR_STRLEN_LARGE + 1], const airEnum *enm) {
       for (jj = ii + 1; jj <= enm->M; jj++) {
         if (enm->val[jj] == enm->val[ii]) {
           if (err) {
-            snprintf(err, ASL, "%s(%s): val[%u] %u same as val[%u] %u", me, enm->name,
+            snprintf(err, ASL, "%s(%s): val[%u] %d same as val[%u] %d", me, enm->name,
                      ii, enm->val[ii], jj, enm->val[jj]);
           }
           return 1;
@@ -417,7 +417,7 @@ airEnumCheck(char err[AIR_STRLEN_LARGE + 1], const airEnum *enm) {
       if (airEnumValCheck(enm, enm->valEqv[ii])) {
         if (err) {
           snprintf(err, ASL,
-                   "%s(%s): valEqv[%u] %u (with strEqv[%u] \"%s\")"
+                   "%s(%s): valEqv[%u] %d (with strEqv[%u] \"%s\")"
                    " not valid",
                    me, enm->name, ii, enm->valEqv[ii], ii, enm->strEqv[ii]);
         }
@@ -445,7 +445,7 @@ airEnumCheck(char err[AIR_STRLEN_LARGE + 1], const airEnum *enm) {
       for (jj = ii + 1; strlen(enm->strEqv[jj]); jj++) {
         if (!strcmp(enm->strEqv[ii], enm->strEqv[jj])) {
           if (err) {
-            snprintf(err, ASL, "%s(%s): strEqv[%d] and [%u] both \"%s\"", me, enm->name,
+            snprintf(err, ASL, "%s(%s): strEqv[%u] and [%u] both \"%s\"", me, enm->name,
                      ii, jj, enm->strEqv[jj]);
           }
           return 1;
@@ -460,7 +460,7 @@ airEnumCheck(char err[AIR_STRLEN_LARGE + 1], const airEnum *enm) {
             if (err) {
               snprintf(err, ASL,
                        "%s(%s): after case-lowering, "
-                       "strEqv[%d] and [%u] both \"%s\"",
+                       "strEqv[%u] and [%u] both \"%s\"",
                        me, enm->name, ii, jj, bb[0]);
             }
             return 1;
