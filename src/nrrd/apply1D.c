@@ -135,7 +135,7 @@ _nrrdApply1DSetUp(Nrrd *nout, const Nrrd *nin, const NrrdRange *range, const Nrr
     if (!multi) {
       mapAxis = nmap->dim - 1;
       if (!(0 == mapAxis || 1 == mapAxis)) {
-        biffAddf(NRRD, "%s: dimension of %s should be 1 or 2, not %d", me, nounStr[kind],
+        biffAddf(NRRD, "%s: dimension of %s should be 1 or 2, not %u", me, nounStr[kind],
                  nmap->dim);
         return 1;
       }
@@ -143,7 +143,7 @@ _nrrdApply1DSetUp(Nrrd *nout, const Nrrd *nin, const NrrdRange *range, const Nrr
     } else {
       mapAxis = nmap->dim - nin->dim - 1;
       if (!(0 == mapAxis || 1 == mapAxis)) {
-        biffAddf(NRRD, "%s: dimension of %s should be %d or %d, not %d", me,
+        biffAddf(NRRD, "%s: dimension of %s should be %u or %u, not %u", me,
                  mnounStr[kind], nin->dim + 1, nin->dim + 2, nmap->dim);
         return 1;
       }
@@ -160,8 +160,8 @@ _nrrdApply1DSetUp(Nrrd *nout, const Nrrd *nin, const NrrdRange *range, const Nrr
           char stmp[2][AIR_STRLEN_SMALL + 1];
           biffAddf(NRRD,
                    "%s: input and mmap don't have compatible sizes: "
-                   "nin->axis[%d].size (%s) "
-                   "!= nmap->axis[%d].size (%s): ",
+                   "nin->axis[%u].size (%s) "
+                   "!= nmap->axis[%u].size (%s): ",
                    me, ax, airSprintSize_t(stmp[0], nin->axis[ax].size),
                    mapAxis + 1 + ax, airSprintSize_t(stmp[1], nmap->axis[taxi].size));
           return 1;
@@ -171,7 +171,7 @@ _nrrdApply1DSetUp(Nrrd *nout, const Nrrd *nin, const NrrdRange *range, const Nrr
     domMin = _nrrdApplyDomainMin(nmap, AIR_FALSE, mapAxis);
     domMax = _nrrdApplyDomainMax(nmap, AIR_FALSE, mapAxis);
     if (!(domMin < domMax)) {
-      biffAddf(NRRD, "%s: (axis %d) domain min (%g) not less than max (%g)", me, mapAxis,
+      biffAddf(NRRD, "%s: (axis %u) domain min (%g) not less than max (%g)", me, mapAxis,
                domMin, domMax);
       return 1;
     }
@@ -199,8 +199,8 @@ _nrrdApply1DSetUp(Nrrd *nout, const Nrrd *nin, const NrrdRange *range, const Nrr
   }
   if (mapAxis + nin->dim > NRRD_DIM_MAX) {
     biffAddf(NRRD,
-             "%s: input nrrd dim %d through non-scalar %s exceeds "
-             "NRRD_DIM_MAX %d",
+             "%s: input nrrd dim %u through non-scalar %s exceeds "
+             "NRRD_DIM_MAX %u",
              me, nin->dim, multi ? mnounStr[kind] : nounStr[kind], NRRD_DIM_MAX);
     return 1;
   }
@@ -603,13 +603,13 @@ nrrd1DIrregMapCheck(const Nrrd *nmap) {
     return 1;
   }
   if (2 != nmap->dim) {
-    biffAddf(NRRD, "%s: map needs to have dimension 2, not %d", me, nmap->dim);
+    biffAddf(NRRD, "%s: map needs to have dimension 2, not %u", me, nmap->dim);
     return 1;
   }
   entLen = AIR_UINT(nmap->axis[0].size);
   mapLen = AIR_UINT(nmap->axis[1].size);
   if (!(entLen >= 2 && mapLen >= 2)) {
-    biffAddf(NRRD, "%s: both map's axes sizes should be >= 2 (not %d,%d)", me, entLen,
+    biffAddf(NRRD, "%s: both map's axes sizes should be >= 2 (not %u,%u)", me, entLen,
              mapLen);
     return 1;
   }
@@ -636,7 +636,7 @@ nrrd1DIrregMapCheck(const Nrrd *nmap) {
     if (!(mapLen >= 5)) {
       biffAddf(NRRD,
                "%s: length of map w/ non-existent locations must "
-               "be >= 5 (not %d)",
+               "be >= 5 (not %u)",
                me, mapLen);
       return 1;
     }
@@ -658,13 +658,13 @@ nrrd1DIrregMapCheck(const Nrrd *nmap) {
   }
   for (ii = baseI; ii < mapLen; ii++) {
     if (!AIR_EXISTS(mapLup(nmap->data, ii * entLen))) {
-      biffAddf(NRRD, "%s: entry %d has non-existent position", me, ii);
+      biffAddf(NRRD, "%s: entry %u has non-existent position", me, ii);
       return 1;
     }
   }
   for (ii = baseI; ii < mapLen - 1; ii++) {
     if (!(mapLup(nmap->data, ii * entLen) < mapLup(nmap->data, (ii + 1) * entLen))) {
-      biffAddf(NRRD, "%s: map entry %d pos (%g) not < entry %d pos (%g)", me, ii,
+      biffAddf(NRRD, "%s: map entry %u pos (%g) not < entry %u pos (%g)", me, ii,
                mapLup(nmap->data, ii * entLen), ii + 1,
                mapLup(nmap->data, (ii + 1) * entLen));
       return 1;
@@ -696,7 +696,7 @@ nrrd1DIrregAclCheck(const Nrrd *nacl) {
     return 1;
   }
   if (2 != nacl->dim) {
-    biffAddf(NRRD, "%s: dimension should be 2, not %d", me, nacl->dim);
+    biffAddf(NRRD, "%s: dimension should be 2, not %u", me, nacl->dim);
     return 1;
   }
   if (!(nacl->axis[0].size == 2 && nacl->axis[1].size >= 2)) {
@@ -737,7 +737,7 @@ _nrrd1DIrregMapDomain(unsigned int *posLenP, unsigned int *baseIP, const Nrrd *n
   }
   pos = (double *)malloc(posLen * sizeof(double));
   if (!pos) {
-    biffAddf(NRRD, "%s: couldn't allocate %d doubles\n", me, posLen);
+    biffAddf(NRRD, "%s: couldn't allocate %u doubles\n", me, posLen);
     return NULL;
   }
   for (ii = 0; ii < posLen; ii++) {
@@ -1061,7 +1061,7 @@ nrrdApply1DSubstitution(Nrrd *nout, const Nrrd *nin, const Nrrd *_nsubst) {
     return 1;
   }
   if (2 != _nsubst->dim) {
-    biffAddf(NRRD, "%s: substitution table has to be 2-D, not %d-D", me, _nsubst->dim);
+    biffAddf(NRRD, "%s: substitution table has to be 2-D, not %u-D", me, _nsubst->dim);
     return 1;
   }
   /* nrrdAxisInfoGet_va(_nsubst, nrrdAxisInfoSize, &asize0, &asize1); */
