@@ -24,7 +24,7 @@
 
 void
 _nrrdAxisInfoInit(NrrdAxisInfo *axis) {
-  int dd;
+  unsigned int dd;
 
   if (axis) {
     axis->size = 0;
@@ -184,7 +184,7 @@ _nrrdKindAltered(int kindIn, int resampling) {
 */
 void
 _nrrdAxisInfoCopy(NrrdAxisInfo *dest, const NrrdAxisInfo *src, int bitflag) {
-  int ii;
+  unsigned int ii;
 
   if (!(NRRD_AXIS_INFO_SIZE_BIT & bitflag)) {
     dest->size = src->size;
@@ -1546,7 +1546,7 @@ nrrdMetaDataNormalize(Nrrd *nout, const Nrrd *nin, int version, int trivialOrien
 
   /* space dimension has to match the number of domain axes */
   if (ntmp->dim != ntmp->spaceDim + !!kindOut) {
-    biffAddf(NRRD, "%s: output dim %d != spaceDim %d + %d %s%s%s%s", me, ntmp->dim,
+    biffAddf(NRRD, "%s: output dim %u != spaceDim %u + %d %s%s%s%s", me, ntmp->dim,
              ntmp->spaceDim, !!kindOut, kindOut ? "for non-scalar (" : "(scalar data)",
              kindOut ? airEnumStr(nrrdKind, kindOut) : "", kindOut ? ") data" : "",
              kindOut ? ""

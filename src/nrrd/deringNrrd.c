@@ -20,7 +20,7 @@
 #include "nrrd.h"
 #include "privateNrrd.h"
 
-#define CLAMP_HIST_BINS_MIN 512
+#define CLAMP_HIST_BINS_MIN 512u
 #define CLAMP_PERC_MAX      30.0
 
 #define DEBUG 0

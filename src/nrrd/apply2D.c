@@ -89,7 +89,7 @@ _nrrdApply2DSetUp(Nrrd *nout, const Nrrd *nin, const NrrdRange *range0,
   }
   mapAxis = nmap->dim - 2;
   if (!(0 == mapAxis || 1 == mapAxis)) {
-    biffAddf(NRRD, "%s: dimension of %s should be 2 or 3, not %d", me, nounStr[kind],
+    biffAddf(NRRD, "%s: dimension of %s should be 2 or 3, not %u", me, nounStr[kind],
              nmap->dim);
     return 1;
   }
@@ -97,14 +97,14 @@ _nrrdApply2DSetUp(Nrrd *nout, const Nrrd *nin, const NrrdRange *range0,
   domMin = _nrrdApplyDomainMin(nmap, AIR_FALSE, mapAxis);
   domMax = _nrrdApplyDomainMax(nmap, AIR_FALSE, mapAxis);
   if (!(domMin < domMax)) {
-    biffAddf(NRRD, "%s: (axis %d) domain min (%g) not less than max (%g)", me, mapAxis,
+    biffAddf(NRRD, "%s: (axis %u) domain min (%g) not less than max (%g)", me, mapAxis,
              domMin, domMax);
     return 1;
   }
   domMin = _nrrdApplyDomainMin(nmap, AIR_FALSE, mapAxis + 1);
   domMax = _nrrdApplyDomainMax(nmap, AIR_FALSE, mapAxis + 1);
   if (!(domMin < domMax)) {
-    biffAddf(NRRD, "%s: (axis %d) domain min (%g) not less than max (%g)", me,
+    biffAddf(NRRD, "%s: (axis %u) domain min (%g) not less than max (%g)", me,
              mapAxis + 1, domMin, domMax);
     return 1;
   }
@@ -115,8 +115,8 @@ _nrrdApply2DSetUp(Nrrd *nout, const Nrrd *nin, const NrrdRange *range0,
   entLen = mapAxis ? AIR_UINT(nmap->axis[0].size) : 1;
   if (mapAxis + nin->dim - 1 > NRRD_DIM_MAX) {
     biffAddf(NRRD,
-             "%s: input nrrd dim %d through non-scalar %s exceeds "
-             "NRRD_DIM_MAX %d",
+             "%s: input nrrd dim %u through non-scalar %s exceeds "
+             "NRRD_DIM_MAX %u",
              me, nin->dim, nounStr[kind], NRRD_DIM_MAX);
     return 1;
   }
