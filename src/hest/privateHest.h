@@ -61,7 +61,7 @@ typedef unsigned int uint;
 
 #define HEST _hestBiffKey
 
-#define HIST_DEPTH_MAX 10 // max sensibly depth of hestInputStack
+#define HIST_DEPTH_MAX 10u // max sensibly depth of hestInputStack
 
 /* methodsHest.c */
 /*

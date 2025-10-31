@@ -295,9 +295,9 @@ hestGlossary(FILE *f, const hestOpt *hopt, const hestParm *_hparm) {
         } else if ((int)hopt[ii].min
                    < _hestMax(hopt[ii].max)) { /* HEY scrutinize casts */
           if (-1 == hopt[ii].max) {
-            sprintf(tmpS, "%d\tor\tmore\t", hopt[ii].min);
+            sprintf(tmpS, "%u\tor\tmore\t", hopt[ii].min);
           } else {
-            sprintf(tmpS, "%d..%d\t", hopt[ii].min, _hestMax(hopt[ii].max));
+            sprintf(tmpS, "%u..%d\t", hopt[ii].min, _hestMax(hopt[ii].max));
           }
           strcat(buff, tmpS);
         }

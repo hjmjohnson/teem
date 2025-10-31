@@ -722,7 +722,7 @@ _hestOPCheck(const hestOpt *hopt, const hestParm *hparm) {
     }
     // `kind` set by hestOptSingleSet
     if (-1 == hopt[opi].kind) {
-      biffAddf(HEST, "%s%sopt[%u]'s min (%d) and max (%d) incompatible", _ME_, opi,
+      biffAddf(HEST, "%s%sopt[%u]'s min (%u) and max (%d) incompatible", _ME_, opi,
                hopt[opi].min, hopt[opi].max);
       return 1;
     }

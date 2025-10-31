@@ -201,7 +201,7 @@ copyArgv(int *sawHelp, char **newArgv, const char **oldArgv, const hestParm *hpa
         if (hparm->verbose) printf("%s: -0-> line: |%s|\n", me, line);
         airOneLinify(line);
         incr = airStrntok(line, AIR_WHITESPACE);
-        if (hparm->verbose) printf("%s: -1-> line: |%s|, incr=%d\n", me, line, incr);
+        if (hparm->verbose) printf("%s: -1-> line: |%s|, incr=%u\n", me, line, incr);
         airParseStrS(newArgv + newArgc, line, AIR_WHITESPACE,
                      incr /*, greedy=AIR_FALSE */);
         for (rgi = 0; rgi < incr; rgi++) {
@@ -216,7 +216,7 @@ copyArgv(int *sawHelp, char **newArgv, const char **oldArgv, const hestParm *hpa
     }
     if (hparm->verbose) {
       printArgv(AIR_INT(newArgc), newArgv, "     ");
-      printf("%s: ^^^^^^^ newArgc = %d, argIdx = %d\n", me, newArgc, argIdx);
+      printf("%s: ^^^^^^^ newArgc = %u, argIdx = %u\n", me, newArgc, argIdx);
     }
   }
   /* NULL-terminate newArgv[] */
@@ -267,11 +267,11 @@ whichOptFlag(const hestOpt *opt, const char *flag, const hestParm *hparm) {
 
   optNum = hestOptNum(opt);
   if (hparm->verbose)
-    printf("%s: (a) looking for maybe-is-flag |%s| in optNum=%d options\n", me, flag,
+    printf("%s: (a) looking for maybe-is-flag |%s| in optNum=%u options\n", me, flag,
            optNum);
   for (optIdx = 0; optIdx < optNum; optIdx++) {
     if (hparm->verbose)
-      printf("%s:      optIdx %d |%s| ?\n", me, optIdx,
+      printf("%s:      optIdx %u |%s| ?\n", me, optIdx,
              opt[optIdx].flag ? opt[optIdx].flag : "(nullflag)");
     if (!opt[optIdx].flag) continue;
     if (strchr(opt[optIdx].flag, MULTI_FLAG_SEP)) {
@@ -290,7 +290,7 @@ whichOptFlag(const hestOpt *opt, const char *flag, const hestParm *hparm) {
       if (!strcmp(flag, buff)) return AIR_INT(optIdx);
     }
   }
-  if (hparm->verbose) printf("%s: (b) optNum = %d\n", me, optNum);
+  if (hparm->verbose) printf("%s: (b) optNum = %u\n", me, optNum);
   if (VAR_PARM_STOP_FLAG) {
     sprintf(buff, "-%c", VAR_PARM_STOP_FLAG);
     if (hparm->verbose)
@@ -448,18 +448,18 @@ extractFlagged(char **optParms, unsigned int *optParmNum, int *optAprd, int *arg
       /* didn't get minimum number of parameters */
       if (!(argIdx + parmNum + 1 <= *argcP - 1)) {
         fprintf(stderr,
-                "%sgot to end of line before getting %d parameter%s "
+                "%sgot to end of line before getting %u parameter%s "
                 "for %s (got %d)\n",
                 ME, opt[optIdx].min, opt[optIdx].min > 1 ? "s" : "",
                 identStr(ident1, opt + optIdx, hparm, AIR_TRUE), parmNum);
       } else if (-2 != nextOptIdx) {
-        fprintf(stderr, "%ssaw %s before getting %d parameter%s for %s (got %d)\n", ME,
+        fprintf(stderr, "%ssaw %s before getting %u parameter%s for %s (got %d)\n", ME,
                 identStr(ident1, opt + nextOptIdx, hparm, AIR_FALSE), opt[optIdx].min,
                 opt[optIdx].min > 1 ? "s" : "",
                 identStr(ident2, opt + optIdx, hparm, AIR_FALSE), parmNum);
       } else {
         fprintf(stderr,
-                "%ssaw \"-%c\" (option-parameter-stop flag) before getting %d "
+                "%ssaw \"-%c\" (option-parameter-stop flag) before getting %u "
                 "parameter%s for %s (got %d)\n",
                 ME, VAR_PARM_STOP_FLAG, opt[optIdx].min, opt[optIdx].min > 1 ? "s" : "",
                 identStr(ident2, opt + optIdx, hparm, AIR_FALSE), parmNum);
@@ -614,7 +614,7 @@ extractUnflagged(char **optParms, unsigned int *optParmNum, int *argcP, char **a
   }
   if (unflagVar < optNum) {
     if (hparm->verbose) {
-      printf("%s unflagVar=%d: min, nvp, max = %d %d %d\n", me, unflagVar,
+      printf("%s unflagVar=%d: min, nvp, max = %u %d %d\n", me, unflagVar,
              opt[unflagVar].min, nvp, _hestMax(opt[unflagVar].max));
     }
     /* we'll do error checking for unexpected args later */
@@ -625,7 +625,7 @@ extractUnflagged(char **optParms, unsigned int *optParmNum, int *argcP, char **a
       triggered this error message when there were zero given parms, but the default
       could have supplied them */
       if (nvp < AIR_INT(opt[unflagVar].min)) {
-        fprintf(stderr, "%sdidn't get minimum of %d arg%s for %s (got %d)\n", ME,
+        fprintf(stderr, "%sdidn't get minimum of %u arg%s for %s (got %d)\n", ME,
                 opt[unflagVar].min, opt[unflagVar].min > 1 ? "s" : "",
                 identStr(ident, opt + unflagVar, hparm, AIR_TRUE), nvp);
         return 1;
@@ -731,13 +731,13 @@ _hestDefaults(char **optParms, int *optDfltd, unsigned int *optParmNum,
                      _hestMax(opt[optIdx].max))) {
         if (-1 == opt[optIdx].max) {
           fprintf(stderr,
-                  "%s# parameters (in default) for %s is %d, but need %d or more\n", ME,
+                  "%s# parameters (in default) for %s is %u, but need %u or more\n", ME,
                   identStr(ident, opt + optIdx, hparm, AIR_TRUE), optParmNum[optIdx],
                   opt[optIdx].min);
         } else {
           fprintf(
             stderr,
-            "%s# parameters (in default) for %s is %d, but need between %d and %d\n", ME,
+            "%s# parameters (in default) for %s is %u, but need between %u and %d\n", ME,
             identStr(ident, opt + optIdx, hparm, AIR_TRUE), optParmNum[optIdx],
             opt[optIdx].min, _hestMax(opt[optIdx].max));
         }
@@ -971,7 +971,7 @@ setValues(char **optParms, int *optDfltd, unsigned int *optParmNum, int *appr,
         case airTypeEnum:
           if (opt[op].min != /* min == max */
               airParseStrE((int *)vP, optParms[op], " ", opt[op].min, opt[op].enm)) {
-            fprintf(stderr, "%scouldn't parse %s\"%s\" as %d %s%s for %s\n", ME,
+            fprintf(stderr, "%scouldn't parse %s\"%s\" as %u %s%s for %s\n", ME,
                     optDfltd[op] ? "(default) " : "", optParms[op], opt[op].min,
                     opt[op].enm->name, opt[op].min > 1 ? "s" : "", ident);
             return 1;
@@ -1011,7 +1011,7 @@ setValues(char **optParms, int *optDfltd, unsigned int *optParmNum, int *appr,
         case airTypeString:
           if (opt[op].min != /* min == max */
               _hestParseStr[type](vP, optParms[op], " ", opt[op].min)) {
-            fprintf(stderr, "%scouldn't parse %s\"%s\" as %d %s%s for %s\n", ME,
+            fprintf(stderr, "%scouldn't parse %s\"%s\" as %u %s%s for %s\n", ME,
                     optDfltd[op] ? "(default) " : "", optParms[op], opt[op].min,
                     _hestTypeStr[type], opt[op].min > 1 ? "s" : "", ident);
             return 1;
@@ -1026,7 +1026,7 @@ setValues(char **optParms, int *optDfltd, unsigned int *optParmNum, int *appr,
         default:
           if (opt[op].min != /* min == max */
               _hestParseStr[type](vP, optParms[op], " ", opt[op].min)) {
-            fprintf(stderr, "%scouldn't parse %s\"%s\" as %d %s%s for %s\n", ME,
+            fprintf(stderr, "%scouldn't parse %s\"%s\" as %u %s%s for %s\n", ME,
                     optDfltd[op] ? "(default) " : "", optParms[op], opt[op].min,
                     _hestTypeStr[type], opt[op].min > 1 ? "s" : "", ident);
             return 1;
@@ -1223,7 +1223,7 @@ setValues(char **optParms, int *optDfltd, unsigned int *optParmNum, int *appr,
             if (optParmNum[op]
                 != airParseStrS((char **)(*((void **)vP)), optParms[op], " ",
                                 optParmNum[op] /*, hparm->greedySingleString */)) {
-              fprintf(stderr, "%scouldn't parse %s\"%s\" as %d %s%s for %s\n", ME,
+              fprintf(stderr, "%scouldn't parse %s\"%s\" as %u %s%s for %s\n", ME,
                       optDfltd[op] ? "(default) " : "", optParms[op], optParmNum[op],
                       _hestTypeStr[type], optParmNum[op] > 1 ? "s" : "", ident);
               return 1;
@@ -1242,7 +1242,7 @@ setValues(char **optParms, int *optDfltd, unsigned int *optParmNum, int *appr,
             if (optParmNum[op]
                 != _hestParseStr[type](*((void **)vP), optParms[op], " ",
                                        optParmNum[op])) {
-              fprintf(stderr, "%scouldn't parse %s\"%s\" as %d %s%s for %s\n", ME,
+              fprintf(stderr, "%scouldn't parse %s\"%s\" as %u %s%s for %s\n", ME,
                       optDfltd[op] ? "(default) " : "", optParms[op], optParmNum[op],
                       _hestTypeStr[type], optParmNum[op] > 1 ? "s" : "", ident);
               return 1;

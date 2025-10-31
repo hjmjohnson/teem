@@ -877,7 +877,7 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
       && UINT_MAX // and we aren't looking at start of another flagged option
            == (nextOptIdx = whichOptFlag(hopt, havec->harg[pai]->str, hparm))) {
       if (hparm->verbose)
-        printf("%s: optIdx %d |%s|; argIdx %u < %u |%s| --> parmNum --> %d\n", __func__,
+        printf("%s: optIdx %u |%s|; argIdx %u < %u |%s| --> parmNum --> %u\n", __func__,
                optIdx, theOpt->flag, argIdx, pai, havec->harg[pai]->str, parmNum + 1);
       parmNum++;
     }
@@ -886,7 +886,7 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
        varParm and we hitVPS, or
        we hit the start of another flagged option (indicated by nextOptIdx) */
     if (hparm->verbose)
-      printf("%s: optIdx %d |%s|: stopped w/ "
+      printf("%s: optIdx %u |%s|: stopped w/ "
              "parmNum=%u hitEnd=%d hitVPS=%d nextOptIdx=%u\n",
              __func__, optIdx, theOpt->flag, parmNum, hitEnd, hitVPS, nextOptIdx);
     if (parmNum < theOpt->min) { // didn't get required min # parameters
@@ -905,13 +905,13 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
                  _ME_, VAR_PARM_STOP_FLAG, theOpt->min, theOpt->min > 1 ? "s" : "",
                  identStr(ident1, theOpt), parmNum);
       } else if (UINT_MAX != nextOptIdx) {
-        biffAddf(HEST, "%s%ssaw %s before getting %u parameter%s for %s (got %d)", _ME_,
+        biffAddf(HEST, "%s%ssaw %s before getting %u parameter%s for %s (got %u)", _ME_,
                  identStr(ident2, hopt + nextOptIdx), theOpt->min,
                  theOpt->min > 1 ? "s" : "", identStr(ident1, theOpt), parmNum);
       } else {
         biffAddf(HEST,
                  "%s%ssorry, confused about not getting %u "
-                 "parameter%s for %s (got %d)",
+                 "parameter%s for %s (got %u)",
                  _ME_, theOpt->min, theOpt->min > 1 ? "s" : "", identStr(ident1, theOpt),
                  parmNum);
       }
@@ -919,7 +919,7 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
       return 1;
     }
     if (hparm->verbose) {
-      printf("%s: ________ argv[%d]=|%s|: optIdx %u |%s| followed by %u parms\n",
+      printf("%s: ________ argv[%u]=|%s|: optIdx %u |%s| followed by %u parms\n",
              __func__, argIdx, havec->harg[argIdx]->str, optIdx, theOpt->flag, parmNum);
     }
     if (hparm->verbose > 1) {
