@@ -2204,13 +2204,13 @@ enum {
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 /* feel free to set these to higher values and recompile */
-#define NRRD_DIM_MAX       16
+#define NRRD_DIM_MAX       16u
 /*                             Max array dimension (nrrd->dim) */
-#define NRRD_SPACE_DIM_MAX 8
+#define NRRD_SPACE_DIM_MAX 8u
 /*                             Max dimension of "space" around array
                                (nrrd->spaceDim) */
 /* ---- BEGIN non-NrrdIO */
-#define NRRD_KERNEL_PARM_MAXNUM 8
+#define NRRD_KERNEL_PARM_MAXNUM 8u
 /*                              max # parameters in a kernel- this is weird: it
                                 isn't the max of any of the NrrdKernels defined
                                 by the nrrd library (that is more like 3), but
@@ -2234,9 +2234,9 @@ enum {
 /* ---- BEGIN non-NrrdIO */
 /* suffix string that indicates percentile-based min/max */
 /* ---- END non-NrrdIO */
-#define NRRD_FILENAME_INCR    32
-#define NRRD_COMMENT_INCR     16
-#define NRRD_KEYVALUE_INCR    32
+#define NRRD_FILENAME_INCR    32u
+#define NRRD_COMMENT_INCR     16u
+#define NRRD_KEYVALUE_INCR    32u
 /*                                   this is designed to be robust against the
                                      mungling that xv does, but no promises for
                                      any other image programs */

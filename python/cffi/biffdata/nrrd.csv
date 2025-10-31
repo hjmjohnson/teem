@@ -24,11 +24,11 @@ nrrdArithIterAffine,int,1,0,nrrd,nrrd/arith.c:1108
 nrrdAxisInfoCompare,int,1,0,nrrd,nrrd/axis.c:929
 nrrdOrientationReduce,int,1,0,nrrd,nrrd/axis.c:1221
 nrrdMetaDataNormalize,int,1,0,nrrd,nrrd/axis.c:1266
-nrrdCCFind,int,1,0,nrrd,nrrd/cc.c:283
-nrrdCCAdjacency,int,1,0,nrrd,nrrd/cc.c:543
-nrrdCCMerge,int,1,0,nrrd,nrrd/cc.c:643
-nrrdCCRevalue,int,1,0,nrrd,nrrd/cc.c:793
-nrrdCCSettle,int,1,0,nrrd,nrrd/cc.c:820
+nrrdCCFind,int,1,0,nrrd,nrrd/cc.c:299
+nrrdCCAdjacency,int,1,0,nrrd,nrrd/cc.c:570
+nrrdCCMerge,int,1,0,nrrd,nrrd/cc.c:668
+nrrdCCRevalue,int,1,0,nrrd,nrrd/cc.c:818
+nrrdCCSettle,int,1,0,nrrd,nrrd/cc.c:845
 nrrdCCValid,int,0,0,nrrd,nrrd/ccmethods.c:24
 nrrdCCSize,unsigned int,1,0,nrrd,nrrd/ccmethods.c:55
 nrrdDeringVerboseSet,int,1,0,nrrd,nrrd/deringNrrd.c:99
@@ -63,12 +63,12 @@ nrrdKernelSprint,int,1,0,nrrd,nrrd/kernel.c:3287
 nrrdKernelCompare,int,1,0,nrrd,nrrd/kernel.c:3305
 nrrdKernelSpecCompare,int,1,0,nrrd,nrrd/kernel.c:3354
 nrrdKernelCheck,int,1,0,nrrd,nrrd/kernel.c:3430
-nrrdConvert,int,1,0,nrrd,nrrd/map.c:232
-nrrdClampConvert,int,1,0,nrrd,nrrd/map.c:252
-nrrdCastClampRound,int,1,0,nrrd,nrrd/map.c:278
-nrrdQuantize,int,1,0,nrrd,nrrd/map.c:300
-nrrdUnquantize,int,1,0,nrrd,nrrd/map.c:472
-nrrdHistoEq,int,1,0,nrrd,nrrd/map.c:609
+nrrdConvert,int,1,0,nrrd,nrrd/map.c:123
+nrrdClampConvert,int,1,0,nrrd,nrrd/map.c:143
+nrrdCastClampRound,int,1,0,nrrd,nrrd/map.c:169
+nrrdQuantize,int,1,0,nrrd,nrrd/map.c:191
+nrrdUnquantize,int,1,0,nrrd,nrrd/map.c:363
+nrrdHistoEq,int,1,0,nrrd,nrrd/map.c:500
 nrrdProject,int,1,0,nrrd,nrrd/measure.c:1134
 nrrdBoundarySpecCheck,int,1,0,nrrd,nrrd/methodsNrrd.c:91
 nrrdBoundarySpecParse,int,1,0,nrrd,nrrd/methodsNrrd.c:115
