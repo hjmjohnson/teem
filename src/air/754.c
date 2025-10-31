@@ -525,12 +525,12 @@ airFPFprintf_f(FILE *file, float val) {
     fprintf(file, "sign:0x%x, expo:0x%02x, mant:0x%06x = \n", sign, expo, mant);
     fprintf(file, " S [ . . Exp . . ] "
                   "[ . . . . . . . . . Mant. . . . . . . . . . ]\n");
-    fprintf(file, " %d ", sign);
+    fprintf(file, " %u ", sign);
     for (i = 7; i >= 0; i--) {
-      fprintf(file, "%d ", (expo >> i) & 1);
+      fprintf(file, "%u ", (expo >> i) & 1);
     }
     for (i = 22; i >= 0; i--) {
-      fprintf(file, "%d ", (mant >> i) & 1);
+      fprintf(file, "%u ", (mant >> i) & 1);
     }
     fprintf(file, "\n");
   }
@@ -561,15 +561,15 @@ airFPFprintf_d(FILE *file, double val) {
     fprintf(file, "sign:0x%x, expo:0x%03x, mant:0x%05x %08x = \n", sign, expo, mant0,
             mant1);
     fprintf(file, "S[...Exp...][.......................Mant.......................]\n");
-    fprintf(file, "%d", sign);
+    fprintf(file, "%u", sign);
     for (i = 10; i >= 0; i--) {
-      fprintf(file, "%d", (expo >> i) & 1);
+      fprintf(file, "%u", (expo >> i) & 1);
     }
     for (i = 19; i >= 0; i--) {
-      fprintf(file, "%d", (mant0 >> i) & 1);
+      fprintf(file, "%u", (mant0 >> i) & 1);
     }
     for (i = 31; i >= 0; i--) {
-      fprintf(file, "%d", (mant1 >> i) & 1);
+      fprintf(file, "%u", (mant1 >> i) & 1);
     }
     fprintf(file, "\n");
   }
