@@ -127,7 +127,7 @@ enum {
   nrrdTypeLast
 };
 #define NRRD_TYPE_MAX      11
-#define NRRD_TYPE_SIZE_MAX 8 /* max(sizeof()) over all scalar types */
+#define NRRD_TYPE_SIZE_MAX 8u /* max(sizeof()) over all scalar types */
 #define NRRD_TYPE_BIGGEST                                                               \
   double /* this should be a basic C type which                                         \
             requires for storage the maximum size                                       \
