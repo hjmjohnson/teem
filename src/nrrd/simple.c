@@ -506,7 +506,7 @@ nrrdContentSet_va(Nrrd *nout, const char *func, const Nrrd *nin, const char *for
 static void
 printDescSep(FILE *file, const char *pfx, const char *sepStr, unsigned int sepWidth,
              const char *label) {
-  unsigned int printWidth, slen;
+  size_t printWidth, slen;
   slen = airStrlen(sepStr);
   if (!(file && slen && sepWidth)) {
     /* nothing to do */
@@ -599,7 +599,7 @@ nrrdDescribeMore(FILE *file, const Nrrd *nrrd, const char *pfx, int showPtrs,
         for (jj = 0; jj < sdim; jj++) {
           unsigned int ml;
           airSinglePrintf(NULL, buff, "%lg", nrrd->measurementFrame[jj][ii]);
-          ml = strlen(buff);
+          ml = AIR_UINT(strlen(buff));
           mmlen = AIR_MAX(ml, mmlen);
         }
       }
@@ -729,6 +729,7 @@ nrrdDescribeMore.
 void
 nrrdDescribe(FILE *file, const Nrrd *nrrd) {
   char stmp[AIR_STRLEN_SMALL + 1];
+  unsigned int ai;
 
   if (file && nrrd) {
     fprintf(file, "Nrrd at 0x%p:\n", AIR_CVOIDP(nrrd));
@@ -742,7 +743,7 @@ nrrdDescribe(FILE *file, const Nrrd *nrrd) {
       fprintf(file, "Content = \"%s\"\n", nrrd->content);
     }
     fprintf(file, "%u-dimensional array, with axes:\n", nrrd->dim);
-    for (unsigned int ai = 0; ai < nrrd->dim; ai++) {
+    for (ai = 0; ai < nrrd->dim; ai++) {
       if (airStrlen(nrrd->axis[ai].label)) {
         fprintf(file, "%u: (\"%s\") ", ai, nrrd->axis[ai].label);
       } else {
@@ -769,7 +770,7 @@ nrrdDescribe(FILE *file, const Nrrd *nrrd) {
     /* fprintf(file, "hasNonExist = %d\n", nrrd->hasNonExist); */
     if (nrrd->cmtArr->len) {
       fprintf(file, "Comments:\n");
-      for (unsigned int ai = 0; ai < nrrd->cmtArr->len; ai++) {
+      for (ai = 0; ai < nrrd->cmtArr->len; ai++) {
         fprintf(file, "%s\n", nrrd->cmt[ai]);
       }
     }
