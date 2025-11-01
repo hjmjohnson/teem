@@ -40,7 +40,6 @@ _axisEmpty(baneAxis *axis) {
 baneHVolParm * /* Biff: nope */
 baneHVolParmNew(void) {
   baneHVolParm *hvp;
-  int i, j;
 
   hvp = (baneHVolParm *)calloc(1, sizeof(baneHVolParm));
   if (hvp) {
@@ -52,10 +51,10 @@ baneHVolParmNew(void) {
     _axisInit(hvp->axis + 1);
     _axisInit(hvp->axis + 2);
     hvp->k3pack = AIR_TRUE;
-    for (i = gageKernelUnknown + 1; i < gageKernelLast; i++) {
-      hvp->k[i] = NULL;
-      for (j = 0; j < NRRD_KERNEL_PARM_MAXNUM; j++)
-        hvp->kparm[i][j] = AIR_NAN;
+    for (unsigned int ii = gageKernelUnknown + 1; ii < gageKernelLast; ii++) {
+      hvp->k[ii] = NULL;
+      for (unsigned int jj = 0; jj < NRRD_KERNEL_PARM_MAXNUM; jj++)
+        hvp->kparm[ii][jj] = AIR_NAN;
     }
     hvp->renormalize = baneDefaultRenormalize;
     hvp->clip = NULL;

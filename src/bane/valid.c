@@ -30,7 +30,7 @@ baneInputCheck(Nrrd *nin, baneHVolParm *hvp) {
     return 1;
   }
   if (3 != nin->dim) {
-    biffAddf(BANE, "%s: need a 3-dimensional nrrd (not %d)", me, nin->dim);
+    biffAddf(BANE, "%s: need a 3-dimensional nrrd (not %u)", me, nin->dim);
     return 1;
   }
   if (nrrdTypeBlock == nin->type) {
@@ -63,7 +63,7 @@ baneHVolCheck(Nrrd *hvol) {
   static const char me[] = "baneHVolCheck";
 
   if (3 != hvol->dim) {
-    biffAddf(BANE, "%s: need dimension to be 3 (not %d)", me, hvol->dim);
+    biffAddf(BANE, "%s: need dimension to be 3 (not %u)", me, hvol->dim);
     return 1;
   }
   if (nrrdTypeUChar != hvol->type) {
@@ -180,7 +180,7 @@ baneBcptsCheck(Nrrd *Bcpts) {
   float *data;
 
   if (2 != Bcpts->dim) {
-    biffAddf(BANE, "%s: need 2-dimensional (not %d)", me, Bcpts->dim);
+    biffAddf(BANE, "%s: need 2-dimensional (not %u)", me, Bcpts->dim);
     return 1;
   }
   if (2 != Bcpts->axis[0].size) {

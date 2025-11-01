@@ -127,7 +127,7 @@ limnEnvMapCheck(Nrrd *envMap) {
     return 1;
   }
   if (!(3 == envMap->dim)) {
-    biffAddf(LIMN, "%s: dimension should be 3, not %d", me, envMap->dim);
+    biffAddf(LIMN, "%s: dimension should be 3, not %u", me, envMap->dim);
     return 1;
   }
   if (!(3 == envMap->axis[0].size && 256 == envMap->axis[1].size

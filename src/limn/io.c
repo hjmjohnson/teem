@@ -31,33 +31,33 @@ limnObjectDescribe(FILE *file, const limnObject *obj) {
   unsigned int partIdx;
   limnLook *look;
 
-  fprintf(file, "parts: %d\n", obj->partNum);
+  fprintf(file, "parts: %u\n", obj->partNum);
   for (partIdx = 0; partIdx < obj->partNum; partIdx++) {
     part = obj->part[partIdx];
-    fprintf(file, "part %d | verts: %d ========\n", partIdx, part->vertIdxNum);
+    fprintf(file, "part %u | verts: %u ========\n", partIdx, part->vertIdxNum);
     for (vii = 0; vii < part->vertIdxNum; vii++) {
       vert = obj->vert + part->vertIdx[vii];
-      fprintf(file, "part %d | %d(%d): w=(%g,%g,%g)\n", partIdx, vii, part->vertIdx[vii],
+      fprintf(file, "part %u | %u(%u): w=(%g,%g,%g)\n", partIdx, vii, part->vertIdx[vii],
               vert->world[0], vert->world[1], vert->world[2]);
       /* vert->view[0], vert->view[1], vert->view[2]); */
       /* vert->screen[0], vert->screen[1], vert->screen[2]); */
     }
-    fprintf(file, "part %d | edges: %d ========\n", partIdx, part->edgeIdxNum);
+    fprintf(file, "part %u | edges: %u ========\n", partIdx, part->edgeIdxNum);
     for (eii = 0; eii < part->edgeIdxNum; eii++) {
       edge = obj->edge + part->edgeIdx[eii];
       fprintf(file,
-              "part %d==%d | %d(%d): "
-              "vert(%d,%d), face(%d,%d)\n",
+              "part %u==%u | %u(%u): "
+              "vert(%u,%u), face(%d,%d)\n",
               partIdx, edge->partIdx, eii, part->edgeIdx[eii], edge->vertIdx[0],
               edge->vertIdx[1], edge->faceIdx[0], edge->faceIdx[1]);
     }
-    fprintf(file, "part %d | faces: %d ========\n", partIdx, part->faceIdxNum);
+    fprintf(file, "part %u | faces: %u ========\n", partIdx, part->faceIdxNum);
     for (fii = 0; fii < part->faceIdxNum; fii++) {
       face = obj->face + part->faceIdx[fii];
-      fprintf(file, "part %d==%d | %d(%d): [", partIdx, face->partIdx, fii,
+      fprintf(file, "part %u==%u | %u(%u): [", partIdx, face->partIdx, fii,
               part->faceIdx[fii]);
       for (si = 0; si < face->sideNum; si++) {
-        fprintf(file, "%d", face->vertIdx[si]);
+        fprintf(file, "%u", face->vertIdx[si]);
         if (si < face->sideNum - 1) {
           fprintf(file, ",");
         }
@@ -89,11 +89,11 @@ limnObjectWriteOFF(FILE *file, const limnObject *obj) {
     return 1;
   }
   fprintf(file, "OFF # created by Teem/limn\n");
-  fprintf(file, "%d %d %d\n", obj->vertNum, obj->faceNum, obj->edgeNum);
+  fprintf(file, "%u %u %u\n", obj->vertNum, obj->faceNum, obj->edgeNum);
 
   /* write vertices */
   for (partIdx = 0; partIdx < obj->partNum; partIdx++) {
-    fprintf(file, "### LIMN BEGIN PART %d\n", partIdx);
+    fprintf(file, "### LIMN BEGIN PART %u\n", partIdx);
     part = obj->part[partIdx];
     for (vii = 0; vii < part->vertIdxNum; vii++) {
       vert = obj->vert + part->vertIdx[vii];
@@ -113,13 +113,13 @@ limnObjectWriteOFF(FILE *file, const limnObject *obj) {
 
   /* write faces */
   for (partIdx = 0; partIdx < obj->partNum; partIdx++) {
-    fprintf(file, "### LIMN BEGIN PART %d\n", partIdx);
+    fprintf(file, "### LIMN BEGIN PART %u\n", partIdx);
     part = obj->part[partIdx];
     for (fii = 0; fii < part->faceIdxNum; fii++) {
       face = obj->face + part->faceIdx[fii];
-      fprintf(file, "%d", face->sideNum);
+      fprintf(file, "%u", face->sideNum);
       for (si = 0; si < face->sideNum; si++) {
-        fprintf(file, " %d", face->vertIdx[si]);
+        fprintf(file, " %u", face->vertIdx[si]);
       }
       if (face->lookIdx) {
         fprintf(file, " %g %g %g", obj->look[face->lookIdx].rgba[0],
@@ -310,7 +310,7 @@ limnObjectReadOFF(limnObject *obj, FILE *file) {
       lineCount++;
     } while (1 == lret);
     if (!lret) {
-      biffAddf(LIMN, "%s: (near line %d) hit EOF trying to read vert %d (of %d)", me,
+      biffAddf(LIMN, "%s: (near line %d) hit EOF trying to read vert %u (of %u)", me,
                lineCount, vertGot, vertNum);
       airMopError(mop);
       return 1;
@@ -331,7 +331,7 @@ limnObjectReadOFF(limnObject *obj, FILE *file) {
     if (3 != airParseStrD(vert, line, AIR_WHITESPACE, 3)) {
       biffAddf(LIMN,
                "%s: couldn't parse 3 doubles from \"%s\" "
-               "for vert %d (of %d)",
+               "for vert %u (of %u)",
                me, line, vertGot, vertNum);
       airMopError(mop);
       return 1;
@@ -403,7 +403,7 @@ limnObjectReadOFF(limnObject *obj, FILE *file) {
     }
     if (vertNum + 1 != airParseStrUI(ibuff, line, AIR_WHITESPACE, vertNum + 1)) {
       biffAddf(LIMN,
-               "%s: (near line %d) couldn't parse %d ints from \"%s\" "
+               "%s: (near line %d) couldn't parse %u ints from \"%s\" "
                "for face %d (of %d)",
                me, lineCount, vertNum + 1, line, faceGot, faceNum);
       airMopError(mop);
@@ -544,7 +544,7 @@ limnPolyDataWriteLMPD(FILE *file, const limnPolyData *pld) {
           E = nrrdWrap_va(nrrd, pld->tang, nrrdTypeFloat, 2, 3, pld->tangNum);
           break;
         default:
-          biffAddf(LIMN, "%s: info %d (%s) not handled", me, bit,
+          biffAddf(LIMN, "%s: info %u (%s) not handled", me, bit,
                    airEnumStr(limnPolyDataInfo, bit));
           airMopError(mop);
           return 1;
@@ -839,7 +839,7 @@ limnPolyDataReadLMPD(limnPolyData *pld, FILE *file) {
         data = pld->tang;
         break;
       default:
-        biffAddf(LIMN, "%s: info %d (%s) not handled", me, info,
+        biffAddf(LIMN, "%s: info %u (%s) not handled", me, info,
                  airEnumStr(limnPolyDataInfo, info));
         airMopError(mop);
         return 1;
@@ -1087,7 +1087,7 @@ limnPolyDataReadOFF(limnPolyData *pld, FILE *file) {
       lineCount++;
     } while (1 == lret);
     if (!lret) {
-      biffAddf(LIMN, "%s: (near line %d) hit EOF trying to read vert %d (of %d)", me,
+      biffAddf(LIMN, "%s: (near line %u) hit EOF trying to read vert %u (of %u)", me,
                lineCount, xyzwGot, xyzwNum);
       return 1;
     }
@@ -1095,7 +1095,7 @@ limnPolyDataReadOFF(limnPolyData *pld, FILE *file) {
     if (3 != airParseStrF(xyzw, line, AIR_WHITESPACE, 3)) {
       biffAddf(LIMN,
                "%s: couldn't parse 3 floats from \"%s\" "
-               "for vert %d (of %d)",
+               "for vert %u (of %u)",
                me, line, xyzwGot, xyzwNum);
       return 1;
     }
@@ -1112,7 +1112,7 @@ limnPolyDataReadOFF(limnPolyData *pld, FILE *file) {
       lineCount++;
     } while (1 == lret);
     if (!lret) {
-      biffAddf(LIMN, "%s: (near line %d) hit EOF trying to read face %d (of %d)", me,
+      biffAddf(LIMN, "%s: (near line %u) hit EOF trying to read face %u (of %u)", me,
                lineCount, faceGot, faceNum);
       return 1;
     }
@@ -1122,8 +1122,8 @@ limnPolyDataReadOFF(limnPolyData *pld, FILE *file) {
     }
     if (1 != sscanf(line, "%u", &indxNum)) {
       biffAddf(LIMN,
-               "%s: (near line %d) can't get first uint "
-               "(#verts) from \"%s\" for face %d (of %d)",
+               "%s: (near line %u) can't get first uint "
+               "(#verts) from \"%s\" for face %u (of %u)",
                me, lineCount, line, faceGot, faceNum);
       return 1;
     }
@@ -1133,8 +1133,8 @@ limnPolyDataReadOFF(limnPolyData *pld, FILE *file) {
     }
     if (indxNum + 1 != airParseStrUI(indxSingle, line, AIR_WHITESPACE, indxNum + 1)) {
       biffAddf(LIMN,
-               "%s: (near line %d) couldn't parse %d uints from \"%s\" "
-               "for face %d (of %d)",
+               "%s: (near line %u) couldn't parse %u uints from \"%s\" "
+               "for face %u (of %u)",
                me, lineCount, indxNum + 1, line, faceGot, faceNum);
       return 1;
     }

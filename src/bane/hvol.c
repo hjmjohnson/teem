@@ -38,7 +38,7 @@ _baneAxisCheck(baneAxis *ax) {
   static const char me[] = "_baneAxisCheck";
 
   if (!(ax->res >= 2)) {
-    biffAddf(BANE, "%s: need resolution at least 2 (not %d)", me, ax->res);
+    biffAddf(BANE, "%s: need resolution at least 2 (not %u)", me, ax->res);
     return 1;
   }
   if (!ax->measr) {
