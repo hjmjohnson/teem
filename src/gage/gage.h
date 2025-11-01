@@ -58,7 +58,7 @@ extern "C" {
 **
 ** MUST KEEP IN SYNC with GAGE_DV_* macros below
 */
-#define GAGE_DERIV_MAX 2
+#define GAGE_DERIV_MAX 2u
 
 /*
 ** Convenience macros for arrays declared like blah[GAGE_DERIV_MAX+1]
