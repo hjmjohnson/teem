@@ -161,23 +161,23 @@ gageStackBlurParmCompare(const gageStackBlurParm *aa, const char *_nameA,
 #define CHECK(VAR, FMT)                                                                 \
   if (aa->VAR != bb->VAR) {                                                             \
     if (explain) {                                                                      \
-      snprintf(explain, ASL + 1, "%s->" #VAR "=" #FMT " != %s->" #VAR "=" #FMT, nameA,  \
+      snprintf(explain, ASL + 1, "%s->" #VAR "=" FMT " != %s->" #VAR "=" FMT, nameA,    \
                aa->VAR, nameB, bb->VAR);                                                \
     }                                                                                   \
     *differ = 1;                                                                        \
     return 0;                                                                           \
   }
-  CHECK(num, % d);
-  CHECK(sigmaRange[0], % .17g);
-  CHECK(sigmaRange[1], % .17g);
-  CHECK(renormalize, % d);
-  CHECK(oneDim, % d);
-  CHECK(needSpatialBlur, % d);
+  CHECK(num, "%u");
+  CHECK(sigmaRange[0], "% .17g");
+  CHECK(sigmaRange[1], "% .17g");
+  CHECK(renormalize, "% d");
+  CHECK(oneDim, "% d");
+  CHECK(needSpatialBlur, "% d");
   /* This is sketchy: the apparent point of the function is to see if two
      sbp's are different.  But a big role of the function is to enable
      leeching in meet.  And for leeching, a difference in verbose is moot */
   /* CHECK(verbose, %d); */
-  CHECK(dgGoodSigmaMax, % .17g);
+  CHECK(dgGoodSigmaMax, "% .17g");
 #undef CHECK
   if (aa->sigmaSampling != bb->sigmaSampling) {
     if (explain) {

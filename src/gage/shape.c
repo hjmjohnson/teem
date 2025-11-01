@@ -112,7 +112,7 @@ int /* Biff: (private) 1 */
 _gageShapeSet(const gageContext *ctx, gageShape *shape, const Nrrd *nin,
               unsigned int baseDim) {
   static const char me[] = "_gageShapeSet";
-  int ai, cx, cy, cz, statCalc[3], status, ofspc;
+  int cx, cy, cz, statCalc[3], status, ofspc;
   unsigned int minsize;
   const NrrdAxisInfo *ax[3];
   double vecA[4], vecB[3], vecC[3], vecD[4], matA[9], spcCalc[3],
@@ -165,7 +165,7 @@ _gageShapeSet(const gageContext *ctx, gageShape *shape, const Nrrd *nin,
   /* see if nrrdSpacingCalculate ever *failed* */
   if (nrrdSpacingStatusUnknown == statCalc[0] || nrrdSpacingStatusUnknown == statCalc[1]
       || nrrdSpacingStatusUnknown == statCalc[2]) {
-    biffAddf(GAGE, "%s: nrrdSpacingCalculate trouble on axis %d, %d, or %d", me,
+    biffAddf(GAGE, "%s: nrrdSpacingCalculate trouble on axis %u, %u, or %u", me,
              baseDim + 0, baseDim + 1, baseDim + 2);
     airMopError(mop);
     return 1;
@@ -185,7 +185,7 @@ _gageShapeSet(const gageContext *ctx, gageShape *shape, const Nrrd *nin,
   /* zero spacing would be problematic */
   if (0 == spcCalc[0] && 0 == spcCalc[1] && 0 == spcCalc[2]) {
     biffAddf(GAGE,
-             "%s: spacings (%g,%g,%g) for axes %d,%d,%d not all "
+             "%s: spacings (%g,%g,%g) for axes %u,%u,%u not all "
              "non-zero",
              me, spcCalc[1], spcCalc[1], spcCalc[2], baseDim + 0, baseDim + 1,
              baseDim + 2);
@@ -230,7 +230,7 @@ _gageShapeSet(const gageContext *ctx, gageShape *shape, const Nrrd *nin,
   if (nrrdSpacingStatusDirection == status) {
     shape->fromOrientation = AIR_TRUE;
     if (3 != nin->spaceDim) {
-      biffAddf(GAGE, "%s: orientation space dimension %d != 3", me, nin->spaceDim);
+      biffAddf(GAGE, "%s: orientation space dimension %u != 3", me, nin->spaceDim);
       airMopError(mop);
       return 1;
     }
@@ -248,7 +248,7 @@ _gageShapeSet(const gageContext *ctx, gageShape *shape, const Nrrd *nin,
   cy = ax[1]->center;
   cz = ax[2]->center;
   if (!(cx == cy && cy == cz)) {
-    biffAddf(GAGE, "%s: axes %d,%d,%d centerings (%s,%s,%s) not all equal", me,
+    biffAddf(GAGE, "%s: axes %u,%u,%u centerings (%s,%s,%s) not all equal", me,
              baseDim + 0, baseDim + 1, baseDim + 2, airEnumStr(nrrdCenter, cx),
              airEnumStr(nrrdCenter, cy), airEnumStr(nrrdCenter, cz));
     airMopError(mop);
@@ -349,7 +349,7 @@ _gageShapeSet(const gageContext *ctx, gageShape *shape, const Nrrd *nin,
     /* ------ learn lengths for bounding nrrd in bi-unit cube */
     ELL_3V_ABS(shape->spacing, spcCalc);
     maxLen = 0.0;
-    for (ai = 0; ai <= 2; ai++) {
+    for (unsigned int ai = 0; ai <= 2; ai++) {
       num[ai] = (nrrdCenterNode == shape->center ? shape->size[ai] - 1
                                                  : shape->size[ai]);
       volHalfLen[ai] = num[ai] * shape->spacing[ai];
@@ -359,7 +359,7 @@ _gageShapeSet(const gageContext *ctx, gageShape *shape, const Nrrd *nin,
        fixed long-standing bug in handling vols without full orientation info:
        spacing[ai] was never scaled to account for being crammed into
        the bi-unit cube!! */
-    for (ai = 0; ai <= 2; ai++) {
+    for (unsigned int ai = 0; ai <= 2; ai++) {
       volHalfLen[ai] /= maxLen;
       shape->spacing[ai] = 2 * volHalfLen[ai] / num[ai];
     }
