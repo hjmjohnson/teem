@@ -78,12 +78,12 @@ unrrdu_sliceMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   for (axi = 0; axi < axisNum; axi++) {
     char stmp[AIR_STRLEN_SMALL + 1];
     if (axisNum > 1) {
-      sprintf(stmp, "[%d]", axi);
+      sprintf(stmp, "[%u]", axi);
     } else {
       strcpy(stmp, "");
     }
     if (!(axis[axi] < nin->dim)) {
-      fprintf(stderr, "%s: axis%s %d not in range [0,%d]\n", me, stmp, axis[axi],
+      fprintf(stderr, "%s: axis%s %u not in range [0,%u]\n", me, stmp, axis[axi],
               nin->dim - 1);
       airMopError(mop);
       return 1;
@@ -105,7 +105,7 @@ unrrdu_sliceMain(int argc, const char **argv, const char *me, hestParm *hparm) {
     for (axi = 0; axi < axisNum - 1; axi++) {
       for (axj = axi + 1; axj < axisNum; axj++) {
         if (axis[axi] == axis[axj]) {
-          fprintf(stderr, "%s: can't repeat axis: axis[%d] = axis[%d] = %u\n", me, axi,
+          fprintf(stderr, "%s: can't repeat axis: axis[%u] = axis[%u] = %u\n", me, axi,
                   axj, axis[axj]);
           airMopError(mop);
           return 1;
@@ -151,7 +151,7 @@ unrrdu_sliceMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                               : ntmp[tidx]), /* use an ntmp for all but first input */
                     axis[axi], pos[axi])) {
         airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
-        fprintf(stderr, "%s: error with slice %d of %d:\n%s", me, axi + 1, axisNum, err);
+        fprintf(stderr, "%s: error with slice %u of %u:\n%s", me, axi + 1, axisNum, err);
         airMopError(mop);
         return 1;
       }

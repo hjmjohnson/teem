@@ -339,7 +339,7 @@ _gageLocationSet(gageContext *ctx, double xif, double yif, double zif, double si
     fprintf(stderr,
             "%s: \n"
             "        pos (% 15.7f,% 15.7f,% 15.7f,% 15.7f) \n"
-            "        -> i(%5d,%5d,%5d,%5d) \n"
+            "        -> i(%5u,%5u,%5u,%5u) \n"
             "         + f(% 15.7f,% 15.7f,% 15.7f,% 15.7f) \n",
             me, xif, yif, zif, sif, idx[0], idx[1], idx[2], idx[3], frac[0], frac[1],
             frac[2], frac[3]);

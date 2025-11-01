@@ -104,7 +104,7 @@ alanDimensionSet(alanContext *actx, unsigned int dim) {
 
   GOT_NULL;
   if (!(dim == 2 || dim == 3)) {
-    biffAddf(ALAN, "%s: dimension must be 2 or 3, not %d", me, dim);
+    biffAddf(ALAN, "%s: dimension must be 2 or 3, not %u", me, dim);
     return 1;
   }
 
@@ -124,7 +124,7 @@ alan2DSizeSet(alanContext *actx, unsigned int sizeX, unsigned int sizeY) {
     return 1;
   }
   if (!(sizeX >= 10 && sizeY >= 10)) {
-    biffAddf(ALAN, "%s: sizes (%d,%d) invalid (too small?)", me, sizeX, sizeY);
+    biffAddf(ALAN, "%s: sizes (%u,%u) invalid (too small?)", me, sizeX, sizeY);
     return 1;
   }
 
@@ -145,7 +145,7 @@ alan3DSizeSet(alanContext *actx, unsigned int sizeX, unsigned int sizeY,
     return 1;
   }
   if (!(sizeX >= 10 && sizeY >= 10 && sizeZ >= 10)) {
-    biffAddf(ALAN, "%s: sizes (%d,%d,%d) invalid (too small?)", me, sizeX, sizeY, sizeZ);
+    biffAddf(ALAN, "%s: sizes (%u,%u,%u) invalid (too small?)", me, sizeX, sizeY, sizeZ);
     return 1;
   }
 

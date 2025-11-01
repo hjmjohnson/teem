@@ -67,7 +67,7 @@ gageKindCheck(const gageKind *kind) {
     }
     if (!(AIR_IN_CL(0, item->needDeriv, GAGE_DERIV_MAX))) {
       biffAddf(GAGE,
-               "%s: \"%s\"-kind \"%s\" (item %d) has invalid needDeriv %d "
+               "%s: \"%s\"-kind \"%s\" (item %d) has invalid needDeriv %u "
                "(not in [0,%u])\n",
                me, kind->name, airEnumStr(kind->enm, ii), ii, item->needDeriv,
                GAGE_DERIV_MAX);
@@ -117,7 +117,7 @@ gageKindCheck(const gageKind *kind) {
             && ((unsigned int)pindex + alen <= kind->table[pitem].answerLength))) {
         biffAddf(GAGE,
                  "%s: item %d of \"%s\"-kind wants index range [%d,%d] "
-                 "of parent %d, which isn't in valid range [0,%d]",
+                 "of parent %d, which isn't in valid range [0,%u]",
                  me, ii, kind->name, pindex, pindex + alen - 1, pitem,
                  kind->table[pitem].answerLength - 1);
         return 1;

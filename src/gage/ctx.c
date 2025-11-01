@@ -32,7 +32,7 @@ gageContext * /* Biff: nope */
 gageContextNew(void) {
   gageContext *ctx;
   perVolumeUnion pvu;
-  int ii;
+  unsigned int ii;
 
   ctx = AIR_CALLOC(1, gageContext);
   if (ctx) {
@@ -141,7 +141,7 @@ gageContextCopy(gageContext *ctx) {
   ntx->fw = AIR_CALLOC(fd * 3 * (GAGE_KERNEL_MAX + 1), double);
   ntx->off = AIR_CALLOC(fd * fd * fd, unsigned int);
   if (!(ntx->fsl && ntx->fw && ntx->off)) {
-    biffAddf(GAGE, "%s: couldn't allocate new filter caches for fd=%d", me, fd);
+    biffAddf(GAGE, "%s: couldn't allocate new filter caches for fd=%u", me, fd);
     return NULL;
   }
   /* the content of the offset array needs to be copied because
@@ -196,7 +196,7 @@ gageContextNix(gageContext *ctx) {
 int /* Biff: 1 */
 gageKernelSet(gageContext *ctx, int which, const NrrdKernel *k, const double *kparm) {
   static const char me[] = "gageKernelSet";
-  int parmNum;
+  unsigned int parmNum;
   double support, integral;
 
   if (!(ctx && k && kparm)) {
@@ -212,8 +212,8 @@ gageKernelSet(gageContext *ctx, int which, const NrrdKernel *k, const double *kp
     fprintf(stderr, "%s: which = %d -> %s\n", me, which, airEnumStr(gageKernel, which));
   }
   parmNum = k->parmNum;
-  if (!(AIR_IN_CL(0, parmNum, NRRD_KERNEL_PARM_MAXNUM))) {
-    biffAddf(GAGE, "%s: kernel's parmNum (%d) not in range [%d,%d]", me, parmNum, 0,
+  if (!(parmNum <= NRRD_KERNEL_PARM_MAXNUM)) {
+    biffAddf(GAGE, "%s: kernel's parmNum (%u) not in range [0,%u]", me, parmNum,
              NRRD_KERNEL_PARM_MAXNUM);
     return 1;
   }
@@ -525,19 +525,19 @@ _gageIv3Fill(gageContext *ctx, gagePerVolume *pvl) {
     /* all the samples we need are inside the existing volume */
     dataIdx = lx + sx * (ly + sy * (lz));
     if (ctx->verbose > 1) {
-      fprintf(stderr, "%s:     hello, valLen = %d, pvl->nin = %p, data = %p\n", me,
+      fprintf(stderr, "%s:     hello, valLen = %u, pvl->nin = %p, data = %p\n", me,
               pvl->kind->valLen, AIR_CVOIDP(pvl->nin), pvl->nin->data);
     }
     here = data + dataIdx * pvl->kind->valLen * nrrdTypeSize[pvl->nin->type];
     if (ctx->verbose > 1) {
       fprintf(stderr,
               "%s:     size = (%u,%u,%u);\n"
-              "%s:     fd = %d; coord = (%u,%u,%u) --> dataIdx = %d\n",
+              "%s:     fd = %u; coord = (%u,%u,%u) --> dataIdx = %u\n",
               me, sx, sy, sz, me, 2 * fr, ctx->point.idx[0], ctx->point.idx[1],
               ctx->point.idx[2], dataIdx);
       fprintf(stderr,
               "%s:     here = %p; iv3 = %p; off[0,1,2,3,4,5,6,7] = "
-              "%d,%d,%d,%d,%d,%d,%d,%d\n",
+              "%u,%u,%u,%u,%u,%u,%u,%u\n",
               me, AIR_VOIDP(here), AIR_VOIDP(pvl->iv3), ctx->off[0], ctx->off[1],
               ctx->off[2], ctx->off[3], ctx->off[4], ctx->off[5], ctx->off[6],
               ctx->off[7]);
@@ -642,7 +642,7 @@ _gageIv3Fill(gageContext *ctx, gagePerVolume *pvl) {
             if (ctx->verbose > 2) {
               fprintf(stderr, "%s:    (%d,%d,%d) --clamp--> (%u,%u,%u)\n", me, _xx, _yy,
                       _zz, xx, yy, zz);
-              fprintf(stderr, "    --> dataIdx = %d; data = %p -> here = %p\n", dataIdx,
+              fprintf(stderr, "    --> dataIdx = %u; data = %p -> here = %p\n", dataIdx,
                       AIR_VOIDP(data), AIR_VOIDP(here));
             }
             for (tup = 0; tup < pvl->kind->valLen; tup++) {

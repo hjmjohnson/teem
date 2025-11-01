@@ -27,7 +27,7 @@ CFFI, within its many limitations, specifically lacking a C pre-processor
 **
 ** MUST KEEP IN SYNC with GAGE_DV_* macros below
 */
-#define GAGE_DERIV_MAX 2
+#define GAGE_DERIV_MAX 2u
 /*
 ** Convenience macros for arrays declared like blah[GAGE_DERIV_MAX+1]
 ** (so these need to be kept in sync with GAGE_DERIV_MAX above).  Note
@@ -174,13 +174,13 @@ enum {
 */
 typedef struct {
   int enumVal;               /* the item's enum value */
-  unsigned int answerLength; /* how many double's are needed to store the answer,
+  unsigned int answerLength, /* how many double's are needed to store the answer,
                                 or (for non-zero items), 0 to represent
                                 "the length will be learned later at runtime" */
-  int needDeriv,             /* what kind of derivative info is immediately needed
+    needDeriv;               /* what kind of derivative info is immediately needed
                                 for this item (not recursively expanded). This is
                                 NO LONGER a bitvector: values are 0, 1, 2, .. */
-    prereq[GAGE_ITEM_PREREQ_MAXNUM],
+  int prereq[GAGE_ITEM_PREREQ_MAXNUM],
     /* what are the other items this item depends on
        (not recusively expanded), you can list up to
        GAGE_ITEM_PREREQ_MAXNUM of them, and use 0
@@ -569,8 +569,8 @@ typedef unsigned char gageQuery[GAGE_QUERY_BYTES_NUM];
 #define GAGE_PERVOLUME_ARR_INCR 32
 /* extents of known information about optimal sigma samples for
    Hermite-spline-based scale-space reconstruction */
-#define GAGE_OPTIMSIG_SIGMA_MAX     11
-#define GAGE_OPTIMSIG_SAMPLE_MAXNUM 11
+#define GAGE_OPTIMSIG_SIGMA_MAX     11u
+#define GAGE_OPTIMSIG_SAMPLE_MAXNUM 11u
 /*
 ******** gageContext struct
 **

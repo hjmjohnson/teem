@@ -220,13 +220,13 @@ enum {
 */
 typedef struct {
   int enumVal;               /* the item's enum value */
-  unsigned int answerLength; /* how many double's are needed to store the answer,
+  unsigned int answerLength, /* how many double's are needed to store the answer,
                                 or (for non-zero items), 0 to represent
                                 "the length will be learned later at runtime" */
-  int needDeriv,             /* what kind of derivative info is immediately needed
+    needDeriv;               /* what kind of derivative info is immediately needed
                                 for this item (not recursively expanded). This is
                                 NO LONGER a bitvector: values are 0, 1, 2, .. */
-    prereq[GAGE_ITEM_PREREQ_MAXNUM],
+  int prereq[GAGE_ITEM_PREREQ_MAXNUM],
     /* what are the other items this item depends on
        (not recusively expanded), you can list up to
        GAGE_ITEM_PREREQ_MAXNUM of them, and use 0
@@ -684,8 +684,8 @@ typedef unsigned char gageQuery[GAGE_QUERY_BYTES_NUM];
 
 /* extents of known information about optimal sigma samples for
    Hermite-spline-based scale-space reconstruction */
-#define GAGE_OPTIMSIG_SIGMA_MAX     11
-#define GAGE_OPTIMSIG_SAMPLE_MAXNUM 11
+#define GAGE_OPTIMSIG_SIGMA_MAX     11u
+#define GAGE_OPTIMSIG_SAMPLE_MAXNUM 11u
 
 /*
 ******** gageContext struct
