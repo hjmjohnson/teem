@@ -456,7 +456,7 @@ _nrrdSprintFieldInfo(char **strP, const char *prefix, const Nrrd *nrrd, NrrdIoSt
     break;
   case nrrdField_dimension:
     *strP = AIR_CALLOC(fslen + uintStrlen, char);
-    sprintf(*strP, "%s%s: %d", prefix, fs, nrrd->dim);
+    sprintf(*strP, "%s%s: %u", prefix, fs, nrrd->dim);
     break;
   case nrrdField_space:
     *strP = AIR_CALLOC(fslen + strlen(airEnumStr(nrrdSpace, nrrd->space)), char);
@@ -464,7 +464,7 @@ _nrrdSprintFieldInfo(char **strP, const char *prefix, const Nrrd *nrrd, NrrdIoSt
     break;
   case nrrdField_space_dimension:
     *strP = AIR_CALLOC(fslen + uintStrlen, char);
-    sprintf(*strP, "%s%s: %d", prefix, fs, nrrd->spaceDim);
+    sprintf(*strP, "%s%s: %u", prefix, fs, nrrd->spaceDim);
     break;
     /* ---- begin per-axis fields ---- */
   case nrrdField_sizes:
@@ -615,7 +615,7 @@ _nrrdSprintFieldInfo(char **strP, const char *prefix, const Nrrd *nrrd, NrrdIoSt
     break;
   case nrrdField_line_skip:
     *strP = AIR_CALLOC(fslen + uintStrlen, char);
-    sprintf(*strP, "%s%s: %d", prefix, fs, nio->lineSkip);
+    sprintf(*strP, "%s%s: %u", prefix, fs, nio->lineSkip);
     break;
   case nrrdField_byte_skip:
     *strP = AIR_CALLOC(fslen + uintStrlen, char);
