@@ -350,7 +350,7 @@ main(int argc, const char *argv[]) {
   rscl[2] = dsiz / dsoz;
 
   if (verbose) {
-    fprintf(stderr, "%s: kernel support = %d^3 samples\n", me, 2 * ctx->radius);
+    fprintf(stderr, "%s: kernel support = %u^3 samples\n", me, 2 * ctx->radius);
     fprintf(stderr, "%s: effective scaling is %g %g %g\n", me, rscl[0], rscl[1],
             rscl[2]);
   }
