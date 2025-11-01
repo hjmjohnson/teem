@@ -162,7 +162,7 @@ unrrdu_basinfoMain(int argc, const char **argv, const char *me, hestParm *hparm)
       nio->pos = 0;
       if (nrrdFieldInfoParse[nrrdField_keyvalue](NULL, nout, nio, AIR_TRUE)) {
         airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
-        fprintf(stderr, "%s: trouble with key/value %d \"%s\":\n%s", me, ii, kvp[ii],
+        fprintf(stderr, "%s: trouble with key/value %u \"%s\":\n%s", me, ii, kvp[ii],
                 err);
         nio->line = NULL;
         airMopError(mop);
@@ -177,7 +177,7 @@ unrrdu_basinfoMain(int argc, const char **argv, const char *me, hestParm *hparm)
     for (ii = 0; ii < dkeyLen; ii++) {
       if (nrrdKeyValueErase(nout, dkey[ii])) {
         airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
-        fprintf(stderr, "%s: trouble erasing key/value %d \"%s\":\n%s", me, ii, dkey[ii],
+        fprintf(stderr, "%s: trouble erasing key/value %u \"%s\":\n%s", me, ii, dkey[ii],
                 err);
         airMopError(mop);
         return 1;

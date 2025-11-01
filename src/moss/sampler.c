@@ -255,7 +255,7 @@ mossSamplerSample(double *val, mossSampler *smplr, double xPos, double yPos) {
   }
   if (smplr->verbose) {
     for (ii = 0; ii < fdiam; ii++) {
-      printf(" bound --> {x,y}Idx[%u]: %d %d\n", ii, smplr->xIdx[ii], smplr->yIdx[ii]);
+      printf(" bound --> {x,y}Idx[%d]: %d %d\n", ii, smplr->xIdx[ii], smplr->yIdx[ii]);
     }
   }
 

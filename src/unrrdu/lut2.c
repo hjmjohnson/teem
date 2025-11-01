@@ -93,7 +93,7 @@ unrrdu_lut2Main(int argc, const char **argv, const char *me, hestParm *hparm) {
   }
   mapAxis = nlut->dim - 2;
   if (!(0 == mapAxis || 1 == mapAxis)) {
-    fprintf(stderr, "%s: dimension of lut should be 2 or 3, not %d", me, nlut->dim);
+    fprintf(stderr, "%s: dimension of lut should be 2 or 3, not %u", me, nlut->dim);
     airMopError(mop);
     return 1;
   }

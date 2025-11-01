@@ -35,7 +35,7 @@ ell_Nm_check(Nrrd *mat, int doNrrdCheck) {
     }
   }
   if (!(2 == mat->dim)) {
-    biffAddf(ELL, "%s: nrrd must be 2-D (not %d-D)", me, mat->dim);
+    biffAddf(ELL, "%s: nrrd must be 2-D (not %u-D)", me, mat->dim);
     return 1;
   }
   if (!(nrrdTypeDouble == mat->type)) {

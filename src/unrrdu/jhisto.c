@@ -144,7 +144,7 @@ unrrdu_jhistoMain(int argc, const char **argv, const char *me, hestParm *hparm) 
   }
   if (2 != minLen || (AIR_EXISTS(min[0]) || AIR_EXISTS(min[1]))) {
     if (minLen != binLen) {
-      fprintf(stderr, "%s: # mins (%d) != # input nrrds (%d)\n", me, minLen, binLen);
+      fprintf(stderr, "%s: # mins (%u) != # input nrrds (%u)\n", me, minLen, binLen);
       airMopError(mop);
       return 1;
     }
@@ -154,7 +154,7 @@ unrrdu_jhistoMain(int argc, const char **argv, const char *me, hestParm *hparm) 
   }
   if (2 != maxLen || (AIR_EXISTS(max[0]) || AIR_EXISTS(max[1]))) {
     if (maxLen != binLen) {
-      fprintf(stderr, "%s: # maxs (%d) != # input nrrds (%d)\n", me, maxLen, binLen);
+      fprintf(stderr, "%s: # maxs (%u) != # input nrrds (%u)\n", me, maxLen, binLen);
       airMopError(mop);
       return 1;
     }

@@ -228,7 +228,7 @@ doit(Nrrd *nout, const Nrrd *nin, int smart, float amount, unsigned int margin,
     return 1;
   }
   if (!(3 == nin->dim)) {
-    biffAddf(UNRRDU, "%s: given nrrd has dimension %d, not 3\n", me, nin->dim);
+    biffAddf(UNRRDU, "%s: given nrrd has dimension %u, not 3\n", me, nin->dim);
     return 1;
   }
 
@@ -239,11 +239,11 @@ doit(Nrrd *nout, const Nrrd *nin, int smart, float amount, unsigned int margin,
 
   /* do projections for each axis, with some progress indication to sterr */
   for (axis = 0; axis <= 2; axis++) {
-    fprintf(stderr, "%s: doing axis %d projections ... ", me, axis);
+    fprintf(stderr, "%s: doing axis %u projections ... ", me, axis);
     fflush(stderr);
     if (ninspect_proj(nproj[axis], nin, axis, smart, amount)) {
       fprintf(stderr, "ERROR\n");
-      biffAddf(UNRRDU, "%s: trouble doing projections for axis %d", me, axis);
+      biffAddf(UNRRDU, "%s: trouble doing projections for axis %u", me, axis);
       airMopError(mop);
       return 1;
     }

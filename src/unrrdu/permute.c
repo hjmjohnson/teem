@@ -51,7 +51,7 @@ unrrdu_permuteMain(int argc, const char **argv, const char *me, hestParm *hparm)
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
 
   if (!(permLen == nin->dim)) {
-    fprintf(stderr, "%s: # axes in permutation (%u) != nrrd dim (%d)\n", me, permLen,
+    fprintf(stderr, "%s: # axes in permutation (%u) != nrrd dim (%u)\n", me, permLen,
             nin->dim);
     airMopError(mop);
     return 1;

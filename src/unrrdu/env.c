@@ -154,7 +154,7 @@ envUInt(FILE *file, const char *envKey, unsigned int currVal, const char *varNam
   switch (ret) {
   case -1:
   case AIR_FALSE:
-    fprintf(file, "  (%s == %d; unchanged)\n", varName, currVal);
+    fprintf(file, "  (%s == %u; unchanged)\n", varName, currVal);
     break;
   case AIR_TRUE:
     fprintf(file, "  ==> %s = %u   **********************\n", varName, currVal);

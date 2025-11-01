@@ -190,7 +190,7 @@ unrrdu_resampleMain(int argc, const char **argv, const char *me, hestParm *hparm
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
 
   if (scaleLen != nin->dim) {
-    fprintf(stderr, "%s: # sampling sizes %d != input nrrd dimension %d\n", me, scaleLen,
+    fprintf(stderr, "%s: # sampling sizes %u != input nrrd dimension %u\n", me, scaleLen,
             nin->dim);
     airMopError(mop);
     return 1;

@@ -466,7 +466,7 @@ parseBits(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
     return 1;
   }
   if (!(8 == *bitsP || 16 == *bitsP || 32 == *bitsP)) {
-    sprintf(err, "%s: bits (%d) not 8, 16, or 32", me, *bitsP);
+    sprintf(err, "%s: bits (%u) not 8, 16, or 32", me, *bitsP);
     return 1;
   }
   return 0;

@@ -77,7 +77,7 @@ mossImageCheck(const Nrrd *image) {
     return 1;
   }
   if (!((2 == image->dim || 3 == image->dim) && nrrdTypeBlock != image->type)) {
-    biffAddf(MOSS, "%s: image has invalid dimension (%d) or type (%s)", me, image->dim,
+    biffAddf(MOSS, "%s: image has invalid dimension (%u) or type (%s)", me, image->dim,
              airEnumStr(nrrdType, image->type));
     return 1;
   }

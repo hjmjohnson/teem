@@ -56,7 +56,7 @@ unrrdu_insetMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
 
   if (!(minLen == nin->dim)) {
-    fprintf(stderr, "%s: # min coords (%d) != nrrd dim (%d)\n", me, minLen, nin->dim);
+    fprintf(stderr, "%s: # min coords (%u) != nrrd dim (%u)\n", me, minLen, nin->dim);
     airMopError(mop);
     return 1;
   }

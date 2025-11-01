@@ -50,7 +50,7 @@ perspGo(airArray *mop, Nrrd *nout, const Nrrd *nin, mossSampler *msp, int bound,
     default:
       /* error */
       biffAddf(UNRRDU,
-               "%s: scale[0 + 2*%d] == %d not handled; should only be exact # samples\n",
+               "%s: scale[0 + 2*%u] == %d not handled; should only be exact # samples\n",
                me, ii, AIR_INT(scale[0 + 2 * ii]));
       return 1;
     }
@@ -125,7 +125,7 @@ ilkGo(airArray *mop, Nrrd *nout, Nrrd *nin, mossSampler *msp, int bound,
       break;
     default:
       /* error */
-      biffAddf(UNRRDU, "%s: scale[0 + 2*%d] == %d not handled\n", me, ii,
+      biffAddf(UNRRDU, "%s: scale[0 + 2*%u] == %d not handled\n", me, ii,
                AIR_INT(scale[0 + 2 * ii]));
       return 1;
     }
