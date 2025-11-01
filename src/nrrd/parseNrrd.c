@@ -253,7 +253,7 @@ _nrrdReadNrrdParse_dimension(FILE *file, Nrrd *nrrd, NrrdIoState *nio, int useBi
 
 #define _CHECK_GOT_ALL_VALUES                                                           \
   if (nrrd->dim != ret) {                                                               \
-    biffMaybeAddf(useBiff, NRRD, "%s: parsed %d values, but dimension is %d", me, ret,  \
+    biffMaybeAddf(useBiff, NRRD, "%s: parsed %u values, but dimension is %u", me, ret,  \
                   nrrd->dim);                                                           \
     return 1;                                                                           \
   }
@@ -273,7 +273,7 @@ _nrrdReadNrrdParse_sizes(FILE *file, Nrrd *nrrd, NrrdIoState *nio, int useBiff) 
   nrrdAxisInfoSet_nva(nrrd, nrrdAxisInfoSize, val);
   /* HEY: this is a very imperfect check of excess info */
   if (nrrd->dim + 1 == airParseStrZ(val, info, _nrrdFieldSep, nrrd->dim + 1)) {
-    biffMaybeAddf(useBiff, NRRD, "%s: seem to have more than expected %d sizes", me,
+    biffMaybeAddf(useBiff, NRRD, "%s: seem to have more than expected %u sizes", me,
                   nrrd->dim);
     return 1;
   }
@@ -299,7 +299,7 @@ _nrrdReadNrrdParse_spacings(FILE *file, Nrrd *nrrd, NrrdIoState *nio, int useBif
   nrrdAxisInfoSet_nva(nrrd, nrrdAxisInfoSpacing, val);
   /* HEY: this is a very imperfect check of excess info */
   if (nrrd->dim + 1 == airParseStrD(val, info, _nrrdFieldSep, nrrd->dim + 1)) {
-    biffMaybeAddf(useBiff, NRRD, "%s: seem to have more than expected %d spacings", me,
+    biffMaybeAddf(useBiff, NRRD, "%s: seem to have more than expected %u spacings", me,
                   nrrd->dim);
     return 1;
   }
@@ -325,7 +325,7 @@ _nrrdReadNrrdParse_thicknesses(FILE *file, Nrrd *nrrd, NrrdIoState *nio, int use
   nrrdAxisInfoSet_nva(nrrd, nrrdAxisInfoThickness, val);
   /* HEY: this is a very imperfect check of excess info */
   if (nrrd->dim + 1 == airParseStrD(val, info, _nrrdFieldSep, nrrd->dim + 1)) {
-    biffMaybeAddf(useBiff, NRRD, "%s: seem to have more than expected %d thicknesses",
+    biffMaybeAddf(useBiff, NRRD, "%s: seem to have more than expected %u thicknesses",
                   me, nrrd->dim);
     return 1;
   }
@@ -351,7 +351,7 @@ _nrrdReadNrrdParse_axis_mins(FILE *file, Nrrd *nrrd, NrrdIoState *nio, int useBi
   nrrdAxisInfoSet_nva(nrrd, nrrdAxisInfoMin, val);
   /* HEY: this is a very imperfect check of excess info */
   if (nrrd->dim + 1 == airParseStrD(val, info, _nrrdFieldSep, nrrd->dim + 1)) {
-    biffMaybeAddf(useBiff, NRRD, "%s: seem to have more than expected %d axis mins", me,
+    biffMaybeAddf(useBiff, NRRD, "%s: seem to have more than expected %u axis mins", me,
                   nrrd->dim);
     return 1;
   }
@@ -377,7 +377,7 @@ _nrrdReadNrrdParse_axis_maxs(FILE *file, Nrrd *nrrd, NrrdIoState *nio, int useBi
   nrrdAxisInfoSet_nva(nrrd, nrrdAxisInfoMax, val);
   /* HEY: this is a very imperfect check of excess info */
   if (nrrd->dim + 1 == airParseStrD(val, info, _nrrdFieldSep, nrrd->dim + 1)) {
-    biffMaybeAddf(useBiff, NRRD, "%s: seem to have more than expected %d axis maxs", me,
+    biffMaybeAddf(useBiff, NRRD, "%s: seem to have more than expected %u axis maxs", me,
                   nrrd->dim);
     return 1;
   }
@@ -463,7 +463,7 @@ _nrrdSpaceVectorParse(double val[NRRD_SPACE_DIM_MAX], char **hhP, unsigned int s
     ret = airStrntok(buff + 1, sep);
     if (ret > spaceDim) {
       biffMaybeAddf(useBiff, NRRD,
-                    "%s: space dimension is %d, but seem to have %d "
+                    "%s: space dimension is %u, but seem to have %u "
                     "coefficients",
                     me, spaceDim, ret);
       airMopError(mop);
@@ -472,7 +472,7 @@ _nrrdSpaceVectorParse(double val[NRRD_SPACE_DIM_MAX], char **hhP, unsigned int s
     /* try to parse the values */
     ret = airParseStrD(val, buff + 1, ",", spaceDim);
     if (spaceDim != ret) {
-      biffMaybeAddf(useBiff, NRRD, "%s: parsed %d values, but space dimension is %d", me,
+      biffMaybeAddf(useBiff, NRRD, "%s: parsed %u values, but space dimension is %u", me,
                     ret, spaceDim);
       airMopError(mop);
       return 1;
@@ -488,7 +488,7 @@ _nrrdSpaceVectorParse(double val[NRRD_SPACE_DIM_MAX], char **hhP, unsigned int s
       biffMaybeAddf(useBiff, NRRD,
                     "%s: existance of all space vector "
                     "coefficients must be consistent (val[0] not like "
-                    "val[%d])",
+                    "val[%u])",
                     me, dd);
       airMopError(mop);
       return 1;
@@ -496,7 +496,7 @@ _nrrdSpaceVectorParse(double val[NRRD_SPACE_DIM_MAX], char **hhP, unsigned int s
   }
   for (dd = 0; dd < spaceDim; dd++) {
     if (airIsInf_d(val[dd])) {
-      biffMaybeAddf(useBiff, NRRD, "%s: vector coefficient %d can't be infinite", me,
+      biffMaybeAddf(useBiff, NRRD, "%s: vector coefficient %u can't be infinite", me,
                     dd);
       airMopError(mop);
       return 1;
@@ -556,13 +556,13 @@ _nrrdReadNrrdParse_space_directions(FILE *file, Nrrd *nrrd, NrrdIoState *nio,
   for (dd = 0; dd < nrrd->dim; dd++) {
     if (_nrrdSpaceVectorParse(nrrd->axis[dd].spaceDirection, &info, nrrd->spaceDim,
                               useBiff)) {
-      biffMaybeAddf(useBiff, NRRD, "%s: trouble getting space vector %d of %d", me,
+      biffMaybeAddf(useBiff, NRRD, "%s: trouble getting space vector %u of %u", me,
                     dd + 1, nrrd->dim);
       return 1;
     }
   }
   if (strlen(info) != strspn(info, _nrrdFieldSep)) {
-    biffMaybeAddf(useBiff, NRRD, "%s: seem to have more than expected %d directions", me,
+    biffMaybeAddf(useBiff, NRRD, "%s: seem to have more than expected %u directions", me,
                   nrrd->dim);
     return 1;
   }
@@ -588,7 +588,7 @@ _nrrdReadNrrdParse_centers(FILE *file, Nrrd *nrrd, NrrdIoState *nio, int useBiff
   for (ai = 0; ai < nrrd->dim; ai++) {
     tok = airStrtok(!ai ? info : NULL, _nrrdFieldSep, &last);
     if (!tok) {
-      biffMaybeAddf(useBiff, NRRD, "%s: couldn't extract string for center %d of %d", me,
+      biffMaybeAddf(useBiff, NRRD, "%s: couldn't extract string for center %u of %u", me,
                     ai + 1, nrrd->dim);
       airMopError(mop);
       return 1;
@@ -602,14 +602,14 @@ _nrrdReadNrrdParse_centers(FILE *file, Nrrd *nrrd, NrrdIoState *nio, int useBiff
       continue;
     }
     if (!(nrrd->axis[ai].center = airEnumVal(nrrdCenter, tok))) {
-      biffMaybeAddf(useBiff, NRRD, "%s: couldn't parse center \"%s\" for axis %d", me,
+      biffMaybeAddf(useBiff, NRRD, "%s: couldn't parse center \"%s\" for axis %u", me,
                     tok, ai);
       airMopError(mop);
       return 1;
     }
   }
   if (airStrtok(!ai ? info : NULL, _nrrdFieldSep, &last)) {
-    biffMaybeAddf(useBiff, NRRD, "%s: seem to have more than expected %d centers", me,
+    biffMaybeAddf(useBiff, NRRD, "%s: seem to have more than expected %u centers", me,
                   nrrd->dim);
     airMopError(mop);
     return 1;
@@ -638,7 +638,7 @@ _nrrdReadNrrdParse_kinds(FILE *file, Nrrd *nrrd, NrrdIoState *nio, int useBiff) 
   for (ai = 0; ai < nrrd->dim; ai++) {
     tok = airStrtok(!ai ? info : NULL, _nrrdFieldSep, &last);
     if (!tok) {
-      biffMaybeAddf(useBiff, NRRD, "%s: couldn't extract string for kind %d of %d", me,
+      biffMaybeAddf(useBiff, NRRD, "%s: couldn't extract string for kind %u of %u", me,
                     ai + 1, nrrd->dim);
       airMopError(mop);
       return 1;
@@ -652,14 +652,14 @@ _nrrdReadNrrdParse_kinds(FILE *file, Nrrd *nrrd, NrrdIoState *nio, int useBiff) 
       continue;
     }
     if (!(nrrd->axis[ai].kind = airEnumVal(nrrdKind, tok))) {
-      biffMaybeAddf(useBiff, NRRD, "%s: couldn't parse \"%s\" kind %d of %d", me, tok,
+      biffMaybeAddf(useBiff, NRRD, "%s: couldn't parse \"%s\" kind %u of %u", me, tok,
                     ai + 1, nrrd->dim);
       airMopError(mop);
       return 1;
     }
   }
   if (airStrtok(!ai ? info : NULL, _nrrdFieldSep, &last)) {
-    biffMaybeAddf(useBiff, NRRD, "%s: seem to have more than expected %d kinds", me,
+    biffMaybeAddf(useBiff, NRRD, "%s: seem to have more than expected %u kinds", me,
                   nrrd->dim);
     airMopError(mop);
     return 1;
@@ -758,13 +758,13 @@ _nrrdReadNrrdParse_labels(FILE *file, Nrrd *nrrd, NrrdIoState *nio, int useBiff)
   h = info;
   for (ai = 0; ai < nrrd->dim; ai++) {
     if (!(nrrd->axis[ai].label = _nrrdGetQuotedString(&h, useBiff))) {
-      biffMaybeAddf(useBiff, NRRD, "%s: couldn't get get label %d of %d\n", me, ai + 1,
+      biffMaybeAddf(useBiff, NRRD, "%s: couldn't get get label %u of %u\n", me, ai + 1,
                     nrrd->dim);
       return 1;
     }
   }
   if (strlen(h) != strspn(h, _nrrdFieldSep)) {
-    biffMaybeAddf(useBiff, NRRD, "%s: seem to have more than expected %d labels", me,
+    biffMaybeAddf(useBiff, NRRD, "%s: seem to have more than expected %u labels", me,
                   nrrd->dim);
     return 1;
   }
@@ -792,13 +792,13 @@ _nrrdReadNrrdParse_units(FILE *file, Nrrd *nrrd, NrrdIoState *nio, int useBiff) 
   h = info;
   for (ai = 0; ai < nrrd->dim; ai++) {
     if (!(nrrd->axis[ai].units = _nrrdGetQuotedString(&h, useBiff))) {
-      biffMaybeAddf(useBiff, NRRD, "%s: couldn't get get unit %d of %d\n", me, ai + 1,
+      biffMaybeAddf(useBiff, NRRD, "%s: couldn't get get unit %u of %u\n", me, ai + 1,
                     nrrd->dim);
       return 1;
     }
   }
   if (strlen(h) != strspn(h, _nrrdFieldSep)) {
-    biffMaybeAddf(useBiff, NRRD, "%s: seem to have more than expected %d units", me,
+    biffMaybeAddf(useBiff, NRRD, "%s: seem to have more than expected %u units", me,
                   nrrd->dim);
     return 1;
   }
@@ -1005,7 +1005,7 @@ _nrrdReadNrrdParse_space(FILE *file, Nrrd *nrrd, NrrdIoState *nio, int useBiff) 
   if (nio->seen[nrrdField_space_dimension]) {
     biffMaybeAddf(useBiff, NRRD,
                   "%s: can't specify space after specifying "
-                  "space dimension (%d)",
+                  "space dimension (%u)",
                   me, nrrd->spaceDim);
     return 1;
   }
@@ -1064,13 +1064,13 @@ _nrrdReadNrrdParse_space_units(FILE *file, Nrrd *nrrd, NrrdIoState *nio, int use
   h = info;
   for (ai = 0; ai < nrrd->spaceDim; ai++) {
     if (!(nrrd->spaceUnits[ai] = _nrrdGetQuotedString(&h, useBiff))) {
-      biffMaybeAddf(useBiff, NRRD, "%s: couldn't get get space unit %d of %d", me,
+      biffMaybeAddf(useBiff, NRRD, "%s: couldn't get get space unit %u of %u", me,
                     ai + 1, nrrd->spaceDim);
       return 1;
     }
   }
   if (_nrrdGetQuotedString(&h, AIR_FALSE)) {
-    biffMaybeAddf(useBiff, NRRD, "%s: seemed to have more than expected %d space units",
+    biffMaybeAddf(useBiff, NRRD, "%s: seemed to have more than expected %u space units",
                   me, nrrd->spaceDim);
     return 1;
   }
@@ -1118,7 +1118,7 @@ _nrrdReadNrrdParse_measurement_frame(FILE *file, Nrrd *nrrd, NrrdIoState *nio,
   for (dd = 0; dd < nrrd->spaceDim; dd++) {
     /* we are going through the *columns* of the mf matrix */
     if (_nrrdSpaceVectorParse(colvec, &info, nrrd->spaceDim, useBiff)) {
-      biffMaybeAddf(useBiff, NRRD, "%s: trouble getting space vector %d of %d", me,
+      biffMaybeAddf(useBiff, NRRD, "%s: trouble getting space vector %u of %u", me,
                     dd + 1, nrrd->spaceDim);
       return 1;
     }
@@ -1127,7 +1127,7 @@ _nrrdReadNrrdParse_measurement_frame(FILE *file, Nrrd *nrrd, NrrdIoState *nio,
     }
   }
   if (strlen(info) != strspn(info, _nrrdFieldSep)) {
-    biffMaybeAddf(useBiff, NRRD, "%s: seem to have more than expected %d directions", me,
+    biffMaybeAddf(useBiff, NRRD, "%s: seem to have more than expected %u directions", me,
                   nrrd->spaceDim);
     return 1;
   }

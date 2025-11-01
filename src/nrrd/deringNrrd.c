@@ -338,7 +338,7 @@ deringBagNew(NrrdDeringContext *drc, double radMax) {
 
   dbg = AIR_CALLOC(1, deringBag);
   dbg->radMax = radMax;
-  dbg->radNum = AIR_ROUNDUP(drc->radiusScale * radMax);
+  dbg->radNum = AIR_ROUNDUP_UI(drc->radiusScale * radMax);
 
   dbg->mop = airMopNew();
   dbg->nsliceOrig = nrrdNew();
@@ -559,7 +559,7 @@ deringPtxfDo(NrrdDeringContext *drc, deringBag *dbg) {
     for (rrIdx = 0; rrIdx < dbg->radNum; rrIdx++) {
       double tmpW;
       tmpW = dbg->wght[rrIdx + dbg->radNum * thIdx];
-      if (tmpW) {
+      if (tmpW != 0) {
         dbg->ptxf[rrIdx + dbg->radNum * thIdx] /= tmpW;
       } else {
         dbg->ptxf[rrIdx + dbg->radNum * thIdx] = AIR_NAN;
@@ -601,7 +601,8 @@ deringPtxfFilter(NrrdDeringContext *drc, deringBag *dbg, unsigned int zi) {
     pmin[0] = 0;
     pmin[1] = -1;
     pmin[2] = 0;
-    pmax[0] = cmax[0] = dbg->radNum - 1;
+    cmax[0] = dbg->radNum - 1;
+    pmax[0] = (ptrdiff_t)(cmax[0]);
     cmax[1] = drc->thetaNum / 2 - 1;
     pmax[1] = drc->thetaNum / 2 - 2; /* max sample # of cropped axis 1 */
     pmax[2] = cmax[2] = 1;

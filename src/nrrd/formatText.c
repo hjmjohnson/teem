@@ -40,7 +40,7 @@ _nrrdFormatText_fitsInto(const Nrrd *nrrd, const NrrdEncoding *encoding, int use
   AIR_UNUSED(encoding);
   /* encoding ignored- always ascii */
   if (!(1 == nrrd->dim || 2 == nrrd->dim)) {
-    biffMaybeAddf(useBiff, NRRD, "%s: dimension is %d, not 1 or 2", me, nrrd->dim);
+    biffMaybeAddf(useBiff, NRRD, "%s: dimension is %u, not 1 or 2", me, nrrd->dim);
     return AIR_FALSE;
   }
   if (nrrdTypeBlock == nrrd->type) {
@@ -287,7 +287,7 @@ _nrrdFormatText_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
   */
 
   if (!(1 == nrrd->dim || 2 == nrrd->dim)) {
-    fprintf(stderr, "%s: PANIC about to save, but dim = %d\n", me, nrrd->dim);
+    fprintf(stderr, "%s: PANIC about to save, but dim = %u\n", me, nrrd->dim);
     exit(1);
   }
   if (1 == nrrd->dim) {

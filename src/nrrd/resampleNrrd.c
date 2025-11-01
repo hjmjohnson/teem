@@ -124,9 +124,8 @@ nrrdSimpleResample(Nrrd *nout, const Nrrd *nin, const NrrdKernel *kernel,
 static int /* Biff: 1 */
 _nrrdResampleCheckInfo(const Nrrd *nin, const NrrdResampleInfo *info) {
   static const char me[] = "_nrrdResampleCheckInfo";
-  const NrrdKernel *k;
-  int center, p, np;
-  unsigned int ai, minsmp;
+  int center;
+  unsigned int minsmp;
   char stmp[2][AIR_STRLEN_SMALL + 1];
 
   if (nrrdTypeBlock == nin->type || nrrdTypeBlock == info->type) {
@@ -142,42 +141,42 @@ _nrrdResampleCheckInfo(const Nrrd *nin, const NrrdResampleInfo *info) {
     biffAddf(NRRD, "%s: asked for boundary padding, but no pad value set\n", me);
     return 1;
   }
-  for (ai = 0; ai < nin->dim; ai++) {
-    k = info->kernel[ai];
+  for (unsigned int axi = 0; axi < nin->dim; axi++) {
+    const NrrdKernel *kk = info->kernel[axi];
     /* we only care about the axes being resampled */
-    if (!k) continue;
-    if (!(info->samples[ai] > 0)) {
-      biffAddf(NRRD, "%s: axis %d # samples (%s) invalid", me, ai,
-               airSprintSize_t(stmp[0], info->samples[ai]));
+    if (!kk) continue;
+    if (!(info->samples[axi] > 0)) {
+      biffAddf(NRRD, "%s: axis %u # samples (%s) invalid", me, axi,
+               airSprintSize_t(stmp[0], info->samples[axi]));
       return 1;
     }
-    if (!(AIR_EXISTS(nin->axis[ai].min) && AIR_EXISTS(nin->axis[ai].max))) {
+    if (!(AIR_EXISTS(nin->axis[axi].min) && AIR_EXISTS(nin->axis[axi].max))) {
       biffAddf(NRRD,
-               "%s: input nrrd's axis %d min,max have not "
+               "%s: input nrrd's axis %u min,max have not "
                "both been set",
-               me, ai);
+               me, axi);
       return 1;
     }
-    if (!(AIR_EXISTS(info->min[ai]) && AIR_EXISTS(info->max[ai]))) {
-      biffAddf(NRRD, "%s: info's axis %d min,max not both set", me, ai);
+    if (!(AIR_EXISTS(info->min[axi]) && AIR_EXISTS(info->max[axi]))) {
+      biffAddf(NRRD, "%s: info's axis %u min,max not both set", me, axi);
       return 1;
     }
-    np = k->parmNum;
-    for (p = 0; p < np; p++) {
-      if (!AIR_EXISTS(info->parm[ai][p])) {
-        biffAddf(NRRD, "%s: didn't set parameter %d (of %d) for axis %d\n", me, p, np,
-                 ai);
+    unsigned int np = kk->parmNum;
+    for (unsigned int pi = 0; pi < np; pi++) {
+      if (!AIR_EXISTS(info->parm[axi][pi])) {
+        biffAddf(NRRD, "%s: didn't set parameter %u (of %u) for axis %u\n", me, pi, np,
+                 axi);
         return 1;
       }
     }
-    center = _nrrdCenter(nin->axis[ai].center);
+    center = _nrrdCenter(nin->axis[axi].center);
     minsmp = nrrdCenterCell == center ? 1 : 2;
-    if (!(nin->axis[ai].size >= minsmp && info->samples[ai] >= minsmp)) {
+    if (!(nin->axis[axi].size >= minsmp && info->samples[axi] >= minsmp)) {
       biffAddf(NRRD,
-               "%s: axis %d # input samples (%s) or output samples (%s) "
+               "%s: axis %u # input samples (%s) or output samples (%s) "
                " invalid for %s centering",
-               me, ai, airSprintSize_t(stmp[0], nin->axis[ai].size),
-               airSprintSize_t(stmp[1], info->samples[ai]),
+               me, axi, airSprintSize_t(stmp[0], nin->axis[axi].size),
+               airSprintSize_t(stmp[1], info->samples[axi]),
                airEnumStr(nrrdCenter, center));
       return 1;
     }
@@ -299,7 +298,7 @@ _nrrdResampleMakeWeightIndex(nrrdResample_t **weightP, int **indexP, double *rat
   int e, i;
 
   if (!(info->kernel[ai])) {
-    biffAddf(NRRD, "%s: don't see a kernel for dimension %d", me, ai);
+    biffAddf(NRRD, "%s: don't see a kernel for dimension %u", me, ai);
     *weightP = NULL;
     *indexP = NULL;
     return 0;
@@ -718,7 +717,7 @@ nrrdSpatialResample(Nrrd *nout, const Nrrd *nin, const NrrdResampleInfo *info) {
       char stmp[AIR_STRLEN_SMALL + 1];
       biffAddf(NRRD,
                "%s: couldn't create array of %s nrrdResample_t's for "
-               "output of pass %d",
+               "output of pass %u",
                me, airSprintSize_t(stmp, numOut), pi);
       airMopError(mop);
       return 1;

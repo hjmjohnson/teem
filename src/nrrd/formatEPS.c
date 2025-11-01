@@ -71,7 +71,7 @@ _nrrdFormatEPS_fitsInto(const Nrrd *nrrd, const NrrdEncoding *encoding, int useB
       return AIR_FALSE;
     }
   } else {
-    biffMaybeAddf(useBiff, NRRD, "%s: dimension is %d, not 2 or 3", me, nrrd->dim);
+    biffMaybeAddf(useBiff, NRRD, "%s: dimension is %u, not 2 or 3", me, nrrd->dim);
     return AIR_FALSE;
   }
   return ret;
@@ -163,7 +163,7 @@ _nrrdFormatEPS_write(FILE *file, const Nrrd *_nrrd, NrrdIoState *nio) {
   fprintf(file, "%%%%BeginProlog\n");
   fprintf(file, "%% linestr creates an empty string to hold "
                 "one scanline\n");
-  fprintf(file, "/linestr %d string def\n", sx * (color ? (cmyk ? 4 : 3) : 1));
+  fprintf(file, "/linestr %u string def\n", sx * (color ? (cmyk ? 4 : 3) : 1));
   fprintf(file, "%%%%EndProlog\n");
   fprintf(file, "%%%%Page: 1 1\n");
   fprintf(file, "gsave\n");

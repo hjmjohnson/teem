@@ -87,7 +87,7 @@ _nrrdFormatPNG_fitsInto(const Nrrd *nrrd, const NrrdEncoding *encoding, int useB
     /* else */
     ret = AIR_TRUE;
   } else {
-    biffMaybeAddf(useBiff, NRRD, "%s: dimension is %d, not 2 or 3", me, nrrd->dim);
+    biffMaybeAddf(useBiff, NRRD, "%s: dimension is %u, not 2 or 3", me, nrrd->dim);
     return AIR_FALSE;
   }
   return ret;
@@ -506,7 +506,7 @@ _nrrdFormatPNG_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
     break;
   default:
     png_destroy_write_struct(&png, &info);
-    biffAddf(NRRD, "%s: dimension (%d) not compatible with PNG", me, nrrd->dim);
+    biffAddf(NRRD, "%s: dimension (%u) not compatible with PNG", me, nrrd->dim);
     return 1;
     break;
   }

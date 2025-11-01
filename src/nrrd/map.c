@@ -221,7 +221,7 @@ nrrdQuantize(Nrrd *nout, const Nrrd *nin, const NrrdRange *_range, unsigned int 
     type = nrrdTypeUInt;
     break;
   default:
-    biffAddf(NRRD, "%s: bits has to be 8, 16, or 32 (not %d)", me, bits);
+    biffAddf(NRRD, "%s: bits has to be 8, 16, or 32 (not %u)", me, bits);
     return 1;
   }
   if (nout == nin && nrrdTypeSize[type] != nrrdTypeSize[nin->type]) {
@@ -519,7 +519,7 @@ nrrdHistoEq(Nrrd *nout, const Nrrd *nin, Nrrd **nmapP, unsigned int bins,
     return 1;
   }
   if (!(bins > 4)) {
-    biffAddf(NRRD, "%s: need # bins > 4 (not %d)", me, bins);
+    biffAddf(NRRD, "%s: need # bins > 4 (not %u)", me, bins);
     return 1;
   }
   /* we start by simply copying, because the only thing we're

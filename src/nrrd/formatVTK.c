@@ -158,7 +158,7 @@ _nrrdFormatVTK_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
     return 1;
   }
   if (N != sx * sy * sz) {
-    biffAddf(NRRD, "%s: product of sizes (%u*%u*%u == %u) != # elements (%d)", me, sx,
+    biffAddf(NRRD, "%s: product of sizes (%u*%u*%u == %u) != # elements (%u)", me, sx,
              sy, sz, sx * sy * sz, N);
     return 1;
   }
@@ -361,7 +361,7 @@ _nrrdFormatVTK_write(FILE *file, const Nrrd *_nrrd, NrrdIoState *nio) {
   fprintf(file, "SPACING %g %g %g\n", xs, ys, zs);
   fprintf(file, "POINT_DATA %u\n", sx * sy * sz);
   airSrandMT(AIR_UINT(airTime()));
-  sprintf(name, "nrrd%05d", airRandInt(100000));
+  sprintf(name, "nrrd%05u", airRandInt(100000));
   if (3 == nrrd->dim) {
     fprintf(file, "SCALARS %s %s\n", name, type);
     fprintf(file, "LOOKUP_TABLE default\n");

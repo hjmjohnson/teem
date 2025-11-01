@@ -102,7 +102,7 @@ nrrdOneLine(unsigned int *lenP, NrrdIoState *nio, FILE *file) {
     nio->lineLen = 3;
     nio->line = (char *)malloc(nio->lineLen);
     if (!nio->line) {
-      biffAddf(NRRD, "%s: couldn't alloc %d-char line\n", me, nio->lineLen);
+      biffAddf(NRRD, "%s: couldn't alloc %u-char line\n", me, nio->lineLen);
       *lenP = 0;
       return 1;
     }
@@ -117,7 +117,7 @@ nrrdOneLine(unsigned int *lenP, NrrdIoState *nio, FILE *file) {
       airFree(nio->line); /* lose previous allocated line */
       nio->line = (char *)malloc(nio->lineLen);
       if (!nio->line) {
-        biffAddf(NRRD, "%s: couldn't alloc %d-char line\n", me, nio->lineLen);
+        biffAddf(NRRD, "%s: couldn't alloc %u-char line\n", me, nio->lineLen);
         *lenP = 0;
         return 1;
       }
@@ -155,7 +155,7 @@ nrrdOneLine(unsigned int *lenP, NrrdIoState *nio, FILE *file) {
       nio->lineLen *= 2;
       nio->line = (char *)malloc(nio->lineLen);
       if (!nio->line) {
-        biffAddf(NRRD, "%s: couldn't alloc %d-char line\n", me, nio->lineLen);
+        biffAddf(NRRD, "%s: couldn't alloc %u-char line\n", me, nio->lineLen);
         *lenP = 0;
         airMopError(mop);
         return 1;
@@ -174,7 +174,7 @@ nrrdOneLine(unsigned int *lenP, NrrdIoState *nio, FILE *file) {
     nio->lineLen *= 3; /* for good measure */
     nio->line = (char *)malloc(nio->lineLen);
     if (!nio->line) {
-      biffAddf(NRRD, "%s: couldn't alloc %d-char line\n", me, nio->lineLen);
+      biffAddf(NRRD, "%s: couldn't alloc %u-char line\n", me, nio->lineLen);
       *lenP = 0;
       airMopError(mop);
       return 1;

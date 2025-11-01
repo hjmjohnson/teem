@@ -1167,7 +1167,7 @@ nrrdProject(Nrrd *nout, const Nrrd *cnin, unsigned int axis, int measr, int type
     }
   } else {
     if (!(axis <= cnin->dim - 1)) {
-      biffAddf(NRRD, "%s: axis %u not in range [0,%d]", me, axis, cnin->dim - 1);
+      biffAddf(NRRD, "%s: axis %u not in range [0,%u]", me, axis, cnin->dim - 1);
       return 1;
     }
   }

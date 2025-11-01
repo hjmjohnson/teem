@@ -176,7 +176,7 @@ nrrdSpaceOriginSet(Nrrd *nrrd, const double *vector) {
     return 1;
   }
   if (!(0 < nrrd->spaceDim && nrrd->spaceDim <= NRRD_SPACE_DIM_MAX)) {
-    biffAddf(NRRD, "%s: set spaceDim %d not valid", me, nrrd->spaceDim);
+    biffAddf(NRRD, "%s: set spaceDim %u not valid", me, nrrd->spaceDim);
     return 1;
   }
 
@@ -371,9 +371,7 @@ nrrdSpaceVecSetNaN(double vec[NRRD_SPACE_DIM_MAX]) {
 
 void
 nrrdSpaceVecSetZero(double vec[NRRD_SPACE_DIM_MAX]) {
-  int di;
-
-  for (di = 0; di < NRRD_SPACE_DIM_MAX; di++) {
+  for (unsigned int di = 0; di < NRRD_SPACE_DIM_MAX; di++) {
     vec[di] = 0;
   }
   return;
@@ -730,7 +728,6 @@ nrrdDescribeMore.
 */
 void
 nrrdDescribe(FILE *file, const Nrrd *nrrd) {
-  unsigned int ai;
   char stmp[AIR_STRLEN_SMALL + 1];
 
   if (file && nrrd) {
@@ -744,12 +741,12 @@ nrrdDescribe(FILE *file, const Nrrd *nrrd) {
     if (airStrlen(nrrd->content)) {
       fprintf(file, "Content = \"%s\"\n", nrrd->content);
     }
-    fprintf(file, "%d-dimensional array, with axes:\n", nrrd->dim);
-    for (ai = 0; ai < nrrd->dim; ai++) {
+    fprintf(file, "%u-dimensional array, with axes:\n", nrrd->dim);
+    for (unsigned int ai = 0; ai < nrrd->dim; ai++) {
       if (airStrlen(nrrd->axis[ai].label)) {
-        fprintf(file, "%d: (\"%s\") ", ai, nrrd->axis[ai].label);
+        fprintf(file, "%u: (\"%s\") ", ai, nrrd->axis[ai].label);
       } else {
-        fprintf(file, "%d: ", ai);
+        fprintf(file, "%u: ", ai);
       }
       fprintf(file, "%s-centered, size=%s, ",
               airEnumStr(nrrdCenter, nrrd->axis[ai].center),
@@ -772,7 +769,7 @@ nrrdDescribe(FILE *file, const Nrrd *nrrd) {
     /* fprintf(file, "hasNonExist = %d\n", nrrd->hasNonExist); */
     if (nrrd->cmtArr->len) {
       fprintf(file, "Comments:\n");
-      for (ai = 0; ai < nrrd->cmtArr->len; ai++) {
+      for (unsigned int ai = 0; ai < nrrd->cmtArr->len; ai++) {
         fprintf(file, "%s\n", nrrd->cmt[ai]);
       }
     }
@@ -810,15 +807,15 @@ _nrrdFieldCheckSpaceInfo(const Nrrd *nrrd, int useBiff) {
   }
   if (!(nrrd->spaceDim <= NRRD_SPACE_DIM_MAX)) {
     biffMaybeAddf(useBiff, NRRD,
-                  "%s: space dimension %d is outside "
-                  "valid range [0,NRRD_SPACE_DIM_MAX] = [0,%d]",
-                  me, nrrd->dim, NRRD_SPACE_DIM_MAX);
+                  "%s: space dimension %u is outside "
+                  "valid range [0,NRRD_SPACE_DIM_MAX] = [0,%u]",
+                  me, nrrd->spaceDim, NRRD_SPACE_DIM_MAX);
     return 1;
   }
   if (nrrd->spaceDim) {
     if (nrrd->space) {
       if (nrrdSpaceDimension(nrrd->space) != nrrd->spaceDim) {
-        biffMaybeAddf(useBiff, NRRD, "%s: space %s has dimension %d but spaceDim is %d",
+        biffMaybeAddf(useBiff, NRRD, "%s: space %s has dimension %u but spaceDim is %u",
                       me, airEnumStr(nrrdSpace, nrrd->space),
                       nrrdSpaceDimension(nrrd->space), nrrd->spaceDim);
         return 1;
@@ -830,7 +827,7 @@ _nrrdFieldCheckSpaceInfo(const Nrrd *nrrd, int useBiff) {
       if (exists ^ AIR_EXISTS(nrrd->spaceOrigin[ii])) {
         biffMaybeAddf(useBiff, NRRD,
                       "%s: existance of space origin coefficients must "
-                      "be consistent (val[0] not like val[%d])",
+                      "be consistent (val[0] not like val[%u])",
                       me, ii);
         return 1;
       }

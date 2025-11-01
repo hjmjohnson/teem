@@ -39,13 +39,13 @@ _nrrdEncodingBzip2_read(FILE *file, void *_data, size_t elNum, Nrrd *nrrd,
                         NrrdIoState *nio) {
   static const char me[] = "_nrrdEncodingBzip2_read";
 #ifdef TEEM_BZIP2
-  size_t bsize, total_read, block_size;
+  size_t data_size, total_read, block_size;
   int read, bzerror = BZ_OK;
   long int bi;
   char *data;
   BZFILE *bzfin;
 
-  bsize = nrrdElementSize(nrrd) * elNum;
+  data_size = nrrdElementSize(nrrd) * elNum;
 
   /* Create the BZFILE* for reading in the gzipped data. */
   bzfin = BZ2_bzReadOpen(&bzerror, file, 0, 0, NULL, 0);
@@ -69,11 +69,11 @@ _nrrdEncodingBzip2_read(FILE *file, void *_data, size_t elNum, Nrrd *nrrd,
   }
 
   /* bzip2 can handle data sizes up to INT_MAX, so we can't just
-     pass in the bsize, because it might be too large for an int.
+     pass in the data_size, because it might be too large for an int.
      Therefore it must be read in chunks if the size is larger
      than INT_MAX. */
-  if (bsize <= INT_MAX) {
-    block_size = bsize;
+  if (data_size <= INT_MAX) {
+    block_size = data_size;
   } else {
     block_size = INT_MAX;
   }
@@ -86,18 +86,25 @@ _nrrdEncodingBzip2_read(FILE *file, void *_data, size_t elNum, Nrrd *nrrd,
 
   /* Ok, now we can begin reading. */
   bzerror = BZ_OK;
-  while ((read = BZ2_bzRead(&bzerror, bzfin, data, block_size))
+  while ((read = BZ2_bzRead(&bzerror, bzfin, data, AIR_INT(block_size)))
          && (BZ_OK == bzerror || BZ_STREAM_END == bzerror)) {
+    /* BZ2_bzRead really does return a signed int */
+    if (read < 0) {
+      /* this probably can't happen,
+         but adding this test to ensure that cast to size_t is safe */
+      biffAddf(NRRD, "%s: confused by negative return %d from BZ2_bzRead", me, read);
+      return 1;
+    }
     /* Increment the data pointer to the next available spot. */
     data += read;
-    total_read += read;
+    total_read += AIR_SIZE_T(read);
     /* We only want to read as much data as we need, so we need to check
        to make sure that we don't request data that might be there but that
        we don't want.  This will reduce block_size when we get to the last
        block (which may be smaller than block_size).
     */
-    if (bsize >= total_read && bsize - total_read < block_size)
-      block_size = bsize - total_read;
+    if (data_size >= total_read && data_size - total_read < block_size)
+      block_size = data_size - total_read;
   }
 
   if (!(BZ_OK == bzerror || BZ_STREAM_END == bzerror)) {
@@ -114,10 +121,10 @@ _nrrdEncodingBzip2_read(FILE *file, void *_data, size_t elNum, Nrrd *nrrd,
   }
 
   /* Check to see if we got out as much as we thought we should. */
-  if (total_read != bsize) {
+  if (total_read != data_size) {
     char stmp[2][AIR_STRLEN_SMALL + 1];
     biffAddf(NRRD, "%s: expected %s bytes but received %s", me,
-             airSprintSize_t(stmp[0], bsize), airSprintSize_t(stmp[1], total_read));
+             airSprintSize_t(stmp[0], data_size), airSprintSize_t(stmp[1], total_read));
     return 1;
   }
 
@@ -148,12 +155,12 @@ _nrrdEncodingBzip2_write(FILE *file, const void *_data, size_t elNum, const Nrrd
                          NrrdIoState *nio) {
   static const char me[] = "_nrrdEncodingBzip2_write";
 #ifdef TEEM_BZIP2
-  size_t bsize, total_written, block_size;
+  size_t data_size, total_written, block_size;
   int bs, bzerror = BZ_OK;
   ptrAlias dataAlias;
   BZFILE *bzfout;
 
-  bsize = nrrdElementSize(nrrd) * elNum;
+  data_size = nrrdElementSize(nrrd) * elNum;
 
   /* Set compression block size. */
   if (1 <= nio->bzip2BlockSize && nio->bzip2BlockSize <= 9) {
@@ -171,11 +178,11 @@ _nrrdEncodingBzip2_write(FILE *file, const void *_data, size_t elNum, const Nrrd
   }
 
   /* bzip2 can handle data sizes up to INT_MAX, so we can't just
-     pass in the bsize, because it might be too large for an int.
-     Therefore it must be read in chunks if the bsize is larger
+     pass in the data_size, because it might be too large for an int.
+     Therefore it must be read in chunks if the data_size is larger
      than INT_MAX. */
-  if (bsize <= INT_MAX) {
-    block_size = bsize;
+  if (data_size <= INT_MAX) {
+    block_size = data_size;
   } else {
     block_size = INT_MAX;
   }
@@ -188,8 +195,8 @@ _nrrdEncodingBzip2_write(FILE *file, const void *_data, size_t elNum, const Nrrd
 
   /* Ok, now we can begin writing. */
   bzerror = BZ_OK;
-  while (bsize - total_written > block_size) {
-    BZ2_bzWrite(&bzerror, bzfout, dataAlias.vvp, block_size);
+  while (data_size - total_written > block_size) {
+    BZ2_bzWrite(&bzerror, bzfout, dataAlias.vvp, AIR_INT(block_size));
     if (BZ_OK != bzerror) break;
     /* Increment the data pointer to the next available spot. */
     dataAlias.ccp += block_size;
@@ -198,8 +205,8 @@ _nrrdEncodingBzip2_write(FILE *file, const void *_data, size_t elNum, const Nrrd
   /* write the last (possibly smaller) block when its humungous data;
      write the whole data when its small */
   if (BZ_OK == bzerror) {
-    block_size = bsize >= total_written ? bsize - total_written : 0;
-    BZ2_bzWrite(&bzerror, bzfout, dataAlias.vvp, block_size);
+    block_size = data_size >= total_written ? data_size - total_written : 0;
+    BZ2_bzWrite(&bzerror, bzfout, dataAlias.vvp, AIR_INT(block_size));
     total_written += block_size;
   }
 
@@ -216,10 +223,11 @@ _nrrdEncodingBzip2_write(FILE *file, const void *_data, size_t elNum, const Nrrd
   }
 
   /* Check to see if we got out as much as we thought we should. */
-  if (total_written != bsize) {
+  if (total_written != data_size) {
     char stmp[2][AIR_STRLEN_SMALL + 1];
     biffAddf(NRRD, "%s: expected to write %s bytes, but only wrote %s", me,
-             airSprintSize_t(stmp[0], bsize), airSprintSize_t(stmp[1], total_written));
+             airSprintSize_t(stmp[0], data_size),
+             airSprintSize_t(stmp[1], total_written));
     return 1;
   }
 

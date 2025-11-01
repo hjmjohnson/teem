@@ -350,7 +350,7 @@ nrrdHistoAxis(Nrrd *nout, const Nrrd *nin, const NrrdRange *_range, unsigned int
     return 1;
   }
   if (!(hax <= nin->dim - 1)) {
-    biffAddf(NRRD, "%s: axis %d is not in range [0,%d]", me, hax, nin->dim - 1);
+    biffAddf(NRRD, "%s: axis %u is not in range [0,%u]", me, hax, nin->dim - 1);
     return 1;
   }
   mop = airMopNew();
@@ -454,11 +454,11 @@ nrrdHistoJoint(Nrrd *nout, const Nrrd *const *nin, const NrrdRange *const *_rang
     return 1;
   }
   if (!(numNin >= 1)) {
-    biffAddf(NRRD, "%s: need numNin >= 1 (not %d)", me, numNin);
+    biffAddf(NRRD, "%s: need numNin >= 1 (not %u)", me, numNin);
     return 1;
   }
   if (numNin > NRRD_DIM_MAX) {
-    biffAddf(NRRD, "%s: can only deal with up to %d nrrds (not %d)", me, NRRD_DIM_MAX,
+    biffAddf(NRRD, "%s: can only deal with up to %u nrrds (not %u)", me, NRRD_DIM_MAX,
              numNin);
     return 1;
   }
@@ -468,11 +468,11 @@ nrrdHistoJoint(Nrrd *nout, const Nrrd *const *nin, const NrrdRange *const *_rang
       return 1;
     }
     if (nout == nin[nii]) {
-      biffAddf(NRRD, "%s: nout==nin[%d] disallowed", me, nii);
+      biffAddf(NRRD, "%s: nout==nin[%u] disallowed", me, nii);
       return 1;
     }
     if (nrrdTypeBlock == nin[nii]->type) {
-      biffAddf(NRRD, "%s: nin[%d] type %s invalid", me, nii,
+      biffAddf(NRRD, "%s: nin[%u] type %s invalid", me, nii,
                airEnumStr(nrrdType, nrrdTypeBlock));
       return 1;
     }
@@ -495,7 +495,7 @@ nrrdHistoJoint(Nrrd *nout, const Nrrd *const *nin, const NrrdRange *const *_rang
   }
   for (ai = 0; ai < numNin; ai++) {
     if (!nin[ai]) {
-      biffAddf(NRRD, "%s: input nrrd[%d] NULL", me, ai);
+      biffAddf(NRRD, "%s: input nrrd[%u] NULL", me, ai);
       return 1;
     }
     if (!(bins[ai] >= 1)) {

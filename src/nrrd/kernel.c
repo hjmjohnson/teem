@@ -3099,19 +3099,19 @@ nrrdKernelParse(const NrrdKernel **kernelP, double *parm, const char *_str) {
       return 1;
     }
     if (!AIR_IN_CL(-1, tmfD, (int)nrrdKernelTMF_maxD)) {
-      biffAddf(NRRD, "%s: derivative value %d outside range [-1,%d]", me, tmfD,
+      biffAddf(NRRD, "%s: derivative value %d outside range [-1,%u]", me, tmfD,
                nrrdKernelTMF_maxD);
       airMopError(mop);
       return 1;
     }
     if (!AIR_IN_CL(-1, tmfC, (int)nrrdKernelTMF_maxC)) {
-      biffAddf(NRRD, "%s: continuity value %d outside range [-1,%d]", me, tmfC,
+      biffAddf(NRRD, "%s: continuity value %d outside range [-1,%u]", me, tmfC,
                nrrdKernelTMF_maxC);
       airMopError(mop);
       return 1;
     }
     if (!AIR_IN_CL(1, tmfA, (int)nrrdKernelTMF_maxA)) {
-      biffAddf(NRRD, "%s: accuracy value %d outside range [1,%d]", me, tmfA,
+      biffAddf(NRRD, "%s: accuracy value %d outside range [1,%u]", me, tmfA,
                nrrdKernelTMF_maxA);
       airMopError(mop);
       return 1;
@@ -3129,7 +3129,7 @@ nrrdKernelParse(const NrrdKernel **kernelP, double *parm, const char *_str) {
       return 1;
     }
     if ((*kernelP)->parmNum > NRRD_KERNEL_PARM_MAXNUM) {
-      biffAddf(NRRD, "%s: kernel \"%s\" requests %d parameters > max %d", me, kstr,
+      biffAddf(NRRD, "%s: kernel \"%s\" requests %u parameters > max %u", me, kstr,
                (*kernelP)->parmNum, NRRD_KERNEL_PARM_MAXNUM);
       airMopError(mop);
       return 1;
@@ -3151,7 +3151,7 @@ nrrdKernelParse(const NrrdKernel **kernelP, double *parm, const char *_str) {
     }
     if (needParm > 0 && !pstr) {
       biffAddf(NRRD,
-               "%s: didn't get any of %d required doubles after "
+               "%s: didn't get any of %u required doubles after "
                "colon in \"%s\"",
                me, needParm, kstr);
       airMopError(mop);
@@ -3178,7 +3178,7 @@ nrrdKernelParse(const NrrdKernel **kernelP, double *parm, const char *_str) {
     /* haveParm is now the number of parameters that were parsed. */
     if (haveParm < needParm) {
       biffAddf(NRRD,
-               "%s: parsed only %d of %d required doubles "
+               "%s: parsed only %u of %u required doubles "
                "from \"%s\" (in \"%s\")",
                me, haveParm, needParm, _pstr, _str);
       airMopError(mop);
@@ -3191,7 +3191,7 @@ nrrdKernelParse(const NrrdKernel **kernelP, double *parm, const char *_str) {
       parm[0] = 1 /* Gone in TeemV2: nrrdDefaultKernelParm0 */;
     } else {
       if (pstr) {
-        biffAddf(NRRD, "%s: \"%s\" (in \"%s\") has more than %d doubles", me, _pstr,
+        biffAddf(NRRD, "%s: \"%s\" (in \"%s\") has more than %u doubles", me, _pstr,
                  _str, (*kernelP)->parmNum);
         airMopError(mop);
         return 1;

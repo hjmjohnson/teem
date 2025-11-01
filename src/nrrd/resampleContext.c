@@ -739,7 +739,7 @@ _nrrdResampleVectorFillUpdate(NrrdResampleContext *rsmc) {
                     base);
             fprintf(stderr, "%s: sample locations:\n", me);
           }
-          fprintf(stderr, "%s: %d (sample locations)\n        ", me, smpIdx);
+          fprintf(stderr, "%s: %u (sample locations)\n        ", me, smpIdx);
           for (dotIdx = 0; dotIdx < dotLen; dotIdx++) {
             fprintf(stderr, "%d/%g ", indexData[dotIdx + dotLen * smpIdx],
                     weightData[dotIdx + dotLen * smpIdx]);
@@ -840,7 +840,7 @@ _nrrdResampleVectorFillUpdate(NrrdResampleContext *rsmc) {
       if (rsmc->verbose) {
         fprintf(stderr, "%s: axis %u sample weights:\n", me, axIdx);
         for (smpIdx = 0; smpIdx < axis->samples; smpIdx++) {
-          fprintf(stderr, "%s: %d (sample weights)\n        ", me, smpIdx);
+          fprintf(stderr, "%s: %u (sample weights)\n        ", me, smpIdx);
           for (dotIdx = 0; dotIdx < dotLen; dotIdx++) {
             fprintf(stderr, "%d/%g ", indexData[dotIdx + dotLen * smpIdx],
                     weightData[dotIdx + dotLen * smpIdx]);
@@ -900,7 +900,7 @@ _nrrdResampleVectorFillUpdate(NrrdResampleContext *rsmc) {
       if (rsmc->verbose) {
         fprintf(stderr, "%s: axis %u post-correction sample weights:\n", me, axIdx);
         for (smpIdx = 0; smpIdx < axis->samples; smpIdx++) {
-          fprintf(stderr, "%s: %d (sample weights)\n        ", me, smpIdx);
+          fprintf(stderr, "%s: %u (sample weights)\n        ", me, smpIdx);
           for (dotIdx = 0; dotIdx < dotLen; dotIdx++) {
             fprintf(stderr, "%d/%g ", indexData[dotIdx + dotLen * smpIdx],
                     weightData[dotIdx + dotLen * smpIdx]);
