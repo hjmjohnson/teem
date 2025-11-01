@@ -73,9 +73,10 @@ gridProbe(gageContext *ctx, gagePerVolume *pvl, int what, Nrrd *nout, int typeOu
       || (!ctx->stackPos && _ngrid->axis[0].size != 4)) {
     biffAddf(GAGE,
              "%s: if %susing stack, need "
-             "ngrid->axis[0].size = %u = 1 + %u (not %u)",
-             me, (ctx->stackPos ? "" : "not "), (ctx->stackPos ? 4 : 3) + 1,
-             (ctx->stackPos ? 4 : 3), AIR_UINT(_ngrid->axis[0].size));
+             "ngrid->axis[0].size = %d = 1 + %d (not %u)",
+             me, (ctx->stackPos ? "" : "not "), /* */
+             (ctx->stackPos ? 4 : 3) + 1, (ctx->stackPos ? 4 : 3),
+             AIR_UINT(_ngrid->axis[0].size));
     return 1;
   }
 
@@ -233,7 +234,7 @@ main(int argc, const char *argv[]) {
   gagePerVolume *pvl = NULL;
   double t0, t1, rscl[3], min[3], maxOut[3], maxIn[3];
   airArray *mop;
-#define NON_SBP_OPT_NUM 5
+#define NON_SBP_OPT_NUM 5u
   unsigned int ansLen, *skip, skipNum, pntPosNum, nonSbpOpi[NON_SBP_OPT_NUM], nsi;
   gageStackBlurParm *sbpIN, *sbpCL, *sbp;
   int otype, clamp, scaleIsTau;
@@ -379,7 +380,7 @@ main(int argc, const char *argv[]) {
                        "overrides \"-pi\": only sample at this specified point",
                        &pntPosNum);
   hestOptAdd_1_Double(&hopt, "eps", "epsilon", &eps, "0",
-                      "if non-zero, and if query is a scalar, and if using \"pp\" "
+                      "if positive, and if query is a scalar, and if using \"pp\" "
                       "to query at a single point, then do epsilon offset probes "
                       "to calculate discrete differences, to find the numerical "
                       "gradient and hessian (for debugging)");
@@ -552,7 +553,7 @@ main(int argc, const char *argv[]) {
   **** end gage setup.
   ***/
   if (verbose) {
-    fprintf(stderr, "%s: kernel support = %d^3 samples\n", me, 2 * ctx->radius);
+    fprintf(stderr, "%s: kernel support = %u^3 samples\n", me, 2 * ctx->radius);
   }
 
   if (ELL_3V_EXISTS(pntPos)) {
@@ -592,7 +593,7 @@ main(int argc, const char *argv[]) {
     printf("\n");
     /* we're done, get out of here */
     /* except if we're supposed to debug derivatives */
-    if (eps && 1 == ansLen) {
+    if (eps > 0 && 1 == ansLen) {
       double v[3][3][3], fes, ee;
       int xo, yo, zo;
       if (probeSpaceIndex) {
