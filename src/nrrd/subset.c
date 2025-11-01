@@ -62,7 +62,7 @@ nrrdSlice(Nrrd *nout, const Nrrd *cnin, unsigned int saxi, size_t pos) {
     }
   } else {
     if (!(saxi < cnin->dim)) {
-      biffAddf(NRRD, "%s: slice axis %d out of bounds (0 to %d)", me, saxi,
+      biffAddf(NRRD, "%s: slice axis %u out of bounds (0 to %u)", me, saxi,
                cnin->dim - 1);
       return 1;
     }
@@ -203,12 +203,12 @@ nrrdCrop(Nrrd *nout, const Nrrd *nin, size_t *min, size_t *max) {
   }
   for (ai = 0; ai < nin->dim; ai++) {
     if (!(min[ai] <= max[ai])) {
-      biffAddf(NRRD, "%s: axis %d min (%s) not <= max (%s)", me, ai,
+      biffAddf(NRRD, "%s: axis %u min (%s) not <= max (%s)", me, ai,
                airSprintSize_t(stmp[0], min[ai]), airSprintSize_t(stmp[1], max[ai]));
       return 1;
     }
     if (!(min[ai] < nin->axis[ai].size && max[ai] < nin->axis[ai].size)) {
-      biffAddf(NRRD, "%s: axis %d min (%s) or max (%s) out of bounds [0,%s]", me, ai,
+      biffAddf(NRRD, "%s: axis %u min (%s) or max (%s) out of bounds [0,%s]", me, ai,
                airSprintSize_t(stmp[0], min[ai]), airSprintSize_t(stmp[1], max[ai]),
                airSprintSize_t(stmp[2], nin->axis[ai].size - 1));
       return 1;
@@ -593,7 +593,7 @@ nrrdSample_nva(void *val, const Nrrd *nrrd, const size_t *coord) {
   nrrdAxisInfoGet_nva(nrrd, nrrdAxisInfoSize, size);
   for (ai = 0; ai < nrrd->dim; ai++) {
     if (!(coord[ai] < size[ai])) {
-      biffAddf(NRRD, "%s: coordinate %s on axis %d out of bounds (0 to %s)", me,
+      biffAddf(NRRD, "%s: coordinate %s on axis %u out of bounds (0 to %s)", me,
                airSprintSize_t(stmp[0], coord[ai]), ai,
                airSprintSize_t(stmp[1], size[ai] - 1));
       return 1;

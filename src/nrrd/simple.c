@@ -839,7 +839,7 @@ _nrrdFieldCheckSpaceInfo(const Nrrd *nrrd, int useBiff) {
         if (exists ^ AIR_EXISTS(nrrd->measurementFrame[dd][ii])) {
           biffMaybeAddf(useBiff, NRRD,
                         "%s: existance of measurement frame coefficients "
-                        "must be consistent: [col][row] [%d][%d] not "
+                        "must be consistent: [col][row] [%u][%u] not "
                         "like [0][0])",
                         me, dd, ii);
           return 1;
@@ -852,8 +852,8 @@ _nrrdFieldCheckSpaceInfo(const Nrrd *nrrd, int useBiff) {
       for (ii = 1; ii < nrrd->spaceDim; ii++) {
         if (exists ^ AIR_EXISTS(nrrd->axis[dd].spaceDirection[ii])) {
           biffMaybeAddf(useBiff, NRRD,
-                        "%s: existance of space direction %d coefficients "
-                        "must be consistent (val[0] not like val[%d])",
+                        "%s: existance of space direction %u coefficients "
+                        "must be consistent (val[0] not like val[%u])",
                         me, dd, ii);
           return 1;
         }
@@ -862,7 +862,7 @@ _nrrdFieldCheckSpaceInfo(const Nrrd *nrrd, int useBiff) {
         if (AIR_EXISTS(nrrd->axis[dd].min) || AIR_EXISTS(nrrd->axis[dd].max)
             || AIR_EXISTS(nrrd->axis[dd].spacing) || !!airStrlen(nrrd->axis[dd].units)) {
           biffMaybeAddf(useBiff, NRRD,
-                        "%s: axis[%d] has a direction vector, and so can't "
+                        "%s: axis[%u] has a direction vector, and so can't "
                         "have min, max, spacing, or units set",
                         me, dd);
           return 1;
@@ -872,7 +872,7 @@ _nrrdFieldCheckSpaceInfo(const Nrrd *nrrd, int useBiff) {
   } else {
     /* else there's not supposed to be anything in "space" */
     if (nrrd->space) {
-      biffMaybeAddf(useBiff, NRRD, "%s: space %s can't be set with spaceDim %d", me,
+      biffMaybeAddf(useBiff, NRRD, "%s: space %s can't be set with spaceDim %u", me,
                     airEnumStr(nrrdSpace, nrrd->space), nrrd->spaceDim);
       return 1;
     }
@@ -965,7 +965,7 @@ _nrrdFieldCheck_dimension(const Nrrd *nrrd, int useBiff) {
   static const char me[] = "_nrrdFieldCheck_dimension";
 
   if (!AIR_IN_CL(1, nrrd->dim, NRRD_DIM_MAX)) {
-    biffMaybeAddf(useBiff, NRRD, "%s: dimension %u is outside valid range [1,%d]", me,
+    biffMaybeAddf(useBiff, NRRD, "%s: dimension %u is outside valid range [1,%u]", me,
                   nrrd->dim, NRRD_DIM_MAX);
     return 1;
   }
@@ -1016,7 +1016,7 @@ _nrrdFieldCheck_spacings(const Nrrd *nrrd, int useBiff) {
   nrrdAxisInfoGet_nva(nrrd, nrrdAxisInfoSpacing, val);
   for (ai = 0; ai < nrrd->dim; ai++) {
     if (!(!airIsInf_d(val[ai]) && (airIsNaN(val[ai]) || (0 != val[ai])))) {
-      biffMaybeAddf(useBiff, NRRD, "%s: axis %d spacing (%g) invalid", me, ai, val[ai]);
+      biffMaybeAddf(useBiff, NRRD, "%s: axis %u spacing (%g) invalid", me, ai, val[ai]);
       return 1;
     }
   }
@@ -1038,7 +1038,7 @@ _nrrdFieldCheck_thicknesses(const Nrrd *nrrd, int useBiff) {
     /* note that unlike spacing, we allow zero thickness,
        but it makes no sense to be negative */
     if (!(!airIsInf_d(val[ai]) && (airIsNaN(val[ai]) || (0 <= val[ai])))) {
-      biffMaybeAddf(useBiff, NRRD, "%s: axis %d thickness (%g) invalid", me, ai,
+      biffMaybeAddf(useBiff, NRRD, "%s: axis %u thickness (%g) invalid", me, ai,
                     val[ai]);
       return 1;
     }
@@ -1056,7 +1056,7 @@ _nrrdFieldCheck_axis_mins(const Nrrd *nrrd, int useBiff) {
   nrrdAxisInfoGet_nva(nrrd, nrrdAxisInfoMin, val);
   for (ai = 0; ai < nrrd->dim; ai++) {
     if ((ret = airIsInf_d(val[ai]))) {
-      biffMaybeAddf(useBiff, NRRD, "%s: axis %d min %sinf invalid", me, ai,
+      biffMaybeAddf(useBiff, NRRD, "%s: axis %u min %sinf invalid", me, ai,
                     1 == ret ? "+" : "-");
       return 1;
     }
@@ -1079,7 +1079,7 @@ _nrrdFieldCheck_axis_maxs(const Nrrd *nrrd, int useBiff) {
   nrrdAxisInfoGet_nva(nrrd, nrrdAxisInfoMax, val);
   for (ai = 0; ai < nrrd->dim; ai++) {
     if ((ret = airIsInf_d(val[ai]))) {
-      biffMaybeAddf(useBiff, NRRD, "%s: axis %d max %sinf invalid", me, ai,
+      biffMaybeAddf(useBiff, NRRD, "%s: axis %u max %sinf invalid", me, ai,
                     1 == ret ? "+" : "-");
       return 1;
     }
@@ -1112,7 +1112,7 @@ _nrrdFieldCheck_centers(const Nrrd *nrrd, int useBiff) {
   nrrdAxisInfoGet_nva(nrrd, nrrdAxisInfoCenter, val);
   for (ai = 0; ai < nrrd->dim; ai++) {
     if (!(nrrdCenterUnknown == val[ai] || !airEnumValCheck(nrrdCenter, val[ai]))) {
-      biffMaybeAddf(useBiff, NRRD, "%s: axis %d center %d invalid", me, ai, val[ai]);
+      biffMaybeAddf(useBiff, NRRD, "%s: axis %u center %d invalid", me, ai, val[ai]);
       return 1;
     }
   }
@@ -1128,13 +1128,13 @@ _nrrdFieldCheck_kinds(const Nrrd *nrrd, int useBiff) {
   nrrdAxisInfoGet_nva(nrrd, nrrdAxisInfoKind, val);
   for (ai = 0; ai < nrrd->dim; ai++) {
     if (!(nrrdKindUnknown == val[ai] || !airEnumValCheck(nrrdKind, val[ai]))) {
-      biffMaybeAddf(useBiff, NRRD, "%s: axis %d kind %d invalid", me, ai, val[ai]);
+      biffMaybeAddf(useBiff, NRRD, "%s: axis %u kind %d invalid", me, ai, val[ai]);
       return 1;
     }
     wantLen = nrrdKindSize(val[ai]);
     if (wantLen && wantLen != nrrd->axis[ai].size) {
       char stmp[AIR_STRLEN_SMALL + 1];
-      biffMaybeAddf(useBiff, NRRD, "%s: axis %d kind %s requires size %u, but have %s",
+      biffMaybeAddf(useBiff, NRRD, "%s: axis %u kind %s requires size %u, but have %s",
                     me, ai, airEnumStr(nrrdKind, val[ai]), wantLen,
                     airSprintSize_t(stmp, nrrd->axis[ai].size));
       return 1;
@@ -1362,8 +1362,8 @@ nrrdSameSize(const Nrrd *n1, const Nrrd *n2, int useBiff) {
   for (ai = 0; ai < n1->dim; ai++) {
     if (n1->axis[ai].size != n2->axis[ai].size) {
       biffMaybeAddf(useBiff, NRRD,
-                    "%s: n1->axis[%d].size (%s) "
-                    "!= n2->axis[%d].size (%s)",
+                    "%s: n1->axis[%u].size (%s) "
+                    "!= n2->axis[%u].size (%s)",
                     me, ai, airSprintSize_t(stmp[0], n1->axis[ai].size), ai,
                     airSprintSize_t(stmp[1], n2->axis[ai].size));
       return 0;
