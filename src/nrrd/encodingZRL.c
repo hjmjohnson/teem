@@ -29,25 +29,38 @@ _nrrdEncodingZRL_available(void) {
 static int
 _nrrdEncodingZRL_read(FILE *file, void *data, size_t elementNum, Nrrd *nrrd,
                       NrrdIoState *nio) {
+  static const char me[] = "_nrrdEncodingZRL_read";
+  /* assume output buffer has been initialized to all zeros */
   unsigned char *output_buffer = (unsigned char *)data;
   size_t toread = elementNum * nrrdElementSize(nrrd);
-  int cc, dd;
-  unsigned int j = 0;
+  unsigned int red = 0; /* how much has been read */
   AIR_UNUSED(nio);
 
-  while (j < toread) {
-    cc = fgetc(file);
+  while (red < toread) {
+    int cc = fgetc(file);
     if (cc == 0) {
-      dd = fgetc(file);
+      int dd = fgetc(file);
       if (dd == 0) {
-        dd = fgetc(file);
-        j += dd + fgetc(file) * 256;
+        /* two zero bytes: next two bytes give (unsigned short) number of zero bytes */
+        int lo = fgetc(file);
+        if (EOF == lo) {
+          biffAddf(NRRD, "%s: after %u, hit EOF at low byte of zero count", me, red);
+          return 1;
+        }
+        int hi = fgetc(file);
+        if (EOF == hi) {
+          biffAddf(NRRD, "%s: after %u, hit EOF at high byte of zero count", me, red);
+          return 1;
+        }
+        red += AIR_UINT(lo + hi * 256);
       } else {
-        j += (unsigned char)dd;
+        /* single zero byte followed by non-zero byte `dd`: `dd` zero bytes */
+        red += (unsigned char)dd;
       }
     } else {
-      output_buffer[j] = (unsigned char)cc;
-      j++;
+      /* non-zero bytes are copied one by one */
+      output_buffer[red] = (unsigned char)cc;
+      red++;
     }
   }
 
