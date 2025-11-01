@@ -42,12 +42,12 @@ _nrrdEncodingZRL_read(FILE *file, void *data, size_t elementNum, Nrrd *nrrd,
       int dd = fgetc(file);
       if (dd == 0) {
         /* two zero bytes: next two bytes give (unsigned short) number of zero bytes */
-        int lo = fgetc(file);
+        int hi, lo = fgetc(file);
         if (EOF == lo) {
           biffAddf(NRRD, "%s: after %u, hit EOF at low byte of zero count", me, red);
           return 1;
         }
-        int hi = fgetc(file);
+        hi = fgetc(file);
         if (EOF == hi) {
           biffAddf(NRRD, "%s: after %u, hit EOF at high byte of zero count", me, red);
           return 1;
