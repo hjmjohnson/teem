@@ -70,7 +70,7 @@ seekDataSet(seekContext *sctx, const Nrrd *ninscl, gageContext *gctx,
       return 1;
     }
     if (3 != ninscl->dim) {
-      biffAddf(SEEK, "%s: vanilla scalar volume must be 3-D (not %d-D)", me,
+      biffAddf(SEEK, "%s: vanilla scalar volume must be 3-D (not %u-D)", me,
                ninscl->dim);
       return 1;
     }
