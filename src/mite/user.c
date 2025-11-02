@@ -109,7 +109,7 @@ _miteUserCheck(miteUser *muu) {
   /* add on all queries associated with transfer functions */
   for (T = 0; T < muu->ntxfNum; T++) {
     if (miteNtxfCheck(muu->ntxf[T])) {
-      biffAddf(MITE, "%s: ntxf[%d] (%d of %d) can't be used as a txf", me, T, T + 1,
+      biffAddf(MITE, "%s: ntxf[%u] (%u of %u) can't be used as a txf", me, T, T + 1,
                muu->ntxfNum);
       airMopError(mop);
       return 1;

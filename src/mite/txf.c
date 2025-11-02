@@ -246,7 +246,7 @@ miteNtxfCheck(const Nrrd *ntxf) {
     return 1;
   }
   if (!(2 <= ntxf->dim)) {
-    biffAddf(MITE, "%s: nrrd dim (%d) isn't at least 2 (for a 1-D txf)", me, ntxf->dim);
+    biffAddf(MITE, "%s: nrrd dim (%u) isn't at least 2 (for a 1-D txf)", me, ntxf->dim);
     return 1;
   }
   rangeStr = ntxf->axis[0].label;
@@ -264,7 +264,7 @@ miteNtxfCheck(const Nrrd *ntxf) {
   for (rii = 0; rii < airStrlen(rangeStr); rii++) {
     if (!strchr(miteRangeChar, rangeStr[rii])) {
       biffAddf(MITE,
-               "%s: char %d of axis[0]'s label (\"%c\") isn't a valid "
+               "%s: char %u of axis[0]'s label (\"%c\") isn't a valid "
                "transfer function range specifier (not in \"%s\")",
                me, rii, rangeStr[rii], miteRangeChar);
       return 1;
@@ -272,16 +272,16 @@ miteNtxfCheck(const Nrrd *ntxf) {
   }
   for (axi = 1; axi < ntxf->dim; axi++) {
     if (1 == ntxf->axis[axi].size) {
-      biffAddf(MITE, "%s: # samples on axis %d must be > 1", me, axi);
+      biffAddf(MITE, "%s: # samples on axis %u must be > 1", me, axi);
       return 1;
     }
     domStr = ntxf->axis[axi].label;
     if (0 == airStrlen(domStr)) {
-      biffAddf(MITE, "%s: axis[%d] of txf didn't specify a domain variable", me, axi);
+      biffAddf(MITE, "%s: axis[%u] of txf didn't specify a domain variable", me, axi);
       return 1;
     }
     if (miteVariableParse(&isp, domStr)) {
-      biffAddf(MITE, "%s: couldn't parse txf domain \"%s\" for axis %d\n", me, domStr,
+      biffAddf(MITE, "%s: couldn't parse txf domain \"%s\" for axis %u\n", me, domStr,
                axi);
       return 1;
     }
@@ -289,7 +289,7 @@ miteNtxfCheck(const Nrrd *ntxf) {
           || 3 == isp.kind->table[isp.item].answerLength)) {
       biffAddf(MITE,
                "%s: %s (item %d) not a scalar or vector "
-               "(answerLength = %d): "
+               "(answerLength = %u): "
                "can't be a txf domain variable",
                me, domStr, isp.item, isp.kind->table[isp.item].answerLength);
       return 1;
@@ -313,11 +313,11 @@ miteNtxfCheck(const Nrrd *ntxf) {
       }
     } else {
       if (!(AIR_EXISTS(ntxf->axis[axi].min) && AIR_EXISTS(ntxf->axis[axi].max))) {
-        biffAddf(MITE, "%s: min and max of axis %d aren't both set", me, axi);
+        biffAddf(MITE, "%s: min and max of axis %u aren't both set", me, axi);
         return 1;
       }
       if (!(ntxf->axis[axi].min < ntxf->axis[axi].max)) {
-        biffAddf(MITE, "%s: min (%g) not less than max (%g) on axis %d", me,
+        biffAddf(MITE, "%s: min (%g) not less than max (%g) on axis %u", me,
                  ntxf->axis[axi].min, ntxf->axis[axi].max, axi);
         return 1;
       }
@@ -404,7 +404,7 @@ _miteNtxfCopy(miteRender *mrr, miteUser *muu) {
 
   mrr->ntxf = AIR_CALLOC(muu->ntxfNum, Nrrd *);
   if (!mrr->ntxf) {
-    biffAddf(MITE, "%s: couldn't calloc %d ntxf pointers", me, muu->ntxfNum);
+    biffAddf(MITE, "%s: couldn't calloc %u ntxf pointers", me, muu->ntxfNum);
     return 1;
   }
   mrr->ntxfNum = muu->ntxfNum;
@@ -553,7 +553,7 @@ _miteStageSet(miteThread *mtt, miteRender *mrr) {
   /* fprintf(stderr, "!%s: stageNum = %d\n", me, stageNum); */
   mtt->stage = AIR_CALLOC(stageNum, miteStage);
   if (!mtt->stage) {
-    biffAddf(MITE, "%s: couldn't alloc array of %d stages", me, stageNum);
+    biffAddf(MITE, "%s: couldn't alloc array of %u stages", me, stageNum);
     return 1;
   }
   airMopAdd(mtt->rmop, mtt->stage, airFree, airMopAlways);
@@ -622,7 +622,7 @@ _miteStageSet(miteThread *mtt, miteRender *mrr) {
             break;
           default:
             biffAddf(MITE,
-                     "%s: txf axis %d size %s not usable for "
+                     "%s: txf axis %u size %s not usable for "
                      "vector txf domain variable %s",
                      me, di, airSprintSize_t(stmp, ntxf->axis[di].size),
                      ntxf->axis[di].label);
@@ -631,7 +631,7 @@ _miteStageSet(miteThread *mtt, miteRender *mrr) {
           }
         } else {
           biffAddf(MITE,
-                   "%s: %s not scalar or vector (len = %d): can't be "
+                   "%s: %s not scalar or vector (len = %u): can't be "
                    "a txf domain variable",
                    me, ntxf->axis[di].label, isp.kind->table[isp.item].answerLength);
           return 1;

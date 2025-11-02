@@ -134,7 +134,7 @@ miteRenderBegin(miteRender **mrrP, miteUser *muu) {
     biffMovef(MITE, GAGE, "%s: gage trouble", me);
     return 1;
   }
-  fprintf(stderr, "!%s: kernel support = %d^3 samples\n", me, 2 * muu->gctx0->radius);
+  fprintf(stderr, "!%s: kernel support = %u^3 samples\n", me, 2 * muu->gctx0->radius);
 
   if (nrrdMaybeAlloc_va(muu->nout, mite_nt, 3, AIR_SIZE_T(5) /* RGBAZ */,
                         AIR_SIZE_T(muu->hctx->imgSize[0]),
@@ -152,7 +152,7 @@ miteRenderBegin(miteRender **mrrP, miteUser *muu) {
   for (thr = 0; thr < muu->hctx->numThreads; thr++) {
     (*mrrP)->tt[thr] = miteThreadNew();
     if (!((*mrrP)->tt[thr])) {
-      biffAddf(MITE, "%s: couldn't allocate thread[%d]", me, thr);
+      biffAddf(MITE, "%s: couldn't allocate thread[%u]", me, thr);
       return 1;
     }
     airMopAdd((*mrrP)->rmop, (*mrrP)->tt[thr], (airMopper)miteThreadNix, airMopAlways);

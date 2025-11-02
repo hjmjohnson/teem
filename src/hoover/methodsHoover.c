@@ -83,7 +83,7 @@ hooverContextCheck(hooverContext *ctx) {
     minSize = (nrrdCenterCell == centr ? 1 : 2);
     if (!(ctx->volSize[0] >= minSize && ctx->volSize[1] >= minSize
           && ctx->volSize[2] >= minSize)) {
-      biffAddf(HOOVER, "%s: volume dimensions (%dx%dx%d) too small", me, ctx->volSize[0],
+      biffAddf(HOOVER, "%s: volume dimensions (%ux%ux%u) too small", me, ctx->volSize[0],
                ctx->volSize[1], ctx->volSize[2]);
       return 1;
     }
@@ -113,16 +113,16 @@ hooverContextCheck(hooverContext *ctx) {
     }
   }
   if (!(ctx->imgSize[0] > 0 && ctx->imgSize[1] > 0)) {
-    biffAddf(HOOVER, "%s: image dimensions (%dx%d) invalid", me, ctx->imgSize[0],
+    biffAddf(HOOVER, "%s: image dimensions (%ux%u) invalid", me, ctx->imgSize[0],
              ctx->imgSize[1]);
     return 1;
   }
   if (!(ctx->numThreads >= 1)) {
-    biffAddf(HOOVER, "%s: number threads (%d) invalid", me, ctx->numThreads);
+    biffAddf(HOOVER, "%s: number threads (%u) invalid", me, ctx->numThreads);
     return 1;
   }
   if (!(ctx->numThreads <= HOOVER_THREAD_MAX)) {
-    biffAddf(HOOVER, "%s: sorry, number threads (%d) > max (%d)", me, ctx->numThreads,
+    biffAddf(HOOVER, "%s: sorry, number threads (%u) > max (%u)", me, ctx->numThreads,
              HOOVER_THREAD_MAX);
     return 1;
   }

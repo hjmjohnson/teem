@@ -427,7 +427,7 @@ hooverRender(hooverContext *ctx, int *errCodeP, int *errThreadP) {
 
   if (1 < ctx->numThreads && !airThreadCapable) {
     fprintf(stderr,
-            "%s: WARNING: not multi-threaded; will do %d "
+            "%s: WARNING: not multi-threaded; will do %u "
             "\"threads\" serially !!!\n",
             me, ctx->numThreads);
   }

@@ -35,7 +35,7 @@ miteRayBegin(miteThread *mtt, miteRender *mrr, miteUser *muu, int uIndex, int vI
   mtt->rayStep = (muu->rayStep * rayLen
                   / (muu->hctx->cam->vspFaar - muu->hctx->cam->vspNeer));
   if (!uIndex) {
-    fprintf(stderr, "%d/%d ", vIndex, muu->hctx->imgSize[1]);
+    fprintf(stderr, "%d/%u ", vIndex, muu->hctx->imgSize[1]);
     fflush(stderr);
   }
   mtt->verbose = (uIndex == muu->verbUi && vIndex == muu->verbVi);
