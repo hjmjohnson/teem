@@ -108,11 +108,11 @@ _pushContextCheck(pushContext *pctx) {
     return 1;
   }
   if (!(pctx->pointNum >= 1)) {
-    biffAddf(PUSH, "%s: pctx->pointNum (%d) not >= 1\n", me, pctx->pointNum);
+    biffAddf(PUSH, "%s: pctx->pointNum (%u) not >= 1\n", me, pctx->pointNum);
     return 1;
   }
   if (!(AIR_IN_CL(1, pctx->threadNum, PUSH_THREAD_MAXNUM))) {
-    biffAddf(PUSH, "%s: pctx->threadNum (%d) outside valid range [1,%d]", me,
+    biffAddf(PUSH, "%s: pctx->threadNum (%u) outside valid range [1,%d]", me,
              pctx->threadNum, PUSH_THREAD_MAXNUM);
     return 1;
   }
@@ -146,7 +146,7 @@ _pushContextCheck(pushContext *pctx) {
   }
   if (tenGageUnknown != pctx->gravItem) {
     if (airEnumValCheck(tenGage, pctx->gravItem)) {
-      biffAddf(PUSH, "%s: gravity item %u invalid", me, pctx->gravItem);
+      biffAddf(PUSH, "%s: gravity item %d invalid", me, pctx->gravItem);
       return 1;
     }
     if (1 != tenGageKind->table[pctx->gravItem].answerLength) {
@@ -156,7 +156,7 @@ _pushContextCheck(pushContext *pctx) {
       return 1;
     }
     if (airEnumValCheck(tenGage, pctx->gravGradItem)) {
-      biffAddf(PUSH, "%s: gravity gradient item %u invalid", me, pctx->gravGradItem);
+      biffAddf(PUSH, "%s: gravity gradient item %d invalid", me, pctx->gravGradItem);
       return 1;
     }
     if (3 != tenGageKind->table[pctx->gravGradItem].answerLength) {
@@ -206,7 +206,7 @@ pushStart(pushContext *pctx) {
     /* start threads 1 and up running; they'll all hit iterBarrierA  */
     for (tidx = 1; tidx < pctx->threadNum; tidx++) {
       if (pctx->verbose > 1) {
-        fprintf(stderr, "%s: spawning thread %d\n", me, tidx);
+        fprintf(stderr, "%s: spawning thread %u\n", me, tidx);
       }
       airThreadStart(pctx->task[tidx]->thread, _pushWorker, (void *)(pctx->task[tidx]));
     }
@@ -255,7 +255,7 @@ pushIterate(pushContext *pctx) {
   }
 
   if (pctx->verbose) {
-    fprintf(stderr, "%s: starting iter %d w/ %u threads\n", me, pctx->iter,
+    fprintf(stderr, "%s: starting iter %u w/ %u threads\n", me, pctx->iter,
             pctx->threadNum);
   }
   if (pctx->threadNum > 1) {
@@ -319,20 +319,20 @@ pushRun(pushContext *pctx) {
   do {
     enrLast = pctx->energySum;
     if (pushIterate(pctx)) {
-      biffAddf(PUSH, "%s: trouble on iter %d", me, pctx->iter);
+      biffAddf(PUSH, "%s: trouble on iter %u", me, pctx->iter);
       return 1;
     }
     if (pctx->snap && !(pctx->iter % pctx->snap)) {
       nten = nrrdNew();
       npos = nrrdNew();
-      sprintf(poutS, "snap.%06d.pos.nrrd", pctx->iter);
-      sprintf(toutS, "snap.%06d.ten.nrrd", pctx->iter);
+      sprintf(poutS, "snap.%6u.pos.nrrd", pctx->iter);
+      sprintf(toutS, "snap.%6u.ten.nrrd", pctx->iter);
       if (pushOutputGet(npos, nten, NULL, pctx)) {
-        biffAddf(PUSH, "%s: couldn't get snapshot for iter %d", me, pctx->iter);
+        biffAddf(PUSH, "%s: couldn't get snapshot for iter %u", me, pctx->iter);
         return 1;
       }
       if (nrrdSave(poutS, npos, NULL) || nrrdSave(toutS, nten, NULL)) {
-        biffMovef(PUSH, NRRD, "%s: couldn't save snapshot for iter %d", me, pctx->iter);
+        biffMovef(PUSH, NRRD, "%s: couldn't save snapshot for iter %u", me, pctx->iter);
         return 1;
       }
       nten = nrrdNuke(nten);

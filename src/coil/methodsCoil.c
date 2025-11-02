@@ -37,7 +37,7 @@ coilVolumeCheck(const Nrrd *nin, const coilKind *kind) {
   }
   baseDim = (1 == kind->valLen ? 0 : 1);
   if (3 + baseDim != nin->dim) {
-    biffAddf(COIL, "%s: dim of input must be 3+%d (3 + baseDim), not %d", me, baseDim,
+    biffAddf(COIL, "%s: dim of input must be 3+%u (3 + baseDim), not %u", me, baseDim,
              nin->dim);
     return 1;
   }
@@ -85,7 +85,7 @@ coilContextAllSet(coilContext *cctx, const Nrrd *nin, const coilKind *kind,
     return 1;
   }
   if (!(radius >= 1 && numThreads >= 1)) {
-    biffAddf(COIL, "%s: radius (%d) not >= 1 or numThreads (%d) not >= 1", me, radius,
+    biffAddf(COIL, "%s: radius (%u) not >= 1 or numThreads (%u) not >= 1", me, radius,
              numThreads);
     return 1;
   }
@@ -104,7 +104,7 @@ coilContextAllSet(coilContext *cctx, const Nrrd *nin, const coilKind *kind,
   if (numThreads > 1 && !airThreadCapable && airThreadNoopWarning) {
     fprintf(stderr,
             "%s: WARNING: this Teem not thread capable: using 1 "
-            "thread, not %d\n",
+            "thread, not %u\n",
             me, numThreads);
     numThreads = 1;
   }
@@ -114,7 +114,7 @@ coilContextAllSet(coilContext *cctx, const Nrrd *nin, const coilKind *kind,
   /* set parms */
   for (uint pi = 0; pi < method->parmNum; pi++) {
     if (!AIR_EXISTS(parm[pi])) {
-      biffAddf(COIL, "%s: parm[%u] (need %d) doesn't exist", me, pi, method->parmNum);
+      biffAddf(COIL, "%s: parm[%u] (need %u) doesn't exist", me, pi, method->parmNum);
       airMopError(mop);
       return 1;
     }
@@ -130,7 +130,7 @@ coilContextAllSet(coilContext *cctx, const Nrrd *nin, const coilKind *kind,
     char stmp[AIR_STRLEN_SMALL + 1];
     airSprintSize_t(stmp, sz);
     fprintf(stderr,
-            "%s: wanted %d threads but volume only has %s slices, "
+            "%s: wanted %u threads but volume only has %s slices, "
             "using %s threads instead\n",
             me, numThreads, stmp, stmp);
     numThreads = AIR_UINT(sz);

@@ -242,7 +242,7 @@ _pushTaskSetup(pushContext *pctx) {
     }
     pctx->task[tidx] = _pushTaskNew(pctx, tidx);
     if (!(pctx->task[tidx])) {
-      biffAddf(PUSH, "%s: couldn't allocate task %d", me, tidx);
+      biffAddf(PUSH, "%s: couldn't allocate task %u", me, tidx);
       return 1;
     }
   }
