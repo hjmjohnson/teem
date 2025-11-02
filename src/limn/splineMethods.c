@@ -142,13 +142,13 @@ limnSplineNew(Nrrd *_ncpt, int info, limnSplineTypeSpec *spec) {
       return NULL;
     }
     if (!(1 == _ncpt->dim)) {
-      biffAddf(LIMN, "%s: given nrrd has dimension %d, not 1", me, _ncpt->dim);
+      biffAddf(LIMN, "%s: given nrrd has dimension %u, not 1", me, _ncpt->dim);
       return NULL;
     }
     N = _ncpt->axis[0].size;
   } else {
     if (!(3 == _ncpt->dim)) {
-      biffAddf(LIMN, "%s: given nrrd has dimension %d, not 3", me, _ncpt->dim);
+      biffAddf(LIMN, "%s: given nrrd has dimension %u, not 3", me, _ncpt->dim);
       return NULL;
     }
     size = limnSplineInfoSize[info];
@@ -282,7 +282,7 @@ limnSplineNrrdCleverFix(Nrrd *nout, Nrrd *nin, int info, int type) {
   case 2:
     N = nin->axis[1].size;
     if (wantSize != nin->axis[0].size) {
-      biffAddf(LIMN, "%s: expected axis[0].size %d for info %s, but got %s", me,
+      biffAddf(LIMN, "%s: expected axis[0].size %u for info %s, but got %s", me,
                wantSize, airEnumStr(limnSplineInfo, info),
                airSprintSize_t(stmp, nin->axis[0].size));
       airMopError(mop);
@@ -376,7 +376,7 @@ limnSplineNrrdCleverFix(Nrrd *nout, Nrrd *nin, int info, int type) {
     }
     break;
   default:
-    biffAddf(LIMN, "%s: input nrrd dim %d baffling", me, nin->dim);
+    biffAddf(LIMN, "%s: input nrrd dim %u baffling", me, nin->dim);
     return 1;
   }
   if (nrrdCheck(nout)) {
@@ -432,7 +432,7 @@ limnSplineUpdate(limnSpline *spline, Nrrd *_ncpt) {
   }
   if (limnSplineTypeTimeWarp == spline->type) {
     if (!(1 == _ncpt->dim)) {
-      biffAddf(LIMN, "%s: given nrrd has dimension %d, not 1", me, _ncpt->dim);
+      biffAddf(LIMN, "%s: given nrrd has dimension %u, not 1", me, _ncpt->dim);
       return 1;
     }
     if (!(spline->ncpt->axis[2].size == _ncpt->axis[0].size)) {

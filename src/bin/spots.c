@@ -160,7 +160,7 @@ main(int argc, const char *argv[]) {
     airMopError(mop);
     return 1;
   }
-  fprintf(stderr, "%s: going to run (%d threads) ...\n", me, actx->numThreads);
+  fprintf(stderr, "%s: going to run (%u threads) ...\n", me, actx->numThreads);
   time0 = airTime();
   if (alanRun(actx)) {
     airMopAdd(mop, err = biffGetDone(ALAN), airFree, airMopAlways);

@@ -345,7 +345,7 @@ limnObjectFaceReverse(limnObject *obj) {
     face = obj->face + faceIdx;
     buff = (int *)calloc(face->sideNum, sizeof(int));
     if (!(buff)) {
-      biffAddf(LIMN, "%s: couldn't allocate %d side buffer for face %d\n", me,
+      biffAddf(LIMN, "%s: couldn't allocate %u side buffer for face %u\n", me,
                face->sideNum, faceIdx);
       return 1;
     }

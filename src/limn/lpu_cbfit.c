@@ -357,7 +357,7 @@ limnPu_cbfitMain(int argc, const char **argv, const char *me, hestParm *hparm) {
       airMopError(mop);
       return 1;
     }
-    printf("%s: loi,hii=[%d,%d] vvi=%d oneSided=%d limnCbfTVT:\n", me, loi, hii, vvi,
+    printf("%s: loi,hii=[%u,%u] vvi=%u oneSided=%d limnCbfTVT:\n", me, loi, hii, vvi,
            oneSided);
     printf("lt = %g %g\n", lt[0], lt[1]);
     printf("vv = %g %g\n", vv[0], vv[1]);

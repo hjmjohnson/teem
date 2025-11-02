@@ -2087,22 +2087,22 @@ limnPolyDataJoin(const limnPolyData **plds, unsigned int num) {
     | (1 << limnPolyDataInfoTex2)
     | (1 << limnPolyDataInfoTang); /* by default, assume we have all these */
   unsigned int vertNum = 0, indxNum = 0, primNum = 0;
-  unsigned int i;
+  unsigned int ii;
   if (plds == NULL) {
     biffAddf(LIMN, "%s: got NULL pointer", me);
     return NULL;
   }
   /* loop over all input plds to find infoBitFlag and the total number of
    * vertices / indices / primitives */
-  for (i = 0; i < num; i++) {
-    if (plds[i] == NULL) {
-      biffAddf(LIMN, "%s: plds[%d] is a NULL pointer", me, i);
+  for (ii = 0; ii < num; ii++) {
+    if (plds[ii] == NULL) {
+      biffAddf(LIMN, "%s: plds[%u] is a NULL pointer", me, ii);
       return NULL;
     }
-    infoBitFlag &= limnPolyDataInfoBitFlag(plds[i]);
-    vertNum += plds[i]->xyzwNum;
-    indxNum += plds[i]->indxNum;
-    primNum += plds[i]->primNum;
+    infoBitFlag &= limnPolyDataInfoBitFlag(plds[ii]);
+    vertNum += plds[ii]->xyzwNum;
+    indxNum += plds[ii]->indxNum;
+    primNum += plds[ii]->primNum;
   }
   if (NULL == (ret = limnPolyDataNew())
       || 0 != limnPolyDataAlloc(ret, infoBitFlag, vertNum, indxNum, primNum)) {
@@ -2111,37 +2111,38 @@ limnPolyDataJoin(const limnPolyData **plds, unsigned int num) {
   }
   /* loop again over all input plds and fill the newly allocated structure */
   vertNum = indxNum = primNum = 0;
-  for (i = 0; i < num; i++) {
+  for (ii = 0; ii < num; ii++) {
     unsigned int j, used_indxNum = 0;
-    memcpy(ret->xyzw + 4 * vertNum, plds[i]->xyzw, sizeof(float) * 4 * plds[i]->xyzwNum);
+    memcpy(ret->xyzw + 4 * vertNum, plds[ii]->xyzw,
+           sizeof(float) * 4 * plds[ii]->xyzwNum);
     if (ret->rgba != NULL) {
-      memcpy(ret->rgba + 4 * vertNum, plds[i]->rgba,
-             sizeof(unsigned char) * 4 * plds[i]->xyzwNum);
+      memcpy(ret->rgba + 4 * vertNum, plds[ii]->rgba,
+             sizeof(unsigned char) * 4 * plds[ii]->xyzwNum);
     }
     if (ret->norm != NULL) {
-      memcpy(ret->norm + 3 * vertNum, plds[i]->norm,
-             sizeof(float) * 3 * plds[i]->xyzwNum);
+      memcpy(ret->norm + 3 * vertNum, plds[ii]->norm,
+             sizeof(float) * 3 * plds[ii]->xyzwNum);
     }
     if (ret->tex2 != NULL) {
-      memcpy(ret->tex2 + 2 * vertNum, plds[i]->tex2,
-             sizeof(float) * 2 * plds[i]->xyzwNum);
+      memcpy(ret->tex2 + 2 * vertNum, plds[ii]->tex2,
+             sizeof(float) * 2 * plds[ii]->xyzwNum);
     }
     if (ret->tang != NULL) {
-      memcpy(ret->tang + 3 * vertNum, plds[i]->tang,
-             sizeof(float) * 3 * plds[i]->xyzwNum);
+      memcpy(ret->tang + 3 * vertNum, plds[ii]->tang,
+             sizeof(float) * 3 * plds[ii]->xyzwNum);
     }
-    for (j = 0; j < plds[i]->indxNum; j++) {
-      ret->indx[indxNum + j] = vertNum + plds[i]->indx[j];
+    for (j = 0; j < plds[ii]->indxNum; j++) {
+      ret->indx[indxNum + j] = vertNum + plds[ii]->indx[j];
     }
-    for (j = 0; j < plds[i]->primNum; j++) {
-      ret->type[primNum + j] = plds[i]->type[j];
-      ret->icnt[primNum + j] = plds[i]->icnt[j];
+    for (j = 0; j < plds[ii]->primNum; j++) {
+      ret->type[primNum + j] = plds[ii]->type[j];
+      ret->icnt[primNum + j] = plds[ii]->icnt[j];
       /* need to keep track of how many indices are actually used */
-      used_indxNum += plds[i]->icnt[j];
+      used_indxNum += plds[ii]->icnt[j];
     }
-    vertNum += plds[i]->xyzwNum;
+    vertNum += plds[ii]->xyzwNum;
     indxNum += used_indxNum;
-    primNum += plds[i]->primNum;
+    primNum += plds[ii]->primNum;
   }
   return ret;
 }

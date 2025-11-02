@@ -109,7 +109,7 @@ mrendUserCheck(mrendUser *uu) {
   static const char me[] = "mrendUserCheck";
 
   if (3 + uu->kind->baseDim != uu->nin->dim) {
-    biffAddf(MREND, "%s: input nrrd needs %d dimensions, not %d", me, +uu->kind->baseDim,
+    biffAddf(MREND, "%s: input nrrd needs %u dimensions, not %u", me, +uu->kind->baseDim,
              uu->nin->dim);
     return 1;
   }
@@ -192,7 +192,7 @@ mrendRenderBegin(mrendRender **rrP, mrendUser *uu) {
     biffMovef(MREND, GAGE, "%s: gage trouble", me);
     return 1;
   }
-  fprintf(stderr, "%s: kernel support = %d^3 samples\n", me, 2 * uu->gctx0->radius);
+  fprintf(stderr, "%s: kernel support = %u^3 samples\n", me, 2 * uu->gctx0->radius);
 
   if (nrrdMaybeAlloc_va((*rrP)->nout = nrrdNew(), nrrdTypeDouble, 2,
                         AIR_SIZE_T(uu->hctx->imgSize[0]),
@@ -320,7 +320,7 @@ mrendRayBegin(mrendThread *tt, mrendRender *rr, mrendUser *uu, int uIndex, int v
   }
   tt->valNum = 0;
   if (!uIndex) {
-    fprintf(stderr, "%d/%d ", vIndex, uu->hctx->imgSize[1]);
+    fprintf(stderr, "%d/%u ", vIndex, uu->hctx->imgSize[1]);
     fflush(stderr);
   }
 
@@ -617,7 +617,7 @@ main(int argc, const char *argv[]) {
             "%s: This Teem not compiled with "
             "multi-threading support.\n",
             me);
-    fprintf(stderr, "%s: --> can't use %d threads; only using 1\n", me,
+    fprintf(stderr, "%s: --> can't use %u threads; only using 1\n", me,
             uu->hctx->numThreads);
     uu->hctx->numThreads = 1;
   }

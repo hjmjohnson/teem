@@ -236,7 +236,7 @@ main(int argc, const char *argv[]) {
             "%s: This Teem not compiled with "
             "multi-threading support.\n",
             me);
-    fprintf(stderr, "%s: ==> can't use %d threads; only using 1\n", me,
+    fprintf(stderr, "%s: ==> can't use %u threads; only using 1\n", me,
             muu->hctx->numThreads);
     muu->hctx->numThreads = 1;
   }
