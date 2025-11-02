@@ -79,7 +79,7 @@ main(int argc, const char **argv) {
   printf("res = %d %d\n", res[0], res[1]);
   printf("  v = %d\n", v);
   printf("out = \"%s\"\n", out);
-  printf(" in = %d files:", numIn);
+  printf(" in = %u files:", numIn);
   for (unsigned int n = 0; n <= numIn - 1; n++) {
     printf(" \"%s\"", in[n]);
   }

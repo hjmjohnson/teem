@@ -72,7 +72,7 @@ main(int argc, const char **argv) {
   /*
   printf("maybe: (%g,%g)\n", maybe[0], maybe[1]);
   */
-  printf("many(%d):", howMany);
+  printf("many(%u):", howMany);
   for (unsigned int i = 0; i <= howMany - 1; i++) {
     printf(" (%g,%g)", many[0 + 2 * i], many[1 + 2 * i]);
   }

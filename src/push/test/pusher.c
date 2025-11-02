@@ -203,7 +203,7 @@ main(int argc, const char *argv[]) {
     airMopError(mop);
     return 1;
   }
-  fprintf(stderr, "%s: time for %d iterations= %g secs\n", me, pctx->iter,
+  fprintf(stderr, "%s: time for %u iterations= %g secs\n", me, pctx->iter,
           pctx->timeRun);
   if (nrrdSave(outS[0], nPosOut, NULL) || nrrdSave(outS[1], nTenOut, NULL)
       || nrrdSave(outS[2], nEnrOut, NULL)) {

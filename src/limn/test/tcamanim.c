@@ -63,7 +63,7 @@ _limnReadCamanim(int imgSize[2], limnCamera **keycamP, double **timeP,
                   "relDwell %lg cam.fr %lg %lg %lg",
                   &di, at + 0, at + 1, at + 2, up + 0, up + 1, up + 2, &dn, &df, &va,
                   dwell + ki, fr + 0, fr + 1, fr + 2)) {
-      biffAddf(LIMN, "%s: trouble parsing line %d: \"%s\"", me, ki, line);
+      biffAddf(LIMN, "%s: trouble parsing line %u: \"%s\"", me, ki, line);
       airMopError(mop);
       return 1;
     }

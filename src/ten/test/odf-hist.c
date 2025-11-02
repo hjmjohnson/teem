@@ -151,7 +151,7 @@ main(int argc, const char *argv[]) {
     hist = (float *)nhist->data;
     for (kk = 0; kk < NN; kk++) {
       if (!(kk % 100)) {
-        fprintf(stderr, "%d/%d\n", kk, NN);
+        fprintf(stderr, "%u/%u\n", kk, NN);
       }
       tmp = 0;
       if (AIR_EXISTS(min)) {

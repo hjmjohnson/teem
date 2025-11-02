@@ -347,7 +347,7 @@ testeigen(double tt[7], double eval[3], double evec[9]) {
     ELL_3MV_MUL(uu, mat, evec + 3 * ii);
     ELL_3V_SCALE(vv, eval[ii], evec + 3 * ii);
     ELL_3V_SUB(dd, uu, vv);
-    printf("%d: (%g) %g %g %g\n", ii, ELL_3V_LEN(dd), dd[0], dd[1], dd[2]);
+    printf("%u: (%g) %g %g %g\n", ii, ELL_3V_LEN(dd), dd[0], dd[1], dd[2]);
   }
   dot[0] = ELL_3V_DOT(evec + 0, evec + 3);
   dot[1] = ELL_3V_DOT(evec + 0, evec + 6);

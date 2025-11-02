@@ -83,7 +83,7 @@ main(int argc, const char *argv[]) {
   while (E) {
     yes += runexp(year, N, M);
     if (!(E % P)) {
-      printf("P = %10d/%10d = %22.20f =?= %22.20f\n", yes, E, (double)yes / E, crct);
+      printf("P = %10d/%10u = %22.20f =?= %22.20f\n", yes, E, (double)yes / E, crct);
     }
     E++;
   }

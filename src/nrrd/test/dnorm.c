@@ -217,7 +217,7 @@ main(int argc, const char **argv) {
   }
   /* probably should be asserted earlier */
   if (nout->dim != nout->spaceDim + !!kindOut) {
-    fprintf(stderr, "%s: output dim %d != spaceDim %d + %d %s%s%s\n", me, nout->dim,
+    fprintf(stderr, "%s: output dim %u != spaceDim %u + %d %s%s%s\n", me, nout->dim,
             nout->spaceDim, !!kindOut, kindOut ? "for non-scalar (" : "(scalar data)",
             kindOut ? airEnumStr(nrrdKind, kindOut) : "", kindOut ? ") data" : "");
     airMopError(mop);

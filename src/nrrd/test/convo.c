@@ -186,7 +186,7 @@ main(int argc, const char *argv[]) {
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
 
   if (!(2 == nimg->dim && 2 == nmask->dim)) {
-    fprintf(stderr, "%s: dimension of image (%d) and mask (%d) not both 2\n", me,
+    fprintf(stderr, "%s: dimension of image (%u) and mask (%u) not both 2\n", me,
             nimg->dim, nmask->dim);
     airMopError(mop);
     return 1;

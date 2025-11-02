@@ -72,7 +72,7 @@ main(int argc, const char *argv[]) {
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
   if (!(3 == nin->dim)) {
-    fprintf(stderr, "%s: need 3-D input (not %d-D)\n", me, nin->dim);
+    fprintf(stderr, "%s: need 3-D input (not %u-D)\n", me, nin->dim);
     airMopError(mop);
     return 1;
   }
@@ -127,12 +127,12 @@ main(int argc, const char *argv[]) {
   ins = nrrdDInsert[nout->type];
   fprintf(stderr, "%s: processing streaks ... \n", me);
   for (si = 0; si < nsinfo->axis[1].size; si++) {
-    fprintf(stderr, "%s: streak %d of %d       ", me, si + 1,
+    fprintf(stderr, "%s: streak %u of %d       ", me, si + 1,
             AIR_INT(nsinfo->axis[1].size));
     fflush(stderr);
     zi = (int)(sinfo[0 + 5 * si]);
     if (!(zi < sz)) {
-      fprintf(stderr, "%s: streak[%d] zi=%d outside valid range [0,%d]\n", me, si, zi,
+      fprintf(stderr, "%s: streak[%u] zi=%u outside valid range [0,%u]\n", me, si, zi,
               sz - 1);
       airMopError(mop);
       return 1;

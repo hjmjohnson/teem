@@ -96,7 +96,7 @@ main(int argc, const char **argv) {
          airEnumStr(hestSource, opt[opiA].source));
   printf("unpB (source %s) = ...\n", airEnumStr(hestSource, opt[opiB].source));
   for (uint ii = 0; ii < sawB; ii++) {
-    printf("   [%u] = %u\n", ii, unpB[ii]);
+    printf("   [%u] = %d\n", ii, unpB[ii]);
   }
   printf("unpC = %d %d (source %s)\n", unpC[0], unpC[1],
          airEnumStr(hestSource, opt[opiC].source));

@@ -62,7 +62,7 @@ main(int argc, const char *argv[]) {
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
   if (2 != nin->dim) {
-    fprintf(stderr, "%s: need 2-D input (not %d-D)\n", me, nin->dim);
+    fprintf(stderr, "%s: need 2-D input (not %u-D)\n", me, nin->dim);
     airMopError(mop);
     return 1;
   }
