@@ -380,7 +380,7 @@ _tenQGLInterpNEval(double evalOut[3], const double *evalIn, /* size 3 -by- NN */
 
   if (elen > tip->convEps) {
     ELL_3V_SET(evalOut, AIR_NAN, AIR_NAN, AIR_NAN);
-    biffAddf(TEN, "%s: still have error %g (> eps %g) after max %d iters", me, elen,
+    biffAddf(TEN, "%s: still have error %g (> eps %g) after max %u iters", me, elen,
              tip->convEps, tip->maxIter);
     return 1;
   }

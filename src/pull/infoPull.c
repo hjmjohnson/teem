@@ -199,7 +199,7 @@ pullInfoSpecAdd(pullContext *pctx, pullInfoSpec *ispec) {
     }
     /* now set item in gage query */
     if (gageQueryItemOn(pctx->vol[vi]->gctx, pctx->vol[vi]->gpvl, ispec->item)) {
-      biffMovef(PULL, GAGE, "%s: trouble adding item %u to vol %u", me, ispec->item, vi);
+      biffMovef(PULL, GAGE, "%s: trouble adding item %d to vol %u", me, ispec->item, vi);
       return 1;
     }
     ispec->volIdx = vi;

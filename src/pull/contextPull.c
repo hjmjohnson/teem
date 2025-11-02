@@ -138,7 +138,7 @@ _pullMiscParmCheck(pullContext *pctx) {
   double denr;
 
   if (!(AIR_IN_CL(1, pctx->threadNum, PULL_THREAD_MAXNUM))) {
-    biffAddf(PULL, "%s: pctx->threadNum (%d) outside valid range [1,%d]", me,
+    biffAddf(PULL, "%s: pctx->threadNum (%u) outside valid range [1,%u]", me,
              pctx->threadNum, PULL_THREAD_MAXNUM);
     return 1;
   }

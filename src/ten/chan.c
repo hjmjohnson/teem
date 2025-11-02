@@ -124,13 +124,13 @@ tenDWMRIKeyValueParse(Nrrd **ngradP, Nrrd **nbmatP, double *bP, unsigned int **s
   dwiNum = AIR_UINT(ndwi->axis[dwiAxis].size);
 
   /* figure out if we're parsing gradients or b-matrices */
-  sprintf(tmpKey, tenDWMRIGradKeyFmt, 0);
+  sprintf(tmpKey, tenDWMRIGradKeyFmt, 0u);
   val = nrrdKeyValueGet(ndwi, tmpKey);
   if (val) {
     valNum = 3;
   } else {
     valNum = 6;
-    sprintf(key, tenDWMRIBmatKeyFmt, 0);
+    sprintf(key, tenDWMRIBmatKeyFmt, 0u);
     val = nrrdKeyValueGet(ndwi, key);
     if (!val) {
       biffAddf(TEN, "%s: saw neither \"%s\" nor \"%s\" key", me, tmpKey, key);
@@ -202,8 +202,8 @@ tenDWMRIKeyValueParse(Nrrd **ngradP, Nrrd **nbmatP, double *bP, unsigned int **s
       parsedNum = airParseStrD(info, val, AIR_WHITESPACE, valNum);
       if (valNum != parsedNum) {
         biffAddf(TEN,
-                 "%s: couldn't parse %d floats in value \"%s\" "
-                 "for key \"%s\" (only got %d)",
+                 "%s: couldn't parse %u floats in value \"%s\" "
+                 "for key \"%s\" (only got %u)",
                  me, valNum, val, key, parsedNum);
         airMopError(mop);
         return 1;
@@ -225,12 +225,12 @@ tenDWMRIKeyValueParse(Nrrd **ngradP, Nrrd **nbmatP, double *bP, unsigned int **s
         }
         val = (char *)airFree(val);
         if (!(nexNum >= 1)) {
-          biffAddf(TEN, "%s: NEX (%d) for DWI %d not >= 1", me, nexNum, dwiIdx);
+          biffAddf(TEN, "%s: NEX (%u) for DWI %u not >= 1", me, nexNum, dwiIdx);
           airMopError(mop);
           return 1;
         }
         if (!(dwiIdx + nexNum - 1 < dwiNum)) {
-          biffAddf(TEN, "%s: NEX %d for DWI %d implies %d DWI > real # DWI %d", me,
+          biffAddf(TEN, "%s: NEX %u for DWI %u implies %u DWI > real # DWI %u", me,
                    nexNum, dwiIdx, dwiIdx + nexNum, dwiNum);
           airMopError(mop);
           return 1;
@@ -242,7 +242,7 @@ tenDWMRIKeyValueParse(Nrrd **ngradP, Nrrd **nbmatP, double *bP, unsigned int **s
             val = (char *)airFree(val);
             biffAddf(TEN,
                      "%s: shouldn't have key \"%s\" with "
-                     "NEX %d for DWI %d",
+                     "NEX %u for DWI %u",
                      me, key, nexNum, dwiIdx);
             airMopError(mop);
             return 1;
@@ -546,7 +546,7 @@ tenEstimateLinearSingle_f(float *_ten, float *_B0P,              /* output */
                           double *vbuf, unsigned int DD, int knownB0, float thresh,
                           float soft, float b) {
   static const char me[] = "tenEstimateLinearSingle_f";
-#define DWI_NUM_MAX 256
+#define DWI_NUM_MAX 256u
   double dwi[DWI_NUM_MAX], ten[7], B0;
   unsigned int dwiIdx;
 

@@ -138,7 +138,7 @@ pullStart(pullContext *pctx) {
     /* start threads 1 and up running; they'll all hit iterBarrierA  */
     for (tidx = 1; tidx < pctx->threadNum; tidx++) {
       if (pctx->verbose > 1) {
-        fprintf(stderr, "%s: spawning thread %d\n", me, tidx);
+        fprintf(stderr, "%s: spawning thread %u\n", me, tidx);
       }
       airThreadStart(pctx->task[tidx]->thread, _pullWorker, (void *)(pctx->task[tidx]));
     }
@@ -247,7 +247,7 @@ _pullIterate(pullContext *pctx, int mode) {
     pctx->task[ti]->processMode = mode;
   }
   if (pctx->verbose) {
-    fprintf(stderr, "%s(%s): iter %d goes w/ eip %g, %u pnts, enr %g%s\n", me,
+    fprintf(stderr, "%s(%s): iter %u goes w/ eip %g, %u pnts, enr %g%s\n", me,
             airEnumStr(pullProcessMode, mode), pctx->iter,
             pctx->sysParm.energyIncreasePermit, pullPointNumber(pctx),
             _pullEnergyTotal(pctx), (pctx->flag.permuteOnRebin ? " (por)" : ""));
@@ -364,20 +364,20 @@ pullRun(pullContext *pctx) {
     pctx->addNum = pctx->nixNum = 0;
     if (pctx->iterParm.snap && !(pctx->iter % pctx->iterParm.snap)) {
       npos = nrrdNew();
-      sprintf(poutS, "snap.%06d.pos.nrrd", pctx->iter);
+      sprintf(poutS, "snap.%6u.pos.nrrd", pctx->iter);
       if (pullOutputGet(npos, NULL, NULL, NULL, 0.0, pctx)) {
-        biffAddf(PULL, "%s: couldn't get snapshot for iter %d", me, pctx->iter);
+        biffAddf(PULL, "%s: couldn't get snapshot for iter %u", me, pctx->iter);
         return 1;
       }
       if (nrrdSave(poutS, npos, NULL)) {
-        biffMovef(PULL, NRRD, "%s: couldn't save snapshot for iter %d", me, pctx->iter);
+        biffMovef(PULL, NRRD, "%s: couldn't save snapshot for iter %u", me, pctx->iter);
         return 1;
       }
       npos = nrrdNuke(npos);
     }
 
     if (_pullIterate(pctx, pullProcessModeDescent)) {
-      biffAddf(PULL, "%s: trouble on iter %d", me, pctx->iter);
+      biffAddf(PULL, "%s: trouble on iter %u", me, pctx->iter);
       return 1;
     }
     enrNew = _pullEnergyTotal(pctx);

@@ -216,7 +216,7 @@ tenBMatrixCheck(const Nrrd *nbmat, int type, unsigned int minnum) {
   }
   if (!(6 == nbmat->axis[0].size && 2 == nbmat->dim)) {
     char stmp[AIR_STRLEN_SMALL + 1];
-    biffAddf(TEN, "%s: need a 6xN 2-D array (not a %s x? %d-D array)", me,
+    biffAddf(TEN, "%s: need a 6xN 2-D array (not a %s x? %u-D array)", me,
              airSprintSize_t(stmp, nbmat->axis[0].size), nbmat->dim);
     return 1;
   }
@@ -232,7 +232,7 @@ tenBMatrixCheck(const Nrrd *nbmat, int type, unsigned int minnum) {
   }
   if (!(minnum <= nbmat->axis[1].size)) {
     char stmp[AIR_STRLEN_SMALL + 1];
-    biffAddf(TEN, "%s: have only %s B-matrices, need at least %d", me,
+    biffAddf(TEN, "%s: have only %s B-matrices, need at least %u", me,
              airSprintSize_t(stmp, nbmat->axis[1].size), minnum);
     return 1;
   }

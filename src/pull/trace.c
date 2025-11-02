@@ -808,7 +808,7 @@ pullTraceMultiPlotAdd(Nrrd *nplot, const pullTraceMulti *mtrc, const Nrrd *nfilt
   sizeS = AIR_UINT(nplot->axis[0].size);
   sizeT = AIR_UINT(nplot->axis[1].size);
   for (trcIdx = trcIdxMin; trcIdx <= trcIdxMax; trcIdx++) {
-    int pntIdx, pntNum;
+    unsigned int pntIdx, pntNum;
     const pullTrace *trc;
     const double *vert, *stab, *strn;
     unsigned int maskInCount = 0;       /* to quiet maybe-used-uninit warning */
@@ -845,8 +845,8 @@ pullTraceMultiPlotAdd(Nrrd *nplot, const pullTraceMulti *mtrc, const Nrrd *nfilt
         double ss, ww, ws;
         ss = ws = 0;
         for (jj = -smooth; jj <= smooth; jj++) {
-          ii = pntIdx + jj;
-          ii = AIR_CLAMP(0, ii, pntNum - 1);
+          ii = AIR_INT(pntIdx) + jj; /* 2025 GLK does not understand this */
+          ii = AIR_CLAMP(0, ii, AIR_INT(pntNum) - 1);
           ww = nrrdKernelBSpline3->eval1_d(AIR_AFFINE(-smooth - 1, jj, smooth + 1, -2,
                                                       2),
                                            NULL);

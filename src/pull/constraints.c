@@ -649,7 +649,7 @@ _pullConstraintSatisfy(pullTask *task, pullPoint *point, double travelMax,
   constrEps = task->pctx->voxelSizeSpace * task->pctx->sysParm.constraintStepMin;
   /*           * (1 + 0.2*_pullSigma(task->pctx, point->pos)); */
   if (DEBUG) {
-    fprintf(stderr, "!%s(%d): hi ==== %g %g %g, stepMax = %g, iterMax = %u\n", me,
+    fprintf(stderr, "!%s(%u): hi ==== %g %g %g, stepMax = %g, iterMax = %u\n", me,
             point->idtag, point->pos[0], point->pos[1], point->pos[2], stepMax, iterMax);
   }
   task->pctx->count[pullCountConstraintSatisfy] += 1;

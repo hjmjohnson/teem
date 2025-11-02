@@ -90,7 +90,7 @@ _pullInitParmCheck(pullInitParm *iparm) {
   case pullInitMethodRandom:
   case pullInitMethodHalton:
     if (!(iparm->numInitial >= 1)) {
-      biffAddf(PULL, "%s: iparm->numInitial (%d) not >= 1\n", me, iparm->numInitial);
+      biffAddf(PULL, "%s: iparm->numInitial (%u) not >= 1", me, iparm->numInitial);
       return 1;
     }
     break;

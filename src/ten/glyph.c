@@ -127,7 +127,7 @@ tenGlyphParmCheck(tenGlyphParm *parm, const Nrrd *nten, const Nrrd *npos,
       return 1;
     }
     if (!(parm->sliceAxis <= 2)) {
-      biffAddf(TEN, "%s: slice axis %d invalid", me, parm->sliceAxis);
+      biffAddf(TEN, "%s: slice axis %u invalid", me, parm->sliceAxis);
       return 1;
     }
     if (!(parm->slicePos < nten->axis[1 + parm->sliceAxis].size)) {
@@ -138,7 +138,7 @@ tenGlyphParmCheck(tenGlyphParm *parm, const Nrrd *nten, const Nrrd *npos,
     }
     if (nslc) {
       if (2 != nslc->dim) {
-        biffAddf(TEN, "%s: explicit slice must be 2-D (not %d)", me, nslc->dim);
+        biffAddf(TEN, "%s: explicit slice must be 2-D (not %u)", me, nslc->dim);
         return 1;
       }
       tenSize[0] = nten->axis[1].size;

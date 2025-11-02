@@ -69,10 +69,10 @@ extern "C" {
 #define PULL pullBiffKey
 
 /* limits on computation; but (HEY) why not in privatePull.h? */
-#define PULL_THREAD_MAXNUM    512
-#define PULL_VOLUME_MAXNUM    4
-#define PULL_POINT_NEIGH_INCR 16
-#define PULL_BIN_MAXNUM       40000000 /* sanity check on max number bins */
+#define PULL_THREAD_MAXNUM    512u
+#define PULL_VOLUME_MAXNUM    4u
+#define PULL_POINT_NEIGH_INCR 16u
+#define PULL_BIN_MAXNUM       40000000u /* sanity check on max number bins */
 
 #define PULL_HINTER   0
 #define PULL_TANCOVAR 0

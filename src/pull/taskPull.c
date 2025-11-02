@@ -151,7 +151,7 @@ _pullTaskSetup(pullContext *pctx) {
     }
     pctx->task[tidx] = _pullTaskNew(pctx, tidx);
     if (!(pctx->task[tidx])) {
-      biffAddf(PULL, "%s: couldn't allocate task %d", me, tidx);
+      biffAddf(PULL, "%s: couldn't allocate task %u", me, tidx);
       return 1;
     }
   }

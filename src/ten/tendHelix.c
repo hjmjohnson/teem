@@ -55,7 +55,7 @@ tend_helixDoit(Nrrd *nout, double bnd, double orig[3], double i2w[9], double mf[
   ELL_3M_TRANSPOSE(mfT, mf);
   for (zi = 0; zi < sz; zi++) {
     if (verbose) {
-      fprintf(stderr, "zi = %d/%d\n", zi, sz);
+      fprintf(stderr, "zi = %u/%u\n", zi, sz);
     }
     for (yi = 0; yi < sy; yi++) {
       for (xi = 0; xi < sx; xi++) {

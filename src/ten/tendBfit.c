@@ -63,7 +63,7 @@ tend_bfitMain(int argc, const char **argv, const char *me, hestParm *hparm) {
 
   if (!(bbLen == nin->axis[0].size)) {
     char stmp[AIR_STRLEN_SMALL + 1];
-    fprintf(stderr, "%s: got %d b-values but axis 0 size is %s\n", me, bbLen,
+    fprintf(stderr, "%s: got %u b-values but axis 0 size is %s\n", me, bbLen,
             airSprintSize_t(stmp, nin->axis[0].size));
     airMopError(mop);
     return 1;
@@ -71,7 +71,7 @@ tend_bfitMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   if (AIR_EXISTS(_ww[0])) {
     if (!(_wwLen == nin->axis[0].size)) {
       char stmp[AIR_STRLEN_SMALL + 1];
-      fprintf(stderr, "%s: got %d weights but axis 0 size is %s\n", me, _wwLen,
+      fprintf(stderr, "%s: got %u weights but axis 0 size is %s\n", me, _wwLen,
               airSprintSize_t(stmp, nin->axis[0].size));
       airMopError(mop);
       return 1;

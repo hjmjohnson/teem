@@ -129,7 +129,7 @@ _tenFiberProbe(tenFiberContext *tfx, int *gageRet, double wPos[3], int seedProbe
         ELL_3V_COPY(tfx->seedEvec, evec[tfx->ten2Which]);
         tfx->ten2Use = tfx->ten2Which;
         if (tfx->verbose > 2) {
-          fprintf(stderr, "%s: ** ten2Use == ten2Which == %d\n", me, tfx->ten2Use);
+          fprintf(stderr, "%s: ** ten2Use == ten2Which == %u\n", me, tfx->ten2Use);
         }
       } else {
         double *lastVec, dot[2];

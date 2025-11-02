@@ -338,7 +338,7 @@ _tenDwiGageAnswer(gageContext *ctx, gagePerVolume *pvl) {
     /* done if doV */
     if (ctx->verbose) {
       for (dwiIdx=0; dwiIdx<pvl->kind->valLen; dwiIdx++) {
-        fprintf(stderr, "%s(%d+%g,%d+%g,%d+%g): dwi[%u] = %g\n", me,
+        fprintf(stderr, "%s(%u+%g,%u+%g,%u+%g): dwi[%u] = %g\n", me,
                 ctx->point.idx[0], ctx->point.frac[0],
                 ctx->point.idx[1], ctx->point.frac[1],
                 ctx->point.idx[2], ctx->point.frac[2],

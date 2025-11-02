@@ -91,8 +91,8 @@ _pullIterParmCheck(pullIterParm *iterParm) {
   static const char me[] = "_pullIterParmCheck";
 
   if (!(1 <= iterParm->constraintMax && iterParm->constraintMax <= 500)) {
-    biffAddf(PULL, "%s: iterParm->constraintMax %u not in range [%u,%u]", me,
-             iterParm->constraintMax, 1, _PULL_CONSTRAINT_ITER_MAX);
+    biffAddf(PULL, "%s: iterParm->constraintMax %u not in range [1,%u]", me,
+             iterParm->constraintMax, _PULL_CONSTRAINT_ITER_MAX);
     return 1;
   }
   return 0;

@@ -87,7 +87,7 @@ tenGradientCheck(const Nrrd *ngrad, int type, unsigned int minnum) {
   }
   if (!(minnum <= ngrad->axis[1].size)) {
     char stmp[AIR_STRLEN_SMALL + 1];
-    biffAddf(TEN, "%s: have only %s gradients, need at least %d", me,
+    biffAddf(TEN, "%s: have only %s gradients, need at least %u", me,
              airSprintSize_t(stmp, ngrad->axis[1].size), minnum);
     return 1;
   }
@@ -538,22 +538,22 @@ tenGradientDistribute(Nrrd *nout, const Nrrd *nin, tenGradientParm *tgparm) {
       potD = 2 * (potNew - pot) / (potNew + pot);
       if (!(iter % tgparm->report) && tgparm->verbose) {
         fprintf(stderr,
-                "%s(%d): . . . . . . step = %g, edgeShrink = %u\n"
+                "%s(%u): . . . . . . step = %g, edgeShrink = %u\n"
                 "   velo = %g<>%g, phi = %g ~ %g<>%g, angle = %g ~ %g\n",
                 me, iter, tgparm->step, edgeShrink, meanVelocity, tgparm->minVelocity,
                 pot, potD, tgparm->minPotentialChange, angle, angleNew - angle);
       }
       if (tgparm->snap && !(iter % tgparm->snap)) {
-        sprintf(filename, "%05d.nrrd", iter / tgparm->snap);
+        sprintf(filename, "%5u.nrrd", iter / tgparm->snap);
         if (tgparm->verbose) {
-          fprintf(stderr, "%s(%d): . . . . . . saving %s\n", me, iter, filename);
+          fprintf(stderr, "%s(%u): . . . . . . saving %s\n", me, iter, filename);
         }
         if (nrrdSave(filename, npos[newIdx], NULL)) {
           char *serr;
           serr = biffGetDone(NRRD);
           if (tgparm->verbose) { /* perhaps shouldn't have this check */
             fprintf(stderr,
-                    "%s: iter=%d, couldn't save snapshot:\n%s"
+                    "%s: iter=%u, couldn't save snapshot:\n%s"
                     "continuing ...\n",
                     me, iter, serr);
           }
@@ -571,7 +571,7 @@ tenGradientDistribute(Nrrd *nout, const Nrrd *nin, tenGradientParm *tgparm) {
       /* oops, did not make progress; back off and try again */
       if (tgparm->verbose) {
         fprintf(stderr,
-                "%s(%d): ######## step %g --> %g\n"
+                "%s(%u): ######## step %g --> %g\n"
                 " phi = %g --> %g ~ %g, angle = %g --> %g\n",
                 me, iter, tgparm->step, tgparm->step / 2, pot, potNew, potD, angle,
                 angleNew);
@@ -600,7 +600,7 @@ tenGradientDistribute(Nrrd *nout, const Nrrd *nin, tenGradientParm *tgparm) {
                  !tgparm->minVelocity, meanVelocity>
               tgparm->minVelocity,
             tgparm->step > FLT_MIN);
-    fprintf(stderr, "  iter=%d, velo = %g<>%g, phi = %g ~ %g<>%g;\n", iter, meanVelocity,
+    fprintf(stderr, "  iter=%u, velo = %g<>%g, phi = %g ~ %g<>%g;\n", iter, meanVelocity,
             tgparm->minVelocity, pot, potD, tgparm->minPotentialChange);
     fprintf(stderr, "  minEdge = %g; idealEdge = %g\n", 2 * sin(angle / 2),
             tenGradientIdealEdge(num, tgparm->single));
@@ -658,7 +658,7 @@ tenGradientGenerate(Nrrd *nout, unsigned int num, tenGradientParm *tgparm) {
   if (!(num >= 3)) {
     biffAddf(TEN,
              "%s: can generate minimum of 3 gradient directions "
-             "(not %d)",
+             "(not %u)",
              me, num);
     return 1;
   }
