@@ -20,7 +20,7 @@ CFFI, within its many limitations, specifically lacking a C pre-processor
   You should have received a copy of the GNU Lesser General Public License
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
-#define HOOVER_THREAD_MAX 512
+#define HOOVER_THREAD_MAX 512u
 /*
 ******** the mess of typedefs for callbacks used below
 */

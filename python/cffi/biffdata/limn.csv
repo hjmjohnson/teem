@@ -29,10 +29,10 @@ limnPolyDataPrimitiveSelect,int,1,0,limn,limn/polymod.c:1490
 limnPolyDataClipMulti,int,1,0,limn,limn/polymod.c:1705
 limnPolyDataCompress,limnPolyData *,NULL,0,limn,limn/polymod.c:1992
 limnPolyDataJoin,limnPolyData *,NULL,0,limn,limn/polymod.c:2082
-limnPolyDataEdgeHalve,int,1,0,limn,limn/polymod.c:2150
-limnPolyDataNeighborList,int,-1,0,limn,limn/polymod.c:2327
-limnPolyDataNeighborArray,int,-1,0,limn,limn/polymod.c:2423
-limnPolyDataNeighborArrayComp,int,-1,0,limn,limn/polymod.c:2463
+limnPolyDataEdgeHalve,int,1,0,limn,limn/polymod.c:2151
+limnPolyDataNeighborList,int,-1,0,limn,limn/polymod.c:2328
+limnPolyDataNeighborArray,int,-1,0,limn,limn/polymod.c:2424
+limnPolyDataNeighborArrayComp,int,-1,0,limn,limn/polymod.c:2464
 limnPolyDataCube,int,1,0,limn,limn/polyshapes.c:25
 limnPolyDataCubeTriangles,int,1,0,limn,limn/polyshapes.c:135
 limnPolyDataOctahedron,int,1,0,limn,limn/polyshapes.c:345
