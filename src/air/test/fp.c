@@ -59,7 +59,7 @@ main(int argc, char *argv[]) {
            c, airEnumStr(airFPClass_ae, c), str, parsed_f, ret, AIR_EXISTS(f),
            airExists(f));
     /* (using TeemV2 airSinglePrintf) */
-    airSinglePrintf(stdout, NULL, "airSinglePrintf: %g\n", f);
+    airSinglePrintf(stdout, NULL, 0, "airSinglePrintf: %g\n", f);
     if (c != airFPClass_f(f)) {
       printf("\n\n%s: Silly hardware!!!\n", me);
       printf("%s: can't return a float of class %d=%s from a function\n\n\n", me, c,
@@ -86,7 +86,7 @@ main(int argc, char *argv[]) {
            c, airEnumStr(airFPClass_ae, c), str, parsed_d, ret, AIR_EXISTS(d),
            airExists(d));
     /* (using TeemV2 airSinglePrintf) */
-    airSinglePrintf(stdout, NULL, "airSinglePrintf: %lg\n", d);
+    airSinglePrintf(stdout, NULL, 0, "airSinglePrintf: %lg\n", d);
     if (c != airFPClass_d(d)) {
       printf("\n\n%s: Silly hardware!!!\n", me);
       printf("%s: can't return a double of class %d=%s from a function\n\n\n", me, c,

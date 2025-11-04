@@ -199,7 +199,7 @@ shift2(char *clo, char *chi) {
  * "%.17g" when sscanf shows it to be necessary.
  */
 int
-airSinglePrintf(FILE *file, char *str, const char *_fmt, ...) {
+airSinglePrintf(FILE *file, char *str, size_t strSize, const char *_fmt, ...) {
   int ret, isF, isD;
   const char *_p0, *_p1, *_p2, *_p3, *_p4, *_p5;
   va_list ap;
@@ -220,7 +220,10 @@ airSinglePrintf(FILE *file, char *str, const char *_fmt, ...) {
      "is 3-character conv. seq."
      (but for TeemV2 we run with that type implication for "%g" and "%lg") */
   if (isF || isD) {
-#define PRINT(F, S, C, V) ((F) ? fprintf((F), (C), (V)) : sprintf((S), (C), (V)))
+#define PRINT(F, S, C, V)                                                               \
+  ((F) /* */                                                                            \
+     ? fprintf((F), (C), (V))                                                           \
+     : snprintf((S), strSize, (C), (V)))
     double val0;
     const char *_conv;
     unsigned int szfmt;
@@ -292,9 +295,10 @@ airSinglePrintf(FILE *file, char *str, const char *_fmt, ...) {
         Teem code using this function was updated to work with this behavior.
         See new test program teem/src/air/test/asprint */
         char buff[AIR_STRLEN_SMALL + 1];
+        size_t buffSize = AIR_STRLEN_SMALL + 1;
         if (_p2) /* got "%g" intended for float */ {
           float fltval1, fltval0 = (float)val0;
-          sprintf(buff, "%g", fltval0);
+          snprintf(buff, buffSize, "%g", fltval0);
           sscanf(buff, "%f", &fltval1);
           if (fltval1 != fltval0) {
             /* "%g" by itself did NOT gave round-trip single-precision accuracy;
@@ -306,7 +310,7 @@ airSinglePrintf(FILE *file, char *str, const char *_fmt, ...) {
           /* else "%g" gave round-trip single-precision accuracy; use `fmt` as is */
         } else /* _p5: got "%lg% intended for double */ {
           double val1;
-          sprintf(buff, "%g", val0);
+          snprintf(buff, buffSize, "%g", val0);
           sscanf(buff, "%lf", &val1);
           if (val1 != val0) { /* SORRY COPY PASTA */
             shift2(conv + 3 /* first char after %lg */,

@@ -569,7 +569,8 @@ AIR_EXPORT void *airSetNull(void **ptrP);
 AIR_EXPORT void *airFree(void *ptr);
 AIR_EXPORT FILE *airFopen(const char *name, FILE *std, const char *mode);
 AIR_EXPORT FILE *airFclose(FILE *file);
-AIR_EXPORT int airSinglePrintf(FILE *file, char *str, const char *fmt, ...);
+AIR_EXPORT int airSinglePrintf(FILE *file, char *str, size_t strSize, /* */
+                               const char *fmt, ...);
 AIR_EXPORT char *airSprintSize_t(char str[AIR_STRLEN_SMALL + 1], size_t val);
 /* ---- BEGIN non-NrrdIO */
 AIR_EXPORT char *airSprintVecSize_t(char *str, const size_t *vec, unsigned int len);

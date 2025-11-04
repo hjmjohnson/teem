@@ -24,6 +24,7 @@ char *me;
 int
 main(int argc, char *argv[]) {
   char *fS, buff[128];
+  size_t buffSize = 128;
   float f;
   double d, sd;
   int ret;
@@ -49,9 +50,9 @@ main(int argc, char *argv[]) {
     printf("\n");
   }
   f = AIR_FLOAT(d);
-  airSinglePrintf(NULL, buff, "%g", f);
+  airSinglePrintf(NULL, buff, buffSize, "%g", f);
   printf("%s: printf/airSinglePrintf as float:\n%g\n%s\n", me, f, buff);
-  airSinglePrintf(NULL, buff, "%lg", d);
+  airSinglePrintf(NULL, buff, buffSize, "%lg", d);
   printf("\n");
   printf("%s: printf/airSinglePrintf as double:\n%lg\n%s\n", me, d, buff);
   printf("\n");

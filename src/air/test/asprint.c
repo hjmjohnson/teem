@@ -74,8 +74,9 @@ main(int argc, const char *argv[]) {
 
   if ('%' != fmt[0]) {
     /* some whole string to test with */
-    char *buff = AIR_CALLOC(2 * strlen(fmt) + 1, char);
-    airSinglePrintf(NULL, buff, fmt, dbl0);
+    size_t buffSize = 2 * strlen(fmt) + 1;
+    char *buff = AIR_CALLOC(buffSize, char);
+    airSinglePrintf(NULL, buff, buffSize, fmt, dbl0);
     printf("%s: sprint(buff, |%s|, %.17g) = |%s|\n", me, fmt, dbl0, buff);
     free(buff);
   } else {
@@ -83,10 +84,11 @@ main(int argc, const char *argv[]) {
        values to test */
     printf("%s: we shall begin scanning\n", me);
     char buff[AIR_STRLEN_SMALL + 1];
+    size_t buffSize = AIR_STRLEN_SMALL + 1;
     char buff2[AIR_STRLEN_SMALL + 1];
     for (I = 0; I < N; I++) {
       if (dblPrec) {
-        airSinglePrintf(NULL, buff, fmt, adbl.d);
+        airSinglePrintf(NULL, buff, buffSize, fmt, adbl.d);
         if (verbose) {
           printf("%s: %.17g ---aSPrint(%s)---> \"%s\"\n", me, adbl.d, fmt, buff);
           sprintf(buff2, fmt, adbl.d);
@@ -102,7 +104,7 @@ main(int argc, const char *argv[]) {
         adbl.i++;
       } else {
         float flt1;
-        airSinglePrintf(NULL, buff, fmt, aflt.f);
+        airSinglePrintf(NULL, buff, buffSize, fmt, aflt.f);
         airSingleSscanf(buff, "%f", &flt1);
         if (verbose) {
           printf("%s: %.9g ---aSPrint(%s)---> \"%s\"\n", me, aflt.f, fmt, buff);
