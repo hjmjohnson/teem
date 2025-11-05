@@ -659,6 +659,7 @@ static int /* Biff: 1 */
 _nrrdFormatNRRD_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
   static const char me[] = "_nrrdFormatNRRD_write";
   char strbuf[AIR_STRLEN_MED + 1], *strptr, *tmp;
+  size_t tmpSize;
   int ii;
   unsigned int jj;
   airArray *mop;
@@ -710,15 +711,15 @@ _nrrdFormatNRRD_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
       airMopError(mop);
       return 1;
     }
-    tmp = (char *)malloc(strlen(nio->base) + strlen(".") + strlen(nio->encoding->suffix)
-                         + 1);
+    tmpSize = strlen(nio->base) + strlen(".") + strlen(nio->encoding->suffix) + 1;
+    tmp = AIR_MALLOC(tmpSize, char);
     if (!tmp) {
       biffAddf(NRRD, "%s: couldn't allocate data filename", me);
       airMopError(mop);
       return 1;
     }
     airMopAdd(mop, tmp, airFree, airMopOnError);
-    sprintf(tmp, "%s.%s", nio->base, nio->encoding->suffix);
+    snprintf(tmp, tmpSize, "%s.%s", nio->base, nio->encoding->suffix);
     jj = airArrayLenIncr(nio->dataFNArr, 1);
     if (!nio->dataFNArr->data) {
       biffAddf(NRRD, "%s: can't increase dataFNArr storage", me);
