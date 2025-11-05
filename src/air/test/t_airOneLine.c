@@ -61,25 +61,15 @@ main(int argc, const char *argv[]) {
   }
 
   char *line = size ? AIR_CALLOC(size, char) : NULL;
-  /* (copied from airOneLine info)
-   * Return values:
-   * 0 and line[0]=='\0': immediately hit EOF, or arguments are invalid
-   * 0 and line[0]!='\0': read something into `line` but hit EOF before seeing newline;
-   *                      caller will need strlen() to find out its length
-   *                   1: line was a single newline (or other line termination)
-   *      N with N<=size: line was N-1 characters followed by newline
-   *              size+1: didn't see a newline within size-1 characters
-   */
+
   size_t ret;
   do {
     ret = airOneLine(file, line, size);
-    if (ret || (line && line[0])) {
-      printf("%3zu %c|%s|=%zu\n", ret,
-             (ret == size + 1 ? 'M'                    /* maxed out */
-                              : (!ret && line[0] ? 'E' /* hit EOF before end-of-line */
-                                                 : ' ')),
-             line, strlen(line));
-    }
+    printf("%3zu %c|%s|=%zu\n", ret,
+           (ret == size + 1 ? 'M'                    /* maxed out */
+                            : (!ret && line[0] ? 'E' /* hit EOF before end-of-line */
+                                               : ' ')),
+           line, strlen(line));
   } while (ret > 0);
   size++;
   free(line);
