@@ -97,12 +97,16 @@ _nrrdCCFind_2(Nrrd *nout, unsigned int *numid, airArray *eqvArr, const Nrrd *nin
 #define IOK(I, S)       (0 <= (I) && (I) < (S))
 #define VI2(XI, SX, YI) (AIR_INT(XI) + AIR_INT((SX) * (YI)))
   double noVal = 0.5; /* value different from any integer */
+/* with GET_V_2(., yi-1) or GET_I_2(., yi-1) with yi==0 don't need IOK(yi, sy):
+   yi-1 will wrapped around to big but still unsigned value, which always >= 0,
+   hence may have some warnings about needless comparisons, but that big value
+   will be >= sy, so we do want to test for that */
 #define GET_V_2(XI, YI)                                                                 \
-  ((IOK(XI, sx) && IOK(YI, sy)) /* */                                                   \
+  ((IOK(XI, sx) && YI < sy) /* */                                                       \
      ? LUP(nin->data, VI2(XI, sx, YI))                                                  \
      : noVal)
 #define GET_I_2(XI, YI)                                                                 \
-  ((IOK(XI, sx) && IOK(YI, sy)) /* */                                                   \
+  ((IOK(XI, sx) && YI < sy) /* */                                                       \
      ? out[VI2(XI, sx, YI)]                                                             \
      : UINT_MAX) /* ID different (fingers crossed) from any real CC ID */
 
@@ -195,12 +199,14 @@ _nrrdCCFind_3(Nrrd *nout, unsigned int *numid, airArray *eqvArr, const Nrrd *nin
   sz = AIR_UINT(nin->axis[2].size);
 #define VI3(XI, SX, YI, SY, ZI) (AIR_INT(XI) + AIR_INT(SX) * VI2(YI, SY, ZI))
   double noVal = 0.5; /* value different from any integer */
+/* see comment for GET_V_2,GET_I_2 above about NOT using IOK with YI;
+   same applies here to both YI and ZI */
 #define GET_V_3(XI, YI, ZI)                                                             \
-  ((IOK(XI, sx) && IOK(YI, sy) && IOK(ZI, sz))                                          \
+  ((IOK(XI, sx) && YI < sy && ZI < sz) /* */                                            \
      ? LUP(nin->data, VI3(XI, sx, YI, sy, ZI))                                          \
      : noVal)
 #define GET_I_3(XI, YI, ZI)                                                             \
-  ((IOK(XI, sx) && IOK(YI, sy) && IOK(ZI, sz)) /* */                                    \
+  ((IOK(XI, sx) && YI < sy && ZI < sz) /* */                                            \
      ? out[VI3(XI, sx, YI, sy, ZI)]                                                     \
      : UINT_MAX)
 
