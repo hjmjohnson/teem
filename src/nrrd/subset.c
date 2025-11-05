@@ -181,7 +181,8 @@ nrrdSlice(Nrrd *nout, const Nrrd *cnin, unsigned int saxi, size_t pos) {
 int /* Biff: 1 */
 nrrdCrop(Nrrd *nout, const Nrrd *nin, size_t *min, size_t *max) {
   static const char me[] = "nrrdCrop", func[] = "crop";
-  char buff1[NRRD_DIM_MAX * 30], buff2[AIR_STRLEN_SMALL + 1];
+  char *buff, _buff[NRRD_DIM_MAX * 30];
+  size_t buffSize = NRRD_DIM_MAX * 30;
   unsigned int ai;
   size_t I, lineSize,   /* #bytes in one scanline to be copied */
     typeSize,           /* size of data type */
@@ -309,13 +310,14 @@ nrrdCrop(Nrrd *nout, const Nrrd *nin, size_t *min, size_t *max) {
       }
     }
   }
-  strcpy(buff1, "");
+  buff = _buff;
+  buff[0] = '\0';
   for (ai = 0; ai < nin->dim; ai++) {
-    sprintf(buff2, "%s[%s,%s]", (ai ? "x" : ""), airSprintSize_t(stmp[0], min[ai]),
-            airSprintSize_t(stmp[1], max[ai]));
-    strcat(buff1, buff2);
+    snprintf(buff, buffSize, "%s[%s,%s]", (ai ? "x" : ""),
+             airSprintSize_t(stmp[0], min[ai]), airSprintSize_t(stmp[1], max[ai]));
+    STRINCR(buff, buffSize);
   }
-  if (nrrdContentSet_va(nout, func, nin, "%s", buff1)) {
+  if (nrrdContentSet_va(nout, func, nin, "%s", _buff)) {
     biffAddf(NRRD, "%s:", me);
     return 1;
   }

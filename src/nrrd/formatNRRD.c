@@ -171,6 +171,7 @@ static int /* Biff: 1 */
 nrrdIoStateDataFileIterNext(FILE **fileP, NrrdIoState *nio, int reading) {
   static const char me[] = "nrrdIoStateDataFileIterNext";
   char *fname = NULL;
+  size_t fnameSize;
   int ii, needPath;
   unsigned int num, fi;
   size_t maxl;
@@ -219,7 +220,8 @@ nrrdIoStateDataFileIterNext(FILE **fileP, NrrdIoState *nio, int reading) {
       airMopError(mop);
       return 1;
     }
-    fname = (char *)malloc(airStrlen(nio->path) + strlen("/") + maxl + 1);
+    fnameSize = airStrlen(nio->path) + strlen("/") + maxl + 1;
+    fname = AIR_MALLOC(fnameSize, char);
     if (!fname) {
       biffAddf(NRRD, "%s: couldn't allocate filename buffer", me);
       airMopError(mop);
@@ -242,20 +244,25 @@ nrrdIoStateDataFileIterNext(FILE **fileP, NrrdIoState *nio, int reading) {
       num += 1;
     }
     if (_NEED_PATH(nio->dataFNFormat)) {
-      strcpy(fname, nio->path);
-      strcat(fname, "/");
-      sprintf(fname + strlen(nio->path) + strlen("/"), nio->dataFNFormat, ii);
+      char *fn = fname;
+      size_t fns = fnameSize;
+      snprintf(fn, fns, "%s", nio->path);
+      STRINCR(fn, fns);
+      snprintf(fn, fns, "/");
+      STRINCR(fn, fns);
+      snprintf(fn, fns, nio->dataFNFormat, ii);
+      STRINCR(fn, fns);
     } else {
-      sprintf(fname, nio->dataFNFormat, ii);
+      snprintf(fname, fnameSize, nio->dataFNFormat, ii);
     }
   } else if (nio->dataFNArr->len) {
     /* ---------------------------------------------------------- */
     /* ------------------- LIST or single ----------------------- */
     /* ---------------------------------------------------------- */
     if (_NEED_PATH(nio->dataFN[nio->dataFNIndex])) {
-      sprintf(fname, "%s/%s", nio->path, nio->dataFN[nio->dataFNIndex]);
+      snprintf(fname, fnameSize, "%s/%s", nio->path, nio->dataFN[nio->dataFNIndex]);
     } else {
-      strcpy(fname, nio->dataFN[nio->dataFNIndex]);
+      snprintf(fname, fnameSize, "%s", nio->dataFN[nio->dataFNIndex]);
     }
   }
   /* else data file is attached */

@@ -149,7 +149,8 @@ nrrdAxesInsert(Nrrd *nout, const Nrrd *nin, unsigned int axis) {
 int /* Biff: 1 */
 nrrdAxesPermute(Nrrd *nout, const Nrrd *nin, const unsigned int *axes) {
   static const char me[] = "nrrdAxesPermute", func[] = "permute";
-  char buff1[NRRD_DIM_MAX * 30], buff2[AIR_STRLEN_SMALL + 1];
+  char *buff, _buff[NRRD_DIM_MAX * 30];
+  size_t buffSize = NRRD_DIM_MAX * 30;
   size_t idxOut, idxInA = 0, /* indices for input and output scanlines */
     lineSize,                /* size of block of memory which can be
                                 moved contiguously from input to output,
@@ -252,12 +253,13 @@ nrrdAxesPermute(Nrrd *nout, const Nrrd *nin, const unsigned int *axes) {
       NRRD_COORD_INCR(cOut, lszOut, ldim, 0);
     }
     /* set content */
-    strcpy(buff1, "");
+    buff = _buff;
+    buff[0] = '\0';
     for (ai = 0; ai < nin->dim; ai++) {
-      sprintf(buff2, "%s%u", (ai ? "," : ""), axes[ai]);
-      strcat(buff1, buff2);
+      snprintf(buff, buffSize, "%s%u", (ai ? "," : ""), axes[ai]);
+      STRINCR(buff, buffSize);
     }
-    if (nrrdContentSet_va(nout, func, nin, "%s", buff1)) {
+    if (nrrdContentSet_va(nout, func, nin, "%s", _buff)) {
       biffAddf(NRRD, "%s:", me);
       airMopError(mop);
       return 1;
@@ -303,7 +305,6 @@ nrrdAxesPermute(Nrrd *nout, const Nrrd *nin, const unsigned int *axes) {
 int /* Biff: 1 */
 nrrdShuffle(Nrrd *nout, const Nrrd *nin, unsigned int axis, const size_t *perm) {
   static const char me[] = "nrrdShuffle", func[] = "shuffle";
-  char buff2[AIR_STRLEN_SMALL + 1];
   /* Sun Feb 8 13:13:58 CST 2009: There was a memory bug here caused
      by using the same buff1[NRRD_DIM_MAX*30] declaration that had
      worked fine for nrrdAxesPermute and nrrdReshape, but does NOT
@@ -318,7 +319,8 @@ nrrdShuffle(Nrrd *nout, const Nrrd *nin, unsigned int axis, const size_t *perm) 
      probably do *not* need the shuffle (the sample reversal) to be
      documented for long axes */
 #define LONGEST_INTERESTING_AXIS 42
-  char buff1[LONGEST_INTERESTING_AXIS * 30];
+  char *buff, _buff[LONGEST_INTERESTING_AXIS * 30];
+  size_t buffSize = LONGEST_INTERESTING_AXIS * 30;
   unsigned int ai, ldim, len;
   size_t idxInB = 0, idxOut, lineSize, numLines, size[NRRD_DIM_MAX], *lsize,
          cIn[NRRD_DIM_MAX + 1], cOut[NRRD_DIM_MAX + 1];
@@ -404,13 +406,14 @@ nrrdShuffle(Nrrd *nout, const Nrrd *nin, unsigned int axis, const size_t *perm) 
   /* Set content. The LONGEST_INTERESTING_AXIS hack avoids the
      previous array out-of-bounds bug */
   if (len <= LONGEST_INTERESTING_AXIS) {
-    strcpy(buff1, "");
+    buff = _buff;
+    buff[0] = '\0';
     for (ai = 0; ai < len; ai++) {
       char stmp[AIR_STRLEN_SMALL + 1];
-      sprintf(buff2, "%s%s", (ai ? "," : ""), airSprintSize_t(stmp, perm[ai]));
-      strcat(buff1, buff2);
+      snprintf(buff, buffSize, "%s%s", (ai ? "," : ""), airSprintSize_t(stmp, perm[ai]));
+      STRINCR(buff, buffSize);
     }
-    if (nrrdContentSet_va(nout, func, nin, "%s", buff1)) {
+    if (nrrdContentSet_va(nout, func, nin, "%s", _buff)) {
       biffAddf(NRRD, "%s:", me);
       return 1;
     }
@@ -976,8 +979,8 @@ nrrdAxesMerge(Nrrd *nout, const Nrrd *nin, unsigned int maxi) {
 int /* Biff: 1 */
 nrrdReshape_nva(Nrrd *nout, const Nrrd *nin, unsigned int dim, const size_t *size) {
   static const char me[] = "nrrdReshape_nva", func[] = "reshape";
-  char buff1[NRRD_DIM_MAX * 30], buff2[AIR_STRLEN_SMALL + 1];
-  size_t numOut;
+  char *buff, _buff[NRRD_DIM_MAX * 30];
+  size_t buffSize = NRRD_DIM_MAX * 30, numOut;
   unsigned int ai;
   char stmp[2][AIR_STRLEN_SMALL + 1];
 
@@ -1022,14 +1025,16 @@ nrrdReshape_nva(Nrrd *nout, const Nrrd *nin, unsigned int dim, const size_t *siz
     nout->axis[ai].size = size[ai];
   }
 
-  strcpy(buff1, "");
+  buff = _buff;
+  buff[0] = '\0';
   for (ai = 0; ai < dim; ai++) {
-    sprintf(buff2, "%s%s", (ai ? "x" : ""), airSprintSize_t(stmp[0], size[ai]));
-    strcat(buff1, buff2);
+    snprintf(buff, buffSize, "%s%s", (ai ? "x" : ""),
+             airSprintSize_t(stmp[0], size[ai]));
+    STRINCR(buff, buffSize);
   }
   /* basic info copied by _nrrdCopy, but probably more than we
      want- perhaps space dimension and origin should be nixed? */
-  if (nrrdContentSet_va(nout, func, nin, "%s", buff1)) {
+  if (nrrdContentSet_va(nout, func, nin, "%s", _buff)) {
     biffAddf(NRRD, "%s:", me);
     return 1;
   }

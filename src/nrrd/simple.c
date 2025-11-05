@@ -403,34 +403,37 @@ _nrrdContentSet_nva(Nrrd *nout, const char *func, char *content, const char *for
                     va_list arg) {
   static const char me[] = "_nrrdContentSet_nva";
   char *buff;
+  size_t buffSize, contentSize;
 
   if (nrrdStateDisableContent) {
     /* we kill content always */
     nout->content = (char *)airFree(nout->content);
     return 0;
   }
-  buff = (char *)malloc(128 * AIR_STRLEN_HUGE + 1);
+  /* conservatively huge buffer,
+     but using vsnprintf so still safe even if not huge enough */
+  buffSize = 128 * AIR_STRLEN_HUGE + 1;
+  buff = AIR_MALLOC(buffSize, char);
   if (!buff) {
     biffAddf(NRRD, "%s: couln't alloc buffer!", me);
     return 1;
   }
   nout->content = (char *)airFree(nout->content);
 
-  /* we are currently praying that this won't overflow the "buff" array */
-  /* HEY: replace with vsnprintf or whatever when its available */
-  vsprintf(buff, format, arg);
+  vsnprintf(buff, buffSize, format, arg);
 
-  nout->content = (char *)calloc(strlen("(,)") + airStrlen(func) + 1 /* '(' */
-                                   + airStrlen(content) + 1          /* ',' */
-                                   + airStrlen(buff) + 1             /* ')' */
-                                   + 1,
-                                 sizeof(char)); /* '\0' */
+  contentSize = (strlen("(,)") + airStrlen(func) + 1 /* '(' */
+                 + airStrlen(content) + 1            /* ',' */
+                 + airStrlen(buff) + 1               /* ')' */
+                 + 1);
+  nout->content = AIR_CALLOC(contentSize, char);
   if (!nout->content) {
     biffAddf(NRRD, "%s: couln't alloc output content!", me);
     airFree(buff);
     return 1;
   }
-  sprintf(nout->content, "%s(%s%s%s)", func, content, airStrlen(buff) ? "," : "", buff);
+  snprintf(nout->content, contentSize, "%s(%s%s%s)", func, content,
+           airStrlen(buff) ? "," : "", buff);
   airFree(buff); /* no NULL assignment, else compile warnings */
   return 0;
 }
@@ -541,6 +544,7 @@ nrrdDescribeMore(FILE *file, const Nrrd *nrrd, const char *pfx, int showPtrs,
                  unsigned int sepWidth) {
   unsigned int ii, jj, sdim, sulen;
   char stmp[AIR_STRLEN_SMALL + 1];
+  size_t stmpSize = AIR_STRLEN_SMALL + 1;
 
   if (!file) {
     /* nothing to do! */
@@ -593,7 +597,7 @@ nrrdDescribeMore(FILE *file, const Nrrd *nrrd, const char *pfx, int showPtrs,
     if (!elideNonExist || mfex) {
       unsigned mmlen = 0;
       char buff[AIR_STRLEN_SMALL + 1], fmt[AIR_STRLEN_SMALL + 1];
-      size_t buffSize = AIR_STRLEN_SMALL + 1;
+      size_t buffSize = AIR_STRLEN_SMALL + 1, fmtSize = AIR_STRLEN_SMALL + 1;
       fprintf(file, "%sMeasurement Frame=\n", PFX);
       /* figure out longest string for on component */
       for (ii = 0; ii < sdim; ii++) {
@@ -605,7 +609,7 @@ nrrdDescribeMore(FILE *file, const Nrrd *nrrd, const char *pfx, int showPtrs,
         }
       }
       /* print the formatting string for one component */
-      sprintf(fmt, "  %%%us", mmlen);
+      snprintf(fmt, fmtSize, "  %%%us", mmlen);
       for (ii = 0; ii < sdim; ii++) {
         fprintf(file, "%s  ", PFX);
         for (jj = 0; jj < sdim; jj++) {
@@ -623,7 +627,7 @@ nrrdDescribeMore(FILE *file, const Nrrd *nrrd, const char *pfx, int showPtrs,
     if (showPtrs || sulen) {
       fprintf(file, "%sSpace Units=\n", PFX);
       for (jj = 0; jj < sdim; jj++) {
-        sprintf(stmp, "[%u]", jj);
+        snprintf(stmp, stmpSize, "[%u]", jj);
         DESC_STRING(nrrd->spaceUnits[jj], "", "", stmp);
       }
     }
@@ -686,7 +690,7 @@ nrrdDescribeMore(FILE *file, const Nrrd *nrrd, const char *pfx, int showPtrs,
     printDescSep(file, PFX, sepStr, sepWidth, "comments"); /* ---------------- */
     fprintf(file, "%scomments (%u):\n", PFX, nrrd->cmtArr->len);
     for (ii = 0; ii < nrrd->cmtArr->len; ii++) {
-      sprintf(stmp, "[%u]", ii);
+      snprintf(stmp, stmpSize, "[%u]", ii);
       DESC_STRING(nrrd->cmt[ii], "", "", stmp);
     }
   }

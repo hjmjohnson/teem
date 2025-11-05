@@ -507,7 +507,7 @@ extern unsigned int airIndexClamp(double min, double val, double max,
                                       unsigned int N);
 extern airULLong airIndexULL(double min, double val, double max, airULLong N);
 extern airULLong airIndexClampULL(double min, double val, double max, airULLong N);
-extern char *airDoneStr(double start, double here, double end, char *str);
+extern char *airDoneStr(double start, double here, double end, char str[13]);
 extern double airTime(void);
 extern void airEqvAdd(airArray *eqvArr, unsigned int j, unsigned int k);
 extern unsigned int airEqvMap(airArray *eqvArr, unsigned int *map, unsigned int len);

@@ -316,7 +316,7 @@ _nrrdFormatText_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
 static int
 _nrrdFormatText_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
   char cmt[AIR_STRLEN_SMALL + 1], buff[AIR_STRLEN_SMALL + 1];
-  size_t buffSize = AIR_STRLEN_SMALL + 1, I, dsz;
+  size_t cmtSize = AIR_STRLEN_SMALL + 1, buffSize = AIR_STRLEN_SMALL + 1, I, dsz;
   int i, x, y, sx, sy; /* HEY unsigned? */
   const void *data;
   const char *cdata;
@@ -327,7 +327,7 @@ _nrrdFormatText_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
      float in a text file */
   moreThanFloat = (nrrdTypeFloat != nrrd->type && !nio->bareText
                    && nio->moreThanFloatInText);
-  sprintf(cmt, "%c ", NRRD_COMMENT_CHAR);
+  snprintf(cmt, cmtSize, "%c ", NRRD_COMMENT_CHAR);
   if (!nio->bareText) {
     if (1 == nrrd->dim) {
       _nrrdFprintFieldInfo(file, cmt, nrrd, nio, nrrdField_dimension, AIR_FALSE);

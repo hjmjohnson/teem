@@ -274,6 +274,7 @@ _nrrdFormatVTK_write(FILE *file, const Nrrd *_nrrd, NrrdIoState *nio) {
   unsigned int sx, sy, sz;
   double xs, ys, zs, xm, ym, zm;
   char type[AIR_STRLEN_MED + 1], name[AIR_STRLEN_SMALL + 1];
+  size_t nameSize = AIR_STRLEN_SMALL + 1;
   Nrrd *nrrd;
   airArray *mop;
 
@@ -361,7 +362,7 @@ _nrrdFormatVTK_write(FILE *file, const Nrrd *_nrrd, NrrdIoState *nio) {
   fprintf(file, "SPACING %g %g %g\n", xs, ys, zs);
   fprintf(file, "POINT_DATA %u\n", sx * sy * sz);
   airSrandMT(AIR_UINT(airTime()));
-  sprintf(name, "nrrd%05u", airRandInt(100000));
+  snprintf(name, nameSize, "nrrd%05u", airRandInt(100000));
   if (3 == nrrd->dim) {
     fprintf(file, "SCALARS %s %s\n", name, type);
     fprintf(file, "LOOKUP_TABLE default\n");
