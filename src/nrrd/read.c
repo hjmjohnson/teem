@@ -683,6 +683,7 @@ nrrdLoadMulti(Nrrd *const *nin, unsigned int ninLen, const char *fnameFormat,
               unsigned int numStart, NrrdIoState *nio) {
   static const char me[] = "nrrdLoadMulti";
   char *fname;
+  size_t fnameSize;
   airArray *mop;
   unsigned int nii;
 
@@ -701,8 +702,9 @@ nrrdLoadMulti(Nrrd *const *nin, unsigned int ninLen, const char *fnameFormat,
 
   mop = airMopNew();
   /* should be big enough for the number replacing the format sequence */
-  fname = AIR_CAST(char *, malloc(strlen(fnameFormat) + 128));
-  if (!(fname)) {
+  fnameSize = strlen(fnameFormat) + 128 + 1;
+  fname = AIR_MALLOC(fnameSize, char);
+  if (!fname) {
     biffAddf(NRRD, "%s: couldn't allocate local fname buffer", me);
     airMopError(mop);
     return 1;
@@ -712,7 +714,7 @@ nrrdLoadMulti(Nrrd *const *nin, unsigned int ninLen, const char *fnameFormat,
   for (nii = 0; nii < ninLen; nii++) {
     unsigned int num;
     num = numStart + nii;
-    sprintf(fname, fnameFormat, num);
+    snprintf(fname, fnameSize, fnameFormat, num);
     if (nrrdLoad(nin[nii], fname, nio)) {
       biffAddf(NRRD, "%s: trouble loading nin[%u] from %s", me, nii, fname);
       airMopError(mop);
