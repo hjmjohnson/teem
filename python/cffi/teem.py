@@ -28,9 +28,14 @@ shared library), and to generate this wrapper, which is the result of simple tex
 transformations of the template wrapper in teem/python/cffi/lliibb.py
 """
 
+# pylint can't see inside CFFI-generated modules
+# pylint: disable=c-extension-no-member
+
 import math as _math   # # likely used in _BIFF_DICT, below, for testing function return values
 import sys as _sys
 import argparse as _argparse
+
+from typing import Any, Union, Iterator
 
 # halt if python2; thanks to https://stackoverflow.com/a/65407535/1465384
 _x, *_y = 1, 2  # NOTE: A SyntaxError means you need Python3, not Python2
@@ -44,136 +49,201 @@ def string(bstr):
 
 
 class Tenum:
-    """Helper/wrapper around (pointers to) airEnums (part of Teem's "air" library).
-    This provides convenient ways to convert between integer enum values and real Python
-    strings. The C airEnum underlying the Python Tenum foo is still available as foo().
-    """
+    """A pythonic helper/wrapper around (CFFI pointers to) Teem's airEnums (which convert
+    between integer enum values and C strings, with aliases and descriptions). The conversion
+    here is between `int`s and Python `str` strings, with an API that mimics Python's `Enum`.
+    The C airEnum underlying the Python Tenum `foo` is available as `foo.airEnum`.
+    The nested Tenum.TenumValue class is for representing a single enum value in a way that
+    can be either an `int` or a `str`, like a value in Python's `IntEnum`."""
 
-    def __init__(self, aenm, _name):
-        """Constructor takes a Teem airEnum pointer (const airEnum *const)."""
-        if not str(aenm).startswith("<cdata 'airEnum *' "):
-            raise TypeError(f'passed argument {aenm} does not seem to be an airEnum pointer')
-        self.aenm = aenm
-        self.name = string(self.aenm.name)
-        self._name = _name  # the variable name for the airEnum in libteem
-        # following definition of airEnum struct in air.h
-        self.vals = list(range(1, self.aenm.M + 1))
-        if self.aenm.val:
-            self.vals = [self.aenm.val[i] for i in self.vals]
+    @staticmethod
+    def _is_airenum(obj: Any) -> bool:
+        try:
+            ty = _teem.ffi.typeof(obj)
+            # is obj a pointer to an airEnum struct?
+            return ty.kind == 'pointer' and ty.item.cname == 'airEnum' and ty.item.kind == 'struct'
+        except AttributeError:
+            return False
 
-    def __call__(self):
-        """Returns (a pointer to) the underlying airEnum."""
-        return self.aenm
+    def __init__(self, aenm, sym_name: str):   # aenm: CData typehint?
+        """Constructor takes a Teem airEnum pointer `aenm` (const airEnum *const)."""
+        if not self._is_airenum(aenm):
+            raise TypeError(f'passed argument {aenm} does not seem to be a Teem airEnum pointer')
+        # pylint: disable-next=invalid-name
+        self.airEnum = aenm   # Teem C programmers will expect this spelling
+        self.cname = _teem.ffi.string(self.airEnum.name).decode('utf8')
+        self.sym_name = sym_name  # the symbol name of this airEnum in the C library
+        self.me = f'{self.sym_name} ("{self.cname}") enum'  # how I self-identify in error messages
+        # following definition of airEnum struct in teem/air.h,
+        # self._vals is initialized to all valid (known) enum values
+        vlist = list(range(1, self.airEnum.M + 1))
+        if self.airEnum.val:
+            self._vals = [self.airEnum.val[i] for i in vlist]
+        else:
+            self._vals = vlist
 
-    def __iter__(self):
-        """Provides a way to iterate through the valid values of the enum"""
-        return iter(self.vals)
+    class TenumValue:
+        """Represents one value in a Tenum, in a way that can be both an int and a string (like
+        a value in Python's `IntEnum`), and that remembers which Tenum it is part of.
+        For example:
+           tv = teem.nrrdKind['2-vector']
+           int(tv)
+           str(tv)"""
 
-    def vals(self):
-        """Provides list of valid values"""
-        return self._vals.copy()
+        def __init__(self, tenum: 'Tenum', value: int) -> None:
+            # initialize these fields to be ready answers; yes redundant but rapidly
+            # accessible without trip over the CFFI bridge
+            self.tenum = tenum
+            self.value = value
+            self.name = tenum.name(value)   # the canonical name for `value`
+            self.description = tenum.description(value)
 
-    def valid(self, ios) -> bool:  # ios = int or string
+        @classmethod
+        def from_value(cls, tenum: 'Tenum', value: int) -> 'Tenum.TenumValue':
+            """construct TenumValue from tenum and integer value"""
+            if not value in tenum:
+                raise ValueError(
+                    f'{value} not valid {tenum.me} value (expected one of {list(map(int, tenum))}'
+                )
+            return cls(tenum, value)
+
+        def __int__(self) -> int:
+            return self.value
+
+        def __str__(self) -> str:
+            return self.name
+
+        def __repr__(self) -> str:
+            return f'<TenumValue({self.tenum.cname}) value={self.value}:name="{str(self)}">'
+
+        def __eq__(self, other: object) -> bool:
+            if isinstance(other, Tenum.TenumValue):
+                return self.tenum.airEnum is other.tenum.airEnum and self.value == other.value
+            if isinstance(other, int):
+                return self.value == other
+            if isinstance(other, str):
+                # `other` could be an alias string; map to int value to compare
+                return self.value == self.tenum.value(other)
+            # else
+            return NotImplemented
+
+        def __hash__(self) -> int:
+            return hash((id(self.tenum), self.value))
+
+    class _ArgparseAction(_argparse.Action):
+        """Custom argparse action for parsing a TenumValue from the CLI.
+        Example usage:
+           enm = teem.nrrdKind
+           parser = argparse.ArgumentParser(description="...")
+           parser.add_argument(
+              "--kind",
+              action=enm.argparse_action(),
+              help=f"Specify a {enm.cname} enum value",
+           )
+        """
+
+        def __init__(self, option_strings, dest, tenum, **kwargs):
+            super().__init__(option_strings, dest, **kwargs)
+            self.tenum = tenum
+
+        def __call__(self, parser, namespace, strings, option_string=None):
+            try:
+                # we first map from string to integer via .value()
+                # and then convert to TenumValue via []
+                # if any parsing fails we raise an excls
+                excls = _argparse.ArgumentTypeError
+                if isinstance(strings, list):
+                    result = [
+                        self.tenum[self.tenum.value(string, True, excls)] for string in strings
+                    ]
+                else:
+                    result = self.tenum[self.tenum.value(strings, True, excls)]
+                setattr(namespace, self.dest, result)
+            except excls as e:
+                opt = option_string or self.option_strings[0]
+                parser.error(f'Invalid value for {opt}: {e}')
+
+    def argparse_action(self):
+        """Return a preconfigured argparse.Action for this enum."""
+        return lambda **kwargs: self._ArgparseAction(tenum=self, **kwargs)
+
+    def __iter__(self) -> Iterator:
+        """Provides a way to iterate through the valid integer values of the enum"""
+        for val in self._vals:
+            yield self.TenumValue(self, val)
+
+    def __contains__(self, item: Union[int, str, 'Tenum.TenumValue']) -> bool:
         """Answers whether given int is a valid value of enum, or whether given string
         is a valid string in enum, depending on incoming type.
         (wraps airEnumValCheck() and airEnumVal())"""
+        if isinstance(item, int):
+            return item in self._vals
+        if isinstance(item, str):
+            return self.unknown() != self.value(item)
+        if isinstance(item, Tenum.TenumValue):
+            return item.tenum is self and item.value in self._vals
+        # else
+        return False
+
+    def __getitem__(self, ios: Union[int, str]) -> TenumValue:
+        if ios not in self:
+            raise ValueError(f'{ios} not in {self.me}')
+        # else ios is valid, and alas we redo some branching on type
         if isinstance(ios, int):
-            return not _teem.lib.airEnumValCheck(self.aenm, ios)
+            return self.TenumValue(self, ios)
         if isinstance(ios, str):
-            return self.unknown() != self.val(ios)
-        # else
-        raise TypeError(f'Need an int or str argument (not {type(ios)})')
+            return self.TenumValue(self, self.value(ios))
+        # should be impossible to get here
+        raise TypeError(f'expected int or str not {ios}:{type(ios)}')
 
-    def str(self, val: int, picky=False, excls=ValueError) -> str:
-        """Converts from integer enum value val to string identifier.
-        If picky, then failure to parse string generates an exception,
-        of class excls (defaults to ValueError) (wraps airEnumStr())"""
-        assert isinstance(val, int), f'Need an int argument (not {type(val)})'
-        if picky and not self.valid(val):
-            raise excls(f'{val} not a valid {self._name} ("{self.name}") enum value')
-        # else
-        return _teem.ffi.string(_teem.lib.airEnumStr(self.aenm, val)).decode('utf8')
+    def name(self, value: int, picky=False, excls=ValueError) -> str:
+        """Converts from integer enum value val to (Python) string identifier.
+        If picky, then failure to parse string as enum member generates an exception,
+        of class `excls` (defaults to ValueError) (wraps airEnumStr())"""
+        assert isinstance(value, int), f'Need an int argument (not {type(value)})'
+        if picky and not value in self:
+            raise excls(f'{value} not a valid {self.me} value')
+        # else whether or not `value` is in enum, use airEnumStr;
+        # this may return the string for "unknown"
+        return _teem.ffi.string(_teem.lib.airEnumStr(self.airEnum, value)).decode('utf8')
 
-    def strs(self):
-        """Provides a list of strings for the valid values"""
-        return [self.str(v) for v in self.vals()]
-
-    def desc(self, val: int) -> str:
-        """Converts from integer value val to description string
-        (wraps airEnumDesc())"""
-        assert isinstance(val, int), f'Need an int argument (not {type(val)})'
-        return string(_teem.lib.airEnumDesc(self.aenm, val))
-
-    def val(self, sss: str, picky=False) -> int:
-        """Converts from string sss to integer enum value
+    def value(self, name: str, picky=False, excls=ValueError) -> int:
+        """Converts from name `name` to integer value
         (wraps airEnumVal())"""
-        assert isinstance(sss, str), f'Need an string argument (not {type(sss)})'
-        ret = _teem.lib.airEnumVal(self.aenm, sss.encode('ascii'))
+        assert isinstance(name, str), f'Need an string argument (not {type(name)})'
+        ret = _teem.lib.airEnumVal(self.airEnum, name.encode('utf8'))
         if picky and ret == self.unknown():
-            raise ValueError(f'"{sss}" not parsable as {self._name} ("{self.name}") enum value')
+            raise excls(f'"{name}" not parsable as {self.me} value')
         # else
         return ret
+
+    def description(self, val: int) -> str:
+        """Converts from integer value `val` to description string
+        (wraps airEnumDesc())"""
+        assert isinstance(val, int), f'Need an int argument (not {type(val)})'
+        dsc = _teem.lib.airEnumDesc(self.airEnum, val)
+        return _teem.ffi.string(dsc).decode('utf8')
 
     def unknown(self) -> int:
         """Returns value representing unknown
         (wraps airEnumUnknown())"""
-        return _teem.lib.airEnumUnknown(self.aenm)
+        return _teem.lib.airEnumUnknown(self.airEnum)
 
 
-class TenumVal:
-    """Represents one value in a Tenum, in a way that can be both an int and a string,
-    and that remembers which Tenum it is part of"""
-
-    def __init__(self, tenum, ios):
-        """Create enum value from Tenum and either int or string value"""
-        if not isinstance(tenum, Tenum):
-            raise ValueError(f'Given {tenum=} not actually a Tenum')
-        if not tenum.valid(ios):
-            raise ValueError(f'Given {ios=} not member of enum {tenum.name}')
-        self.tenum = tenum
-        self.val = ios if isinstance(ios, int) else tenum.val(ios)
-
-    def __str__(self):
-        """Return own value as string"""
-        return self.tenum.str(self.val)
-
-    def __int__(self):
-        """Return own value as int"""
-        return self.val
-
-    def __repr__(self):
-        """Full string representation of own value
-        (though currently nothing knows how to parse this)"""
-        return f'{self.tenum.str(self.val)}:({self.tenum.name} enum)'
-
-    def __eq__(self, other):
-        """Test equality between two things"""
-        if isinstance(other, TenumVal):
-            if self.tenum != other.tenum:
-                return False
-            # else other same kind of tenum
-            return self.val == other.val
-        # else other not a tenum
-        if not self.tenum.valid(other):
-            raise ValueError(f'Given {other=} not member of enum {self.tenum.name}')
-        oval = other if isinstance(other, int) else self.tenum.val(other)
-        return self.val == oval
-
-
-class TenumValParseAction(_argparse.Action):
-    """Custom argparse action for parsing a TenumVal from the command-line"""
-
-    def __init__(self, option_strings, dest, tenum, **kwargs):
-        super().__init__(option_strings, dest, **kwargs)
-        # Store the enum we want to parse
-        self.tenum = tenum
-
-    def __call__(self, _parser, namespace, string, _option_string=None):
-        # parse value from string
-        val = self.tenum.val(string, True, _argparse.ArgumentTypeError)
-        tval = TenumVal(self.tenum, val)
-        # Set the parsed result in the namespace
-        setattr(namespace, self.dest, tval)
+# class TenumValParseAction(_argparse.Action):
+#    """Custom argparse action for parsing a TenumVal from the command-line"""
+#
+#    def __init__(self, option_strings, dest, tenum, **kwargs):
+#        super().__init__(option_strings, dest, **kwargs)
+#        # Store the enum we want to parse
+#        self.tenum = tenum
+#
+#    def __call__(self, _parser, namespace, string, _option_string=None):
+#        # parse value from string
+#        val = self.tenum.val(string, True, _argparse.ArgumentTypeError)
+#        tval = TenumVal(self.tenum, val)
+#        # Set the parsed result in the namespace
+#        setattr(namespace, self.dest, tval)
 
 
 def _equals_one(val):   # likely used in _BIFF_DICT, below
@@ -187,36 +257,36 @@ def _equals_null(val):   # likely used in _BIFF_DICT, below
 
 
 _BIFF_DICT = {  # contents here are filled in by teem/python/cffi/exult.py Tffi.wrap()
-    'nrrdArrayCompare': (_equals_one, 0, b'nrrd', 'nrrd/accessors.c:515'),
-    'nrrdApply1DLut': (_equals_one, 0, b'nrrd', 'nrrd/apply1D.c:432'),
-    'nrrdApplyMulti1DLut': (_equals_one, 0, b'nrrd', 'nrrd/apply1D.c:463'),
-    'nrrdApply1DRegMap': (_equals_one, 0, b'nrrd', 'nrrd/apply1D.c:512'),
-    'nrrdApplyMulti1DRegMap': (_equals_one, 0, b'nrrd', 'nrrd/apply1D.c:543'),
+    'nrrdArrayCompare': (_equals_one, 0, b'nrrd', 'nrrd/accessors.c:520'),
+    'nrrdApply1DLut': (_equals_one, 0, b'nrrd', 'nrrd/apply1D.c:435'),
+    'nrrdApplyMulti1DLut': (_equals_one, 0, b'nrrd', 'nrrd/apply1D.c:466'),
+    'nrrdApply1DRegMap': (_equals_one, 0, b'nrrd', 'nrrd/apply1D.c:514'),
+    'nrrdApplyMulti1DRegMap': (_equals_one, 0, b'nrrd', 'nrrd/apply1D.c:545'),
     'nrrd1DIrregMapCheck': (_equals_one, 0, b'nrrd', 'nrrd/apply1D.c:585'),
     'nrrd1DIrregAclCheck': (_equals_one, 0, b'nrrd', 'nrrd/apply1D.c:682'),
-    'nrrd1DIrregAclGenerate': (_equals_one, 0, b'nrrd', 'nrrd/apply1D.c:814'),
-    'nrrdApply1DIrregMap': (_equals_one, 0, b'nrrd', 'nrrd/apply1D.c:878'),
-    'nrrdApply1DSubstitution': (_equals_one, 0, b'nrrd', 'nrrd/apply1D.c:1051'),
-    'nrrdApply2DLut': (_equals_one, 0, b'nrrd', 'nrrd/apply2D.c:295'),
-    'nrrdArithGamma': (_equals_one, 0, b'nrrd', 'nrrd/arith.c:48'),
-    'nrrdArithSRGBGamma': (_equals_one, 0, b'nrrd', 'nrrd/arith.c:136'),
-    'nrrdArithUnaryOp': (_equals_one, 0, b'nrrd', 'nrrd/arith.c:342'),
-    'nrrdArithBinaryOp': (_equals_one, 0, b'nrrd', 'nrrd/arith.c:551'),
-    'nrrdArithIterBinaryOpSelect': (_equals_one, 0, b'nrrd', 'nrrd/arith.c:637'),
-    'nrrdArithIterBinaryOp': (_equals_one, 0, b'nrrd', 'nrrd/arith.c:724'),
-    'nrrdArithTernaryOp': (_equals_one, 0, b'nrrd', 'nrrd/arith.c:874'),
-    'nrrdArithIterTernaryOpSelect': (_equals_one, 0, b'nrrd', 'nrrd/arith.c:952'),
-    'nrrdArithIterTernaryOp': (_equals_one, 0, b'nrrd', 'nrrd/arith.c:1040'),
-    'nrrdArithAffine': (_equals_one, 0, b'nrrd', 'nrrd/arith.c:1063'),
-    'nrrdArithIterAffine': (_equals_one, 0, b'nrrd', 'nrrd/arith.c:1106'),
-    'nrrdAxisInfoCompare': (_equals_one, 0, b'nrrd', 'nrrd/axis.c:927'),
-    'nrrdOrientationReduce': (_equals_one, 0, b'nrrd', 'nrrd/axis.c:1219'),
-    'nrrdMetaDataNormalize': (_equals_one, 0, b'nrrd', 'nrrd/axis.c:1264'),
-    'nrrdCCFind': (_equals_one, 0, b'nrrd', 'nrrd/cc.c:283'),
-    'nrrdCCAdjacency': (_equals_one, 0, b'nrrd', 'nrrd/cc.c:543'),
-    'nrrdCCMerge': (_equals_one, 0, b'nrrd', 'nrrd/cc.c:643'),
-    'nrrdCCRevalue': (_equals_one, 0, b'nrrd', 'nrrd/cc.c:793'),
-    'nrrdCCSettle': (_equals_one, 0, b'nrrd', 'nrrd/cc.c:820'),
+    'nrrd1DIrregAclGenerate': (_equals_one, 0, b'nrrd', 'nrrd/apply1D.c:809'),
+    'nrrdApply1DIrregMap': (_equals_one, 0, b'nrrd', 'nrrd/apply1D.c:872'),
+    'nrrdApply1DSubstitution': (_equals_one, 0, b'nrrd', 'nrrd/apply1D.c:1044'),
+    'nrrdApply2DLut': (_equals_one, 0, b'nrrd', 'nrrd/apply2D.c:294'),
+    'nrrdArithGamma': (_equals_one, 0, b'nrrd', 'nrrd/arith.c:50'),
+    'nrrdArithSRGBGamma': (_equals_one, 0, b'nrrd', 'nrrd/arith.c:138'),
+    'nrrdArithUnaryOp': (_equals_one, 0, b'nrrd', 'nrrd/arith.c:344'),
+    'nrrdArithBinaryOp': (_equals_one, 0, b'nrrd', 'nrrd/arith.c:553'),
+    'nrrdArithIterBinaryOpSelect': (_equals_one, 0, b'nrrd', 'nrrd/arith.c:639'),
+    'nrrdArithIterBinaryOp': (_equals_one, 0, b'nrrd', 'nrrd/arith.c:726'),
+    'nrrdArithTernaryOp': (_equals_one, 0, b'nrrd', 'nrrd/arith.c:876'),
+    'nrrdArithIterTernaryOpSelect': (_equals_one, 0, b'nrrd', 'nrrd/arith.c:954'),
+    'nrrdArithIterTernaryOp': (_equals_one, 0, b'nrrd', 'nrrd/arith.c:1042'),
+    'nrrdArithAffine': (_equals_one, 0, b'nrrd', 'nrrd/arith.c:1065'),
+    'nrrdArithIterAffine': (_equals_one, 0, b'nrrd', 'nrrd/arith.c:1108'),
+    'nrrdAxisInfoCompare': (_equals_one, 0, b'nrrd', 'nrrd/axis.c:929'),
+    'nrrdOrientationReduce': (_equals_one, 0, b'nrrd', 'nrrd/axis.c:1221'),
+    'nrrdMetaDataNormalize': (_equals_one, 0, b'nrrd', 'nrrd/axis.c:1266'),
+    'nrrdCCFind': (_equals_one, 0, b'nrrd', 'nrrd/cc.c:299'),
+    'nrrdCCAdjacency': (_equals_one, 0, b'nrrd', 'nrrd/cc.c:570'),
+    'nrrdCCMerge': (_equals_one, 0, b'nrrd', 'nrrd/cc.c:668'),
+    'nrrdCCRevalue': (_equals_one, 0, b'nrrd', 'nrrd/cc.c:818'),
+    'nrrdCCSettle': (_equals_one, 0, b'nrrd', 'nrrd/cc.c:845'),
     'nrrdCCValid': ((lambda rv: 0 == rv), 0, b'nrrd', 'nrrd/ccmethods.c:24'),
     'nrrdCCSize': (_equals_one, 0, b'nrrd', 'nrrd/ccmethods.c:55'),
     'nrrdDeringVerboseSet': (_equals_one, 0, b'nrrd', 'nrrd/deringNrrd.c:99'),
@@ -230,10 +300,10 @@ _BIFF_DICT = {  # contents here are filled in by teem/python/cffi/exult.py Tffi.
     'nrrdDeringThetaNumSet': (_equals_one, 0, b'nrrd', 'nrrd/deringNrrd.c:250'),
     'nrrdDeringRadialKernelSet': (_equals_one, 0, b'nrrd', 'nrrd/deringNrrd.c:268'),
     'nrrdDeringThetaKernelSet': (_equals_one, 0, b'nrrd', 'nrrd/deringNrrd.c:288'),
-    'nrrdDeringExecute': (_equals_one, 0, b'nrrd', 'nrrd/deringNrrd.c:748'),
+    'nrrdDeringExecute': (_equals_one, 0, b'nrrd', 'nrrd/deringNrrd.c:749'),
     'nrrdFFTWWisdomRead': (_equals_one, 0, b'nrrd', 'nrrd/fftNrrd.c:32'),
-    'nrrdFFT': (_equals_one, 0, b'nrrd', 'nrrd/fftNrrd.c:88'),
-    'nrrdFFTWWisdomWrite': (_equals_one, 0, b'nrrd', 'nrrd/fftNrrd.c:285'),
+    'nrrdFFT': (_equals_one, 0, b'nrrd', 'nrrd/fftNrrd.c:89'),
+    'nrrdFFTWWisdomWrite': (_equals_one, 0, b'nrrd', 'nrrd/fftNrrd.c:286'),
     'nrrdCheapMedian': (_equals_one, 0, b'nrrd', 'nrrd/filt.c:405'),
     'nrrdDistanceL2': (_equals_one, 0, b'nrrd', 'nrrd/filt.c:812'),
     'nrrdDistanceL2Biased': (_equals_one, 0, b'nrrd', 'nrrd/filt.c:824'),
@@ -251,97 +321,97 @@ _BIFF_DICT = {  # contents here are filled in by teem/python/cffi/exult.py Tffi.
     'nrrdKernelCompare': (_equals_one, 0, b'nrrd', 'nrrd/kernel.c:3305'),
     'nrrdKernelSpecCompare': (_equals_one, 0, b'nrrd', 'nrrd/kernel.c:3354'),
     'nrrdKernelCheck': (_equals_one, 0, b'nrrd', 'nrrd/kernel.c:3430'),
-    'nrrdConvert': (_equals_one, 0, b'nrrd', 'nrrd/map.c:232'),
-    'nrrdClampConvert': (_equals_one, 0, b'nrrd', 'nrrd/map.c:252'),
-    'nrrdCastClampRound': (_equals_one, 0, b'nrrd', 'nrrd/map.c:278'),
-    'nrrdQuantize': (_equals_one, 0, b'nrrd', 'nrrd/map.c:300'),
-    'nrrdUnquantize': (_equals_one, 0, b'nrrd', 'nrrd/map.c:472'),
-    'nrrdHistoEq': (_equals_one, 0, b'nrrd', 'nrrd/map.c:609'),
+    'nrrdConvert': (_equals_one, 0, b'nrrd', 'nrrd/map.c:123'),
+    'nrrdClampConvert': (_equals_one, 0, b'nrrd', 'nrrd/map.c:143'),
+    'nrrdCastClampRound': (_equals_one, 0, b'nrrd', 'nrrd/map.c:169'),
+    'nrrdQuantize': (_equals_one, 0, b'nrrd', 'nrrd/map.c:191'),
+    'nrrdUnquantize': (_equals_one, 0, b'nrrd', 'nrrd/map.c:363'),
+    'nrrdHistoEq': (_equals_one, 0, b'nrrd', 'nrrd/map.c:500'),
     'nrrdProject': (_equals_one, 0, b'nrrd', 'nrrd/measure.c:1134'),
     'nrrdBoundarySpecCheck': (_equals_one, 0, b'nrrd', 'nrrd/methodsNrrd.c:91'),
     'nrrdBoundarySpecParse': (_equals_one, 0, b'nrrd', 'nrrd/methodsNrrd.c:115'),
     'nrrdBoundarySpecSprint': (_equals_one, 0, b'nrrd', 'nrrd/methodsNrrd.c:174'),
     'nrrdBoundarySpecCompare': (_equals_one, 0, b'nrrd', 'nrrd/methodsNrrd.c:196'),
-    'nrrdBasicInfoCopy': (_equals_one, 0, b'nrrd', 'nrrd/methodsNrrd.c:540'),
-    'nrrdWrap_nva': (_equals_one, 0, b'nrrd', 'nrrd/methodsNrrd.c:816'),
-    'nrrdWrap_va': (_equals_one, 0, b'nrrd', 'nrrd/methodsNrrd.c:847'),
-    'nrrdCopy': (_equals_one, 0, b'nrrd', 'nrrd/methodsNrrd.c:938'),
-    'nrrdAlloc_nva': (_equals_one, 0, b'nrrd', 'nrrd/methodsNrrd.c:968'),
-    'nrrdAlloc_va': (_equals_one, 0, b'nrrd', 'nrrd/methodsNrrd.c:1017'),
-    'nrrdMaybeAlloc_nva': (_equals_one, 0, b'nrrd', 'nrrd/methodsNrrd.c:1138'),
-    'nrrdMaybeAlloc_va': (_equals_one, 0, b'nrrd', 'nrrd/methodsNrrd.c:1155'),
-    'nrrdCompare': (_equals_one, 0, b'nrrd', 'nrrd/methodsNrrd.c:1196'),
-    'nrrdPPM': (_equals_one, 0, b'nrrd', 'nrrd/methodsNrrd.c:1382'),
-    'nrrdPGM': (_equals_one, 0, b'nrrd', 'nrrd/methodsNrrd.c:1402'),
+    'nrrdBasicInfoCopy': (_equals_one, 0, b'nrrd', 'nrrd/methodsNrrd.c:542'),
+    'nrrdWrap_nva': (_equals_one, 0, b'nrrd', 'nrrd/methodsNrrd.c:818'),
+    'nrrdWrap_va': (_equals_one, 0, b'nrrd', 'nrrd/methodsNrrd.c:849'),
+    'nrrdCopy': (_equals_one, 0, b'nrrd', 'nrrd/methodsNrrd.c:940'),
+    'nrrdAlloc_nva': (_equals_one, 0, b'nrrd', 'nrrd/methodsNrrd.c:970'),
+    'nrrdAlloc_va': (_equals_one, 0, b'nrrd', 'nrrd/methodsNrrd.c:1019'),
+    'nrrdMaybeAlloc_nva': (_equals_one, 0, b'nrrd', 'nrrd/methodsNrrd.c:1140'),
+    'nrrdMaybeAlloc_va': (_equals_one, 0, b'nrrd', 'nrrd/methodsNrrd.c:1157'),
+    'nrrdCompare': (_equals_one, 0, b'nrrd', 'nrrd/methodsNrrd.c:1198'),
+    'nrrdPPM': (_equals_one, 0, b'nrrd', 'nrrd/methodsNrrd.c:1384'),
+    'nrrdPGM': (_equals_one, 0, b'nrrd', 'nrrd/methodsNrrd.c:1404'),
     'nrrdSpaceVectorParse': (_equals_one, 4, b'nrrd', 'nrrd/parseNrrd.c:519'),
-    '_nrrdDataFNCheck': (_equals_one, 3, b'nrrd', 'nrrd/parseNrrd.c:1196'),
+    '_nrrdDataFNCheck': (_equals_one, 3, b'nrrd', 'nrrd/parseNrrd.c:1201'),
     'nrrdRangePercentileSet': (_equals_one, 0, b'nrrd', 'nrrd/range.c:107'),
     'nrrdRangePercentileFromStringSet': (_equals_one, 0, b'nrrd', 'nrrd/range.c:209'),
-    'nrrdOneLine': (_equals_one, 0, b'nrrd', 'nrrd/read.c:74'),
-    'nrrdLineSkip': (_equals_one, 0, b'nrrd', 'nrrd/read.c:225'),
-    'nrrdByteSkip': (_equals_one, 0, b'nrrd', 'nrrd/read.c:321'),
-    'nrrdRead': (_equals_one, 0, b'nrrd', 'nrrd/read.c:485'),
-    'nrrdStringRead': (_equals_one, 0, b'nrrd', 'nrrd/read.c:505'),
-    'nrrdLoad': ((lambda rv: 1 == rv or 2 == rv), 0, b'nrrd', 'nrrd/read.c:601'),
-    'nrrdLoadMulti': (_equals_one, 0, b'nrrd', 'nrrd/read.c:668'),
+    'nrrdOneLine': (_equals_one, 0, b'nrrd', 'nrrd/read.c:88'),
+    'nrrdLineSkip': (_equals_one, 0, b'nrrd', 'nrrd/read.c:239'),
+    'nrrdByteSkip': (_equals_one, 0, b'nrrd', 'nrrd/read.c:335'),
+    'nrrdRead': (_equals_one, 0, b'nrrd', 'nrrd/read.c:499'),
+    'nrrdStringRead': (_equals_one, 0, b'nrrd', 'nrrd/read.c:519'),
+    'nrrdLoad': ((lambda rv: 1 == rv or 2 == rv), 0, b'nrrd', 'nrrd/read.c:615'),
+    'nrrdLoadMulti': (_equals_one, 0, b'nrrd', 'nrrd/read.c:682'),
     'nrrdInvertPerm': (_equals_one, 0, b'nrrd', 'nrrd/reorder.c:32'),
     'nrrdAxesInsert': (_equals_one, 0, b'nrrd', 'nrrd/reorder.c:84'),
     'nrrdAxesPermute': (_equals_one, 0, b'nrrd', 'nrrd/reorder.c:150'),
-    'nrrdShuffle': (_equals_one, 0, b'nrrd', 'nrrd/reorder.c:304'),
-    'nrrdAxesSwap': (_equals_one, 0, b'nrrd', 'nrrd/reorder.c:449'),
-    'nrrdFlip': (_equals_one, 0, b'nrrd', 'nrrd/reorder.c:485'),
-    'nrrdJoin': (_equals_one, 0, b'nrrd', 'nrrd/reorder.c:566'),
-    'nrrdAxesSplit': (_equals_one, 0, b'nrrd', 'nrrd/reorder.c:813'),
-    'nrrdAxesDelete': (_equals_one, 0, b'nrrd', 'nrrd/reorder.c:875'),
-    'nrrdAxesMerge': (_equals_one, 0, b'nrrd', 'nrrd/reorder.c:927'),
-    'nrrdReshape_nva': (_equals_one, 0, b'nrrd', 'nrrd/reorder.c:977'),
-    'nrrdReshape_va': (_equals_one, 0, b'nrrd', 'nrrd/reorder.c:1045'),
-    'nrrdBlock': (_equals_one, 0, b'nrrd', 'nrrd/reorder.c:1082'),
-    'nrrdUnblock': (_equals_one, 0, b'nrrd', 'nrrd/reorder.c:1153'),
-    'nrrdTile2D': (_equals_one, 0, b'nrrd', 'nrrd/reorder.c:1252'),
-    'nrrdUntile2D': (_equals_one, 0, b'nrrd', 'nrrd/reorder.c:1366'),
+    'nrrdShuffle': (_equals_one, 0, b'nrrd', 'nrrd/reorder.c:306'),
+    'nrrdAxesSwap': (_equals_one, 0, b'nrrd', 'nrrd/reorder.c:452'),
+    'nrrdFlip': (_equals_one, 0, b'nrrd', 'nrrd/reorder.c:488'),
+    'nrrdJoin': (_equals_one, 0, b'nrrd', 'nrrd/reorder.c:569'),
+    'nrrdAxesSplit': (_equals_one, 0, b'nrrd', 'nrrd/reorder.c:816'),
+    'nrrdAxesDelete': (_equals_one, 0, b'nrrd', 'nrrd/reorder.c:878'),
+    'nrrdAxesMerge': (_equals_one, 0, b'nrrd', 'nrrd/reorder.c:930'),
+    'nrrdReshape_nva': (_equals_one, 0, b'nrrd', 'nrrd/reorder.c:980'),
+    'nrrdReshape_va': (_equals_one, 0, b'nrrd', 'nrrd/reorder.c:1050'),
+    'nrrdBlock': (_equals_one, 0, b'nrrd', 'nrrd/reorder.c:1087'),
+    'nrrdUnblock': (_equals_one, 0, b'nrrd', 'nrrd/reorder.c:1158'),
+    'nrrdTile2D': (_equals_one, 0, b'nrrd', 'nrrd/reorder.c:1257'),
+    'nrrdUntile2D': (_equals_one, 0, b'nrrd', 'nrrd/reorder.c:1371'),
     'nrrdResampleDefaultCenterSet': (_equals_one, 0, b'nrrd', 'nrrd/resampleContext.c:168'),
     'nrrdResampleNonExistentSet': (_equals_one, 0, b'nrrd', 'nrrd/resampleContext.c:189'),
-    'nrrdResampleRangeSet': (_equals_one, 0, b'nrrd', 'nrrd/resampleContext.c:322'),
-    'nrrdResampleOverrideCenterSet': (_equals_one, 0, b'nrrd', 'nrrd/resampleContext.c:341'),
-    'nrrdResampleBoundarySet': (_equals_one, 0, b'nrrd', 'nrrd/resampleContext.c:398'),
-    'nrrdResamplePadValueSet': (_equals_one, 0, b'nrrd', 'nrrd/resampleContext.c:419'),
-    'nrrdResampleBoundarySpecSet': (_equals_one, 0, b'nrrd', 'nrrd/resampleContext.c:436'),
-    'nrrdResampleRenormalizeSet': (_equals_one, 0, b'nrrd', 'nrrd/resampleContext.c:457'),
-    'nrrdResampleTypeOutSet': (_equals_one, 0, b'nrrd', 'nrrd/resampleContext.c:474'),
-    'nrrdResampleRoundSet': (_equals_one, 0, b'nrrd', 'nrrd/resampleContext.c:499'),
-    'nrrdResampleClampSet': (_equals_one, 0, b'nrrd', 'nrrd/resampleContext.c:516'),
-    'nrrdResampleExecute': (_equals_one, 0, b'nrrd', 'nrrd/resampleContext.c:1451'),
+    'nrrdResampleRangeSet': (_equals_one, 0, b'nrrd', 'nrrd/resampleContext.c:310'),
+    'nrrdResampleOverrideCenterSet': (_equals_one, 0, b'nrrd', 'nrrd/resampleContext.c:329'),
+    'nrrdResampleBoundarySet': (_equals_one, 0, b'nrrd', 'nrrd/resampleContext.c:386'),
+    'nrrdResamplePadValueSet': (_equals_one, 0, b'nrrd', 'nrrd/resampleContext.c:407'),
+    'nrrdResampleBoundarySpecSet': (_equals_one, 0, b'nrrd', 'nrrd/resampleContext.c:424'),
+    'nrrdResampleRenormalizeSet': (_equals_one, 0, b'nrrd', 'nrrd/resampleContext.c:445'),
+    'nrrdResampleTypeOutSet': (_equals_one, 0, b'nrrd', 'nrrd/resampleContext.c:462'),
+    'nrrdResampleRoundSet': (_equals_one, 0, b'nrrd', 'nrrd/resampleContext.c:487'),
+    'nrrdResampleClampSet': (_equals_one, 0, b'nrrd', 'nrrd/resampleContext.c:504'),
+    'nrrdResampleExecute': (_equals_one, 0, b'nrrd', 'nrrd/resampleContext.c:1439'),
     'nrrdSimpleResample': (_equals_one, 0, b'nrrd', 'nrrd/resampleNrrd.c:49'),
-    'nrrdSpatialResample': (_equals_one, 0, b'nrrd', 'nrrd/resampleNrrd.c:519'),
+    'nrrdSpatialResample': (_equals_one, 0, b'nrrd', 'nrrd/resampleNrrd.c:518'),
     'nrrdSpaceSet': (_equals_one, 0, b'nrrd', 'nrrd/simple.c:81'),
     'nrrdSpaceDimensionSet': (_equals_one, 0, b'nrrd', 'nrrd/simple.c:118'),
     'nrrdSpaceOriginSet': (_equals_one, 0, b'nrrd', 'nrrd/simple.c:170'),
-    'nrrdContentSet_va': (_equals_one, 0, b'nrrd', 'nrrd/simple.c:471'),
-    '_nrrdCheck': (_equals_one, 3, b'nrrd', 'nrrd/simple.c:1075'),
-    'nrrdCheck': (_equals_one, 0, b'nrrd', 'nrrd/simple.c:1112'),
-    'nrrdSameSize': ((lambda rv: 0 == rv), 3, b'nrrd', 'nrrd/simple.c:1133'),
-    'nrrdSanity': ((lambda rv: 0 == rv), 0, b'nrrd', 'nrrd/simple.c:1365'),
+    'nrrdContentSet_va': (_equals_one, 0, b'nrrd', 'nrrd/simple.c:472'),
+    '_nrrdCheck': (_equals_one, 3, b'nrrd', 'nrrd/simple.c:1296'),
+    'nrrdCheck': (_equals_one, 0, b'nrrd', 'nrrd/simple.c:1333'),
+    'nrrdSameSize': ((lambda rv: 0 == rv), 3, b'nrrd', 'nrrd/simple.c:1354'),
+    'nrrdSanity': ((lambda rv: 0 == rv), 0, b'nrrd', 'nrrd/simple.c:1539'),
     'nrrdSlice': (_equals_one, 0, b'nrrd', 'nrrd/subset.c:37'),
     'nrrdCrop': (_equals_one, 0, b'nrrd', 'nrrd/subset.c:182'),
-    'nrrdSliceSelect': (_equals_one, 0, b'nrrd', 'nrrd/subset.c:364'),
-    'nrrdSample_nva': (_equals_one, 0, b'nrrd', 'nrrd/subset.c:576'),
-    'nrrdSample_va': (_equals_one, 0, b'nrrd', 'nrrd/subset.c:615'),
-    'nrrdSimpleCrop': (_equals_one, 0, b'nrrd', 'nrrd/subset.c:644'),
-    'nrrdCropAuto': (_equals_one, 0, b'nrrd', 'nrrd/subset.c:665'),
+    'nrrdSliceSelect': (_equals_one, 0, b'nrrd', 'nrrd/subset.c:366'),
+    'nrrdSample_nva': (_equals_one, 0, b'nrrd', 'nrrd/subset.c:578'),
+    'nrrdSample_va': (_equals_one, 0, b'nrrd', 'nrrd/subset.c:617'),
+    'nrrdSimpleCrop': (_equals_one, 0, b'nrrd', 'nrrd/subset.c:646'),
+    'nrrdCropAuto': (_equals_one, 0, b'nrrd', 'nrrd/subset.c:667'),
     'nrrdSplice': (_equals_one, 0, b'nrrd', 'nrrd/superset.c:30'),
     'nrrdInset': (_equals_one, 0, b'nrrd', 'nrrd/superset.c:155'),
-    'nrrdPad_va': (_equals_one, 0, b'nrrd', 'nrrd/superset.c:279'),
-    'nrrdPad_nva': (_equals_one, 0, b'nrrd', 'nrrd/superset.c:485'),
-    'nrrdSimplePad_va': (_equals_one, 0, b'nrrd', 'nrrd/superset.c:513'),
-    'nrrdSimplePad_nva': (_equals_one, 0, b'nrrd', 'nrrd/superset.c:551'),
+    'nrrdPad_va': (_equals_one, 0, b'nrrd', 'nrrd/superset.c:277'),
+    'nrrdPad_nva': (_equals_one, 0, b'nrrd', 'nrrd/superset.c:483'),
+    'nrrdSimplePad_va': (_equals_one, 0, b'nrrd', 'nrrd/superset.c:511'),
+    'nrrdSimplePad_nva': (_equals_one, 0, b'nrrd', 'nrrd/superset.c:549'),
     'nrrdIoStateSet': (_equals_one, 0, b'nrrd', 'nrrd/write.c:28'),
     'nrrdIoStateEncodingSet': (_equals_one, 0, b'nrrd', 'nrrd/write.c:101'),
     'nrrdIoStateFormatSet': (_equals_one, 0, b'nrrd', 'nrrd/write.c:121'),
-    'nrrdWrite': (_equals_one, 0, b'nrrd', 'nrrd/write.c:941'),
-    'nrrdStringWrite': (_equals_one, 0, b'nrrd', 'nrrd/write.c:957'),
-    'nrrdSave': (_equals_one, 0, b'nrrd', 'nrrd/write.c:978'),
-    'nrrdSaveMulti': (_equals_one, 0, b'nrrd', 'nrrd/write.c:1044'),
+    'nrrdWrite': (_equals_one, 0, b'nrrd', 'nrrd/write.c:1011'),
+    'nrrdStringWrite': (_equals_one, 0, b'nrrd', 'nrrd/write.c:1027'),
+    'nrrdSave': (_equals_one, 0, b'nrrd', 'nrrd/write.c:1048'),
+    'nrrdSaveMulti': (_equals_one, 0, b'nrrd', 'nrrd/write.c:1114'),
     'ell_Nm_check': (_equals_one, 0, b'ell', 'ell/genmat.c:23'),
     'ell_Nm_tran': (_equals_one, 0, b'ell', 'ell/genmat.c:57'),
     'ell_Nm_mul': (_equals_one, 0, b'ell', 'ell/genmat.c:102'),
@@ -368,8 +438,8 @@ _BIFF_DICT = {  # contents here are filled in by teem/python/cffi/exult.py Tffi.
     'alanParmSet': (_equals_one, 0, b'alan', 'alan/methodsAlan.c:206'),
     'gageContextCopy': (_equals_null, 0, b'gage', 'gage/ctx.c:86'),
     'gageKernelSet': (_equals_one, 0, b'gage', 'gage/ctx.c:197'),
-    'gagePerVolumeAttach': (_equals_one, 0, b'gage', 'gage/ctx.c:396'),
-    'gagePerVolumeDetach': (_equals_one, 0, b'gage', 'gage/ctx.c:455'),
+    'gagePerVolumeAttach': (_equals_one, 0, b'gage', 'gage/ctx.c:392'),
+    'gagePerVolumeDetach': (_equals_one, 0, b'gage', 'gage/ctx.c:451'),
     'gageDeconvolve': (_equals_one, 0, b'gage', 'gage/deconvolve.c:24'),
     'gageDeconvolveSeparable': (_equals_one, 0, b'gage', 'gage/deconvolve.c:206'),
     'gageKindCheck': (_equals_one, 0, b'gage', 'gage/kind.c:31'),
@@ -381,12 +451,12 @@ _BIFF_DICT = {  # contents here are filled in by teem/python/cffi/exult.py Tffi.
     'gageOptimSigErrorPlotSliding': (_equals_one, 0, b'gage', 'gage/optimsig.c:1251'),
     'gageVolumeCheck': (_equals_one, 0, b'gage', 'gage/pvl.c:34'),
     'gagePerVolumeNew': (_equals_null, 0, b'gage', 'gage/pvl.c:55'),
-    'gageQueryReset': (_equals_one, 0, b'gage', 'gage/pvl.c:259'),
-    'gageQuerySet': (_equals_one, 0, b'gage', 'gage/pvl.c:285'),
-    'gageQueryAdd': (_equals_one, 0, b'gage', 'gage/pvl.c:341'),
-    'gageQueryItemOn': (_equals_one, 0, b'gage', 'gage/pvl.c:359'),
-    'gageShapeSet': (_equals_one, 0, b'gage', 'gage/shape.c:403'),
-    'gageShapeEqual': ((lambda rv: 0 == rv), 0, b'gage', 'gage/shape.c:466'),
+    'gageQueryReset': (_equals_one, 0, b'gage', 'gage/pvl.c:258'),
+    'gageQuerySet': (_equals_one, 0, b'gage', 'gage/pvl.c:284'),
+    'gageQueryAdd': (_equals_one, 0, b'gage', 'gage/pvl.c:340'),
+    'gageQueryItemOn': (_equals_one, 0, b'gage', 'gage/pvl.c:358'),
+    'gageShapeSet': (_equals_one, 0, b'gage', 'gage/shape.c:401'),
+    'gageShapeEqual': ((lambda rv: 0 == rv), 0, b'gage', 'gage/shape.c:464'),
     'gageStructureTensor': (_equals_one, 0, b'gage', 'gage/st.c:81'),
     'gageStackPerVolumeNew': (_equals_one, 0, b'gage', 'gage/stack.c:96'),
     'gageStackPerVolumeAttach': (_equals_one, 0, b'gage', 'gage/stack.c:125'),
@@ -411,7 +481,7 @@ _BIFF_DICT = {  # contents here are filled in by teem/python/cffi/exult.py Tffi.
     'gageStackBlurManage': (_equals_one, 0, b'gage', 'gage/stackBlur.c:1700'),
     'gageUpdate': (_equals_one, 0, b'gage', 'gage/update.c:311'),
     'dyeConvert': (_equals_one, 0, b'dye', 'dye/convertDye.c:349'),
-    'dyeColorParse': (_equals_one, 0, b'dye', 'dye/methodsDye.c:183'),
+    'dyeColorParse': (_equals_one, 0, b'dye', 'dye/methodsDye.c:184'),
     'baneClipNew': (_equals_null, 0, b'bane', 'bane/clip.c:100'),
     'baneClipAnswer': (_equals_one, 0, b'bane', 'bane/clip.c:150'),
     'baneClipCopy': (_equals_null, 0, b'bane', 'bane/clip.c:165'),
@@ -467,10 +537,10 @@ _BIFF_DICT = {  # contents here are filled in by teem/python/cffi/exult.py Tffi.
     'limnPolyDataClipMulti': (_equals_one, 0, b'limn', 'limn/polymod.c:1705'),
     'limnPolyDataCompress': (_equals_null, 0, b'limn', 'limn/polymod.c:1992'),
     'limnPolyDataJoin': (_equals_null, 0, b'limn', 'limn/polymod.c:2082'),
-    'limnPolyDataEdgeHalve': (_equals_one, 0, b'limn', 'limn/polymod.c:2150'),
-    'limnPolyDataNeighborList': ((lambda rv: -1 == rv), 0, b'limn', 'limn/polymod.c:2327'),
-    'limnPolyDataNeighborArray': ((lambda rv: -1 == rv), 0, b'limn', 'limn/polymod.c:2423'),
-    'limnPolyDataNeighborArrayComp': ((lambda rv: -1 == rv), 0, b'limn', 'limn/polymod.c:2463'),
+    'limnPolyDataEdgeHalve': (_equals_one, 0, b'limn', 'limn/polymod.c:2151'),
+    'limnPolyDataNeighborList': ((lambda rv: -1 == rv), 0, b'limn', 'limn/polymod.c:2328'),
+    'limnPolyDataNeighborArray': ((lambda rv: -1 == rv), 0, b'limn', 'limn/polymod.c:2424'),
+    'limnPolyDataNeighborArrayComp': ((lambda rv: -1 == rv), 0, b'limn', 'limn/polymod.c:2464'),
     'limnPolyDataCube': (_equals_one, 0, b'limn', 'limn/polyshapes.c:25'),
     'limnPolyDataCubeTriangles': (_equals_one, 0, b'limn', 'limn/polyshapes.c:135'),
     'limnPolyDataOctahedron': (_equals_one, 0, b'limn', 'limn/polyshapes.c:345'),
@@ -513,7 +583,7 @@ _BIFF_DICT = {  # contents here are filled in by teem/python/cffi/exult.py Tffi.
     'echoThreadStateInit': (_equals_one, 0, b'echo', 'echo/renderEcho.c:24'),
     'echoRTRenderCheck': (_equals_one, 0, b'echo', 'echo/renderEcho.c:132'),
     'echoRTRender': (_equals_one, 0, b'echo', 'echo/renderEcho.c:407'),
-    'hooverContextCheck': (_equals_one, 0, b'hoover', 'hoover/methodsHoover.c:51'),
+    'hooverContextCheck': (_equals_one, 0, b'hoover', 'hoover/methodsHoover.c:54'),
     'hooverRender': ((lambda rv: _teem.lib.hooverErrInit == rv), 0, b'hoover', 'hoover/rays.c:357'),
     'seekExtract': (_equals_one, 0, b'seek', 'seek/extract.c:934'),
     'seekDataSet': (_equals_one, 0, b'seek', 'seek/setSeek.c:54'),
@@ -532,7 +602,7 @@ _BIFF_DICT = {  # contents here are filled in by teem/python/cffi/exult.py Tffi.
     'seekIsovalueSet': (_equals_one, 0, b'seek', 'seek/setSeek.c:412'),
     'seekEvalDiffThreshSet': (_equals_one, 0, b'seek', 'seek/setSeek.c:438'),
     'seekVertexStrength': (_equals_one, 0, b'seek', 'seek/textract.c:1882'),
-    'seekUpdate': (_equals_one, 0, b'seek', 'seek/updateSeek.c:670'),
+    'seekUpdate': (_equals_one, 0, b'seek', 'seek/updateSeek.c:671'),
     'tenAnisoPlot': (_equals_one, 0, b'ten', 'ten/aniso.c:1066'),
     'tenAnisoVolume': (_equals_one, 0, b'ten', 'ten/aniso.c:1125'),
     'tenAnisoHistogram': (_equals_one, 0, b'ten', 'ten/aniso.c:1197'),
@@ -856,7 +926,7 @@ class _teem_Module:
                 if cval is sym:
                     # so sym_name *is* an integer const, export that (integer) value
                     setattr(self, sym_name, sym)
-                elif isinstance(sym, int) or isinstance(sym, float) or isinstance(sym, bytes):
+                elif isinstance(sym, (bytes, float, int)):
                     # sym_name is a NON-CONST scalar, do not export, instead alias it
                     self._alias[sym_name] = sym_name
                     # HEY in the python wrappers for GLK's SciVis, this aliasing is

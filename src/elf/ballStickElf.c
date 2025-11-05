@@ -18,7 +18,7 @@
 #include "elf.h"
 /* clang-format off */
 
-#if TEEM_LEVMAR
+#ifdef TEEM_LEVMAR
 #  include <levmar.h>
 #endif
 
@@ -29,6 +29,14 @@
  * Fitting via Spherical Deconvolution: A Unifying Framework. MICCAI
  * 2010, Part I, LNCS 6361, pp. 673-680. Springer, 2010
  */
+
+#if defined(__clang__)
+#  pragma clang diagnostic push
+/* elfBallStickOptimize_f(elfBallStickParms *parms, const elfSingleShellDWI *dwi)
+   calls dlevmar_der() with `dwi` as last (non-const) `void*` arg;
+   this warning is about that loss of const-ness */
+#  pragma clang diagnostic ignored "-Wcast-qual"
+#endif
 
 /* elfKernelStick:
  *
@@ -184,7 +192,7 @@ elfBallStickPredict_f(elfBallStickParms *parms, float *odf,
   return 0;
 }
 
-#if TEEM_LEVMAR
+#ifdef TEEM_LEVMAR
 /* Callbacks for levmar-based optimization of ball-and-stick model */
 
 /* pp[0]: log(d) pp[1]: VF1 pp[2]: theta1 pp[3]: phi1
@@ -322,7 +330,7 @@ _levmarBallStickJacCB(double *p, double *jac, int m, int n, void *_data) {
 int /* Biff: nope */
 elfBallStickOptimize_f(elfBallStickParms *parms,
                        const elfSingleShellDWI *dwi) {
-#if TEEM_LEVMAR
+#ifdef TEEM_LEVMAR
   double lmparms[10], *dwis;
   int lmret=0;
   unsigned int k;
@@ -421,4 +429,9 @@ elfBallStickOptimize_f(elfBallStickParms *parms,
   return 3;
 #endif
 }
+
+#if defined(__clang__)
+#  pragma clang diagnostic pop
+#endif
+
 /* clang-format on */

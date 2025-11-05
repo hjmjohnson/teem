@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -26,18 +26,17 @@ enum {
 };
 
 /*
-** _nrrdApply2DSetUp()
-**
-** some error checking and initializing needed for 2D LUTS and regular
-** maps.  The intent is that if this succeeds, then there is no need
-** for any further error checking.
-**
-** The only thing this function DOES is allocate the output nrrd, and
-** set meta information.  The rest is just error checking.
-**
-** The given NrrdRange has to be fleshed out by the caller: it can't
-** be NULL, and both range->min and range->max must exist.
-*/
+ * _nrrdApply2DSetUp()
+ *
+ * some error checking and initializing needed for 2D LUTS and regular maps.  The intent
+ * is that if this succeeds, then there is no need for any further error checking.
+ *
+ * The only thing this function DOES is allocate the output nrrd, and set meta
+ * information.  The rest is just error checking.
+ *
+ * The given NrrdRange has to be fleshed out by the caller: it can't be NULL, and both
+ * range->min and range->max must exist.
+ */
 static int /* Biff: 1 */
 _nrrdApply2DSetUp(Nrrd *nout, const Nrrd *nin, const NrrdRange *range0,
                   const NrrdRange *range1, const Nrrd *nmap, int kind, int typeOut,
@@ -46,8 +45,8 @@ _nrrdApply2DSetUp(Nrrd *nout, const Nrrd *nin, const NrrdRange *range0,
   char *mapcnt;
   char nounStr[][AIR_STRLEN_SMALL + 1] = {"2D lut", "2D regular map"};
   char verbStr[][AIR_STRLEN_SMALL + 1] = {"lut2", "rmap2"};
-  int mapAxis, copyMapAxis0 = AIR_FALSE, axisMap[NRRD_DIM_MAX];
-  unsigned int dim, entLen;
+  int copyMapAxis0 = AIR_FALSE, axisMap[NRRD_DIM_MAX];
+  unsigned int dim, entLen, mapAxis;
   size_t size[NRRD_DIM_MAX];
   double domMin, domMax;
 
@@ -90,7 +89,7 @@ _nrrdApply2DSetUp(Nrrd *nout, const Nrrd *nin, const NrrdRange *range0,
   }
   mapAxis = nmap->dim - 2;
   if (!(0 == mapAxis || 1 == mapAxis)) {
-    biffAddf(NRRD, "%s: dimension of %s should be 2 or 3, not %d", me, nounStr[kind],
+    biffAddf(NRRD, "%s: dimension of %s should be 2 or 3, not %u", me, nounStr[kind],
              nmap->dim);
     return 1;
   }
@@ -98,14 +97,14 @@ _nrrdApply2DSetUp(Nrrd *nout, const Nrrd *nin, const NrrdRange *range0,
   domMin = _nrrdApplyDomainMin(nmap, AIR_FALSE, mapAxis);
   domMax = _nrrdApplyDomainMax(nmap, AIR_FALSE, mapAxis);
   if (!(domMin < domMax)) {
-    biffAddf(NRRD, "%s: (axis %d) domain min (%g) not less than max (%g)", me, mapAxis,
+    biffAddf(NRRD, "%s: (axis %u) domain min (%g) not less than max (%g)", me, mapAxis,
              domMin, domMax);
     return 1;
   }
   domMin = _nrrdApplyDomainMin(nmap, AIR_FALSE, mapAxis + 1);
   domMax = _nrrdApplyDomainMax(nmap, AIR_FALSE, mapAxis + 1);
   if (!(domMin < domMax)) {
-    biffAddf(NRRD, "%s: (axis %d) domain min (%g) not less than max (%g)", me,
+    biffAddf(NRRD, "%s: (axis %u) domain min (%g) not less than max (%g)", me,
              mapAxis + 1, domMin, domMax);
     return 1;
   }
@@ -116,8 +115,8 @@ _nrrdApply2DSetUp(Nrrd *nout, const Nrrd *nin, const NrrdRange *range0,
   entLen = mapAxis ? AIR_UINT(nmap->axis[0].size) : 1;
   if (mapAxis + nin->dim - 1 > NRRD_DIM_MAX) {
     biffAddf(NRRD,
-             "%s: input nrrd dim %d through non-scalar %s exceeds "
-             "NRRD_DIM_MAX %d",
+             "%s: input nrrd dim %u through non-scalar %s exceeds "
+             "NRRD_DIM_MAX %u",
              me, nin->dim, nounStr[kind], NRRD_DIM_MAX);
     return 1;
   }
@@ -127,7 +126,7 @@ _nrrdApply2DSetUp(Nrrd *nout, const Nrrd *nin, const NrrdRange *range0,
   }
   for (dim = 1; dim < nin->dim; dim++) {
     size[dim - 1 + mapAxis] = nin->axis[dim].size;
-    axisMap[dim - 1 + mapAxis] = dim;
+    axisMap[dim - 1 + mapAxis] = AIR_INT(dim);
   }
   /*
   fprintf(stderr, "##%s: pre maybe alloc: nout->data = %p\n", me, nout->data);

@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -50,7 +50,7 @@ returnOne(const double *parm) {
 
 /* helper macro for listing the various members of the kernel */
 #define BSPL_DECL(ord, deriv)                   \
-  0,                                            \
+    0, AIR_FALSE,                               \
     _bspl##ord##_sup,                           \
     (0 == deriv ? returnOne : returnZero),      \
     _bspl##ord##d##deriv##_1f,                  \
@@ -493,7 +493,7 @@ _bspl3_ANI_Nf(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelBSpline3ApproxInverse = {
-  "bspl3ai", 0,
+  "bspl3ai", 0, AIR_FALSE,
   _bspl3_ANI_sup, _bspl3_ANI_int,
   _bspl3_ANI_1f, _bspl3_ANI_Nf,
   _bspl3_ANI_1d, _bspl3_ANI_Nd
@@ -806,7 +806,7 @@ _bspl5_ANI_Nf(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelBSpline5ApproxInverse = {
-  "bspl5ai", 0,
+  "bspl5ai", 0, AIR_FALSE,
   _bspl5_ANI_sup, _bspl5_ANI_int,
   _bspl5_ANI_1f, _bspl5_ANI_Nf,
   _bspl5_ANI_1d, _bspl5_ANI_Nd
@@ -1147,7 +1147,7 @@ _bspl7_ANI_Nf(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelBSpline7ApproxInverse = {
-  "bspl7ai", 0,
+  "bspl7ai", 0, AIR_FALSE,
   _bspl7_ANI_sup, _bspl7_ANI_int,
   _bspl7_ANI_1f, _bspl7_ANI_Nf,
   _bspl7_ANI_1d, _bspl7_ANI_Nd

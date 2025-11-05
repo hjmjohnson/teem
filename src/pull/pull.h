@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -54,7 +54,12 @@
 #    define PULL_EXPORT extern __declspec(dllimport)
 #  endif
 #else /* TEEM_STATIC || UNIX */
-#  define PULL_EXPORT extern
+#  if !defined(TEEM_STATIC)
+/*   If built w/ -fvisibility=hidden, only EXPORTed symbols are visible in shared lib */
+#    define PULL_EXPORT extern __attribute__((visibility("default")))
+#  else
+#    define PULL_EXPORT extern
+#  endif
 #endif
 
 #ifdef __cplusplus
@@ -64,10 +69,10 @@ extern "C" {
 #define PULL pullBiffKey
 
 /* limits on computation; but (HEY) why not in privatePull.h? */
-#define PULL_THREAD_MAXNUM    512
-#define PULL_VOLUME_MAXNUM    4
-#define PULL_POINT_NEIGH_INCR 16
-#define PULL_BIN_MAXNUM       40000000 /* sanity check on max number bins */
+#define PULL_THREAD_MAXNUM    512u
+#define PULL_VOLUME_MAXNUM    4u
+#define PULL_POINT_NEIGH_INCR 16u
+#define PULL_BIN_MAXNUM       40000000u /* sanity check on max number bins */
 
 #define PULL_HINTER   0
 #define PULL_TANCOVAR 0

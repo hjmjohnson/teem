@@ -1,0 +1,11 @@
+# destination directory of non-CMake GNUmake compilation process
+built/
+
+# everything associated with building python/CFFI wrapper
+python/cffi/__pycache__/
+python/cffi/_teem*.*
+
+# btw, not our job here to deal with .DS_Store files;
+# https://github.com/desktop/desktop/issues/15644 suggests:
+# # Quick and easy one line command to setup a global .gitignore file and ignore macOS .DS_store files globally
+# git config --global core.excludesfile "~/.gitignore" &&  echo .DS_Store >> ~/.gitignore

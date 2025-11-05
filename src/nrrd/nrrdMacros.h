@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -23,6 +23,21 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/* ---- BEGIN non-NrrdIO */
+/*
+******** NRRD_SPACING
+**
+** the guts of nrrdAxisSpacing(), determines the inter-sample
+** spacing, given centering, min and max "position", and number of samples
+**
+** Unlike nrrdAxisSpacing, this assumes that center is either
+** nrrdCenterCell or nrrdCenterNode, but not nrrdCenterUnknown.
+*/
+#define NRRD_SPACING(center, min, max, size)                                            \
+  (nrrdCenterCell == center ? ((max) - (min)) / AIR_CAST(double, size)                  \
+                            : ((max) - (min)) / (AIR_CAST(double, (size) - 1)))
+/* ---- END non-NrrdIO */
 
 /*
 ******** NRRD_CELL_POS, NRRD_NODE_POS, NRRD_POS
@@ -47,6 +62,7 @@ extern "C" {
   (nrrdCenterCell == (center) ? NRRD_CELL_POS((min), (max), (size), (idx))              \
                               : NRRD_NODE_POS((min), (max), (size), (idx)))
 
+/* ---- BEGIN non-NrrdIO */
 /* position to index, cell centering */
 #define NRRD_CELL_IDX(min, max, size, pos)                                              \
   (AIR_AFFINE((min), (pos), (max), 0, (size)) - 0.5)
@@ -59,18 +75,7 @@ extern "C" {
   (nrrdCenterCell == (center) ? NRRD_CELL_IDX((min), (max), (size), (pos))              \
                               : NRRD_NODE_IDX((min), (max), (size), (pos)))
 
-/*
-******** NRRD_SPACING
-**
-** the guts of nrrdAxisSpacing(), determines the inter-sample
-** spacing, given centering, min and max "position", and number of samples
-**
-** Unlike nrrdAxisSpacing, this assumes that center is either
-** nrrdCenterCell or nrrdCenterNode, but not nrrdCenterUnknown.
-*/
-#define NRRD_SPACING(center, min, max, size)                                            \
-  (nrrdCenterCell == center ? ((max) - (min)) / AIR_CAST(double, size)                  \
-                            : ((max) - (min)) / (AIR_CAST(double, (size) - 1)))
+/* ---- END non-NrrdIO */
 
 /*
 ******** NRRD_COORD_UPDATE

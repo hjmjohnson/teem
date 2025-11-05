@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -21,7 +21,7 @@
 #include "privatePull.h"
 
 pullVolume * /* Biff: nope */
-pullVolumeNew() {
+pullVolumeNew(void) {
   pullVolume *vol;
 
   vol = AIR_CAST(pullVolume *, calloc(1, sizeof(pullVolume)));

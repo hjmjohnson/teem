@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -16,7 +16,6 @@
   You should have received a copy of the GNU Lesser General Public License
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
-
 
 #include "../alan.h"
 
@@ -47,37 +46,34 @@ main(int argc, char *argv[]) {
     npri = nrrdNuke(npri);
   }
   actx = alanContextNew();
-  if (alanDimensionSet(actx, 2)
-      || alan2DSizeSet(actx, 100, 100)
+  if (alanDimensionSet(actx, 2) || alan2DSizeSet(actx, 100, 100)
       || alanParmSet(actx, alanParmMaxIteration, 100000)
       || alanParmSet(actx, alanParmVerbose, 1)
       || alanParmSet(actx, alanParmTextureType, alanTextureTypeTuring)
       || alanParmSet(actx, alanParmRandRange, 4.0)
-      || alanParmSet(actx, alanParmK, 0.0125)
-      || alanParmSet(actx, alanParmH, 1.2)
-      || alanParmSet(actx, alanParmAlpha, 16.0+0.07)
-      || alanParmSet(actx, alanParmBeta, 12.0-0.07)
+      || alanParmSet(actx, alanParmK, 0.0125) || alanParmSet(actx, alanParmH, 1.2)
+      || alanParmSet(actx, alanParmAlpha, 16.0 + 0.07)
+      || alanParmSet(actx, alanParmBeta, 12.0 - 0.07)
       || alanParmSet(actx, alanParmSpeed, 1.38)
       || alanParmSet(actx, alanParmMinAverageChange, 0.00002)
       || alanParmSet(actx, alanParmSaveInterval, 500)
-      || alanParmSet(actx, alanParmFrameInterval,500)
+      || alanParmSet(actx, alanParmFrameInterval, 500)
       || alanParmSet(actx, alanParmConstantFilename, AIR_TRUE)
       || alanParmSet(actx, alanParmWrapAround, AIR_TRUE)
-      || alanParmSet(actx, alanParmNumThreads, 10)
-      ) {
+      || alanParmSet(actx, alanParmNumThreads, 10)) {
     err = biffGetDone(ALAN);
     fprintf(stderr, "%s: trouble: %s\n", me, err);
-    free(err); return 1;
+    free(err);
+    return 1;
   }
 
-  if (alanUpdate(actx)
-      || alanInit(actx, ninit, nparm)) {
+  if (alanUpdate(actx) || alanInit(actx, ninit, nparm)) {
     err = biffGetDone(ALAN);
     fprintf(stderr, "%s: trouble: %s\n", me, err);
-    free(err); return 1;
+    free(err);
+    return 1;
   }
-  fprintf(stderr, "%s: going to run (%d threads) . . .\n",
-          me, actx->numThreads);
+  fprintf(stderr, "%s: going to run (%d threads) . . .\n", me, actx->numThreads);
   alanRun(actx);
   fprintf(stderr, "%s: stop = %d: %s\n", me, actx->stop,
           airEnumDesc(alanStop, actx->stop));

@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -113,6 +113,7 @@ _nrrdEncodingAscii_write(FILE *file, const void *_data, size_t elNum, const Nrrd
                          NrrdIoState *nio) {
   static const char me[] = "_nrrdEncodingAscii_write";
   char buff[AIR_STRLEN_MED + 1];
+  size_t buffSize = AIR_STRLEN_MED + 1;
   size_t bufflen, linelen;
   const char *data;
   size_t I;
@@ -126,7 +127,7 @@ _nrrdEncodingAscii_write(FILE *file, const void *_data, size_t elNum, const Nrrd
   data = AIR_CAST(const char *, _data);
   linelen = 0;
   for (I = 0; I < elNum; I++) {
-    nrrdSprint[nrrd->type](buff, data);
+    nrrdSprint[nrrd->type](buff, buffSize, data);
     if (1 == nrrd->dim) {
       fprintf(file, "%s\n", buff);
       newlined = AIR_TRUE;

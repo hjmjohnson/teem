@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -36,7 +36,12 @@
 #    define MITE_EXPORT extern __declspec(dllimport)
 #  endif
 #else /* TEEM_STATIC || UNIX */
-#  define MITE_EXPORT extern
+#  if !defined(TEEM_STATIC)
+/*   If built w/ -fvisibility=hidden, only EXPORTed symbols are visible in shared lib */
+#    define MITE_EXPORT extern __attribute__((visibility("default")))
+#  else
+#    define MITE_EXPORT extern
+#  endif
 #endif
 
 #ifdef __cplusplus
@@ -419,11 +424,11 @@ typedef struct miteThread_t {
 /* defaultsMite.c */
 MITE_EXPORT const int mitePresent;
 MITE_EXPORT const char *const miteBiffKey;
-MITE_EXPORT double miteDefRefStep;
-MITE_EXPORT int miteDefRenorm;
-MITE_EXPORT int miteDefNormalSide;
-MITE_EXPORT double miteDefOpacNear1;
-MITE_EXPORT double miteDefOpacMatters;
+MITE_EXPORT double miteDefaultRefStep;
+MITE_EXPORT int miteDefaultRenorm;
+MITE_EXPORT int miteDefaultNormalSide;
+MITE_EXPORT double miteDefaultOpacNear1;
+MITE_EXPORT double miteDefaultOpacMatters;
 
 /* kindnot.c */
 MITE_EXPORT const airEnum *const miteVal;

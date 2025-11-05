@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -577,7 +577,7 @@ const pullEnergy *const pullEnergyAll[PULL_ENERGY_TYPE_MAX + 1] = {
 };
 
 pullEnergySpec * /* Biff: nope */
-pullEnergySpecNew() {
+pullEnergySpecNew(void) {
   pullEnergySpec *ensp;
   int pi;
 

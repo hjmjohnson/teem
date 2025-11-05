@@ -16,4 +16,4 @@ seekItemEigensystemSet,int,1,0,seek,seek/setSeek.c:383
 seekIsovalueSet,int,1,0,seek,seek/setSeek.c:412
 seekEvalDiffThreshSet,int,1,0,seek,seek/setSeek.c:438
 seekVertexStrength,int,1,0,seek,seek/textract.c:1882
-seekUpdate,int,1,0,seek,seek/updateSeek.c:670
+seekUpdate,int,1,0,seek,seek/updateSeek.c:671

@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -96,7 +96,7 @@ main(int argc, const char **argv) {
          airEnumStr(hestSource, opt[opiA].source));
   printf("unpB (source %s) = ...\n", airEnumStr(hestSource, opt[opiB].source));
   for (uint ii = 0; ii < sawB; ii++) {
-    printf("   [%u] = %u\n", ii, unpB[ii]);
+    printf("   [%u] = %d\n", ii, unpB[ii]);
   }
   printf("unpC = %d %d (source %s)\n", unpC[0], unpC[1],
          airEnumStr(hestSource, opt[opiC].source));

@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -35,7 +35,7 @@ miteRayBegin(miteThread *mtt, miteRender *mrr, miteUser *muu, int uIndex, int vI
   mtt->rayStep = (muu->rayStep * rayLen
                   / (muu->hctx->cam->vspFaar - muu->hctx->cam->vspNeer));
   if (!uIndex) {
-    fprintf(stderr, "%d/%d ", vIndex, muu->hctx->imgSize[1]);
+    fprintf(stderr, "%d/%u ", vIndex, muu->hctx->imgSize[1]);
     fflush(stderr);
   }
   mtt->verbose = (uIndex == muu->verbUi && vIndex == muu->verbVi);

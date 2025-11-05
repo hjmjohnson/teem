@@ -56,7 +56,7 @@ unrrdu_aboutMain(int argc, const char **argv, const char *me, hestParm *hparm) {
       "how Teem software has helped in your work.\n "
       "\n "
       "\t\t\t"
-      "(New for 2025 and Teem v2) Join the Teem-users Discord via "
+      "(New for 2025 and TeemV2) Join the Teem-users Discord via "
       "<https://discord.gg/xBBqZGXkF7> to share how Teem works or doesn't work "
       "for you. Or, traditionalists can join the teem-users mailing list via "
       "<http://lists.sourceforge.net/lists/listinfo/teem-users>.\n ";

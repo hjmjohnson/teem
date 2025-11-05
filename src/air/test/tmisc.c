@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -17,7 +17,6 @@
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #include "../air.h"
 
 int
@@ -25,7 +24,7 @@ main(int argc, char *argv[]) {
   char *me, *ns;
   unsigned int cc, nn;
 
-  char str[]="this is a line";
+  char str[] = "this is a line";
   char *dup = airStrdup(str);
   str[5] = (char)130;
   printf("str\n|%s| == |%s|\n", str, dup);

@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -58,7 +58,8 @@ main(int argc, char *argv[]) {
            "(AIR_EXISTS %d; airExists %d)\n",
            c, airEnumStr(airFPClass_ae, c), str, parsed_f, ret, AIR_EXISTS(f),
            airExists(f));
-    airSinglePrintf(stdout, NULL, "airSinglePrintf: %.9g\n", f);
+    /* (using TeemV2 airSinglePrintf) */
+    airSinglePrintf(stdout, NULL, 0, "airSinglePrintf: %g\n", f);
     if (c != airFPClass_f(f)) {
       printf("\n\n%s: Silly hardware!!!\n", me);
       printf("%s: can't return a float of class %d=%s from a function\n\n\n", me, c,
@@ -69,7 +70,7 @@ main(int argc, char *argv[]) {
     /* I think solaris turns the SNAN into a QNAN */
     printf("to double and back:\n");
     airFPFprintf_f(stdout, AIR_FLOAT(d));
-    printf("AIR_ISNAN_F = %d\n", AIR_ISNAN_F(f));
+    /* Gone in TeemV2: printf("AIR_ISNAN_F = %d\n", AIR_ISNAN_F(f)); */
   }
 
   printf(" - - - - - - - - - - - - - - - -\n");
@@ -84,7 +85,8 @@ main(int argc, char *argv[]) {
            "(AIR_EXISTS %d; airExists %d)\n",
            c, airEnumStr(airFPClass_ae, c), str, parsed_d, ret, AIR_EXISTS(d),
            airExists(d));
-    airSinglePrintf(stdout, NULL, "airSinglePrintf: %.17g\n", d);
+    /* (using TeemV2 airSinglePrintf) */
+    airSinglePrintf(stdout, NULL, 0, "airSinglePrintf: %lg\n", d);
     if (c != airFPClass_d(d)) {
       printf("\n\n%s: Silly hardware!!!\n", me);
       printf("%s: can't return a double of class %d=%s from a function\n\n\n", me, c,

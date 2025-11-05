@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -37,7 +37,12 @@
 #    define GAGE_EXPORT extern __declspec(dllimport)
 #  endif
 #else /* TEEM_STATIC || UNIX */
-#  define GAGE_EXPORT extern
+#  if !defined(TEEM_STATIC)
+/*   If built w/ -fvisibility=hidden, only EXPORTed symbols are visible in shared lib */
+#    define GAGE_EXPORT extern __attribute__((visibility("default")))
+#  else
+#    define GAGE_EXPORT extern
+#  endif
 #endif
 
 #ifdef __cplusplus
@@ -53,7 +58,7 @@ extern "C" {
 **
 ** MUST KEEP IN SYNC with GAGE_DV_* macros below
 */
-#define GAGE_DERIV_MAX 2
+#define GAGE_DERIV_MAX 2u
 
 /*
 ** Convenience macros for arrays declared like blah[GAGE_DERIV_MAX+1]
@@ -98,7 +103,7 @@ extern "C" {
 ** The following things have to agree:
 ** - gageParm* enum
 ** - fields of gageParm struct
-** - analogous gageDef* defaults (their declaration and setting)
+** - analogous gageDefault* defaults (their declaration and setting)
 ** - action of gageParmSet (ctx.c)
 ** - action of gageParmReset (miscGage.c)
 */
@@ -111,7 +116,6 @@ enum {
   gageParmGradMagCurvMin,          /* double */
   gageParmCurvNormalSide,          /* int */
   gageParmKernelIntegralNearZero,  /* double */
-  gageParmDefaultCenter,           /* int */
   gageParmStackUse,                /* int */
   gageParmStackNormalizeDeriv,     /* int; does NOT imply gageParmStackUse */
   gageParmStackNormalizeDerivBias, /* double; does NOT imply      "        */
@@ -216,13 +220,13 @@ enum {
 */
 typedef struct {
   int enumVal;               /* the item's enum value */
-  unsigned int answerLength; /* how many double's are needed to store the answer,
+  unsigned int answerLength, /* how many double's are needed to store the answer,
                                 or (for non-zero items), 0 to represent
                                 "the length will be learned later at runtime" */
-  int needDeriv,             /* what kind of derivative info is immediately needed
+    needDeriv;               /* what kind of derivative info is immediately needed
                                 for this item (not recursively expanded). This is
                                 NO LONGER a bitvector: values are 0, 1, 2, .. */
-    prereq[GAGE_ITEM_PREREQ_MAXNUM],
+  int prereq[GAGE_ITEM_PREREQ_MAXNUM],
     /* what are the other items this item depends on
        (not recusively expanded), you can list up to
        GAGE_ITEM_PREREQ_MAXNUM of them, and use 0
@@ -286,7 +290,7 @@ enum {
   gageScl2ndDD,           /* 19: "2d", 2nd dir.deriv. along gradient: [1] */
   gageSclGeomTens,        /* 20: "gten", sym. matx w/ evals {0, K1, K2} and
                                  evecs {grad, cdir0, cdir1}: [9] */
-  gageSclGeomTensTen,     /* 21: "gtenten", 7-element geometry tensor [7] */
+  gageSclGeomTens7Ten,    /* 21: "gten7ten", 7-element geometry tensor [7] */
   gageSclK1,              /* 22: "k1", 1st principle curvature: [1] */
   gageSclK2,              /* 23: "k2", 2nd principle curvature (k2 <= k1): [1] */
   gageSclTotalCurv,       /* 24: "tc", L2 norm(K1,K2) (not Koen.'s "C"): [1] */
@@ -441,9 +445,9 @@ enum {
 */
 typedef struct gageShape_t {
   /* ========= INPUT ========= (controls for _gageShapeSet) */
-  int defaultCenter,        /* default centering to use when given volume
-                               has no centering set. */
-    orientationFromSpacing; /* only meaningful if nrrd has per-axis spacing,
+  /* TeemV2 nixed defaultCenter = default centering to use when given volume
+                                  has no centering set (its nrrdCenterCell now) */
+  int orientationFromSpacing; /* only meaningful if nrrd has per-axis spacing,
                                but not full orientation info. If zero, the
                                volume is crammed into the bi-unit cube.
                                If non-zero, gage treats the volume as if it
@@ -512,9 +516,10 @@ typedef struct gageParm_t {
                                 normal pointing to lower values (higher
                                 values are more "inside"); -1 for normal
                                 pointing to higher values (low values more
-                                "inside") */
-    defaultCenter,           /* what centering to use when you have to invent
-                                one, because its not set on any axis */
+                                "inside").
+                                TeemV2 nixed defaultCenter: centering to use when
+                                you have to invent one, because its not set on any
+                                axis (its nrrdCenterCell now) */
     stackUse,                /* if non-zero: treat the pvl's (all same kind)
                                 as multiple values of a single logical volume
                                 (e.g. for approximating scale space).
@@ -679,8 +684,8 @@ typedef unsigned char gageQuery[GAGE_QUERY_BYTES_NUM];
 
 /* extents of known information about optimal sigma samples for
    Hermite-spline-based scale-space reconstruction */
-#define GAGE_OPTIMSIG_SIGMA_MAX      11
-#define GAGE_OPTIMSIG_SAMPLES_MAXNUM 11
+#define GAGE_OPTIMSIG_SIGMA_MAX     11u
+#define GAGE_OPTIMSIG_SAMPLE_MAXNUM 11u
 
 /*
 ******** gageContext struct
@@ -1038,21 +1043,15 @@ typedef struct {
 
 /* defaultsGage.c */
 GAGE_EXPORT const char *const gageBiffKey;
-GAGE_EXPORT int gageDefVerbose;
-GAGE_EXPORT double gageDefGradMagCurvMin;
-GAGE_EXPORT int gageDefRenormalize;
-GAGE_EXPORT int gageDefCheckIntegrals;
-GAGE_EXPORT int gageDefK3Pack;
-GAGE_EXPORT int gageDefCurvNormalSide;
-GAGE_EXPORT double gageDefKernelIntegralNearZero;
-GAGE_EXPORT int gageDefDefaultCenter;
-GAGE_EXPORT int gageDefStackUse;
-GAGE_EXPORT int gageDefStackNormalizeRecon;
-GAGE_EXPORT int gageDefStackNormalizeDeriv;
-GAGE_EXPORT double gageDefStackNormalizeDerivBias;
-GAGE_EXPORT int gageDefOrientationFromSpacing;
-GAGE_EXPORT int gageDefGenerateErrStr;
-GAGE_EXPORT int gageDefTwoDimZeroZ;
+GAGE_EXPORT int gageDefaultVerbose;
+GAGE_EXPORT double gageDefaultGradMagCurvMin;
+GAGE_EXPORT int gageDefaultRenormalize;
+GAGE_EXPORT int gageDefaultCheckIntegrals;
+GAGE_EXPORT int gageDefaultK3Pack;
+GAGE_EXPORT int gageDefaultCurvNormalSide;
+GAGE_EXPORT double gageDefaultKernelIntegralNearZero;
+GAGE_EXPORT int gageDefaultOrientationFromSpacing;
+GAGE_EXPORT int gageDefaultGenerateErrStr;
 
 /* miscGage.c */
 GAGE_EXPORT const int gagePresent;

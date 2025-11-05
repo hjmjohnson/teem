@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -55,7 +55,7 @@ tend_helixDoit(Nrrd *nout, double bnd, double orig[3], double i2w[9], double mf[
   ELL_3M_TRANSPOSE(mfT, mf);
   for (zi = 0; zi < sz; zi++) {
     if (verbose) {
-      fprintf(stderr, "zi = %d/%d\n", zi, sz);
+      fprintf(stderr, "zi = %u/%u\n", zi, sz);
     }
     for (yi = 0; yi < sy; yi++) {
       for (xi = 0; xi < sx; xi++) {

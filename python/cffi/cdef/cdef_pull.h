@@ -6,7 +6,7 @@ CFFI, within its many limitations, specifically lacking a C pre-processor
  /* =========== pull.h =========== */
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
   This library is free software; you can redistribute it and/or modify it under the terms
@@ -38,10 +38,10 @@ CFFI, within its many limitations, specifically lacking a C pre-processor
 ** tensor fields.
 */
 /* limits on computation; but (HEY) why not in privatePull.h? */
-#define PULL_THREAD_MAXNUM    512
-#define PULL_VOLUME_MAXNUM    4
-#define PULL_POINT_NEIGH_INCR 16
-#define PULL_BIN_MAXNUM       40000000 /* sanity check on max number bins */
+#define PULL_THREAD_MAXNUM    512u
+#define PULL_VOLUME_MAXNUM    4u
+#define PULL_POINT_NEIGH_INCR 16u
+#define PULL_BIN_MAXNUM       40000000u /* sanity check on max number bins */
 /* can compile history of positions, with tuples of length PULL_PHIST_NUM */
 /*
 ******** pullInfo enum

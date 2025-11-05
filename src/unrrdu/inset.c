@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -56,7 +56,7 @@ unrrdu_insetMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
 
   if (!(minLen == nin->dim)) {
-    fprintf(stderr, "%s: # min coords (%d) != nrrd dim (%d)\n", me, minLen, nin->dim);
+    fprintf(stderr, "%s: # min coords (%u) != nrrd dim (%u)\n", me, minLen, nin->dim);
     airMopError(mop);
     return 1;
   }

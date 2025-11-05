@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -21,7 +21,7 @@
 #include "privateMite.h"
 
 miteThread * /* Biff: NULL */
-miteThreadNew() {
+miteThreadNew(void) {
   static const char me[] = "miteThreadNew";
   miteThread *mtt;
   int ii;

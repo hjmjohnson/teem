@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -21,7 +21,7 @@
 #include "privateTen.h"
 
 tenGlyphParm * /* Biff: nope */
-tenGlyphParmNew() {
+tenGlyphParmNew(void) {
   tenGlyphParm *parm;
 
   parm = (tenGlyphParm *)calloc(1, sizeof(tenGlyphParm));
@@ -127,7 +127,7 @@ tenGlyphParmCheck(tenGlyphParm *parm, const Nrrd *nten, const Nrrd *npos,
       return 1;
     }
     if (!(parm->sliceAxis <= 2)) {
-      biffAddf(TEN, "%s: slice axis %d invalid", me, parm->sliceAxis);
+      biffAddf(TEN, "%s: slice axis %u invalid", me, parm->sliceAxis);
       return 1;
     }
     if (!(parm->slicePos < nten->axis[1 + parm->sliceAxis].size)) {
@@ -138,7 +138,7 @@ tenGlyphParmCheck(tenGlyphParm *parm, const Nrrd *nten, const Nrrd *npos,
     }
     if (nslc) {
       if (2 != nslc->dim) {
-        biffAddf(TEN, "%s: explicit slice must be 2-D (not %d)", me, nslc->dim);
+        biffAddf(TEN, "%s: explicit slice must be 2-D (not %u)", me, nslc->dim);
         return 1;
       }
       tenSize[0] = nten->axis[1].size;
@@ -194,7 +194,6 @@ tenGlyphGen(limnObject *glyphsLimn, echoScene *glyphsEcho, tenGlyphParm *parm,
   }
   mop = airMopNew();
   shape = gageShapeNew();
-  shape->defaultCenter = nrrdCenterCell;
   airMopAdd(mop, shape, (airMopper)gageShapeNix, airMopAlways);
   if (npos) {
     if (!(2 == nten->dim && 7 == nten->axis[0].size)) {

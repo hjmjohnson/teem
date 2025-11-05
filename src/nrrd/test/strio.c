@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -43,7 +43,7 @@ main(int argc, char **argv) {
   AIR_UNUSED(argc);
   me = argv[0];
 
-  nrrdDefaultVerboseIO = 10;
+  nrrdDefaultIoVerbose = 10;
 
   nio = nrrdIoStateNew();
   nrrd = nrrdNew();

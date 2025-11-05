@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -17,13 +17,12 @@
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #include "../bane.h"
 
 char *me;
 
 void
-usage() {
+usage(void) {
   /*                      0     1       2     3    (4)  */
   fprintf(stderr, "usage: %s <hvolin> <dim> <nout>\n", me);
   exit(1);
@@ -36,13 +35,12 @@ main(int argc, char *argv[]) {
   int dim;
 
   me = argv[0];
-  if (argc != 4)
-    usage();
+  if (argc != 4) usage();
   iStr = argv[1];
   dStr = argv[2];
   oStr = argv[3];
 
-  if (nrrdLoad(hvol=nrrdNew(), iStr, NULL)) {
+  if (nrrdLoad(hvol = nrrdNew(), iStr, NULL)) {
     fprintf(stderr, "%s: trouble reading hvol:\n%s\n", me, biffGet(NRRD));
     usage();
   }
@@ -51,13 +49,12 @@ main(int argc, char *argv[]) {
     usage();
   }
   if (baneOpacInfo(info = nrrdNew(), hvol, dim, nrrdMeasureHistoMean)) {
-    fprintf(stderr, "%s: trouble calculting %d-D opacity info:\n%s\n",
-            me, dim, biffGet(BANE));
+    fprintf(stderr, "%s: trouble calculting %d-D opacity info:\n%s\n", me, dim,
+            biffGet(BANE));
     exit(1);
   }
   if (nrrdSave(oStr, info, NULL)) {
-    fprintf(stderr, "%s: trouble saving nrrd to %s:\n%s\n", me, oStr,
-            biffGet(NRRD));
+    fprintf(stderr, "%s: trouble saving nrrd to %s:\n%s\n", me, oStr, biffGet(NRRD));
     exit(1);
   }
   nrrdNuke(hvol);

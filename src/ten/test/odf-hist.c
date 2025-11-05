@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -151,7 +151,7 @@ main(int argc, const char *argv[]) {
     hist = (float *)nhist->data;
     for (kk = 0; kk < NN; kk++) {
       if (!(kk % 100)) {
-        fprintf(stderr, "%d/%d\n", kk, NN);
+        fprintf(stderr, "%u/%u\n", kk, NN);
       }
       tmp = 0;
       if (AIR_EXISTS(min)) {

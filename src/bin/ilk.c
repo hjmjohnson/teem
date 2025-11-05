@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -161,10 +161,10 @@ main(int argc, const char *argv[]) {
 
   ax0 = MOSS_AXIS0(nin);
   if (!(AIR_EXISTS(nin->axis[ax0 + 0].min) && AIR_EXISTS(nin->axis[ax0 + 0].max))) {
-    nrrdAxisInfoMinMaxSet(nin, ax0 + 0, mossDefCenter);
+    nrrdAxisInfoMinMaxSet(nin, ax0 + 0, mossDefaultCenter);
   }
   if (!(AIR_EXISTS(nin->axis[ax0 + 1].min) && AIR_EXISTS(nin->axis[ax0 + 1].max))) {
-    nrrdAxisInfoMinMaxSet(nin, ax0 + 1, mossDefCenter);
+    nrrdAxisInfoMinMaxSet(nin, ax0 + 1, mossDefaultCenter);
   }
   min[0] = AIR_EXISTS(min[0]) ? min[0] : nin->axis[ax0 + 0].min;
   max[0] = AIR_EXISTS(max[0]) ? max[0] : nin->axis[ax0 + 0].max;
@@ -221,10 +221,10 @@ main(int argc, const char *argv[]) {
   mossMatLeftMultiply(mat, origInvMat);
 
   if (!AIR_EXISTS(nin->axis[ax0 + 0].min) || !AIR_EXISTS(nin->axis[ax0 + 0].max)) {
-    nrrdAxisInfoMinMaxSet(nin, ax0 + 0, mossDefCenter);
+    nrrdAxisInfoMinMaxSet(nin, ax0 + 0, mossDefaultCenter);
   }
   if (!AIR_EXISTS(nin->axis[ax0 + 1].min) || !AIR_EXISTS(nin->axis[ax0 + 1].max)) {
-    nrrdAxisInfoMinMaxSet(nin, ax0 + 1, mossDefCenter);
+    nrrdAxisInfoMinMaxSet(nin, ax0 + 1, mossDefaultCenter);
   }
   if (avgNum > 1) {
     /* GLK is not sure what the original purpose of this was: if transform is a single

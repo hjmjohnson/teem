@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -214,7 +214,7 @@ int (*const _hestParseSingle[_HEST_TYPE_MAX + 1])(void *, const char *, _hestPPa
   static void _invertScalar##TT(void *_valP) {                                          \
     ctype *valP = (ctype *)_valP;                                                       \
     ctype val = *valP;                                                                  \
-    *valP = !val;                                                                       \
+    *valP = (val == 0);                                                                 \
   }
 _INVERT_SCALAR(B, int)
 _INVERT_SCALAR(H, short)
@@ -304,7 +304,7 @@ this avoids all the reallocations in the past action of hestOptAdd and the like.
 #define INCR 32
 
 hestParm * /* Biff: nope */
-hestParmNew() {
+hestParmNew(void) {
   hestParm *hparm;
 
   hparm = AIR_CALLOC(1, hestParm);
@@ -706,8 +706,8 @@ off the possibility of doing an argtable-style static creation of a hestOpt arra
 int /* Biff: (private) 1 */
 _hestOPCheck(const hestOpt *hopt, const hestParm *hparm) {
   if (!(hopt && hparm)) {
-    biffAddf(HEST, "%s%sgot NULL hopt (%p) or hparm (%p)", _ME_, AIR_VOIDP(hopt),
-             AIR_VOIDP(hparm));
+    biffAddf(HEST, "%s%sgot NULL hopt (%p) or hparm (%p)", _ME_, AIR_CVOIDP(hopt),
+             AIR_CVOIDP(hparm));
     return 1;
   }
   uint optNum = hopt->arrLen;
@@ -722,7 +722,7 @@ _hestOPCheck(const hestOpt *hopt, const hestParm *hparm) {
     }
     // `kind` set by hestOptSingleSet
     if (-1 == hopt[opi].kind) {
-      biffAddf(HEST, "%s%sopt[%u]'s min (%d) and max (%d) incompatible", _ME_, opi,
+      biffAddf(HEST, "%s%sopt[%u]'s min (%u) and max (%d) incompatible", _ME_, opi,
                hopt[opi].min, hopt[opi].max);
       return 1;
     }

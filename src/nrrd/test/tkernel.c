@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -42,7 +42,7 @@ main(int argc, char *argv[]) {
   char *me, *kernS[2], *minS, *stepS, *maxS, *outS, *err, kstr[AIR_STRLEN_LARGE + 1];
   const NrrdKernel *kern[2];
   NrrdKernelSpec *ksp[2];
-  double parm[NRRD_KERNEL_PARMS_NUM], min, step, max, integral, *dom_d, *ran_d;
+  double parm[NRRD_KERNEL_PARM_MAXNUM], min, step, max, integral, *dom_d, *ran_d;
   float *dom_f, *ran_f, val, r_f, r_d;
   FILE *fout;
   int i, len;

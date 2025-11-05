@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -35,7 +35,12 @@
 #    define ALAN_EXPORT extern __declspec(dllimport)
 #  endif
 #else /* TEEM_STATIC || UNIX */
-#  define ALAN_EXPORT extern
+#  if !defined(TEEM_STATIC)
+/*   If built w/ -fvisibility=hidden, only EXPORTed symbols are visible in shared lib */
+#    define ALAN_EXPORT extern __attribute__((visibility("default")))
+#  else
+#    define ALAN_EXPORT extern
+#  endif
 #endif
 
 #ifdef __cplusplus

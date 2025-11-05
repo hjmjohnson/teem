@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -16,7 +16,6 @@
   You should have received a copy of the GNU Lesser General Public License
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
-
 
 #include "../limn.h"
 
@@ -43,12 +42,12 @@ main(int argc, char *argv[]) {
   AIR_UNUSED(argc);
   me = argv[0];
 
-  if (limnEnvMapFill(map=nrrdNew(), cb, limnQN16checker, NULL)) {
+  if (limnEnvMapFill(map = nrrdNew(), cb, limnQN16checker, NULL)) {
     fprintf(stderr, "%s: trouble:\n%s", me, biffGet(LIMN));
     exit(1);
   }
   range = nrrdRangeNew(0, 1);
-  if (nrrdQuantize(ppm=nrrdNew(), map, range, 8)) {
+  if (nrrdQuantize(ppm = nrrdNew(), map, range, 8)) {
     fprintf(stderr, "%s: trouble:\n%s", me, biffGet(NRRD));
     exit(1);
   }

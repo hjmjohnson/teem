@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -138,7 +138,7 @@ _pullMiscParmCheck(pullContext *pctx) {
   double denr;
 
   if (!(AIR_IN_CL(1, pctx->threadNum, PULL_THREAD_MAXNUM))) {
-    biffAddf(PULL, "%s: pctx->threadNum (%d) outside valid range [1,%d]", me,
+    biffAddf(PULL, "%s: pctx->threadNum (%u) outside valid range [1,%u]", me,
              pctx->threadNum, PULL_THREAD_MAXNUM);
     return 1;
   }

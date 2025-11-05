@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -27,8 +27,9 @@ static const char *_unrrdu_lut2InfoL
           "has the same dimension as the input, or 3D, in which case "
           "the output has one more dimension than the input, and each "
           "pair of values is mapped to a scanline (along axis 0) from the "
-          "lookup table.  In any case, axis 0 of the input must have length two.\n "
-          "* Uses nrrdApply2DLut");
+          "lookup table.  In any case, axis 0 of the input must have length "
+          "two.\n " UNRRDU_DILRR_INFO("lut2") /* */
+     "* Uses nrrdApply2DLut");
 
 static int
 unrrdu_lut2Main(int argc, const char **argv, const char *me, hestParm *hparm) {
@@ -43,12 +44,13 @@ unrrdu_lut2Main(int argc, const char **argv, const char *me, hestParm *hparm) {
 
   hestOptAdd_1_Other(&opt, "m,map", "lut", &nlut, NULL,
                      "lookup table to map input nrrd through", nrrdHestNrrdNoTTY);
-  hestOptAdd_2_Bool(&opt, "r,rescale", "bool bool", rescale, "false false",
-                    "rescale one or both of the input values from the "
-                    "input range to the lut domain.  The lut domain is either "
-                    "explicitly defined by the axis min,max along axis 0 or 1, "
-                    "or, it is implicitly defined as zero to the length of that axis "
-                    "minus one.");
+  int rsclOptIdx
+    = hestOptAdd_2_Bool(&opt, "r,rescale", "bool bool", rescale, "false false",
+                        "rescale one or both of the input values from the "
+                        "input range to the lut domain.  The lut domain is either "
+                        "explicitly defined by the axis min,max along axis 0 or 1, "
+                        "or, it is implicitly defined as zero to the length of that "
+                        "axis minus one.");
   hestOptAdd_2_Double(&opt, "min,minimum", "min0 min1", min, "nan nan",
                       "Low ends of input range. Defaults to lowest values "
                       "found in input nrrd.  Explicitly setting this is useful "
@@ -91,16 +93,19 @@ unrrdu_lut2Main(int argc, const char **argv, const char *me, hestParm *hparm) {
   }
   mapAxis = nlut->dim - 2;
   if (!(0 == mapAxis || 1 == mapAxis)) {
-    fprintf(stderr, "%s: dimension of lut should be 2 or 3, not %d", me, nlut->dim);
+    fprintf(stderr, "%s: dimension of lut should be 2 or 3, not %u", me, nlut->dim);
     airMopError(mop);
     return 1;
   }
 
-  /* see comment in rmap.c */
+  unrrduGetenvDefaultImplicitLutRmapRescale();
+  /* NOTE: comment in lut.c describes logic for how rescale is set */
   for (rai = 0; rai <= 1; rai++) {
-    if (!(AIR_EXISTS(nlut->axis[mapAxis + rai].min)
-          && AIR_EXISTS(nlut->axis[mapAxis + rai].max))) {
-      rescale[rai] = AIR_TRUE;
+    if (!hestSourceUser(opt[rsclOptIdx].source)) {
+      if (!(AIR_EXISTS(nlut->axis[mapAxis + rai].min)
+            && AIR_EXISTS(nlut->axis[mapAxis + rai].max))) {
+        rescale[rai] = unrrduDefaultImplicitLutRmapRescale;
+      }
     }
     if (rescale[rai]) {
       ntmp[rai] = nrrdNew();

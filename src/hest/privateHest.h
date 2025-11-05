@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -61,7 +61,7 @@ typedef unsigned int uint;
 
 #define HEST _hestBiffKey
 
-#define HIST_DEPTH_MAX 10 // max sensibly depth of hestInputStack
+#define HIST_DEPTH_MAX 10u // max sensibly depth of hestInputStack
 
 /* methodsHest.c */
 /*

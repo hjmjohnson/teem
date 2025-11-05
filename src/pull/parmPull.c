@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -91,8 +91,8 @@ _pullIterParmCheck(pullIterParm *iterParm) {
   static const char me[] = "_pullIterParmCheck";
 
   if (!(1 <= iterParm->constraintMax && iterParm->constraintMax <= 500)) {
-    biffAddf(PULL, "%s: iterParm->constraintMax %u not in range [%u,%u]", me,
-             iterParm->constraintMax, 1, _PULL_CONSTRAINT_ITER_MAX);
+    biffAddf(PULL, "%s: iterParm->constraintMax %u not in range [1,%u]", me,
+             iterParm->constraintMax, _PULL_CONSTRAINT_ITER_MAX);
     return 1;
   }
   return 0;

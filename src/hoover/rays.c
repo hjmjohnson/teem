@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -427,7 +427,7 @@ hooverRender(hooverContext *ctx, int *errCodeP, int *errThreadP) {
 
   if (1 < ctx->numThreads && !airThreadCapable) {
     fprintf(stderr,
-            "%s: WARNING: not multi-threaded; will do %d "
+            "%s: WARNING: not multi-threaded; will do %u "
             "\"threads\" serially !!!\n",
             me, ctx->numThreads);
   }

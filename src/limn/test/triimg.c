@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -52,7 +52,7 @@ main(int argc, const char *argv[]) {
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
   if (!(2 == nin->dim || 3 == nin->dim)) {
-    fprintf(stderr, "%s: input nrrd must be 2-D or 3-D (not %d-D)\n", me, nin->dim);
+    fprintf(stderr, "%s: input nrrd must be 2-D or 3-D (not %u-D)\n", me, nin->dim);
     airMopError(mop);
     return 1;
   }
@@ -66,7 +66,7 @@ main(int argc, const char *argv[]) {
   sy = AIR_UINT(2 == nin->dim ? nin->axis[1].size : nin->axis[2].size);
   gray = 2 == nin->dim || 1 == nin->axis[0].size;
   if (!(sx == sy)) {
-    fprintf(stderr, "%s: image must be square (not %d x %d)\n", me, sx, sy);
+    fprintf(stderr, "%s: image must be square (not %u x %u)\n", me, sx, sy);
     airMopError(mop);
     return 1;
   }
@@ -103,7 +103,7 @@ main(int argc, const char *argv[]) {
   fprintf(file, "%%%%BeginProlog\n");
   fprintf(file, "%% linestr creates an empty string to hold "
                 "one scanline\n");
-  fprintf(file, "/linestr %d string def\n", sx * (gray ? 1 : 3));
+  fprintf(file, "/linestr %u string def\n", sx * (gray ? 1 : 3));
   fprintf(file, "%%%%EndProlog\n");
   fprintf(file, "%%%%Page: 1 1\n");
   fprintf(file, "gsave\n");
@@ -117,8 +117,8 @@ main(int argc, const char *argv[]) {
 
   fprintf(file, "%g %g translate\n", minX, minY);
   fprintf(file, "%g %g scale\n", sx * scale, sy * scale);
-  fprintf(file, "%d %d 8\n", sx, sy);
-  fprintf(file, "[%d 0 0 -%d 0 %d]\n", sx, sy, sy);
+  fprintf(file, "%u %u 8\n", sx, sy);
+  fprintf(file, "[%u 0 0 -%u 0 %u]\n", sx, sy, sy);
   fprintf(file, "{currentfile linestr readhexstring pop} %s\n",
           gray ? "image" : "false 3 colorimage");
   nrrdEncodingHex->write(file, nin->data, nrrdElementNumber(nin), nin, nio);

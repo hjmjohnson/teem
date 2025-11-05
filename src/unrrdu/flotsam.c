@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -27,7 +27,12 @@ const int unrrduPresent = 42;
 const char *const unrrduBiffKey = "unrrdu";
 
 /* number of columns that hest will used */
-unsigned int unrrduDefNumColumns = 78;
+unsigned int unrrduDefaultNumColumns = 78;
+
+/* how rescale was set in {lut,rmap,mlut,mrmap}.c when
+   lut,rmap,mlut,mrmap domain is implicit */
+int unrrduDefaultImplicitLutRmapRescale = AIR_TRUE;
+const char *const unrrduEnvVarDefaultImplicitLutRmapRescale = UNRRDU_DILRR;
 
 /*
 ******** unrrduCmdList[]
@@ -35,6 +40,21 @@ unsigned int unrrduDefNumColumns = 78;
 ** NULL-terminated array of unrrduCmd pointers, as ordered by UNRRDU_MAP macro
 */
 const unrrduCmd *const unrrduCmdList[] = {UNRRDU_MAP(UNRRDU_LIST) NULL};
+
+void
+unrrduGetenvDefaultImplicitLutRmapRescale(void) {
+  char *envStr = NULL;
+  if (AIR_FALSE
+      == nrrdGetenvBool(&unrrduDefaultImplicitLutRmapRescale, &envStr,
+                        unrrduEnvVarDefaultImplicitLutRmapRescale)) {
+    fprintf(stderr,
+            "WARNING: envvar \"%s\" set to \"%s\" which could not be parsed as "
+            "a bool, so unrrduDefaultImplicitLutRmapRescale=%d unchanged\n",
+            unrrduEnvVarDefaultImplicitLutRmapRescale, envStr ? envStr : "(null)",
+            unrrduDefaultImplicitLutRmapRescale);
+  }
+  return;
+}
 
 /*
 ******** unrrduCmdMain
@@ -446,7 +466,7 @@ parseBits(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
     return 1;
   }
   if (!(8 == *bitsP || 16 == *bitsP || 32 == *bitsP)) {
-    sprintf(err, "%s: bits (%d) not 8, 16, or 32", me, *bitsP);
+    sprintf(err, "%s: bits (%u) not 8, 16, or 32", me, *bitsP);
     return 1;
   }
   return 0;

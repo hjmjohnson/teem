@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -242,7 +242,7 @@ _pushTaskSetup(pushContext *pctx) {
     }
     pctx->task[tidx] = _pushTaskNew(pctx, tidx);
     if (!(pctx->task[tidx])) {
-      biffAddf(PUSH, "%s: couldn't allocate task %d", me, tidx);
+      biffAddf(PUSH, "%s: couldn't allocate task %u", me, tidx);
       return 1;
     }
   }

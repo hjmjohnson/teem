@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2011, 2010, 2009, 2008 Thomas Schultz
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
@@ -32,7 +32,12 @@
 #    define TIJK_EXPORT extern __declspec(dllimport)
 #  endif
 #else /* TEEM_STATIC || UNIX */
-#  define TIJK_EXPORT extern
+#  if !defined(TEEM_STATIC)
+/*   If built w/ -fvisibility=hidden, only EXPORTed symbols are visible in shared lib */
+#    define TIJK_EXPORT extern __attribute__((visibility("default")))
+#  else
+#    define TIJK_EXPORT extern
+#  endif
 #endif
 
 #ifdef __cplusplus

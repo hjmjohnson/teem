@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -19,11 +19,11 @@
 
 #include "../hest.h"
 
-int
-runexp(int *year, int N, int M) {
-  int i, m;
+unsigned int
+runexp(unsigned int *year, unsigned int N, unsigned int M) {
+  unsigned int i, m;
 
-  memset(year, 0, N * sizeof(int));
+  memset(year, 0, N * sizeof(unsigned int));
   for (m = 0; m < M; m++) {
     year[airRandInt(N)]++;
   }
@@ -43,19 +43,22 @@ int
 main(int argc, const char *argv[]) {
   airArray *mop;
   hestOpt *hopt = NULL;
-  int i, N, M, P, yes, *year;
-  unsigned int E;
+  unsigned int yes, P, i, E, N, M, *year;
   const char *me;
-  double crct;
+  double calc, calcOld, chng, crct;
 
   me = argv[0];
   mop = airMopNew();
-  hestOptAdd(&hopt, "N", "days", airTypeInt, 1, 1, &N, "365", "# of days in year");
+  hestOptAdd_1_UInt(&hopt, "N", "days", &N, "365", "# of days in year");
   /* E != P */
-  hestOptAdd(&hopt, "E", "exps", airTypeInt, 1, 1, &P, "100000",
-             "number of experiments after which to print out newly "
-             "computed probability");
-  hestOptAdd(&hopt, NULL, "people", airTypeInt, 1, 1, &M, NULL, "# of people in room");
+  hestOptAdd_1_UInt(&hopt, "E", "exps", &P, "100000",
+                    "number of experiments after which to print out newly "
+                    "computed probability");
+  double chngEps;
+  hestOptAdd_1_Double(&hopt, "eps", "eps", &chngEps, "0.0000001",
+                      "Stop running experiments when relative change in computed "
+                      "probability goes below this");
+  hestOptAdd(&hopt, NULL, "M", airTypeInt, 1, 1, &M, NULL, "# of people in room");
   hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
@@ -65,8 +68,8 @@ main(int argc, const char *argv[]) {
     airMopError(mop);
     exit(1);
   }
-  if (!(year = (int *)calloc(N, sizeof(int)))) {
-    fprintf(stderr, "%s: couldn't calloc(%d,sizeof(int))\n", me, N);
+  if (!(year = AIR_CALLOC(N, unsigned int))) {
+    fprintf(stderr, "%s: couldn't calloc %u uints\n", me, N);
     airMopError(mop);
     exit(1);
   }
@@ -78,15 +81,23 @@ main(int argc, const char *argv[]) {
   }
   crct = 1 - crct;
   yes = 0;
-  E = 1;
-  airSrandMT((int)airTime());
-  while (E) {
+  E = 0;
+  airSrandMT(AIR_UINT(airTime()));
+  chng = calc = 1; /* just to thwart convergence */
+  do {
+    double blah;
     yes += runexp(year, N, M);
-    if (!(E % P)) {
-      printf("P = %10d/%10d = %22.20f =?= %22.20f\n", yes, E, (double)yes / E, crct);
-    }
     E++;
-  }
+    calcOld = calc;
+    calc = (double)yes / E;
+    blah = fabs(calcOld - calc) / ((calcOld + calc) / 2);
+    chng = (chng + (AIR_EXISTS(blah) ? blah : 1)) / 2;
+    if (!(E % P)) {
+      printf("P = %10u/%10u = %22.20f =?= %22.20f  (chng=%g)\n", yes, E, calc, crct,
+             chng);
+    }
+  } while (chng > chngEps);
+  printf("P = %10u/%10u = %22.20f =?= %22.20f  (chng=%g)\n", yes, E, calc, crct, chng);
 
   airMopOkay(mop);
   exit(0);

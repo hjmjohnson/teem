@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -24,7 +24,7 @@
 
 void
 _nrrdAxisInfoInit(NrrdAxisInfo *axis) {
-  int dd;
+  unsigned int dd;
 
   if (axis) {
     axis->size = 0;
@@ -184,7 +184,7 @@ _nrrdKindAltered(int kindIn, int resampling) {
 */
 void
 _nrrdAxisInfoCopy(NrrdAxisInfo *dest, const NrrdAxisInfo *src, int bitflag) {
-  int ii;
+  unsigned int ii;
 
   if (!(NRRD_AXIS_INFO_SIZE_BIT & bitflag)) {
     dest->size = src->size;
@@ -702,6 +702,7 @@ nrrdAxisInfoPos(const Nrrd *nrrd, unsigned int ax, double idx) {
   return NRRD_POS(center, min, max, size, idx);
 }
 
+/* ---- BEGIN non-NrrdIO */
 /*
 ******** nrrdAxisInfoIdx()
 **
@@ -725,6 +726,7 @@ nrrdAxisInfoIdx(const Nrrd *nrrd, unsigned int ax, double pos) {
 
   return NRRD_IDX(center, min, max, size, pos);
 }
+/* ---- END non-NrrdIO */
 
 /*
 ******** nrrdAxisInfoPosRange()
@@ -772,6 +774,7 @@ nrrdAxisInfoPosRange(double *loP, double *hiP, const Nrrd *nrrd, unsigned int ax
   return;
 }
 
+/* ---- BEGIN non-NrrdIO */
 /*
 ******** nrrdAxisInfoIdxRange()
 **
@@ -846,7 +849,7 @@ nrrdAxisInfoSpacingSet(Nrrd *nrrd, unsigned int ax) {
   if (!(AIR_EXISTS(min) && AIR_EXISTS(max))) {
     /* there's no actual basis on which to set the spacing information,
        but we have to set it something, so here goes .. */
-    nrrd->axis[ax].spacing = nrrdDefaultSpacing;
+    nrrd->axis[ax].spacing = 1 /* Gone in TeemV2: nrrdDefaultSpacing */;
     return;
   }
 
@@ -878,7 +881,7 @@ nrrdAxisInfoMinMaxSet(Nrrd *nrrd, unsigned int ax, int defCenter) {
 
   center = _nrrdCenter2(nrrd->axis[ax].center, defCenter);
   spacing = nrrd->axis[ax].spacing;
-  if (!AIR_EXISTS(spacing)) spacing = nrrdDefaultSpacing;
+  if (!AIR_EXISTS(spacing)) spacing = 1 /* Gone in TeemV2: nrrdDefaultSpacing */;
   if (nrrdCenterCell == center) {
     nrrd->axis[ax].min = 0;
     nrrd->axis[ax].max = spacing * AIR_CAST(double, nrrd->axis[ax].size);
@@ -889,7 +892,6 @@ nrrdAxisInfoMinMaxSet(Nrrd *nrrd, unsigned int ax, int defCenter) {
 
   return;
 }
-/* ---- BEGIN non-NrrdIO */
 
 /*
 ** not using the value comparators in accessors.c because of their
@@ -1497,7 +1499,7 @@ nrrdMetaDataNormalize(Nrrd *nout, const Nrrd *nin, int version, int trivialOrien
       }
     }
   } else if (haveMM && !trivialOrient) {
-    int saxi = 0;
+    unsigned int saxi = 0;
     size_t N;
     double rng;
     for (axi = 0; axi < ntmp->dim; axi++) {
@@ -1524,7 +1526,7 @@ nrrdMetaDataNormalize(Nrrd *nout, const Nrrd *nin, int version, int trivialOrien
     ntmp->spaceDim = saxi;
   } else {
     /* either trivialOrient, or, not spaceDim and not haveMM */
-    int saxi = 0;
+    unsigned int saxi = 0;
     nrrdSpaceVecSetZero(ntmp->spaceOrigin);
     for (axi = 0; axi < ntmp->dim; axi++) {
       if (nrrdKindUnknown == kindOut || kindAxis != axi) {
@@ -1544,7 +1546,7 @@ nrrdMetaDataNormalize(Nrrd *nout, const Nrrd *nin, int version, int trivialOrien
 
   /* space dimension has to match the number of domain axes */
   if (ntmp->dim != ntmp->spaceDim + !!kindOut) {
-    biffAddf(NRRD, "%s: output dim %d != spaceDim %d + %d %s%s%s%s", me, ntmp->dim,
+    biffAddf(NRRD, "%s: output dim %u != spaceDim %u + %d %s%s%s%s", me, ntmp->dim,
              ntmp->spaceDim, !!kindOut, kindOut ? "for non-scalar (" : "(scalar data)",
              kindOut ? airEnumStr(nrrdKind, kindOut) : "", kindOut ? ") data" : "",
              kindOut ? ""

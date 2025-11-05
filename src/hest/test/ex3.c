@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -81,12 +81,12 @@ main(int argc, const char **argv) {
   printf("blah = \"%s\" \"%s\" \"%s\"\n", blah[0], blah[1], blah[2]);
   // printf("option = \"%s\"\n", option ? option : "(null)");
   printf("res = %d %d\n", res[0], res[1]);
-  printf("\nin = %d files:", numIn);
+  printf("\nin = %u files:", numIn);
   for (unsigned int n = 0; n <= numIn - 1; n++) {
     printf(" \"%s\"", in[n] ? in[n] : "(null)");
   }
   printf("\n");
-  printf("ints = %d ints:", numN);
+  printf("ints = %u ints:", numN);
   for (unsigned int n = 0; n <= numN - 1; n++) {
     printf(" %d", ints[n]);
   }

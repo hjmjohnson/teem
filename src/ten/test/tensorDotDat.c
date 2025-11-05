@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -152,7 +152,7 @@ main(int argc, const char *argv[]) {
   }
   E = 0;
   if (!E) strcpy(keyStr, "maxiter");
-  if (!E) sprintf(valStr, "%d", tgparm->maxIteration);
+  if (!E) sprintf(valStr, "%u", tgparm->maxIteration);
   if (!E) E |= nrrdKeyValueAdd(nlog, keyStr, valStr);
   if (!E) strcpy(keyStr, "step");
   if (!E) sprintf(valStr, "%g", tgparm->initStep);

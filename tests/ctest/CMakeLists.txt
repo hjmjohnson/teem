@@ -5,7 +5,7 @@
 # Note: these tests are very incomplete. It is unclear how much of Teem's
 # future development will hinge on CTest-based testing, now that the
 # Python/CFFI bindings offer a more convenient way to call into Teem.  But they
-# do test something useful, and now for the Teem v2 re-write they work again.
+# do test something useful, and now for the TeemV2 re-write they work again.
 
 # To run tests (from top-level):
 #

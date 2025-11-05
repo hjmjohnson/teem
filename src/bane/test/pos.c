@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -17,13 +17,12 @@
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #include "../bane.h"
 
 char *me;
 
 void
-usage() {
+usage(void) {
   /*                      0     1        2       3          4   (5) */
   fprintf(stderr, "usage: %s <infoIn> <sigma> <gthresh> <posOut>\n", me);
   exit(1);
@@ -44,16 +43,13 @@ main(int argc, char *argv[]) {
   gthStr = argv[3];
   oStr = argv[4];
 
-  if (1 != sscanf(sigStr, "%g", &sigma) ||
-      1 != sscanf(gthStr, "%g", &gthresh)) {
-    fprintf(stderr, "%s: couldn't parse %s and %s as floats\n", me,
-            sigStr, gthStr);
+  if (1 != sscanf(sigStr, "%g", &sigma) || 1 != sscanf(gthStr, "%g", &gthresh)) {
+    fprintf(stderr, "%s: couldn't parse %s and %s as floats\n", me, sigStr, gthStr);
     usage();
   }
 
-  if (nrrdLoad(info=nrrdNew(), iStr, NULL)) {
-    fprintf(stderr, "%s: trouble reading \"%s\" :\n%s\n", me,
-            iStr, biffGet(NRRD));
+  if (nrrdLoad(info = nrrdNew(), iStr, NULL)) {
+    fprintf(stderr, "%s: trouble reading \"%s\" :\n%s\n", me, iStr, biffGet(NRRD));
     exit(1);
   }
   if (banePosCalc(pos = nrrdNew(), sigma, gthresh, info)) {
@@ -69,4 +65,3 @@ main(int argc, char *argv[]) {
   nrrdNuke(pos);
   exit(0);
 }
-

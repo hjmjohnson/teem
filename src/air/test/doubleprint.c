@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -17,7 +17,6 @@
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #include "../air.h"
 
 char *me;
@@ -25,6 +24,7 @@ char *me;
 int
 main(int argc, char *argv[]) {
   char *fS, buff[128];
+  size_t buffSize = 128;
   float f;
   double d, sd;
   int ret;
@@ -50,11 +50,11 @@ main(int argc, char *argv[]) {
     printf("\n");
   }
   f = AIR_FLOAT(d);
-  airSinglePrintf(NULL, buff, "%f", f);
-  printf("%s: printf/airSinglePrintf as float:\n%f\n%s\n", me, f, buff);
-  airSinglePrintf(NULL, buff, "%lf", d);
+  airSinglePrintf(NULL, buff, buffSize, "%g", f);
+  printf("%s: printf/airSinglePrintf as float:\n%g\n%s\n", me, f, buff);
+  airSinglePrintf(NULL, buff, buffSize, "%lg", d);
   printf("\n");
-  printf("%s: printf/airSinglePrintf as double:\n%f\n%s\n", me, d, buff);
+  printf("%s: printf/airSinglePrintf as double:\n%lg\n%s\n", me, d, buff);
   printf("\n");
   printf("%s: airFPFprintf_d:\n", me);
   airFPFprintf_d(stderr, d);

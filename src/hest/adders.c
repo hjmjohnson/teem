@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -203,8 +203,8 @@ _M and _N    _M and _N    _M and _N    _M and _N    _M and _N    _M and _N    _M
                                    const char *info)
 #define IMP_T_N(_, ATYP, CTYP)                                                          \
   {                                                                                     \
-    return hestOptAdd_nva(hoptP, flag, name, airType##ATYP, N, N, valueP, dflt, info,   \
-                          NULL, NULL, NULL);                                            \
+    return hestOptAdd_nva(hoptP, flag, name, airType##ATYP, N, AIR_INT(N), valueP,      \
+                          dflt, info, NULL, NULL, NULL);                                \
   }
 #define DEF_T_N(_, ATYP, CTYP) DCL_T_N(_, ATYP, CTYP) IMP_T_N(_, ATYP, CTYP)
 /* copy-pasta for _E Enums */
@@ -224,8 +224,8 @@ _M and _N    _M and _N    _M and _N    _M and _N    _M and _N    _M and _N    _M
                                  const char *info, const airEnum *enm)
 #define IMP_E_N(_)                                                                      \
   {                                                                                     \
-    return hestOptAdd_nva(hoptP, flag, name, airTypeEnum, N, N, valueP, dflt, info,     \
-                          NULL, enm, NULL);                                             \
+    return hestOptAdd_nva(hoptP, flag, name, airTypeEnum, N, AIR_INT(N), valueP, dflt,  \
+                          info, NULL, enm, NULL);                                       \
   }
 #define DEF_E_N(_) DCL_E_N(_) IMP_E_N(_)
 /* copy-pasta for _O Other */
@@ -245,8 +245,8 @@ _M and _N    _M and _N    _M and _N    _M and _N    _M and _N    _M and _N    _M
                                   const char *info, const hestCB *CB)
 #define IMP_O_N(_)                                                                      \
   {                                                                                     \
-    return hestOptAdd_nva(hoptP, flag, name, airTypeOther, N, N, valueP, dflt, info,    \
-                          NULL, NULL, CB);                                              \
+    return hestOptAdd_nva(hoptP, flag, name, airTypeOther, N, AIR_INT(N), valueP, dflt, \
+                          info, NULL, NULL, CB);                                        \
   }
 #define DEF_O_N(_) DCL_O_N(_) IMP_O_N(_)
 

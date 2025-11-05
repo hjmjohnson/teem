@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -25,7 +25,7 @@ main(int argc, const char **argv) {
   AIR_UNUSED(argc);
   printf("%s: yo\n", argv[0]);
   hestArg *harg = hestArgNew();
-  printf("%s: harg = %p\n", argv[0], harg);
+  printf("%s: harg = %p\n", argv[0], AIR_CVOIDP(harg));
   printf("%s: |%s|\n", argv[0], harg->str);
   hestArgAddChar(harg, 'c');
   printf("%s: |%s|\n", argv[0], harg->str);

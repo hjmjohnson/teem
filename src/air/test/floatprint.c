@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -17,7 +17,6 @@
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #include "../air.h"
 
 char *me;
@@ -25,6 +24,7 @@ char *me;
 int
 main(int argc, char *argv[]) {
   char *fS, buff[128];
+  size_t buffSize = 128;
   float f, sf;
   double d;
   int ret;
@@ -50,24 +50,25 @@ main(int argc, char *argv[]) {
     printf("\n");
   }
   d = f;
-  airSinglePrintf(NULL, buff, "%f", f);
-  printf("%s: printf/airSinglePrintf as float:\n%f\n%s\n", me, f, buff);
-  airSinglePrintf(NULL, buff, "%f", d);
+  airSinglePrintf(NULL, buff, buffSize, "%g", f);
+  printf("%s: printf/airSinglePrintf as float:\n%g\n%s\n", me, f, buff);
+  airSinglePrintf(NULL, buff, buffSize, "%lg", d);
   printf("\n");
-  printf("%s: printf/airSinglePrintf as double:\n%f\n%s\n", me, d, buff);
+  printf("%s: printf/airSinglePrintf as double:\n%g\n%s\n", me, d, buff);
   printf("\n");
   printf("%s: airFPFprintf_f:\n", me);
   airFPFprintf_f(stderr, f);
 
   {
     double l2d = log2(AIR_ABS(d));
-    double fl2d = floor(l2d)+1;
+    double fl2d = floor(l2d) + 1;
     double ss = l2d - fl2d;
-    double ess = pow(2,ss);
+    double ess = pow(2, ss);
     int ee;
     double frx = frexp(d, &ee);
-      printf("d=%.17g -> l2d=%.17g -> fl2d=%.17g\n -> ss=%.17g -> ess=%.17g vs %0.17g|%d\n",
-             d, l2d, fl2d, ss, ess, frx, ee);
+    printf(
+      "d=%.17g -> l2d=%.17g -> fl2d=%.17g\n -> ss=%.17g -> ess=%.17g vs %0.17g|%d\n", d,
+      l2d, fl2d, ss, ess, frx, ee);
   }
 
   ret = sscanf(fS, "%lf", &d);
@@ -77,8 +78,8 @@ main(int argc, char *argv[]) {
   }
   airFPFprintf_d(stderr, d);
 
-  d = (double)1/10;
-  d = d+d+d+d+d+d+d+d+d+d;
+  d = (double)1 / 10;
+  d = d + d + d + d + d + d + d + d + d + d;
   printf("d = %.17g\n", d);
   airFPFprintf_d(stderr, d);
 

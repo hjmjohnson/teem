@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -27,7 +27,7 @@
 #include <teem/ten.h>
 #include <teem/meet.h>
 
-#define SPACING(spc) (AIR_EXISTS(spc) ? spc : nrrdDefaultSpacing)
+#define SPACING(spc) (AIR_EXISTS(spc) ? spc : 1.0)
 
 /* copied this from ten.h; I don't want gage to depend on ten */
 #define PROBE_MAT2LIST(l, m)                                                            \
@@ -35,15 +35,14 @@
    (l)[6] = (m)[8])
 
 void
-printans(FILE *file, const double *ans, int len) {
-  int a;
+printans(FILE *file, const double *ans, unsigned int len) {
 
   AIR_UNUSED(file);
-  for (a = 0; a <= len - 1; a++) {
-    if (a) {
+  for (unsigned int ai = 0; ai <= len - 1; ai++) {
+    if (ai) {
       printf(", ");
     }
-    printf("%g", ans[a]);
+    printf("%g", ans[ai]);
   }
 }
 
@@ -95,7 +94,7 @@ main(int argc, const char *argv[]) {
                      "probe along line, instead of at point.  "
                      "The \"-p\" three coords are the line start point. "
                      "If \"s\" is zero, (x,y,z) is the line end point. "
-                     "If \"s\" is non-zero, (x,y,z) is the line direction, "
+                     "If \"s\" is positive, (x,y,z) is the line direction, "
                      "which is scaled to have length \"s\", "
                      "and then used as the step between line samples. ");
   hestOptAdd_1_UInt(&hopt, "pln", "num", &lineStepNum, "0",
@@ -163,7 +162,7 @@ main(int argc, const char *argv[]) {
     return 1;
   }
 
-  if (ELL_4V_LEN(lineInfo) && !lineStepNum) {
+  if (ELL_4V_LEN(lineInfo) > 0 && !lineStepNum) {
     fprintf(stderr,
             "%s: gave line info (\"-pl\") but not "
             "# samples (\"-pln\")",
@@ -338,13 +337,13 @@ main(int argc, const char *argv[]) {
     }
     dout = AIR_CAST(double *, nout->data);
     ELL_3V_COPY(start, pos);
-    if (lineInfo[3]) {
+    if (lineInfo[3] > 0) {
       double tmp;
       /* stepping along vector */
       ELL_3V_COPY(dir, 0 + lineInfo);
       ELL_3V_SET(end, AIR_NAN, AIR_NAN, AIR_NAN);
       ELL_3V_NORM(dir, dir, tmp);
-      if (!tmp) {
+      if (tmp == 0) {
         fprintf(stderr, "%s: requested vector stepping, but vlen = 0", me);
         airMopError(mop);
         return 1;
@@ -356,7 +355,7 @@ main(int argc, const char *argv[]) {
       ELL_3V_COPY(end, 0 + lineInfo);
     }
     for (vidx = 0; vidx < lineStepNum; vidx++) {
-      if (lineInfo[3]) {
+      if (lineInfo[3] > 0) {
         ELL_3V_SCALE_ADD2(lpos, 1, start, vidx, dir);
       } else {
         ELL_3V_AFFINE(lpos, 0, vidx, lineStepNum - 1, start, end);

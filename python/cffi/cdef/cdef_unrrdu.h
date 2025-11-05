@@ -6,7 +6,7 @@ CFFI, within its many limitations, specifically lacking a C pre-processor
  /* =========== unrrdu.h =========== */
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
   This library is free software; you can redistribute it and/or modify it under the terms
@@ -54,7 +54,10 @@ enum {
 /* flotsam.c */
 extern const int unrrduPresent;
 extern const char *const unrrduBiffKey;
-extern unsigned int unrrduDefNumColumns;
+extern unsigned int unrrduDefaultNumColumns;
+extern int unrrduDefaultImplicitLutRmapRescale;
+extern const char *const unrrduEnvVarDefaultImplicitLutRmapRescale;
+extern void unrrduGetenvDefaultImplicitLutRmapRescale(void);
 /* unrrduCmdList[] gives addresses of unrrdu_fooCmd for all commands "unu foo".
    The list of all commands is maintained in privateUnrrdu.h */
 extern const unrrduCmd *const unrrduCmdList[];

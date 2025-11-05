@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -30,18 +30,18 @@ tend_evecMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   char *perr, *err;
   airArray *mop;
 
-  int ret, *comp;
-  unsigned int cc, compLen;
+  int ret;
+  unsigned int cc, *comp, compLen;
   Nrrd *nin, *nout;
   char *outS;
   float thresh, *edata, *tdata, eval[3], evec[9], scl;
   size_t N, I, sx, sy, sz;
 
-  hestOptAdd_Nv_Int(&hopt, "c", "c0 ", 1, 3, &comp, NULL,
-                    "which eigenvalues should be saved out. \"0\" for the "
-                    "largest, \"1\" for the middle, \"2\" for the smallest, "
-                    "\"0 1\", \"1 2\", \"0 1 2\" or similar for more than one",
-                    &compLen);
+  hestOptAdd_Nv_UInt(&hopt, "c", "c0 ", 1, 3, &comp, NULL,
+                     "which eigenvalues should be saved out. \"0\" for the "
+                     "largest, \"1\" for the middle, \"2\" for the smallest, "
+                     "\"0 1\", \"1 2\", \"0 1 2\" or similar for more than one",
+                     &compLen);
   hestOptAdd_1_Float(&hopt, "t", "thresh", &thresh, "0.5", "confidence threshold");
   hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-", "input diffusion tensor volume",
                      nrrdHestNrrd);
@@ -54,7 +54,7 @@ tend_evecMain(int argc, const char **argv, const char *me, hestParm *hparm) {
 
   for (cc = 0; cc < compLen; cc++) {
     if (!AIR_IN_CL(0, comp[cc], 2)) {
-      fprintf(stderr, "%s: requested component %d (%d of 3) not in [0..2]\n", me,
+      fprintf(stderr, "%s: requested component %u (%u of 3) not in [0..2]\n", me,
               comp[cc], cc + 1);
       airMopError(mop);
       return 1;

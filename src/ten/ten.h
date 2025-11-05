@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -40,7 +40,12 @@
 #    define TEN_EXPORT extern __declspec(dllimport)
 #  endif
 #else /* TEEM_STATIC || UNIX */
-#  define TEN_EXPORT extern
+#  if !defined(TEEM_STATIC)
+/*   If built w/ -fvisibility=hidden, only EXPORTed symbols are visible in shared lib */
+#    define TEN_EXPORT extern __attribute__((visibility("default")))
+#  else
+#    define TEN_EXPORT extern
+#  endif
 #endif
 
 #ifdef __cplusplus
@@ -1228,15 +1233,15 @@ typedef struct tenModel_t {
 /* defaultsTen.c */
 TEN_EXPORT const int tenPresent;
 TEN_EXPORT const char *const tenBiffKey;
-TEN_EXPORT const char tenDefFiberKernel[];
-TEN_EXPORT double tenDefFiberStepSize;
-TEN_EXPORT int tenDefFiberUseIndexSpace;
-TEN_EXPORT int tenDefFiberMaxNumSteps;
-TEN_EXPORT double tenDefFiberMaxHalfLen;
-TEN_EXPORT int tenDefFiberAnisoStopType;
-TEN_EXPORT double tenDefFiberAnisoThresh;
-TEN_EXPORT int tenDefFiberIntg;
-TEN_EXPORT double tenDefFiberWPunct;
+TEN_EXPORT const char tenDefaultFiberKernel[];
+TEN_EXPORT double tenDefaultFiberStepSize;
+TEN_EXPORT int tenDefaultFiberUseIndexSpace;
+TEN_EXPORT int tenDefaultFiberMaxNumSteps;
+TEN_EXPORT double tenDefaultFiberMaxHalfLen;
+TEN_EXPORT int tenDefaultFiberAnisoStopType;
+TEN_EXPORT double tenDefaultFiberAnisoThresh;
+TEN_EXPORT int tenDefaultFiberIntg;
+TEN_EXPORT double tenDefaultFiberWPunct;
 
 /* triple.c */
 TEN_EXPORT void tenTripleConvertSingle_d(double dst[3],
@@ -1483,7 +1488,7 @@ TEN_EXPORT void tenFiberVerboseSet(tenFiberContext *tfx, int verbose);
 TEN_EXPORT int tenFiberTypeSet(tenFiberContext *tfx, int type);
 TEN_EXPORT int tenFiberKernelSet(tenFiberContext *tfx,
                                  const NrrdKernel *kern,
-                                 const double parm[NRRD_KERNEL_PARMS_NUM]);
+                                 const double parm[NRRD_KERNEL_PARM_MAXNUM]);
 TEN_EXPORT int tenFiberProbeItemSet(tenFiberContext *tfx, int item);
 TEN_EXPORT int tenFiberIntgSet(tenFiberContext *tfx, int intg);
 TEN_EXPORT int tenFiberStopSet(tenFiberContext *tfx, int stop, ...);

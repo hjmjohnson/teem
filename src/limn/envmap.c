@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -127,7 +127,7 @@ limnEnvMapCheck(Nrrd *envMap) {
     return 1;
   }
   if (!(3 == envMap->dim)) {
-    biffAddf(LIMN, "%s: dimension should be 3, not %d", me, envMap->dim);
+    biffAddf(LIMN, "%s: dimension should be 3, not %u", me, envMap->dim);
     return 1;
   }
   if (!(3 == envMap->axis[0].size && 256 == envMap->axis[1].size

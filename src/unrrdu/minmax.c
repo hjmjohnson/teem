@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -53,17 +53,20 @@ unrrdu_minmaxDoit(const char *me, char *inS, int blind8BitRange, int singleLine,
   airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
   if (singleLine) {
     char minStr[128], maxStr[128], nexStr[128];
-    airSinglePrintf(NULL, minStr, "%.17g", range->min);
-    airSinglePrintf(NULL, maxStr, "%.17g", range->max);
+    size_t strSize = 128;
+    /* (using TeemV2 airSinglePrintf) */
+    airSinglePrintf(NULL, minStr, strSize, "%lg", range->min);
+    airSinglePrintf(NULL, maxStr, strSize, "%lg", range->max);
     if (range->hasNonExist) {
-      strcpy(nexStr, " non-existent");
+      snprintf(nexStr, strSize, " non-existent");
     } else {
-      strcpy(nexStr, "");
+      nexStr[0] = '\0';
     }
     fprintf(fout, "%s %s%s\n", minStr, maxStr, nexStr);
   } else {
-    airSinglePrintf(fout, NULL, "min: %.17g\n", range->min);
-    airSinglePrintf(fout, NULL, "max: %.17g\n", range->max);
+    /* (using TeemV2 airSinglePrintf) */
+    airSinglePrintf(fout, NULL, 0, "min: %lg\n", range->min);
+    airSinglePrintf(fout, NULL, 0, "max: %lg\n", range->max);
     if (range->min == range->max) {
       if (0 == range->min) {
         fprintf(fout, "# min == max == 0.0 exactly\n");

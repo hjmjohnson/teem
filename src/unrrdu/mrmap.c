@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -22,11 +22,12 @@
 
 #define INFO "Map nrrd through a whole nrrd of regular univariate maps"
 static const char *_unrrdu_mrmapInfoL
-  = (INFO ", one map per sample in input. The \"mmap\" nrrd has the same dimensional "
+  = (INFO ", one map per sample in input. The \"mrmap\" nrrd has the same dimensional "
           "constraints as the \"mlut\" nrrd for \"unu mlut\".  This functionality "
           "is a generalization of \"unu 3op lerp\": it allows you to lerp through "
-          "multiple nrrds, instead of just two.\n "
-          "* Uses nrrdApplyMulti1DRegMap");
+          "multiple nrrds, instead of just two.\n " /* */
+     UNRRDU_DILRR_INFO("mrmap")                     /* */
+     "* Uses nrrdApplyMulti1DRegMap");
 
 static int
 unrrdu_mrmapMain(int argc, const char **argv, const char *me, hestParm *hparm) {
@@ -45,12 +46,13 @@ unrrdu_mrmapMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                       "list of nrrds which contain the individual entries of the map "
                       "at each voxel, which will be joined together.",
                       &_nmmapLen, nrrdHestNrrdNoTTY);
-  hestOptAdd_Flag(&opt, "r,rescale", &rescale,
-                  "rescale the input values from the input range to the "
-                  "map domain.  The map domain is either explicitly "
-                  "defined by the axis min,max along axis 0 or 1, or, it "
-                  "is implicitly defined as zero to one minus the length of "
-                  "that axis.");
+  int rsclOptIdx
+    = hestOptAdd_1v_Bool(&opt, "r,rescale", "bool", &rescale, "false",
+                         "rescale the input values from the input range to the "
+                         "map domain.  The map domain is either explicitly "
+                         "defined by the axis min,max along axis 0 or 1, or, it "
+                         "is implicitly defined as zero to one minus the length of "
+                         "that axis.");
   hestOptAdd_1_Double(&opt, "min,minimum", "value", &min, "nan",
                       "Low end of input range. Defaults to lowest value "
                       "found in input nrrd.  Explicitly setting this is useful "
@@ -72,7 +74,7 @@ unrrdu_mrmapMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                      "specify the type (\"int\", \"float\", etc.) of the "
                      "output nrrd. "
                      "By default (not using this option), the output type "
-                     "is the map's type.",
+                     "is the map's type",
                      &unrrduHestMaybeTypeCB);
   OPT_ADD_NIN(nin, "input nrrd");
   OPT_ADD_NOUT(out, "output nrrd");
@@ -113,8 +115,13 @@ unrrdu_mrmapMain(int argc, const char **argv, const char *me, hestParm *hparm) {
     nmmap->axis[mapAxis].max = max;
   }
 
-  if (!(AIR_EXISTS(nmmap->axis[mapAxis].min) && AIR_EXISTS(nmmap->axis[mapAxis].max))) {
-    rescale = AIR_TRUE;
+  unrrduGetenvDefaultImplicitLutRmapRescale();
+  /* NOTE: comment in lut.c describes logic for how rescale is set */
+  if (!hestSourceUser(opt[rsclOptIdx].source)) {
+    if (!(AIR_EXISTS(nmmap->axis[mapAxis].min)
+          && AIR_EXISTS(nmmap->axis[mapAxis].max))) {
+      rescale = unrrduDefaultImplicitLutRmapRescale;
+    }
   }
   if (rescale) {
     range = nrrdRangeNew(min, max);

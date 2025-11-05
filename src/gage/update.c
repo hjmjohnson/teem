@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -72,7 +72,7 @@ _gagePvlNeedDUpdate(gageContext *ctx) {
       } while (que);
       if (!GAGE_DV_EQUAL(needD, pvl->needD)) {
         if (ctx->verbose) {
-          fprintf(stderr, "%s: updating pvl[%d]'s needD to (", me, pvlIdx);
+          fprintf(stderr, "%s: updating pvl[%u]'s needD to (", me, pvlIdx);
           for (di = 0; di <= GAGE_DERIV_MAX; di++) {
             fprintf(stderr, "%s%d", di ? "," : "", needD[di]);
           }
@@ -215,14 +215,14 @@ _gageRadiusUpdate(gageContext *ctx) {
   if (ctx->parm.stackUse
       && (nrrdKernelHermiteScaleSpaceFlag == ctx->ksp[gageKernelStack]->kernel)) {
     if (ctx->verbose) {
-      fprintf(stderr, "%s: hermite on stack: bumping radius %d --> %d\n", me, radius,
+      fprintf(stderr, "%s: hermite on stack: bumping radius %u --> %u\n", me, radius,
               radius + 1);
     }
     radius += 1;
   }
   if (radius != ctx->radius) {
     if (ctx->verbose) {
-      fprintf(stderr, "%s: changing radius from %d to %d\n", me, ctx->radius, radius);
+      fprintf(stderr, "%s: changing radius from %u to %u\n", me, ctx->radius, radius);
     }
     ctx->radius = radius;
     ctx->flag[gageCtxFlagRadius] = AIR_TRUE;
@@ -235,13 +235,13 @@ _gageRadiusUpdate(gageContext *ctx) {
 static int /* Biff: 1 */
 _gageCacheSizeUpdate(gageContext *ctx) {
   static const char me[] = "_gageCacheSizeUpdate";
-  int fd;
+  unsigned int fd;
   gagePerVolume *pvl;
   unsigned int pvlIdx;
 
-  if (ctx->verbose) fprintf(stderr, "%s: hello (radius = %d)\n", me, ctx->radius);
+  if (ctx->verbose) fprintf(stderr, "%s: hello (radius = %u)\n", me, ctx->radius);
   if (!(ctx->radius > 0)) {
-    biffAddf(GAGE, "%s: have bad radius %d", me, ctx->radius);
+    biffAddf(GAGE, "%s: have bad radius %u", me, ctx->radius);
     return 1;
   }
   fd = 2 * ctx->radius;
@@ -252,7 +252,7 @@ _gageCacheSizeUpdate(gageContext *ctx) {
   ctx->fw = (double *)calloc(fd * 3 * (GAGE_KERNEL_MAX + 1), sizeof(double));
   ctx->off = (unsigned int *)calloc(fd * fd * fd, sizeof(unsigned int));
   if (!(ctx->fsl && ctx->fw && ctx->off)) {
-    biffAddf(GAGE, "%s: couldn't allocate filter caches for fd=%d", me, fd);
+    biffAddf(GAGE, "%s: couldn't allocate filter caches for fd=%u", me, fd);
     return 1;
   }
   /* note that all pvls get caches allocated for the same size, even if
@@ -267,7 +267,7 @@ _gageCacheSizeUpdate(gageContext *ctx) {
     pvl->iv2 = (double *)calloc(fd * fd * pvl->kind->valLen, sizeof(double));
     pvl->iv1 = (double *)calloc(fd * pvl->kind->valLen, sizeof(double));
     if (!(pvl->iv3 && pvl->iv2 && pvl->iv1)) {
-      biffAddf(GAGE, "%s: couldn't allocate pvl[%d]'s value caches for fd=%d", me,
+      biffAddf(GAGE, "%s: couldn't allocate pvl[%u]'s value caches for fd=%u", me,
                pvlIdx, fd);
       return 1;
     }

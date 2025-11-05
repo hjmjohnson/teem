@@ -34,7 +34,7 @@ static int /* Biff: 1 */
 histPop(hestInputStack *hist, const hestParm *hparm) {
   if (!(hist && hparm)) {
     biffAddf(HEST, "%s%sgot NULL pointer (hist %p hparm %p)", _ME_, AIR_VOIDP(hist),
-             AIR_VOIDP(hparm));
+             AIR_CVOIDP(hparm));
     return 1;
   }
   if (!(hist->len)) {
@@ -286,7 +286,7 @@ histProcNextArgTry(int *nastP, hestArg *tharg, hestInputStack *hist,
                    const hestParm *hparm) {
   if (!(nastP && tharg && hist && hparm)) {
     biffAddf(HEST, "%s%sgot NULL pointer (nastP %p tharg %p hist %p hparm %p)", _ME_,
-             AIR_VOIDP(nastP), AIR_VOIDP(tharg), AIR_VOIDP(hist), AIR_VOIDP(hparm));
+             AIR_VOIDP(nastP), AIR_VOIDP(tharg), AIR_VOIDP(hist), AIR_CVOIDP(hparm));
     return 1;
   }
   // printf("!%s: hello hist->len %u\n", __func__, hist->len);
@@ -396,7 +396,7 @@ histPushCommandLine(hestInputStack *hist, int argc, const char **argv,
                     const hestParm *hparm) {
   if (!(hist && argv && hparm)) {
     biffAddf(HEST, "%s%sgot NULL pointer (hist %p, argv %p, hparm %p)", _ME_,
-             AIR_VOIDP(hist), AIR_VOIDP(argv), AIR_VOIDP(hparm));
+             AIR_VOIDP(hist), AIR_CVOIDP(argv), AIR_CVOIDP(hparm));
     return 1;
   }
   if (HIST_DEPTH_MAX == hist->len) {
@@ -413,7 +413,7 @@ histPushCommandLine(hestInputStack *hist, int argc, const char **argv,
     printf("%s: new hinTop = %p\n", __func__, AIR_VOIDP(hist->hin + idx));
   }
   hist->hin[idx].source = hestSourceCommandLine;
-  hist->hin[idx].argc = argc;
+  hist->hin[idx].argc = AIR_UINT(argc);
   hist->hin[idx].argv = argv;
   hist->hin[idx].argIdx = 0;
   return 0;
@@ -423,7 +423,7 @@ static int /* Biff: 1 */
 histPushResponseFile(hestInputStack *hist, const char *rfname, const hestParm *hparm) {
   if (!(hist && rfname && hparm)) {
     biffAddf(HEST, "%s%sgot NULL pointer (hist %p, rfname %p, hparm %p)", _ME_,
-             AIR_VOIDP(hist), AIR_VOIDP(rfname), AIR_VOIDP(hparm));
+             AIR_VOIDP(hist), AIR_CVOIDP(rfname), AIR_CVOIDP(hparm));
     return 1;
   }
   if (HIST_DEPTH_MAX == hist->len) {
@@ -488,7 +488,7 @@ static int /* Biff: 1 */
 histPushDefault(hestInputStack *hist, const char *dflt, const hestParm *hparm) {
   if (!(hist && dflt && hparm)) {
     biffAddf(HEST, "%s%sgot NULL pointer (hist %p, dflt %p, hparm %p)", _ME_,
-             AIR_VOIDP(hist), AIR_VOIDP(dflt), AIR_VOIDP(hparm));
+             AIR_CVOIDP(hist), AIR_CVOIDP(dflt), AIR_CVOIDP(hparm));
     return 1;
   }
   if (HIST_DEPTH_MAX == hist->len) {
@@ -504,7 +504,7 @@ histPushDefault(hestInputStack *hist, const char *dflt, const hestParm *hparm) {
   uint idx = airArrayLenIncr(hist->hinArr, 1);
   hist->hin[idx].source = hestSourceDefault;
   hist->hin[idx].dfltStr = dflt;
-  hist->hin[idx].dfltLen = strlen(dflt);
+  hist->hin[idx].dfltLen = AIR_UINT(strlen(dflt));
   hist->hin[idx].carIdx = 0;
   return 0;
 }
@@ -797,7 +797,7 @@ static void
 optAllPrint(const char *func, const char *ctx, const hestOpt *hoptall) {
   printf("%s: %s:\n", func, ctx);
   printf("%s: v.v.v.v.v.v.v.v.v hestOpt %p has %u options (allocated for %u):\n", func,
-         AIR_VOIDP(hoptall), hoptall->arrLen, hoptall->arrAlloc);
+         AIR_CVOIDP(hoptall), hoptall->arrLen, hoptall->arrAlloc);
   for (uint opi = 0; opi < hoptall->arrLen; opi++) {
     optPrint(hoptall + opi, opi);
   }
@@ -877,7 +877,7 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
       && UINT_MAX // and we aren't looking at start of another flagged option
            == (nextOptIdx = whichOptFlag(hopt, havec->harg[pai]->str, hparm))) {
       if (hparm->verbose)
-        printf("%s: optIdx %d |%s|; argIdx %u < %u |%s| --> parmNum --> %d\n", __func__,
+        printf("%s: optIdx %u |%s|; argIdx %u < %u |%s| --> parmNum --> %u\n", __func__,
                optIdx, theOpt->flag, argIdx, pai, havec->harg[pai]->str, parmNum + 1);
       parmNum++;
     }
@@ -886,7 +886,7 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
        varParm and we hitVPS, or
        we hit the start of another flagged option (indicated by nextOptIdx) */
     if (hparm->verbose)
-      printf("%s: optIdx %d |%s|: stopped w/ "
+      printf("%s: optIdx %u |%s|: stopped w/ "
              "parmNum=%u hitEnd=%d hitVPS=%d nextOptIdx=%u\n",
              __func__, optIdx, theOpt->flag, parmNum, hitEnd, hitVPS, nextOptIdx);
     if (parmNum < theOpt->min) { // didn't get required min # parameters
@@ -905,13 +905,13 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
                  _ME_, VAR_PARM_STOP_FLAG, theOpt->min, theOpt->min > 1 ? "s" : "",
                  identStr(ident1, theOpt), parmNum);
       } else if (UINT_MAX != nextOptIdx) {
-        biffAddf(HEST, "%s%ssaw %s before getting %u parameter%s for %s (got %d)", _ME_,
+        biffAddf(HEST, "%s%ssaw %s before getting %u parameter%s for %s (got %u)", _ME_,
                  identStr(ident2, hopt + nextOptIdx), theOpt->min,
                  theOpt->min > 1 ? "s" : "", identStr(ident1, theOpt), parmNum);
       } else {
         biffAddf(HEST,
                  "%s%ssorry, confused about not getting %u "
-                 "parameter%s for %s (got %d)",
+                 "parameter%s for %s (got %u)",
                  _ME_, theOpt->min, theOpt->min > 1 ? "s" : "", identStr(ident1, theOpt),
                  parmNum);
       }
@@ -919,7 +919,7 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
       return 1;
     }
     if (hparm->verbose) {
-      printf("%s: ________ argv[%d]=|%s|: optIdx %u |%s| followed by %u parms\n",
+      printf("%s: ________ argv[%u]=|%s|: optIdx %u |%s| followed by %u parms\n",
              __func__, argIdx, havec->harg[argIdx]->str, optIdx, theOpt->flag, parmNum);
     }
     if (hparm->verbose > 1) {

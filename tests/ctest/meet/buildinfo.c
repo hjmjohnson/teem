@@ -51,7 +51,7 @@ main(int argc, const char **argv) {
 
   printf("nrrdFFTWEnabled = %d\n", nrrdFFTWEnabled);
 
-#if TEEM_LEVMAR
+#ifdef TEEM_LEVMAR
   printf("yes, TEEM_LEVMAR #defined\n");
 #else
   printf(" no, TEEM_LEVMAR not #defined\n");

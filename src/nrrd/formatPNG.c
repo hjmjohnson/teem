@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -21,7 +21,7 @@
 #include "privateNrrd.h"
 
 #include <teemPng.h>
-#if TEEM_PNG
+#ifdef TEEM_PNG
 #  include <png.h>
 #endif
 
@@ -30,7 +30,7 @@
 static int
 _nrrdFormatPNG_available(void) {
 
-#if TEEM_PNG
+#ifdef TEEM_PNG
   return AIR_TRUE;
 #else
   return AIR_FALSE;
@@ -87,7 +87,7 @@ _nrrdFormatPNG_fitsInto(const Nrrd *nrrd, const NrrdEncoding *encoding, int useB
     /* else */
     ret = AIR_TRUE;
   } else {
-    biffMaybeAddf(useBiff, NRRD, "%s: dimension is %d, not 2 or 3", me, nrrd->dim);
+    biffMaybeAddf(useBiff, NRRD, "%s: dimension is %u, not 2 or 3", me, nrrd->dim);
     return AIR_FALSE;
   }
   return ret;
@@ -506,7 +506,7 @@ _nrrdFormatPNG_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
     break;
   default:
     png_destroy_write_struct(&png, &info);
-    biffAddf(NRRD, "%s: dimension (%d) not compatible with PNG", me, nrrd->dim);
+    biffAddf(NRRD, "%s: dimension (%u) not compatible with PNG", me, nrrd->dim);
     return 1;
     break;
   }

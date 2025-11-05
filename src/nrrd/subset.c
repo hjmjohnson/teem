@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -62,7 +62,7 @@ nrrdSlice(Nrrd *nout, const Nrrd *cnin, unsigned int saxi, size_t pos) {
     }
   } else {
     if (!(saxi < cnin->dim)) {
-      biffAddf(NRRD, "%s: slice axis %d out of bounds (0 to %d)", me, saxi,
+      biffAddf(NRRD, "%s: slice axis %u out of bounds (0 to %u)", me, saxi,
                cnin->dim - 1);
       return 1;
     }
@@ -181,7 +181,8 @@ nrrdSlice(Nrrd *nout, const Nrrd *cnin, unsigned int saxi, size_t pos) {
 int /* Biff: 1 */
 nrrdCrop(Nrrd *nout, const Nrrd *nin, size_t *min, size_t *max) {
   static const char me[] = "nrrdCrop", func[] = "crop";
-  char buff1[NRRD_DIM_MAX * 30], buff2[AIR_STRLEN_SMALL + 1];
+  char *buff, _buff[NRRD_DIM_MAX * 30];
+  size_t buffSize = NRRD_DIM_MAX * 30;
   unsigned int ai;
   size_t I, lineSize,   /* #bytes in one scanline to be copied */
     typeSize,           /* size of data type */
@@ -203,12 +204,12 @@ nrrdCrop(Nrrd *nout, const Nrrd *nin, size_t *min, size_t *max) {
   }
   for (ai = 0; ai < nin->dim; ai++) {
     if (!(min[ai] <= max[ai])) {
-      biffAddf(NRRD, "%s: axis %d min (%s) not <= max (%s)", me, ai,
+      biffAddf(NRRD, "%s: axis %u min (%s) not <= max (%s)", me, ai,
                airSprintSize_t(stmp[0], min[ai]), airSprintSize_t(stmp[1], max[ai]));
       return 1;
     }
     if (!(min[ai] < nin->axis[ai].size && max[ai] < nin->axis[ai].size)) {
-      biffAddf(NRRD, "%s: axis %d min (%s) or max (%s) out of bounds [0,%s]", me, ai,
+      biffAddf(NRRD, "%s: axis %u min (%s) or max (%s) out of bounds [0,%s]", me, ai,
                airSprintSize_t(stmp[0], min[ai]), airSprintSize_t(stmp[1], max[ai]),
                airSprintSize_t(stmp[2], nin->axis[ai].size - 1));
       return 1;
@@ -309,13 +310,14 @@ nrrdCrop(Nrrd *nout, const Nrrd *nin, size_t *min, size_t *max) {
       }
     }
   }
-  strcpy(buff1, "");
+  buff = _buff;
+  buff[0] = '\0';
   for (ai = 0; ai < nin->dim; ai++) {
-    sprintf(buff2, "%s[%s,%s]", (ai ? "x" : ""), airSprintSize_t(stmp[0], min[ai]),
-            airSprintSize_t(stmp[1], max[ai]));
-    strcat(buff1, buff2);
+    snprintf(buff, buffSize, "%s[%s,%s]", (ai ? "x" : ""),
+             airSprintSize_t(stmp[0], min[ai]), airSprintSize_t(stmp[1], max[ai]));
+    STRINCR(buff, buffSize);
   }
-  if (nrrdContentSet_va(nout, func, nin, "%s", buff1)) {
+  if (nrrdContentSet_va(nout, func, nin, "%s", _buff)) {
     biffAddf(NRRD, "%s:", me);
     return 1;
   }
@@ -593,7 +595,7 @@ nrrdSample_nva(void *val, const Nrrd *nrrd, const size_t *coord) {
   nrrdAxisInfoGet_nva(nrrd, nrrdAxisInfoSize, size);
   for (ai = 0; ai < nrrd->dim; ai++) {
     if (!(coord[ai] < size[ai])) {
-      biffAddf(NRRD, "%s: coordinate %s on axis %d out of bounds (0 to %s)", me,
+      biffAddf(NRRD, "%s: coordinate %s on axis %u out of bounds (0 to %s)", me,
                airSprintSize_t(stmp[0], coord[ai]), ai,
                airSprintSize_t(stmp[1], size[ai] - 1));
       return 1;

@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -48,7 +48,7 @@ nrrdSplice(Nrrd *nout, const Nrrd *nin, const Nrrd *nslice, unsigned int axis,
 
   /* check that desired slice location is legit */
   if (!(axis < nin->dim)) {
-    biffAddf(NRRD, "%s: slice axis %d out of bounds (0 to %d)", me, axis, nin->dim - 1);
+    biffAddf(NRRD, "%s: slice axis %u out of bounds (0 to %u)", me, axis, nin->dim - 1);
     return 1;
   }
   if (!(pos < nin->axis[axis].size)) {
@@ -65,8 +65,8 @@ nrrdSplice(Nrrd *nout, const Nrrd *nin, const Nrrd *nslice, unsigned int axis,
   }
   if (!(nin->dim - 1 == nslice->dim)) {
     biffAddf(NRRD,
-             "%s: dim of slice (%d) not one less than "
-             "dim of input (%d)",
+             "%s: dim of slice (%u) not one less than "
+             "dim of input (%u)",
              me, nslice->dim, nin->dim);
     return 1;
   }
@@ -183,7 +183,7 @@ nrrdInset(Nrrd *nout, const Nrrd *nin, const Nrrd *nsub, const size_t *min) {
     return 1;
   }
   if (!(nin->dim == nsub->dim)) {
-    biffAddf(NRRD, "%s: input's dim (%d) != subvolume's dim (%d)", me, nin->dim,
+    biffAddf(NRRD, "%s: input's dim (%u) != subvolume's dim (%u)", me, nin->dim,
              nsub->dim);
     return 1;
   }
@@ -203,7 +203,7 @@ nrrdInset(Nrrd *nout, const Nrrd *nin, const Nrrd *nsub, const size_t *min) {
   for (ai = 0; ai < nin->dim; ai++) {
     if (!(min[ai] + nsub->axis[ai].size - 1 <= nin->axis[ai].size - 1)) {
       biffAddf(NRRD,
-               "%s: axis %d range of inset indices [%s,%s] not within "
+               "%s: axis %u range of inset indices [%s,%s] not within "
                "input indices [0,%s]",
                me, ai, airSprintSize_t(stmp[0], min[ai]),
                airSprintSize_t(stmp[1], min[ai] + nsub->axis[ai].size - 1),
@@ -249,8 +249,6 @@ nrrdInset(Nrrd *nout, const Nrrd *nin, const Nrrd *nsub, const size_t *min) {
        copying one (1-D) scanline at a time */
     NRRD_COORD_INCR(cOut, szOut, nin->dim, 1);
   }
-
-  /* HEY: before Teem version 2.0 figure out nrrdKind stuff here */
 
   strcpy(buff1, "[");
   for (ai = 0; ai < nin->dim; ai++) {
@@ -340,12 +338,12 @@ nrrdPad_va(Nrrd *nout, const Nrrd *nin, const ptrdiff_t *min, const ptrdiff_t *m
   nrrdAxisInfoGet_nva(nin, nrrdAxisInfoSize, szIn);
   for (ai = 0; ai < nin->dim; ai++) {
     if (!(min[ai] <= 0)) {
-      biffAddf(NRRD, "%s: axis %d min (%s) not <= 0", me, ai,
+      biffAddf(NRRD, "%s: axis %u min (%s) not <= 0", me, ai,
                airSprintPtrdiff_t(stmp[0], min[ai]));
       return 1;
     }
     if (!((size_t)max[ai] >= szIn[ai] - 1)) {
-      biffAddf(NRRD, "%s: axis %d max (%s) not >= size-1 (%s)", me, ai,
+      biffAddf(NRRD, "%s: axis %u max (%s) not >= size-1 (%s)", me, ai,
                airSprintPtrdiff_t(stmp[0], max[ai]),
                airSprintSize_t(stmp[1], szIn[ai] - 1));
       return 1;

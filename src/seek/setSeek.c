@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -70,7 +70,7 @@ seekDataSet(seekContext *sctx, const Nrrd *ninscl, gageContext *gctx,
       return 1;
     }
     if (3 != ninscl->dim) {
-      biffAddf(SEEK, "%s: vanilla scalar volume must be 3-D (not %d-D)", me,
+      biffAddf(SEEK, "%s: vanilla scalar volume must be 3-D (not %u-D)", me,
                ninscl->dim);
       return 1;
     }

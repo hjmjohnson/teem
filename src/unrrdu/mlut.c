@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -26,8 +26,8 @@ static const char *_unrrdu_mlutInfoL
           "tables are stored in a nrrd with a dimension which is either 1 or 2 "
           "more than the dimension of the input nrrd, resulting in an output "
           "which has either the same or one more dimension than the input, "
-          "resptectively.\n "
-          "* Uses nrrdApplyMulti1DLut");
+          "resptectively.\n " UNRRDU_DILRR_INFO("mlut") /* */
+     "* Uses nrrdApplyMulti1DLut");
 
 static int
 unrrdu_mlutMain(int argc, const char **argv, const char *me, hestParm *hparm) {
@@ -45,12 +45,13 @@ unrrdu_mlutMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                       "list of nrrds which contain the individual entries of "
                       "the lookup table at each voxel, which will be joined together.",
                       &_nmlutLen, nrrdHestNrrdNoTTY);
-  hestOptAdd_Flag(&opt, "r,rescale", &rescale,
-                  "rescale the input values from the input range to the "
-                  "lut domain.  The lut domain is either explicitly "
-                  "defined by the axis min,max along axis 0 or 1, or, it "
-                  "is implicitly defined as zero to the length of that axis "
-                  "minus one.");
+  int rsclOptIdx
+    = hestOptAdd_1v_Bool(&opt, "r,rescale", "bool", &rescale, "false",
+                         "rescale the input values from the input range to the "
+                         "lut domain.  The lut domain is either explicitly "
+                         "defined by the axis min,max along axis 0 or 1, or, it "
+                         "is implicitly defined as zero to the length of that axis "
+                         "minus one.");
   hestOptAdd_1_Double(&opt, "min,minimum", "value", &min, "nan",
                       "Low end of input range. Defaults to lowest value "
                       "found in input nrrd.  Explicitly setting this is useful "
@@ -68,7 +69,7 @@ unrrdu_mlutMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                      "specify the type (\"int\", \"float\", etc.) of the "
                      "output nrrd. "
                      "By default (not using this option), the output type "
-                     "is the lut's type.",
+                     "is the lut's type",
                      &unrrduHestMaybeTypeCB);
   OPT_ADD_NIN(nin, "input nrrd");
   OPT_ADD_NOUT(out, "output nrrd");
@@ -107,8 +108,13 @@ unrrdu_mlutMain(int argc, const char **argv, const char *me, hestParm *hparm) {
     nmlut->axis[mapAxis].max = max;
   }
 
-  if (!(AIR_EXISTS(nmlut->axis[mapAxis].min) && AIR_EXISTS(nmlut->axis[mapAxis].max))) {
-    rescale = AIR_TRUE;
+  unrrduGetenvDefaultImplicitLutRmapRescale();
+  /* NOTE: comment in lut.c describes logic for how rescale is set */
+  if (!hestSourceUser(opt[rsclOptIdx].source)) {
+    if (!(AIR_EXISTS(nmlut->axis[mapAxis].min)
+          && AIR_EXISTS(nmlut->axis[mapAxis].max))) {
+      rescale = unrrduDefaultImplicitLutRmapRescale;
+    }
   }
   if (rescale) {
     range = nrrdRangeNew(min, max);

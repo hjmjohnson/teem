@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -35,7 +35,7 @@ nrrdInvertPerm(unsigned int *invp, const unsigned int *pp, unsigned int nn) {
   unsigned int ii;
 
   if (!(invp && pp && nn > 0)) {
-    biffAddf(NRRD, "%s: got NULL pointer or non-positive nn (%d)", me, nn);
+    biffAddf(NRRD, "%s: got NULL pointer or non-positive nn (%u)", me, nn);
     return 1;
   }
 
@@ -43,7 +43,7 @@ nrrdInvertPerm(unsigned int *invp, const unsigned int *pp, unsigned int nn) {
   memset(invp, 0, nn * sizeof(unsigned int));
   for (ii = 0; ii < nn; ii++) {
     if (!(pp[ii] <= nn - 1)) {
-      biffAddf(NRRD, "%s: permutation element #%d == %d out of bounds [0,%d]", me, ii,
+      biffAddf(NRRD, "%s: permutation element #%u == %u out of bounds [0,%u]", me, ii,
                pp[ii], nn - 1);
       return 1;
     }
@@ -56,7 +56,7 @@ nrrdInvertPerm(unsigned int *invp, const unsigned int *pp, unsigned int nn) {
   problem = AIR_FALSE;
   for (ii = 0; ii < nn; ii++) {
     if (1 != invp[ii]) {
-      biffAddf(NRRD, "%s: element #%d mapped to %d times (should be once)", me, ii,
+      biffAddf(NRRD, "%s: element #%u mapped to %u times (should be once)", me, ii,
                invp[ii]);
       problem = AIR_TRUE;
     }
@@ -90,12 +90,12 @@ nrrdAxesInsert(Nrrd *nout, const Nrrd *nin, unsigned int axis) {
     return 1;
   }
   if (!(axis <= nin->dim)) {
-    biffAddf(NRRD, "%s: given axis (%d) outside valid range [0, %d]", me, axis,
+    biffAddf(NRRD, "%s: given axis (%u) outside valid range [0, %u]", me, axis,
              nin->dim);
     return 1;
   }
   if (NRRD_DIM_MAX == nin->dim) {
-    biffAddf(NRRD, "%s: given nrrd already at NRRD_DIM_MAX (%d)", me, NRRD_DIM_MAX);
+    biffAddf(NRRD, "%s: given nrrd already at NRRD_DIM_MAX (%u)", me, NRRD_DIM_MAX);
     return 1;
   }
   if (nout != nin) {
@@ -149,7 +149,8 @@ nrrdAxesInsert(Nrrd *nout, const Nrrd *nin, unsigned int axis) {
 int /* Biff: 1 */
 nrrdAxesPermute(Nrrd *nout, const Nrrd *nin, const unsigned int *axes) {
   static const char me[] = "nrrdAxesPermute", func[] = "permute";
-  char buff1[NRRD_DIM_MAX * 30], buff2[AIR_STRLEN_SMALL + 1];
+  char *buff, _buff[NRRD_DIM_MAX * 30];
+  size_t buffSize = NRRD_DIM_MAX * 30;
   size_t idxOut, idxInA = 0, /* indices for input and output scanlines */
     lineSize,                /* size of block of memory which can be
                                 moved contiguously from input to output,
@@ -252,12 +253,13 @@ nrrdAxesPermute(Nrrd *nout, const Nrrd *nin, const unsigned int *axes) {
       NRRD_COORD_INCR(cOut, lszOut, ldim, 0);
     }
     /* set content */
-    strcpy(buff1, "");
+    buff = _buff;
+    buff[0] = '\0';
     for (ai = 0; ai < nin->dim; ai++) {
-      sprintf(buff2, "%s%d", (ai ? "," : ""), axes[ai]);
-      strcat(buff1, buff2);
+      snprintf(buff, buffSize, "%s%u", (ai ? "," : ""), axes[ai]);
+      STRINCR(buff, buffSize);
     }
-    if (nrrdContentSet_va(nout, func, nin, "%s", buff1)) {
+    if (nrrdContentSet_va(nout, func, nin, "%s", _buff)) {
       biffAddf(NRRD, "%s:", me);
       airMopError(mop);
       return 1;
@@ -303,7 +305,6 @@ nrrdAxesPermute(Nrrd *nout, const Nrrd *nin, const unsigned int *axes) {
 int /* Biff: 1 */
 nrrdShuffle(Nrrd *nout, const Nrrd *nin, unsigned int axis, const size_t *perm) {
   static const char me[] = "nrrdShuffle", func[] = "shuffle";
-  char buff2[AIR_STRLEN_SMALL + 1];
   /* Sun Feb 8 13:13:58 CST 2009: There was a memory bug here caused
      by using the same buff1[NRRD_DIM_MAX*30] declaration that had
      worked fine for nrrdAxesPermute and nrrdReshape, but does NOT
@@ -318,7 +319,8 @@ nrrdShuffle(Nrrd *nout, const Nrrd *nin, unsigned int axis, const size_t *perm) 
      probably do *not* need the shuffle (the sample reversal) to be
      documented for long axes */
 #define LONGEST_INTERESTING_AXIS 42
-  char buff1[LONGEST_INTERESTING_AXIS * 30];
+  char *buff, _buff[LONGEST_INTERESTING_AXIS * 30];
+  size_t buffSize = LONGEST_INTERESTING_AXIS * 30;
   unsigned int ai, ldim, len;
   size_t idxInB = 0, idxOut, lineSize, numLines, size[NRRD_DIM_MAX], *lsize,
          cIn[NRRD_DIM_MAX + 1], cOut[NRRD_DIM_MAX + 1];
@@ -333,14 +335,14 @@ nrrdShuffle(Nrrd *nout, const Nrrd *nin, unsigned int axis, const size_t *perm) 
     return 1;
   }
   if (!(axis < nin->dim)) {
-    biffAddf(NRRD, "%s: axis %d outside valid range [0,%d]", me, axis, nin->dim - 1);
+    biffAddf(NRRD, "%s: axis %u outside valid range [0,%u]", me, axis, nin->dim - 1);
     return 1;
   }
   len = AIR_UINT(nin->axis[axis].size);
   for (ai = 0; ai < len; ai++) {
     if (!(perm[ai] < len)) {
       char stmp[AIR_STRLEN_SMALL + 1];
-      biffAddf(NRRD, "%s: perm[%d] (%s) outside valid range [0,%d]", me, ai,
+      biffAddf(NRRD, "%s: perm[%u] (%s) outside valid range [0,%u]", me, ai,
                airSprintSize_t(stmp, perm[ai]), len - 1);
       return 1;
     }
@@ -404,13 +406,14 @@ nrrdShuffle(Nrrd *nout, const Nrrd *nin, unsigned int axis, const size_t *perm) 
   /* Set content. The LONGEST_INTERESTING_AXIS hack avoids the
      previous array out-of-bounds bug */
   if (len <= LONGEST_INTERESTING_AXIS) {
-    strcpy(buff1, "");
+    buff = _buff;
+    buff[0] = '\0';
     for (ai = 0; ai < len; ai++) {
       char stmp[AIR_STRLEN_SMALL + 1];
-      sprintf(buff2, "%s%s", (ai ? "," : ""), airSprintSize_t(stmp, perm[ai]));
-      strcat(buff1, buff2);
+      snprintf(buff, buffSize, "%s%s", (ai ? "," : ""), airSprintSize_t(stmp, perm[ai]));
+      STRINCR(buff, buffSize);
     }
-    if (nrrdContentSet_va(nout, func, nin, "%s", buff1)) {
+    if (nrrdContentSet_va(nout, func, nin, "%s", _buff)) {
       biffAddf(NRRD, "%s:", me);
       return 1;
     }
@@ -455,7 +458,7 @@ nrrdAxesSwap(Nrrd *nout, const Nrrd *nin, unsigned int ax1, unsigned int ax2) {
     return 1;
   }
   if (!(ax1 < nin->dim && ax2 < nin->dim)) {
-    biffAddf(NRRD, "%s: ax1 (%d) or ax2 (%d) out of bounds [0,%d]", me, ax1, ax2,
+    biffAddf(NRRD, "%s: ax1 (%u) or ax2 (%u) out of bounds [0,%u]", me, ax1, ax2,
              nin->dim - 1);
     return 1;
   }
@@ -495,7 +498,7 @@ nrrdFlip(Nrrd *nout, const Nrrd *nin, unsigned int axis) {
     return 1;
   }
   if (!(axis < nin->dim)) {
-    biffAddf(NRRD, "%s: given axis (%d) is outside valid range ([0,%d])", me, axis,
+    biffAddf(NRRD, "%s: given axis (%u) is outside valid range ([0,%u])", me, axis,
              nin->dim - 1);
     airMopError(mop);
     return 1;
@@ -582,16 +585,16 @@ nrrdJoin(Nrrd *nout, const Nrrd *const *nin, unsigned int ninNum, unsigned int a
     return 1;
   }
   if (!(ninNum >= 1)) {
-    biffAddf(NRRD, "%s: ninNum (%d) must be >= 1", me, ninNum);
+    biffAddf(NRRD, "%s: ninNum (%u) must be >= 1", me, ninNum);
     return 1;
   }
   for (ni = 0; ni < ninNum; ni++) {
     if (!(nin[ni])) {
-      biffAddf(NRRD, "%s: input nrrd #%d NULL", me, ni);
+      biffAddf(NRRD, "%s: input nrrd #%u NULL", me, ni);
       return 1;
     }
     if (nout == nin[ni]) {
-      biffAddf(NRRD, "%s: nout==nin[%d] disallowed", me, ni);
+      biffAddf(NRRD, "%s: nout==nin[%u] disallowed", me, ni);
       return 1;
     }
   }
@@ -617,7 +620,7 @@ nrrdJoin(Nrrd *nout, const Nrrd *const *nin, unsigned int ninNum, unsigned int a
     return 1;
   }
   if (axis > maxdim) {
-    biffAddf(NRRD, "%s: can't join along axis %d with highest input dim = %d", me, axis,
+    biffAddf(NRRD, "%s: can't join along axis %u with highest input dim = %u", me, axis,
              maxdim);
     airMopError(mop);
     return 1;
@@ -650,7 +653,7 @@ nrrdJoin(Nrrd *nout, const Nrrd *const *nin, unsigned int ninNum, unsigned int a
     }
   }
   if (outdim > NRRD_DIM_MAX) {
-    biffAddf(NRRD, "%s: output dimension (%d) exceeds NRRD_DIM_MAX (%d)", me, outdim,
+    biffAddf(NRRD, "%s: output dimension (%u) exceeds NRRD_DIM_MAX (%u)", me, outdim,
              NRRD_DIM_MAX);
     airMopError(mop);
     return 1;
@@ -691,7 +694,7 @@ nrrdJoin(Nrrd *nout, const Nrrd *const *nin, unsigned int ninNum, unsigned int a
          the input data with the reshaped size array */
       if (nrrdWrap_nva(ninperm[ni], nin[ni]->data, nin[ni]->type, nin[ni]->dim + 1,
                        size)) {
-        biffAddf(NRRD, "%s: trouble creating interm. version of nrrd %d", me, ni);
+        biffAddf(NRRD, "%s: trouble creating interm. version of nrrd %u", me, ni);
         airMopError(mop);
         return 1;
       }
@@ -704,7 +707,7 @@ nrrdJoin(Nrrd *nout, const Nrrd *const *nin, unsigned int ninNum, unsigned int a
       /* on this part, we permute (no need for a reshape) */
       airMopAdd(mop, ninperm[ni], (airMopper)nrrdNuke, airMopAlways);
       if (nrrdAxesPermute(ninperm[ni], nin[ni], permute)) {
-        biffAddf(NRRD, "%s: trouble permuting input part %d", me, ni);
+        biffAddf(NRRD, "%s: trouble permuting input part %u", me, ni);
         airMopError(mop);
         return 1;
       }
@@ -716,7 +719,7 @@ nrrdJoin(Nrrd *nout, const Nrrd *const *nin, unsigned int ninNum, unsigned int a
   outlen = 0;
   for (ni = 0; ni < ninNum; ni++) {
     if (ninperm[ni]->type != ninperm[0]->type) {
-      biffAddf(NRRD, "%s: type (%s) of part %d unlike first's (%s)", me,
+      biffAddf(NRRD, "%s: type (%s) of part %u unlike first's (%s)", me,
                airEnumStr(nrrdType, ninperm[ni]->type), ni,
                airEnumStr(nrrdType, ninperm[0]->type));
       airMopError(mop);
@@ -724,7 +727,7 @@ nrrdJoin(Nrrd *nout, const Nrrd *const *nin, unsigned int ninNum, unsigned int a
     }
     if (nrrdTypeBlock == ninperm[0]->type) {
       if (ninperm[ni]->blockSize != ninperm[0]->blockSize) {
-        biffAddf(NRRD, "%s: blockSize (%s) of part %d != first's (%s)", me,
+        biffAddf(NRRD, "%s: blockSize (%s) of part %u != first's (%s)", me,
                  airSprintSize_t(stmp[0], ninperm[ni]->blockSize), ni,
                  airSprintSize_t(stmp[1], ninperm[0]->blockSize));
         airMopError(mop);
@@ -732,7 +735,7 @@ nrrdJoin(Nrrd *nout, const Nrrd *const *nin, unsigned int ninNum, unsigned int a
       }
     }
     if (!nrrdElementSize(ninperm[ni])) {
-      biffAddf(NRRD, "%s: got wacky elements size (%s) for part %d", me,
+      biffAddf(NRRD, "%s: got wacky elements size (%s) for part %u", me,
                airSprintSize_t(stmp[0], nrrdElementSize(ninperm[ni])), ni);
       airMopError(mop);
       return 1;
@@ -742,7 +745,7 @@ nrrdJoin(Nrrd *nout, const Nrrd *const *nin, unsigned int ninNum, unsigned int a
     for (ai = 0; ai < outdim - 1; ai++) {
       /* fprintf(stderr, "%03u ", (unsigned int)ninperm[ni]->axis[ai].size);*/
       if (ninperm[ni]->axis[ai].size != ninperm[0]->axis[ai].size) {
-        biffAddf(NRRD, "%s: axis %d size (%s) of part %d != first's (%s)", me, ai,
+        biffAddf(NRRD, "%s: axis %u size (%s) of part %u != first's (%s)", me, ai,
                  airSprintSize_t(stmp[0], ninperm[ni]->axis[ai].size), ni,
                  airSprintSize_t(stmp[1], ninperm[0]->axis[ai].size));
         airMopError(mop);
@@ -820,18 +823,18 @@ nrrdAxesSplit(Nrrd *nout, const Nrrd *nin, unsigned int saxi, size_t sizeFast,
     return 1;
   }
   if (!(saxi <= nin->dim - 1)) {
-    biffAddf(NRRD, "%s: given axis (%d) outside valid range [0, %d]", me, saxi,
+    biffAddf(NRRD, "%s: given axis (%u) outside valid range [0, %u]", me, saxi,
              nin->dim - 1);
     return 1;
   }
   if (NRRD_DIM_MAX == nin->dim) {
-    biffAddf(NRRD, "%s: given nrrd already at NRRD_DIM_MAX (%d)", me, NRRD_DIM_MAX);
+    biffAddf(NRRD, "%s: given nrrd already at NRRD_DIM_MAX (%u)", me, NRRD_DIM_MAX);
     return 1;
   }
   if (!(sizeFast * sizeSlow == nin->axis[saxi].size)) {
     char stmp[4][AIR_STRLEN_SMALL + 1];
     biffAddf(NRRD,
-             "%s: # samples along axis %d (%s) != "
+             "%s: # samples along axis %u (%s) != "
              "product of fast and slow sizes (%s * %s = %s)",
              me, saxi, airSprintSize_t(stmp[0], nin->axis[saxi].size),
              airSprintSize_t(stmp[1], sizeFast), airSprintSize_t(stmp[2], sizeSlow),
@@ -881,7 +884,7 @@ nrrdAxesDelete(Nrrd *nout, const Nrrd *nin, unsigned int daxi) {
     return 1;
   }
   if (!(daxi < nin->dim)) {
-    biffAddf(NRRD, "%s: given axis (%d) outside valid range [0, %d]", me, daxi,
+    biffAddf(NRRD, "%s: given axis (%u) outside valid range [0, %u]", me, daxi,
              nin->dim - 1);
     return 1;
   }
@@ -891,7 +894,7 @@ nrrdAxesDelete(Nrrd *nout, const Nrrd *nin, unsigned int daxi) {
   }
   if (1 != nin->axis[daxi].size) {
     char stmp[AIR_STRLEN_SMALL + 1];
-    biffAddf(NRRD, "%s: size along axis %d is %s, not 1", me, daxi,
+    biffAddf(NRRD, "%s: size along axis %u is %s, not 1", me, daxi,
              airSprintSize_t(stmp, nin->axis[daxi].size));
     return 1;
   }
@@ -934,7 +937,7 @@ nrrdAxesMerge(Nrrd *nout, const Nrrd *nin, unsigned int maxi) {
     return 1;
   }
   if (!(maxi < nin->dim - 1)) {
-    biffAddf(NRRD, "%s: given axis (%d) outside valid range [0, %d]", me, maxi,
+    biffAddf(NRRD, "%s: given axis (%u) outside valid range [0, %u]", me, maxi,
              nin->dim - 2);
     return 1;
   }
@@ -976,8 +979,8 @@ nrrdAxesMerge(Nrrd *nout, const Nrrd *nin, unsigned int maxi) {
 int /* Biff: 1 */
 nrrdReshape_nva(Nrrd *nout, const Nrrd *nin, unsigned int dim, const size_t *size) {
   static const char me[] = "nrrdReshape_nva", func[] = "reshape";
-  char buff1[NRRD_DIM_MAX * 30], buff2[AIR_STRLEN_SMALL + 1];
-  size_t numOut;
+  char *buff, _buff[NRRD_DIM_MAX * 30];
+  size_t buffSize = NRRD_DIM_MAX * 30, numOut;
   unsigned int ai;
   char stmp[2][AIR_STRLEN_SMALL + 1];
 
@@ -986,7 +989,7 @@ nrrdReshape_nva(Nrrd *nout, const Nrrd *nin, unsigned int dim, const size_t *siz
     return 1;
   }
   if (!(AIR_IN_CL(1, dim, NRRD_DIM_MAX))) {
-    biffAddf(NRRD, "%s: given dimension (%d) outside valid range [1,%d]", me, dim,
+    biffAddf(NRRD, "%s: given dimension (%u) outside valid range [1,%u]", me, dim,
              NRRD_DIM_MAX);
     return 1;
   }
@@ -1022,14 +1025,16 @@ nrrdReshape_nva(Nrrd *nout, const Nrrd *nin, unsigned int dim, const size_t *siz
     nout->axis[ai].size = size[ai];
   }
 
-  strcpy(buff1, "");
+  buff = _buff;
+  buff[0] = '\0';
   for (ai = 0; ai < dim; ai++) {
-    sprintf(buff2, "%s%s", (ai ? "x" : ""), airSprintSize_t(stmp[0], size[ai]));
-    strcat(buff1, buff2);
+    snprintf(buff, buffSize, "%s%s", (ai ? "x" : ""),
+             airSprintSize_t(stmp[0], size[ai]));
+    STRINCR(buff, buffSize);
   }
   /* basic info copied by _nrrdCopy, but probably more than we
      want- perhaps space dimension and origin should be nixed? */
-  if (nrrdContentSet_va(nout, func, nin, "%s", buff1)) {
+  if (nrrdContentSet_va(nout, func, nin, "%s", _buff)) {
     biffAddf(NRRD, "%s:", me);
     return 1;
   }
@@ -1053,7 +1058,7 @@ nrrdReshape_va(Nrrd *nout, const Nrrd *nin, unsigned int dim, ...) {
     return 1;
   }
   if (!(AIR_IN_CL(1, dim, NRRD_DIM_MAX))) {
-    biffAddf(NRRD, "%s: given dimension (%d) outside valid range [1,%d]", me, dim,
+    biffAddf(NRRD, "%s: given dimension (%u) outside valid range [1,%u]", me, dim,
              NRRD_DIM_MAX);
     return 1;
   }
@@ -1171,7 +1176,7 @@ nrrdUnblock(Nrrd *nout, const Nrrd *nin, int type) {
     return 1;
   }
   if (NRRD_DIM_MAX == nin->dim) {
-    biffAddf(NRRD, "%s: input nrrd already at dimension limit (%d)", me, NRRD_DIM_MAX);
+    biffAddf(NRRD, "%s: input nrrd already at dimension limit (%u)", me, NRRD_DIM_MAX);
     return 1;
   }
   if (airEnumValCheck(nrrdType, type)) {
@@ -1269,12 +1274,12 @@ nrrdTile2D(Nrrd *nout, const Nrrd *nin, unsigned int ax0, unsigned int ax1,
 
   /* at least for now, axSplit, ax0, and ax1 need to be distinct */
   if (!(axSplit != ax0 && axSplit != ax1 && ax0 != ax1)) {
-    biffAddf(NRRD, "%s: axSplit, ax0, ax1 (%d,%d,%d) must be distinct", me, axSplit, ax0,
+    biffAddf(NRRD, "%s: axSplit, ax0, ax1 (%u,%u,%u) must be distinct", me, axSplit, ax0,
              ax1);
     return 1;
   }
   if (!(ax0 < nin->dim && ax1 < nin->dim && axSplit < nin->dim)) {
-    biffAddf(NRRD, "%s: axSplit, ax0, ax1 (%d,%d,%d) must be in range [0,%d]", me,
+    biffAddf(NRRD, "%s: axSplit, ax0, ax1 (%u,%u,%u) must be in range [0,%u]", me,
              axSplit, ax0, ax1, nin->dim - 1);
     return 1;
   }
@@ -1375,26 +1380,26 @@ nrrdUntile2D(Nrrd *nout, const Nrrd *nin, unsigned int ax0, unsigned int ax1,
     return 1;
   }
   if (ax0 == ax1) {
-    biffAddf(NRRD, "%s: ax0 (%d) and ax1 (%d) must be distinct", me, ax0, ax1);
+    biffAddf(NRRD, "%s: ax0 (%u) and ax1 (%u) must be distinct", me, ax0, ax1);
     return 1;
   }
   if (!(ax0 < nin->dim && ax1 < nin->dim)) {
-    biffAddf(NRRD, "%s: ax0, ax1 (%d,%d) must be in range [0,%d]", me, ax0, ax1,
+    biffAddf(NRRD, "%s: ax0, ax1 (%u,%u) must be in range [0,%u]", me, ax0, ax1,
              nin->dim - 1);
     return 1;
   }
   if (!(axMerge <= nin->dim)) {
-    biffAddf(NRRD, "%s: axMerge (%d) must be in range [0,%d]", me, axMerge, nin->dim);
+    biffAddf(NRRD, "%s: axMerge (%u) must be in range [0,%u]", me, axMerge, nin->dim);
     return 1;
   }
   if (nin->axis[ax0].size != sizeFast * (nin->axis[ax0].size / sizeFast)) {
-    biffAddf(NRRD, "%s: sizeFast (%s) doesn't divide into axis %d size (%s)", me,
+    biffAddf(NRRD, "%s: sizeFast (%s) doesn't divide into axis %u size (%s)", me,
              airSprintSize_t(stmp[0], sizeFast), ax0,
              airSprintSize_t(stmp[1], nin->axis[ax0].size));
     return 1;
   }
   if (nin->axis[ax1].size != sizeSlow * (nin->axis[ax1].size / sizeSlow)) {
-    biffAddf(NRRD, "%s: sizeSlow (%s) doesn't divide into axis %d size (%s)", me,
+    biffAddf(NRRD, "%s: sizeSlow (%s) doesn't divide into axis %u size (%s)", me,
              airSprintSize_t(stmp[0], sizeSlow), ax1,
              airSprintSize_t(stmp[1], nin->axis[ax1].size));
     return 1;

@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -129,7 +129,7 @@ _tenFiberProbe(tenFiberContext *tfx, int *gageRet, double wPos[3], int seedProbe
         ELL_3V_COPY(tfx->seedEvec, evec[tfx->ten2Which]);
         tfx->ten2Use = tfx->ten2Which;
         if (tfx->verbose > 2) {
-          fprintf(stderr, "%s: ** ten2Use == ten2Which == %d\n", me, tfx->ten2Use);
+          fprintf(stderr, "%s: ** ten2Use == ten2Which == %u\n", me, tfx->ten2Use);
         }
       } else {
         double *lastVec, dot[2];
@@ -820,7 +820,7 @@ _fiberTraceSet(tenFiberContext *tfx, Nrrd *nval, Nrrd *nfiber, double *buff,
 ** for seedpoints and when fiber vertices are saved out, respectively.
 **
 ** As of Sun Aug  1 20:40:55 CDT 2010 this is just a wrapper around
-** _fiberTraceSet; this will probably change in Teem 2.0
+** _fiberTraceSet; this may change in the future.
 */
 int /* Biff: 1 */
 tenFiberTraceSet(tenFiberContext *tfx, Nrrd *nfiber, double *buff,
@@ -955,7 +955,7 @@ typedef union {
 
 /* uses biff */
 tenFiberMulti * /* Biff: NULL */
-tenFiberMultiNew() {
+tenFiberMultiNew(void) {
   static const char me[] = "tenFiberMultiNew";
   tenFiberMulti *ret;
   fiberunion tfu;

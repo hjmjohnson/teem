@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -158,7 +158,7 @@ _nrrdFormatVTK_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
     return 1;
   }
   if (N != sx * sy * sz) {
-    biffAddf(NRRD, "%s: product of sizes (%u*%u*%u == %u) != # elements (%d)", me, sx,
+    biffAddf(NRRD, "%s: product of sizes (%u*%u*%u == %u) != # elements (%u)", me, sx,
              sy, sz, sx * sy * sz, N);
     return 1;
   }
@@ -274,6 +274,7 @@ _nrrdFormatVTK_write(FILE *file, const Nrrd *_nrrd, NrrdIoState *nio) {
   unsigned int sx, sy, sz;
   double xs, ys, zs, xm, ym, zm;
   char type[AIR_STRLEN_MED + 1], name[AIR_STRLEN_SMALL + 1];
+  size_t nameSize = AIR_STRLEN_SMALL + 1;
   Nrrd *nrrd;
   airArray *mop;
 
@@ -361,7 +362,7 @@ _nrrdFormatVTK_write(FILE *file, const Nrrd *_nrrd, NrrdIoState *nio) {
   fprintf(file, "SPACING %g %g %g\n", xs, ys, zs);
   fprintf(file, "POINT_DATA %u\n", sx * sy * sz);
   airSrandMT(AIR_UINT(airTime()));
-  sprintf(name, "nrrd%05d", airRandInt(100000));
+  snprintf(name, nameSize, "nrrd%05u", airRandInt(100000));
   if (3 == nrrd->dim) {
     fprintf(file, "SCALARS %s %s\n", name, type);
     fprintf(file, "LOOKUP_TABLE default\n");

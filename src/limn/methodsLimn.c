@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -40,9 +40,9 @@ void
 limnCameraInit(limnCamera *cam) {
 
   if (cam) {
-    cam->atRelative = limnDefCameraAtRelative;
-    cam->orthographic = limnDefCameraOrthographic;
-    cam->rightHanded = limnDefCameraRightHanded;
+    cam->atRelative = limnDefaultCameraAtRelative;
+    cam->orthographic = limnDefaultCameraOrthographic;
+    cam->rightHanded = limnDefaultCameraRightHanded;
     cam->uRange[0] = cam->uRange[1] = AIR_NAN;
     cam->vRange[0] = cam->vRange[1] = AIR_NAN;
     cam->fov = AIR_NAN;

@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -21,15 +21,15 @@
 
 const char *const baneBiffKey = "bane";
 
-int baneDefVerbose = 0;
+int baneDefaultVerbose = 0;
 
-int baneDefMakeMeasrVol = AIR_TRUE;
+int baneDefaultMakeMeasrVol = AIR_TRUE;
 
-double baneDefIncLimit = 0.80; /* throwing away more than 20% is too much */
+double baneDefaultIncLimit = 0.80; /* throwing away more than 20% is too much */
 
-int baneDefRenormalize = AIR_TRUE;
+int baneDefaultRenormalize = AIR_TRUE;
 
-int baneDefPercHistBins = 1024;
+int baneDefaultPercHistBins = 1024;
 
 int baneStateHistEqBins = 4096;
 

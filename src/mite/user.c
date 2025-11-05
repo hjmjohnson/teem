@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -21,7 +21,7 @@
 #include "privateMite.h"
 
 miteUser * /* Biff: nope */
-miteUserNew() {
+miteUserNew(void) {
   miteUser *muu;
   int i;
 
@@ -44,11 +44,11 @@ miteUserNew() {
   for (i = 0; i < MITE_RANGE_NUM; i++) {
     muu->rangeInit[i] = 1.0;
   }
-  muu->normalSide = miteDefNormalSide;
-  muu->refStep = miteDefRefStep;
+  muu->normalSide = miteDefaultNormalSide;
+  muu->refStep = miteDefaultRefStep;
   muu->rayStep = AIR_NAN;
-  muu->opacMatters = miteDefOpacMatters;
-  muu->opacNear1 = miteDefOpacNear1;
+  muu->opacMatters = miteDefaultOpacMatters;
+  muu->opacNear1 = miteDefaultOpacNear1;
   muu->hctx = hooverContextNew();
   ELL_3V_SET(muu->fakeFrom, AIR_NAN, AIR_NAN, AIR_NAN);
   ELL_3V_SET(muu->vectorD, 0, 0, 0);
@@ -63,7 +63,7 @@ miteUserNew() {
   /* gageParmSet(muu->gctx0, gageParmRequireAllSpacings, AIR_FALSE); */
   muu->lit = limnLightNew();
   airMopAdd(muu->umop, muu->lit, (airMopper)limnLightNix, airMopAlways);
-  muu->normalSide = miteDefNormalSide;
+  muu->normalSide = miteDefaultNormalSide;
   muu->verbUi = muu->verbVi = -1;
   muu->rendTime = 0;
   muu->sampRate = 0;
@@ -109,7 +109,7 @@ _miteUserCheck(miteUser *muu) {
   /* add on all queries associated with transfer functions */
   for (T = 0; T < muu->ntxfNum; T++) {
     if (miteNtxfCheck(muu->ntxf[T])) {
-      biffAddf(MITE, "%s: ntxf[%d] (%d of %d) can't be used as a txf", me, T, T + 1,
+      biffAddf(MITE, "%s: ntxf[%u] (%u of %u) can't be used as a txf", me, T, T + 1,
                muu->ntxfNum);
       airMopError(mop);
       return 1;

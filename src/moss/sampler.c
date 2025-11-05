@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -255,7 +255,7 @@ mossSamplerSample(double *val, mossSampler *smplr, double xPos, double yPos) {
   }
   if (smplr->verbose) {
     for (ii = 0; ii < fdiam; ii++) {
-      printf(" bound --> {x,y}Idx[%u]: %d %d\n", ii, smplr->xIdx[ii], smplr->yIdx[ii]);
+      printf(" bound --> {x,y}Idx[%d]: %d %d\n", ii, smplr->xIdx[ii], smplr->yIdx[ii]);
     }
   }
 

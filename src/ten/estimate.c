@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -191,7 +191,7 @@ _tenEstimateOutputInit(tenEstimateContext *tec) {
 }
 
 tenEstimateContext * /* Biff: nope */
-tenEstimateContextNew() {
+tenEstimateContextNew(void) {
   tenEstimateContext *tec;
   unsigned int fi;
   airPtrPtrUnion appu;

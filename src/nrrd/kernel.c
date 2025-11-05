@@ -1,8 +1,8 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
-  Copyright (C) 2008, 2007, 2006, 2005  Gordon Kindlmann
-  Copyright (C) 2004, 2003, 2002, 2001, 2000, 1999, 1998  University of Utah
+  Copyright (C) 2009--2025  University of Chicago
+  Copyright (C) 2005--2008  Gordon Kindlmann
+  Copyright (C) 1998--2004  University of Utah
 
   This library is free software; you can redistribute it and/or modify it under the terms
   of the GNU Lesser General Public License (LGPL) as published by the Free Software
@@ -171,8 +171,8 @@ _nrrdZeroN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelZero = {
-  "zero",
-  1, _nrrdZeroSup, returnZero,
+  "zero", 1, AIR_TRUE /* even though we evaluate to zero! */,
+  _nrrdZeroSup, returnZero,
   _nrrdZero1_f, _nrrdZeroN_f, _nrrdZero1_d, _nrrdZeroN_d
 };
 const NrrdKernel *const
@@ -221,8 +221,8 @@ _nrrdFlagN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelFlag = {
-  "flag",
-  1, _nrrdFlagSup, returnZero,
+  "flag", 1, AIR_FALSE,
+  _nrrdFlagSup, returnZero,
   _nrrdFlag1_f, _nrrdFlagN_f, _nrrdFlag1_d, _nrrdFlagN_d
 };
 const NrrdKernel *const
@@ -287,8 +287,8 @@ _nrrdBoxN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelBox = {
-  "box",
-  1, _nrrdBoxSup, returnOne,
+  "box", 1, AIR_TRUE,
+  _nrrdBoxSup, returnOne,
   _nrrdBox1_f,  _nrrdBoxN_f,  _nrrdBox1_d,  _nrrdBoxN_d
 };
 const NrrdKernel *const
@@ -343,8 +343,8 @@ _nrrdBoxSDN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelBoxSupportDebug = {
-  "boxsup",
-  1, _nrrdBoxSDSup, returnOne /* well only if parm[0] > 0.5 */,
+  "boxsup", 1, AIR_FALSE /* the kernel itself does NOT stretch */,
+  _nrrdBoxSDSup, returnOne /* well only if parm[0] > 0.5 */,
   _nrrdBoxSD1_f,  _nrrdBoxSDN_f,  _nrrdBoxSD1_d,  _nrrdBoxSDN_d
 };
 const NrrdKernel *const
@@ -409,8 +409,8 @@ _nrrdCos4SDN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelCos4SupportDebug = {
-  "cos4sup",
-  1, _nrrdCos4SDSup, _nrrdCos4SDInt,
+  "cos4sup", 1, AIR_FALSE /* the kernel itself does NOT stretch */,
+  _nrrdCos4SDSup, _nrrdCos4SDInt,
   _nrrdCos4SD1_f,  _nrrdCos4SDN_f,  _nrrdCos4SD1_d,  _nrrdCos4SDN_d
 };
 const NrrdKernel *const
@@ -472,8 +472,8 @@ _nrrdDCos4SDN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelCos4SupportDebugD = {
-  "cos4supD",
-  1, _nrrdDCos4SDSup, returnZero,
+  "cos4supD", 1, AIR_FALSE /* the kernel itself does NOT stretch */,
+  _nrrdDCos4SDSup, returnZero,
   _nrrdDCos4SD1_f,   _nrrdDCos4SDN_f,   _nrrdDCos4SD1_d,   _nrrdDCos4SDN_d
 };
 const NrrdKernel *const
@@ -528,8 +528,8 @@ _nrrdDDCos4SDN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelCos4SupportDebugDD = {
-  "cos4supDD",
-  1, _nrrdDDCos4SDSup, returnZero,
+  "cos4supDD", 1, AIR_FALSE /* the kernel itself does NOT stretch */,
+  _nrrdDDCos4SDSup, returnZero,
   _nrrdDDCos4SD1_f,  _nrrdDDCos4SDN_f,  _nrrdDDCos4SD1_d,  _nrrdDDCos4SDN_d
 };
 const NrrdKernel *const
@@ -590,8 +590,8 @@ _nrrdDDDCos4SDN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelCos4SupportDebugDDD = {
-  "cos4supDDD",
-  1, _nrrdDDDCos4SDSup, returnZero,
+  "cos4supDDD", 1, AIR_FALSE /* the kernel itself does NOT stretch */,
+  _nrrdDDDCos4SDSup, returnZero,
   _nrrdDDDCos4SD1_f, _nrrdDDDCos4SDN_f, _nrrdDDDCos4SD1_d, _nrrdDDDCos4SDN_d
 };
 const NrrdKernel *const
@@ -651,8 +651,8 @@ _nrrdCheapN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelCheap = {
-  "cheap",
-  1, _nrrdCheapSup, returnOne,
+  "cheap", 1, AIR_TRUE,
+  _nrrdCheapSup, returnOne,
   _nrrdCheap1_f,  _nrrdCheapN_f,  _nrrdCheap1_d,  _nrrdCheapN_d
 };
 const NrrdKernel *const
@@ -715,8 +715,8 @@ _nrrdTentN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelTent = {
-  "tent",
-  1, _nrrdTentSup, returnOne,
+  "tent", 1, AIR_TRUE,
+  _nrrdTentSup, returnOne,
   _nrrdTent1_f, _nrrdTentN_f, _nrrdTent1_d, _nrrdTentN_d
 };
 const NrrdKernel *const
@@ -776,8 +776,8 @@ _nrrdHermiteN_f(float *f, const float *x, size_t len, const double *parm) {
    of creating new functions */
 static const NrrdKernel
 _nrrdKernelHermiteScaleSpaceFlag = {
-  "hermiteSS",
-  0, returnOne, returnOne,
+  "hermiteSS",  0, AIR_FALSE,
+  returnOne, returnOne,
   _nrrdHermite1_f, _nrrdHermiteN_f, _nrrdHermite1_d, _nrrdHermiteN_d
 };
 const NrrdKernel *const
@@ -841,8 +841,8 @@ _nrrdFDN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelFD = {
-  "fordif",
-  1, _nrrdFDSup, returnZero,
+  "fordif", 1, AIR_TRUE,
+  _nrrdFDSup, returnZero,
   _nrrdFD1_f,   _nrrdFDN_f,   _nrrdFD1_d,   _nrrdFDN_d
 };
 const NrrdKernel *const
@@ -908,8 +908,8 @@ _nrrdCDN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelCD = {
-  "cendif",
-  1, _nrrdCDSup, returnZero,
+  "cendif", 1, AIR_TRUE,
+  _nrrdCDSup, returnZero,
   _nrrdCD1_f,   _nrrdCDN_f,   _nrrdCD1_d,   _nrrdCDN_d
 };
 const NrrdKernel *const
@@ -983,8 +983,8 @@ _nrrdBCN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelBC = {
-  "BCcubic",
-  3, _nrrdBCSup, returnOne,
+  "BCcubic", 3, AIR_TRUE,
+  _nrrdBCSup, returnOne,
   _nrrdBC1_f,   _nrrdBCN_f,   _nrrdBC1_d,   _nrrdBCN_d
 };
 const NrrdKernel *const
@@ -1064,8 +1064,8 @@ _nrrdDBCN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelDBC = {
-  "BCcubicD",
-  3, _nrrdDBCSup, returnZero,
+  "BCcubicD", 3, AIR_TRUE,
+  _nrrdDBCSup, returnZero,
   _nrrdDBC1_f,  _nrrdDBCN_f,  _nrrdDBC1_d,  _nrrdDBCN_d
 };
 const NrrdKernel *const
@@ -1139,8 +1139,8 @@ _nrrdDDBCN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelDDBC = {
-  "BCcubicDD",
-  3, _nrrdDDBCSup, returnZero,
+  "BCcubicDD", 3, AIR_TRUE,
+  _nrrdDDBCSup, returnZero,
   _nrrdDDBC1_f, _nrrdDDBCN_f, _nrrdDDBC1_d, _nrrdDDBCN_d
 };
 const NrrdKernel *const
@@ -1191,8 +1191,8 @@ _nrrdCTMRN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelCatmullRom = {
-  "catmull-rom",
-  0, returnTwo, returnOne,
+  "catmull-rom", 0, AIR_FALSE,
+  returnTwo, returnOne,
   _nrrdCTMR1_f,   _nrrdCTMRN_f,   _nrrdCTMR1_d,   _nrrdCTMRN_d
 };
 const NrrdKernel *const
@@ -1207,8 +1207,8 @@ _nrrdCtmrSDSup(const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelCatmullRomSupportDebug = {
-  "ctmrsup",
-  1, _nrrdCtmrSDSup, returnOne,
+  "ctmrsup",  1, AIR_FALSE /* the kernel itself does NOT stretch */,
+  _nrrdCtmrSDSup, returnOne,
   _nrrdCTMR1_f,   _nrrdCTMRN_f,   _nrrdCTMR1_d,   _nrrdCTMRN_d
 };
 const NrrdKernel *const
@@ -1263,8 +1263,8 @@ _nrrdDCTMRN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelCatmullRomD = {
-  "catmull-romD",
-  0, returnTwo, returnZero,
+  "catmull-romD", 0, AIR_FALSE,
+  returnTwo, returnZero,
   _nrrdDCTMR1_f,   _nrrdDCTMRN_f,   _nrrdDCTMR1_d,   _nrrdDCTMRN_d
 };
 const NrrdKernel *const
@@ -1272,8 +1272,8 @@ nrrdKernelCatmullRomD = &_nrrdKernelCatmullRomD;
 
 static const NrrdKernel
 _nrrdKernelCatmullRomSupportDebugD = {
-  "ctmrsupD",
-  1, _nrrdCtmrSDSup, returnZero,
+  "ctmrsupD", 1, AIR_FALSE /* the kernel itself does NOT stretch */,
+  _nrrdCtmrSDSup, returnZero,
   _nrrdDCTMR1_f,   _nrrdDCTMRN_f,   _nrrdDCTMR1_d,   _nrrdDCTMRN_d
 };
 const NrrdKernel *const
@@ -1324,8 +1324,8 @@ _nrrdDDCTMRN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelCatmullRomDD = {
-  "catmull-romDD",
-  0, returnTwo, returnZero,
+  "catmull-romDD", 0, AIR_FALSE,
+  returnTwo, returnZero,
   _nrrdDDCTMR1_f,   _nrrdDDCTMRN_f,   _nrrdDDCTMR1_d,   _nrrdDDCTMRN_d
 };
 const NrrdKernel *const
@@ -1333,8 +1333,8 @@ nrrdKernelCatmullRomDD = &_nrrdKernelCatmullRomDD;
 
 static const NrrdKernel
 _nrrdKernelCatmullRomSupportDebugDD = {
-  "ctmrsupDD",
-  1, _nrrdCtmrSDSup, returnZero,
+  "ctmrsupDD", 1, AIR_FALSE /* the kernel itself does NOT stretch */,
+  _nrrdCtmrSDSup, returnZero,
   _nrrdDDCTMR1_f,   _nrrdDDCTMRN_f,   _nrrdDDCTMR1_d,   _nrrdDDCTMRN_d
 };
 const NrrdKernel *const
@@ -1407,8 +1407,8 @@ _nrrdA4N_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelA4 = {
-  "Aquartic",
-  2, _nrrdA4Sup, returnOne,
+  "Aquartic", 2, AIR_TRUE,
+  _nrrdA4Sup, returnOne,
   _nrrdA41_f,   _nrrdA4N_f,   _nrrdA41_d,   _nrrdA4N_d
 };
 const NrrdKernel *const
@@ -1486,8 +1486,8 @@ _nrrdDA4N_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelDA4 = {
-  "AquarticD",
-  2, _nrrdDA4Sup, returnZero,
+  "AquarticD", 2, AIR_TRUE,
+  _nrrdDA4Sup, returnZero,
   _nrrdDA41_f,  _nrrdDA4N_f,  _nrrdDA41_d,  _nrrdDA4N_d
 };
 const NrrdKernel *const
@@ -1559,8 +1559,8 @@ _nrrdDDA4N_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelDDA4 = {
-  "AquarticDD",
-  2, _nrrdDDA4Sup, returnZero,
+  "AquarticDD", 2, AIR_TRUE,
+  _nrrdDDA4Sup, returnZero,
   _nrrdDDA41_f, _nrrdDDA4N_f, _nrrdDDA41_d, _nrrdDDA4N_d
 };
 const NrrdKernel *const
@@ -1633,9 +1633,9 @@ _c3quintN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _c3quint = {
-  "C3Quintic",
-  0, returnTwo, returnOne,
-  _c3quint1_f,   _c3quintN_f,   _c3quint1_d,   _c3quintN_d
+  "C3Quintic", 0, AIR_FALSE,
+  returnTwo, returnOne,
+  _c3quint1_f, _c3quintN_f,   _c3quint1_d,   _c3quintN_d
 };
 const NrrdKernel *const
 nrrdKernelC3Quintic = &_c3quint;
@@ -1692,8 +1692,8 @@ _Dc3quintN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelDC3Quintic = {
-  "C3QuinticD",
-  0, returnTwo, returnZero,
+  "C3QuinticD", 0, AIR_FALSE,
+  returnTwo, returnZero,
   _Dc3quint1_f,  _Dc3quintN_f,  _Dc3quint1_d,  _Dc3quintN_d
 };
 const NrrdKernel *const
@@ -1747,8 +1747,8 @@ _DDc3quintN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _DDc3quint = {
-  "C3QuinticDD",
-  0, returnTwo, returnZero,
+  "C3QuinticDD", 0, AIR_FALSE,
+  returnTwo, returnZero,
   _DDc3quint1_f,   _DDc3quintN_f,   _DDc3quint1_d,   _DDc3quintN_d
 };
 const NrrdKernel *const
@@ -1816,8 +1816,8 @@ _c4hexN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _c4hex = {
-  "C4Hexic",
-  0, returnThree, returnOne,
+  "C4Hexic", 0, AIR_FALSE,
+  returnThree, returnOne,
   _c4hex1_f,   _c4hexN_f,   _c4hex1_d,   _c4hexN_d
 };
 const NrrdKernel *const
@@ -1878,8 +1878,8 @@ _Dc4hexN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelDC4hexic = {
-  "C4HexicD",
-  0, returnThree, returnZero,
+  "C4HexicD", 0, AIR_FALSE,
+  returnThree, returnZero,
   _Dc4hex1_f,  _Dc4hexN_f,  _Dc4hex1_d,  _Dc4hexN_d
 };
 const NrrdKernel *const
@@ -1936,8 +1936,8 @@ _DDc4hexN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _DDc4hex = {
-  "C4HexicDD",
-  0, returnThree, returnZero,
+  "C4HexicDD", 0, AIR_FALSE,
+  returnThree, returnZero,
   _DDc4hex1_f,   _DDc4hexN_f,   _DDc4hex1_d,   _DDc4hexN_d
 };
 const NrrdKernel *const
@@ -1999,8 +1999,8 @@ _DDDc4hexN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelDDDC4hexic = {
-  "C4HexicDDD",
-  0, returnThree, returnZero,
+  "C4HexicDDD", 0, AIR_FALSE,
+  returnThree, returnZero,
   _DDDc4hex1_f,  _DDDc4hexN_f,  _DDDc4hex1_d,  _DDDc4hexN_d
 };
 const NrrdKernel *const
@@ -2083,7 +2083,7 @@ _c4hex_ANI_Nf(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelC4HexicApproxInverse = {
-  "C4HexicAI", 0,
+  "C4HexicAI", 0, AIR_FALSE,
   _c4hex_ANI_sup, returnOne,
   _c4hex_ANI_1f, _c4hex_ANI_Nf,
   _c4hex_ANI_1d, _c4hex_ANI_Nd
@@ -2163,8 +2163,8 @@ _c5septN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _c5sept = {
-  "C5Septic",
-  0, returnFour, returnOne,
+  "C5Septic", 0, AIR_FALSE,
+  returnFour, returnOne,
   _c5sept1_f,   _c5septN_f,   _c5sept1_d,   _c5septN_d
 };
 const NrrdKernel *const
@@ -2237,8 +2237,8 @@ _dc5septN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _dc5sept = {
-  "C5SepticD",
-  0, returnFour, returnZero,
+  "C5SepticD", 0, AIR_FALSE,
+  returnFour, returnZero,
   _dc5sept1_f,   _dc5septN_f,   _dc5sept1_d,   _dc5septN_d
 };
 const NrrdKernel *const
@@ -2307,8 +2307,8 @@ _ddc5septN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _ddc5sept = {
-  "C5SepticDD",
-  0, returnFour, returnZero,
+  "C5SepticDD", 0, AIR_FALSE,
+  returnFour, returnZero,
   _ddc5sept1_f,   _ddc5septN_f,   _ddc5sept1_d,   _ddc5septN_d
 };
 const NrrdKernel *const
@@ -2381,8 +2381,8 @@ _dddc5septN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _dddc5sept = {
-  "C5SepticDDD",
-  0, returnFour, returnZero,
+  "C5SepticDDD", 0, AIR_FALSE,
+  returnFour, returnZero,
   _dddc5sept1_f,   _dddc5septN_f,   _dddc5sept1_d,   _dddc5septN_d
 };
 const NrrdKernel *const
@@ -2491,7 +2491,7 @@ _c5sept_ANI_Nf(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelC5SepticApproxInverse = {
-  "C5SepticAI", 0,
+  "C5SepticAI", 0, AIR_FALSE,
   _c5sept_ANI_sup, _c5sept_ANI_int,
   _c5sept_ANI_1f, _c5sept_ANI_Nf,
   _c5sept_ANI_1d, _c5sept_ANI_Nd
@@ -2572,8 +2572,8 @@ _nrrdGN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelG = {
-  "gauss",
-  2, _nrrdGSup,  _nrrdGInt,
+  "gauss", 2, AIR_TRUE,
+  _nrrdGSup,  _nrrdGInt,
   _nrrdG1_f,   _nrrdGN_f,   _nrrdG1_d,   _nrrdGN_d
 };
 const NrrdKernel *const
@@ -2674,7 +2674,7 @@ _nrrdDiscGaussianN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelDiscreteGaussian = {
-  "discretegauss", 2,
+  "discretegauss", 2, AIR_TRUE,
   _nrrdDiscGaussianSup,  _nrrdDiscGaussianInt,
   _nrrdDiscGaussian1_f, _nrrdDiscGaussianN_f,
   _nrrdDiscGaussian1_d, _nrrdDiscGaussianN_d
@@ -2768,8 +2768,8 @@ _nrrdDGN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelDG = {
-  "gaussD",
-  2, _nrrdDGSup,  _nrrdDGInt,
+  "gaussD", 2, AIR_TRUE,
+  _nrrdDGSup,  _nrrdDGInt,
   _nrrdDG1_f,   _nrrdDGN_f,   _nrrdDG1_d,   _nrrdDGN_d
 };
 const NrrdKernel *const
@@ -2850,8 +2850,8 @@ _nrrdDDGN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelDDG = {
-  "gaussDD",
-  2, _nrrdDDGSup,  _nrrdDDGInt,
+  "gaussDD", 2, AIR_TRUE,
+  _nrrdDDGSup,  _nrrdDDGInt,
   _nrrdDDG1_f,   _nrrdDDGN_f,   _nrrdDDG1_d,   _nrrdDDGN_d
 };
 const NrrdKernel *const
@@ -3041,11 +3041,11 @@ nrrdKernelParse(const NrrdKernel **kernelP, double *parm, const char *_str) {
   }
 
   /* [jorik] (if i understood this correctly) parm is always of length
-  ** NRRD_KERNEL_PARMS_NUM. We have to clear all parameters here, since
+  ** NRRD_KERNEL_PARM_MAXNUM. We have to clear all parameters here, since
   ** nrrdKernelSet copies all arguments into its own array later, and
   ** copying uninitialised memory is bad (it traps my memory debugger).
   */
-  for (jj = 0; jj < NRRD_KERNEL_PARMS_NUM; jj++) {
+  for (jj = 0; jj < NRRD_KERNEL_PARM_MAXNUM; jj++) {
     parm[jj] = 0;
   }
 
@@ -3099,19 +3099,19 @@ nrrdKernelParse(const NrrdKernel **kernelP, double *parm, const char *_str) {
       return 1;
     }
     if (!AIR_IN_CL(-1, tmfD, (int)nrrdKernelTMF_maxD)) {
-      biffAddf(NRRD, "%s: derivative value %d outside range [-1,%d]", me, tmfD,
+      biffAddf(NRRD, "%s: derivative value %d outside range [-1,%u]", me, tmfD,
                nrrdKernelTMF_maxD);
       airMopError(mop);
       return 1;
     }
     if (!AIR_IN_CL(-1, tmfC, (int)nrrdKernelTMF_maxC)) {
-      biffAddf(NRRD, "%s: continuity value %d outside range [-1,%d]", me, tmfC,
+      biffAddf(NRRD, "%s: continuity value %d outside range [-1,%u]", me, tmfC,
                nrrdKernelTMF_maxC);
       airMopError(mop);
       return 1;
     }
     if (!AIR_IN_CL(1, tmfA, (int)nrrdKernelTMF_maxA)) {
-      biffAddf(NRRD, "%s: accuracy value %d outside range [1,%d]", me, tmfA,
+      biffAddf(NRRD, "%s: accuracy value %d outside range [1,%u]", me, tmfA,
                nrrdKernelTMF_maxA);
       airMopError(mop);
       return 1;
@@ -3128,9 +3128,9 @@ nrrdKernelParse(const NrrdKernel **kernelP, double *parm, const char *_str) {
       airMopError(mop);
       return 1;
     }
-    if ((*kernelP)->parmNum > NRRD_KERNEL_PARMS_NUM) {
-      biffAddf(NRRD, "%s: kernel \"%s\" requests %d parameters > max %d", me, kstr,
-               (*kernelP)->parmNum, NRRD_KERNEL_PARMS_NUM);
+    if ((*kernelP)->parmNum > NRRD_KERNEL_PARM_MAXNUM) {
+      biffAddf(NRRD, "%s: kernel \"%s\" requests %u parameters > max %u", me, kstr,
+               (*kernelP)->parmNum, NRRD_KERNEL_PARM_MAXNUM);
       airMopError(mop);
       return 1;
     }
@@ -3151,7 +3151,7 @@ nrrdKernelParse(const NrrdKernel **kernelP, double *parm, const char *_str) {
     }
     if (needParm > 0 && !pstr) {
       biffAddf(NRRD,
-               "%s: didn't get any of %d required doubles after "
+               "%s: didn't get any of %u required doubles after "
                "colon in \"%s\"",
                me, needParm, kstr);
       airMopError(mop);
@@ -3178,7 +3178,7 @@ nrrdKernelParse(const NrrdKernel **kernelP, double *parm, const char *_str) {
     /* haveParm is now the number of parameters that were parsed. */
     if (haveParm < needParm) {
       biffAddf(NRRD,
-               "%s: parsed only %d of %d required doubles "
+               "%s: parsed only %u of %u required doubles "
                "from \"%s\" (in \"%s\")",
                me, haveParm, needParm, _pstr, _str);
       airMopError(mop);
@@ -3188,10 +3188,10 @@ nrrdKernelParse(const NrrdKernel **kernelP, double *parm, const char *_str) {
       for (jj = haveParm; jj >= 1; jj--) {
         parm[jj] = parm[jj - 1];
       }
-      parm[0] = nrrdDefaultKernelParm0;
+      parm[0] = 1 /* Gone in TeemV2: nrrdDefaultKernelParm0 */;
     } else {
       if (pstr) {
-        biffAddf(NRRD, "%s: \"%s\" (in \"%s\") has more than %d doubles", me, _pstr,
+        biffAddf(NRRD, "%s: \"%s\" (in \"%s\") has more than %u doubles", me, _pstr,
                  _str, (*kernelP)->parmNum);
         airMopError(mop);
         return 1;
@@ -3210,7 +3210,7 @@ int /* Biff: 1 */
 nrrdKernelSpecParse(NrrdKernelSpec *ksp, const char *str) {
   static const char me[] = "nrrdKernelSpecParse";
   const NrrdKernel *kern;
-  double kparm[NRRD_KERNEL_PARMS_NUM];
+  double kparm[NRRD_KERNEL_PARM_MAXNUM];
 
   if (!(ksp && str)) {
     biffAddf(NRRD, "%s: got NULL pointer", me);
@@ -3285,7 +3285,7 @@ nrrdKernelSpecSprint(char str[AIR_STRLEN_LARGE + 1], const NrrdKernelSpec *ksp) 
 
 int /* Biff: 1 */
 nrrdKernelSprint(char str[AIR_STRLEN_LARGE + 1], const NrrdKernel *kernel,
-                 const double kparm[NRRD_KERNEL_PARMS_NUM]) {
+                 const double kparm[NRRD_KERNEL_PARM_MAXNUM]) {
   static const char me[] = "nrrdKernelSprint";
   NrrdKernelSpec ksp;
 
@@ -3302,8 +3302,8 @@ nrrdKernelSprint(char str[AIR_STRLEN_LARGE + 1], const NrrdKernel *kernel,
 ** but HEY that's very contrived; why bother?
 */
 int /* Biff: 1 */
-nrrdKernelCompare(const NrrdKernel *kernA, const double parmA[NRRD_KERNEL_PARMS_NUM],
-                  const NrrdKernel *kernB, const double parmB[NRRD_KERNEL_PARMS_NUM],
+nrrdKernelCompare(const NrrdKernel *kernA, const double parmA[NRRD_KERNEL_PARM_MAXNUM],
+                  const NrrdKernel *kernB, const double parmB[NRRD_KERNEL_PARM_MAXNUM],
                   int *differ, char explain[AIR_STRLEN_LARGE + 1]) {
   static const char me[] = "nrrdKernelCompare";
   unsigned int pnum, pidx;
@@ -3427,13 +3427,13 @@ nrrdKernelSpecCompare(const NrrdKernelSpec *aa, const NrrdKernelSpec *bb, int *d
 ** based on idea that the parm vec is the same for a kernel and its derivative
 */
 int /* Biff: 1 */
-nrrdKernelCheck(const NrrdKernel *kern, const double parm[NRRD_KERNEL_PARMS_NUM],
+nrrdKernelCheck(const NrrdKernel *kern, const double parm[NRRD_KERNEL_PARM_MAXNUM],
                 size_t evalNum, double epsilon, unsigned int diffOkEvalMax,
                 unsigned int diffOkIntglOrDerivMax, const NrrdKernel *ikern,
-                const double iparm[NRRD_KERNEL_PARMS_NUM]) {
+                const double iparm[NRRD_KERNEL_PARM_MAXNUM]) {
   static const char me[] = "nrrdKernelCheck";
   const NrrdKernel *parsedkern, *kernD;
-  double parsedparm[NRRD_KERNEL_PARMS_NUM], supp, integral;
+  double parsedparm[NRRD_KERNEL_PARM_MAXNUM], supp, integral;
   char kstr[AIR_STRLEN_LARGE + 1], kspstr[AIR_STRLEN_LARGE + 1],
     explain[AIR_STRLEN_LARGE + 1], stmp[AIR_STRLEN_SMALL + 1],
     kdstr[AIR_STRLEN_LARGE + 1];
@@ -3680,34 +3680,41 @@ nrrdKernelCheck(const NrrdKernel *kern, const double parm[NRRD_KERNEL_PARMS_NUM]
 }
 
 /* nrrdKernelParm0IsScale answers the question: does the given kernel look at parm[0] to
-   determine the over-all size of the kernel?  In the early days of nrrd, all kernels did
-   this, but gradually the utility of doing that became less obvious, and for
-   simplicity's sake newer kernels were parameter-free. The kernels listed here thus tend
-   to be the older kernels in nrrd. */
-int /* Biff: nope */
-nrrdKernelParm0IsScale(const NrrdKernel *kern) {
-  int ret;
+ * determine the over-all size of the kernel?  In the early days of nrrd, all kernels did
+ * this, but gradually the utility of doing that became less obvious, and for
+ * simplicity's sake newer kernels were parameter-free. The kernels listed here thus tend
+ * to be the older kernels in nrrd.
+ *
+ * For TeemV2, the kernels gained a new parm0IsScale field, and meetNrrdKernelAllCheck()
+ * verified that it was set correctly w.r.t this function. Then, since this function
+ * became superfluous, it was removed.
 
-  if (!kern) {
-    ret = 0;
-  } else if (nrrdKernelZero == kern || nrrdKernelBox == kern || nrrdKernelCheap == kern
-             || nrrdKernelTent == kern || nrrdKernelForwDiff == kern
-             || nrrdKernelCentDiff == kern || nrrdKernelBCCubic == kern
-             || nrrdKernelBCCubicD == kern || nrrdKernelBCCubicDD == kern
-             || nrrdKernelAQuartic == kern || nrrdKernelAQuarticD == kern
-             || nrrdKernelAQuarticDD == kern || nrrdKernelGaussian == kern
-             || nrrdKernelGaussianD == kern || nrrdKernelGaussianDD == kern
-             || nrrdKernelDiscreteGaussian == kern || nrrdKernelHann == kern
-             || nrrdKernelHannD == kern || nrrdKernelHannDD == kern
-             || nrrdKernelBlackman == kern || nrrdKernelBlackmanD == kern
-             || nrrdKernelBlackmanDD == kern) {
-    /* nrrdKernelFlag should maybe be part of this, but it's a flag, not a kernel */
-    ret = 1;
-  } else {
-    ret = 0;
-  }
-  return ret;
-}
+ * int / * Biff: nope * /
+ * nrrdKernelParm0IsScale(const NrrdKernel *kern) {
+ *   int ret;
+ *
+ *   if (!kern) {
+ *       ret = 0;
+ *   } else if (nrrdKernelZero == kern
+ *              || nrrdKernelBox == kern || nrrdKernelCheap == kern
+ *              || nrrdKernelTent == kern || nrrdKernelForwDiff == kern
+ *              || nrrdKernelCentDiff == kern || nrrdKernelBCCubic == kern
+ *              || nrrdKernelBCCubicD == kern || nrrdKernelBCCubicDD == kern
+ *              || nrrdKernelAQuartic == kern || nrrdKernelAQuarticD == kern
+ *              || nrrdKernelAQuarticDD == kern || nrrdKernelGaussian == kern
+ *              || nrrdKernelGaussianD == kern || nrrdKernelGaussianDD == kern
+ *              || nrrdKernelDiscreteGaussian == kern || nrrdKernelHann == kern
+ *              || nrrdKernelHannD == kern || nrrdKernelHannDD == kern
+ *              || nrrdKernelBlackman == kern || nrrdKernelBlackmanD == kern
+ *              || nrrdKernelBlackmanDD == kern) {
+ *     / * nrrdKernelFlag should maybe be part of this, but it's a flag, not a kernel * /
+ *     ret = 1;
+ *   } else {
+ *     ret = 0;
+ *   }
+ *   return ret;
+ * }
+ */
 
 /* Given a kernel, make an attempt to return its derivative,
   but if can't figure it out return nrrdKernelFlag.

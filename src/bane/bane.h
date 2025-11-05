@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -38,7 +38,12 @@
 #    define BANE_EXPORT extern __declspec(dllimport)
 #  endif
 #else /* TEEM_STATIC || UNIX */
-#  define BANE_EXPORT extern
+#  if !defined(TEEM_STATIC)
+/*   If built w/ -fvisibility=hidden, only EXPORTed symbols are visible in shared lib */
+#    define BANE_EXPORT extern __attribute__((visibility("default")))
+#  else
+#    define BANE_EXPORT extern
+#  endif
 #endif
 
 #ifdef __cplusplus
@@ -274,7 +279,7 @@ typedef struct {
     renormalize,  /* use gage's mask renormalization */
     k3pack;
   const NrrdKernel *k[GAGE_KERNEL_MAX + 1];
-  double kparm[GAGE_KERNEL_MAX + 1][NRRD_KERNEL_PARMS_NUM];
+  double kparm[GAGE_KERNEL_MAX + 1][NRRD_KERNEL_PARM_MAXNUM];
   baneClip *clip;
   double incLimit; /* lowest permissible fraction of the
                       data remaining after new inclusion
@@ -287,11 +292,11 @@ typedef struct {
 
 /* defaultsBane.c */
 BANE_EXPORT const char *const baneBiffKey;
-BANE_EXPORT int baneDefVerbose;
-BANE_EXPORT int baneDefMakeMeasrVol;
-BANE_EXPORT double baneDefIncLimit;
-BANE_EXPORT int baneDefRenormalize;
-BANE_EXPORT int baneDefPercHistBins;
+BANE_EXPORT int baneDefaultVerbose;
+BANE_EXPORT int baneDefaultMakeMeasrVol;
+BANE_EXPORT double baneDefaultIncLimit;
+BANE_EXPORT int baneDefaultRenormalize;
+BANE_EXPORT int baneDefaultPercHistBins;
 BANE_EXPORT int baneStateHistEqBins;
 BANE_EXPORT int baneStateHistEqSmart;
 BANE_EXPORT int baneHack;

@@ -54,7 +54,12 @@
 #    define MEET_EXPORT extern __declspec(dllimport)
 #  endif
 #else /* TEEM_STATIC || UNIX */
-#  define MEET_EXPORT extern
+#  if !defined(TEEM_STATIC)
+/*   If built w/ -fvisibility=hidden, only EXPORTed symbols are visible in shared lib */
+#    define MEET_EXPORT extern __attribute__((visibility("default")))
+#  else
+#    define MEET_EXPORT extern
+#  endif
 #endif
 
 #ifdef __cplusplus

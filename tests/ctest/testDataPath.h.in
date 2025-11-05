@@ -1,9 +1,9 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2019  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2011  James Bigler
-  Copyright (C) 2008, 2007, 2006, 2005  Gordon Kindlmann
-  Copyright (C) 2004, 2003, 2002, 2001, 2000, 1999, 1998  University of Utah
+  Copyright (C) 2005--2008  Gordon Kindlmann
+  Copyright (C) 1998--2004  University of Utah
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public License
@@ -28,7 +28,7 @@
 
 // #warning only became standard in C23:
 // https://en.cppreference.com/w/c/preprocessor/warning.html
-#warning "With the new Teem v2 testing framework, this file is not needed anymore;"
+#warning "With the new TeemV2 testing framework, this file is not needed anymore;"
 #warning "the location of data is now communicated at run-time via environment"
 #warning "variables, rather than at configure- and compile-time via a header file."
 #warning "But the file is sticking around for now out of gratitude to James Bigler"

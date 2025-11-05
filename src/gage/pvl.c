@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -55,7 +55,6 @@ gagePerVolume * /* Biff: NULL */
 gagePerVolumeNew(gageContext *ctx, const Nrrd *nin, const gageKind *kind) {
   static const char me[] = "gagePerVolumeNew";
   gagePerVolume *pvl;
-  int ii;
   airArray *mop;
 
   if (!(nin && kind)) {
@@ -80,14 +79,14 @@ gagePerVolumeNew(gageContext *ctx, const Nrrd *nin, const gageKind *kind) {
   }
   mop = airMopNew();
   airMopAdd(mop, pvl, airFree, airMopOnError);
-  pvl->verbose = gageDefVerbose;
+  pvl->verbose = gageDefaultVerbose;
   pvl->kind = kind;
   GAGE_QUERY_RESET(pvl->query);
-  for (ii = 0; ii <= GAGE_DERIV_MAX; ii++) {
-    ctx->needD[ii] = AIR_FALSE;
+  for (unsigned int dd = 0; dd <= GAGE_DERIV_MAX; dd++) {
+    ctx->needD[dd] = AIR_FALSE;
   }
   pvl->nin = nin;
-  for (ii = gagePvlFlagUnknown + 1; ii < gagePvlFlagLast; ii++) {
+  for (int ii = gagePvlFlagUnknown + 1; ii < gagePvlFlagLast; ii++) {
     pvl->flag[ii] = AIR_FALSE;
   }
   pvl->iv3 = pvl->iv2 = pvl->iv1 = NULL;
@@ -101,7 +100,7 @@ gagePerVolumeNew(gageContext *ctx, const Nrrd *nin, const gageKind *kind) {
     airMopError(mop);
     return NULL;
   }
-  for (ii = 1; ii <= kind->itemMax; ii++) {
+  for (int ii = 1; ii <= kind->itemMax; ii++) {
     pvl->directAnswer[ii] = pvl->answer + gageKindAnswerOffset(kind, ii);
   }
   pvl->flag[gagePvlFlagVolume] = AIR_TRUE;
@@ -156,7 +155,7 @@ _gagePerVolumeCopy(gagePerVolume *pvl, unsigned int fd) {
   if (!(nvl->iv3 && nvl->iv2 && nvl->iv1 && nvl->answer && nvl->directAnswer)) {
     biffAddf(GAGE,
              "%s: couldn't allocate all caches "
-             "(fd=%u, valLen=%u, totAnsLen=%u, itemMax=%u)",
+             "(fd=%u, valLen=%u, totAnsLen=%u, itemMax=%d)",
              me, fd, nvl->kind->valLen, gageKindTotalAnswerLength(nvl->kind),
              nvl->kind->itemMax);
     airMopError(mop);

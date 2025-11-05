@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -55,7 +55,7 @@ airMopSub() and airMopUnMem were created
 #define AIR_MOP_INCR 10
 
 airArray *
-airMopNew() {
+airMopNew(void) {
 
   return airArrayNew(NULL, NULL, sizeof(airMop), AIR_MOP_INCR);
 }

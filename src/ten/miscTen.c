@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -216,7 +216,7 @@ tenBMatrixCheck(const Nrrd *nbmat, int type, unsigned int minnum) {
   }
   if (!(6 == nbmat->axis[0].size && 2 == nbmat->dim)) {
     char stmp[AIR_STRLEN_SMALL + 1];
-    biffAddf(TEN, "%s: need a 6xN 2-D array (not a %s x? %d-D array)", me,
+    biffAddf(TEN, "%s: need a 6xN 2-D array (not a %s x? %u-D array)", me,
              airSprintSize_t(stmp, nbmat->axis[0].size), nbmat->dim);
     return 1;
   }
@@ -232,7 +232,7 @@ tenBMatrixCheck(const Nrrd *nbmat, int type, unsigned int minnum) {
   }
   if (!(minnum <= nbmat->axis[1].size)) {
     char stmp[AIR_STRLEN_SMALL + 1];
-    biffAddf(TEN, "%s: have only %s B-matrices, need at least %d", me,
+    biffAddf(TEN, "%s: have only %s B-matrices, need at least %u", me,
              airSprintSize_t(stmp, nbmat->axis[1].size), minnum);
     return 1;
   }
@@ -253,7 +253,7 @@ tenBMatrixCheck(const Nrrd *nbmat, int type, unsigned int minnum) {
 int /* Biff: 1 */
 _tenFindValley(double *valP, const Nrrd *nhist, double tweak, int save) {
   static const char me[] = "_tenFindValley";
-  double gparm[NRRD_KERNEL_PARMS_NUM], dparm[NRRD_KERNEL_PARMS_NUM];
+  double gparm[NRRD_KERNEL_PARM_MAXNUM], dparm[NRRD_KERNEL_PARM_MAXNUM];
   Nrrd *ntmpA, *ntmpB, *nhistD, *nhistDD;
   float *hist, *histD, *histDD;
   airArray *mop;

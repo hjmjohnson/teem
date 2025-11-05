@@ -11,7 +11,7 @@
 # if AIR_EXISTS() is really working, based on the little CMake/TestAIR_EXISTS.c test
 # program. For this to be a useful test that informs how the rest of Teem code will work,
 # TestAIR_EXISTS.c needs to be compiled the same as Teem itself will be compiled later.
-# Sadly, it was not until Teem V2 that this consistency was actually enforced (!)  To
+# Sadly, it was not until TeemV2 that this consistency was actually enforced (!)  To
 # further help debugging, we also print out exactly how TestAIR_EXISTS.c is compiled, and
 # we use try_compile instead of try_run so the resulting executable file stays available
 # for later inspection.

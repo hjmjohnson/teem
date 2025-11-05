@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -117,9 +117,10 @@ airSanity(void) {
   if (AIR_EXISTS(nanValue)) {
     return airInsane_NaNExists;
   }
-  if (!(AIR_EXISTS(0.0) && AIR_EXISTS(-0.0)    /* */
-        && AIR_EXISTS(1.0) && AIR_EXISTS(-1.0) /* */
-        && AIR_EXISTS(42.42) && AIR_EXISTS(AIR_PI))) {
+  if (!(AIR_EXISTS(0.0) && AIR_EXISTS(-0.0) && AIR_EXISTS(1.0)
+        && AIR_EXISTS(-1.0) /* */
+        /* not using AIR_PI because NrrdIO doesn't need or define that */
+        && AIR_EXISTS(42.42) && AIR_EXISTS(3.14159265358979323846))) {
     return airInsane_ExistsBad;
   }
   nanF = (float)nanValue;
@@ -127,26 +128,6 @@ airSanity(void) {
   ninfF = (float)ninf;
   airFPValToParts_f(&sign, &expvalue, &mant, nanF);
   mant >>= 22;
-  /* this a rough test of the _F and _D macros at the end of air.h; they aren't currently
-     used within Teem so it is harder to justify making an airInsane case just for these;
-     but if that happens this might be a start
-  do {
-    double ff = 1234.123412f;
-    double dd = 1234.123412;
-    printf("AIR_EXISTS_F(nanF) = %d\n", AIR_EXISTS_F(nanF));
-    printf("AIR_EXISTS_F(pinfF) = %d\n", AIR_EXISTS_F(pinfF));
-    printf("AIR_EXISTS_F(ninfF) = %d\n", AIR_EXISTS_F(ninfF));
-    printf("AIR_EXISTS_F(ff) = %d\n", AIR_EXISTS_F(ff));
-    printf("AIR_ISNAN_F(nanF) = %d\n", AIR_ISNAN_F(nanF));
-    printf("AIR_ISNAN_F(pinfF) = %d\n", AIR_ISNAN_F(pinfF));
-    printf("AIR_ISNAN_F(ninfF) = %d\n", AIR_ISNAN_F(ninfF));
-    printf("AIR_ISNAN_F(ff) = %d\n", AIR_ISNAN_F(ff));
-    printf("AIR_EXISTS_D(nanValue) = %d\n", AIR_EXISTS_D(nanValue));
-    printf("AIR_EXISTS_D(pinf) = %d\n", AIR_EXISTS_D(pinf));
-    printf("AIR_EXISTS_D(ninf) = %d\n", AIR_EXISTS_D(ninf));
-    printf("AIR_EXISTS_D(dd) = %d\n", AIR_EXISTS_F(dd));
-  } while (0);
-   */
 
   if (!(airFP_NAN == airFPClass_f(AIR_NAN)
         /*

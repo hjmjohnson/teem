@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -190,7 +190,7 @@ unrrdu_resampleMain(int argc, const char **argv, const char *me, hestParm *hparm
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
 
   if (scaleLen != nin->dim) {
-    fprintf(stderr, "%s: # sampling sizes %d != input nrrd dimension %d\n", me, scaleLen,
+    fprintf(stderr, "%s: # sampling sizes %u != input nrrd dimension %u\n", me, scaleLen,
             nin->dim);
     airMopError(mop);
     return 1;
@@ -456,7 +456,7 @@ unrrdu_resampleMain(int argc, const char **argv, const char *me, hestParm *hparm
         airMopError(mop);
         return 1;
       }
-      memcpy(info->parm[ai], unuk->parm, NRRD_KERNEL_PARMS_NUM * sizeof(*unuk->parm));
+      memcpy(info->parm[ai], unuk->parm, NRRD_KERNEL_PARM_MAXNUM * sizeof(*unuk->parm));
       if (info->kernel[ai]
           && (!(AIR_EXISTS(nin->axis[ai].min) && AIR_EXISTS(nin->axis[ai].max)))) {
         nrrdAxisInfoMinMaxSet(nin, ai,

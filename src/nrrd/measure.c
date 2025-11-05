@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -1167,7 +1167,7 @@ nrrdProject(Nrrd *nout, const Nrrd *cnin, unsigned int axis, int measr, int type
     }
   } else {
     if (!(axis <= cnin->dim - 1)) {
-      biffAddf(NRRD, "%s: axis %u not in range [0,%d]", me, axis, cnin->dim - 1);
+      biffAddf(NRRD, "%s: axis %u not in range [0,%u]", me, axis, cnin->dim - 1);
       return 1;
     }
   }

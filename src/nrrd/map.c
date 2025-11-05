@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -19,115 +19,6 @@
 
 #include "nrrd.h"
 #include "privateNrrd.h"
-
-/*
-** RETIRED: nrrdMinMaxSet()
-**
-** Sets nrrd->min and nrrd->max to the extremal (existent) values in
-** the given nrrd, by calling the appropriate member of nrrdMinMaxExactFind[]
-**
-** calling this function will result in nrrd->hasNonExist being set
-** (because of the nrrdFindMinMax[] functions)
-**
-** decided NOT to use biff, so that this is a more distinct alternative to
-** nrrdMinMaxCleverSet().
-
-void
-nrrdMinMaxSet(Nrrd *nrrd) {
-  NRRD_TYPE_BIGGEST _min, _max;
-
-  if (nrrd) {
-    if (!airEnumValCheck(nrrdType, nrrd->type)
-        && nrrdTypeBlock != nrrd->type) {
-      nrrdFindMinMax[nrrd->type](&_min, &_max, nrrd);
-      nrrd->min = nrrdDLoad[nrrd->type](&_min);
-      nrrd->max = nrrdDLoad[nrrd->type](&_max);
-    } else {
-      nrrd->min = nrrd->max = AIR_NAN;
-    }
-  }
-  return;
-}
-*/
-
-/*
-** RETIRED: nrrdMinMaxCleverSet()
-**
-** basically a wrapper around nrrdMinMaxSet(), with bells + whistles:
-** 1) will call nrrdMinMaxSet only when one of nrrd->min and nrrd->max
-**    are non-existent, with the end result that only the non-existent
-**    values are over-written
-** 2) obeys the nrrdStateClever8BitMinMax global state to short-cut
-**    finding min and max for 8-bit data.  Values for nrrd->min or
-**    nrrd->max which were existent to start with are untouched.
-** 3) reports error if there are no existent values in nrrd (AIR_EXISTS()
-**    fails on every value)
-**
-** Like nrrdMinMaxSet(), this will always set nrrd->hasNonExist.
-**
-** Uses biff.
-
-int
-nrrdMinMaxCleverSet(Nrrd *nrrd) {
-  static const char me[] = "nrrdMinMaxCleverSet";
-  double min, max;
-
-  if (!nrrd) {
-    biffAddf(NRRD, "%s: got NULL pointer", me);
-    return 1;
-  }
-  if (airEnumValCheck(nrrdType, nrrd->type)) {
-    biffAddf(NRRD, "%s: input nrrd has invalid type (%d)", me, nrrd->type);
-    return 1;
-  }
-  if (nrrdTypeBlock == nrrd->type) {
-    sprintf(err, "%s: can't find min/max of type %s", me,
-            airEnumStr(nrrdType, nrrdTypeBlock));
-  }
-  if (AIR_EXISTS(nrrd->min) && AIR_EXISTS(nrrd->max)) {
-    / * both of min and max already set, so we won't look for those, but
-       we have to comply with stated behavior of always setting hasNonExist * /
-    nrrdHasNonExistSet(nrrd);
-    return 0;
-  }
-  if (nrrdStateClever8BitMinMax
-      && (nrrdTypeChar == nrrd->type || nrrdTypeUChar == nrrd->type)) {
-    if (nrrdTypeChar == nrrd->type) {
-      if (!AIR_EXISTS(nrrd->min))
-        nrrd->min = SCHAR_MIN;
-      if (!AIR_EXISTS(nrrd->max))
-        nrrd->max = SCHAR_MAX;
-    } else {
-      if (!AIR_EXISTS(nrrd->min))
-        nrrd->min = 0;
-      if (!AIR_EXISTS(nrrd->max))
-        nrrd->max = UCHAR_MAX;
-    }
-    nrrdHasNonExistSet(nrrd);
-    return 0;
-  }
-
-  / * at this point we need to find either min and/or max (at least
-     one of them was non-existent on the way in) * /
-
-  / * save incoming values in case they exist * /
-  min = nrrd->min;
-  max = nrrd->max;
-  / * this will set nrrd->min, nrrd->max, and hasNonExist * /
-  nrrdMinMaxSet(nrrd);
-  if (!( AIR_EXISTS(nrrd->min) && AIR_EXISTS(nrrd->max) )) {
-    biffAddf(NRRD, "%s: no existent values!", me);
-    return 1;
-  }
-  / * re-enstate the existent incoming min and/or max values * /
-  if (AIR_EXISTS(min))
-    nrrd->min = min;
-  if (AIR_EXISTS(max))
-    nrrd->max = max;
-
-  return 0;
-}
-*/
 
 static int /* Biff: 1 */
 clampRoundConvert(Nrrd *nout, const Nrrd *nin, int type, int doClamp, int roundDir) {
@@ -330,7 +221,7 @@ nrrdQuantize(Nrrd *nout, const Nrrd *nin, const NrrdRange *_range, unsigned int 
     type = nrrdTypeUInt;
     break;
   default:
-    biffAddf(NRRD, "%s: bits has to be 8, 16, or 32 (not %d)", me, bits);
+    biffAddf(NRRD, "%s: bits has to be 8, 16, or 32 (not %u)", me, bits);
     return 1;
   }
   if (nout == nin && nrrdTypeSize[type] != nrrdTypeSize[nin->type]) {
@@ -628,7 +519,7 @@ nrrdHistoEq(Nrrd *nout, const Nrrd *nin, Nrrd **nmapP, unsigned int bins,
     return 1;
   }
   if (!(bins > 4)) {
-    biffAddf(NRRD, "%s: need # bins > 4 (not %d)", me, bins);
+    biffAddf(NRRD, "%s: need # bins > 4 (not %u)", me, bins);
     return 1;
   }
   /* we start by simply copying, because the only thing we're

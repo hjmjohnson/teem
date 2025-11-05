@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -53,7 +53,7 @@ baneGkmsParseIncStrategy(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 
   if (1 == sscanf(str, "p:%lg", incParm + 1)
       || 2 == sscanf(str, "p:%lg,%lg", incParm + 1, incParm + 2)) {
     inc[0] = baneIncPercentile;
-    incParm[0] = baneDefPercHistBins;
+    incParm[0] = baneDefaultPercHistBins;
     return 0;
   }
   if (3 == sscanf(str, "p:%d,%lg,%lg", &bins, incParm + 1, incParm + 2)) {

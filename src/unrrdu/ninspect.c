@@ -1,8 +1,8 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2022  University of Chicago
-  Copyright (C) 2008, 2007, 2006, 2005  Gordon Kindlmann
-  Copyright (C) 2004, 2003, 2002, 2001, 2000, 1999, 1998  University of Utah
+  Copyright (C) 2009--2025  University of Chicago
+  Copyright (C) 2005--2008  Gordon Kindlmann
+  Copyright (C) 1998--2004  University of Utah
 
   This library is free software; you can redistribute it and/or modify it under the terms
   of the GNU Lesser General Public License (LGPL) as published by the Free Software
@@ -44,7 +44,7 @@ fixproj(Nrrd *nproj[3], const Nrrd *nvol) {
   Nrrd *ntmp[3], *nt;
   int ii, jj, map[3], h[3], E, mi;
   size_t rsz[3][3];
-  double vec[3][3], dot[3], sp[3], parm[NRRD_KERNEL_PARMS_NUM];
+  double vec[3][3], dot[3], sp[3], parm[NRRD_KERNEL_PARM_MAXNUM];
   unsigned int sz[3];
 
   mop = airMopNew();
@@ -228,7 +228,7 @@ doit(Nrrd *nout, const Nrrd *nin, int smart, float amount, unsigned int margin,
     return 1;
   }
   if (!(3 == nin->dim)) {
-    biffAddf(UNRRDU, "%s: given nrrd has dimension %d, not 3\n", me, nin->dim);
+    biffAddf(UNRRDU, "%s: given nrrd has dimension %u, not 3\n", me, nin->dim);
     return 1;
   }
 
@@ -239,11 +239,11 @@ doit(Nrrd *nout, const Nrrd *nin, int smart, float amount, unsigned int margin,
 
   /* do projections for each axis, with some progress indication to sterr */
   for (axis = 0; axis <= 2; axis++) {
-    fprintf(stderr, "%s: doing axis %d projections ... ", me, axis);
+    fprintf(stderr, "%s: doing axis %u projections ... ", me, axis);
     fflush(stderr);
     if (ninspect_proj(nproj[axis], nin, axis, smart, amount)) {
       fprintf(stderr, "ERROR\n");
-      biffAddf(UNRRDU, "%s: trouble doing projections for axis %d", me, axis);
+      biffAddf(UNRRDU, "%s: trouble doing projections for axis %u", me, axis);
       airMopError(mop);
       return 1;
     }
@@ -315,7 +315,7 @@ doit(Nrrd *nout, const Nrrd *nin, int smart, float amount, unsigned int margin,
   }
   if (!E) E |= nrrdInset(nout, nout, nproj[0], min);
   if (E) {
-    biffAddf(UNRRDU, NRRD, "%s: couldn't composite output (which = %d)", me, which);
+    biffMovef(UNRRDU, NRRD, "%s: couldn't composite output (which = %d)", me, which);
     airMopError(mop);
     return 1;
   }

@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -20,7 +20,7 @@
 #include "hoover.h"
 
 hooverContext * /* Biff: nope */
-hooverContextNew() {
+hooverContextNew(void) {
   hooverContext *ctx;
 
   ctx = (hooverContext *)calloc(1, sizeof(hooverContext));
@@ -28,10 +28,13 @@ hooverContextNew() {
     ctx->cam = limnCameraNew();
     ELL_3V_SET(ctx->volSize, 0, 0, 0);
     ELL_3V_SET(ctx->volSpacing, AIR_NAN, AIR_NAN, AIR_NAN);
-    ctx->volCentering = hooverDefVolCentering;
+    /* TeemV2 removed hooverDefVolCentering, initialized to nrrdCenterNode (!)
+       probabably reflecting student GLK's ignorance of real-world imaging */
+    ctx->volCentering = nrrdCenterNode;
     ctx->shape = NULL;
     ctx->imgSize[0] = ctx->imgSize[1] = 0;
-    ctx->imgCentering = hooverDefImgCentering;
+    /* TeemV2 removed hooverDefImgCentering, initialized to nrrdCenterCell */
+    ctx->imgCentering = nrrdCenterCell;
     ctx->user = NULL;
     ctx->numThreads = 1;
     ctx->workIdx = 0;
@@ -80,7 +83,7 @@ hooverContextCheck(hooverContext *ctx) {
     minSize = (nrrdCenterCell == centr ? 1 : 2);
     if (!(ctx->volSize[0] >= minSize && ctx->volSize[1] >= minSize
           && ctx->volSize[2] >= minSize)) {
-      biffAddf(HOOVER, "%s: volume dimensions (%dx%dx%d) too small", me, ctx->volSize[0],
+      biffAddf(HOOVER, "%s: volume dimensions (%ux%ux%u) too small", me, ctx->volSize[0],
                ctx->volSize[1], ctx->volSize[2]);
       return 1;
     }
@@ -90,13 +93,10 @@ hooverContextCheck(hooverContext *ctx) {
     if (!sxe && !sye && !sze) {
       /* none of the incoming spacings existed, we'll go out on a limb
          and assume unit spacing */
-      ctx->volSpacing[0] = nrrdDefaultSpacing;
+      ctx->volSpacing[0] = 1 /* Gone in TeemV2: nrrdDefaultSpacing */;
       ctx->volSpacing[1] = ctx->volSpacing[2] = ctx->volSpacing[0];
       fprintf(stderr, "%s: WARNING: assuming spacing %g for all axes\n", me,
               ctx->volSpacing[0]);
-      /* HEY : nrrdDefaultSpacing need not be the same as gageParm's
-         defaultSpacing, but we don't know anything about gage here,
-         so what else can we do? */
     } else if (sxe && sye && sze) {
       /* all existed */
       if (!(ctx->volSpacing[0] > 0.0 && ctx->volSpacing[1] > 0.0
@@ -113,16 +113,16 @@ hooverContextCheck(hooverContext *ctx) {
     }
   }
   if (!(ctx->imgSize[0] > 0 && ctx->imgSize[1] > 0)) {
-    biffAddf(HOOVER, "%s: image dimensions (%dx%d) invalid", me, ctx->imgSize[0],
+    biffAddf(HOOVER, "%s: image dimensions (%ux%u) invalid", me, ctx->imgSize[0],
              ctx->imgSize[1]);
     return 1;
   }
   if (!(ctx->numThreads >= 1)) {
-    biffAddf(HOOVER, "%s: number threads (%d) invalid", me, ctx->numThreads);
+    biffAddf(HOOVER, "%s: number threads (%u) invalid", me, ctx->numThreads);
     return 1;
   }
   if (!(ctx->numThreads <= HOOVER_THREAD_MAX)) {
-    biffAddf(HOOVER, "%s: sorry, number threads (%d) > max (%d)", me, ctx->numThreads,
+    biffAddf(HOOVER, "%s: sorry, number threads (%u) > max (%u)", me, ctx->numThreads,
              HOOVER_THREAD_MAX);
     return 1;
   }

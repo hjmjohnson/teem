@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -39,7 +39,12 @@
 #    define MOSS_EXPORT extern __declspec(dllimport)
 #  endif
 #else /* TEEM_STATIC || UNIX */
-#  define MOSS_EXPORT extern
+#  if !defined(TEEM_STATIC)
+/*   If built w/ -fvisibility=hidden, only EXPORTed symbols are visible in shared lib */
+#    define MOSS_EXPORT extern __attribute__((visibility("default")))
+#  else
+#    define MOSS_EXPORT extern
+#  endif
 #endif
 
 #ifdef __cplusplus
@@ -89,7 +94,7 @@ typedef struct {
 
 /* defaultsMoss.c */
 MOSS_EXPORT const char *const mossBiffKey;
-MOSS_EXPORT int mossDefCenter;
+MOSS_EXPORT int mossDefaultCenter;
 
 /* methodsMoss.c */
 MOSS_EXPORT const int mossPresent;

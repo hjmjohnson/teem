@@ -37,7 +37,7 @@ main(int argc, const char **argv) {
   char *fullname;
   gageContext *igctx[INTERP_KERN_NUM], *bgctx[BLUR_KERN_NUM];
   const NrrdKernel *ikern[INTERP_KERN_NUM];
-  double ikparm[INTERP_KERN_NUM][NRRD_KERNEL_PARMS_NUM] = {
+  double ikparm[INTERP_KERN_NUM][NRRD_KERNEL_PARM_MAXNUM] = {
     {1.0},
     {1.0},
     {1.0, 0.0, 0.5},
@@ -46,7 +46,7 @@ main(int argc, const char **argv) {
   const NrrdKernel *bkern[BLUR_KERN_NUM];
   const NrrdKernel *bkernD[BLUR_KERN_NUM];
   const NrrdKernel *bkernDD[BLUR_KERN_NUM];
-  double bkparm[BLUR_KERN_NUM][NRRD_KERNEL_PARMS_NUM] = {
+  double bkparm[BLUR_KERN_NUM][NRRD_KERNEL_PARM_MAXNUM] = {
     {1.0}, {AIR_NAN}, {AIR_NAN}, {2.0, 1.0, 0.0}, {1.2, 5.0},
   };
   const double *ivalAns[INTERP_KERN_NUM], *bvalAns[BLUR_KERN_NUM],

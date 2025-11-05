@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -36,7 +36,6 @@ _nrrdEncodingRaw_read(FILE *file, void *data, size_t elementNum, Nrrd *nrrd,
   char *data_c;
   size_t elementSize, maxChunkSize, remainderValue, chunkSize;
   size_t retTmp;
-  char stmp[3][AIR_STRLEN_SMALL + 1];
 
   bsize = nrrdElementSize(nrrd) * elementNum;
 
@@ -60,11 +59,10 @@ _nrrdEncodingRaw_read(FILE *file, void *data, size_t elementNum, Nrrd *nrrd,
     ret += retTmp;
     if (retTmp != chunkSize) {
       biffAddf(NRRD,
-               "%s: fread got only %s %s-sized things, not %s "
+               /* trying C99's %zu conversion sequence instead of airSprintSize_t */
+               "%s: fread got only %zu %zu-sized things, not %zu "
                "(%g%% of expected)",
-               me, airSprintSize_t(stmp[0], ret),
-               airSprintSize_t(stmp[1], nrrdElementSize(nrrd)),
-               airSprintSize_t(stmp[2], elementNum),
+               me, ret, nrrdElementSize(nrrd), elementNum,
                100.0 * AIR_CAST(double, ret) / AIR_CAST(double, elementNum));
       return 1;
     }

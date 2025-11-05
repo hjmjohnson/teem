@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -21,7 +21,7 @@
 #include "privateNrrd.h"
 
 NrrdIter * /* Biff: nope */
-nrrdIterNew() {
+nrrdIterNew(void) {
   NrrdIter *iter;
 
   if ((iter = (NrrdIter *)calloc(1, sizeof(NrrdIter)))) {
@@ -124,13 +124,15 @@ nrrdIterValue(NrrdIter *iter) {
 char * /* Biff: nope */
 nrrdIterContent(NrrdIter *iter) {
   char *ret, buff[AIR_STRLEN_SMALL + 1];
+  size_t buffSize = AIR_STRLEN_SMALL + 1;
 
   ret = NULL;
   if (iter) {
     if (_NRRD_ITER_NRRD(iter)) {
       ret = _nrrdContentGet(_NRRD_ITER_NRRD(iter));
     } else {
-      airSinglePrintf(NULL, buff, "%g", iter->val);
+      /* (using TeemV2 airSinglePrintf) */
+      airSinglePrintf(NULL, buff, buffSize, "%lg", iter->val);
       ret = airStrdup(buff);
     }
   }

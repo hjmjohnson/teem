@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -171,6 +171,7 @@ static int /* Biff: 1 */
 nrrdIoStateDataFileIterNext(FILE **fileP, NrrdIoState *nio, int reading) {
   static const char me[] = "nrrdIoStateDataFileIterNext";
   char *fname = NULL;
+  size_t fnameSize;
   int ii, needPath;
   unsigned int num, fi;
   size_t maxl;
@@ -219,7 +220,8 @@ nrrdIoStateDataFileIterNext(FILE **fileP, NrrdIoState *nio, int reading) {
       airMopError(mop);
       return 1;
     }
-    fname = (char *)malloc(airStrlen(nio->path) + strlen("/") + maxl + 1);
+    fnameSize = airStrlen(nio->path) + strlen("/") + maxl + 1;
+    fname = AIR_MALLOC(fnameSize, char);
     if (!fname) {
       biffAddf(NRRD, "%s: couldn't allocate filename buffer", me);
       airMopError(mop);
@@ -242,20 +244,25 @@ nrrdIoStateDataFileIterNext(FILE **fileP, NrrdIoState *nio, int reading) {
       num += 1;
     }
     if (_NEED_PATH(nio->dataFNFormat)) {
-      strcpy(fname, nio->path);
-      strcat(fname, "/");
-      sprintf(fname + strlen(nio->path) + strlen("/"), nio->dataFNFormat, ii);
+      char *fn = fname;
+      size_t fns = fnameSize;
+      snprintf(fn, fns, "%s", nio->path);
+      STRINCR(fn, fns);
+      snprintf(fn, fns, "/");
+      STRINCR(fn, fns);
+      snprintf(fn, fns, nio->dataFNFormat, ii);
+      STRINCR(fn, fns);
     } else {
-      sprintf(fname, nio->dataFNFormat, ii);
+      snprintf(fname, fnameSize, nio->dataFNFormat, ii);
     }
   } else if (nio->dataFNArr->len) {
     /* ---------------------------------------------------------- */
     /* ------------------- LIST or single ----------------------- */
     /* ---------------------------------------------------------- */
     if (_NEED_PATH(nio->dataFN[nio->dataFNIndex])) {
-      sprintf(fname, "%s/%s", nio->path, nio->dataFN[nio->dataFNIndex]);
+      snprintf(fname, fnameSize, "%s/%s", nio->path, nio->dataFN[nio->dataFNIndex]);
     } else {
-      strcpy(fname, nio->dataFN[nio->dataFNIndex]);
+      snprintf(fname, fnameSize, "%s", nio->dataFN[nio->dataFNIndex]);
     }
   }
   /* else data file is attached */
@@ -652,6 +659,7 @@ static int /* Biff: 1 */
 _nrrdFormatNRRD_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
   static const char me[] = "_nrrdFormatNRRD_write";
   char strbuf[AIR_STRLEN_MED + 1], *strptr, *tmp;
+  size_t tmpSize;
   int ii;
   unsigned int jj;
   airArray *mop;
@@ -703,15 +711,15 @@ _nrrdFormatNRRD_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
       airMopError(mop);
       return 1;
     }
-    tmp = (char *)malloc(strlen(nio->base) + strlen(".") + strlen(nio->encoding->suffix)
-                         + 1);
+    tmpSize = strlen(nio->base) + strlen(".") + strlen(nio->encoding->suffix) + 1;
+    tmp = AIR_MALLOC(tmpSize, char);
     if (!tmp) {
       biffAddf(NRRD, "%s: couldn't allocate data filename", me);
       airMopError(mop);
       return 1;
     }
     airMopAdd(mop, tmp, airFree, airMopOnError);
-    sprintf(tmp, "%s.%s", nio->base, nio->encoding->suffix);
+    snprintf(tmp, tmpSize, "%s.%s", nio->base, nio->encoding->suffix);
     jj = airArrayLenIncr(nio->dataFNArr, 1);
     if (!nio->dataFNArr->data) {
       biffAddf(NRRD, "%s: can't increase dataFNArr storage", me);

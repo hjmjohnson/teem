@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -72,7 +72,7 @@ main(int argc, const char **argv) {
   /*
   printf("maybe: (%g,%g)\n", maybe[0], maybe[1]);
   */
-  printf("many(%d):", howMany);
+  printf("many(%u):", howMany);
   for (unsigned int i = 0; i <= howMany - 1; i++) {
     printf(" (%g,%g)", many[0 + 2 * i], many[1 + 2 * i]);
   }

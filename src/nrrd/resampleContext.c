@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -105,8 +105,8 @@ resampleContextInit(NrrdResampleContext *rsmc) {
     for (axIdx = 0; axIdx < NRRD_DIM_MAX + 1; axIdx++) {
       axis = rsmc->axis + axIdx;
       axis->kernel = NULL;
-      axis->kparm[0] = nrrdDefaultKernelParm0;
-      for (kpIdx = 1; kpIdx < NRRD_KERNEL_PARMS_NUM; kpIdx++) {
+      axis->kparm[0] = 1 /* Gone in TeemV2: nrrdDefaultKernelParm0 */;
+      for (kpIdx = 1; kpIdx < NRRD_KERNEL_PARM_MAXNUM; kpIdx++) {
         axis->kparm[kpIdx] = AIR_NAN;
       }
       axis->min = axis->max = AIR_NAN;
@@ -136,7 +136,7 @@ resampleContextInit(NrrdResampleContext *rsmc) {
 }
 
 NrrdResampleContext * /* Biff: nope */
-nrrdResampleContextNew() {
+nrrdResampleContextNew(void) {
   NrrdResampleContext *rsmc;
 
   rsmc = AIR_CALLOC(1, NrrdResampleContext);
@@ -205,59 +205,47 @@ nrrdResampleNonExistentSet(NrrdResampleContext *rsmc, int nonExist) {
   return 0;
 }
 
-#define NRRD_RESAMPLE_INPUT_SET_BODY                                                    \
-  unsigned int axIdx, kpIdx;                                                            \
-                                                                                        \
-  if (!(rsmc && nin)) {                                                                 \
-    biffAddf(NRRD, "%s: got NULL pointer", me);                                         \
-    return 1;                                                                           \
-  }                                                                                     \
-  if (nrrdCheck(nin)) {                                                                 \
-    biffAddf(NRRD, "%s: problems with given nrrd", me);                                 \
-    return 1;                                                                           \
-  }                                                                                     \
-  if (nrrdTypeBlock == nin->type) {                                                     \
-    biffAddf(NRRD, "%s: can't resample from type %s", me,                               \
-             airEnumStr(nrrdType, nrrdTypeBlock));                                      \
-    return 1;                                                                           \
-  }                                                                                     \
-                                                                                        \
-  rsmc->nin = nin;                                                                      \
-  rsmc->flag[flagInput] = AIR_TRUE;                                                     \
-                                                                                        \
-  /* per-axis information should be invalidated at this point, because                  \
-     if we defer the invalidation to later ...Update() calls, it will                   \
-     clobber the effects of intervening calls to the likes of                           \
-     ...KernelSet(), ...SampleSet(), and so on */                                       \
-  if (rsmc->dim != nin->dim) {                                                          \
-    for (axIdx = 0; axIdx < NRRD_DIM_MAX; axIdx++) {                                    \
-      rsmc->axis[axIdx].center = nrrdCenterUnknown;                                     \
-      rsmc->axis[axIdx].sizeIn = 0;                                                     \
-      rsmc->axis[axIdx].kernel = NULL;                                                  \
-      rsmc->axis[axIdx].kparm[0] = nrrdDefaultKernelParm0;                              \
-      for (kpIdx = 1; kpIdx < NRRD_KERNEL_PARMS_NUM; kpIdx++) {                         \
-        rsmc->axis[axIdx].kparm[kpIdx] = AIR_NAN;                                       \
-      }                                                                                 \
-      rsmc->axis[axIdx].samples = 0;                                                    \
-      rsmc->axis[axIdx].min = AIR_NAN;                                                  \
-      rsmc->axis[axIdx].max = AIR_NAN;                                                  \
-    }                                                                                   \
-  }                                                                                     \
-                                                                                        \
-  return 0
-
-int /* Biff: nope */
-nrrdResampleNrrdSet(NrrdResampleContext *rsmc, const Nrrd *nin) {
-  static const char me[] = "nrrdResampleNrrdSet";
-
-  NRRD_RESAMPLE_INPUT_SET_BODY;
-}
-
 int /* Biff: nope */
 nrrdResampleInputSet(NrrdResampleContext *rsmc, const Nrrd *nin) {
   static const char me[] = "nrrdResampleInputSet";
+  unsigned int axIdx, kpIdx;
 
-  NRRD_RESAMPLE_INPUT_SET_BODY;
+  if (!(rsmc && nin)) {
+    biffAddf(NRRD, "%s: got NULL pointer", me);
+    return 1;
+  }
+  if (nrrdCheck(nin)) {
+    biffAddf(NRRD, "%s: problems with given nrrd", me);
+    return 1;
+  }
+  if (nrrdTypeBlock == nin->type) {
+    biffAddf(NRRD, "%s: can't resample from type %s", me,
+             airEnumStr(nrrdType, nrrdTypeBlock));
+    return 1;
+  }
+
+  rsmc->nin = nin;
+  rsmc->flag[flagInput] = AIR_TRUE;
+
+  /* per-axis information should be invalidated at this point, because
+     if we defer the invalidation to later ...Update() calls, it will
+     clobber the effects of intervening calls to the likes of
+     ...KernelSet(), ...SampleSet(), and so on */
+  if (rsmc->dim != nin->dim) {
+    for (axIdx = 0; axIdx < NRRD_DIM_MAX; axIdx++) {
+      rsmc->axis[axIdx].center = nrrdCenterUnknown;
+      rsmc->axis[axIdx].sizeIn = 0;
+      rsmc->axis[axIdx].kernel = NULL;
+      rsmc->axis[axIdx].kparm[0] = 1 /* Gone in TeemV2: nrrdDefaultKernelParm0 */;
+      for (kpIdx = 1; kpIdx < NRRD_KERNEL_PARM_MAXNUM; kpIdx++) {
+        rsmc->axis[axIdx].kparm[kpIdx] = AIR_NAN;
+      }
+      rsmc->axis[axIdx].samples = 0;
+      rsmc->axis[axIdx].min = AIR_NAN;
+      rsmc->axis[axIdx].max = AIR_NAN;
+    }
+  }
+  return 0;
 }
 
 #define PER_AXIS_ERROR_CHECK                                                            \
@@ -276,7 +264,7 @@ nrrdResampleInputSet(NrrdResampleContext *rsmc, const Nrrd *nin) {
 
 int /* Biff: nope */
 nrrdResampleKernelSet(NrrdResampleContext *rsmc, unsigned int axIdx,
-                      const NrrdKernel *kernel, double kparm[NRRD_KERNEL_PARMS_NUM]) {
+                      const NrrdKernel *kernel, double kparm[NRRD_KERNEL_PARM_MAXNUM]) {
   static const char me[] = "nrrdResampleKernelSet";
   unsigned int kpIdx;
 
@@ -705,7 +693,7 @@ _nrrdResampleVectorFillUpdate(NrrdResampleContext *rsmc) {
   int *indexData, tmp, base, rawIdx;
   nrrdResample_t *weightData, idx, integral;
   NrrdResampleAxis *axis;
-  double kparm[NRRD_KERNEL_PARMS_NUM];
+  double kparm[NRRD_KERNEL_PARM_MAXNUM];
 
   if (rsmc->flag[flagRenormalize]     /* */
       || rsmc->flag[flagBoundary]     /* */
@@ -751,7 +739,7 @@ _nrrdResampleVectorFillUpdate(NrrdResampleContext *rsmc) {
                     base);
             fprintf(stderr, "%s: sample locations:\n", me);
           }
-          fprintf(stderr, "%s: %d (sample locations)\n        ", me, smpIdx);
+          fprintf(stderr, "%s: %u (sample locations)\n        ", me, smpIdx);
           for (dotIdx = 0; dotIdx < dotLen; dotIdx++) {
             fprintf(stderr, "%d/%g ", indexData[dotIdx + dotLen * smpIdx],
                     weightData[dotIdx + dotLen * smpIdx]);
@@ -791,10 +779,10 @@ _nrrdResampleVectorFillUpdate(NrrdResampleContext *rsmc) {
          defined, versus the newer practice of creating parameter-free kernels. The
          "sneaky trick" code below for changing parm[0] only works if the kernel actually
          looks at parm[0]!  So for the parameter-free kernels, and those for which NOT
-         nrrdKernelParm0IsScale(), we have to do what we probably should have been done
+         kernel->parm0IsScale(), we have to do what we probably should have been done
          all along: simulating the kernel scaling by pre-processing the evaluation
          locations and post-processing the kernel weights */
-      if (0 == axis->kernel->parmNum || !nrrdKernelParm0IsScale(axis->kernel)) {
+      if (0 == axis->kernel->parmNum || !axis->kernel->parm0IsScale) {
         size_t nn, ii;
         double ratio;
         nn = dotLen * axis->samples;
@@ -815,7 +803,7 @@ _nrrdResampleVectorFillUpdate(NrrdResampleContext *rsmc) {
            sneaky trick on the kernel parameter 0 in case of downsampling
            to create the blurring of the old index space */
         kparm[0] = (axis->ratio < 1 ? axis->kparm[0] / axis->ratio : axis->kparm[0]);
-        for (kpIdx = 1; kpIdx < NRRD_KERNEL_PARMS_NUM; kpIdx++) {
+        for (kpIdx = 1; kpIdx < NRRD_KERNEL_PARM_MAXNUM; kpIdx++) {
           kparm[kpIdx] = axis->kparm[kpIdx];
         }
         axis->kernel->EVALN(weightData, weightData, dotLen * axis->samples, kparm);
@@ -852,7 +840,7 @@ _nrrdResampleVectorFillUpdate(NrrdResampleContext *rsmc) {
       if (rsmc->verbose) {
         fprintf(stderr, "%s: axis %u sample weights:\n", me, axIdx);
         for (smpIdx = 0; smpIdx < axis->samples; smpIdx++) {
-          fprintf(stderr, "%s: %d (sample weights)\n        ", me, smpIdx);
+          fprintf(stderr, "%s: %u (sample weights)\n        ", me, smpIdx);
           for (dotIdx = 0; dotIdx < dotLen; dotIdx++) {
             fprintf(stderr, "%d/%g ", indexData[dotIdx + dotLen * smpIdx],
                     weightData[dotIdx + dotLen * smpIdx]);
@@ -912,7 +900,7 @@ _nrrdResampleVectorFillUpdate(NrrdResampleContext *rsmc) {
       if (rsmc->verbose) {
         fprintf(stderr, "%s: axis %u post-correction sample weights:\n", me, axIdx);
         for (smpIdx = 0; smpIdx < axis->samples; smpIdx++) {
-          fprintf(stderr, "%s: %d (sample weights)\n        ", me, smpIdx);
+          fprintf(stderr, "%s: %u (sample weights)\n        ", me, smpIdx);
           for (dotIdx = 0; dotIdx < dotLen; dotIdx++) {
             fprintf(stderr, "%d/%g ", indexData[dotIdx + dotLen * smpIdx],
                     weightData[dotIdx + dotLen * smpIdx]);

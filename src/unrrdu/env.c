@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -154,7 +154,7 @@ envUInt(FILE *file, const char *envKey, unsigned int currVal, const char *varNam
   switch (ret) {
   case -1:
   case AIR_FALSE:
-    fprintf(file, "  (%s == %d; unchanged)\n", varName, currVal);
+    fprintf(file, "  (%s == %u; unchanged)\n", varName, currVal);
     break;
   case AIR_TRUE:
     fprintf(file, "  ==> %s = %u   **********************\n", varName, currVal);
@@ -247,9 +247,9 @@ unrrdu_envMain(int argc, const char **argv, const char *me, hestParm *hparm) {
           "some operation that modified its samples.",
           hparm->columns);
   envInt(out,                                                            /* */
-         nrrdEnvVarDefaultVerboseIO,                                     /* */
-         nrrdDefaultVerboseIO,                                           /* */
-         "nrrdDefaultVerboseIO",                                         /* */
+         nrrdEnvVarDefaultIoVerbose,                                     /* */
+         nrrdDefaultIoVerbose,                                           /* */
+         "nrrdDefaultIoVerbose",                                         /* */
          "The default verbosity level of Nrrd input/output operations.", /* */
          hparm->columns);
   envBool(out,
@@ -328,14 +328,6 @@ unrrdu_envMain(int argc, const char **argv, const char *me, hestParm *hparm) {
           "3-D image with a single sample (size=1) on the first "
           "(fastest) axis.",
           hparm->columns);
-
-#if 0
-  /* GLK is ambivalent about the continued existence of these ... */
-  nrrdGetenvDouble(/**/ &nrrdDefaultKernelParm0,
-                   nrrdEnvVarDefaultKernelParm0);
-  nrrdGetenvDouble(/**/ &nrrdDefaultSpacing,
-                   nrrdEnvVarDefaultSpacing);
-#endif
 
   /* NOTE: this is an exceptional unu command that doesn't rely on
      privateUnrrdu.h USAGE() macro; so we determine our own return value */

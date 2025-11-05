@@ -2,10 +2,6 @@
 ** starting with the most important.
 
 
-Update NrrdIO's CMakeLists.txt file. Teem's CMake files were re-written for
-TeemV2, what best practices are in Teem's CMake files can be copied to NrrdIO?
-
-
 Update the Teem CDash dashboard, or create a new one. The old one at
 <http://my.cdash.org/index.php?project=Teem> stopped working when
 Sourceforge changed the URL for code repo, and, GLK has been unable to
@@ -20,27 +16,6 @@ caused at least one tricky memory bug, when the variable type changed.
 
 
 Scrutinize all use strncpy. Why not use airStrcpy?
-
-
-All of the code in teem/src/nrrd/apply1D.c is ancient, and has not
-been brought into the modern world of using unsigned int and size_t.
-Also its very confusing. Needs to be walked through and tested
-thoroughly (with new tests in teem/Testing/nrrd)
-
-
-airArray's are used through-out Teem whenever a dynamically resized array
-is needed.  The current scheme for reallocation is very dumb: an "incr" is
-set at creation time, and then the array allocates itself for some multiple
-of incr (0, incr, 2*incr, 3*incr, etc).  The scaling should be
-multiplicative, not linear, with some adjustable factor:
-<http://en.wikipedia.org/wiki/Dynamic_array>
-<http://hg.python.org/cpython/file/e3be2941c834/Objects/listobject.c> The
-new thing should be called the "airList", and otherwise have an API closely
-matching that of airArray, including the callback mechanisms. Bit by bit
-things inside Teem can be switched over from using airArray to airList,
-starting with uses that have no public visibility.  Teem 2.0 can start
-changing things that are public, like the implementation of the airMop
-functions with airArrays (airMopNew() would then return an airList).
 
 
 There should be something called airBuff which can be generally used

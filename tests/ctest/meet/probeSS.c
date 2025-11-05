@@ -593,7 +593,7 @@ updateQueryKernelSetTask1(gageContext *gctxComp[KIND_NUM], gageContext *gctx[KIN
                           multiAnswer *man[KIND_NUM], const NrrdKernel *kpack[3],
                           double support) {
   static const char me[] = "updateQueryKernelSetTask1";
-  double parm1[NRRD_KERNEL_PARMS_NUM], parmV[NRRD_KERNEL_PARMS_NUM];
+  double parm1[NRRD_KERNEL_PARM_MAXNUM], parmV[NRRD_KERNEL_PARM_MAXNUM];
   unsigned int kindIdx;
 
   if (4 != KIND_NUM) {

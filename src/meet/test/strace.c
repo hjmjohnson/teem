@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -178,9 +178,9 @@ distanceProb(Nrrd *npp, Nrrd *nqq) {
 void
 savePlot(Nrrd *nout) {
   static const char me[] = "saveProb";
-  static int count = 0;
+  static unsigned int count = 0;
   char fname[128], *err;
-  sprintf(fname, "pdf-%03u.nrrd", count);
+  sprintf(fname, "pdf-%3u.nrrd", count);
   if (nrrdSave(fname, nout, NULL)) {
     err = biffGetDone(NRRD);
     fprintf(stderr, "%s: HEY couldn't save pdf to %s; moving on ...\n", me, fname);
@@ -740,7 +740,7 @@ main(int argc, const char **argv) {
       unsigned int ti;
       for (ti = 0; ti < mtrc->traceNum; ti++) {
         trc = mtrc->trace[ti];
-        fprintf(stderr, "!%s: ti %u/%u : stab (%d-D) %u %u\n", me, ti, mtrc->traceNum,
+        fprintf(stderr, "!%s: ti %u/%u : stab (%u-D) %u %u\n", me, ti, mtrc->traceNum,
                 trc->nstab->dim, AIR_UINT(trc->nstab->axis[0].size),
                 AIR_UINT(trc->nstab->axis[1].size));
         totn += trc->nstab->axis[0].size;

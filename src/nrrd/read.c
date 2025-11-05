@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -20,7 +20,7 @@
 #include "nrrd.h"
 #include "privateNrrd.h"
 
-#if TEEM_BZIP2
+#ifdef TEEM_BZIP2
 #  include <bzlib.h>
 #endif
 
@@ -34,12 +34,12 @@ static const char *const _nrrdLineSep = "\r\n";
 const char *const _nrrdTextSep = " ,\t";
 const char *const _nrrdNoSpaceVector = "none";
 
-// returns non-zero if given char `cc` is in _nrrdFieldSep
+/* returns non-zero if given char `cc` is in _nrrdFieldSep */
 int
 _nrrdCharIsFieldSep(char cc) {
-  unsigned int fslen = (unsigned int)strlen(_nrrdFieldSep);
+  unsigned int ii, fslen = (unsigned int)strlen(_nrrdFieldSep);
   int ret = 0;
-  for (unsigned int ii = 0; ii < fslen; ii++) {
+  for (ii = 0; ii < fslen; ii++) {
     if (cc == _nrrdFieldSep[ii]) {
       ret = 1;
       break;
@@ -102,7 +102,7 @@ nrrdOneLine(unsigned int *lenP, NrrdIoState *nio, FILE *file) {
     nio->lineLen = 3;
     nio->line = (char *)malloc(nio->lineLen);
     if (!nio->line) {
-      biffAddf(NRRD, "%s: couldn't alloc %d-char line\n", me, nio->lineLen);
+      biffAddf(NRRD, "%s: couldn't alloc %u-char line\n", me, nio->lineLen);
       *lenP = 0;
       return 1;
     }
@@ -117,7 +117,7 @@ nrrdOneLine(unsigned int *lenP, NrrdIoState *nio, FILE *file) {
       airFree(nio->line); /* lose previous allocated line */
       nio->line = (char *)malloc(nio->lineLen);
       if (!nio->line) {
-        biffAddf(NRRD, "%s: couldn't alloc %d-char line\n", me, nio->lineLen);
+        biffAddf(NRRD, "%s: couldn't alloc %u-char line\n", me, nio->lineLen);
         *lenP = 0;
         return 1;
       }
@@ -155,7 +155,7 @@ nrrdOneLine(unsigned int *lenP, NrrdIoState *nio, FILE *file) {
       nio->lineLen *= 2;
       nio->line = (char *)malloc(nio->lineLen);
       if (!nio->line) {
-        biffAddf(NRRD, "%s: couldn't alloc %d-char line\n", me, nio->lineLen);
+        biffAddf(NRRD, "%s: couldn't alloc %u-char line\n", me, nio->lineLen);
         *lenP = 0;
         airMopError(mop);
         return 1;
@@ -174,7 +174,7 @@ nrrdOneLine(unsigned int *lenP, NrrdIoState *nio, FILE *file) {
     nio->lineLen *= 3; /* for good measure */
     nio->line = (char *)malloc(nio->lineLen);
     if (!nio->line) {
-      biffAddf(NRRD, "%s: couldn't alloc %d-char line\n", me, nio->lineLen);
+      biffAddf(NRRD, "%s: couldn't alloc %u-char line\n", me, nio->lineLen);
       *lenP = 0;
       airMopError(mop);
       return 1;
@@ -683,6 +683,7 @@ nrrdLoadMulti(Nrrd *const *nin, unsigned int ninLen, const char *fnameFormat,
               unsigned int numStart, NrrdIoState *nio) {
   static const char me[] = "nrrdLoadMulti";
   char *fname;
+  size_t fnameSize;
   airArray *mop;
   unsigned int nii;
 
@@ -701,8 +702,9 @@ nrrdLoadMulti(Nrrd *const *nin, unsigned int ninLen, const char *fnameFormat,
 
   mop = airMopNew();
   /* should be big enough for the number replacing the format sequence */
-  fname = AIR_CAST(char *, malloc(strlen(fnameFormat) + 128));
-  if (!(fname)) {
+  fnameSize = strlen(fnameFormat) + 128 + 1;
+  fname = AIR_MALLOC(fnameSize, char);
+  if (!fname) {
     biffAddf(NRRD, "%s: couldn't allocate local fname buffer", me);
     airMopError(mop);
     return 1;
@@ -712,7 +714,7 @@ nrrdLoadMulti(Nrrd *const *nin, unsigned int ninLen, const char *fnameFormat,
   for (nii = 0; nii < ninLen; nii++) {
     unsigned int num;
     num = numStart + nii;
-    sprintf(fname, fnameFormat, num);
+    snprintf(fname, fnameSize, fnameFormat, num);
     if (nrrdLoad(nin[nii], fname, nio)) {
       biffAddf(NRRD, "%s: trouble loading nin[%u] from %s", me, nii, fname);
       airMopError(mop);

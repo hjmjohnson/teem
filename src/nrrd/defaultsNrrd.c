@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -48,14 +48,14 @@ int nrrdDefaultResampleClamp = AIR_TRUE;
 int nrrdDefaultResampleCheap = AIR_FALSE;
 double nrrdDefaultResamplePadValue = 0.0;
 int nrrdDefaultResampleNonExistent = nrrdResampleNonExistentNoop;
-double nrrdDefaultKernelParm0 = 1.0;
 /* creating and by-default enabling this functionality is a change for Teem2 */
 int nrrdDefaultDeclineStdioOnTTY = AIR_TRUE;
 /* ---- END non-NrrdIO */
 int nrrdDefaultCenter = nrrdCenterCell;
-/* matches how nrrdStateVerboseIO (gone in Teem2) was initialized */
-int nrrdDefaultVerboseIO = 1; /* NrrdIO-hack-003 */
-double nrrdDefaultSpacing = 1.0;
+/* new for TeemV2; emulate pre-TeemV2 nrrdStateVerboseIO=1 initialization */
+int nrrdDefaultIoVerbose = 1; /* NrrdIO-hack-003 */
+/* new for TeemV2; pre-TeemV2 behavior equivalent to this being AIR_TRUE */
+int nrrdDefaultIoHeaderDoubleExcessPrecision = AIR_FALSE;
 
 /* these aren't really "defaults" because there's no other channel for
    specifying this information.  It is just global state.  Obviously,
@@ -112,13 +112,11 @@ const char *const nrrdEnvVarDefaultCenter = "NRRD_DEFAULT_CENTER";
 const char *const nrrdEnvVarDefaultWriteCharsPerLine
   = "NRRD_DEFAULT_WRITE_CHARS_PER_LINE";
 const char *const nrrdEnvVarDefaultWriteValsPerLine = "NRRD_DEFAULT_WRITE_VALS_PER_LINE";
-const char *const nrrdEnvVarDefaultKernelParm0 = "NRRD_DEFAULT_KERNEL_PARM0";
-const char *const nrrdEnvVarDefaultSpacing = "NRRD_DEFAULT_SPACING";
-/* over-writes nrrdEnvVarStateVerboseIO for setting nrrdDefaultVerboseIO */
-const char *const nrrdEnvVarDefaultVerboseIO = "NRRD_DEFAULT_VERBOSE_IO";
+/* over-writes _EnvVarStateVerboseIO for setting nrrdDefaultIoVerbose */
+const char *const nrrdEnvVarDefaultIoVerbose = "NRRD_DEFAULT_IO_VERBOSE";
 
 const char *const nrrdEnvVarStateKindNoop = "NRRD_STATE_KIND_NOOP";
-/* nrrdStateVerboseIO gone but still respect this to set nrrdDefaultVerboseIO */
+/* nrrdStateVerboseIO gone but still respect this to set nrrdDefaultIoVerbose */
 static const char *const _EnvVarStateVerboseIO = "NRRD_STATE_VERBOSE_IO";
 const char *const nrrdEnvVarStateKeyValuePairsPropagate
   = "NRRD_STATE_KEYVALUEPAIRS_PROPAGATE";
@@ -299,29 +297,27 @@ nrrdDefaultGetenv(void) {
                  nrrdEnvVarDefaultWriteCharsPerLine);
   nrrdGetenvUInt(/**/ &nrrdDefaultWriteValsPerLine, NULL,
                  nrrdEnvVarDefaultWriteValsPerLine);
-  nrrdGetenvDouble(/**/ &nrrdDefaultKernelParm0, NULL, nrrdEnvVarDefaultKernelParm0);
-  nrrdGetenvDouble(/**/ &nrrdDefaultSpacing, NULL, nrrdEnvVarDefaultSpacing);
 
-  /* for TeemV2 nrrdStateVerboseIO --> nrrdDefaultVerboseIO but we'll
+  /* for TeemV2 nrrdStateVerboseIO --> nrrdDefaultIoVerbose but we'll
    still honor the old env var name if new env var name is not given */
   setOldWay = (AIR_TRUE == nrrdGetenvInt(&oldVal, NULL, _EnvVarStateVerboseIO));
-  setNewWay = (AIR_TRUE == nrrdGetenvInt(&newVal, NULL, nrrdEnvVarDefaultVerboseIO));
+  setNewWay = (AIR_TRUE == nrrdGetenvInt(&newVal, NULL, nrrdEnvVarDefaultIoVerbose));
   if (setOldWay) {
     if (!setNewWay) {
       fprintf(stderr,
               "%s: WARNING environment variable \"%s\" deprecated, "
               "use \"%s\" instead\n",
-              me, _EnvVarStateVerboseIO, nrrdEnvVarDefaultVerboseIO);
-      nrrdDefaultVerboseIO = oldVal;
+              me, _EnvVarStateVerboseIO, nrrdEnvVarDefaultIoVerbose);
+      nrrdDefaultIoVerbose = oldVal;
     } else if (setNewWay) {
       fprintf(stderr,
               "%s: WARNING environment variable \"%s\" "
               "over-riding deprecated \"%s\"\n",
-              me, nrrdEnvVarDefaultVerboseIO, _EnvVarStateVerboseIO);
-      nrrdDefaultVerboseIO = newVal;
+              me, nrrdEnvVarDefaultIoVerbose, _EnvVarStateVerboseIO);
+      nrrdDefaultIoVerbose = newVal;
     }
   } else if (setNewWay) {
-    nrrdDefaultVerboseIO = newVal;
+    nrrdDefaultIoVerbose = newVal;
   }
   return;
 }

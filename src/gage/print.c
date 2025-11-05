@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -31,25 +31,25 @@ _gagePrint_off(FILE *file, gageContext *ctx) {
   fprintf(file, "off[]:\n");
   switch(fd) {
   case 2:
-    fprintf(file, "% 6d   % 6d\n", off[6], off[7]);
-    fprintf(file, "   % 6d   % 6d\n\n", off[4], off[5]);
-    fprintf(file, "% 6d   % 6d\n", off[2], off[3]);
-    fprintf(file, "   % 6d   % 6d\n", off[0], off[1]);
+    fprintf(file, "%6u   %6u\n", off[6], off[7]);
+    fprintf(file, "   %6u   %6u\n\n", off[4], off[5]);
+    fprintf(file, "%6u   %6u\n", off[2], off[3]);
+    fprintf(file, "   %6u   %6u\n", off[0], off[1]);
     break;
   case 4:
     for (i=3; i>=0; i--) {
-      fprintf(file, "% 6d   % 6d   % 6d   % 6d\n",
+      fprintf(file, "%6u   %6u   %6u   %6u\n",
               off[12+16*i], off[13+16*i],
               off[14+16*i], off[15+16*i]);
-      fprintf(file, "   % 6d  %c% 6d   % 6d%c   % 6d\n",
+      fprintf(file, "   %6u  %c%6u   %6u%c   %6u\n",
               off[ 8+16*i], (i==1||i==2)?'\\':' ',
               off[ 9+16*i], off[10+16*i], (i==1||i==2)?'\\':' ',
               off[11+16*i]);
-      fprintf(file, "      % 6d  %c% 6d   % 6d%c   % 6d\n",
+      fprintf(file, "      %6u  %c%6u   %6u%c   %6u\n",
               off[ 4+16*i], (i==1||i==2)?'\\':' ',
               off[ 5+16*i], off[ 6+16*i], (i==1||i==2)?'\\':' ',
               off[ 7+16*i]);
-      fprintf(file, "         % 6d   % 6d   % 6d   % 6d\n",
+      fprintf(file, "         %6u   %6u   %6u   %6u\n",
               off[ 0+16*i], off[ 1+16*i],
               off[ 2+16*i], off[ 3+16*i]);
       if (i) fprintf(file, "\n");
@@ -57,7 +57,7 @@ _gagePrint_off(FILE *file, gageContext *ctx) {
     break;
   default:
     for (i=0; i<fd*fd*fd; i++) {
-      fprintf(file, "  off[% 3d,% 3d,% 3d] = % 6d\n",
+      fprintf(file, "  off[% 3d,% 3d,% 3d] = %6u\n",
               i%fd, (i/fd)%fd, i/(fd*fd), off[i]);
     }
     break;

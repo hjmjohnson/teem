@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -494,7 +494,7 @@ tend_glyphMain(int argc, const char **argv, const char *me, hestParm *hparm) {
           airMopError(mop);
           return 1;
         }
-        sprintf(hackoutFN, "%04d.png", hackci);
+        sprintf(hackoutFN, "%4u.png", hackci);
         if (nrrdCrop(hacknrgb, nraw, hackmin, hackmax)
             || nrrdQuantize(hacknpng, hacknrgb, hackrange, 8)
             || nrrdSave(hackoutFN, hacknpng, NULL)) {

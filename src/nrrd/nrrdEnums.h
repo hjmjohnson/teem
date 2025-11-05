@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -77,6 +77,7 @@ enum {
 };
 #define NRRD_FORMAT_TYPE_MAX 6
 
+/* ---- BEGIN non-NrrdIO */
 /*
 ******** nrrdBoundary* enum
 **
@@ -94,6 +95,7 @@ enum {
   nrrdBoundaryLast
 };
 #define NRRD_BOUNDARY_MAX 5
+/* ---- END non-NrrdIO */
 
 /*
 ******** nrrdType* enum
@@ -125,7 +127,7 @@ enum {
   nrrdTypeLast
 };
 #define NRRD_TYPE_MAX      11
-#define NRRD_TYPE_SIZE_MAX 8 /* max(sizeof()) over all scalar types */
+#define NRRD_TYPE_SIZE_MAX 8u /* max(sizeof()) over all scalar types */
 #define NRRD_TYPE_BIGGEST                                                               \
   double /* this should be a basic C type which                                         \
             requires for storage the maximum size                                       \

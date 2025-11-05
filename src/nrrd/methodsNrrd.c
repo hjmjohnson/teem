@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -243,7 +243,7 @@ void
 nrrdIoStateInit(NrrdIoState *nio) {
 
   if (nio) {
-    nio->verbose = nrrdDefaultVerboseIO;
+    nio->verbose = nrrdDefaultIoVerbose;
     nio->path = (char *)airFree(nio->path);
     nio->base = (char *)airFree(nio->base);
     nio->line = (char *)airFree(nio->line);
@@ -291,6 +291,7 @@ nrrdIoStateInit(NrrdIoState *nio) {
     nio->learningHeaderStrlen = AIR_FALSE;
     nio->oldData = NULL;
     nio->oldDataSize = 0;
+    nio->headerDoubleExcessPrecision = nrrdDefaultIoHeaderDoubleExcessPrecision;
     nio->format = nrrdFormatUnknown;
     nio->encoding = nrrdEncodingUnknown;
   }
@@ -304,7 +305,7 @@ nrrdIoStateNew(void) {
   nio = (NrrdIoState *)calloc(1, sizeof(NrrdIoState));
   if (nio) {
     airPtrPtrUnion appu;
-    nio->verbose = nrrdDefaultVerboseIO;
+    nio->verbose = nrrdDefaultIoVerbose;
     nio->path = NULL;
     nio->base = NULL;
     nio->line = NULL;
@@ -318,6 +319,7 @@ nrrdIoStateNew(void) {
     nio->dataFSkip = NULL;
     appu.li = &(nio->dataFSkip);
     nio->dataFSkipArr = airArrayNew(appu.v, NULL, sizeof(long int), NRRD_FILENAME_INCR);
+    nio->headerDoubleExcessPrecision = nrrdDefaultIoHeaderDoubleExcessPrecision;
     nio->format = nrrdFormatUnknown;
     nio->encoding = nrrdEncodingUnknown;
     nrrdIoStateInit(nio);
@@ -345,15 +347,15 @@ nrrdIoStateNix(NrrdIoState *nio) {
 
 static void
 _nrrdResampleInfoInit(NrrdResampleInfo *info) {
-  int i, d;
+  unsigned int ii, dd;
 
-  for (d = 0; d < NRRD_DIM_MAX; d++) {
-    info->kernel[d] = NULL;
-    info->samples[d] = 0;
-    info->parm[d][0] = nrrdDefaultKernelParm0;
-    for (i = 1; i < NRRD_KERNEL_PARMS_NUM; i++)
-      info->parm[d][i] = AIR_NAN;
-    info->min[d] = info->max[d] = AIR_NAN;
+  for (dd = 0; dd < NRRD_DIM_MAX; dd++) {
+    info->kernel[dd] = NULL;
+    info->samples[dd] = 0;
+    info->parm[dd][0] = 1 /* Gone in TeemV2: nrrdDefaultKernelParm0 */;
+    for (ii = 1; ii < NRRD_KERNEL_PARM_MAXNUM; ii++)
+      info->parm[dd][ii] = AIR_NAN;
+    info->min[dd] = info->max[dd] = AIR_NAN;
   }
   info->boundary = nrrdDefaultResampleBoundary;
   info->type = nrrdDefaultResampleType;
@@ -388,13 +390,13 @@ nrrdResampleInfoNix(NrrdResampleInfo *info) {
 NrrdKernelSpec * /* Biff: nope */
 nrrdKernelSpecNew(void) {
   NrrdKernelSpec *ksp;
-  int i;
+  unsigned int ii;
 
   ksp = (NrrdKernelSpec *)calloc(1, sizeof(NrrdKernelSpec));
   if (ksp) {
     ksp->kernel = NULL;
-    for (i = 0; i < NRRD_KERNEL_PARMS_NUM; i++) {
-      ksp->parm[i] = airNaN(); /* valgrind complained about AIR_NAN at -O2 */
+    for (ii = 0; ii < NRRD_KERNEL_PARM_MAXNUM; ii++) {
+      ksp->parm[ii] = airNaN(); /* valgrind complained about AIR_NAN at -O2 */
     }
   }
   return ksp;
@@ -422,7 +424,7 @@ nrrdKernelSpecNix(NrrdKernelSpec *ksp) {
 
 void
 nrrdKernelSpecSet(NrrdKernelSpec *ksp, const NrrdKernel *k,
-                  const double kparm[NRRD_KERNEL_PARMS_NUM]) {
+                  const double kparm[NRRD_KERNEL_PARM_MAXNUM]) {
   unsigned int p;
 
   if (ksp && k && kparm) {
@@ -434,14 +436,14 @@ nrrdKernelSpecSet(NrrdKernelSpec *ksp, const NrrdKernel *k,
 }
 
 void
-nrrdKernelParmSet(const NrrdKernel **kP, double kparm[NRRD_KERNEL_PARMS_NUM],
+nrrdKernelParmSet(const NrrdKernel **kP, double kparm[NRRD_KERNEL_PARM_MAXNUM],
                   NrrdKernelSpec *ksp) {
-  int p;
+  unsigned int pp;
 
   if (kP && kparm && ksp) {
     *kP = ksp->kernel;
-    for (p = 0; p < NRRD_KERNEL_PARMS_NUM; p++) {
-      kparm[p] = ksp->parm[p];
+    for (pp = 0; pp < NRRD_KERNEL_PARM_MAXNUM; pp++) {
+      kparm[pp] = ksp->parm[pp];
     }
   }
 }
@@ -464,7 +466,7 @@ nrrdKernelParmSet(const NrrdKernel **kP, double kparm[NRRD_KERNEL_PARMS_NUM],
 */
 void
 nrrdBasicInfoInit(Nrrd *nrrd, int bitflag) {
-  int dd, ee;
+  unsigned int dd, ee;
 
   if (!nrrd) {
     return;
@@ -586,7 +588,7 @@ nrrdBasicInfoCopy(Nrrd *dest, const Nrrd *src, int bitflag) {
       dest->spaceUnits[dd] = (char *)airFree(dest->spaceUnits[dd]);
       dest->spaceUnits[dd] = airStrdup(src->spaceUnits[dd]);
       if (src->spaceUnits[dd] && !dest->spaceUnits[dd]) {
-        biffAddf(NRRD, "%s: couldn't copy spaceUnits[%d]", me, dd);
+        biffAddf(NRRD, "%s: couldn't copy spaceUnits[%u]", me, dd);
         return 1;
       }
     }
@@ -647,7 +649,7 @@ nrrdBasicInfoCopy(Nrrd *dest, const Nrrd *src, int bitflag) {
 */
 void
 nrrdInit(Nrrd *nrrd) {
-  int ii;
+  unsigned int ii;
 
   if (nrrd) {
     nrrdBasicInfoInit(nrrd, NRRD_BASIC_INFO_NONE);
@@ -665,7 +667,7 @@ nrrdInit(Nrrd *nrrd) {
 */
 Nrrd * /* Biff: nope */
 nrrdNew(void) {
-  int ii;
+  unsigned int ii;
   Nrrd *nrrd;
   airPtrPtrUnion appu;
 
@@ -720,7 +722,7 @@ nrrdNew(void) {
 */
 Nrrd * /* Biff: nope */
 nrrdNix(Nrrd *nrrd) {
-  int ii;
+  unsigned int ii;
 
   if (nrrd) {
     for (ii = 0; ii < NRRD_DIM_MAX; ii++) {
@@ -986,7 +988,7 @@ nrrdAlloc_nva(Nrrd *nrrd, int type, unsigned int dim, const size_t *size) {
     }
   }
   if (!AIR_IN_CL(1, dim, NRRD_DIM_MAX)) {
-    biffAddf(NRRD, "%s: dim (%d) not in valid range [1,%d]", me, dim, NRRD_DIM_MAX);
+    biffAddf(NRRD, "%s: dim (%u) not in valid range [1,%u]", me, dim, NRRD_DIM_MAX);
     return 1;
   }
 

@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -380,7 +380,7 @@ _tenQGLInterpNEval(double evalOut[3], const double *evalIn, /* size 3 -by- NN */
 
   if (elen > tip->convEps) {
     ELL_3V_SET(evalOut, AIR_NAN, AIR_NAN, AIR_NAN);
-    biffAddf(TEN, "%s: still have error %g (> eps %g) after max %d iters", me, elen,
+    biffAddf(TEN, "%s: still have error %g (> eps %g) after max %u iters", me, elen,
              tip->convEps, tip->maxIter);
     return 1;
   }

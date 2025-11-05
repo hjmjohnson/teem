@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -68,8 +68,8 @@ main(int argc, const char **argv) {
   hparm->elideMultipleEmptyStringDefault = AIR_TRUE;
   /* say that we look for, and know how to handle, seeing "--help" */
   hparm->respectDashDashHelp = AIR_TRUE;
-  /* set hparm->columns from ioctl if possible, else use unrrduDefNumColumns */
-  hestParmColumnsIoctl(hparm, unrrduDefNumColumns);
+  /* set hparm->columns from ioctl if possible, else use unrrduDefaultNumColumns */
+  hestParmColumnsIoctl(hparm, unrrduDefaultNumColumns);
   // Gone in TeemV2: hparm->greedySingleString = AIR_TRUE;
 
   /* if there are no arguments, or "unu list" (or "unu all" shhh), then we give general

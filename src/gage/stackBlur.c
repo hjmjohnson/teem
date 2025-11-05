@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -96,7 +96,7 @@ gageStackBlurParmInit(gageStackBlurParm *parm) {
 ** does not use biff
 */
 gageStackBlurParm * /* Biff: nope */
-gageStackBlurParmNew() {
+gageStackBlurParmNew(void) {
   gageStackBlurParm *parm;
 
   parm = AIR_CALLOC(1, gageStackBlurParm);
@@ -161,23 +161,23 @@ gageStackBlurParmCompare(const gageStackBlurParm *aa, const char *_nameA,
 #define CHECK(VAR, FMT)                                                                 \
   if (aa->VAR != bb->VAR) {                                                             \
     if (explain) {                                                                      \
-      snprintf(explain, ASL + 1, "%s->" #VAR "=" #FMT " != %s->" #VAR "=" #FMT, nameA,  \
+      snprintf(explain, ASL + 1, "%s->" #VAR "=" FMT " != %s->" #VAR "=" FMT, nameA,    \
                aa->VAR, nameB, bb->VAR);                                                \
     }                                                                                   \
     *differ = 1;                                                                        \
     return 0;                                                                           \
   }
-  CHECK(num, % d);
-  CHECK(sigmaRange[0], % .17g);
-  CHECK(sigmaRange[1], % .17g);
-  CHECK(renormalize, % d);
-  CHECK(oneDim, % d);
-  CHECK(needSpatialBlur, % d);
+  CHECK(num, "%u");
+  CHECK(sigmaRange[0], "% .17g");
+  CHECK(sigmaRange[1], "% .17g");
+  CHECK(renormalize, "% d");
+  CHECK(oneDim, "% d");
+  CHECK(needSpatialBlur, "% d");
   /* This is sketchy: the apparent point of the function is to see if two
      sbp's are different.  But a big role of the function is to enable
      leeching in meet.  And for leeching, a difference in verbose is moot */
   /* CHECK(verbose, %d); */
-  CHECK(dgGoodSigmaMax, % .17g);
+  CHECK(dgGoodSigmaMax, "% .17g");
 #undef CHECK
   if (aa->sigmaSampling != bb->sigmaSampling) {
     if (explain) {
@@ -1310,7 +1310,7 @@ _stackBlurSpatial(Nrrd *const nblur[], gageStackBlurParm *sbp, NrrdKernelSpec *k
                on this axis, but that would undermine the in==out==niter
                trick described above; and produce the mysterious behavior
                that the second scale-space volume is all 0.0 */
-            double boxparm[NRRD_KERNEL_PARMS_NUM] = {1.0};
+            double boxparm[NRRD_KERNEL_PARM_MAXNUM] = {1.0};
             if (!E)
               E |= nrrdResampleKernelSet(rsmc, kind->baseDim + axi, nrrdKernelBox,
                                          boxparm);

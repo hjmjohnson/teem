@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -26,7 +26,7 @@
 #include <teem/ten.h>
 #include <teem/meet.h>
 
-#define SPACING(spc) (AIR_EXISTS(spc) ? spc : nrrdDefaultSpacing)
+#define SPACING(spc) (AIR_EXISTS(spc) ? spc : 1.0)
 
 /* copied this from ten.h; I don't want gage to depend on ten */
 #define PROBE_MAT2LIST(l, m)                                                            \

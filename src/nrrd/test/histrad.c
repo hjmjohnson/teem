@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -62,7 +62,7 @@ main(int argc, const char *argv[]) {
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
   if (2 != nin->dim) {
-    fprintf(stderr, "%s: need 2-D input (not %d-D)\n", me, nin->dim);
+    fprintf(stderr, "%s: need 2-D input (not %u-D)\n", me, nin->dim);
     airMopError(mop);
     return 1;
   }

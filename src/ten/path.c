@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -712,7 +712,7 @@ _tenInterpGeoLoxPolyLine(Nrrd *ngeod, unsigned int *numIter, const double tenA[7
     unsigned int subIter;
     int E;
     NrrdResampleContext *rsmc;
-    double kparm[NRRD_KERNEL_PARMS_NUM] = {1.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0};
+    double kparm[NRRD_KERNEL_PARM_MAXNUM] = {1.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0};
     /* recurse and find geodesic with smaller number of vertices */
     if (_tenInterpGeoLoxPolyLine(nsub, &subIter, tenA, tenB, NN / 2, useK, rotnoop,
                                  tip)) {

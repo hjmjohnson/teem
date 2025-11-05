@@ -1,8 +1,8 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2024  University of Chicago
-  Copyright (C) 2008, 2007, 2006, 2005  Gordon Kindlmann
-  Copyright (C) 2004, 2003, 2002, 2001, 2000, 1999, 1998  University of Utah
+  Copyright (C) 2009--2025  University of Chicago
+  Copyright (C) 2005--2008  Gordon Kindlmann
+  Copyright (C) 1998--2004  University of Utah
 
   This library is free software; you can redistribute it and/or modify it under the terms
   of the GNU Lesser General Public License (LGPL) as published by the Free Software
@@ -161,7 +161,7 @@ Even a bad initial (arc-length) parameterization can be improved, so now with th
 described here, N=18 and N=19 do equally well (yay!)
 */
 
-#define PNMIN(ISLOOP) ((ISLOOP) ? 3 : 3)
+#define PNMIN 3u
 
 /*
 limnCbfPointsNew
@@ -189,8 +189,8 @@ limnCbfPointsNew(const void *pdata, int ptype, uint dim, uint pnum, int isLoop) 
     biffAddf(LIMN, "%s: sorry, only 2-D data implemented now (not %u)", me, dim);
     return NULL;
   }
-  if (pnum < PNMIN(isLoop)) {
-    biffAddf(LIMN, "%s: need at least %u points in %s (not %u)", me, PNMIN(isLoop),
+  if (pnum < PNMIN) {
+    biffAddf(LIMN, "%s: need at least %u points in %s (not %u)", me, PNMIN,
              isLoop ? "loop" : "non-loop", pnum);
     return NULL;
   }
@@ -253,7 +253,7 @@ limnCbfPointsCheck(const limnCbfPoints *lpnt) {
     biffAddf(LIMN, "%s: got NULL pointer", me);
     return 1;
   }
-  pnmin = PNMIN(lpnt->isLoop);
+  pnmin = PNMIN;
   if (!(lpnt->num >= pnmin)) {
     biffAddf(LIMN, "%s: need %u or more points in limnCbfPoints (not %u)%s", me, pnmin,
              lpnt->num, lpnt->isLoop ? " for loop" : "");
@@ -355,7 +355,7 @@ ctxInit(limnCbfCtx *fctx) {
 }
 
 limnCbfCtx * /* Biff: nope */
-limnCbfCtxNew() {
+limnCbfCtxNew(void) {
   limnCbfCtx *ret;
 
   ret = AIR_CALLOC(1, limnCbfCtx);
@@ -479,7 +479,7 @@ ctxBuffersSet(limnCbfCtx *fctx, uint pNum) {
        1 = sum_i(tw[i]) for i=0...len-1 */
     vsum = tsum = 0;
     for (ii = 0; ii < wlen; ii++) {
-      double kw = nrrdKernelDiscreteGaussian->eval1_d(ii, kparm);
+      kw = nrrdKernelDiscreteGaussian->eval1_d(ii, kparm);
       vsum += (!ii ? 1 : 2) * (fctx->vw[ii] = kw);
       tsum += (fctx->tw[ii] = ii * kw);
     }
@@ -1285,7 +1285,7 @@ fitSingle(double alpha[2], const double vv0[2], const double tt1[2], const doubl
   spanlen = spanLength(lpnt, loi, hii);
   /* DIM=2 pretty much everywhere here */
   if (fctx->verbose) {
-    printf("%s[%d,%d(spanlen=%u)]: hello, vv0=(%g,%g), tt1=(%g,%g), "
+    printf("%s[%u,%u(spanlen=%u)]: hello, vv0=(%g,%g), tt1=(%g,%g), "
            "tt2=(%g,%g), vv3=(%g,%g)\n",
            me, loi, hii, spanlen, vv0[0], vv0[1], tt1[0], tt1[1], tt2[0], tt2[1], vv3[0],
            vv3[1]);
@@ -1333,12 +1333,12 @@ fitSingle(double alpha[2], const double vv0[2], const double tt1[2], const doubl
           fctx->uu[ii] = 1;
         }
         if (fctx->verbose > 1) {
-          printf("%s[%d,%d]: initial uu[%u] = %g\n", me, loi, hii, ii, fctx->uu[ii]);
+          printf("%s[%u,%u]: initial uu[%u] = %g\n", me, loi, hii, ii, fctx->uu[ii]);
         }
       }
       delta /= spanlen - 2; /* within the spanlen verts are spanlen-2 interior verts */
       if (fctx->verbose) {
-        printf("%s[%d,%d]: initial (chord length) delta = %g\n", me, loi, hii, delta);
+        printf("%s[%u,%u]: initial (chord length) delta = %g\n", me, loi, hii, delta);
       }
     } /* (end uu chord-length initialization ) */
     lastPunt = findAlpha(alpha, -1, fctx, vv0, tt1, tt2, vv3, lpnt, loi, hii);
@@ -1348,7 +1348,7 @@ fitSingle(double alpha[2], const double vv0[2], const double tt1[2], const doubl
       return 1;
     }
     if (fctx->verbose) {
-      printf("%s[%d,%d]: found (%s) alpha %g %g, maxdist %g @ %u (big %d) (%u max nrp "
+      printf("%s[%u,%u]: found (%s) alpha %g %g, maxdist %g @ %u (big %d) (%u max nrp "
              "iters)\n",
              me, loi, hii, lastPunt ? "punt" : "calc", alpha[0], alpha[1], fctx->distMax,
              fctx->distMaxIdx, fctx->distBig, fctx->nrpIterMax);
@@ -1359,7 +1359,7 @@ fitSingle(double alpha[2], const double vv0[2], const double tt1[2], const doubl
       for (iter = 0; fctx->distBig && iter < fctx->nrpIterMax; iter++) {
         int punt;
         if (fctx->verbose > 1) {
-          printf("%s[%d,%d]: nrp iter %u starting with alpha %g,%g (det %g) (big %d)\n",
+          printf("%s[%u,%u]: nrp iter %u starting with alpha %g,%g (det %g) (big %d)\n",
                  me, loi, hii, iter, alpha[0], alpha[1], fctx->alphaDet, fctx->distBig);
         }
         /* *this* is where nrp = Newton-based ReParameterization happens */
@@ -1381,12 +1381,12 @@ fitSingle(double alpha[2], const double vv0[2], const double tt1[2], const doubl
           return 1;
         }
         if (fctx->verbose > 1) {
-          printf("%s[%d,%d]: nrp iter %u (reparm) delta = %g (big %d)\n", me, loi, hii,
+          printf("%s[%u,%u]: nrp iter %u (reparm) delta = %g (big %d)\n", me, loi, hii,
                  iter, delta, fctx->distBig);
         }
         if (delta <= fctx->nrpDeltaThresh) {
           if (fctx->verbose) {
-            printf("%s[%d,%d]: nrp iter %u delta %g <= thresh %g --> break\n", me, loi,
+            printf("%s[%u,%u]: nrp iter %u delta %g <= thresh %g --> break\n", me, loi,
                    hii, iter, delta, fctx->nrpDeltaThresh);
           }
           converged = AIR_TRUE;
@@ -1399,7 +1399,7 @@ fitSingle(double alpha[2], const double vv0[2], const double tt1[2], const doubl
         fitting sub-paths */
       }
       if (fctx->verbose) {
-        printf("%s[%d,%d]: nrp done after %u iters: ", me, loi, hii, iter);
+        printf("%s[%u,%u]: nrp done after %u iters: ", me, loi, hii, iter);
         if (converged) {
           printf("converged! with maxdist %g @ %u (big %d)\n", fctx->distMax,
                  fctx->distMaxIdx, fctx->distBig);
@@ -1420,7 +1420,7 @@ fitSingle(double alpha[2], const double vv0[2], const double tt1[2], const doubl
       /* else fctx->distBig == 3: dist so big that we don't even try nrp */
       fctx->nrpIterDone = 0;
       if (fctx->verbose) {
-        printf("%s[%d,%d]: such big (%d) dist %g > %g we didn't try nrp\n", me, loi, hii,
+        printf("%s[%u,%u]: such big (%d) dist %g > %g we didn't try nrp\n", me, loi, hii,
                fctx->distBig, fctx->distMax, fctx->nrpPsi * fctx->epsilon);
       }
     }
@@ -1428,7 +1428,7 @@ fitSingle(double alpha[2], const double vv0[2], const double tt1[2], const doubl
     fctx->nrpPuntFlop = puntFlop;
   }
   if (fctx->verbose) {
-    printf("%s[%d,%d]: leaving with alpha %g %g\n", me, loi, hii, alpha[0], alpha[1]);
+    printf("%s[%u,%u]: leaving with alpha %g %g\n", me, loi, hii, alpha[0], alpha[1]);
   }
   return 0;
 }

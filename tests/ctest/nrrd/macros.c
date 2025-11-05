@@ -28,7 +28,7 @@
 */
 
 int
-main() {
+main(void) {
   size_t II, *coord0, *ctmp0, *size0, coord1[1], ctmp1[1], size1[1], coord2[2], ctmp2[2],
     size2[2], coord3[3], ctmp3[3], size3[3], coord4[4], ctmp4[4], size4[4];
   char sbuff[NRRD_DIM_MAX * AIR_STRLEN_SMALL + 1],

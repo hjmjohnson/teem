@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -1077,7 +1077,7 @@ tenAnisoPlot(Nrrd *nout, int aniso, unsigned int res, int hflip, int whole, int 
     return 1;
   }
   if (!(res > 2)) {
-    biffAddf(TEN, "%s: resolution (%d) invalid", me, res);
+    biffAddf(TEN, "%s: resolution (%u) invalid", me, res);
     return 1;
   }
   if (nrrdMaybeAlloc_va(nout, nrrdTypeFloat, 2, AIR_SIZE_T(res), AIR_SIZE_T(res))) {
@@ -1227,7 +1227,7 @@ tenAnisoHistogram(Nrrd *nout, const Nrrd *nin, const Nrrd *nwght, int right, int
     return 1;
   }
   if (!(res > 10)) {
-    biffAddf(TEN, "%s: resolution (%d) invalid", me, res);
+    biffAddf(TEN, "%s: resolution (%u) invalid", me, res);
     return 1;
   }
   if (right) {
@@ -1279,7 +1279,7 @@ tenAnisoHistogram(Nrrd *nout, const Nrrd *nin, const Nrrd *nwght, int right, int
 }
 
 tenEvecRGBParm * /* Biff: nope */
-tenEvecRGBParmNew() {
+tenEvecRGBParmNew(void) {
   tenEvecRGBParm *rgbp;
 
   rgbp = AIR_CAST(tenEvecRGBParm *, calloc(1, sizeof(tenEvecRGBParm)));

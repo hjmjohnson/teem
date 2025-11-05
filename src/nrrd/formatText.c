@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -40,7 +40,7 @@ _nrrdFormatText_fitsInto(const Nrrd *nrrd, const NrrdEncoding *encoding, int use
   AIR_UNUSED(encoding);
   /* encoding ignored- always ascii */
   if (!(1 == nrrd->dim || 2 == nrrd->dim)) {
-    biffMaybeAddf(useBiff, NRRD, "%s: dimension is %d, not 1 or 2", me, nrrd->dim);
+    biffMaybeAddf(useBiff, NRRD, "%s: dimension is %u, not 1 or 2", me, nrrd->dim);
     return AIR_FALSE;
   }
   if (nrrdTypeBlock == nrrd->type) {
@@ -287,7 +287,7 @@ _nrrdFormatText_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
   */
 
   if (!(1 == nrrd->dim || 2 == nrrd->dim)) {
-    fprintf(stderr, "%s: PANIC about to save, but dim = %d\n", me, nrrd->dim);
+    fprintf(stderr, "%s: PANIC about to save, but dim = %u\n", me, nrrd->dim);
     exit(1);
   }
   if (1 == nrrd->dim) {
@@ -316,7 +316,7 @@ _nrrdFormatText_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
 static int
 _nrrdFormatText_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
   char cmt[AIR_STRLEN_SMALL + 1], buff[AIR_STRLEN_SMALL + 1];
-  size_t I, dsz;
+  size_t cmtSize = AIR_STRLEN_SMALL + 1, buffSize = AIR_STRLEN_SMALL + 1, I, dsz;
   int i, x, y, sx, sy; /* HEY unsigned? */
   const void *data;
   const char *cdata;
@@ -327,7 +327,7 @@ _nrrdFormatText_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
      float in a text file */
   moreThanFloat = (nrrdTypeFloat != nrrd->type && !nio->bareText
                    && nio->moreThanFloatInText);
-  sprintf(cmt, "%c ", NRRD_COMMENT_CHAR);
+  snprintf(cmt, cmtSize, "%c ", NRRD_COMMENT_CHAR);
   if (!nio->bareText) {
     if (1 == nrrd->dim) {
       _nrrdFprintFieldInfo(file, cmt, nrrd, nio, nrrdField_dimension, AIR_FALSE);
@@ -365,10 +365,10 @@ _nrrdFormatText_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
   for (y = 0; y < sy; y++) {
     for (x = 0; x < sx; x++) {
       if (moreThanFloat) {
-        nrrdSprint[nrrd->type](buff, cdata + I * dsz);
+        nrrdSprint[nrrd->type](buff, buffSize, cdata + I * dsz);
       } else {
         val = nrrdFLookup[nrrd->type](data, I);
-        nrrdSprint[nrrdTypeFloat](buff, &val);
+        nrrdSprint[nrrdTypeFloat](buff, buffSize, &val);
       }
       if (x) fprintf(file, " ");
       fprintf(file, "%s", buff);

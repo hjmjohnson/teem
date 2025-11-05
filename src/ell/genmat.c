@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -35,7 +35,7 @@ ell_Nm_check(Nrrd *mat, int doNrrdCheck) {
     }
   }
   if (!(2 == mat->dim)) {
-    biffAddf(ELL, "%s: nrrd must be 2-D (not %d-D)", me, mat->dim);
+    biffAddf(ELL, "%s: nrrd must be 2-D (not %u-D)", me, mat->dim);
     return 1;
   }
   if (!(nrrdTypeDouble == mat->type)) {

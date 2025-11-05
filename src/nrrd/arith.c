@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -20,9 +20,11 @@
 #include "nrrd.h"
 #include "privateNrrd.h"
 
-/* these two functions probably logically belong in dye, not nrrd, oh well.
-   The Teem 2.0 plan is to put all of dye inside nrrd, so that nrrd/unu
-   can do color-space conversions, which will be a big API change */
+/* These two functions probably logically belong more in dye than nrrd, oh well.
+   Having them here allows them to power nrrdArithSRGBGamma, which is called with
+   by "unu gamma" with "-g srgb" or "-g 1/srgb". And that much color computation
+   can probably stay in nrrd. TeemV2 also makes unrrdu depend on dye (like it also
+   depends on moss for "unu ilk") to support color space conversions in unu */
 double /* Biff: nope */
 nrrdSRGBGamma(double val) {
   return val <= 0.0031308 ? 12.92 * val : 1.055 * pow(val, 1 / 2.4) - 0.055;
@@ -282,7 +284,7 @@ _nrrdUnaryOpNormalRand(double a) {
 }
 static double
 _nrrdUnaryOpIf(double a) {
-  return (a ? 1 : 0);
+  return (a != 0 ? 1 : 0);
 }
 static double
 _nrrdUnaryOpZero(double a) {
@@ -409,7 +411,7 @@ static double _nrrdBinaryOpEqual(double a, double b)     {return (a == b);}
 static double _nrrdBinaryOpNotEqual(double a, double b)  {return (a != b);}
 static double _nrrdBinaryOpExists(double a, double b)  {return (AIR_EXISTS(a)
                                                                 ? a : b);}
-static double _nrrdBinaryOpIf(double a, double b)        {return (a ? a : b);}
+static double _nrrdBinaryOpIf(double a, double b)        {return (a != 0 ? a : b);}
 /* clang-format on */
 static double
 _nrrdBinaryOpNormalRandScaleAdd(double a, double b) {
@@ -465,8 +467,8 @@ _nrrdBinaryOpULPDistance(double dA, double dB) {
   switch (Anf + Bnf) {
   case 0:
     /* both values finite; computing distance is straightforward */
-    FA.f = fabs(A);
-    FB.f = fabs(B);
+    FA.f = fabsf(A);
+    FB.f = fabsf(B);
     Ai = FA.i;
     Bi = FB.i;
     if ((A >= 0) == (B >= 0)) {
@@ -805,7 +807,7 @@ _nrrdTernaryOpClamp(double a, double b, double c) {
 }
 static double
 _nrrdTernaryOpIfElse(double a, double b, double c) {
-  return (a ? b : c);
+  return (a != 0 ? b : c);
 }
 static double
 _nrrdTernaryOpLerp(double a, double b, double c) {

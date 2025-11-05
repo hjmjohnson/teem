@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -73,16 +73,16 @@ static const char *debugReconErrName = NULL;
 **
 ** "total # samples" can't be 0, or 1, smallest value is 2
 ** ==> index with (total # samples)-2
-** biggest value is GAGE_OPTIMSIG_SAMPLES_MAXNUM
-** ==> biggest index is GAGE_OPTIMSIG_SAMPLES_MAXNUM-2
-** ==> allocate for GAGE_OPTIMSIG_SAMPLES_MAXNUM-1
+** biggest value is GAGE_OPTIMSIG_SAMPLE_MAXNUM
+** ==> biggest index is GAGE_OPTIMSIG_SAMPLE_MAXNUM-2
+** ==> allocate for GAGE_OPTIMSIG_SAMPLE_MAXNUM-1
 **
-** "which sample" ranges from 0 to GAGE_OPTIMSIG_SAMPLES_MAXNUM-1
-** ==> allocate for GAGE_OPTIMSIG_SAMPLES_MAXNUM
+** "which sample" ranges from 0 to GAGE_OPTIMSIG_SAMPLE_MAXNUM-1
+** ==> allocate for GAGE_OPTIMSIG_SAMPLE_MAXNUM
 */
 /* clang-format off */
 static double
-_optimSigTable[GAGE_OPTIMSIG_SIGMA_MAX][GAGE_OPTIMSIG_SAMPLES_MAXNUM-1][GAGE_OPTIMSIG_SAMPLES_MAXNUM] = {
+_optimSigTable[GAGE_OPTIMSIG_SIGMA_MAX][GAGE_OPTIMSIG_SAMPLE_MAXNUM-1][GAGE_OPTIMSIG_SAMPLE_MAXNUM] = {
   {
     {0,1,N,N,N,N,N,N,N,N,N},
     {0,0.5279398,1,N,N,N,N,N,N,N,N},
@@ -220,9 +220,9 @@ gageOptimSigSet(double *scale, unsigned int num, unsigned int sigmaMax) {
     biffAddf(GAGE, "%s: got NULL pointer", me);
     return 1;
   }
-  if (!AIR_IN_CL(2, num, GAGE_OPTIMSIG_SAMPLES_MAXNUM)) {
+  if (!AIR_IN_CL(2, num, GAGE_OPTIMSIG_SAMPLE_MAXNUM)) {
     biffAddf(GAGE, "%s: requested # sigma samples %u not in known range [2,%u]", me, num,
-             GAGE_OPTIMSIG_SAMPLES_MAXNUM);
+             GAGE_OPTIMSIG_SAMPLE_MAXNUM);
     return 1;
   }
   if (!AIR_IN_CL(1, sigmaMax, GAGE_OPTIMSIG_SIGMA_MAX)) {
@@ -528,7 +528,7 @@ static void
 _kernset(double **kzP, double **kyP, double **kxP, gageOptimSigContext *oscx,
          double rho) {
   const NrrdKernel *dg;
-  double sig, kparm[NRRD_KERNEL_PARMS_NUM], *kloc, *kern, *ktmp1, *ktmp2;
+  double sig, kparm[NRRD_KERNEL_PARM_MAXNUM], *kloc, *kern, *ktmp1, *ktmp2;
   unsigned int ki, kj, kk, sx;
 
   kern = oscx->kern;
@@ -752,7 +752,7 @@ _errTotalLinf(double *retP, gageOptimSigContext *oscx, unsigned int mmIdx[2],
 static int /* Biff: 1 */
 _gageSetup(gageOptimSigContext *oscx) {
   static const char me[] = "_gageSetup";
-  double kparm[NRRD_KERNEL_PARMS_NUM];
+  double kparm[NRRD_KERNEL_PARM_MAXNUM];
   int E;
 
   if (oscx->gctx) {

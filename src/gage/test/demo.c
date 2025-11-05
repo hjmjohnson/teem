@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -29,7 +29,7 @@ main(int argc, char *argv[]) {
   gageContext *ctx;
   gagePerVolume *pvl;
   const double *grad, *norm;
-  double kparm[NRRD_KERNEL_PARMS_NUM];
+  double kparm[NRRD_KERNEL_PARM_MAXNUM];
   int E;
 
   me = argv[0];
@@ -43,16 +43,17 @@ main(int argc, char *argv[]) {
   airMopAdd(mop, nin, (airMopper)nrrdNuke, airMopAlways);
 
   if (nrrdLoad(nin, argv[1], NULL)) {
-    airMopAdd(mop, err=biffGetDone(NRRD), airFree, airMopAlways);
+    airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble loading\n%s\n", me, err);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
 
   if (gageKindVolumeCheck(gageKindScl, nin)) {
-    airMopAdd(mop, err=biffGetDone(GAGE), airFree, airMopAlways);
-    fprintf(stderr, "%s: didn't get a %s volume:\n%s\n", me,
-            gageKindScl->name, err);
-    airMopError(mop); return 1;
+    airMopAdd(mop, err = biffGetDone(GAGE), airFree, airMopAlways);
+    fprintf(stderr, "%s: didn't get a %s volume:\n%s\n", me, gageKindScl->name, err);
+    airMopError(mop);
+    return 1;
   }
 
   kparm[0] = 1.0; /* scale parameter, in units of samples */
@@ -70,9 +71,10 @@ main(int argc, char *argv[]) {
   if (!E) E |= gageQueryItemOn(ctx, pvl, gageSclNormal);
   if (!E) E |= gageUpdate(ctx);
   if (E) {
-    airMopAdd(mop, err=biffGetDone(GAGE), airFree, airMopAlways);
+    airMopAdd(mop, err = biffGetDone(GAGE), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble setting up Gage:\n%s\n", me, err);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
 
   grad = gageAnswerPointer(ctx, pvl, gageSclGradVec);
@@ -80,10 +82,11 @@ main(int argc, char *argv[]) {
 
   if (gageProbe(ctx, 1.1, 2.3, 6.8)) {
     fprintf(stderr, "%s: trouble:\n(%d) %s\n", me, ctx->errNum, ctx->errStr);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
-  printf("gradient (%g,%g,%g) --> norm (%g,%g,%g)\n",
-         grad[0], grad[1], grad[2], norm[0], norm[1], norm[2]);
+  printf("gradient (%g,%g,%g) --> norm (%g,%g,%g)\n", grad[0], grad[1], grad[2], norm[0],
+         norm[1], norm[2]);
 
   airMopOkay(mop);
   return 0;

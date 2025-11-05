@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -26,7 +26,7 @@
 extern "C" {
 #endif
 
-#define _NRRD_TEXT_INCR      1024
+#define _NRRD_TEXT_INCR      1024u
 #define _NRRD_LLONG_MAX_HELP AIR_LLONG(2305843009213693951)
 #define _NRRD_LLONG_MIN_HELP AIR_LLONG(-2305843009213693952)
 
@@ -47,13 +47,16 @@ extern "C" {
 
 /* ---- END non-NrrdIO */
 
-/*
-** _NRRD_SPACING
-**
-** returns nrrdDefSpacing if the argument doesn't exist, otherwise
-** returns the argument
-*/
-#define _NRRD_SPACING(spc) (AIR_EXISTS(spc) ? spc : nrrdDefSpacing)
+/* for adjusting locals `STR` and `SIZE`, assuming correct usage of snprintf.
+   At worst, snprintf filled up everything except the final element for the
+   '\0'-termination, and then after this, STR will be advanced to point to that '\0',
+   and SIZE will go down to 1 */
+#define STRINCR(STR, SIZE)                                                              \
+  do {                                                                                  \
+    size_t tmp_str_len_##STR = strlen(STR);                                             \
+    STR += tmp_str_len_##STR;                                                           \
+    SIZE -= tmp_str_len_##STR;                                                          \
+  } while (0)
 
 typedef union {
   char **CP;
@@ -81,7 +84,7 @@ extern airLLong _nrrdLLongMinHelp(airLLong val);
 extern airULLong _nrrdULLongMaxHelp(airULLong val);
 
 /* keyvalue.c */
-extern void _nrrdWriteEscaped(FILE *file, char *dst, const char *str,
+extern void _nrrdWriteEscaped(FILE *file, char *dst, size_t dstSize, const char *str,
                               const char *toescape, const char *tospace);
 extern int _nrrdKeyValueWrite(FILE *file, char **stringP, const char *prefix,
                               const char *key, const char *value);
@@ -166,8 +169,8 @@ extern int _nrrdSizeCheck(const size_t *size, unsigned int dim, int useBiff);
 extern int _nrrdMaybeAllocMaybeZero_nva(Nrrd *nrrd, int type, unsigned int dim,
                                         const size_t *size, int zeroWhenNoAlloc);
 
-#if TEEM_ZLIB
-#  if TEEM_VTK_MANGLE
+#ifdef TEEM_ZLIB
+#  ifdef TEEM_VTK_MANGLE
 #    include "vtk_zlib_mangle.h"
 #  endif
 #  include <zlib.h> /* NrrdIO-hack-004 */
@@ -184,8 +187,8 @@ extern int _nrrdGzDummySymbol(void);
 
 /* ---- BEGIN non-NrrdIO */
 /* apply1D.c */
-extern double _nrrdApplyDomainMin(const Nrrd *nmap, int ramps, int mapAxis);
-extern double _nrrdApplyDomainMax(const Nrrd *nmap, int ramps, int mapAxis);
+extern double _nrrdApplyDomainMin(const Nrrd *nmap, int ramps, unsigned int mapAxis);
+extern double _nrrdApplyDomainMax(const Nrrd *nmap, int ramps, unsigned int mapAxis);
 
 /* ---- END non-NrrdIO */
 

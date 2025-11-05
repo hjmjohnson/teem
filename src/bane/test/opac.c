@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -17,12 +17,11 @@
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #include "../bane.h"
 
 char *me;
 void
-usage() {
+usage(void) {
   /*                      0    1     2       3   (4) */
   fprintf(stderr, "usage: %s <bIn> <pIn> <opacOut>\n", me);
   exit(1);
@@ -34,17 +33,16 @@ main(int argc, char *argv[]) {
   Nrrd *b, *p, *o;
 
   me = argv[0];
-  if (argc != 4)
-    usage();
+  if (argc != 4) usage();
   bStr = argv[1];
   pStr = argv[2];
   oStr = argv[3];
-  if (nrrdLoad(b=nrrdNew(), bStr, NULL)) {
+  if (nrrdLoad(b = nrrdNew(), bStr, NULL)) {
     fprintf(stderr, "%s: trouble reading %s:\n%s\n", me, bStr, biffGet(NRRD));
     usage();
   }
 
-  if (nrrdLoad(p=nrrdNew(), pStr, NULL)) {
+  if (nrrdLoad(p = nrrdNew(), pStr, NULL)) {
     fprintf(stderr, "%s: trouble reading %s:\n%s\n", me, pStr, biffGet(NRRD));
     usage();
   }

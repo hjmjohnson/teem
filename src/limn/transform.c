@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -345,7 +345,7 @@ limnObjectFaceReverse(limnObject *obj) {
     face = obj->face + faceIdx;
     buff = (int *)calloc(face->sideNum, sizeof(int));
     if (!(buff)) {
-      biffAddf(LIMN, "%s: couldn't allocate %d side buffer for face %d\n", me,
+      biffAddf(LIMN, "%s: couldn't allocate %u side buffer for face %u\n", me,
                face->sideNum, faceIdx);
       return 1;
     }

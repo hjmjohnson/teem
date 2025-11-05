@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -23,6 +23,6 @@ const int limnPresent = 42;
 
 const char *const limnBiffKey = "limn";
 
-int limnDefCameraAtRelative = AIR_FALSE;
-int limnDefCameraOrthographic = AIR_FALSE;
-int limnDefCameraRightHanded = AIR_TRUE;
+int limnDefaultCameraAtRelative = AIR_FALSE;
+int limnDefaultCameraOrthographic = AIR_FALSE;
+int limnDefaultCameraRightHanded = AIR_TRUE;

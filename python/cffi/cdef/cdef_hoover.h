@@ -6,7 +6,7 @@ CFFI, within its many limitations, specifically lacking a C pre-processor
  /* =========== hoover.h =========== */
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
   This library is free software; you can redistribute it and/or modify it under the terms
@@ -20,7 +20,7 @@ CFFI, within its many limitations, specifically lacking a C pre-processor
   You should have received a copy of the GNU Lesser General Public License
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
-#define HOOVER_THREAD_MAX 512
+#define HOOVER_THREAD_MAX 512u
 /*
 ******** the mess of typedefs for callbacks used below
 */
@@ -215,8 +215,6 @@ enum {
 /* defaultsHoover.c */
 extern const int hooverPresent;
 extern const char *const hooverBiffKey;
-extern int hooverDefVolCentering;
-extern int hooverDefImgCentering;
 extern const airEnum *const hooverErr;
 /* methodsHoover.c */
 extern hooverContext *hooverContextNew(void);

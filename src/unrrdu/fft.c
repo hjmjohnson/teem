@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -21,10 +21,8 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Fast Fourier Transform of selected axes"
-static const char *_unrrdu_fftInfoL_yes
-  = (INFO ". Initial attempt at wrapping the FFTW3 library; options are "
-          "likely to change in Teem 2.0.\n "
-          "* Uses nrrdFFT");
+static const char *_unrrdu_fftInfoL_yes = (INFO ". Powered by the FFTW3 library.\n "
+                                                "* Uses nrrdFFT");
 
 static const char *_unrrdu_fftInfoL_no
   = (INFO ". This Teem has NOT been compiled with FFTW3 <http://www.fftw.org/>. "

@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -155,7 +155,7 @@ qbertSizeDown(Nrrd *nout, Nrrd *nin, unsigned int *sz, NrrdKernelSpec *dk) {
       rsi->min[i] = nin->axis[i].min;
       rsi->max[i] = nin->axis[i].max;
       nin->axis[i].center = nrrdCenterNode;
-      fprintf(stderr, "%s: downsampling axis %d from %s to %s samples\n", me, i,
+      fprintf(stderr, "%s: downsampling axis %u from %s to %s samples\n", me, i,
               airSprintSize_t(stmp1, nin->axis[i].size),
               airSprintSize_t(stmp2, rsi->samples[i]));
     } else {
@@ -340,7 +340,7 @@ qbertMakeVghHists(Nrrd *nvhist, Nrrd *nghist, Nrrd *nhhist, unsigned int *sz, in
     if (!E) E |= nrrdMaybeAlloc_va(nhhist, nrrdTypeInt, 1, AIR_SIZE_T(bins));
   }
   if (E) {
-    biffMovef(QBERT, NRRD, "%s: couldn't allocate %d %d-bin histograms", me, nval, bins);
+    biffMovef(QBERT, NRRD, "%s: couldn't allocate %u %d-bin histograms", me, nval, bins);
     return 1;
   }
   nvhist->axis[0].min = minv;
@@ -638,7 +638,7 @@ main(int argc, const char *argv[]) {
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
   if (3 != nin->dim) {
-    fprintf(stderr, "%s: input nrrd is %-dimensional, not 3\n", me, nin->dim);
+    fprintf(stderr, "%s: input nrrd is %u-dimensional, not 3\n", me, nin->dim);
     airMopError(mop);
     exit(1);
   }

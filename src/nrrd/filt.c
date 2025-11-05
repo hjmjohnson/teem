@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -416,15 +416,15 @@ nrrdCheapMedian(Nrrd *_nout, const Nrrd *_nin, int pad, int mode, unsigned int r
     return 1;
   }
   if (!(radius >= 1)) {
-    biffAddf(NRRD, "%s: need radius >= 1 (got %d)", me, radius);
+    biffAddf(NRRD, "%s: need radius >= 1 (got %u)", me, radius);
     return 1;
   }
   if (!(bins >= 1)) {
-    biffAddf(NRRD, "%s: need bins >= 1 (got %d)", me, bins);
+    biffAddf(NRRD, "%s: need bins >= 1 (got %u)", me, bins);
     return 1;
   }
   if (!(AIR_IN_CL(1, _nin->dim, 4))) {
-    biffAddf(NRRD, "%s: sorry, can only handle dim 1, 2, 3 (not %d)", me, _nin->dim);
+    biffAddf(NRRD, "%s: sorry, can only handle dim 1, 2, 3 (not %u)", me, _nin->dim);
     return 1;
   }
   minsize = AIR_UINT(_nin->axis[0].size);
@@ -436,8 +436,8 @@ nrrdCheapMedian(Nrrd *_nout, const Nrrd *_nin, int pad, int mode, unsigned int r
   }
   if (!pad && minsize < 2 * radius + 1) {
     biffAddf(NRRD,
-             "%s: minimum nrrd size (%d) smaller than filtering "
-             "window size (%d) with radius %d; must enable padding",
+             "%s: minimum nrrd size (%u) smaller than filtering "
+             "window size (%u) with radius %u; must enable padding",
              me, minsize, 2 * radius + 1, radius);
     return 1;
   }
@@ -477,7 +477,7 @@ nrrdCheapMedian(Nrrd *_nout, const Nrrd *_nin, int pad, int mode, unsigned int r
   range = nrrdRangeNewSet(nin, nrrdBlind8BitRangeFalse);
   airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
   if (!(hist = (float *)calloc(bins, sizeof(float)))) {
-    biffAddf(NRRD, "%s: couldn't allocate histogram (%d bins)", me, bins);
+    biffAddf(NRRD, "%s: couldn't allocate histogram (%u bins)", me, bins);
     airMopError(mop);
     return 1;
   }
@@ -499,7 +499,7 @@ nrrdCheapMedian(Nrrd *_nout, const Nrrd *_nin, int pad, int mode, unsigned int r
     _nrrdCheapMedian4D(nout, nin, range, radius, wght, bins, mode, hist);
     break;
   default:
-    biffAddf(NRRD, "%s: sorry, %d-dimensional median unimplemented", me, nin->dim);
+    biffAddf(NRRD, "%s: sorry, %u-dimensional median unimplemented", me, nin->dim);
     airMopError(mop);
     return 1;
   }

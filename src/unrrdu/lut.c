@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -27,8 +27,8 @@ static const char *_unrrdu_lutInfoL
           "has the same dimension as the input, or 2D, in which case "
           "the output has one more dimension than the input, and each "
           "value is mapped to a scanline (along axis 0) from the "
-          "lookup table.\n "
-          "* Uses nrrdApply1DLut");
+          "lookup table.\n " UNRRDU_DILRR_INFO("lut") /* */
+     "* Uses nrrdApply1DLut");
 
 static int
 unrrdu_lutMain(int argc, const char **argv, const char *me, hestParm *hparm) {
@@ -42,12 +42,18 @@ unrrdu_lutMain(int argc, const char **argv, const char *me, hestParm *hparm) {
 
   hestOptAdd_1_Other(&opt, "m,map", "lut", &nlut, NULL,
                      "lookup table to map input nrrd through", nrrdHestNrrdNoTTY);
-  hestOptAdd_Flag(&opt, "r,rescale", &rescale,
-                  "rescale the input values from the input range to the "
-                  "lut domain.  The lut domain is either explicitly "
-                  "defined by the axis min,max along axis 0 or 1, or, it "
-                  "is implicitly defined as zero to the length of that axis "
-                  "minus one.");
+  /* Pre-TeemV2; "-r" was only a flag (0 parms), which meant there was no way
+     for the to explicitly say, "no rescaling".  Here is where we are grateful
+     for the odd "single variadic parameter" hest option kind: The user can omit
+     the option (==> rescale=false), or say "-r" (==> rescale=true),
+     or say "-r false" (==> rescale=false), or say "-r true" (==> rescale=true) */
+  int rsclOptIdx
+    = hestOptAdd_1v_Bool(&opt, "r,rescale", "bool", &rescale, "false",
+                         "rescale the input values from the input range to the "
+                         "lut domain.  The lut domain is either explicitly "
+                         "defined by the axis min,max along axis 0 or 1, or, it "
+                         "is implicitly defined as zero to the length of that axis "
+                         "minus one.");
   hestOptAdd_1_Double(&opt, "min,minimum", "value", &min, "nan",
                       "Low end of input range. Defaults to lowest value "
                       "found in input nrrd.  Explicitly setting this is useful "
@@ -65,7 +71,7 @@ unrrdu_lutMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                      "specify the type (\"int\", \"float\", etc.) of the "
                      "output nrrd. "
                      "By default (not using this option), the output type "
-                     "is the lut's type.",
+                     "is the lut's type",
                      &unrrduHestMaybeTypeCB);
   OPT_ADD_NIN(nin, "input nrrd");
   OPT_ADD_NOUT(out, "output nrrd");
@@ -79,10 +85,21 @@ unrrdu_lutMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
 
-  /* see comment rmap.c */
-  if (!(AIR_EXISTS(nlut->axis[nlut->dim - 1].min)
-        && AIR_EXISTS(nlut->axis[nlut->dim - 1].max))) {
-    rescale = AIR_TRUE;
+  unrrduGetenvDefaultImplicitLutRmapRescale();
+  /* Pre-TeemV2: "here is a big difference between unu and nrrd: we enforce rescaling any
+  time that the map domain is implicit.  This is how the pre-1.6 functionality is
+  recreated."
+  TeemV2: Given an implicit map domain, if user is not used "-r", then rescale is set to
+  unrrduDefaultImplicitLutRmapRescale (initialized to AIR_TRUE) which can be controlled
+  by envvar "UNRRDU_DEFAULT_IMPLICIT_LUT_RMAP_RESCALE".
+  Also, whenever there is rescaling we pass a NrrdRange to reflect the (optional) user
+  range specification, instead of letting nrrdApply1DRegMap find the input range itself
+  (by passing a NULL NrrdRange). */
+  if (!hestSourceUser(opt[rsclOptIdx].source)) {
+    if (!(AIR_EXISTS(nlut->axis[nlut->dim - 1].min)
+          && AIR_EXISTS(nlut->axis[nlut->dim - 1].max))) {
+      rescale = unrrduDefaultImplicitLutRmapRescale;
+    }
   }
   if (rescale) {
     range = nrrdRangeNew(min, max);

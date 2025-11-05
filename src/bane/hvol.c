@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -38,7 +38,7 @@ _baneAxisCheck(baneAxis *ax) {
   static const char me[] = "_baneAxisCheck";
 
   if (!(ax->res >= 2)) {
-    biffAddf(BANE, "%s: need resolution at least 2 (not %d)", me, ax->res);
+    biffAddf(BANE, "%s: need resolution at least 2 (not %u)", me, ax->res);
     return 1;
   }
   if (!ax->measr) {

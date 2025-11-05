@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -16,7 +16,6 @@
   You should have received a copy of the GNU Lesser General Public License
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
-
 
 #include "../air.h"
 
@@ -42,12 +41,11 @@ main(int argc, char *argv[]) {
 
   mop = airMopNew();
   str = airStrdup("this is just a test");
-  printf("%s: str = \"%s\", str = 0x%p, &str = 0x%p\n", me,
-         str, AIR_VOIDP(str), AIR_VOIDP(&str));
+  printf("%s: str = \"%s\", str = 0x%p, &str = 0x%p\n", me, str, AIR_VOIDP(str),
+         AIR_VOIDP(&str));
   airMopMem(mop, &str, airMopAlways);
   airMopDebug(mop);
   airMopOkay(mop);
-
 
   printf("%s: -------------------------------------\n", me);
 
@@ -84,7 +82,6 @@ main(int argc, char *argv[]) {
   airMopMem(mop, &ptr, airMopAlways);
   free(ptr);
   airMopUnMem(mop, &ptr);
-
 
   airMopDebug(mop);
   airMopOkay(mop);

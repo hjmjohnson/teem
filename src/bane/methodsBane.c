@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -38,28 +38,27 @@ _axisEmpty(baneAxis *axis) {
 }
 
 baneHVolParm * /* Biff: nope */
-baneHVolParmNew() {
+baneHVolParmNew(void) {
   baneHVolParm *hvp;
-  int i, j;
 
   hvp = (baneHVolParm *)calloc(1, sizeof(baneHVolParm));
   if (hvp) {
-    hvp->verbose = baneDefVerbose;
-    hvp->makeMeasrVol = baneDefMakeMeasrVol;
+    hvp->verbose = baneDefaultVerbose;
+    hvp->makeMeasrVol = baneDefaultMakeMeasrVol;
     hvp->measrVol = NULL;
     hvp->measrVolDone = AIR_FALSE;
     _axisInit(hvp->axis + 0);
     _axisInit(hvp->axis + 1);
     _axisInit(hvp->axis + 2);
     hvp->k3pack = AIR_TRUE;
-    for (i = gageKernelUnknown + 1; i < gageKernelLast; i++) {
-      hvp->k[i] = NULL;
-      for (j = 0; j < NRRD_KERNEL_PARMS_NUM; j++)
-        hvp->kparm[i][j] = AIR_NAN;
+    for (unsigned int ii = gageKernelUnknown + 1; ii < gageKernelLast; ii++) {
+      hvp->k[ii] = NULL;
+      for (unsigned int jj = 0; jj < NRRD_KERNEL_PARM_MAXNUM; jj++)
+        hvp->kparm[ii][jj] = AIR_NAN;
     }
-    hvp->renormalize = baneDefRenormalize;
+    hvp->renormalize = baneDefaultRenormalize;
     hvp->clip = NULL;
-    hvp->incLimit = baneDefIncLimit;
+    hvp->incLimit = baneDefaultIncLimit;
   }
   return hvp;
 }

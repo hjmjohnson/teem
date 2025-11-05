@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -69,7 +69,7 @@ tenTensorCheck(const Nrrd *nin, int wantType, int want4D, int useBiff) {
     }
   }
   if (want4D && !(4 == nin->dim)) {
-    biffMaybeAddf(useBiff, TEN, "%s: given dimension is %d, not 4", me, nin->dim);
+    biffMaybeAddf(useBiff, TEN, "%s: given dimension is %u, not 4", me, nin->dim);
     return 1;
   }
   if (!(7 == nin->axis[0].size)) {
@@ -298,7 +298,7 @@ tenShrink(Nrrd *tseven, const Nrrd *nconf, const Nrrd *tnine) {
   if (!(nrrdTypeFloat == tnine->type && 4 == tnine->dim && 9 == tnine->axis[0].size)) {
     char stmp[AIR_STRLEN_SMALL + 1];
     biffAddf(TEN,
-             "%s: type not %s (was %s) or dim not 4 (was %d) "
+             "%s: type not %s (was %s) or dim not 4 (was %u) "
              "or first axis size not 9 (was %s)",
              me, airEnumStr(nrrdType, nrrdTypeFloat), airEnumStr(nrrdType, tnine->type),
              tnine->dim, airSprintSize_t(stmp, tnine->axis[0].size));
@@ -311,7 +311,7 @@ tenShrink(Nrrd *tseven, const Nrrd *nconf, const Nrrd *tnine) {
     if (!(nrrdTypeFloat == nconf->type && 3 == nconf->dim && sx == nconf->axis[0].size
           && sy == nconf->axis[1].size && sz == nconf->axis[2].size)) {
       biffAddf(TEN,
-               "%s: confidence type not %s (was %s) or dim not 3 (was %d) "
+               "%s: confidence type not %s (was %s) or dim not 3 (was %u) "
                "or dimensions didn't match tensor volume",
                me, airEnumStr(nrrdType, nrrdTypeFloat),
                airEnumStr(nrrdType, nconf->type), nconf->dim);
@@ -543,7 +543,7 @@ tenMake(Nrrd *nout, const Nrrd *nconf, const Nrrd *neval, const Nrrd *nevec) {
   if (!(3 == nconf->dim && nrrdTypeFloat == nconf->type)) {
     biffAddf(TEN,
              "%s: first nrrd not a confidence volume "
-             "(dim = %d, not 3; type = %s, not %s)",
+             "(dim = %u, not 3; type = %s, not %s)",
              me, nconf->dim, airEnumStr(nrrdType, nconf->type),
              airEnumStr(nrrdType, nrrdTypeFloat));
     return 1;
@@ -554,7 +554,7 @@ tenMake(Nrrd *nout, const Nrrd *nconf, const Nrrd *neval, const Nrrd *nevec) {
   if (!(4 == neval->dim && 4 == nevec->dim && nrrdTypeFloat == neval->type
         && nrrdTypeFloat == nevec->type)) {
     biffAddf(TEN,
-             "%s: second and third nrrd aren't both 4-D (%d and %d) "
+             "%s: second and third nrrd aren't both 4-D (%u and %u) "
              "and type %s (%s and %s)",
              me, neval->dim, nevec->dim, airEnumStr(nrrdType, nrrdTypeFloat),
              airEnumStr(nrrdType, neval->type), airEnumStr(nrrdType, nevec->type));
@@ -642,7 +642,7 @@ tenSlice(Nrrd *nout, const Nrrd *nten, unsigned int axis, size_t pos, unsigned i
     return 1;
   }
   if (!(2 == dim || 3 == dim)) {
-    biffAddf(TEN, "%s: given dim (%d) not 2 or 3", me, dim);
+    biffAddf(TEN, "%s: given dim (%u) not 2 or 3", me, dim);
     return 1;
   }
   if (!(axis <= 2)) {
@@ -692,7 +692,7 @@ tenSlice(Nrrd *nout, const Nrrd *nten, unsigned int axis, size_t pos, unsigned i
       ELL_4V_SET(ci, 0, 1, 2, 4);
       break;
     default:
-      biffAddf(TEN, "%s: axis %d bogus", me, axis);
+      biffAddf(TEN, "%s: axis %u bogus", me, axis);
       airMopError(mop);
       return 1;
       break;

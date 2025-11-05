@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -42,9 +42,6 @@ unrrdu_heqMain(int argc, const char **argv, const char *me, hestParm *hparm) {
 
   /* we want to facilitate saving out the mapping as a text file,
      but with the domain included */
-  /* this is commented out with the 8 Aug 2003 advent of nrrdDefGetenv
-  nrrdDefWriteBareTable = AIR_FALSE;
-  */
 
   hestOptAdd_1_UInt(&opt, "b,bin", "bins", &bins, NULL,
                     "# bins to use in histogram that is created in order to "

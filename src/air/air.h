@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2010 Thomas Schultz
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
@@ -43,12 +43,12 @@
 ** is a manual operation.  See also airTeemReleaseDate in miscAir.c
 */
 /* clang-format off */
-#define TEEM_VERSION_MAJOR   0       /* must be 1 digit */
-#define TEEM_VERSION_MINOR    00     /* 1 or 2 digits */
-#define TEEM_VERSION_PATCH      00   /* 1 or 2 digits */
+#define TEEM_VERSION_MAJOR   2       /* must be 1 digit */
+#define TEEM_VERSION_MINOR     0     /* 1 or 2 digits (no leading 0) */
+#define TEEM_VERSION_PATCH       0   /* 1 or 2 digits (no leading 0) */
 #define TEEM_VERSION         20000   /* must be 5 digits, to facilitate
                                         easy numerical comparison */
-#define TEEM_VERSION_STRING "2.00.0" /* cannot be so easily compared */
+#define TEEM_VERSION_STRING "2.0.0" /* THIS is the semantic version "number" */
 /* clang-format on */
 
 /* NrrdIO-hack-000 */
@@ -65,7 +65,12 @@ extern "C" {
 #    define AIR_EXPORT extern __declspec(dllimport)
 #  endif
 #else /* TEEM_STATIC || UNIX */
-#  define AIR_EXPORT extern
+#  if !defined(TEEM_STATIC)
+/*   If built w/ -fvisibility=hidden, only EXPORTed symbols are visible in shared lib */
+#    define AIR_EXPORT extern __attribute__((visibility("default")))
+#  else
+#    define AIR_EXPORT extern
+#  endif
 #endif
 
 #if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MINGW32__)
@@ -96,15 +101,15 @@ typedef unsigned long long airULLong;
  * distracts from more urgent implementation goals.  In the mean time, these can be used
  * safely as long as the lengths are used consistently.
  */
-#define AIR_STRLEN_SMALL 128
+#define AIR_STRLEN_SMALL 128u
 /* SMALL has to be big enough to hold:
    - printed value of size_t and
    - ptrdiff_t, line of text that
    - should contain file format "magic"
 */
-#define AIR_STRLEN_MED   256
-#define AIR_STRLEN_LARGE 512
-#define AIR_STRLEN_HUGE  1024
+#define AIR_STRLEN_MED   256u
+#define AIR_STRLEN_LARGE 512u
+#define AIR_STRLEN_HUGE  1024u
 /* HUGE has to be big enough to hold one line of biff error message */
 
 /*
@@ -526,7 +531,7 @@ AIR_EXPORT char *airUnescape(char *s);
 AIR_EXPORT char *airOneLinify(char *s);
 AIR_EXPORT char *airToLower(char *str);
 AIR_EXPORT char *airToUpper(char *str);
-AIR_EXPORT unsigned int airOneLine(FILE *file, char *line, unsigned int size);
+AIR_EXPORT size_t airOneLine(FILE *file, char *line, size_t size);
 
 /* sane.c */
 /*
@@ -564,7 +569,8 @@ AIR_EXPORT void *airSetNull(void **ptrP);
 AIR_EXPORT void *airFree(void *ptr);
 AIR_EXPORT FILE *airFopen(const char *name, FILE *std, const char *mode);
 AIR_EXPORT FILE *airFclose(FILE *file);
-AIR_EXPORT int airSinglePrintf(FILE *file, char *str, const char *fmt, ...);
+AIR_EXPORT int airSinglePrintf(FILE *file, char *str, size_t strSize, /* */
+                               const char *fmt, ...);
 AIR_EXPORT char *airSprintSize_t(char str[AIR_STRLEN_SMALL + 1], size_t val);
 /* ---- BEGIN non-NrrdIO */
 AIR_EXPORT char *airSprintVecSize_t(char *str, const size_t *vec, unsigned int len);
@@ -580,7 +586,7 @@ AIR_EXPORT unsigned int airIndexClamp(double min, double val, double max,
                                       unsigned int N);
 AIR_EXPORT airULLong airIndexULL(double min, double val, double max, airULLong N);
 AIR_EXPORT airULLong airIndexClampULL(double min, double val, double max, airULLong N);
-AIR_EXPORT char *airDoneStr(double start, double here, double end, char *str);
+AIR_EXPORT char *airDoneStr(double start, double here, double end, char str[13]);
 AIR_EXPORT double airTime(void);
 AIR_EXPORT void airEqvAdd(airArray *eqvArr, unsigned int j, unsigned int k);
 AIR_EXPORT unsigned int airEqvMap(airArray *eqvArr, unsigned int *map, unsigned int len);
@@ -661,9 +667,8 @@ AIR_EXPORT void airMopSingleOkay(airArray *arr, void *ptr);
 
 /*******     the interminable sea of defines and macros     *******/
 
-#define AIR_TRUE  1
-#define AIR_FALSE 0
-
+#define AIR_TRUE       1
+#define AIR_FALSE      0
 #define AIR_WHITESPACE " \t\n\r\v\f" /* K+R pg. 157 */
 
 /*
@@ -711,17 +716,6 @@ AIR_EXPORT void airMopSingleOkay(airArray *arr, void *ptr);
 #define AIR_CALLOC(N, T) (T *)(calloc((N), sizeof(T)))
 
 /*
-******** AIR_ENDIAN
-**
-** This reflects particulars of hardware which we're running on. The
-** difference from the things starting with TEEM_ is that the TEEM_
-** values are for passing architecture-specific to compilation of source
-** files, and thes AIR_ variables are for advertising that information
-** to anyone linking against air (or Teem) and including air.h.
-*/
-#define AIR_ENDIAN (airMyEndian())
-
-/*
 ******** AIR_NAN, AIR_POS_INF, AIR_NEG_INF
 **
 ** its nice to have these values available without the cost of a
@@ -736,6 +730,8 @@ AIR_EXPORT void airMopSingleOkay(airArray *arr, void *ptr);
 #define AIR_POS_INF (airFloatPosInf.f)
 #define AIR_NEG_INF (airFloatNegInf.f)
 
+/* NrrdIO-hack-002 */ /* simpler AIR_EXISTS for NrrdIO */
+/* ---- BEGIN non-NrrdIO */
 /*
 ******** AIR_EXISTS(x)
 **
@@ -745,78 +741,71 @@ AIR_EXPORT void airMopSingleOkay(airArray *arr, void *ptr);
 ** than "finite" now pervades Teem source code.
 **
 ** Much commentary, from a wide-eyed student GLK, used to be here.  The upshot:
-** - Some compilers, with some options, violate IEEE 754 on x == x being false for NaNs
+** - Some compilers, with some options, violate IEEE754 by saying that Nan == NaN
 **   (but, that's moot for this macro because inf == inf).
 ** - GLK now believes that whether denormals are flushed to zero, and the role of
 **   extended precision FP registers, are also moot for this macro, but welcomes
 **   counterexamples or expert guidance.
 **
-** The current definition based on "!(x-x)" has seemed to work since 2012.  With
-** -Wfloat-conversion, Clang warns that "implicit conversion turns floating-point number
-** into integer" with x-x being the operand of "!", which is unfortunate. But there is
-** no undefined behavior, at least as detected by clang -fsanitize=undefined, in !NaN
-** (as arising from !(NaN-NaN) or !(inf-inf)). BTW GLK is unsure why the current macro
-** explicitly casts the result of "!" to int, since "!" already produces an int:
-** https://en.cppreference.com/w/c/language/operator_logical. A more straight-forward
-** alternative, which avoids float conversion warnings, would be to use "x-x == x-x"
+** This used to use `!((x)-(x))` but Clang -Wfloat-conversion warns about
+** "implicit conversion turns floating-point number into integer" with x-x being the
+** operand of `!`. The current `((x)-(x))==0` avoids that since 0 is promoted to the
+** floating-point type of x-x. One alternative that avoids all possible conversion
+** and promotion is (x-x)==(x-x).
 **
 ** Configuring with CMake uses teem/CMake/TestAIR_EXISTS.c (and tries to compile it the
 ** same as the rest of Teem will be compiled) to test this macro (but NOTE: it has to be
 ** copy-pasted to there since it can't read air.h), which then produces
 ** teem-install-dir/include/teem/airExistsConf.h, which #define's AIR_EXISTS_MACRO_FAILS
 ** or not, which controls whether AIR_EXISTS here uses the clever macro or the more
-** reliable function call airExists. There may yet be failure modes untested by
-** TestAIR_EXISTS.c, and by the tests in air/airSanity().
+** reliable function call airExists. There may be yet more failure modes untested by
+** TestAIR_EXISTS.c and untested by the tests in air/airSanity().
 */
-/* ---- BEGIN non-NrrdIO */
 #if !defined(TEEM_NON_CMAKE)
 #  include "teem/airExistsConf.h"
 #endif
-/* ---- END non-NrrdIO */
 
 /* clang-format off */
-#if defined(_WIN32) || defined(__ECC) || defined(AIR_EXISTS_MACRO_FAILS) /* NrrdIO-hack-002 */
+#if defined(_WIN32) || defined(__ECC) || defined(AIR_EXISTS_MACRO_FAILS)
 #define AIR_EXISTS(x) (airExists(x))
 #else
-#define AIR_EXISTS(x) (AIR_CAST(int, !((x) - (x))))
+#define AIR_EXISTS(x) (((x) - (x)) == 0)
 #endif
 /* clang-format on */
 
-/* ---- BEGIN non-NrrdIO */
+/* Gone in TeemV2: size-specific AIR_EXISTS_F, AIR_EXISTS_D, AIR_ISNAN_F macros */
 
 /*
-******** AIR_EXISTS_F(x)
+******** AIR_ENDIAN
 **
-** This is another way to check for non-specialness (not NaN, not +inf, not -inf) of
-** a _float_ _variable_, by making sure the exponent field isn't all ones.
-**
-** Unlike with AIR_EXISTS() or airExists(), this macro argument MUST be a variable of
-** type (4-byte) float, and 4 == sizeof(int): there is no implicit type converstion as
-** part of macro expansion.
-**
-** This macro is endian-safe.
+** This reflects particulars of hardware which we're running on. The
+** difference from the things starting with TEEM_ is that the TEEM_
+** values are for passing architecture-specific to compilation of source
+** files, and thes AIR_ variables are for advertising that information
+** to anyone linking against air (or Teem) and including air.h.
 */
-#define AIR_EXISTS_F(x) (((*((unsigned int *)&(x))) & 0x7f800000) != 0x7f800000)
+#define AIR_ENDIAN (airMyEndian())
 
 /*
-******** AIR_EXISTS_D(x)
+******** AIR_COMPARE(a,b)
 **
-** like AIR_EXISTS_F(), but the argument here MUST be a (8-byte) double variable
+** the sort of compare that qsort() wants for ascending sort
 */
-#define AIR_EXISTS_D(x)                                                                 \
-  (((*((airULLong *)&(x))) & AIR_ULLONG(0x7ff0000000000000))                            \
-   != AIR_ULLONG(0x7ff0000000000000))
+#define AIR_COMPARE(a, b) ((a) < (b) ? -1 : ((a) > (b) ? 1 : 0))
 
 /*
-******** AIR_ISNAN_F(x)
+******** AIR_MOD(i, N)
 **
-** detects if a float is NaN by looking at the bits, without relying on any of its
-** arithmetic properties.  As with AIR_EXISTS_F(), this only works when the argument
-** is a float variable, and when floats and ints are 4-bytes.
+** returns that integer in [0, N-1] which is i plus a multiple of N. It may be
+** unfortunate that the expression (i)%(N) appears three times; we can hope the compiler
+** optimizes the common sub-expression.
+**
+** NOTE: !! Results will not be as expected if i and N differ in sign-ed-ness !!
+**
+** Note: integer divisions are not very fast on some modern chips; don't go silly using
+** this one.
 */
-#define AIR_ISNAN_F(x)                                                                  \
-  ((((*((unsigned int *)&(x))) & 0x7f800000) == 0x7f800000)                             \
-   && ((*((unsigned int *)&(x))) & 0x007fffff))
+#define AIR_MOD(i, N) ((i) % (N) >= 0 ? (i) % (N) : N + (i) % (N))
 
 /* ---- END non-NrrdIO */
 
@@ -828,13 +817,6 @@ AIR_EXPORT void airMopSingleOkay(airArray *arr, void *ptr);
 #define AIR_MAX(a, b) ((a) > (b) ? (a) : (b))
 #define AIR_MIN(a, b) ((a) < (b) ? (a) : (b))
 #define AIR_ABS(a)    ((a) > 0.0f ? (a) : -(a))
-
-/*
-******** AIR_COMPARE(a,b)
-**
-** the sort of compare that qsort() wants for ascending sort
-*/
-#define AIR_COMPARE(a, b) ((a) < (b) ? -1 : ((a) > (b) ? 1 : 0))
 
 /*
 ******** AIR_IN_OP(a,b,c), AIR_IN_CL(a,b,c)
@@ -857,27 +839,6 @@ AIR_EXPORT void airMopSingleOkay(airArray *arr, void *ptr);
 #define AIR_CLAMP(a, b, c) ((b) < (a) ? (a) : ((b) > (c) ? (c) : (b)))
 
 /*
-******** AIR_MOD(i, N)
-**
-** returns that integer in [0, N-1] which is i plus a multiple of N. It may be
-** unfortunate that the expression (i)%(N) appears three times; we can hope the compiler
-** optimizes the common sub-expression.
-**
-** NOTE: !! Results will not be as expected if i and N differ in sign-ed-ness !!
-**
-** Note: integer divisions are not very fast on some modern chips; don't go silly using
-** this one.
-*/
-#define AIR_MOD(i, N) ((i) % (N) >= 0 ? (i) % (N) : N + (i) % (N))
-
-/*
-******** AIR_LERP(w, a, b)
-**
-** returns a when w=0, and b when w=1, and linearly varies in between
-*/
-#define AIR_LERP(w, a, b) ((w) * ((b) - (a)) + (a))
-
-/*
 ******** AIR_AFFINE(i,x,I,o,O)
 **
 ** given intervals [i,I], [o,O] and a value x which may or may not be
@@ -898,6 +859,14 @@ AIR_EXPORT void airMopSingleOkay(airArray *arr, void *ptr);
 */
 #define AIR_AFFINE(i, x, I, o, O)                                                       \
   (((double)(O) - (o)) * ((double)(x) - (i)) / ((double)(I) - (i)) + (o))
+/* ---- BEGIN non-NrrdIO */
+
+/*
+******** AIR_LERP(w, a, b)
+**
+** returns a when w=0, and b when w=1, and linearly varies in between
+*/
+#define AIR_LERP(w, a, b) ((w) * ((b) - (a)) + (a))
 
 /*
 ******** AIR_DELTA(i,x,I,o,O)
@@ -927,6 +896,7 @@ AIR_EXPORT void airMopSingleOkay(airArray *arr, void *ptr);
 #define AIR_ROUNDDOWN(x)    ((int)(ceil((x) - 0.5)))
 #define AIR_ROUNDUP_UI(x)   ((unsigned int)(floor((x) + 0.5)))
 #define AIR_ROUNDDOWN_UI(x) ((unsigned int)(ceil((x) - 0.5)))
+/* ---- END non-NrrdIO */
 
 #ifdef __cplusplus
 }

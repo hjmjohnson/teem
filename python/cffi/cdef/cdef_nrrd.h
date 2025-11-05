@@ -243,7 +243,7 @@ typedef struct NrrdEncoding_t {
 ** it took to read it in.
 */
 typedef struct NrrdIoState_t {
-  int verbose;                  /* new for Teem v2: replacing the old global
+  int verbose;                  /* (new for TeemV2) replaces the old global
                                    nrrdStateVerboseIO */
   char *path,                   /* allows us to remember the directory
                                    from whence this nrrd was "load"ed, or
@@ -405,12 +405,23 @@ typedef struct NrrdIoState_t {
     PNGsRGBIntent,      /* ON READ+WRITE: iff sRGBIntentKnown, the intent
                            itself, from nrrdFormatPNGsRGBIntent* enum */
     /* ---- END non-NrrdIO */
-    learningHeaderStrlen; /* ON WRITE, for nrrds, learn and save the total
-                             length of header into headerStrlen. This is
-                             used to allocate a buffer for header */
-  void *oldData;          /* ON READ: if non-NULL, pointer to space that
-                             has already been allocated for oldDataSize */
-  size_t oldDataSize;     /* ON READ: size of mem pointed to by oldData */
+    learningHeaderStrlen,        /* ON WRITE, for nrrds, learn and save the total
+                                    length of header into headerStrlen. This is
+                                    used to allocate a buffer for header */
+    headerDoubleExcessPrecision; /* (new for TeemV2) ON WRITE, how to write out the
+                                    `double`s in the Nrrd struct into the NRRD header.
+                                    Turning headerDoubleExcessPrecision ON is the
+                                    pre-TeemV2 behavior of using `sprintf` conversion
+                                    sequence "%.17g", which means getting digit strings
+                                    that are sometimes longer than necessary to specify
+                                    all bits of a `double` (e.g. "0.10000000000000001"
+                                    instead of "0.1": both parse to same `double`).
+                                    Turning headerDoubleExcessPrecision OFF enables new
+                                    TeemV2 ways of writing a shorter but equivalent
+                                    (modulo parsing to `double`) digit strings */
+  void *oldData;                 /* ON READ: if non-NULL, pointer to space that
+                                    has already been allocated for oldDataSize */
+  size_t oldDataSize;            /* ON READ: size of mem pointed to by oldData */
   /* The format and encoding.  These are initialized to nrrdFormatUnknown
      and nrrdEncodingUnknown, respectively. USE THESE VALUES for
      any kind of initialization or flagging; DO NOT USE NULL */
@@ -458,6 +469,14 @@ typedef struct {
   char name[AIR_STRLEN_SMALL + 1];
   /* number of parameters needed (# elements in parm[] used) */
   unsigned int parmNum;
+  /* whether parm[0]>0 is used for scaling up kernel to larger support while
+  proportionally scaling down kernel evaluations (preserving integral), e.g.
+   - (AIR_TRUE) nrrdKernelTent can be stretched out for blurring
+   - (AIR_FALSE) many nrrdKernelTMF[] use parm[0] but not for for scaling
+   - (AIR_FALSE) nrrdKernel*SupportDebug use parm[0] but only to artificially
+     increase support while otherwise preserving kernel shape
+   - (AIR_FALSE) and while nrrdKernelBSpline3 ignores parm[0] */
+  int parm0IsScale;
   /* smallest x (x > 0) such that k(y) = 0 for all y > x, y < -x */
   double (*support)(const double *parm);
   /* integral of kernel from -support to +support */
@@ -480,7 +499,7 @@ typedef struct {
 */
 typedef struct {
   const NrrdKernel *kernel;
-  double parm[NRRD_KERNEL_PARMS_NUM];
+  double parm[NRRD_KERNEL_PARM_MAXNUM];
 } NrrdKernelSpec;
 /*
 ******** NrrdResampleInfo struct
@@ -492,7 +511,7 @@ typedef struct {
     *kernel[NRRD_DIM_MAX];      /* which kernel to use on each axis; use NULL to
                                    say no resampling whatsoever on this axis */
   size_t samples[NRRD_DIM_MAX]; /* number of samples per axis */
-  double parm[NRRD_DIM_MAX][NRRD_KERNEL_PARMS_NUM], /* kernel arguments */
+  double parm[NRRD_DIM_MAX][NRRD_KERNEL_PARM_MAXNUM], /* kernel arguments */
     min[NRRD_DIM_MAX],
     max[NRRD_DIM_MAX]; /* min[i] and max[i] are the range, in WORLD space,
                           along which to resample axis i.  axis mins and
@@ -530,12 +549,12 @@ typedef struct {
 */
 typedef struct {
   /* ----------- input ---------- */
-  const NrrdKernel *kernel;            /* which kernel to use on this axis; use NULL to
-                                          say no resampling whatsoever on this axis */
-  double kparm[NRRD_KERNEL_PARMS_NUM]; /* kernel arguments */
-  double min, max;                     /* range in INDEX space of resampling */
-  size_t samples;                      /* number output samples on this axis (sizeOut) */
-  int overrideCenter;                  /* possible explicit setting of centering */
+  const NrrdKernel *kernel;              /* which kernel to use on this axis; use NULL to
+                                            say no resampling whatsoever on this axis */
+  double kparm[NRRD_KERNEL_PARM_MAXNUM]; /* kernel arguments */
+  double min, max;                       /* range in INDEX space of resampling */
+  size_t samples;     /* number output samples on this axis (sizeOut) */
+  int overrideCenter; /* possible explicit setting of centering */
   /* ----------- internal ---------- */
   int center;               /* centering for this axis */
   size_t sizeIn,            /* number input samples on this axis */
@@ -648,14 +667,13 @@ extern int nrrdDefaultResampleClamp;
 extern int nrrdDefaultResampleCheap;
 extern double nrrdDefaultResamplePadValue;
 extern int nrrdDefaultResampleNonExistent;
-extern double nrrdDefaultKernelParm0;
 extern int nrrdDefaultDeclineStdioOnTTY;
 /* ---- END non-NrrdIO */
 extern int nrrdDefaultCenter;
-extern double nrrdDefaultSpacing;
-/* Teem v2: nrrdStateVerboseIO --> nrrdDefaultVerboseIO,
+/* TeemV2: nrrdStateVerboseIO --> nrrdDefaultIoVerbose,
    and added NrrdIoState->verbose which is initialized by this */
-extern int nrrdDefaultVerboseIO;
+extern int nrrdDefaultIoVerbose;
+extern int nrrdDefaultIoHeaderDoubleExcessPrecision;
 extern int nrrdStateKeyValuePairsPropagate;
 /* ---- BEGIN non-NrrdIO */
 extern int nrrdStateBlind8BitRange;
@@ -673,16 +691,12 @@ extern int nrrdStateKindNoop;
 /* ---- BEGIN non-NrrdIO */
 extern const char *const nrrdEnvVarDefaultWriteEncodingType;
 extern const char *const nrrdEnvVarDefaultWriteBareText;
-extern const char *const nrrdEnvVarDefaultWriteBareTextOld;
 extern const char *const nrrdEnvVarDefaultWriteMoreThanFloatInText;
 extern const char *const nrrdEnvVarDefaultCenter;
-extern const char *const nrrdEnvVarDefaultCenterOld;
 extern const char *const nrrdEnvVarDefaultWriteCharsPerLine;
 extern const char *const nrrdEnvVarDefaultWriteValsPerLine;
-extern const char *const nrrdEnvVarDefaultKernelParm0;
-extern const char *const nrrdEnvVarDefaultSpacing;
-/* Teem v2: nrrdEnvVarStateVerboseIO --> nrrdEnvVarDefaultVerboseIO */
-extern const char *const nrrdEnvVarDefaultVerboseIO;
+/* TeemV2: nrrdEnvVarStateVerboseIO --> nrrdEnvVarDefaultIoVerbose */
+extern const char *const nrrdEnvVarDefaultIoVerbose;
 extern const char *const nrrdEnvVarStateKindNoop;
 extern const char *const nrrdEnvVarStateKeyValuePairsPropagate;
 extern const char *const nrrdEnvVarStateBlind8BitRange;
@@ -698,7 +712,7 @@ extern int nrrdGetenvEnum(int *val, char **envStr, const airEnum *enm,
 extern int nrrdGetenvInt(int *val, char **envStr, const char *envVar);
 extern int nrrdGetenvUInt(unsigned int *val, char **envStr, const char *envVar);
 extern int nrrdGetenvDouble(double *val, char **envStr, const char *envVar);
-extern int nrrdGetenvString(char **envStr, const char *envVar);
+extern int nrrdGetenvString(const char **envStr, const char *envVar);
 extern void nrrdDefaultGetenv(void);
 extern void nrrdStateGetenv(void);
 /* ---- END non-NrrdIO */
@@ -762,9 +776,9 @@ extern NrrdResampleInfo *nrrdResampleInfoNix(NrrdResampleInfo *info);
 extern NrrdKernelSpec *nrrdKernelSpecNew(void);
 extern NrrdKernelSpec *nrrdKernelSpecCopy(const NrrdKernelSpec *ksp);
 extern void nrrdKernelSpecSet(NrrdKernelSpec *ksp, const NrrdKernel *k,
-                                   const double kparm[NRRD_KERNEL_PARMS_NUM]);
+                                   const double kparm[NRRD_KERNEL_PARM_MAXNUM]);
 extern void nrrdKernelParmSet(const NrrdKernel **kP,
-                                   double kparm[NRRD_KERNEL_PARMS_NUM],
+                                   double kparm[NRRD_KERNEL_PARM_MAXNUM],
                                    NrrdKernelSpec *ksp);
 extern NrrdKernelSpec *nrrdKernelSpecNix(NrrdKernelSpec *ksp);
 /* ---- END non-NrrdIO */
@@ -851,6 +865,9 @@ extern int nrrdOriginCalculate(const Nrrd *nrrd, unsigned int *axisIdx,
                                     double *origin);
 extern int nrrdContentSet_va(Nrrd *nout, const char *func, const Nrrd *nin,
                                   const char *format, ... /* printf-style arg list */);
+extern void nrrdDescribeMore(FILE *file, const Nrrd *nrrd, const char *pfx,
+                                  int showPtrs, int elideNonExist, int elideUnknown,
+                                  const char *sepStr, unsigned int sepWidth);
 extern void nrrdDescribe(FILE *file, const Nrrd *nrrd);
 extern int nrrdCheck(const Nrrd *nrrd);
 extern int _nrrdCheck(const Nrrd *nrrd, int checkData, int useBiff);
@@ -981,7 +998,7 @@ extern float (*const nrrdFInsert[NRRD_TYPE_MAX + 1])(void *v, size_t I, float f)
 extern int (*const nrrdIInsert[NRRD_TYPE_MAX + 1])(void *v, size_t I, int j);
 extern unsigned int (*const nrrdUIInsert[NRRD_TYPE_MAX + 1])(void *v, size_t I,
                                                                   unsigned int j);
-extern int (*const nrrdSprint[NRRD_TYPE_MAX + 1])(char *, const void *);
+extern int (*const nrrdSprint[NRRD_TYPE_MAX + 1])(char *, size_t, const void *);
 /* ---- BEGIN non-NrrdIO */
 extern int (*const nrrdFprint[NRRD_TYPE_MAX + 1])(FILE *, const void *);
 extern void (*const nrrdMinMaxExactFind[NRRD_TYPE_MAX + 1])(void *minP,
@@ -1212,9 +1229,9 @@ typedef struct {
     clampHistoBins;          /* number of bins in histogram for computing
                                 clamping in terms of percentiles */
   const NrrdKernel *rkernel; /* kernel for radial high-pass filtering */
-  double rkparm[NRRD_KERNEL_PARMS_NUM];
+  double rkparm[NRRD_KERNEL_PARM_MAXNUM];
   const NrrdKernel *tkernel; /* kernel for blurring along theta */
-  double tkparm[NRRD_KERNEL_PARMS_NUM];
+  double tkparm[NRRD_KERNEL_PARM_MAXNUM];
   /* -------- INTERNAL */
   const char *cdataIn; /* nin->data as char* */
   char *cdataOut;      /* nout->data as char* */
@@ -1238,10 +1255,10 @@ extern int nrrdDeringRadiusScaleSet(NrrdDeringContext *drc, double rsc);
 extern int nrrdDeringThetaNumSet(NrrdDeringContext *drc, unsigned int thetaNum);
 extern int nrrdDeringRadialKernelSet(NrrdDeringContext *drc,
                                           const NrrdKernel *rkernel,
-                                          const double rkparm[NRRD_KERNEL_PARMS_NUM]);
+                                          const double rkparm[NRRD_KERNEL_PARM_MAXNUM]);
 extern int nrrdDeringThetaKernelSet(NrrdDeringContext *drc,
                                          const NrrdKernel *tkernel,
-                                         const double tkparm[NRRD_KERNEL_PARMS_NUM]);
+                                         const double tkparm[NRRD_KERNEL_PARM_MAXNUM]);
 extern int nrrdDeringExecute(NrrdDeringContext *drc, Nrrd *nout);
 /*
 ******** nrrdResample_t typedef
@@ -1262,12 +1279,11 @@ extern NrrdResampleContext *nrrdResampleContextNew(void);
 extern NrrdResampleContext *nrrdResampleContextNix(NrrdResampleContext *);
 extern int nrrdResampleDefaultCenterSet(NrrdResampleContext *rsmc, int center);
 extern int nrrdResampleNonExistentSet(NrrdResampleContext *rsmc, int nonExistent);
-extern int nrrdResampleNrrdSet(NrrdResampleContext *rsmc, const Nrrd *nin);
 extern int nrrdResampleInputSet(NrrdResampleContext *rsmc, const Nrrd *nin);
 extern int nrrdResampleKernelSet(NrrdResampleContext *rsmc,
                                       unsigned int axIdx,
                                       const NrrdKernel *kernel,
-                                      double kparm[NRRD_KERNEL_PARMS_NUM]);
+                                      double kparm[NRRD_KERNEL_PARM_MAXNUM]);
 extern int nrrdResampleSamplesSet(NrrdResampleContext *rsmc,
                                        unsigned int axIdx,
                                        size_t samples);
@@ -1437,11 +1453,11 @@ extern int nrrdKernelSpecSprint(char str[AIR_STRLEN_LARGE + 1],
                                      const NrrdKernelSpec *ksp);
 extern int nrrdKernelSprint(char str[AIR_STRLEN_LARGE + 1],
                                  const NrrdKernel *kernel,
-                                 const double kparm[NRRD_KERNEL_PARMS_NUM]);
+                                 const double kparm[NRRD_KERNEL_PARM_MAXNUM]);
 extern int nrrdKernelCompare(const NrrdKernel *kernA,
-                                  const double parmA[NRRD_KERNEL_PARMS_NUM],
+                                  const double parmA[NRRD_KERNEL_PARM_MAXNUM],
                                   const NrrdKernel *kernB,
-                                  const double parmB[NRRD_KERNEL_PARMS_NUM],
+                                  const double parmB[NRRD_KERNEL_PARM_MAXNUM],
                                   int *differ,
                                   char explain[AIR_STRLEN_LARGE + 1]);
 extern int nrrdKernelSpecCompare(const NrrdKernelSpec *aa,
@@ -1449,11 +1465,11 @@ extern int nrrdKernelSpecCompare(const NrrdKernelSpec *aa,
                                       int *differ,
                                       char explain[AIR_STRLEN_LARGE + 1]);
 extern int nrrdKernelCheck(const NrrdKernel *kern,
-                                const double parm[NRRD_KERNEL_PARMS_NUM], size_t evalNum,
-                                double epsilon, unsigned int diffOkEvalMax,
-                                unsigned int diffOkIntglMax, const NrrdKernel *dkern,
-                                const double dparm[NRRD_KERNEL_PARMS_NUM]);
-extern int nrrdKernelParm0IsScale(const NrrdKernel *kern);
+                                const double parm[NRRD_KERNEL_PARM_MAXNUM],
+                                size_t evalNum, double epsilon,
+                                unsigned int diffOkEvalMax, unsigned int diffOkIntglMax,
+                                const NrrdKernel *dkern,
+                                const double dparm[NRRD_KERNEL_PARM_MAXNUM]);
 extern const NrrdKernel *nrrdKernelDerivative(const NrrdKernel *kern);
 /* ---- END non-NrrdIO */
 
@@ -1461,7 +1477,7 @@ extern const NrrdKernel *nrrdKernelDerivative(const NrrdKernel *kern);
 /* =========== nrrdEnums.h =========== */
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
   This library is free software; you can redistribute it and/or modify it under the terms
@@ -1525,6 +1541,7 @@ enum {
   nrrdFormatTypeLast
 };
 #define NRRD_FORMAT_TYPE_MAX 6
+/* ---- BEGIN non-NrrdIO */
 /*
 ******** nrrdBoundary* enum
 **
@@ -1542,6 +1559,7 @@ enum {
   nrrdBoundaryLast
 };
 #define NRRD_BOUNDARY_MAX 5
+/* ---- END non-NrrdIO */
 /*
 ******** nrrdType* enum
 **
@@ -2171,7 +2189,7 @@ enum {
 /* =========== nrrdDefines.h =========== */
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
   This library is free software; you can redistribute it and/or modify it under the terms
@@ -2186,21 +2204,21 @@ enum {
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 /* feel free to set these to higher values and recompile */
-#define NRRD_DIM_MAX       16
+#define NRRD_DIM_MAX       16u
 /*                             Max array dimension (nrrd->dim) */
-#define NRRD_SPACE_DIM_MAX 8
+#define NRRD_SPACE_DIM_MAX 8u
 /*                             Max dimension of "space" around array
                                (nrrd->spaceDim) */
-/* HEY: should this be renamed -> MAXNUM ? Would be more consistent
-   with other Teem pound-define names */
-#define NRRD_KERNEL_PARMS_NUM 8
-/*                              max # arguments to a kernel- this is weird: it
+/* ---- BEGIN non-NrrdIO */
+#define NRRD_KERNEL_PARM_MAXNUM 8u
+/*                              max # parameters in a kernel- this is weird: it
                                 isn't the max of any of the NrrdKernels defined
                                 by the nrrd library (that is more like 3), but
                                 is the max number of parms of any NrrdKernel
                                 used by anyone using Teem, such as in gage.
                                 Enforcing one global max simplifies
                                 implementation. */
+/* ---- END non-NrrdIO */
 /*
 ** For the 64-bit integer types (not standard except in C99), we used
 ** to try to use the names for the _MIN and _MAX values which are used
@@ -2216,9 +2234,9 @@ enum {
 /* ---- BEGIN non-NrrdIO */
 /* suffix string that indicates percentile-based min/max */
 /* ---- END non-NrrdIO */
-#define NRRD_FILENAME_INCR    32
-#define NRRD_COMMENT_INCR     16
-#define NRRD_KEYVALUE_INCR    32
+#define NRRD_FILENAME_INCR    32u
+#define NRRD_COMMENT_INCR     16u
+#define NRRD_KEYVALUE_INCR    32u
 /*                                   this is designed to be robust against the
                                      mungling that xv does, but no promises for
                                      any other image programs */

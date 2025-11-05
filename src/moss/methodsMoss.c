@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -77,7 +77,7 @@ mossImageCheck(const Nrrd *image) {
     return 1;
   }
   if (!((2 == image->dim || 3 == image->dim) && nrrdTypeBlock != image->type)) {
-    biffAddf(MOSS, "%s: image has invalid dimension (%d) or type (%s)", me, image->dim,
+    biffAddf(MOSS, "%s: image has invalid dimension (%u) or type (%s)", me, image->dim,
              airEnumStr(nrrdType, image->type));
     return 1;
   }
@@ -121,5 +121,5 @@ mossImageAlloc(Nrrd *image, int type, unsigned int _sx, unsigned int _sy,
 int /* Biff: (private) nope */
 _mossCenter(int center) {
 
-  return (airEnumValCheck(nrrdCenter, center) ? mossDefCenter : center);
+  return (airEnumValCheck(nrrdCenter, center) ? mossDefaultCenter : center);
 }

@@ -6,7 +6,7 @@ CFFI, within its many limitations, specifically lacking a C pre-processor
  /* =========== dye.h =========== */
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
   This library is free software; you can redistribute it and/or modify it under the terms
@@ -41,7 +41,7 @@ typedef struct {
 /* methodsDye.c */
 extern const int dyePresent;
 extern const char *const dyeBiffKey;
-extern const char *const dyeSpaceToStr[DYE_MAX_SPACE + 1];
+extern const char * /* const */ dyeSpaceToStr[DYE_MAX_SPACE + 1];
 extern const airEnum *const dyeSpace;
 extern int dyeStrToSpace(char *str);
 extern dyeColor *dyeColorInit(dyeColor *col);

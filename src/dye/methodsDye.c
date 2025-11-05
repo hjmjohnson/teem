@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -24,7 +24,8 @@ const int dyePresent = 42;
 const char *const dyeBiffKey = "dye";
 
 /* clang-format off */
-const char *const
+const char * /* const */ /* See Hmmm below about missed
+                            opportunity for const-correctness in airEnum*/
 dyeSpaceToStr[DYE_MAX_SPACE+1] = {
   "(unknown)",
   "HSV",
@@ -153,7 +154,7 @@ dyeColorGetAs(float *v0P, float *v1P, float *v2P, dyeColor *colIn, int space) {
 }
 
 dyeColor * /* Biff: nope */
-dyeColorNew() {
+dyeColorNew(void) {
   dyeColor *col;
 
   col = (dyeColor *)calloc(1, sizeof(dyeColor));

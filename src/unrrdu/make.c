@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -256,7 +256,7 @@ unrrdu_makeMain(int argc, const char **argv, const char *me, hestParm *hparm) {
         fprintf(stderr,
                 "%s: can't use detached headers (\"-h\") "
                 "with stdin (\"-\") as data source "
-                "(filename %d of %d)\n",
+                "(filename %u of %u)\n",
                 me, ii + 1, nameLen);
         airMopError(mop);
         return 1;
@@ -267,8 +267,8 @@ unrrdu_makeMain(int argc, const char **argv, const char *me, hestParm *hparm) {
      so as to simulate having read the information from a header */
   if (!(AIR_IN_CL(1, sizeLen, NRRD_DIM_MAX))) {
     fprintf(stderr,
-            "%s: # axis sizes (%d) not in valid nrrd dimension "
-            "range [1,NRRD_DIM_MAX] = [1,%d]\n",
+            "%s: # axis sizes (%u) not in valid nrrd dimension "
+            "range [1,NRRD_DIM_MAX] = [1,%u]\n",
             me, sizeLen, NRRD_DIM_MAX);
     airMopError(mop);
     return 1;
@@ -345,7 +345,7 @@ unrrdu_makeMain(int argc, const char **argv, const char *me, hestParm *hparm) {
     if (nameLen < 4 || nameLen > 5) {
       fprintf(stderr,
               "%s: formatted list of filenames needs between "
-              "3 and 4 ints after the format (not %d)\n",
+              "3 and 4 ints after the format (not %u)\n",
               me, nameLen - 1);
       airMopError(mop);
       return 1;
@@ -435,7 +435,7 @@ unrrdu_makeMain(int argc, const char **argv, const char *me, hestParm *hparm) {
       nio->pos = 0;
       if (nrrdFieldInfoParse[nrrdField_keyvalue](NULL, nrrd, nio, AIR_TRUE)) {
         airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
-        fprintf(stderr, "%s: trouble with key/value %d \"%s\":\n%s", me, ii, kvp[ii],
+        fprintf(stderr, "%s: trouble with key/value %u \"%s\":\n%s", me, ii, kvp[ii],
                 err);
         nio->line = NULL;
         airMopError(mop);
@@ -592,8 +592,8 @@ unrrdu_makeMain(int argc, const char **argv, const char *me, hestParm *hparm) {
     }
     if (nrrd->spaceDim != spunitsLen) {
       fprintf(stderr,
-              "%s: number of space units (%d) "
-              "not same as space dimension (%d)\n",
+              "%s: number of space units (%u) "
+              "not same as space dimension (%u)\n",
               me, spunitsLen, nrrd->spaceDim);
       airMopError(mop);
       return 1;

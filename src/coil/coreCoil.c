@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -162,7 +162,7 @@ _coilProcess(coilTask *task, int doFilter) {
         break;
       }
       if (task->cctx->verbose > 2) {
-        fprintf(stderr, "%s(%u),f: iter=%u, z=%d\n", me, task->threadIdx,
+        fprintf(stderr, "%s(%u),f: iter=%u, z=%u\n", me, task->threadIdx,
                 task->cctx->iter, thisZ);
       }
       here = (coil_t *)(task->cctx->nvol->data) + 2 * valLen * sizeX * sizeY * thisZ;
@@ -183,7 +183,7 @@ _coilProcess(coilTask *task, int doFilter) {
         break;
       }
       if (task->cctx->verbose > 3) {
-        fprintf(stderr, "%s(%u),u: iter=%u, z=%d\n", me, task->threadIdx,
+        fprintf(stderr, "%s(%u),u: iter=%u, z=%u\n", me, task->threadIdx,
                 task->cctx->iter, thisZ);
       }
       here = (coil_t *)(task->cctx->nvol->data) + 2 * valLen * sizeX * sizeY * thisZ;
@@ -249,14 +249,14 @@ _coilWorker(void *_task) {
   while (1) {
     /* wait until parent has set cctx->finished */
     if (task->cctx->verbose > 1) {
-      fprintf(stderr, "%s(%d): waiting to check finished\n", me, task->threadIdx);
+      fprintf(stderr, "%s(%u): waiting to check finished\n", me, task->threadIdx);
     }
     if (task->cctx->numThreads > 1) {
       airThreadBarrierWait(task->cctx->filterBarrier);
     }
     if (task->cctx->finished) {
       if (task->cctx->verbose > 1) {
-        fprintf(stderr, "%s(%d): done!\n", me, task->threadIdx);
+        fprintf(stderr, "%s(%u): done!\n", me, task->threadIdx);
       }
       break;
     }
@@ -264,7 +264,7 @@ _coilWorker(void *_task) {
 
     /* first: filter */
     if (task->cctx->verbose > 1) {
-      fprintf(stderr, "%s(%d): filtering ... \n", me, task->threadIdx);
+      fprintf(stderr, "%s(%u): filtering ... \n", me, task->threadIdx);
     }
     _coilProcess(task, AIR_TRUE);
 
@@ -273,7 +273,7 @@ _coilWorker(void *_task) {
       airThreadBarrierWait(task->cctx->updateBarrier);
     }
     if (task->cctx->verbose > 1) {
-      fprintf(stderr, "%s(%d): updating ... \n", me, task->threadIdx);
+      fprintf(stderr, "%s(%u): updating ... \n", me, task->threadIdx);
     }
     _coilProcess(task, AIR_FALSE);
   }
@@ -303,7 +303,7 @@ coilStart(coilContext *cctx) {
   for (tidx = 0; tidx < cctx->numThreads; tidx++) {
     cctx->task[tidx] = _coilTaskNew(cctx, tidx);
     if (!(cctx->task[tidx])) {
-      biffAddf(COIL, "%s: couldn't allocate task %d", me, tidx);
+      biffAddf(COIL, "%s: couldn't allocate task %u", me, tidx);
       return 1;
     }
   }
@@ -335,7 +335,7 @@ coilStart(coilContext *cctx) {
   if (cctx->numThreads > 1) {
     for (tidx = 1; tidx < cctx->numThreads; tidx++) {
       if (cctx->verbose > 1) {
-        fprintf(stderr, "%s: spawning thread %d\n", me, tidx);
+        fprintf(stderr, "%s: spawning thread %u\n", me, tidx);
       }
       airThreadStart(cctx->task[tidx]->thread, _coilWorker, (void *)(cctx->task[tidx]));
     }

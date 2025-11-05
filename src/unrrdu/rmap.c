@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -34,8 +34,8 @@ static const char *_unrrdu_rmapInfoL
           "either case, the output is the result of linearly "
           "interpolating between map points, either scalar values "
           "(\"grayscale\"), or scanlines along axis 0 "
-          "(\"color\").\n "
-          "* Uses nrrdApply1DRegMap");
+          "(\"color\").\n " UNRRDU_DILRR_INFO("rmap") /* */
+     "* Uses nrrdApply1DRegMap");
 
 static int
 unrrdu_rmapMain(int argc, const char **argv, const char *me, hestParm *hparm) {
@@ -49,12 +49,13 @@ unrrdu_rmapMain(int argc, const char **argv, const char *me, hestParm *hparm) {
 
   hestOptAdd_1_Other(&opt, "m,map", "map", &nmap, NULL,
                      "regular map to map input nrrd through", nrrdHestNrrdNoTTY);
-  hestOptAdd_Flag(&opt, "r,rescale", &rescale,
-                  "rescale the input values from the input range to the "
-                  "map domain.  The map domain is either explicitly "
-                  "defined by the axis min,max along axis 0 or 1, or, it "
-                  "is implicitly defined as zero to the length of "
-                  "that axis minus one.");
+  int rsclOptIdx
+    = hestOptAdd_1v_Bool(&opt, "r,rescale", "bool", &rescale, "false",
+                         "rescale the input values from the input range to the "
+                         "map domain.  The map domain is either explicitly "
+                         "defined by the axis min,max along axis 0 or 1, or, it "
+                         "is implicitly defined as zero to the length of "
+                         "that axis minus one.");
   hestOptAdd_1_Double(&opt, "min,minimum", "value", &min, "nan",
                       "Low end of input range. Defaults to lowest value "
                       "found in input nrrd.  Explicitly setting this is useful "
@@ -76,7 +77,7 @@ unrrdu_rmapMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                      "specify the type (\"int\", \"float\", etc.) of the "
                      "output nrrd. "
                      "By default (not using this option), the output type "
-                     "is the map's type.",
+                     "is the map's type",
                      &unrrduHestMaybeTypeCB);
   OPT_ADD_NIN(nin, "input nrrd");
   OPT_ADD_NOUT(out, "output nrrd");
@@ -90,16 +91,13 @@ unrrdu_rmapMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
 
-  /* here is a big difference between unu and nrrd: we enforce
-     rescaling any time that the map domain is implicit.  This
-     is how the pre-1.6 functionality is recreated.  Also, whenever
-     there is rescaling we pass a NrrdRange to reflect the (optional)
-     user range specification, instead of letting nrrdApply1DRegMap
-     find the input range itself (by passing a NULL NrrdRange).
-  */
-  if (!(AIR_EXISTS(nmap->axis[nmap->dim - 1].min)
-        && AIR_EXISTS(nmap->axis[nmap->dim - 1].max))) {
-    rescale = AIR_TRUE;
+  unrrduGetenvDefaultImplicitLutRmapRescale();
+  /* NOTE: comment in lut.c describes logic for how rescale is set */
+  if (!hestSourceUser(opt[rsclOptIdx].source)) {
+    if (!(AIR_EXISTS(nmap->axis[nmap->dim - 1].min)
+          && AIR_EXISTS(nmap->axis[nmap->dim - 1].max))) {
+      rescale = unrrduDefaultImplicitLutRmapRescale;
+    }
   }
   if (rescale) {
     range = nrrdRangeNew(min, max);

@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -27,9 +27,9 @@ extern "C" {
 #endif
 
 /* feel free to set these to higher values and recompile */
-#define NRRD_DIM_MAX       16
+#define NRRD_DIM_MAX       16u
 /*                             Max array dimension (nrrd->dim) */
-#define NRRD_SPACE_DIM_MAX 8
+#define NRRD_SPACE_DIM_MAX 8u
 /*                             Max dimension of "space" around array
                                (nrrd->spaceDim) */
 
@@ -42,16 +42,16 @@ extern "C" {
 #define NRRD_EXT_TEXT ".txt"
 #define NRRD_EXT_EPS  ".eps"
 
-/* HEY: should this be renamed -> MAXNUM ? Would be more consistent
-   with other Teem pound-define names */
-#define NRRD_KERNEL_PARMS_NUM 8
-/*                              max # arguments to a kernel- this is weird: it
+/* ---- BEGIN non-NrrdIO */
+#define NRRD_KERNEL_PARM_MAXNUM 8u
+/*                              max # parameters in a kernel- this is weird: it
                                 isn't the max of any of the NrrdKernels defined
                                 by the nrrd library (that is more like 3), but
                                 is the max number of parms of any NrrdKernel
                                 used by anyone using Teem, such as in gage.
                                 Enforcing one global max simplifies
                                 implementation. */
+/* ---- END non-NrrdIO */
 
 /*
 ** For the 64-bit integer types (not standard except in C99), we used
@@ -76,9 +76,9 @@ extern "C" {
 #define NRRD_MINMAX_PERC_SUFF "%"
 /* ---- END non-NrrdIO */
 #define NRRD_COMMENT_CHAR     '#'
-#define NRRD_FILENAME_INCR    32
-#define NRRD_COMMENT_INCR     16
-#define NRRD_KEYVALUE_INCR    32
+#define NRRD_FILENAME_INCR    32u
+#define NRRD_COMMENT_INCR     16u
+#define NRRD_KEYVALUE_INCR    32u
 #define NRRD_LIST_FLAG        "LIST"
 #define NRRD_SKIPLIST_FLAG    "SKIPLIST"
 #define NRRD_PNM_COMMENT      "# NRRD>"

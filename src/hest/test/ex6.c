@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -47,7 +47,8 @@ quat_parse(void *_ptr, const char *str, char *err) {
 
   ptrP = _ptr;
   ptr = (*ptrP) = AIR_MALLOC(1, Quat);
-  printf("%s: ptrP = %p  ---malloc-->  ptr = *ptrP = %p\n", __func__, ptrP, *ptrP);
+  printf("%s: ptrP = %p  ---malloc-->  ptr = *ptrP = %p\n", __func__, AIR_VOIDP(ptrP),
+         AIR_VOIDP(*ptrP));
   ptr->str = NULL;
   if (1 != sscanf(str, "%lf", &(ptr->val))) {
     sprintf(err, "didn't parse a double from %s", str);
@@ -462,7 +463,7 @@ main(int argc, const char **argv) {
   printf("s1 = |%s|\n", s1);
   printf("e1 = %d\n", e1);
   printf("p1 = %g,%g\n", p1[0], p1[1]);
-  printf("q1 (@ %p) = %g(%s)\n", q1, q1->val, q1->str);
+  printf("q1 (@ %p) = %g(%s)\n", AIR_VOIDP(q1), q1->val, q1->str);
   printf("\n");
 
   printf("b2 = %d %d\n", b2[0], b2[1]);
@@ -479,7 +480,7 @@ main(int argc, const char **argv) {
   printf("s2 = |%s| |%s|\n", s2[0], s2[1]);
   printf("e2 = %d %d\n", e2[0], e2[1]);
   printf("p2 = %g,%g  %g,%g\n", p2[0][0], p2[0][1], p2[1][0], p2[1][1]);
-  printf(" (q2 = %p : [%p %p])\n", q2, q2[0], q2[1]);
+  printf(" (q2 = %p : [%p %p])\n", AIR_VOIDP(q2), AIR_VOIDP(q2[0]), AIR_VOIDP(q2[1]));
   printf("q2 = %g(%s)  %g(%s)\n", q2[0]->val, q2[0]->str, q2[1]->val, q2[1]->str);
 
   printf("b3 = %d %d %d\n", b3[0], b3[1], b3[2]);

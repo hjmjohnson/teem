@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -25,6 +25,14 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#define UNRRDU_DILRR "UNRRDU_DEFAULT_IMPLICIT_LUT_RMAP_RESCALE"
+
+#define UNRRDU_DILRR_INFO(WUT)                                                          \
+  "You can set the " UNRRDU_DILRR " environment variable to "                           \
+  "control whether, with the \"-r\" option is not used, to rescale "                    \
+  "data values to the domain of a " WUT " with an implicit domain "                     \
+  "(by default rescaling does happen in this case).\n "
 
 /*
 Twisted C-preprocessor tricks.  The idea is to make it as simple as possible to add new

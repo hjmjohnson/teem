@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -24,20 +24,20 @@ const int tenPresent = 42;
 
 const char *const tenBiffKey = "ten";
 
-const char tenDefFiberKernel[] = "cubic:0,0.5";
+const char tenDefaultFiberKernel[] = "cubic:0,0.5";
 
-double tenDefFiberStepSize = 0.01;
+double tenDefaultFiberStepSize = 0.01;
 
-int tenDefFiberUseIndexSpace = AIR_FALSE;
+int tenDefaultFiberUseIndexSpace = AIR_FALSE;
 
-int tenDefFiberMaxNumSteps = 0;
+int tenDefaultFiberMaxNumSteps = 0;
 
-double tenDefFiberMaxHalfLen = 3;
+double tenDefaultFiberMaxHalfLen = 3;
 
-int tenDefFiberAnisoStopType = tenAniso_Cl2;
+int tenDefaultFiberAnisoStopType = tenAniso_Cl2;
 
-double tenDefFiberAnisoThresh = 0.5;
+double tenDefaultFiberAnisoThresh = 0.5;
 
-int tenDefFiberIntg = tenFiberIntgEuler;
+int tenDefaultFiberIntg = tenFiberIntgEuler;
 
-double tenDefFiberWPunct = 0;
+double tenDefaultFiberWPunct = 0;

@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -16,7 +16,6 @@
   You should have received a copy of the GNU Lesser General Public License
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
-
 
 #include "../air.h"
 
@@ -34,7 +33,7 @@ main(int argc, char *argv[]) {
     fprintf(stderr, "%s: need one uint as argument\n", me);
     exit(1);
   }
-  for (ii=0; ii<NN; ii++) {
+  for (ii = 0; ii < NN; ii++) {
     double xx;
     xx = AIR_AFFINE(0.0, airDrandMT(), 1.0, -10, 10);
     printf("%f %f\n", exp(xx), airFastExp(xx));

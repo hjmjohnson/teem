@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -38,7 +38,12 @@
 #    define HOOVER_EXPORT extern __declspec(dllimport)
 #  endif
 #else /* TEEM_STATIC || UNIX */
-#  define HOOVER_EXPORT extern
+#  if !defined(TEEM_STATIC)
+/*   If built w/ -fvisibility=hidden, only EXPORTed symbols are visible in shared lib */
+#    define HOOVER_EXPORT extern __attribute__((visibility("default")))
+#  else
+#    define HOOVER_EXPORT extern
+#  endif
 #endif
 
 #ifdef __cplusplus
@@ -47,7 +52,7 @@ extern "C" {
 
 #define HOOVER hooverBiffKey
 
-#define HOOVER_THREAD_MAX 512
+#define HOOVER_THREAD_MAX 512u
 
 /*
 ******** the mess of typedefs for callbacks used below
@@ -260,8 +265,6 @@ enum {
 /* defaultsHoover.c */
 HOOVER_EXPORT const int hooverPresent;
 HOOVER_EXPORT const char *const hooverBiffKey;
-HOOVER_EXPORT int hooverDefVolCentering;
-HOOVER_EXPORT int hooverDefImgCentering;
 HOOVER_EXPORT const airEnum *const hooverErr;
 
 /* methodsHoover.c */

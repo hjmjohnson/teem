@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -199,7 +199,7 @@ pullInfoSpecAdd(pullContext *pctx, pullInfoSpec *ispec) {
     }
     /* now set item in gage query */
     if (gageQueryItemOn(pctx->vol[vi]->gctx, pctx->vol[vi]->gpvl, ispec->item)) {
-      biffMovef(PULL, GAGE, "%s: trouble adding item %u to vol %u", me, ispec->item, vi);
+      biffMovef(PULL, GAGE, "%s: trouble adding item %d to vol %u", me, ispec->item, vi);
       return 1;
     }
     ispec->volIdx = vi;

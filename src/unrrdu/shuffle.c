@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -65,13 +65,13 @@ unrrdu_shuffleMain(int argc, const char **argv, const char *me, hestParm *hparm)
   /* we have to do error checking on axis in order to do error
      checking on length of permutation */
   if (!(axis < nin->dim)) {
-    fprintf(stderr, "%s: axis %d not in valid range [0,%d]\n", me, axis, nin->dim - 1);
+    fprintf(stderr, "%s: axis %u not in valid range [0,%u]\n", me, axis, nin->dim - 1);
     airMopError(mop);
     return 1;
   }
   if (!(permLen == nin->axis[axis].size)) {
     char stmp[AIR_STRLEN_SMALL + 1];
-    fprintf(stderr, "%s: permutation length (%u) != axis %d's size (%s)\n", me, permLen,
+    fprintf(stderr, "%s: permutation length (%u) != axis %u's size (%s)\n", me, permLen,
             axis, airSprintSize_t(stmp, nin->axis[axis].size));
     airMopError(mop);
     return 1;

@@ -38,7 +38,7 @@ errPrefix(char *dst, int typi, unsigned int supi, unsigned int prbi,
 }
 
 int
-main() {
+main(void) {
   airArray *mop, *submop;
   char *err;
 

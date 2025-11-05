@@ -6,7 +6,7 @@ CFFI, within its many limitations, specifically lacking a C pre-processor
  /* =========== bane.h =========== */
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
   This library is free software; you can redistribute it and/or modify it under the terms
@@ -232,7 +232,7 @@ typedef struct {
     renormalize,  /* use gage's mask renormalization */
     k3pack;
   const NrrdKernel *k[GAGE_KERNEL_MAX + 1];
-  double kparm[GAGE_KERNEL_MAX + 1][NRRD_KERNEL_PARMS_NUM];
+  double kparm[GAGE_KERNEL_MAX + 1][NRRD_KERNEL_PARM_MAXNUM];
   baneClip *clip;
   double incLimit; /* lowest permissible fraction of the
                       data remaining after new inclusion
@@ -244,11 +244,11 @@ typedef struct {
 } baneHVolParm;
 /* defaultsBane.c */
 extern const char *const baneBiffKey;
-extern int baneDefVerbose;
-extern int baneDefMakeMeasrVol;
-extern double baneDefIncLimit;
-extern int baneDefRenormalize;
-extern int baneDefPercHistBins;
+extern int baneDefaultVerbose;
+extern int baneDefaultMakeMeasrVol;
+extern double baneDefaultIncLimit;
+extern int baneDefaultRenormalize;
+extern int baneDefaultPercHistBins;
 extern int baneStateHistEqBins;
 extern int baneStateHistEqSmart;
 extern int baneHack;

@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -789,7 +789,7 @@ _nrrdSpacingStatusStr[NRRD_SPACING_STATUS_MAX+1] = {
 };
 
 static const char *
-_nrrdSpacingStatusDesc[NRRD_BOUNDARY_MAX+1] = {
+_nrrdSpacingStatusDesc[NRRD_SPACING_STATUS_MAX+1] = {
   "unknown spacing status behavior",
   "neither axis->spacing nor axis->spaceDirection set",
   "axis->spacing set normally",
@@ -949,6 +949,7 @@ _nrrdOrientationHave = {
 const airEnum *const
 nrrdOrientationHave = &_nrrdOrientationHave;
 
+/* ---- BEGIN non-NrrdIO */
 /* ------------------------ nrrdBoundary ------------------------- */
 
 static const char *

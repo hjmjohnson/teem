@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -236,7 +236,7 @@ main(int argc, const char *argv[]) {
             "%s: This Teem not compiled with "
             "multi-threading support.\n",
             me);
-    fprintf(stderr, "%s: ==> can't use %d threads; only using 1\n", me,
+    fprintf(stderr, "%s: ==> can't use %u threads; only using 1\n", me,
             muu->hctx->numThreads);
     muu->hctx->numThreads = 1;
   }

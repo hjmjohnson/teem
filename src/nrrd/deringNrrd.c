@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -20,7 +20,7 @@
 #include "nrrd.h"
 #include "privateNrrd.h"
 
-#define CLAMP_HIST_BINS_MIN 512
+#define CLAMP_HIST_BINS_MIN 512u
 #define CLAMP_PERC_MAX      30.0
 
 #define DEBUG 0
@@ -73,7 +73,7 @@ nrrdDeringContextNew(void) {
   drc->clampHistoBins = CLAMP_HIST_BINS_MIN * 4;
   drc->rkernel = NULL;
   drc->tkernel = NULL;
-  for (pi = 0; pi < NRRD_KERNEL_PARMS_NUM; pi++) {
+  for (pi = 0; pi < NRRD_KERNEL_PARM_MAXNUM; pi++) {
     drc->rkparm[pi] = drc->tkparm[pi] = AIR_NAN;
   }
   drc->cdataIn = NULL;
@@ -267,7 +267,7 @@ nrrdDeringThetaNumSet(NrrdDeringContext *drc, unsigned int thetaNum) {
 int /* Biff: 1 */
 nrrdDeringRadialKernelSet(NrrdDeringContext *drc,
                           const NrrdKernel *rkernel,
-                          const double rkparm[NRRD_KERNEL_PARMS_NUM]) {
+                          const double rkparm[NRRD_KERNEL_PARM_MAXNUM]) {
   static const char me[] = "nrrdDeringRadialKernelSet";
   unsigned int pi;
 
@@ -277,7 +277,7 @@ nrrdDeringRadialKernelSet(NrrdDeringContext *drc,
   }
 
   drc->rkernel = rkernel;
-  for (pi = 0; pi < NRRD_KERNEL_PARMS_NUM; pi++) {
+  for (pi = 0; pi < NRRD_KERNEL_PARM_MAXNUM; pi++) {
     drc->rkparm[pi] = rkparm[pi];
   }
 
@@ -287,7 +287,7 @@ nrrdDeringRadialKernelSet(NrrdDeringContext *drc,
 int /* Biff: 1 */
 nrrdDeringThetaKernelSet(NrrdDeringContext *drc,
                          const NrrdKernel *tkernel,
-                         const double tkparm[NRRD_KERNEL_PARMS_NUM]) {
+                         const double tkparm[NRRD_KERNEL_PARM_MAXNUM]) {
   static const char me[] = "nrrdDeringThetaKernelSet";
   unsigned int pi;
 
@@ -297,7 +297,7 @@ nrrdDeringThetaKernelSet(NrrdDeringContext *drc,
   }
 
   drc->tkernel = tkernel;
-  for (pi = 0; pi < NRRD_KERNEL_PARMS_NUM; pi++) {
+  for (pi = 0; pi < NRRD_KERNEL_PARM_MAXNUM; pi++) {
     drc->tkparm[pi] = tkparm[pi];
   }
 
@@ -338,7 +338,7 @@ deringBagNew(NrrdDeringContext *drc, double radMax) {
 
   dbg = AIR_CALLOC(1, deringBag);
   dbg->radMax = radMax;
-  dbg->radNum = AIR_ROUNDUP(drc->radiusScale * radMax);
+  dbg->radNum = AIR_ROUNDUP_UI(drc->radiusScale * radMax);
 
   dbg->mop = airMopNew();
   dbg->nsliceOrig = nrrdNew();
@@ -559,7 +559,7 @@ deringPtxfDo(NrrdDeringContext *drc, deringBag *dbg) {
     for (rrIdx = 0; rrIdx < dbg->radNum; rrIdx++) {
       double tmpW;
       tmpW = dbg->wght[rrIdx + dbg->radNum * thIdx];
-      if (tmpW) {
+      if (tmpW != 0) {
         dbg->ptxf[rrIdx + dbg->radNum * thIdx] /= tmpW;
       } else {
         dbg->ptxf[rrIdx + dbg->radNum * thIdx] = AIR_NAN;
@@ -601,7 +601,8 @@ deringPtxfFilter(NrrdDeringContext *drc, deringBag *dbg, unsigned int zi) {
     pmin[0] = 0;
     pmin[1] = -1;
     pmin[2] = 0;
-    pmax[0] = cmax[0] = dbg->radNum - 1;
+    cmax[0] = dbg->radNum - 1;
+    pmax[0] = (ptrdiff_t)(cmax[0]);
     cmax[1] = drc->thetaNum / 2 - 1;
     pmax[1] = drc->thetaNum / 2 - 2; /* max sample # of cropped axis 1 */
     pmax[2] = cmax[2] = 1;

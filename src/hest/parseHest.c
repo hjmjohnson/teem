@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -76,7 +76,7 @@ argsInResponseFiles(int *argsNumP, int *respFileNumP, const char **argv,
         return 1;
       }
       /* read first line, and start looping over lines */
-      len = airOneLine(file, line, AIR_STRLEN_HUGE + 1);
+      len = AIR_INT(airOneLine(file, line, AIR_STRLEN_HUGE + 1));
       while (len > 0) {
         /* first # (or #-alike char) is turned into line end */
         if ((pound = strchr(line, RESPONSE_FILE_COMMENT))) {
@@ -86,7 +86,7 @@ argsInResponseFiles(int *argsNumP, int *respFileNumP, const char **argv,
         airOneLinify(line);
         *argsNumP += airStrntok(line, AIR_WHITESPACE);
         /* read next line for next iter */
-        len = airOneLine(file, line, AIR_STRLEN_HUGE + 1);
+        len = AIR_INT(airOneLine(file, line, AIR_STRLEN_HUGE + 1));
       }
       fclose(file); /* ok because file != stdin, see above */
       (*respFileNumP)++;
@@ -179,7 +179,7 @@ copyArgv(int *sawHelp, char **newArgv, const char **oldArgv, const hestParm *hpa
     if (hparm->verbose) {
       printf("%s:________ newArgc = %u, argIdx = %u -> \"%s\"\n", me, newArgc, argIdx,
              oldArgv[argIdx]);
-      printArgv(newArgc, newArgv, "     ");
+      printArgv(AIR_INT(newArgc), newArgv, "     ");
     }
     if (!hparm->responseFileEnable || RESPONSE_FILE_FLAG != oldArgv[argIdx][0]) {
       /* either ignoring response files, or its not a response file:
@@ -201,7 +201,7 @@ copyArgv(int *sawHelp, char **newArgv, const char **oldArgv, const hestParm *hpa
         if (hparm->verbose) printf("%s: -0-> line: |%s|\n", me, line);
         airOneLinify(line);
         incr = airStrntok(line, AIR_WHITESPACE);
-        if (hparm->verbose) printf("%s: -1-> line: |%s|, incr=%d\n", me, line, incr);
+        if (hparm->verbose) printf("%s: -1-> line: |%s|, incr=%u\n", me, line, incr);
         airParseStrS(newArgv + newArgc, line, AIR_WHITESPACE,
                      incr /*, greedy=AIR_FALSE */);
         for (rgi = 0; rgi < incr; rgi++) {
@@ -215,14 +215,14 @@ copyArgv(int *sawHelp, char **newArgv, const char **oldArgv, const hestParm *hpa
       fclose(file);
     }
     if (hparm->verbose) {
-      printArgv(newArgc, newArgv, "     ");
-      printf("%s: ^^^^^^^ newArgc = %d, argIdx = %d\n", me, newArgc, argIdx);
+      printArgv(AIR_INT(newArgc), newArgv, "     ");
+      printf("%s: ^^^^^^^ newArgc = %u, argIdx = %u\n", me, newArgc, argIdx);
     }
   }
   /* NULL-terminate newArgv[] */
   newArgv[newArgc] = NULL;
 
-  return newArgc;
+  return AIR_INT(newArgc);
 }
 
 /* uint _hestErrStrlen(const hestOpt *opt, int argc, const char **argv) ...
@@ -263,15 +263,15 @@ static int
 whichOptFlag(const hestOpt *opt, const char *flag, const hestParm *hparm) {
   static const char me[] = "whichOptFlag";
   char buff[2 * AIR_STRLEN_HUGE + 1], copy[AIR_STRLEN_HUGE + 1], *sep;
-  int optIdx, optNum;
+  unsigned int optIdx, optNum;
 
   optNum = hestOptNum(opt);
   if (hparm->verbose)
-    printf("%s: (a) looking for maybe-is-flag |%s| in optNum=%d options\n", me, flag,
+    printf("%s: (a) looking for maybe-is-flag |%s| in optNum=%u options\n", me, flag,
            optNum);
   for (optIdx = 0; optIdx < optNum; optIdx++) {
     if (hparm->verbose)
-      printf("%s:      optIdx %d |%s| ?\n", me, optIdx,
+      printf("%s:      optIdx %u |%s| ?\n", me, optIdx,
              opt[optIdx].flag ? opt[optIdx].flag : "(nullflag)");
     if (!opt[optIdx].flag) continue;
     if (strchr(opt[optIdx].flag, MULTI_FLAG_SEP)) {
@@ -280,17 +280,17 @@ whichOptFlag(const hestOpt *opt, const char *flag, const hestParm *hparm) {
       *sep = '\0';
       /* first try the short version */
       sprintf(buff, "-%s", copy);
-      if (!strcmp(flag, buff)) return optIdx;
+      if (!strcmp(flag, buff)) return AIR_INT(optIdx);
       /* then try the long version */
       sprintf(buff, "--%s", sep + 1);
-      if (!strcmp(flag, buff)) return optIdx;
+      if (!strcmp(flag, buff)) return AIR_INT(optIdx);
     } else {
       /* flag has only the short version */
       sprintf(buff, "-%s", opt[optIdx].flag);
-      if (!strcmp(flag, buff)) return optIdx;
+      if (!strcmp(flag, buff)) return AIR_INT(optIdx);
     }
   }
-  if (hparm->verbose) printf("%s: (b) optNum = %d\n", me, optNum);
+  if (hparm->verbose) printf("%s: (b) optNum = %u\n", me, optNum);
   if (VAR_PARM_STOP_FLAG) {
     sprintf(buff, "-%c", VAR_PARM_STOP_FLAG);
     if (hparm->verbose)
@@ -448,18 +448,18 @@ extractFlagged(char **optParms, unsigned int *optParmNum, int *optAprd, int *arg
       /* didn't get minimum number of parameters */
       if (!(argIdx + parmNum + 1 <= *argcP - 1)) {
         fprintf(stderr,
-                "%sgot to end of line before getting %d parameter%s "
+                "%sgot to end of line before getting %u parameter%s "
                 "for %s (got %d)\n",
                 ME, opt[optIdx].min, opt[optIdx].min > 1 ? "s" : "",
                 identStr(ident1, opt + optIdx, hparm, AIR_TRUE), parmNum);
       } else if (-2 != nextOptIdx) {
-        fprintf(stderr, "%ssaw %s before getting %d parameter%s for %s (got %d)\n", ME,
+        fprintf(stderr, "%ssaw %s before getting %u parameter%s for %s (got %d)\n", ME,
                 identStr(ident1, opt + nextOptIdx, hparm, AIR_FALSE), opt[optIdx].min,
                 opt[optIdx].min > 1 ? "s" : "",
                 identStr(ident2, opt + optIdx, hparm, AIR_FALSE), parmNum);
       } else {
         fprintf(stderr,
-                "%ssaw \"-%c\" (option-parameter-stop flag) before getting %d "
+                "%ssaw \"-%c\" (option-parameter-stop flag) before getting %u "
                 "parameter%s for %s (got %d)\n",
                 ME, VAR_PARM_STOP_FLAG, opt[optIdx].min, opt[optIdx].min > 1 ? "s" : "",
                 identStr(ident2, opt + optIdx, hparm, AIR_FALSE), parmNum);
@@ -467,14 +467,14 @@ extractFlagged(char **optParms, unsigned int *optParmNum, int *optAprd, int *arg
       return 1;
     }
     /* record number of parameters seen for this option */
-    optParmNum[optIdx] = parmNum;
+    optParmNum[optIdx] = AIR_UINT(parmNum);
     if (hparm->verbose) {
       printf("%s________ argv[%d]=|%s|: *argcP = %d -> optIdx = %d\n", me, argIdx,
              argv[argIdx], *argcP, optIdx);
       printArgv(*argcP, argv, "     ");
     }
     /* lose the flag argument */
-    free(extractToStr(argcP, argv, argIdx, 1, NULL, NULL));
+    free(extractToStr(argcP, argv, AIR_UINT(argIdx), 1, NULL, NULL));
     /* extract the args after the flag */
     if (optAprd[optIdx]) {
       /* oh so this is not the first time we've seen this option;
@@ -482,12 +482,13 @@ extractFlagged(char **optParms, unsigned int *optParmNum, int *optAprd, int *arg
       airMopSub(pmop, optParms[optIdx], airFree);
       optParms[optIdx] = (char *)airFree(optParms[optIdx]);
     }
-    optParms[optIdx] = extractToStr(argcP, argv, argIdx, optParmNum[optIdx], NULL, NULL);
+    optParms[optIdx] = extractToStr(argcP, argv, AIR_UINT(argIdx), optParmNum[optIdx],
+                                    NULL, NULL);
     airMopAdd(pmop, optParms[optIdx], airFree, airMopAlways);
     optAprd[optIdx] = AIR_TRUE;
     if (-2 == nextOptIdx) {
       /* we drop the option-parameter-stop flag */
-      free(extractToStr(argcP, argv, argIdx, 1, NULL, NULL));
+      free(extractToStr(argcP, argv, AIR_UINT(argIdx), 1, NULL, NULL));
     }
     if (hparm->verbose) {
       printArgv(*argcP, argv, "     ");
@@ -498,7 +499,7 @@ extractFlagged(char **optParms, unsigned int *optParmNum, int *optAprd, int *arg
   }
 
   /* make sure that flagged options without default were given */
-  optNum = hestOptNum(opt);
+  optNum = AIR_INT(hestOptNum(opt));
   for (op = 0; op < optNum; op++) {
     if (1 != opt[op].kind && opt[op].flag && !opt[op].dflt && !optAprd[op]) {
       fprintf(stderr, "%sdidn't get required %s\n", ME,
@@ -539,7 +540,7 @@ extractUnflagged(char **optParms, unsigned int *optParmNum, int *argcP, char **a
   char ident[AIR_STRLEN_HUGE + 1];
   int nvp, np, op, unflag1st, unflagVar, optNum;
 
-  optNum = hestOptNum(opt);
+  optNum = AIR_INT(hestOptNum(opt));
   unflag1st = nextUnflagged(0, opt, optNum);
   if (optNum == unflag1st) {
     /* no unflagged options; we're done */
@@ -568,16 +569,16 @@ extractUnflagged(char **optParms, unsigned int *optParmNum, int *argcP, char **a
     if (hparm->verbose) {
       printf("%sop = %d; unflagVar = %d\n", me, op, unflagVar);
     }
-    np = opt[op].min; /* min == max, as implied by how unflagVar was set */
+    np = AIR_INT(opt[op].min); /* min == max, as implied by how unflagVar was set */
     if (!(np <= *argcP)) {
       fprintf(stderr, "%sdon't have %d parameter%s %s%s%sfor %s\n", ME, np,
               np > 1 ? "s" : "", argv[0] ? "starting at \"" : "", argv[0] ? argv[0] : "",
               argv[0] ? "\" " : "", identStr(ident, opt + op, hparm, AIR_TRUE));
       return 1;
     }
-    optParms[op] = extractToStr(argcP, argv, 0, np, NULL, NULL);
+    optParms[op] = extractToStr(argcP, argv, 0, AIR_UINT(np), NULL, NULL);
     airMopAdd(pmop, optParms[op], airFree, airMopAlways);
-    optParmNum[op] = np;
+    optParmNum[op] = AIR_UINT(np);
   }
   /* we skip over the variadic parameter unflagged option,
   subtract from *argcP the number of parameters in all the opts which follow it,
@@ -590,7 +591,7 @@ extractUnflagged(char **optParms, unsigned int *optParmNum, int *argcP, char **a
   }
   if (nvp < 0) {
     op = nextUnflagged(unflagVar + 1, opt, optNum);
-    np = opt[op].min;
+    np = AIR_INT(opt[op].min);
     fprintf(stderr, "%sdon't have %d parameter%s for %s\n", ME, np, np > 1 ? "s" : "",
             identStr(ident, opt + op, hparm, AIR_FALSE));
     return 1;
@@ -599,10 +600,10 @@ extractUnflagged(char **optParms, unsigned int *optParmNum, int *argcP, char **a
      the sole variadic parameter unflagged option, so snarf them up */
   for (op = nextUnflagged(unflagVar + 1, opt, optNum); op < optNum;
        op = nextUnflagged(op + 1, opt, optNum)) {
-    np = opt[op].min;
-    optParms[op] = extractToStr(argcP, argv, nvp, np, NULL, NULL);
+    np = AIR_INT(opt[op].min);
+    optParms[op] = extractToStr(argcP, argv, AIR_UINT(nvp), AIR_UINT(np), NULL, NULL);
     airMopAdd(pmop, optParms[op], airFree, airMopAlways);
-    optParmNum[op] = np;
+    optParmNum[op] = AIR_UINT(np);
   }
 
   /* now we grab the parameters of the sole variadic parameter unflagged opt,
@@ -613,7 +614,7 @@ extractUnflagged(char **optParms, unsigned int *optParmNum, int *argcP, char **a
   }
   if (unflagVar < optNum) {
     if (hparm->verbose) {
-      printf("%s unflagVar=%d: min, nvp, max = %d %d %d\n", me, unflagVar,
+      printf("%s unflagVar=%d: min, nvp, max = %u %d %d\n", me, unflagVar,
              opt[unflagVar].min, nvp, _hestMax(opt[unflagVar].max));
     }
     /* we'll do error checking for unexpected args later */
@@ -624,12 +625,12 @@ extractUnflagged(char **optParms, unsigned int *optParmNum, int *argcP, char **a
       triggered this error message when there were zero given parms, but the default
       could have supplied them */
       if (nvp < AIR_INT(opt[unflagVar].min)) {
-        fprintf(stderr, "%sdidn't get minimum of %d arg%s for %s (got %d)\n", ME,
+        fprintf(stderr, "%sdidn't get minimum of %u arg%s for %s (got %d)\n", ME,
                 opt[unflagVar].min, opt[unflagVar].min > 1 ? "s" : "",
                 identStr(ident, opt + unflagVar, hparm, AIR_TRUE), nvp);
         return 1;
       }
-      optParms[unflagVar] = extractToStr(argcP, argv, 0, nvp, &gotp, hparm);
+      optParms[unflagVar] = extractToStr(argcP, argv, 0, AIR_UINT(nvp), &gotp, hparm);
       if (hparm->verbose) {
         printf("%s extracted %u to new string |%s| (*argcP now %d)\n", me, gotp,
                optParms[unflagVar], *argcP);
@@ -653,7 +654,7 @@ _hestDefaults(char **optParms, int *optDfltd, unsigned int *optParmNum,
   char *tmpS, ident[AIR_STRLEN_HUGE + 1];
   int optIdx, optNum;
 
-  optNum = hestOptNum(opt);
+  optNum = AIR_INT(hestOptNum(opt));
   for (optIdx = 0; optIdx < optNum; optIdx++) {
     if (hparm->verbose)
       printf("%soptIdx=%d/%d (kind=%d): parms=\"%s\" optParmNum=%u, optAprd=%d\n", me,
@@ -730,13 +731,13 @@ _hestDefaults(char **optParms, int *optDfltd, unsigned int *optParmNum,
                      _hestMax(opt[optIdx].max))) {
         if (-1 == opt[optIdx].max) {
           fprintf(stderr,
-                  "%s# parameters (in default) for %s is %d, but need %d or more\n", ME,
+                  "%s# parameters (in default) for %s is %u, but need %u or more\n", ME,
                   identStr(ident, opt + optIdx, hparm, AIR_TRUE), optParmNum[optIdx],
                   opt[optIdx].min);
         } else {
           fprintf(
             stderr,
-            "%s# parameters (in default) for %s is %d, but need between %d and %d\n", ME,
+            "%s# parameters (in default) for %s is %u, but need between %u and %d\n", ME,
             identStr(ident, opt + optIdx, hparm, AIR_TRUE), optParmNum[optIdx],
             opt[optIdx].min, _hestMax(opt[optIdx].max));
         }
@@ -759,25 +760,25 @@ airIStore(void *v, int t, int i) {
     return (*((int *)v) = !!i);
     break;
   case airTypeShort:
-    return (*((short *)v) = i);
+    return (*((short *)v) = (short)i);
     break;
   case airTypeUShort:
-    return (int)(*((unsigned short *)v) = i);
+    return (int)(*((unsigned short *)v) = (unsigned short)i);
     break;
   case airTypeInt:
     return (*((int *)v) = i);
     break;
   case airTypeUInt:
-    return (int)(*((unsigned int *)v) = i);
+    return (int)(*((unsigned int *)v) = (unsigned int)i);
     break;
   case airTypeLong:
-    return (int)(*((long int *)v) = i);
+    return (int)(*((long int *)v) = (long int)i);
     break;
   case airTypeULong:
-    return (int)(*((unsigned long int *)v) = i);
+    return (int)(*((unsigned long int *)v) = (unsigned long int)i);
     break;
   case airTypeSize_t:
-    return (int)(*((size_t *)v) = i);
+    return (int)(*((size_t *)v) = (size_t)i);
     break;
   case airTypeFloat:
     return (int)(*((float *)v) = (float)(i));
@@ -870,7 +871,7 @@ setValues(char **optParms, int *optDfltd, unsigned int *optParmNum, int *appr,
   char *cP;
   size_t size;
 
-  optNum = hestOptNum(opt);
+  optNum = AIR_INT(hestOptNum(opt));
   for (op = 0; op < optNum; op++) {
     identStr(ident, opt + op, hparm, AIR_TRUE);
     opt[op].source = optDfltd[op] ? hestSourceDefault : hestSourceCommandLine;
@@ -970,7 +971,7 @@ setValues(char **optParms, int *optDfltd, unsigned int *optParmNum, int *appr,
         case airTypeEnum:
           if (opt[op].min != /* min == max */
               airParseStrE((int *)vP, optParms[op], " ", opt[op].min, opt[op].enm)) {
-            fprintf(stderr, "%scouldn't parse %s\"%s\" as %d %s%s for %s\n", ME,
+            fprintf(stderr, "%scouldn't parse %s\"%s\" as %u %s%s for %s\n", ME,
                     optDfltd[op] ? "(default) " : "", optParms[op], opt[op].min,
                     opt[op].enm->name, opt[op].min > 1 ? "s" : "", ident);
             return 1;
@@ -981,7 +982,7 @@ setValues(char **optParms, int *optDfltd, unsigned int *optParmNum, int *appr,
           for (p = 0; p < (int)opt[op].min; p++) { /* HEY scrutinize casts */
             tok = airStrtok(!p ? optParmsCopy : NULL, " ", &last);
             strcpy(cberr, "");
-            ret = opt[op].CB->parse(cP + p * size, tok, cberr);
+            ret = opt[op].CB->parse(cP + AIR_SIZE_T(p) * size, tok, cberr);
             if (ret) {
               if (strlen(cberr))
                 fprintf(stderr,
@@ -1010,7 +1011,7 @@ setValues(char **optParms, int *optDfltd, unsigned int *optParmNum, int *appr,
         case airTypeString:
           if (opt[op].min != /* min == max */
               _hestParseStr[type](vP, optParms[op], " ", opt[op].min)) {
-            fprintf(stderr, "%scouldn't parse %s\"%s\" as %d %s%s for %s\n", ME,
+            fprintf(stderr, "%scouldn't parse %s\"%s\" as %u %s%s for %s\n", ME,
                     optDfltd[op] ? "(default) " : "", optParms[op], opt[op].min,
                     _hestTypeStr[type], opt[op].min > 1 ? "s" : "", ident);
             return 1;
@@ -1025,7 +1026,7 @@ setValues(char **optParms, int *optDfltd, unsigned int *optParmNum, int *appr,
         default:
           if (opt[op].min != /* min == max */
               _hestParseStr[type](vP, optParms[op], " ", opt[op].min)) {
-            fprintf(stderr, "%scouldn't parse %s\"%s\" as %d %s%s for %s\n", ME,
+            fprintf(stderr, "%scouldn't parse %s\"%s\" as %u %s%s for %s\n", ME,
                     optDfltd[op] ? "(default) " : "", optParms[op], opt[op].min,
                     _hestTypeStr[type], opt[op].min > 1 ? "s" : "", ident);
             return 1;
@@ -1058,8 +1059,8 @@ setValues(char **optParms, int *optDfltd, unsigned int *optParmNum, int *appr,
           without a parameter, was implemented from the early days of hest.  Assuming
           that a younger GLK long ago had a reason for that, that functionality now
           persists. */
-          pret = _hestParseStr[type](vP, optParms[op], " ",
-                                     1 /*, hparm->greedySingleString */);
+          pret = AIR_INT(_hestParseStr[type](vP, optParms[op], " ",
+                                             1 /*, hparm->greedySingleString */));
           if (1 != pret) {
             fprintf(stderr, "%scouldn't parse %s\"%s\" as %s for %s\n", ME,
                     optDfltd[op] ? "(default) " : "", optParms[op], _hestTypeStr[type],
@@ -1122,7 +1123,7 @@ setValues(char **optParms, int *optDfltd, unsigned int *optParmNum, int *appr,
           if (1 == whichCase(opt, optDfltd, optParmNum, appr, op)) {
             /* we just parsed the default, but now we want to "invert" it */
             tmpD = airDLoad(vP, type);
-            airIStore(vP, type, tmpD ? 0 : 1);
+            airIStore(vP, type, tmpD == 0 ? 1 : 0);
           }
           break;
         }
@@ -1188,7 +1189,7 @@ setValues(char **optParms, int *optDfltd, unsigned int *optParmNum, int *appr,
                  strcpy(cberr, "");
               */
               cberr[0] = 0;
-              ret = opt[op].CB->parse(cP + p * size, tok, cberr);
+              ret = opt[op].CB->parse(cP + AIR_SIZE_T(p) * size, tok, cberr);
               if (ret) {
                 if (strlen(cberr))
                   fprintf(stderr,
@@ -1222,7 +1223,7 @@ setValues(char **optParms, int *optDfltd, unsigned int *optParmNum, int *appr,
             if (optParmNum[op]
                 != airParseStrS((char **)(*((void **)vP)), optParms[op], " ",
                                 optParmNum[op] /*, hparm->greedySingleString */)) {
-              fprintf(stderr, "%scouldn't parse %s\"%s\" as %d %s%s for %s\n", ME,
+              fprintf(stderr, "%scouldn't parse %s\"%s\" as %u %s%s for %s\n", ME,
                       optDfltd[op] ? "(default) " : "", optParms[op], optParmNum[op],
                       _hestTypeStr[type], optParmNum[op] > 1 ? "s" : "", ident);
               return 1;
@@ -1241,7 +1242,7 @@ setValues(char **optParms, int *optDfltd, unsigned int *optParmNum, int *appr,
             if (optParmNum[op]
                 != _hestParseStr[type](*((void **)vP), optParms[op], " ",
                                        optParmNum[op])) {
-              fprintf(stderr, "%scouldn't parse %s\"%s\" as %d %s%s for %s\n", ME,
+              fprintf(stderr, "%scouldn't parse %s\"%s\" as %u %s%s for %s\n", ME,
                       optDfltd[op] ? "(default) " : "", optParms[op], optParmNum[op],
                       _hestTypeStr[type], optParmNum[op] > 1 ? "s" : "", ident);
               return 1;
@@ -1267,9 +1268,8 @@ hestParseOld(hestOpt *opt, int _argc, const char **_argv, char **errP,
   /* see note on ME (at top) for why me[] ends with ": " */
   static const char me[] = "hestParse: ";
   char **argv, **optParms;
-  int a, argc, argc_used, respArgNum, *optAprd, *optDfltd, respFileNum, optNum, ret,
-    sawHelp;
-  unsigned int *optParmNum;
+  int argc, argc_used, respArgNum, *optAprd, *optDfltd, respFileNum, ret, sawHelp;
+  unsigned int a, optNum, *optParmNum;
   airArray *mop;
   hestParm *hparm;
 
@@ -1335,7 +1335,7 @@ hestParseOld(hestOpt *opt, int _argc, const char **_argv, char **errP,
     printf("%s: respFileNum = %d; respArgNum = %d; _argc = %d --> argc = %d\n", me,
            respFileNum, respArgNum, _argc, argc);
   }
-  argv = AIR_CALLOC(argc + 1, char *);
+  argv = AIR_CALLOC(AIR_UINT(argc) + 1, char *);
   airMopMem(mop, &argv, airMopAlways);
 
   /* -------- process response files (if any) and set the remaining

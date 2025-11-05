@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -35,7 +35,7 @@ typedef signed int JN;
 typedef unsigned int UI;
 typedef airLLong LL;
 /* ui64 to double conversion is not implemented, sorry */
-#if _MSC_VER < 1300
+#if defined(_MSC_VER) && _MSC_VER  < 1300
 typedef airLLong UL;
 #else
 typedef airULLong UL;
@@ -211,36 +211,38 @@ nrrdDInsert[NRRD_TYPE_MAX+1])(void *, size_t, double) = {
 ** There is obviously no provision for ensuring that the sprint'ing
 ** doesn't overflow the buffer, which is unfortunate...
 */
-static int _nrrdSprintCH(char *s, const CH *v) { return sprintf(s, "%d", *v); }
-static int _nrrdSprintUC(char *s, const UC *v) { return sprintf(s, "%u", *v); }
-static int _nrrdSprintSH(char *s, const SH *v) { return sprintf(s, "%d", *v); }
-static int _nrrdSprintUS(char *s, const US *v) { return sprintf(s, "%u", *v); }
-static int _nrrdSprintIN(char *s, const JN *v) { return sprintf(s, "%d", *v); }
-static int _nrrdSprintUI(char *s, const UI *v) { return sprintf(s, "%u", *v); }
-static int _nrrdSprintLL(char *s, const LL *v) {
-  return sprintf(s, AIR_LLONG_FMT, *v);
+static int _nrrdSprintCH(char *s, size_t sz, const CH *v) { return snprintf(s, sz, "%d", *v); }
+static int _nrrdSprintUC(char *s, size_t sz, const UC *v) { return snprintf(s, sz, "%u", *v); }
+static int _nrrdSprintSH(char *s, size_t sz, const SH *v) { return snprintf(s, sz, "%d", *v); }
+static int _nrrdSprintUS(char *s, size_t sz, const US *v) { return snprintf(s, sz, "%u", *v); }
+static int _nrrdSprintIN(char *s, size_t sz, const JN *v) { return snprintf(s, sz, "%d", *v); }
+static int _nrrdSprintUI(char *s, size_t sz, const UI *v) { return snprintf(s, sz, "%u", *v); }
+static int _nrrdSprintLL(char *s, size_t sz, const LL *v) {
+  return snprintf(s, sz, AIR_LLONG_FMT, *v);
 }
-static int _nrrdSprintUL(char *s, const UL *v) {
-  return sprintf(s, AIR_ULLONG_FMT, *v);
+static int _nrrdSprintUL(char *s, size_t sz, const UL *v) {
+  return snprintf(s, sz, AIR_ULLONG_FMT, *v);
 }
-static int _nrrdSprintFL(char *s, const FL *v) {
-  /* having %.8g instead of %.9g was a roughly 20-year old bug */
-  return airSinglePrintf(NULL, s, "%.9g", (double)(*v)); }
-static int _nrrdSprintDB(char *s, const DB *v) {
-  return airSinglePrintf(NULL, s, "%.17g", *v); }
+static int _nrrdSprintFL(char *s, size_t sz, const FL *v) {
+  /* having %.8g instead of %.9g was a roughly 20-year old bug,
+     but now using %g with TeemV2 airSinglePrintf */
+  return airSinglePrintf(NULL, s, sz, "%g", *v); }
+static int _nrrdSprintDB(char *s, size_t sz, const DB *v) {
+  /* not with %.17g thanks to TeemV2 airSinglePrintf */
+  return airSinglePrintf(NULL, s, sz, "%lg", *v); }
 int (* const
-nrrdSprint[NRRD_TYPE_MAX+1])(char *, const void *) = {
+nrrdSprint[NRRD_TYPE_MAX+1])(char *, size_t, const void *) = {
   NULL,
-  (int (*)(char *, const void *))_nrrdSprintCH,
-  (int (*)(char *, const void *))_nrrdSprintUC,
-  (int (*)(char *, const void *))_nrrdSprintSH,
-  (int (*)(char *, const void *))_nrrdSprintUS,
-  (int (*)(char *, const void *))_nrrdSprintIN,
-  (int (*)(char *, const void *))_nrrdSprintUI,
-  (int (*)(char *, const void *))_nrrdSprintLL,
-  (int (*)(char *, const void *))_nrrdSprintUL,
-  (int (*)(char *, const void *))_nrrdSprintFL,
-  (int (*)(char *, const void *))_nrrdSprintDB,
+  (int (*)(char *, size_t, const void *))_nrrdSprintCH,
+  (int (*)(char *, size_t, const void *))_nrrdSprintUC,
+  (int (*)(char *, size_t, const void *))_nrrdSprintSH,
+  (int (*)(char *, size_t, const void *))_nrrdSprintUS,
+  (int (*)(char *, size_t, const void *))_nrrdSprintIN,
+  (int (*)(char *, size_t, const void *))_nrrdSprintUI,
+  (int (*)(char *, size_t, const void *))_nrrdSprintLL,
+  (int (*)(char *, size_t, const void *))_nrrdSprintUL,
+  (int (*)(char *, size_t, const void *))_nrrdSprintFL,
+  (int (*)(char *, size_t, const void *))_nrrdSprintDB,
   NULL};
 
 /* ---- BEGIN non-NrrdIO */
@@ -264,9 +266,12 @@ static int _nrrdFprintUL(FILE *f, const UL *v) {
   return fprintf(f, AIR_ULLONG_FMT, *v);
 }
 static int _nrrdFprintFL(FILE *f, const FL *v) {
-  return airSinglePrintf(f, NULL, "%.8g", (double)(*v)); }
+  /* had %.8g here since r427 2002-04-29 (23-year old bug)
+     now using %g with TeemV2 airSinglePrintf instead of %.9g */
+  return airSinglePrintf(f, NULL, 0, "%g", (double)(*v)); }
 static int _nrrdFprintDB(FILE *f, const DB *v) {
-  return airSinglePrintf(f, NULL, "%.17g", *v); }
+  /* not with %.17g thanks to TeemV2 airSinglePrintf */
+  return airSinglePrintf(f, NULL, 0, "%lg", *v); }
 int (* const
 nrrdFprint[NRRD_TYPE_MAX+1])(FILE *, const void *) = {
   NULL,

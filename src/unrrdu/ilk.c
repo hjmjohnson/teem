@@ -1,8 +1,8 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2022  University of Chicago
-  Copyright (C) 2008, 2007, 2006, 2005  Gordon Kindlmann
-  Copyright (C) 2004, 2003, 2002, 2001, 2000, 1999, 1998  University of Utah
+  Copyright (C) 2009--2025  University of Chicago
+  Copyright (C) 2005--2008  Gordon Kindlmann
+  Copyright (C) 1998--2004  University of Utah
 
   This library is free software; you can redistribute it and/or modify it under the terms
   of the GNU Lesser General Public License (LGPL) as published by the Free Software
@@ -50,7 +50,7 @@ perspGo(airArray *mop, Nrrd *nout, const Nrrd *nin, mossSampler *msp, int bound,
     default:
       /* error */
       biffAddf(UNRRDU,
-               "%s: scale[0 + 2*%d] == %d not handled; should only be exact # samples\n",
+               "%s: scale[0 + 2*%u] == %d not handled; should only be exact # samples\n",
                me, ii, AIR_INT(scale[0 + 2 * ii]));
       return 1;
     }
@@ -95,10 +95,10 @@ ilkGo(airArray *mop, Nrrd *nout, Nrrd *nin, mossSampler *msp, int bound,
 
   ax0 = MOSS_AXIS0(nin);
   if (!(AIR_EXISTS(nin->axis[ax0 + 0].min) && AIR_EXISTS(nin->axis[ax0 + 0].max))) {
-    nrrdAxisInfoMinMaxSet(nin, ax0 + 0, mossDefCenter);
+    nrrdAxisInfoMinMaxSet(nin, ax0 + 0, mossDefaultCenter);
   }
   if (!(AIR_EXISTS(nin->axis[ax0 + 1].min) && AIR_EXISTS(nin->axis[ax0 + 1].max))) {
-    nrrdAxisInfoMinMaxSet(nin, ax0 + 1, mossDefCenter);
+    nrrdAxisInfoMinMaxSet(nin, ax0 + 1, mossDefaultCenter);
   }
   min[0] = AIR_EXISTS(min[0]) ? min[0] : nin->axis[ax0 + 0].min;
   max[0] = AIR_EXISTS(max[0]) ? max[0] : nin->axis[ax0 + 0].max;
@@ -125,7 +125,7 @@ ilkGo(airArray *mop, Nrrd *nout, Nrrd *nin, mossSampler *msp, int bound,
       break;
     default:
       /* error */
-      biffAddf(UNRRDU, "%s: scale[0 + 2*%d] == %d not handled\n", me, ii,
+      biffAddf(UNRRDU, "%s: scale[0 + 2*%u] == %d not handled\n", me, ii,
                AIR_INT(scale[0 + 2 * ii]));
       return 1;
     }
@@ -154,10 +154,10 @@ ilkGo(airArray *mop, Nrrd *nout, Nrrd *nin, mossSampler *msp, int bound,
   mossMatLeftMultiply(mat, origInvMat);
 
   if (!AIR_EXISTS(nin->axis[ax0 + 0].min) || !AIR_EXISTS(nin->axis[ax0 + 0].max)) {
-    nrrdAxisInfoMinMaxSet(nin, ax0 + 0, mossDefCenter);
+    nrrdAxisInfoMinMaxSet(nin, ax0 + 0, mossDefaultCenter);
   }
   if (!AIR_EXISTS(nin->axis[ax0 + 1].min) || !AIR_EXISTS(nin->axis[ax0 + 1].max)) {
-    nrrdAxisInfoMinMaxSet(nin, ax0 + 1, mossDefCenter);
+    nrrdAxisInfoMinMaxSet(nin, ax0 + 1, mossDefaultCenter);
   }
   if (!avgNum) {
     if (mossLinearTransform(nout, nin, bound, bkg, mat, msp, min[0], max[0], min[1],

@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -21,7 +21,7 @@
 #include "privateTen.h"
 
 tenEMBimodalParm * /* Biff: nope */
-tenEMBimodalParmNew() {
+tenEMBimodalParmNew(void) {
   tenEMBimodalParm *biparm;
 
   biparm = (tenEMBimodalParm *)calloc(1, sizeof(tenEMBimodalParm));
@@ -63,7 +63,7 @@ _tenEMBimodalInit(tenEMBimodalParm *biparm, const Nrrd *_nhisto) {
   airArray *mop;
 
   if (!(biparm->maxIteration > 5)) {
-    biffAddf(TEN, "%s: biparm->maxIteration = %d too small", me, biparm->maxIteration);
+    biffAddf(TEN, "%s: biparm->maxIteration = %u too small", me, biparm->maxIteration);
     return 1;
   }
 
@@ -123,7 +123,7 @@ _tenEMBimodalInit(tenEMBimodalParm *biparm, const Nrrd *_nhisto) {
   biparm->fraction1 = 0.5;
 
   if (biparm->verbose) {
-    fprintf(stderr, "%s: median = %d\n", me, median);
+    fprintf(stderr, "%s: median = %u\n", me, median);
     fprintf(stderr, "%s: m1, s1 = %g, %g; m2, s2 = %g, %g\n", me, biparm->mean1,
             biparm->stdv1, biparm->mean2, biparm->stdv2);
   }
@@ -273,7 +273,7 @@ _tenEMBimodalSaveImage(tenEMBimodalParm *biparm) {
   nrrdHistoDraw(nhi, nh, 400, AIR_FALSE, max);
   ELL_3V_SET(nhmhi, nhi, nmi, nhi);
   nrrdJoin(ni, nhmhi, 3, 0, AIR_TRUE);
-  sprintf(name, "%04d-%d.png", biparm->iteration, biparm->stage);
+  sprintf(name, "%4u-%u.png", biparm->iteration, biparm->stage);
   nrrdSave(name, ni, NULL);
   nh = nrrdNix(nh);
   nm = nrrdNuke(nm);
@@ -315,7 +315,7 @@ _tenEMBimodalIterate(tenEMBimodalParm *biparm) {
   biparm->stdv2 = s2;
 
   if (biparm->verbose) {
-    fprintf(stderr, "%s(%d:%d):\n", me, biparm->stage, biparm->iteration);
+    fprintf(stderr, "%s(%u:%u):\n", me, biparm->stage, biparm->iteration);
     fprintf(stderr, "  m1, s1 = %g, %g\n", m1, s1);
     fprintf(stderr, "  m2, s2 = %g, %g\n", m2, s2);
     fprintf(stderr, "  f1 = %g ; delta = %g\n", f1, biparm->delta);
@@ -389,7 +389,7 @@ _tenEMBimodalCheck(tenEMBimodalParm *biparm) {
         && biparm->mean2 < biparm->N - 1)) {
     biffAddf(TEN,
              "%s: mean of material 1 (%g) or 2 (%g) went outside "
-             "given histogram range [0 .. %d]",
+             "given histogram range [0 .. %u]",
              me, biparm->mean1, biparm->mean2, biparm->N - 1);
     return 1;
   }
@@ -416,7 +416,7 @@ tenEMBimodal(tenEMBimodalParm *biparm, const Nrrd *_nhisto) {
     return 1;
   }
   if (!(1 == _nhisto->dim)) {
-    biffAddf(TEN, "%s: histogram must be 1-D, not %d-D", me, _nhisto->dim);
+    biffAddf(TEN, "%s: histogram must be 1-D, not %u-D", me, _nhisto->dim);
     return 1;
   }
 
@@ -432,7 +432,7 @@ tenEMBimodal(tenEMBimodalParm *biparm, const Nrrd *_nhisto) {
          biparm->iteration++, _iter++) {
       if (_tenEMBimodalIterate(biparm) /* sets delta */
           || _tenEMBimodalConfThresh(biparm) || _tenEMBimodalCheck(biparm)) {
-        biffAddf(TEN, "%s: problem with fitting (iter=%d)", me, biparm->iteration);
+        biffAddf(TEN, "%s: problem with fitting (iter=%u)", me, biparm->iteration);
         return 1;
       }
       if (biparm->delta < biparm->minDelta
@@ -443,7 +443,7 @@ tenEMBimodal(tenEMBimodalParm *biparm, const Nrrd *_nhisto) {
     }
   }
   if (!done) {
-    biffAddf(TEN, "%s: didn't converge after %d iterations", me, biparm->maxIteration);
+    biffAddf(TEN, "%s: didn't converge after %u iterations", me, biparm->maxIteration);
     return 1;
   }
 

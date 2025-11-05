@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -236,8 +236,8 @@ meetNrrdKernelAllCheck(void) {
   const NrrdKernel **kern, *kk, *ll;
   unsigned int ki, kj, pnum;
   airArray *mop;
-  double epsl, XX, YY, parm0[NRRD_KERNEL_PARMS_NUM], parm1_1[NRRD_KERNEL_PARMS_NUM],
-    parm1_X[NRRD_KERNEL_PARMS_NUM], parm[NRRD_KERNEL_PARMS_NUM];
+  double epsl, XX, YY, parm0[NRRD_KERNEL_PARM_MAXNUM], parm1_1[NRRD_KERNEL_PARM_MAXNUM],
+    parm1_X[NRRD_KERNEL_PARM_MAXNUM], parm[NRRD_KERNEL_PARM_MAXNUM];
   size_t evalNum;
   int EE;
 
@@ -273,6 +273,17 @@ meetNrrdKernelAllCheck(void) {
       }
       kj++;
     }
+    /* once the current kernels passed this test, nrrdKernelParm0IsScale was retired.
+     * HOWEVER it would be better to have an actual test that tries scaling the kernel!
+     * if (kk->parm0IsScale != nrrdKernelParm0IsScale(kk)) {
+     *   biffAddf(MEET,
+     *            "%s: kern[%u] %s: kern->parm0IsScale %d != "
+     *            "nrrdKernelParm0IsScale(k) %d\n",
+     *            me, ki, kk->name, kk->parm0IsScale, nrrdKernelParm0IsScale(kk));
+     *   airMopError(mop);
+     *   return 1;
+     * }
+     */
     pnum = kk->parmNum;
     EE = 0;
     /* the second argument to CHECK is how much to scale up the

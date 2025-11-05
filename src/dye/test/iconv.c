@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -17,13 +17,12 @@
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #include "../dye.h"
 
 char *me;
 
 void
-usage() {
+usage(void) {
   /*                      0       1       2         3         4    (5) */
   fprintf(stderr, "usage: %s <spaceIn> <imgIn> <spaceOut> <imgOut>\n", me);
   exit(1);
@@ -40,8 +39,7 @@ main(int argc, char *argv[]) {
   dyeColor *col;
 
   me = argv[0];
-  if (5 != argc)
-    usage();
+  if (5 != argc) usage();
   inSpcS = argv[1];
   inFN = argv[2];
   otSpcS = argv[3];
@@ -63,8 +61,7 @@ main(int argc, char *argv[]) {
   airMopAdd(mop, nin, (airMopper)nrrdNuke, airMopAlways);
   nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
-  if (nrrdLoad(nin, inFN, NULL)
-      || nrrdCopy(nout, nin)) {
+  if (nrrdLoad(nin, inFN, NULL) || nrrdCopy(nout, nin)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble:\n%s", me, err);
     airMopError(mop);
@@ -72,8 +69,7 @@ main(int argc, char *argv[]) {
   }
   if (nrrdTypeFloat != nin->type) {
     fprintf(stderr, "%s: sorry, require type %s (not %s)\n", me,
-            airEnumStr(nrrdType, nrrdTypeFloat),
-            airEnumStr(nrrdType, nin->type));
+            airEnumStr(nrrdType, nrrdTypeFloat), airEnumStr(nrrdType, nin->type));
     airMopError(mop);
     exit(1);
   }
@@ -85,7 +81,7 @@ main(int argc, char *argv[]) {
   } else {
     hack3d = AIR_FALSE;
   }
-  if (!( 3 == nin->dim && 3 == nin->axis[0].size )) {
+  if (!(3 == nin->dim && 3 == nin->axis[0].size)) {
     fprintf(stderr, "%s: sorry, need 3D 3-by-X-by-Y array (not %u-D %u-by)\n", me,
             nin->dim, AIR_UINT(nin->axis[0].size));
     airMopError(mop);
@@ -98,10 +94,10 @@ main(int argc, char *argv[]) {
   airMopAdd(mop, col, (airMopper)dyeColorNix, airMopAlways);
 
   nn = AIR_UINT(nin->axis[1].size * nin->axis[2].size);
-  for (ii=0; ii<nn; ii++) {
-    dyeColorSet(col, inSpc, id[0 + 3*ii], id[1 + 3*ii], id[2 + 3*ii]);
+  for (ii = 0; ii < nn; ii++) {
+    dyeColorSet(col, inSpc, id[0 + 3 * ii], id[1 + 3 * ii], id[2 + 3 * ii]);
     dyeConvert(col, otSpc);
-    dyeColorGet(od + 0 + 3*ii, od + 1 + 3*ii, od + 2 + 3*ii, col);
+    dyeColorGet(od + 0 + 3 * ii, od + 1 + 3 * ii, od + 2 + 3 * ii, col);
   }
 
   if (hack3d) {

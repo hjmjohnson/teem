@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -23,4 +23,4 @@
 const char *const mossBiffKey = "moss";
 
 /* must be a valid centering (nrrdCenterCell or nrrdCenterNode) */
-int mossDefCenter = nrrdCenterCell;
+int mossDefaultCenter = nrrdCenterCell;

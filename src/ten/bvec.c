@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -109,12 +109,12 @@ tenBVecNonLinearFit(Nrrd *nout, const Nrrd *nin, double *bb, double *ww, int ite
   }
 
   if (!(nin->dim >= 2)) {
-    biffAddf(TEN, "%s: nin->dim (%d) not >= 2", me, nin->dim);
+    biffAddf(TEN, "%s: nin->dim (%u) not >= 2", me, nin->dim);
     return 1;
   }
   if (!(nin->axis[0].size < AIR_STRLEN_SMALL + 1)) {
     char stmp[AIR_STRLEN_SMALL + 1];
-    biffAddf(TEN, "%s: sorry need nin->axis[0].size (%s) < %d", me,
+    biffAddf(TEN, "%s: sorry need nin->axis[0].size (%s) < %u", me,
              airSprintSize_t(stmp, nin->axis[0].size), AIR_STRLEN_SMALL + 1);
     return 1;
   }

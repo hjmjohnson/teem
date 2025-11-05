@@ -50,8 +50,9 @@ $(L).Obj = $(patsubst %.c,%.o, \
     754.c array.c endianAir.c enum.c heap.c math.c miscAir.c mop.c parseAir.c \
     randJSF.c randMT.c sane.c string.c threadAir.c \
   )
-$(L).Test = floatprint doubleprint tok tmop tline fp trand trandJSF tmisc \
-	bessy tarr texp logrice tprint
+$(L).Test = floatprint doubleprint tok tmop fp trand trandJSF tmisc \
+	bessy tarr texp logrice tprint asprint \
+        t_airStrcpy t_airOneLine
 ####
 ####
 ####

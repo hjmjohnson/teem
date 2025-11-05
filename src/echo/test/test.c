@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -38,7 +38,7 @@ main(int argc, char **argv) {
   scene = echoSceneNew();
   airMopAdd(mop, scene, (airMopper)echoSceneNix, airMopAlways);
   list = echoObjectNew(scene, echoTypeList);
-  for (I=0; I<70; I++) {
+  for (I = 0; I < 70; I++) {
     sph = echoObjectNew(scene, echoTypeSphere);
     R = airDrandMT();
     G = airDrandMT();
@@ -66,44 +66,32 @@ main(int argc, char **argv) {
   */
 
   rect = echoObjectNew(scene, echoTypeRectangle);
-  echoRectangleSet(rect, -2, -2, 2,
-                   0, 4, 0,
-                   4, 0, 0);
+  echoRectangleSet(rect, -2, -2, 2, 0, 4, 0, 4, 0, 0);
   echoColorSet(rect, 1, 1, 1, 1);
   echoMatterLightSet(scene, rect, 1, 2);
 
   rect = echoObjectNew(scene, echoTypeRectangle);
-  echoRectangleSet(rect, -2, -2, -2,
-                   4, 0, 0,
-                   0, 4, 0);
+  echoRectangleSet(rect, -2, -2, -2, 4, 0, 0, 0, 4, 0);
   echoColorSet(rect, 1, 1, 1, 1);
   echoMatterLightSet(scene, rect, 1, 2);
 
   rect = echoObjectNew(scene, echoTypeRectangle);
-  echoRectangleSet(rect, -2, 2, -2,
-                   4, 0, 0,
-                   0, 0, 4);
+  echoRectangleSet(rect, -2, 2, -2, 4, 0, 0, 0, 0, 4);
   echoColorSet(rect, 1, 1, 1, 1);
   echoMatterLightSet(scene, rect, 1, 2);
 
   rect = echoObjectNew(scene, echoTypeRectangle);
-  echoRectangleSet(rect, -2, -2, -2,
-                   0, 0, 4,
-                   4, 0, 0);
+  echoRectangleSet(rect, -2, -2, -2, 0, 0, 4, 4, 0, 0);
   echoColorSet(rect, 1, 1, 1, 1);
   echoMatterLightSet(scene, rect, 1, 2);
 
   rect = echoObjectNew(scene, echoTypeRectangle);
-  echoRectangleSet(rect, -2, -2, -2,
-                   0, 4, 0,
-                   0, 0, 4);
+  echoRectangleSet(rect, -2, -2, -2, 0, 4, 0, 0, 0, 4);
   echoColorSet(rect, 1, 1, 1, 1);
   echoMatterLightSet(scene, rect, 1, 2);
 
   rect = echoObjectNew(scene, echoTypeRectangle);
-  echoRectangleSet(rect, 2, -2, -2,
-                   0, 0, 4,
-                   0, 4, 0);
+  echoRectangleSet(rect, 2, -2, -2, 0, 0, 4, 0, 4, 0);
   echoColorSet(rect, 1, 1, 1, 1);
   echoMatterLightSet(scene, rect, 1, 2);
 
@@ -124,8 +112,10 @@ main(int argc, char **argv) {
   cam->faar = 2;
   cam->atRelative = AIR_TRUE;
   cam->rightHanded = AIR_TRUE;
-  cam->uRange[0] = -1.6;  cam->vRange[0] = -1.6;
-  cam->uRange[1] =  1.6;  cam->vRange[1] =  1.6;
+  cam->uRange[0] = -1.6;
+  cam->vRange[0] = -1.6;
+  cam->uRange[1] = 1.6;
+  cam->vRange[1] = 1.6;
   parm->imgResU = parm->imgResV = 300;
   parm->numSamples = 100;
   parm->jitterType = echoJitterJitter;

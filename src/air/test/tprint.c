@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -19,80 +19,86 @@
 
 #include "../air.h"
 
+/* for testing airSprintSize_t and airSprintPtrdiff_t */
+
 int
 main(int argc, char *argv[]) {
   char *me;
   char str[AIR_STRLEN_SMALL + 1];
-  size_t sz;
+  size_t sz, oldSz;
   ptrdiff_t pd;
   int change;
 
   AIR_UNUSED(argc);
   me = argv[0];
 
-#define PRINT                                                                           \
-  printf("%s: %lu %s\n", me, AIR_CAST(unsigned long, sz), airSprintSize_t(str, sz))
+#define PRINT(P)                                                                        \
+  printf("%s: %s %lu %s\n", me, P, AIR_CAST(unsigned long, sz), airSprintSize_t(str, sz))
 
   sz = 1;
-  PRINT;
+  PRINT("A1");
   do {
-    sz = 2.4 * sz;
-    PRINT;
-  } while (sz);
+    oldSz = sz;
+    sz = AIR_SIZE_T(2.4 * sz);
+    PRINT("*A");
+    change = (oldSz != sz);
+  } while (change);
   *((long int *)(&sz)) = -1;
-  PRINT;
+  PRINT("A-1");
   sz += 1;
-  PRINT;
+  PRINT("A++");
   sz -= 1;
-  PRINT;
+  PRINT("A--");
   sz -= 1;
-  PRINT;
+  PRINT("A--");
   sz -= 1;
-  PRINT;
+  PRINT("A--");
 
 #undef PRINT
 
-#define PRINT printf("%s: %ld %s\n", me, AIR_CAST(long, pd), airSprintPtrdiff_t(str, pd))
+#define PRINT(P)                                                                        \
+  printf("%s: %s %ld %s\n", me, P, AIR_CAST(long, pd), airSprintPtrdiff_t(str, pd))
 
   pd = 1;
-  PRINT;
+  PRINT("B1");
   do {
     ptrdiff_t od;
     od = pd;
-    pd = 2.4 * pd;
-    PRINT;
+    pd = (ptrdiff_t)(2.4 * pd);
+    PRINT("*B");
     change = (od != pd);
   } while (change);
 
   pd = -1;
-  PRINT;
+  PRINT("B-1");
   do {
     ptrdiff_t od;
     od = pd;
-    pd = 2.4 * pd;
-    PRINT;
+    pd = (ptrdiff_t)(2.4 * pd);
+    PRINT("*B");
     change = (od != pd);
   } while (change);
 
   pd -= 5;
+  PRINT("B-5");
   pd += 1;
-  PRINT;
+  PRINT("B++");
   pd += 1;
-  PRINT;
+  PRINT("B++");
   pd += 1;
-  PRINT;
+  PRINT("B++");
   pd += 1;
-  PRINT;
+  PRINT("B++");
   pd += 1;
-  PRINT;
+  PRINT("B++");
   pd += 1;
-  PRINT;
+  PRINT("B++");
   pd += 1;
-  PRINT;
+  PRINT("B++");
   pd += 1;
-  PRINT;
+  PRINT("B++");
   pd += 1;
-  PRINT;
+  PRINT("B++");
 
   exit(0);
 }

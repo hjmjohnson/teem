@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -34,7 +34,7 @@ typedef signed int JN;
 typedef unsigned int UI;
 typedef airLLong LL;
 /* ui64 to double conversion is not implemented, sorry */
-#if _MSC_VER < 1300
+#if defined(_MSC_VER) && _MSC_VER < 1300
 typedef airLLong UL;
 #else
 typedef airULLong UL;

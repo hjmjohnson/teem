@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -87,7 +87,7 @@ nrrdSimpleResample(Nrrd *nout, const Nrrd *nin, const NrrdKernel *kernel,
       double spacing;
       center = _nrrdCenter2(nin->axis[ai].center, nrrdDefaultCenter);
       spacing = nin->axis[ai].spacing;
-      if (!AIR_EXISTS(spacing)) spacing = nrrdDefaultSpacing;
+      if (!AIR_EXISTS(spacing)) spacing = 1 /* Gone in TeemV2: nrrdDefaultSpacing */;
       if (nrrdCenterCell == center) {
         axmin = 0;
         axmax = spacing * nin->axis[ai].size;
@@ -124,9 +124,8 @@ nrrdSimpleResample(Nrrd *nout, const Nrrd *nin, const NrrdKernel *kernel,
 static int /* Biff: 1 */
 _nrrdResampleCheckInfo(const Nrrd *nin, const NrrdResampleInfo *info) {
   static const char me[] = "_nrrdResampleCheckInfo";
-  const NrrdKernel *k;
-  int center, p, np;
-  unsigned int ai, minsmp;
+  int center;
+  unsigned int minsmp;
   char stmp[2][AIR_STRLEN_SMALL + 1];
 
   if (nrrdTypeBlock == nin->type || nrrdTypeBlock == info->type) {
@@ -142,42 +141,42 @@ _nrrdResampleCheckInfo(const Nrrd *nin, const NrrdResampleInfo *info) {
     biffAddf(NRRD, "%s: asked for boundary padding, but no pad value set\n", me);
     return 1;
   }
-  for (ai = 0; ai < nin->dim; ai++) {
-    k = info->kernel[ai];
+  for (unsigned int axi = 0; axi < nin->dim; axi++) {
+    const NrrdKernel *kk = info->kernel[axi];
     /* we only care about the axes being resampled */
-    if (!k) continue;
-    if (!(info->samples[ai] > 0)) {
-      biffAddf(NRRD, "%s: axis %d # samples (%s) invalid", me, ai,
-               airSprintSize_t(stmp[0], info->samples[ai]));
+    if (!kk) continue;
+    if (!(info->samples[axi] > 0)) {
+      biffAddf(NRRD, "%s: axis %u # samples (%s) invalid", me, axi,
+               airSprintSize_t(stmp[0], info->samples[axi]));
       return 1;
     }
-    if (!(AIR_EXISTS(nin->axis[ai].min) && AIR_EXISTS(nin->axis[ai].max))) {
+    if (!(AIR_EXISTS(nin->axis[axi].min) && AIR_EXISTS(nin->axis[axi].max))) {
       biffAddf(NRRD,
-               "%s: input nrrd's axis %d min,max have not "
+               "%s: input nrrd's axis %u min,max have not "
                "both been set",
-               me, ai);
+               me, axi);
       return 1;
     }
-    if (!(AIR_EXISTS(info->min[ai]) && AIR_EXISTS(info->max[ai]))) {
-      biffAddf(NRRD, "%s: info's axis %d min,max not both set", me, ai);
+    if (!(AIR_EXISTS(info->min[axi]) && AIR_EXISTS(info->max[axi]))) {
+      biffAddf(NRRD, "%s: info's axis %u min,max not both set", me, axi);
       return 1;
     }
-    np = k->parmNum;
-    for (p = 0; p < np; p++) {
-      if (!AIR_EXISTS(info->parm[ai][p])) {
-        biffAddf(NRRD, "%s: didn't set parameter %d (of %d) for axis %d\n", me, p, np,
-                 ai);
+    unsigned int np = kk->parmNum;
+    for (unsigned int pi = 0; pi < np; pi++) {
+      if (!AIR_EXISTS(info->parm[axi][pi])) {
+        biffAddf(NRRD, "%s: didn't set parameter %u (of %u) for axis %u\n", me, pi, np,
+                 axi);
         return 1;
       }
     }
-    center = _nrrdCenter(nin->axis[ai].center);
+    center = _nrrdCenter(nin->axis[axi].center);
     minsmp = nrrdCenterCell == center ? 1 : 2;
-    if (!(nin->axis[ai].size >= minsmp && info->samples[ai] >= minsmp)) {
+    if (!(nin->axis[axi].size >= minsmp && info->samples[axi] >= minsmp)) {
       biffAddf(NRRD,
-               "%s: axis %d # input samples (%s) or output samples (%s) "
+               "%s: axis %u # input samples (%s) or output samples (%s) "
                " invalid for %s centering",
-               me, ai, airSprintSize_t(stmp[0], nin->axis[ai].size),
-               airSprintSize_t(stmp[1], info->samples[ai]),
+               me, axi, airSprintSize_t(stmp[0], nin->axis[axi].size),
+               airSprintSize_t(stmp[1], info->samples[axi]),
                airEnumStr(nrrdCenter, center));
       return 1;
     }
@@ -294,12 +293,12 @@ _nrrdResampleMakeWeightIndex(nrrdResample_t **weightP, int **indexP, double *rat
   nrrdResample_t minIn, maxIn, minOut, maxOut, spcIn, spcOut, ratio, support, integral,
     pos, idxD, wght;
   nrrdResample_t *weight;
-  double parm[NRRD_KERNEL_PARMS_NUM];
+  double parm[NRRD_KERNEL_PARM_MAXNUM];
 
   int e, i;
 
   if (!(info->kernel[ai])) {
-    biffAddf(NRRD, "%s: don't see a kernel for dimension %d", me, ai);
+    biffAddf(NRRD, "%s: don't see a kernel for dimension %u", me, ai);
     *weightP = NULL;
     *indexP = NULL;
     return 0;
@@ -408,7 +407,7 @@ _nrrdResampleMakeWeightIndex(nrrdResample_t **weightP, int **indexP, double *rat
   /* run the sample locations through the chosen kernel.  We play a
      sneaky trick on the kernel parameter 0 in case of downsampling
      to create the blurring of the old index space, but only if !cheap */
-  memcpy(parm, info->parm[ai], NRRD_KERNEL_PARMS_NUM * sizeof(double));
+  memcpy(parm, info->parm[ai], NRRD_KERNEL_PARM_MAXNUM * sizeof(double));
   if (ratio < 1 && !(info->cheap)) {
     parm[0] /= ratio;
   }
@@ -718,7 +717,7 @@ nrrdSpatialResample(Nrrd *nout, const Nrrd *nin, const NrrdResampleInfo *info) {
       char stmp[AIR_STRLEN_SMALL + 1];
       biffAddf(NRRD,
                "%s: couldn't create array of %s nrrdResample_t's for "
-               "output of pass %d",
+               "output of pass %u",
                me, airSprintSize_t(stmp, numOut), pi);
       airMopError(mop);
       return 1;

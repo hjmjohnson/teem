@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -22,8 +22,7 @@
 
 /* bad bad bad Gordon */
 void
-_dyeHSVtoRGB(float *R, float *G, float *B,
-            float  H, float  S, float  V) {
+_dyeHSVtoRGB(float *R, float *G, float *B, float H, float S, float V) {
   float min, fract, vsf, mid1, mid2;
   int sextant;
 
@@ -32,22 +31,51 @@ _dyeHSVtoRGB(float *R, float *G, float *B,
     return;
   }
   /* else there is hue */
-  if (1 == H)
-    H = 0;
+  if (1 == H) H = 0;
   H *= 6;
-  sextant = (int) floor(H);
+  sextant = (int)floor(H);
   fract = H - sextant;
-  vsf = V*S*fract;
-  min = V*(1 - S);
+  vsf = V * S * fract;
+  min = V * (1 - S);
   mid1 = min + vsf;
   mid2 = V - vsf;
   switch (sextant) {
-  case 0: { *R = V;    *G = mid1; *B = min;  break; }
-  case 1: { *R = mid2; *G = V;    *B = min;  break; }
-  case 2: { *R = min;  *G = V;    *B = mid1; break; }
-  case 3: { *R = min;  *G = mid2; *B = V;    break; }
-  case 4: { *R = mid1; *G = min;  *B = V;    break; }
-  case 5: { *R = V;    *G = min;  *B = mid2; break; }
+  case 0: {
+    *R = V;
+    *G = mid1;
+    *B = min;
+    break;
+  }
+  case 1: {
+    *R = mid2;
+    *G = V;
+    *B = min;
+    break;
+  }
+  case 2: {
+    *R = min;
+    *G = V;
+    *B = mid1;
+    break;
+  }
+  case 3: {
+    *R = min;
+    *G = mid2;
+    *B = V;
+    break;
+  }
+  case 4: {
+    *R = mid1;
+    *G = min;
+    *B = V;
+    break;
+  }
+  case 5: {
+    *R = V;
+    *G = min;
+    *B = mid2;
+    break;
+  }
   }
 }
 
@@ -266,9 +294,9 @@ makeSceneInstance(limnCamera *cam, echoRTParm *parm, echoScene *scene) {
   echoObject *trim, *rect, *inst;
   echoPos_t matx[16], A[16], B[16];
 
-  ELL_3V_SET(cam->from, 9*1.3, 9*1.3, 11*1.3);
-  ELL_3V_SET(cam->at,   0, 0, 0);
-  ELL_3V_SET(cam->up,   0, 0, 1);
+  ELL_3V_SET(cam->from, 9 * 1.3, 9 * 1.3, 11 * 1.3);
+  ELL_3V_SET(cam->at, 0, 0, 0);
+  ELL_3V_SET(cam->up, 0, 0, 1);
   cam->uRange[0] = -5;
   cam->uRange[1] = 5;
   cam->vRange[0] = -5;
@@ -287,16 +315,20 @@ makeSceneInstance(limnCamera *cam, echoRTParm *parm, echoScene *scene) {
 
   ELL_4M_IDENTITY_SET(matx);
   ELL_4M_SCALE_SET(B, 2.5, 1.5, 0.8);
-  ELL_4M_MUL(A, B, matx); ELL_4M_COPY(matx, A);
+  ELL_4M_MUL(A, B, matx);
+  ELL_4M_COPY(matx, A);
   ELL_4M_ROTATE_X_SET(B, 0.2);
-  ELL_4M_MUL(A, B, matx); ELL_4M_COPY(matx, A);
+  ELL_4M_MUL(A, B, matx);
+  ELL_4M_COPY(matx, A);
   ELL_4M_ROTATE_Y_SET(B, 0.2);
-  ELL_4M_MUL(A, B, matx); ELL_4M_COPY(matx, A);
+  ELL_4M_MUL(A, B, matx);
+  ELL_4M_COPY(matx, A);
   ELL_4M_ROTATE_Y_SET(B, 0.2);
-  ELL_4M_MUL(A, B, matx); ELL_4M_COPY(matx, A);
+  ELL_4M_MUL(A, B, matx);
+  ELL_4M_COPY(matx, A);
   ELL_4M_TRANSLATE_SET(B, 0, 0, 1);
-  ELL_4M_MUL(A, B, matx); ELL_4M_COPY(matx, A);
-
+  ELL_4M_MUL(A, B, matx);
+  ELL_4M_COPY(matx, A);
 
   /* trim = echoRoughSphere(50, 25, matx); */
   /*
@@ -318,18 +350,12 @@ makeSceneInstance(limnCamera *cam, echoRTParm *parm, echoScene *scene) {
   echoObjectAdd(scene, inst);
 
   rect = echoObjectNew(scene, echoTypeRectangle);
-  echoRectangleSet(rect,
-                         -3.5, -3.5, -3.5,
-                         7, 0, 0,
-                         0, 7, 0);
+  echoRectangleSet(rect, -3.5, -3.5, -3.5, 7, 0, 0, 0, 7, 0);
   echoColorSet(trim, 1.0, 1.0, 1.0, 1.0);
   echoMatterPhongSet(scene, rect, 0.1, 0.5, 0.9, 50);
   echoObjectAdd(scene, rect);
   rect = echoObjectNew(scene, echoTypeRectangle);
-  echoRectangleSet(rect,
-                         -3.5, -3.5, -3.5,
-                         0, 7, 0,
-                         0, 0, 7);
+  echoRectangleSet(rect, -3.5, -3.5, -3.5, 0, 7, 0, 0, 0, 7);
   echoColorSet(rect, 1.0, 1.0, 1.0, 1.0);
   echoMatterPhongSet(scene, rect, 0.1, 0.5, 0.9, 50);
   echoObjectAdd(scene, rect);
@@ -346,11 +372,10 @@ makeSceneInstance(limnCamera *cam, echoRTParm *parm, echoScene *scene) {
   echoMatterPhongSet(scene, rect, 0.1, 0.5, 0.9, 50);
   inst = echoObjectNew(scene, echoTypeInstance);
   ELL_4M_SCALE_SET(A, 20, 20, 20);
-  ELL_4M_TRANSLATE_SET(B, 0, -(20+3.5), 0);
+  ELL_4M_TRANSLATE_SET(B, 0, -(20 + 3.5), 0);
   ELL_4M_MUL(matx, B, A);
   echoInstanceSet(inst, matx, rect);
   echoObjectAdd(scene, inst);
-
 
   /*
   light = echoLightNew(echoLightDirectional);
@@ -370,14 +395,14 @@ makeSceneInstance(limnCamera *cam, echoRTParm *parm, echoScene *scene) {
 void
 makeSceneGlassTest(limnCamera *cam, echoRTParm *parm, echoScene *scene) {
   echoObject *cube, *rect, *inst;
-  echoCol_t r=0, g=0, b=0;
+  echoCol_t r = 0, g = 0, b = 0;
   Nrrd *ntext;
   int i, N;
   echoPos_t ma[16], mb[16];
 
   ELL_3V_SET(cam->from, 0, 0, 10);
-  ELL_3V_SET(cam->at,   0, 0, 0);
-  ELL_3V_SET(cam->up,   1, 0, 0);
+  ELL_3V_SET(cam->at, 0, 0, 0);
+  ELL_3V_SET(cam->up, 1, 0, 0);
   cam->uRange[0] = -1.1;
   cam->uRange[1] = 1.1;
   cam->vRange[0] = -1.1;
@@ -395,39 +420,33 @@ makeSceneGlassTest(limnCamera *cam, echoRTParm *parm, echoScene *scene) {
 
   /* create scene */
   N = 11;
-  for (i=0; i<N; i++) {
+  for (i = 0; i < N; i++) {
     cube = echoObjectNew(scene, echoTypeCube);
     _dyeHSVtoRGB(&r, &g, &b, AIR_AFFINE(0, i, N, 0.0, 1.0), 1.0, 1.0);
     echoColorSet(cube, r, g, b, 1);
     echoMatterGlassSet(scene, cube, 1.1, 0.0, 0.0, 0);
     inst = echoObjectNew(scene, echoTypeInstance);
     ELL_4M_IDENTITY_SET(ma);
-    ELL_4M_SCALE_SET(mb, 1.0/(N+2), 0.8, 3.0/(N+2));
+    ELL_4M_SCALE_SET(mb, 1.0 / (N + 2), 0.8, 3.0 / (N + 2));
     ell_4m_POST_MUL(ma, mb);
-    ELL_4M_ROTATE_X_SET(mb, AIR_AFFINE(0, i, N-1, -AIR_PI/2, AIR_PI/2));
+    ELL_4M_ROTATE_X_SET(mb, AIR_AFFINE(0, i, N - 1, -AIR_PI / 2, AIR_PI / 2));
     ell_4m_POST_MUL(ma, mb);
-    ELL_4M_TRANSLATE_SET(mb, AIR_AFFINE(0, i, N-1, -0.8, 0.8), 0, 1);
+    ELL_4M_TRANSLATE_SET(mb, AIR_AFFINE(0, i, N - 1, -0.8, 0.8), 0, 1);
     ell_4m_POST_MUL(ma, mb);
     echoInstanceSet(inst, ma, cube);
     echoObjectAdd(scene, inst);
   }
 
   rect = echoObjectNew(scene, echoTypeRectangle);
-  echoRectangleSet(rect,
-                   -1, 1, 0,
-                   0, -2, 0,
-                   2, 0, 0);
+  echoRectangleSet(rect, -1, 1, 0, 0, -2, 0, 2, 0, 0);
   echoColorSet(rect, 1.0, 1.0, 1.0, 1.0);
   echoMatterPhongSet(scene, rect, 1.0, 0.0, 0.0, 40);
-  nrrdLoad(ntext=nrrdNew(), "pot.png", NULL);
+  nrrdLoad(ntext = nrrdNew(), "pot.png", NULL);
   echoMatterTextureSet(scene, rect, ntext);
   echoObjectAdd(scene, rect);
 
   rect = echoObjectNew(scene, echoTypeRectangle);
-  echoRectangleSet(rect,
-                   -0.25, -0.25, 10,
-                   0.5, 0, 0,
-                   0, 0.5, 0);
+  echoRectangleSet(rect, -0.25, -0.25, 10, 0.5, 0, 0, 0, 0.5, 0);
   echoColorSet(rect, 1, 1, 1, 1);
   echoMatterLightSet(scene, rect, 1, 0);
 
@@ -439,8 +458,8 @@ makeSceneGlassMetal(limnCamera *cam, echoRTParm *parm, echoScene *scene) {
   echoObject *sphere, *rect;
 
   ELL_3V_SET(cam->from, 4, 0, 5);
-  ELL_3V_SET(cam->at,   0, 0, 0);
-  ELL_3V_SET(cam->up,   -1, 0, 0);
+  ELL_3V_SET(cam->at, 0, 0, 0);
+  ELL_3V_SET(cam->up, -1, 0, 0);
   cam->uRange[0] = -0.7;
   cam->uRange[1] = 0.7;
   cam->vRange[0] = -0.0;
@@ -476,28 +495,19 @@ makeSceneGlassMetal(limnCamera *cam, echoRTParm *parm, echoScene *scene) {
   echoObjectAdd(scene, sphere);
 
   rect = echoObjectNew(scene, echoTypeRectangle);
-  echoRectangleSet(rect,
-                   0.5, 0.5, 0.5,
-                   0, -1, 0,
-                   0, 0, -1);
+  echoRectangleSet(rect, 0.5, 0.5, 0.5, 0, -1, 0, 0, 0, -1);
   echoColorSet(rect, 1.0, 1.0, 1.0, 1.0);
   echoMatterMetalSet(scene, rect, 0.7, 0.0, 0.0, 0.2);
   echoObjectAdd(scene, rect);
 
   rect = echoObjectNew(scene, echoTypeRectangle);
-  echoRectangleSet(rect,
-                   -1.5, -1.5, -1,
-                   3, 0, 0,
-                   0, 3, 0);
+  echoRectangleSet(rect, -1.5, -1.5, -1, 3, 0, 0, 0, 3, 0);
   echoColorSet(rect, 1.0, 1.0, 1.0, 1.0);
   echoMatterPhongSet(scene, rect, 0.1, 0.6, 0.3, 40);
   echoObjectAdd(scene, rect);
 
   rect = echoObjectNew(scene, echoTypeRectangle);
-  echoRectangleSet(rect,
-                   0.5-0.2, -0.2, 40,
-                   0.4, 0, 0,
-                   0, 0.4, 0);
+  echoRectangleSet(rect, 0.5 - 0.2, -0.2, 40, 0.4, 0, 0, 0, 0.4, 0);
   echoColorSet(rect, 1, 1, 1, 1);
   echoMatterLightSet(scene, rect, 1, 0);
 
@@ -510,8 +520,8 @@ makeSceneTexture(limnCamera *cam, echoRTParm *parm, echoScene *scene) {
   Nrrd *ntext;
 
   ELL_3V_SET(cam->from, 9, 9, 11);
-  ELL_3V_SET(cam->at,   0, 0, 0);
-  ELL_3V_SET(cam->up,   0, 0, 1);
+  ELL_3V_SET(cam->at, 0, 0, 0);
+  ELL_3V_SET(cam->up, 0, 0, 1);
   cam->uRange[0] = -4;
   cam->uRange[1] = 4;
   cam->vRange[0] = -4;
@@ -529,15 +539,12 @@ makeSceneTexture(limnCamera *cam, echoRTParm *parm, echoScene *scene) {
   parm->shadow = 1.0;
 
   rect = echoObjectNew(scene, echoTypeRectangle);
-  echoRectangleSet(rect,
-                   -2, -2, 0,
-                   4, 0, 0,
-                   0, 4, 0);
+  echoRectangleSet(rect, -2, -2, 0, 4, 0, 0, 0, 4, 0);
   echoColorSet(rect, 1, 1, 1, 1);
   echoMatterPhongSet(scene, rect, 0.1, 1, 0.9, 50);
   echoObjectAdd(scene, rect);
 
-  nrrdLoad(ntext=nrrdNew(), "tmp.png", NULL);
+  nrrdLoad(ntext = nrrdNew(), "tmp.png", NULL);
   echoMatterTextureSet(scene, rect, ntext);
 
   sphere = echoObjectNew(scene, echoTypeSphere);
@@ -557,10 +564,7 @@ makeSceneTexture(limnCamera *cam, echoRTParm *parm, echoScene *scene) {
   */
 
   rect = echoObjectNew(scene, echoTypeRectangle);
-  echoRectangleSet(rect,
-                   0, 0, 60,
-                   0, 2, 0,
-                   0, 0, 2);
+  echoRectangleSet(rect, 0, 0, 60, 0, 2, 0, 0, 0, 2);
   echoColorSet(rect, 1, 1, 1, 1);
   echoMatterLightSet(scene, rect, 1, 1);
 
@@ -573,8 +577,8 @@ makeSceneDOF(limnCamera *cam, echoRTParm *parm, echoScene *scene) {
   Nrrd *ntext;
 
   ELL_3V_SET(cam->from, 6, 6, 20);
-  ELL_3V_SET(cam->at,   0, 0, 0);
-  ELL_3V_SET(cam->up,   0, 1, 0);
+  ELL_3V_SET(cam->at, 0, 0, 0);
+  ELL_3V_SET(cam->up, 0, 1, 0);
   cam->uRange[0] = -3.3;
   cam->uRange[1] = 3.3;
   cam->vRange[0] = -3.3;
@@ -594,30 +598,21 @@ makeSceneDOF(limnCamera *cam, echoRTParm *parm, echoScene *scene) {
   nrrdLoad(ntext = nrrdNew(), "tmp.png", NULL);
 
   rect = echoObjectNew(scene, echoTypeRectangle);
-  echoRectangleSet(rect,
-                   -0.5, 1.5, -3,
-                   2, 0, 0,
-                   0, -2, 0);
+  echoRectangleSet(rect, -0.5, 1.5, -3, 2, 0, 0, 0, -2, 0);
   echoColorSet(rect, 1, 0.5, 0.5, 1);
   echoMatterPhongSet(scene, rect, 1.0, 0.0, 0.0, 1);
   echoMatterTextureSet(scene, rect, ntext);
   echoObjectAdd(scene, rect);
 
   rect = echoObjectNew(scene, echoTypeRectangle);
-  echoRectangleSet(rect,
-                   -1, 1, 0,
-                   2, 0, 0,
-                   0, -2, 0);
+  echoRectangleSet(rect, -1, 1, 0, 2, 0, 0, 0, -2, 0);
   echoColorSet(rect, 0.5, 1, 0.5, 1);
   echoMatterPhongSet(scene, rect, 1.0, 0.0, 0.0, 1);
   echoMatterTextureSet(scene, rect, ntext);
   echoObjectAdd(scene, rect);
 
   rect = echoObjectNew(scene, echoTypeRectangle);
-  echoRectangleSet(rect,
-                   -1.5, 0.5, 3,
-                   2, 0, 0,
-                   0, -2, 0);
+  echoRectangleSet(rect, -1.5, 0.5, 3, 2, 0, 0, 0, -2, 0);
   echoColorSet(rect, 0.5, 0.5, 1, 1);
   echoMatterPhongSet(scene, rect, 1.0, 0.0, 0.0, 1);
   echoMatterTextureSet(scene, rect, ntext);
@@ -631,8 +626,8 @@ makeSceneShadow(limnCamera *cam, echoRTParm *parm, echoScene *scene) {
   echoObject *sphere, *rect, *tri;
 
   ELL_3V_SET(cam->from, 2, 0, 20);
-  ELL_3V_SET(cam->at,   0, 0, 0);
-  ELL_3V_SET(cam->up,   -1, 0, 0);
+  ELL_3V_SET(cam->at, 0, 0, 0);
+  ELL_3V_SET(cam->up, -1, 0, 0);
   cam->uRange[0] = -1.8;
   cam->uRange[1] = 1.8;
   cam->vRange[0] = -1.8;
@@ -666,28 +661,19 @@ makeSceneShadow(limnCamera *cam, echoRTParm *parm, echoScene *scene) {
   echoObjectAdd(scene, sphere);
 
   tri = echoObjectNew(scene, echoTypeTriangle);
-  echoTriangleSet(tri,
-                  0, -1, -1,
-                  0, 1, -1,
-                  0, 0, 1);
+  echoTriangleSet(tri, 0, -1, -1, 0, 1, -1, 0, 0, 1);
   echoColorSet(tri, 1, 1, 0, 1.0);
   echoMatterPhongSet(scene, tri, 0.1, 0.6, 0.3, 40);
   echoObjectAdd(scene, tri);
 
   rect = echoObjectNew(scene, echoTypeRectangle);
-  echoRectangleSet(rect,
-                   1.7, 1.7, -2,
-                   -3.4, 0, 0,
-                   0, -3.4, 0);
+  echoRectangleSet(rect, 1.7, 1.7, -2, -3.4, 0, 0, 0, -3.4, 0);
   echoColorSet(rect, 1.0, 0.8, 1.0, 1.0);
   echoMatterPhongSet(scene, rect, 0.1, 0.3, 0.7, 3000);
   echoObjectAdd(scene, rect);
 
   rect = echoObjectNew(scene, echoTypeRectangle);
-  echoRectangleSet(rect,
-                   1.0, 0.2, 4,
-                   0.2, 0, 0,
-                   0, 0.2, 0);
+  echoRectangleSet(rect, 1.0, 0.2, 4, 0.2, 0, 0, 0, 0.2, 0);
   echoColorSet(rect, 1, 1, 1, 1);
   echoMatterLightSet(scene, rect, 1, 0);
   echoObjectAdd(scene, rect);
@@ -699,8 +685,8 @@ makeSceneSimple(limnCamera *cam, echoRTParm *parm, echoScene *scene) {
   Nrrd *ntext;
 
   ELL_3V_SET(cam->from, 5, -5, 9);
-  ELL_3V_SET(cam->at,   0, 0, 0);
-  ELL_3V_SET(cam->up,   0, 0, 1);
+  ELL_3V_SET(cam->at, 0, 0, 0);
+  ELL_3V_SET(cam->up, 0, 0, 1);
   cam->uRange[0] = -3.6;
   cam->uRange[1] = 3.6;
   cam->vRange[0] = -3.6;
@@ -720,13 +706,10 @@ makeSceneSimple(limnCamera *cam, echoRTParm *parm, echoScene *scene) {
   parm->shadow = 1.0;
 
   rect = echoObjectNew(scene, echoTypeRectangle);
-  echoRectangleSet(rect,
-                   -5, -5, -1.4,
-                   10, 0, 0,
-                   0, 10, 0);
+  echoRectangleSet(rect, -5, -5, -1.4, 10, 0, 0, 0, 10, 0);
   echoColorSet(rect, 1, 1, 1, 1.0);
   echoMatterPhongSet(scene, rect, 0.1, 0.5, 0.6, 50);
-  if (nrrdLoad(ntext=nrrdNew(), "pot.png", NULL)) {
+  if (nrrdLoad(ntext = nrrdNew(), "pot.png", NULL)) {
     /* oops, no pot */
     airFree(biffGetDone(NRRD));
     nrrdNuke(ntext);
@@ -743,37 +726,25 @@ makeSceneSimple(limnCamera *cam, echoRTParm *parm, echoScene *scene) {
   echoObjectAdd(scene, sphere);
 
   tri = echoObjectNew(scene, echoTypeTriangle);
-  echoTriangleSet(tri,
-                  0.1, 0.1, 2,
-                  2, 2, 2,
-                  0, 2, 2);
+  echoTriangleSet(tri, 0.1, 0.1, 2, 2, 2, 2, 0, 2, 2);
   echoColorSet(tri, 1, 0.4, 0.4, 1.0);
   echoMatterPhongSet(scene, tri, 0.4, 0.6, 0.0, 90);
   echoObjectAdd(scene, tri);
 
   tri = echoObjectNew(scene, echoTypeTriangle);
-  echoTriangleSet(tri,
-                  -0.1, 0.1, 2,
-                  -2, 2, 2,
-                  -2, 0, 2);
+  echoTriangleSet(tri, -0.1, 0.1, 2, -2, 2, 2, -2, 0, 2);
   echoColorSet(tri, 0.4, 1.0, 0.4, 1.0);
   echoMatterPhongSet(scene, tri, 0.4, 0.6, 0.0, 90);
   echoObjectAdd(scene, tri);
 
   tri = echoObjectNew(scene, echoTypeTriangle);
-  echoTriangleSet(tri,
-                  -0.1, -0.1, 2,
-                  -2, -2, 2,
-                  0, -2, 2);
+  echoTriangleSet(tri, -0.1, -0.1, 2, -2, -2, 2, 0, -2, 2);
   echoColorSet(tri, 0.4, 0.4, 1.0, 1.0);
   echoMatterPhongSet(scene, tri, 0.4, 0.6, 0.0, 90);
   echoObjectAdd(scene, tri);
 
   rect = echoObjectNew(scene, echoTypeRectangle);
-  echoRectangleSet(rect,
-                   -0.5, -0.5, 10,
-                   1.0, 0.0, 0,
-                   0.0, 1.0, 0);
+  echoRectangleSet(rect, -0.5, -0.5, 10, 1.0, 0.0, 0, 0.0, 1.0, 0);
   echoColorSet(rect, 1, 1, 1, 1);
   echoMatterLightSet(scene, rect, 1, 0);
   echoObjectAdd(scene, rect);
@@ -786,11 +757,11 @@ makeSceneRainLights(limnCamera *cam, echoRTParm *parm, echoScene *scene) {
   echoObject *sphere, *rect;
   int i, N;
   echoPos_t w;
-  float r=0, g=0, b=0;
+  float r = 0, g = 0, b = 0;
 
   ELL_3V_SET(cam->from, 2.5, 0, 5);
-  ELL_3V_SET(cam->at,   0, 0, 0);
-  ELL_3V_SET(cam->up,   0, 0, 1);
+  ELL_3V_SET(cam->at, 0, 0, 0);
+  ELL_3V_SET(cam->up, 0, 0, 1);
   cam->uRange[0] = -1.7;
   cam->uRange[1] = 1.7;
   cam->vRange[0] = -1.7;
@@ -816,20 +787,17 @@ makeSceneRainLights(limnCamera *cam, echoRTParm *parm, echoScene *scene) {
   echoObjectAdd(scene, sphere);
 
   N = 8;
-  w = 1.7/N;
+  w = 1.7 / N;
 
-  for (i=0; i<N; i++) {
+  for (i = 0; i < N; i++) {
     rect = echoObjectNew(scene, echoTypeRectangle);
-    echoRectangleSet(rect,
-                     w/2, AIR_AFFINE(0, i, N-1, -1-w/2, 1-w/2), 1.5,
-                     0, w, 0,
-                     w, 0, 0);
+    echoRectangleSet(rect, w / 2, AIR_AFFINE(0, i, N - 1, -1 - w / 2, 1 - w / 2), 1.5, 0,
+                     w, 0, w, 0, 0);
     _dyeHSVtoRGB(&r, &g, &b, AIR_AFFINE(0, i, N, 0.0, 1.0), 1.0, 1.0);
     echoColorSet(rect, r, g, b, 1);
     echoMatterLightSet(scene, rect, 1, 0);
     echoObjectAdd(scene, rect);
   }
-
 }
 
 int
@@ -895,15 +863,16 @@ main(int argc, char **argv) {
   if (E) {
     airMopAdd(mop, err = biffGetDone(ECHO), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble:\n%s\n", me, err);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
-  printf("render time = %g seconds (%g fps)\n",
-         state->time, 1.0/state->time);
+  printf("render time = %g seconds (%g fps)\n", state->time, 1.0 / state->time);
   if (!E) E |= nrrdSave("raw.nrrd", nraw, NULL);
   if (E) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble:\n%s\n", me, err);
-    airMopError(mop); return 1;
+    airMopError(mop);
+    return 1;
   }
 
   airMopOkay(mop);

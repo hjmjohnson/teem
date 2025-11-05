@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -54,7 +54,6 @@ myclose(FILE *file) {
   return;
 }
 
-
 int
 main(int argc, char *argv[]) {
   char *me, *fileS;
@@ -69,7 +68,7 @@ main(int argc, char *argv[]) {
     exit(1);
   }
   fileS = argv[1];
-  if (!( file = myopen(fileS) )) {
+  if (!(file = myopen(fileS))) {
     fprintf(stderr, "%s: couldn't open \"%s\" for reading\n", me, fileS);
     exit(1);
   }
@@ -82,7 +81,7 @@ main(int argc, char *argv[]) {
     if (llen) {
       printf("%2u   |%s|\n", llen, io->line);
     }
-  } while(llen > 0);
+  } while (llen > 0);
   nrrdIoStateNix(io);
   myclose(file);
 

@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -105,20 +105,19 @@ void
 gageParmReset(gageParm *parm) {
 
   if (parm) {
-    parm->renormalize = gageDefRenormalize;
-    parm->checkIntegrals = gageDefCheckIntegrals;
-    parm->k3pack = gageDefK3Pack;
-    parm->gradMagCurvMin = gageDefGradMagCurvMin;
-    parm->curvNormalSide = gageDefCurvNormalSide;
-    parm->kernelIntegralNearZero = gageDefKernelIntegralNearZero;
-    parm->defaultCenter = gageDefDefaultCenter;
-    parm->stackUse = gageDefStackUse;
-    parm->stackNormalizeRecon = gageDefStackNormalizeRecon;
-    parm->stackNormalizeDeriv = gageDefStackNormalizeDeriv;
-    parm->stackNormalizeDerivBias = gageDefStackNormalizeDerivBias;
-    parm->orientationFromSpacing = gageDefOrientationFromSpacing;
-    parm->generateErrStr = gageDefGenerateErrStr;
-    parm->twoDimZeroZ = gageDefTwoDimZeroZ;
+    parm->renormalize = gageDefaultRenormalize;
+    parm->checkIntegrals = gageDefaultCheckIntegrals;
+    parm->k3pack = gageDefaultK3Pack;
+    parm->gradMagCurvMin = gageDefaultGradMagCurvMin;
+    parm->curvNormalSide = gageDefaultCurvNormalSide;
+    parm->kernelIntegralNearZero = gageDefaultKernelIntegralNearZero;
+    parm->stackUse = AIR_FALSE;            // TeemV2 nixed gageDefStackUse
+    parm->stackNormalizeRecon = AIR_FALSE; // TeemV2 nixed gageDefStackNormalizeRecon
+    parm->stackNormalizeDeriv = AIR_FALSE; // TeemV2 nixed gageDefStackNormalizeDeriv
+    parm->stackNormalizeDerivBias = 0;     // TeemV2 nixed gageDefStackNormalizeDerivBias
+    parm->orientationFromSpacing = gageDefaultOrientationFromSpacing;
+    parm->generateErrStr = gageDefaultGenerateErrStr;
+    parm->twoDimZeroZ = AIR_FALSE; // TeemV2 nixed gageDefTwoDimZeroZ
   }
   return;
 }

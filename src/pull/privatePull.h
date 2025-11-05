@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -29,13 +29,13 @@ extern "C" {
 */
 
 /* size/allocation increment for per-bin airArray */
-#define _PULL_BIN_INCR 32
+#define _PULL_BIN_INCR 32u
 
 /* size/allocation increment for pullTrace airArray in pullTraceMulti */
-#define _PULL_TRACE_MULTI_INCR 1024
+#define _PULL_TRACE_MULTI_INCR 1024u
 
 /* this has to be big enough to do experiments where binning is turned off */
-#define _PULL_NEIGH_MAXNUM 4096
+#define _PULL_NEIGH_MAXNUM 4096u
 
 /* used by pullBinsPointMaybeAdd; don't add a point if its (normalized)
    distance to an existing point is less than this */
@@ -74,23 +74,23 @@ extern "C" {
 
 /* maximum distance, in multiples of voxelSizeSpace, that a point is
    allowed to move between start and end of constraint satisfaction */
-#define _PULL_CONSTRAINT_TRAVEL_MAX 2
+#define _PULL_CONSTRAINT_TRAVEL_MAX 2.0
 
 /* max reasonable value of iterParm->constraintIterMax */
-#define _PULL_CONSTRAINT_ITER_MAX 50
+#define _PULL_CONSTRAINT_ITER_MAX 50u
 
 /* the main _iterate() function does progress indication if the number of
    points is larger than this */
-#define _PULL_PROGRESS_POINT_NUM_MIN 100
+#define _PULL_PROGRESS_POINT_NUM_MIN 100u
 
 /* limit on # times we allow random or halton (non-ppv) seeding to fail */
-#define _PULL_RANDOM_SEED_TRY_MAX 1000000
+#define _PULL_RANDOM_SEED_TRY_MAX 1000000u
 
 /* limit on stepEnergy */
 #define _PULL_STEP_ENERGY_MAX FLT_MAX
 
 /* resolution of histogram of (r,s) coords of interactions ("hinter") */
-#define _PULL_HINTER_SIZE 601
+#define _PULL_HINTER_SIZE 601u
 
 /* initPull.c */
 extern void _pullInitParmInit(pullInitParm *initParm);

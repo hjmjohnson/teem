@@ -18,6 +18,21 @@
 #include "air.h"
 #include <string.h>
 
+#if defined(_MSC_VER)
+#  pragma warning(push)
+#  pragma warning(disable:4244
+#  pragma warning(disable:4267)
+#  pragma warning(disable:4365)
+#elif defined(__clang__)
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wconversion"
+#  pragma clang diagnostic ignored "-Wsign-conversion"
+#elif defined(__GNUC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wconversion"
+#  pragma GCC diagnostic ignored "-Wsign-conversion"
+#endif
+
 /* internal helper routines */
 /* restore heap property by pulling a single node up the tree */
 static void upheap(airHeap *h, unsigned int i) {
@@ -328,5 +343,14 @@ int airHeapUpdate(airHeap *h, unsigned int ai, double newKey,
   if (oldkey<newKey) downheap(h, h->invidx[ai]);
   else upheap(h, h->invidx[ai]);
   return 0;
+
 }
+
+#if defined(_MSC_VER)
+#  pragma warning(pop)
+#elif defined(__clang__)
+#  pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#  pragma GCC diagnostic pop
+#endif
 /* clang-format on */

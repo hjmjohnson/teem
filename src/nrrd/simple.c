@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -176,7 +176,7 @@ nrrdSpaceOriginSet(Nrrd *nrrd, const double *vector) {
     return 1;
   }
   if (!(0 < nrrd->spaceDim && nrrd->spaceDim <= NRRD_SPACE_DIM_MAX)) {
-    biffAddf(NRRD, "%s: set spaceDim %d not valid", me, nrrd->spaceDim);
+    biffAddf(NRRD, "%s: set spaceDim %u not valid", me, nrrd->spaceDim);
     return 1;
   }
 
@@ -371,9 +371,7 @@ nrrdSpaceVecSetNaN(double vec[NRRD_SPACE_DIM_MAX]) {
 
 void
 nrrdSpaceVecSetZero(double vec[NRRD_SPACE_DIM_MAX]) {
-  int di;
-
-  for (di = 0; di < NRRD_SPACE_DIM_MAX; di++) {
+  for (unsigned int di = 0; di < NRRD_SPACE_DIM_MAX; di++) {
     vec[di] = 0;
   }
   return;
@@ -405,34 +403,37 @@ _nrrdContentSet_nva(Nrrd *nout, const char *func, char *content, const char *for
                     va_list arg) {
   static const char me[] = "_nrrdContentSet_nva";
   char *buff;
+  size_t buffSize, contentSize;
 
   if (nrrdStateDisableContent) {
     /* we kill content always */
     nout->content = (char *)airFree(nout->content);
     return 0;
   }
-  buff = (char *)malloc(128 * AIR_STRLEN_HUGE + 1);
+  /* conservatively huge buffer,
+     but using vsnprintf so still safe even if not huge enough */
+  buffSize = 128 * AIR_STRLEN_HUGE + 1;
+  buff = AIR_MALLOC(buffSize, char);
   if (!buff) {
     biffAddf(NRRD, "%s: couln't alloc buffer!", me);
     return 1;
   }
   nout->content = (char *)airFree(nout->content);
 
-  /* we are currently praying that this won't overflow the "buff" array */
-  /* HEY: replace with vsnprintf or whatever when its available */
-  vsprintf(buff, format, arg);
+  vsnprintf(buff, buffSize, format, arg);
 
-  nout->content = (char *)calloc(strlen("(,)") + airStrlen(func) + 1 /* '(' */
-                                   + airStrlen(content) + 1          /* ',' */
-                                   + airStrlen(buff) + 1             /* ')' */
-                                   + 1,
-                                 sizeof(char)); /* '\0' */
+  contentSize = (strlen("(,)") + airStrlen(func) + 1 /* '(' */
+                 + airStrlen(content) + 1            /* ',' */
+                 + airStrlen(buff) + 1               /* ')' */
+                 + 1);
+  nout->content = AIR_CALLOC(contentSize, char);
   if (!nout->content) {
     biffAddf(NRRD, "%s: couln't alloc output content!", me);
     airFree(buff);
     return 1;
   }
-  sprintf(nout->content, "%s(%s%s%s)", func, content, airStrlen(buff) ? "," : "", buff);
+  snprintf(nout->content, contentSize, "%s(%s%s%s)", func, content,
+           airStrlen(buff) ? "," : "", buff);
   airFree(buff); /* no NULL assignment, else compile warnings */
   return 0;
 }
@@ -508,7 +509,7 @@ nrrdContentSet_va(Nrrd *nout, const char *func, const Nrrd *nin, const char *for
 static void
 printDescSep(FILE *file, const char *pfx, const char *sepStr, unsigned int sepWidth,
              const char *label) {
-  unsigned int printWidth, slen;
+  size_t printWidth, slen;
   slen = airStrlen(sepStr);
   if (!(file && slen && sepWidth)) {
     /* nothing to do */
@@ -543,9 +544,10 @@ nrrdDescribeMore(FILE *file, const Nrrd *nrrd, const char *pfx, int showPtrs,
                  unsigned int sepWidth) {
   unsigned int ii, jj, sdim, sulen;
   char stmp[AIR_STRLEN_SMALL + 1];
+  size_t stmpSize = AIR_STRLEN_SMALL + 1;
 
   if (!file) {
-    // nothing to do!
+    /* nothing to do! */
     return;
   }
 #define PFX    (pfx ? pfx : "")
@@ -554,7 +556,7 @@ nrrdDescribeMore(FILE *file, const Nrrd *nrrd, const char *pfx, int showPtrs,
   if ((PTR)) {                                                                          \
     fprintf(file, "%s" IND DLIT "%s=|%s|", PFX, (DSTR), (PTR));                         \
     if (showPtrs) {                                                                     \
-      fprintf(file, "@%p", (PTR));                                                      \
+      fprintf(file, "@%p", AIR_VOIDP(PTR));                                             \
     }                                                                                   \
     fprintf(file, "\n");                                                                \
   } else if (showPtrs) {                                                                \
@@ -585,7 +587,7 @@ nrrdDescribeMore(FILE *file, const Nrrd *nrrd, const char *pfx, int showPtrs,
       fprintf(file, "%sSpace Origin=(", PFX);
       for (jj = 0; jj < sdim; jj++) {
         if (jj) fprintf(file, ",");
-        airSinglePrintf(file, NULL, "%lg", nrrd->spaceOrigin[jj]);
+        airSinglePrintf(file, NULL, 0, "%lg", nrrd->spaceOrigin[jj]);
       }
       fprintf(file, ")\n");
     }
@@ -595,23 +597,24 @@ nrrdDescribeMore(FILE *file, const Nrrd *nrrd, const char *pfx, int showPtrs,
     if (!elideNonExist || mfex) {
       unsigned mmlen = 0;
       char buff[AIR_STRLEN_SMALL + 1], fmt[AIR_STRLEN_SMALL + 1];
+      size_t buffSize = AIR_STRLEN_SMALL + 1, fmtSize = AIR_STRLEN_SMALL + 1;
       fprintf(file, "%sMeasurement Frame=\n", PFX);
       /* figure out longest string for on component */
       for (ii = 0; ii < sdim; ii++) {
         for (jj = 0; jj < sdim; jj++) {
           unsigned int ml;
-          airSinglePrintf(NULL, buff, "%lg", nrrd->measurementFrame[jj][ii]);
-          ml = strlen(buff);
+          airSinglePrintf(NULL, buff, buffSize, "%lg", nrrd->measurementFrame[jj][ii]);
+          ml = AIR_UINT(strlen(buff));
           mmlen = AIR_MAX(ml, mmlen);
         }
       }
       /* print the formatting string for one component */
-      sprintf(fmt, "  %%%us", mmlen);
+      snprintf(fmt, fmtSize, "  %%%us", mmlen);
       for (ii = 0; ii < sdim; ii++) {
         fprintf(file, "%s  ", PFX);
         for (jj = 0; jj < sdim; jj++) {
           /* inner loop is looping over columns */
-          airSinglePrintf(NULL, buff, "%lg", nrrd->measurementFrame[jj][ii]);
+          airSinglePrintf(NULL, buff, buffSize, "%lg", nrrd->measurementFrame[jj][ii]);
           fprintf(file, fmt, buff);
         }
         fprintf(file, "\n");
@@ -624,7 +627,7 @@ nrrdDescribeMore(FILE *file, const Nrrd *nrrd, const char *pfx, int showPtrs,
     if (showPtrs || sulen) {
       fprintf(file, "%sSpace Units=\n", PFX);
       for (jj = 0; jj < sdim; jj++) {
-        sprintf(stmp, "[%u]", jj);
+        snprintf(stmp, stmpSize, "[%u]", jj);
         DESC_STRING(nrrd->spaceUnits[jj], "", "", stmp);
       }
     }
@@ -632,14 +635,16 @@ nrrdDescribeMore(FILE *file, const Nrrd *nrrd, const char *pfx, int showPtrs,
   printDescSep(file, PFX, sepStr, sepWidth, "basic"); /* ---------------- */
   if (!elideNonExist || AIR_EXISTS(nrrd->oldMin) || AIR_EXISTS(nrrd->oldMax)) {
     fprintf(file, "%s", PFX);
-    airSinglePrintf(file, NULL, "The old min, old max values are %lg", nrrd->oldMin);
-    airSinglePrintf(file, NULL, ", %lg\n", nrrd->oldMax);
+    airSinglePrintf(file, NULL, 0, "The old min, old max values are %lg", nrrd->oldMin);
+    airSinglePrintf(file, NULL, 0, ", %lg\n", nrrd->oldMax);
   }
-  fprintf(file, "%sElementNumber=%s\n", PFX,
+  fprintf(file, "%selementNumber=%s\n", PFX,
           airSprintSize_t(stmp, nrrdElementNumber(nrrd)));
   fprintf(file, "%stype=%s\n", PFX, airEnumStr(nrrdType, nrrd->type));
   if (nrrdTypeBlock == nrrd->type) {
     fprintf(file, "%sblockSize=%s\n", PFX, airSprintSize_t(stmp, nrrd->blockSize));
+  } else {
+    fprintf(file, "%selementSize=%u\n", PFX, (unsigned int)nrrdElementSize(nrrd));
   }
   printDescSep(file, PFX, sepStr, sepWidth, "axes"); /* ---------------- */
   fprintf(file, "%s%u-dimensional array, with axes:\n", PFX, nrrd->dim);
@@ -648,24 +653,24 @@ nrrdDescribeMore(FILE *file, const Nrrd *nrrd, const char *pfx, int showPtrs,
             airSprintSize_t(stmp, nrrd->axis[ii].size));
     if (!elideNonExist || AIR_EXISTS(nrrd->axis[ii].spacing)) {
       fprintf(file, "%s", PFX);
-      airSinglePrintf(file, NULL, INDENT "spacing=%lg\n", nrrd->axis[ii].spacing);
+      airSinglePrintf(file, NULL, 0, INDENT "spacing=%lg\n", nrrd->axis[ii].spacing);
     }
     if (!elideNonExist || AIR_EXISTS(nrrd->axis[ii].thickness)) {
       fprintf(file, "%s", PFX);
-      airSinglePrintf(file, NULL, INDENT "thickness=%lg\n", nrrd->axis[ii].thickness);
+      airSinglePrintf(file, NULL, 0, INDENT "thickness=%lg\n", nrrd->axis[ii].thickness);
     }
     if (!elideNonExist || AIR_EXISTS(nrrd->axis[ii].min)
         || AIR_EXISTS(nrrd->axis[ii].max)) {
       fprintf(file, "%s", PFX);
-      airSinglePrintf(file, NULL, INDENT "axis min, max = %lg, ", nrrd->axis[ii].min);
-      airSinglePrintf(file, NULL, "%lg\n", nrrd->axis[ii].max);
+      airSinglePrintf(file, NULL, 0, INDENT "axis min, max = %lg, ", nrrd->axis[ii].min);
+      airSinglePrintf(file, NULL, 0, "%lg\n", nrrd->axis[ii].max);
     }
     if (sdim) {
       if (!elideNonExist || nrrdSpaceVecExists(sdim, nrrd->axis[ii].spaceDirection)) {
         fprintf(file, "%s" INDENT "spaceDirection=(", PFX);
         for (jj = 0; jj < sdim; jj++) {
           if (jj) fprintf(file, ",");
-          airSinglePrintf(file, NULL, "%lg", nrrd->axis[ii].spaceDirection[jj]);
+          airSinglePrintf(file, NULL, 0, "%lg", nrrd->axis[ii].spaceDirection[jj]);
         }
         fprintf(file, ")\n");
       }
@@ -685,7 +690,7 @@ nrrdDescribeMore(FILE *file, const Nrrd *nrrd, const char *pfx, int showPtrs,
     printDescSep(file, PFX, sepStr, sepWidth, "comments"); /* ---------------- */
     fprintf(file, "%scomments (%u):\n", PFX, nrrd->cmtArr->len);
     for (ii = 0; ii < nrrd->cmtArr->len; ii++) {
-      sprintf(stmp, "[%u]", ii);
+      snprintf(stmp, stmpSize, "[%u]", ii);
       DESC_STRING(nrrd->cmt[ii], "", "", stmp);
     }
   }
@@ -694,8 +699,9 @@ nrrdDescribeMore(FILE *file, const Nrrd *nrrd, const char *pfx, int showPtrs,
     fprintf(file, "%skey/value pairs (%u):\n", PFX, nrrd->kvpArr->len);
     if (showPtrs) {
       for (ii = 0; ii < nrrd->kvpArr->len; ii++) {
-        fprintf(file, "%s[%u]=|%s|@%p:=|%s|@%p\n", PFX, ii, nrrd->kvp[0 + 2 * ii],
-                nrrd->kvp[0 + 2 * ii], nrrd->kvp[1 + 2 * ii], nrrd->kvp[1 + 2 * ii]);
+        fprintf(file, "%s[%u]=|%s|@%p:=|%s|@%p\n", PFX, ii,              /* */
+                nrrd->kvp[0 + 2 * ii], AIR_VOIDP(nrrd->kvp[0 + 2 * ii]), /* */
+                nrrd->kvp[1 + 2 * ii], AIR_VOIDP(nrrd->kvp[1 + 2 * ii]));
       }
     } else {
       for (ii = 0; ii < nrrd->kvpArr->len; ii++) {
@@ -727,8 +733,8 @@ nrrdDescribeMore.
 */
 void
 nrrdDescribe(FILE *file, const Nrrd *nrrd) {
-  unsigned int ai;
   char stmp[AIR_STRLEN_SMALL + 1];
+  unsigned int ai;
 
   if (file && nrrd) {
     fprintf(file, "Nrrd at 0x%p:\n", AIR_CVOIDP(nrrd));
@@ -741,20 +747,20 @@ nrrdDescribe(FILE *file, const Nrrd *nrrd) {
     if (airStrlen(nrrd->content)) {
       fprintf(file, "Content = \"%s\"\n", nrrd->content);
     }
-    fprintf(file, "%d-dimensional array, with axes:\n", nrrd->dim);
+    fprintf(file, "%u-dimensional array, with axes:\n", nrrd->dim);
     for (ai = 0; ai < nrrd->dim; ai++) {
       if (airStrlen(nrrd->axis[ai].label)) {
-        fprintf(file, "%d: (\"%s\") ", ai, nrrd->axis[ai].label);
+        fprintf(file, "%u: (\"%s\") ", ai, nrrd->axis[ai].label);
       } else {
-        fprintf(file, "%d: ", ai);
+        fprintf(file, "%u: ", ai);
       }
       fprintf(file, "%s-centered, size=%s, ",
               airEnumStr(nrrdCenter, nrrd->axis[ai].center),
               airSprintSize_t(stmp, nrrd->axis[ai].size));
-      airSinglePrintf(file, NULL, "spacing=%lg, \n", nrrd->axis[ai].spacing);
-      airSinglePrintf(file, NULL, "thickness=%lg, \n", nrrd->axis[ai].thickness);
-      airSinglePrintf(file, NULL, "    axis(Min,Max) = (%lg,", nrrd->axis[ai].min);
-      airSinglePrintf(file, NULL, "%lg)\n", nrrd->axis[ai].max);
+      airSinglePrintf(file, NULL, 0, "spacing=%lg, \n", nrrd->axis[ai].spacing);
+      airSinglePrintf(file, NULL, 0, "thickness=%lg, \n", nrrd->axis[ai].thickness);
+      airSinglePrintf(file, NULL, 0, "    axis(Min,Max) = (%lg,", nrrd->axis[ai].min);
+      airSinglePrintf(file, NULL, 0, "%lg)\n", nrrd->axis[ai].max);
       if (airStrlen(nrrd->axis[ai].units)) {
         fprintf(file, "units=%s, \n", nrrd->axis[ai].units);
       }
@@ -764,8 +770,8 @@ nrrdDescribe(FILE *file, const Nrrd *nrrd) {
                      nrrd->min);
     airSinglePrintf(file, NULL, ", %lg\n", nrrd->max);
     */
-    airSinglePrintf(file, NULL, "The old min, old max values are %lg", nrrd->oldMin);
-    airSinglePrintf(file, NULL, ", %lg\n", nrrd->oldMax);
+    airSinglePrintf(file, NULL, 0, "The old min, old max values are %lg", nrrd->oldMin);
+    airSinglePrintf(file, NULL, 0, ", %lg\n", nrrd->oldMax);
     /* fprintf(file, "hasNonExist = %d\n", nrrd->hasNonExist); */
     if (nrrd->cmtArr->len) {
       fprintf(file, "Comments:\n");
@@ -807,15 +813,15 @@ _nrrdFieldCheckSpaceInfo(const Nrrd *nrrd, int useBiff) {
   }
   if (!(nrrd->spaceDim <= NRRD_SPACE_DIM_MAX)) {
     biffMaybeAddf(useBiff, NRRD,
-                  "%s: space dimension %d is outside "
-                  "valid range [0,NRRD_SPACE_DIM_MAX] = [0,%d]",
-                  me, nrrd->dim, NRRD_SPACE_DIM_MAX);
+                  "%s: space dimension %u is outside "
+                  "valid range [0,NRRD_SPACE_DIM_MAX] = [0,%u]",
+                  me, nrrd->spaceDim, NRRD_SPACE_DIM_MAX);
     return 1;
   }
   if (nrrd->spaceDim) {
     if (nrrd->space) {
       if (nrrdSpaceDimension(nrrd->space) != nrrd->spaceDim) {
-        biffMaybeAddf(useBiff, NRRD, "%s: space %s has dimension %d but spaceDim is %d",
+        biffMaybeAddf(useBiff, NRRD, "%s: space %s has dimension %u but spaceDim is %u",
                       me, airEnumStr(nrrdSpace, nrrd->space),
                       nrrdSpaceDimension(nrrd->space), nrrd->spaceDim);
         return 1;
@@ -827,7 +833,7 @@ _nrrdFieldCheckSpaceInfo(const Nrrd *nrrd, int useBiff) {
       if (exists ^ AIR_EXISTS(nrrd->spaceOrigin[ii])) {
         biffMaybeAddf(useBiff, NRRD,
                       "%s: existance of space origin coefficients must "
-                      "be consistent (val[0] not like val[%d])",
+                      "be consistent (val[0] not like val[%u])",
                       me, ii);
         return 1;
       }
@@ -839,7 +845,7 @@ _nrrdFieldCheckSpaceInfo(const Nrrd *nrrd, int useBiff) {
         if (exists ^ AIR_EXISTS(nrrd->measurementFrame[dd][ii])) {
           biffMaybeAddf(useBiff, NRRD,
                         "%s: existance of measurement frame coefficients "
-                        "must be consistent: [col][row] [%d][%d] not "
+                        "must be consistent: [col][row] [%u][%u] not "
                         "like [0][0])",
                         me, dd, ii);
           return 1;
@@ -852,8 +858,8 @@ _nrrdFieldCheckSpaceInfo(const Nrrd *nrrd, int useBiff) {
       for (ii = 1; ii < nrrd->spaceDim; ii++) {
         if (exists ^ AIR_EXISTS(nrrd->axis[dd].spaceDirection[ii])) {
           biffMaybeAddf(useBiff, NRRD,
-                        "%s: existance of space direction %d coefficients "
-                        "must be consistent (val[0] not like val[%d])",
+                        "%s: existance of space direction %u coefficients "
+                        "must be consistent (val[0] not like val[%u])",
                         me, dd, ii);
           return 1;
         }
@@ -862,7 +868,7 @@ _nrrdFieldCheckSpaceInfo(const Nrrd *nrrd, int useBiff) {
         if (AIR_EXISTS(nrrd->axis[dd].min) || AIR_EXISTS(nrrd->axis[dd].max)
             || AIR_EXISTS(nrrd->axis[dd].spacing) || !!airStrlen(nrrd->axis[dd].units)) {
           biffMaybeAddf(useBiff, NRRD,
-                        "%s: axis[%d] has a direction vector, and so can't "
+                        "%s: axis[%u] has a direction vector, and so can't "
                         "have min, max, spacing, or units set",
                         me, dd);
           return 1;
@@ -872,7 +878,7 @@ _nrrdFieldCheckSpaceInfo(const Nrrd *nrrd, int useBiff) {
   } else {
     /* else there's not supposed to be anything in "space" */
     if (nrrd->space) {
-      biffMaybeAddf(useBiff, NRRD, "%s: space %s can't be set with spaceDim %d", me,
+      biffMaybeAddf(useBiff, NRRD, "%s: space %s can't be set with spaceDim %u", me,
                     airEnumStr(nrrdSpace, nrrd->space), nrrd->spaceDim);
       return 1;
     }
@@ -965,7 +971,7 @@ _nrrdFieldCheck_dimension(const Nrrd *nrrd, int useBiff) {
   static const char me[] = "_nrrdFieldCheck_dimension";
 
   if (!AIR_IN_CL(1, nrrd->dim, NRRD_DIM_MAX)) {
-    biffMaybeAddf(useBiff, NRRD, "%s: dimension %u is outside valid range [1,%d]", me,
+    biffMaybeAddf(useBiff, NRRD, "%s: dimension %u is outside valid range [1,%u]", me,
                   nrrd->dim, NRRD_DIM_MAX);
     return 1;
   }
@@ -1016,7 +1022,7 @@ _nrrdFieldCheck_spacings(const Nrrd *nrrd, int useBiff) {
   nrrdAxisInfoGet_nva(nrrd, nrrdAxisInfoSpacing, val);
   for (ai = 0; ai < nrrd->dim; ai++) {
     if (!(!airIsInf_d(val[ai]) && (airIsNaN(val[ai]) || (0 != val[ai])))) {
-      biffMaybeAddf(useBiff, NRRD, "%s: axis %d spacing (%g) invalid", me, ai, val[ai]);
+      biffMaybeAddf(useBiff, NRRD, "%s: axis %u spacing (%g) invalid", me, ai, val[ai]);
       return 1;
     }
   }
@@ -1038,7 +1044,7 @@ _nrrdFieldCheck_thicknesses(const Nrrd *nrrd, int useBiff) {
     /* note that unlike spacing, we allow zero thickness,
        but it makes no sense to be negative */
     if (!(!airIsInf_d(val[ai]) && (airIsNaN(val[ai]) || (0 <= val[ai])))) {
-      biffMaybeAddf(useBiff, NRRD, "%s: axis %d thickness (%g) invalid", me, ai,
+      biffMaybeAddf(useBiff, NRRD, "%s: axis %u thickness (%g) invalid", me, ai,
                     val[ai]);
       return 1;
     }
@@ -1056,7 +1062,7 @@ _nrrdFieldCheck_axis_mins(const Nrrd *nrrd, int useBiff) {
   nrrdAxisInfoGet_nva(nrrd, nrrdAxisInfoMin, val);
   for (ai = 0; ai < nrrd->dim; ai++) {
     if ((ret = airIsInf_d(val[ai]))) {
-      biffMaybeAddf(useBiff, NRRD, "%s: axis %d min %sinf invalid", me, ai,
+      biffMaybeAddf(useBiff, NRRD, "%s: axis %u min %sinf invalid", me, ai,
                     1 == ret ? "+" : "-");
       return 1;
     }
@@ -1079,7 +1085,7 @@ _nrrdFieldCheck_axis_maxs(const Nrrd *nrrd, int useBiff) {
   nrrdAxisInfoGet_nva(nrrd, nrrdAxisInfoMax, val);
   for (ai = 0; ai < nrrd->dim; ai++) {
     if ((ret = airIsInf_d(val[ai]))) {
-      biffMaybeAddf(useBiff, NRRD, "%s: axis %d max %sinf invalid", me, ai,
+      biffMaybeAddf(useBiff, NRRD, "%s: axis %u max %sinf invalid", me, ai,
                     1 == ret ? "+" : "-");
       return 1;
     }
@@ -1112,7 +1118,7 @@ _nrrdFieldCheck_centers(const Nrrd *nrrd, int useBiff) {
   nrrdAxisInfoGet_nva(nrrd, nrrdAxisInfoCenter, val);
   for (ai = 0; ai < nrrd->dim; ai++) {
     if (!(nrrdCenterUnknown == val[ai] || !airEnumValCheck(nrrdCenter, val[ai]))) {
-      biffMaybeAddf(useBiff, NRRD, "%s: axis %d center %d invalid", me, ai, val[ai]);
+      biffMaybeAddf(useBiff, NRRD, "%s: axis %u center %d invalid", me, ai, val[ai]);
       return 1;
     }
   }
@@ -1128,13 +1134,13 @@ _nrrdFieldCheck_kinds(const Nrrd *nrrd, int useBiff) {
   nrrdAxisInfoGet_nva(nrrd, nrrdAxisInfoKind, val);
   for (ai = 0; ai < nrrd->dim; ai++) {
     if (!(nrrdKindUnknown == val[ai] || !airEnumValCheck(nrrdKind, val[ai]))) {
-      biffMaybeAddf(useBiff, NRRD, "%s: axis %d kind %d invalid", me, ai, val[ai]);
+      biffMaybeAddf(useBiff, NRRD, "%s: axis %u kind %d invalid", me, ai, val[ai]);
       return 1;
     }
     wantLen = nrrdKindSize(val[ai]);
     if (wantLen && wantLen != nrrd->axis[ai].size) {
       char stmp[AIR_STRLEN_SMALL + 1];
-      biffMaybeAddf(useBiff, NRRD, "%s: axis %d kind %s requires size %u, but have %s",
+      biffMaybeAddf(useBiff, NRRD, "%s: axis %u kind %s requires size %u, but have %s",
                     me, ai, airEnumStr(nrrdKind, val[ai]), wantLen,
                     airSprintSize_t(stmp, nrrd->axis[ai].size));
       return 1;
@@ -1362,8 +1368,8 @@ nrrdSameSize(const Nrrd *n1, const Nrrd *n2, int useBiff) {
   for (ai = 0; ai < n1->dim; ai++) {
     if (n1->axis[ai].size != n2->axis[ai].size) {
       biffMaybeAddf(useBiff, NRRD,
-                    "%s: n1->axis[%d].size (%s) "
-                    "!= n2->axis[%d].size (%s)",
+                    "%s: n1->axis[%u].size (%s) "
+                    "!= n2->axis[%u].size (%s)",
                     me, ai, airSprintSize_t(stmp[0], n1->axis[ai].size), ai,
                     airSprintSize_t(stmp[1], n2->axis[ai].size));
       return 0;
@@ -1454,54 +1460,7 @@ _nrrdSplitSizes(size_t *pieceSize, size_t *pieceNum, Nrrd *nrrd, unsigned int sp
   return;
 }
 
-/*
-******** nrrdHasNonExistSet()
-**
-** This function will always (assuming type is valid) set the value of
-** nrrd->hasNonExist to either nrrdNonExistTrue or nrrdNonExistFalse,
-** and it will return that value.  For lack of a more sophisticated
-** policy, blocks are currently always considered to be existent
-** values (because nrrdTypeIsIntegral[nrrdTypeBlock] is currently true).
-** This function will ALWAYS determine the correct answer and set the
-** value of nrrd->hasNonExist: it ignores the value of
-** nrrd->hasNonExist on the input nrrd.  Exception: if nrrd is null or
-** type is bogus, no action is taken and nrrdNonExistUnknown is
-** returned.
-**
-** Because this will return either nrrdNonExistTrue or nrrdNonExistFalse,
-** and because the C boolean value of these are true and false (respectively),
-** it is possible (and encouraged) to use the return of this function
-** as the expression of a conditional:
-**
-**   if (nrrdHasNonExistSet(nrrd)) {
-**     ... handle existance of non-existent values ...
-**   }
-*/
-/*
-int
-nrrdHasNonExistSet(Nrrd *nrrd) {
-  size_t I, N;
-  float val;
-
-  if (!( nrrd && !airEnumValCheck(nrrdType, nrrd->type) ))
-    return nrrdNonExistUnknown;
-
-  if (nrrdTypeIsIntegral[nrrd->type]) {
-    nrrd->hasNonExist = nrrdNonExistFalse;
-  } else {
-    nrrd->hasNonExist = nrrdNonExistFalse;
-    N = nrrdElementNumber(nrrd);
-    for (I=0; I<N; I++) {
-      val = nrrdFLookup[nrrd->type](nrrd->data, I);
-      if (!AIR_EXISTS(val)) {
-        nrrd->hasNonExist = nrrdNonExistTrue;
-        break;
-      }
-    }
-  }
-  return nrrd->hasNonExist;
-}
-*/
+/* TeemV2: long-commented-out nrrdHasNonExistSet() now removed */
 
 static int /* Biff: 1 */
 _nrrdCheckEnums(void) {

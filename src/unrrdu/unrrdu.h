@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -33,7 +33,12 @@
 #    define UNRRDU_EXPORT extern __declspec(dllimport)
 #  endif
 #else /* TEEM_STATIC || UNIX */
-#  define UNRRDU_EXPORT extern
+#  if !defined(TEEM_STATIC)
+/*   If built w/ -fvisibility=hidden, only EXPORTed symbols are visible in shared lib */
+#    define UNRRDU_EXPORT extern __attribute__((visibility("default")))
+#  else
+#    define UNRRDU_EXPORT extern
+#  endif
 #endif
 
 #ifdef __cplusplus
@@ -78,7 +83,10 @@ enum {
 /* flotsam.c */
 UNRRDU_EXPORT const int unrrduPresent;
 UNRRDU_EXPORT const char *const unrrduBiffKey;
-UNRRDU_EXPORT unsigned int unrrduDefNumColumns;
+UNRRDU_EXPORT unsigned int unrrduDefaultNumColumns;
+UNRRDU_EXPORT int unrrduDefaultImplicitLutRmapRescale;
+UNRRDU_EXPORT const char *const unrrduEnvVarDefaultImplicitLutRmapRescale;
+UNRRDU_EXPORT void unrrduGetenvDefaultImplicitLutRmapRescale(void);
 /* unrrduCmdList[] gives addresses of unrrdu_fooCmd for all commands "unu foo".
    The list of all commands is maintained in privateUnrrdu.h */
 UNRRDU_EXPORT const unrrduCmd *const unrrduCmdList[];

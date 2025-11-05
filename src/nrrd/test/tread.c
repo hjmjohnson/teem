@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -17,7 +17,6 @@
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 
-
 #include "../nrrd.h"
 
 int
@@ -33,15 +32,17 @@ main(int argc, char *argv[]) {
   }
   ninName = argv[1];
   noutName = argv[2];
-  if (nrrdLoad(nin=nrrdNew(), ninName, NULL)) {
+  if (nrrdLoad(nin = nrrdNew(), ninName, NULL)) {
     fprintf(stderr, "%s: couldn't open nrrd \"%s\":\n%s", me, ninName,
             err = biffGetDone(NRRD));
-    free(err); exit(1);
+    free(err);
+    exit(1);
   }
   if (nrrdSave(noutName, nin, NULL)) {
     fprintf(stderr, "%s: trouble saving nrrd to \"%s\":\n%s", me, noutName,
             err = biffGetDone(NRRD));
-    free(err); exit(1);
+    free(err);
+    exit(1);
   }
   nrrdNuke(nin);
   exit(0);

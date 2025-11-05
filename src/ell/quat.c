@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2023  University of Chicago
+  Copyright (C) 2009--2025  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -519,7 +519,7 @@ ell_q_avg4_d(double m[4], unsigned int *iterP, const double _q1[4], const double
     iter++;
   } while ((!maxIter || iter < maxIter) && elen > eps);
   if (elen > eps) {
-    biffAddf(ELL, "%s: still have error %g after max %d iters", me, elen, maxIter);
+    biffAddf(ELL, "%s: still have error %g after max %u iters", me, elen, maxIter);
     return 1;
   }
 
@@ -583,7 +583,7 @@ ell_q_avgN_d(double mm[4], unsigned int *iterP, const double *qq, double *qlog,
     iter++;
   } while ((!maxIter || iter < maxIter) && elen > eps);
   if (elen > eps) {
-    biffAddf(ELL, "%s: still have error %g (> eps %g) after max %d iters", me, elen, eps,
+    biffAddf(ELL, "%s: still have error %g (> eps %g) after max %u iters", me, elen, eps,
              maxIter);
     return 1;
   }
