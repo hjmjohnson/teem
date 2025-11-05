@@ -19,7 +19,7 @@
 
 #include "../hest.h"
 
-int
+unsigned int
 runexp(unsigned int *year, unsigned int N, unsigned int M) {
   unsigned int i, m;
 
