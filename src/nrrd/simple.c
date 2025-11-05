@@ -583,7 +583,7 @@ nrrdDescribeMore(FILE *file, const Nrrd *nrrd, const char *pfx, int showPtrs,
       fprintf(file, "%sSpace Origin=(", PFX);
       for (jj = 0; jj < sdim; jj++) {
         if (jj) fprintf(file, ",");
-        airSinglePrintf(file, NULL, "%lg", nrrd->spaceOrigin[jj]);
+        airSinglePrintf(file, NULL, 0, "%lg", nrrd->spaceOrigin[jj]);
       }
       fprintf(file, ")\n");
     }
@@ -593,12 +593,13 @@ nrrdDescribeMore(FILE *file, const Nrrd *nrrd, const char *pfx, int showPtrs,
     if (!elideNonExist || mfex) {
       unsigned mmlen = 0;
       char buff[AIR_STRLEN_SMALL + 1], fmt[AIR_STRLEN_SMALL + 1];
+      size_t buffSize = AIR_STRLEN_SMALL + 1;
       fprintf(file, "%sMeasurement Frame=\n", PFX);
       /* figure out longest string for on component */
       for (ii = 0; ii < sdim; ii++) {
         for (jj = 0; jj < sdim; jj++) {
           unsigned int ml;
-          airSinglePrintf(NULL, buff, "%lg", nrrd->measurementFrame[jj][ii]);
+          airSinglePrintf(NULL, buff, buffSize, "%lg", nrrd->measurementFrame[jj][ii]);
           ml = AIR_UINT(strlen(buff));
           mmlen = AIR_MAX(ml, mmlen);
         }
@@ -609,7 +610,7 @@ nrrdDescribeMore(FILE *file, const Nrrd *nrrd, const char *pfx, int showPtrs,
         fprintf(file, "%s  ", PFX);
         for (jj = 0; jj < sdim; jj++) {
           /* inner loop is looping over columns */
-          airSinglePrintf(NULL, buff, "%lg", nrrd->measurementFrame[jj][ii]);
+          airSinglePrintf(NULL, buff, buffSize, "%lg", nrrd->measurementFrame[jj][ii]);
           fprintf(file, fmt, buff);
         }
         fprintf(file, "\n");
@@ -630,8 +631,8 @@ nrrdDescribeMore(FILE *file, const Nrrd *nrrd, const char *pfx, int showPtrs,
   printDescSep(file, PFX, sepStr, sepWidth, "basic"); /* ---------------- */
   if (!elideNonExist || AIR_EXISTS(nrrd->oldMin) || AIR_EXISTS(nrrd->oldMax)) {
     fprintf(file, "%s", PFX);
-    airSinglePrintf(file, NULL, "The old min, old max values are %lg", nrrd->oldMin);
-    airSinglePrintf(file, NULL, ", %lg\n", nrrd->oldMax);
+    airSinglePrintf(file, NULL, 0, "The old min, old max values are %lg", nrrd->oldMin);
+    airSinglePrintf(file, NULL, 0, ", %lg\n", nrrd->oldMax);
   }
   fprintf(file, "%selementNumber=%s\n", PFX,
           airSprintSize_t(stmp, nrrdElementNumber(nrrd)));
@@ -648,24 +649,24 @@ nrrdDescribeMore(FILE *file, const Nrrd *nrrd, const char *pfx, int showPtrs,
             airSprintSize_t(stmp, nrrd->axis[ii].size));
     if (!elideNonExist || AIR_EXISTS(nrrd->axis[ii].spacing)) {
       fprintf(file, "%s", PFX);
-      airSinglePrintf(file, NULL, INDENT "spacing=%lg\n", nrrd->axis[ii].spacing);
+      airSinglePrintf(file, NULL, 0, INDENT "spacing=%lg\n", nrrd->axis[ii].spacing);
     }
     if (!elideNonExist || AIR_EXISTS(nrrd->axis[ii].thickness)) {
       fprintf(file, "%s", PFX);
-      airSinglePrintf(file, NULL, INDENT "thickness=%lg\n", nrrd->axis[ii].thickness);
+      airSinglePrintf(file, NULL, 0, INDENT "thickness=%lg\n", nrrd->axis[ii].thickness);
     }
     if (!elideNonExist || AIR_EXISTS(nrrd->axis[ii].min)
         || AIR_EXISTS(nrrd->axis[ii].max)) {
       fprintf(file, "%s", PFX);
-      airSinglePrintf(file, NULL, INDENT "axis min, max = %lg, ", nrrd->axis[ii].min);
-      airSinglePrintf(file, NULL, "%lg\n", nrrd->axis[ii].max);
+      airSinglePrintf(file, NULL, 0, INDENT "axis min, max = %lg, ", nrrd->axis[ii].min);
+      airSinglePrintf(file, NULL, 0, "%lg\n", nrrd->axis[ii].max);
     }
     if (sdim) {
       if (!elideNonExist || nrrdSpaceVecExists(sdim, nrrd->axis[ii].spaceDirection)) {
         fprintf(file, "%s" INDENT "spaceDirection=(", PFX);
         for (jj = 0; jj < sdim; jj++) {
           if (jj) fprintf(file, ",");
-          airSinglePrintf(file, NULL, "%lg", nrrd->axis[ii].spaceDirection[jj]);
+          airSinglePrintf(file, NULL, 0, "%lg", nrrd->axis[ii].spaceDirection[jj]);
         }
         fprintf(file, ")\n");
       }
@@ -752,10 +753,10 @@ nrrdDescribe(FILE *file, const Nrrd *nrrd) {
       fprintf(file, "%s-centered, size=%s, ",
               airEnumStr(nrrdCenter, nrrd->axis[ai].center),
               airSprintSize_t(stmp, nrrd->axis[ai].size));
-      airSinglePrintf(file, NULL, "spacing=%lg, \n", nrrd->axis[ai].spacing);
-      airSinglePrintf(file, NULL, "thickness=%lg, \n", nrrd->axis[ai].thickness);
-      airSinglePrintf(file, NULL, "    axis(Min,Max) = (%lg,", nrrd->axis[ai].min);
-      airSinglePrintf(file, NULL, "%lg)\n", nrrd->axis[ai].max);
+      airSinglePrintf(file, NULL, 0, "spacing=%lg, \n", nrrd->axis[ai].spacing);
+      airSinglePrintf(file, NULL, 0, "thickness=%lg, \n", nrrd->axis[ai].thickness);
+      airSinglePrintf(file, NULL, 0, "    axis(Min,Max) = (%lg,", nrrd->axis[ai].min);
+      airSinglePrintf(file, NULL, 0, "%lg)\n", nrrd->axis[ai].max);
       if (airStrlen(nrrd->axis[ai].units)) {
         fprintf(file, "units=%s, \n", nrrd->axis[ai].units);
       }
@@ -765,8 +766,8 @@ nrrdDescribe(FILE *file, const Nrrd *nrrd) {
                      nrrd->min);
     airSinglePrintf(file, NULL, ", %lg\n", nrrd->max);
     */
-    airSinglePrintf(file, NULL, "The old min, old max values are %lg", nrrd->oldMin);
-    airSinglePrintf(file, NULL, ", %lg\n", nrrd->oldMax);
+    airSinglePrintf(file, NULL, 0, "The old min, old max values are %lg", nrrd->oldMin);
+    airSinglePrintf(file, NULL, 0, ", %lg\n", nrrd->oldMax);
     /* fprintf(file, "hasNonExist = %d\n", nrrd->hasNonExist); */
     if (nrrd->cmtArr->len) {
       fprintf(file, "Comments:\n");

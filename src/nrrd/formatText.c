@@ -316,7 +316,7 @@ _nrrdFormatText_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
 static int
 _nrrdFormatText_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
   char cmt[AIR_STRLEN_SMALL + 1], buff[AIR_STRLEN_SMALL + 1];
-  size_t I, dsz;
+  size_t buffSize = AIR_STRLEN_SMALL + 1, I, dsz;
   int i, x, y, sx, sy; /* HEY unsigned? */
   const void *data;
   const char *cdata;
@@ -365,10 +365,10 @@ _nrrdFormatText_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
   for (y = 0; y < sy; y++) {
     for (x = 0; x < sx; x++) {
       if (moreThanFloat) {
-        nrrdSprint[nrrd->type](buff, cdata + I * dsz);
+        nrrdSprint[nrrd->type](buff, buffSize, cdata + I * dsz);
       } else {
         val = nrrdFLookup[nrrd->type](data, I);
-        nrrdSprint[nrrdTypeFloat](buff, &val);
+        nrrdSprint[nrrdTypeFloat](buff, buffSize, &val);
       }
       if (x) fprintf(file, " ");
       fprintf(file, "%s", buff);

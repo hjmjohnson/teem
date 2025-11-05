@@ -1089,7 +1089,7 @@ NRRD_EXPORT float (*const nrrdFInsert[NRRD_TYPE_MAX + 1])(void *v, size_t I, flo
 NRRD_EXPORT int (*const nrrdIInsert[NRRD_TYPE_MAX + 1])(void *v, size_t I, int j);
 NRRD_EXPORT unsigned int (*const nrrdUIInsert[NRRD_TYPE_MAX + 1])(void *v, size_t I,
                                                                   unsigned int j);
-NRRD_EXPORT int (*const nrrdSprint[NRRD_TYPE_MAX + 1])(char *, const void *);
+NRRD_EXPORT int (*const nrrdSprint[NRRD_TYPE_MAX + 1])(char *, size_t, const void *);
 /* ---- BEGIN non-NrrdIO */
 NRRD_EXPORT int (*const nrrdFprint[NRRD_TYPE_MAX + 1])(FILE *, const void *);
 NRRD_EXPORT void (*const nrrdMinMaxExactFind[NRRD_TYPE_MAX + 1])(void *minP,

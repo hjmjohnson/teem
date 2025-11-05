@@ -47,6 +47,17 @@ extern "C" {
 
 /* ---- END non-NrrdIO */
 
+/* for adjusting locals `STR` and `SIZE`, assuming correct usage of snprintf.
+   At worst, snprintf filled up everything except the final element for the
+   '\0'-termination, and then after this, STR will be advanced to point to that '\0',
+   and SIZE will go down to 1 */
+#define STRINCR(STR, SIZE)                                                              \
+  do {                                                                                  \
+    size_t tmp_str_len_##STR = strlen(STR);                                             \
+    STR += tmp_str_len_##STR;                                                           \
+    SIZE -= tmp_str_len_##STR;                                                          \
+  } while (0)
+
 typedef union {
   char **CP;
   int *I;
@@ -73,7 +84,7 @@ extern airLLong _nrrdLLongMinHelp(airLLong val);
 extern airULLong _nrrdULLongMaxHelp(airULLong val);
 
 /* keyvalue.c */
-extern void _nrrdWriteEscaped(FILE *file, char *dst, const char *str,
+extern void _nrrdWriteEscaped(FILE *file, char *dst, size_t dstSize, const char *str,
                               const char *toescape, const char *tospace);
 extern int _nrrdKeyValueWrite(FILE *file, char **stringP, const char *prefix,
                               const char *key, const char *value);

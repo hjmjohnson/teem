@@ -124,6 +124,7 @@ nrrdIterValue(NrrdIter *iter) {
 char * /* Biff: nope */
 nrrdIterContent(NrrdIter *iter) {
   char *ret, buff[AIR_STRLEN_SMALL + 1];
+  size_t buffSize = AIR_STRLEN_SMALL + 1;
 
   ret = NULL;
   if (iter) {
@@ -131,7 +132,7 @@ nrrdIterContent(NrrdIter *iter) {
       ret = _nrrdContentGet(_NRRD_ITER_NRRD(iter));
     } else {
       /* (using TeemV2 airSinglePrintf) */
-      airSinglePrintf(NULL, buff, "%lg", iter->val);
+      airSinglePrintf(NULL, buff, buffSize, "%lg", iter->val);
       ret = airStrdup(buff);
     }
   }
