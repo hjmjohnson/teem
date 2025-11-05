@@ -227,7 +227,7 @@ airSinglePrintf(FILE *file, char *str, size_t strSize, const char *_fmt, ...) {
      : snprintf((S), strSize, (C), (V)))
     double val0;
     const char *_conv;
-    unsigned int szfmt;
+    size_t fmtSize;
     char *fmt, *conv;
     int cls;
     if (isF) {
@@ -237,10 +237,10 @@ airSinglePrintf(FILE *file, char *str, size_t strSize, const char *_fmt, ...) {
     }
     /* allocate our own copy of _fmt, with length increase by the most we might need to
        add with |%g|=2 --> |%.9g|=4 or |%lg|=3 --> |%.17g|=5, namely 2 */
-    szfmt = (unsigned int)strlen(_fmt) + 2 + 1;
-    fmt = AIR_CALLOC(szfmt, char);
+    fmtSize = strlen(_fmt) + 2 + 1;
+    fmt = AIR_CALLOC(fmtSize, char);
     assert(fmt);
-    strncpy(fmt, _fmt, szfmt);
+    airStrcpy(fmt, fmtSize, _fmt);
     conv = fmt + (_conv - _fmt); /* conv points into fmt like _conv points into _fmt */
     /* must use "double" here to consume var-arg instead of "float" because var args are
        _always_ subject to old-style C type promotions: float promotes to double */
