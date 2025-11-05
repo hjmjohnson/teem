@@ -20,8 +20,13 @@
 #include "hest.h"
 #include "privateHest.h"
 
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#else
 #include <sys/ioctl.h> // for ioctl(), TIOCGWINSZ, struct winsize
 #include <unistd.h>    // for STDOUT_FILENO and friends
+#endif
 
 const int hestPresent = 42;
 
@@ -382,6 +387,32 @@ If ioctl() never worked, then hparm->columns gets the given nonIoctlColumns, and
 return 1 (but this 1 is not an error that needs any recovering from). */
 int /* Biff: nope */
 hestParmColumnsIoctl(hestParm *hparm, unsigned int nonIoctlColumns) {
+#ifdef _WIN32
+  CONSOLE_SCREEN_BUFFER_INFO csbi;
+  int ret = 1; /* default if all attempts fail */
+  unsigned int sanemin = AIR_MAX(20, hestDefaultColumns / 2);
+  HANDLE hands[3] = { GetStdHandle(STD_INPUT_HANDLE),
+                      GetStdHandle(STD_OUTPUT_HANDLE),
+                      GetStdHandle(STD_ERROR_HANDLE) };
+  for (int hi = 0; hi < 3; ++hi) {
+    HANDLE h = hands[hi];
+    if (h && h != INVALID_HANDLE_VALUE && GetConsoleScreenBufferInfo(h, &csbi)) {
+      unsigned int cols = (unsigned int)(csbi.srWindow.Right - csbi.srWindow.Left + 1);
+      /* mirror the POSIX path's conservative "- 2" margin */
+      hparm->columns = (cols > 2 ? cols - 2 : cols);
+      if (hparm->columns < sanemin) {
+        hparm->columns = sanemin; /* ignore too-small values */
+        ret = -1;
+      } else {
+        ret = 0; /* worked and sane */
+      }
+      return ret;
+    }
+  }
+  /* none of the console handles yielded a size; fall back */
+  hparm->columns = nonIoctlColumns;
+  return 1;
+#else
   struct winsize wsz;
   int ret;
   if (-1 != ioctl(STDIN_FILENO, TIOCGWINSZ, &wsz)
@@ -406,6 +437,7 @@ hestParmColumnsIoctl(hestParm *hparm, unsigned int nonIoctlColumns) {
     ret = 1;
   }
   return ret;
+#endif
 }
 
 // _hestMax(-1) == INT_MAX, otherwise _hestMax(m) == m
