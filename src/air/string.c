@@ -381,11 +381,14 @@ airToUpper(char *str) {
  *
  * Return values:
  * 0 and line[0]=='\0': immediately hit EOF, or arguments are invalid
- * 0 and line[0]!='\0': read something into `line` but hit EOF before seeing newline;
+ * 0 and line[0]!='\0': read something (with strlen() < size-1) into `line`
+ *                      but hit EOF before seeing newline;
  *                      caller will need strlen() to find out its length
  *                   1: line was a single newline (or other line termination)
  *      N with N<=size: line was N-1 characters followed by newline
+ *                      OR if N==size: N-1 chars followed by EOF
  *              size+1: didn't see a newline within size-1 characters
+ *                      and there's more in the file to consume
  *
  * So in normal cases, the return is the number of characters making up the line,
  * including the line termination
@@ -426,40 +429,48 @@ airOneLine(FILE *file, char *line, size_t size) {
     ret = 0;
   } else if ('\r' == cc || '\n' == cc) {
     /* for-loop terminated because we hit '\n' or '\r' */
-    /* if it was '\r', see if next character is '\n' */
     if ('\r' == cc) {
+      /* could be either legacy Mac "\r" or DOS "\r\n" */
       cc = getc(file);
       if (EOF != cc && '\n' != cc) {
         /* oops, we got something, and it was not a '\n'
-           ==> this was a legacy Mac line termination; put `cc` back for later */
+           ==> it was legacy Mac; put `cc` back for later */
         ungetc(cc, file);
       }
+      /* else either cc == EOF (legacy Mac line and then EOF)
+                  or cc == '\n' (DOS line and then EOF) */
     }
+    /* else '\n' == cc: a unix line termination */
     line[ii] = '\0';
     ret = ii + 1;
   } else {
-    /* for-loop terminated because we got to end of buffer (ii == size-1) */
+    /* for-loop terminated because we got to end of `line` buffer: ii == size-1
+       null-terminate `line` */
+    line[size - 1] = '\0';
+    /* and then figure out what to return */
     cc = getc(file);
-    /* but see if we were about to get '\r', "\r\n", or '\n' */
-    if ('\r' == cc) {
-      int dd;
-      dd = getc(file);
-      if (EOF != dd && '\n' != dd) {
-        /* oops, put it back */
-        ungetc(dd, file);
-      }
-      line[ii] = '\0';
+    if (EOF == cc || '\n' == cc) {
+      /* with EOF there was nothing more to read anyway, or,
+         next up is Unix line termination , either way not maxed out */
       ret = size;
-    } else if ('\n' == cc) {
-      line[size - 1] = '\0';
+    } else if ('\r' == cc) {
+      /* if got to end of `line` buffer BUT then have "\r" or "\r\n",
+         we are not maxed out */
+      cc = getc(file);
+      if (EOF != cc && '\n' != cc) {
+        /* oops, legacy Mac line termination with more later, put it back */
+        ungetc(cc, file);
+      }
+      /* else either cc == EOF (legacy Mac line termination and then EOF)
+                  or cc == '\n' (DOS line termination and then EOF)
+         ==> same as Unix line termination above */
       ret = size;
     } else {
-      /* weren't about to get a line termination,
+      /* were NOT about to get a line termination,
          we really did run out of space in output `line` buffer */
       if (EOF != cc) {
         ungetc(cc, file);
       }
-      line[size - 1] = '\0';
       ret = size + 1;
     }
   }
