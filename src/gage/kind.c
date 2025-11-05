@@ -65,7 +65,7 @@ gageKindCheck(const gageKind *kind) {
       }
       return 1;
     }
-    if (!(AIR_IN_CL(0, item->needDeriv, GAGE_DERIV_MAX))) {
+    if (!(item->needDeriv <= GAGE_DERIV_MAX)) {
       biffAddf(GAGE,
                "%s: \"%s\"-kind \"%s\" (item %d) has invalid needDeriv %u "
                "(not in [0,%u])\n",
