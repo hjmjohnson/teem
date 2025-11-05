@@ -586,7 +586,7 @@ AIR_EXPORT unsigned int airIndexClamp(double min, double val, double max,
                                       unsigned int N);
 AIR_EXPORT airULLong airIndexULL(double min, double val, double max, airULLong N);
 AIR_EXPORT airULLong airIndexClampULL(double min, double val, double max, airULLong N);
-AIR_EXPORT char *airDoneStr(double start, double here, double end, char *str);
+AIR_EXPORT char *airDoneStr(double start, double here, double end, char str[13]);
 AIR_EXPORT double airTime(void);
 AIR_EXPORT void airEqvAdd(airArray *eqvArr, unsigned int j, unsigned int k);
 AIR_EXPORT unsigned int airEqvMap(airArray *eqvArr, unsigned int *map, unsigned int len);

@@ -175,9 +175,10 @@ shift2(char *clo, char *chi) {
  * airSinglePrintf(f, NULL, "This %f isn't a number\n", AIR_NAN) will be the same as:
  * fprintf(f, "This %s isn't a number\n", "NaN");
  *
- * To get fprintf behavior, pass "str" as NULL
- * to get sprintf bahavior, pass "file" as NULL. AND NOTE THAT THIS DOES USE sprintf
- * and not snprintf because we're not in a position to know what the buffer size is.
+ * To get fprintf behavior, pass `str` as NULL
+ * to get sprintf bahavior, pass `file` as NULL
+ *       and pass the allocated size of `str` as `strSize`
+ *       so that we can use snprintf instead of sprintf
  *
  * Finding a complete {f|s|}printf replacement would be great, but finding one compatible
  * with our LGPL+linking exception licensing is hard.
@@ -276,11 +277,12 @@ airSinglePrintf(FILE *file, char *str, size_t strSize, const char *_fmt, ...) {
         /* 2025 Prof GLK revisiting this post-doc GLK code (svn r2879 2005-09-21)
         and comments with better floating-point experience and understanding:
            / * got "%g" or "%lg", see if it would be better to use "%f" * /
-           sprintf(buff, "%f", val);
-           sscanf(buff, "%lf", &fVal);
-           sprintf(buff, "%g", val);
-           sscanf(buff, "%lf", &gVal);
-           if (fVal != gVal) ... / * using %g/%lg lost precision, use %f/%lf instead * /
+             * sprintf(buff, "%f", val);
+             * sscanf(buff, "%lf", &fVal);
+             * sprintf(buff, "%g", val);
+             * sscanf(buff, "%lf", &gVal);
+             * if (fVal != gVal) ...
+             * / * using %g/%lg lost precision, use %f/%lf instead * /
         NO, and NO.
         NO#1: The relevant test for the insufficient precision of %g/%lg for the round-
            trip val-sprintf->buff-sscanf->val is whether val == gVal, NOT fVal != gVal.
@@ -333,7 +335,7 @@ airSinglePrintf(FILE *file, char *str, size_t strSize, const char *_fmt, ...) {
        more specific like "%.17g" (which NOTE does not get the above special treatment of
        IEEE754 special values!s), or, it isn't for any kind of floating point value.
        We can use the given `_fmt` as is (no local allocation of `fmt`) */
-    ret = file ? vfprintf(file, _fmt, ap) : vsprintf(str, _fmt, ap);
+    ret = file ? vfprintf(file, _fmt, ap) : vsnprintf(str, strSize, _fmt, ap);
   }
 
   va_end(ap);
@@ -655,11 +657,12 @@ airIndexClampULL(double min, double val, double max, airULLong N) {
  * "  1.9%" or " 35.3%" or  "100.0%"
  *
  * The message will ALWAYS be six characters, and will ALWAYS be preceeded by six
- * backspaces.  Thus, you pass in a string to sprintf() into (yes sprintf not snprintf),
+ * backspaces.  Thus, you pass in a string to snprintf() into,
  * and it had better be allocated for at least 6+6+1 = 13 chars.
  */
 char *
-airDoneStr(double start, double here, double end, char *str) {
+airDoneStr(double start, double here, double end, char str[13]) {
+  size_t strSize = 13;
   int perc = 0;
 
   if (str) {
@@ -668,15 +671,15 @@ airDoneStr(double start, double here, double end, char *str) {
     else
       perc = 1000;
     if (perc < 0) {
-      sprintf(str, "\b\b\b\b\b\b ---- ");
+      snprintf(str, strSize, "\b\b\b\b\b\b ---- ");
     } else if (perc < 1000) {
-      sprintf(str, "\b\b\b\b\b\b% 3d.%d%%", perc / 10, perc % 10);
+      snprintf(str, strSize, "\b\b\b\b\b\b% 3d.%d%%", perc / 10, perc % 10);
     } else if (perc == 1000) {
       /* the "% 3d" formatting sequence should have taken care
          of this, but whatever */
-      sprintf(str, "\b\b\b\b\b\b100.0%%");
+      snprintf(str, strSize, "\b\b\b\b\b\b100.0%%");
     } else {
-      sprintf(str, "\b\b\b\b\b\b done.");
+      snprintf(str, strSize, "\b\b\b\b\b\b done.");
     }
   }
 
