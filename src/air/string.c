@@ -449,13 +449,13 @@ airOneLine(FILE *file, char *line, size_t size) {
         ungetc(dd, file);
       }
       line[ii] = '\0';
-      ret = ii + 1;
+      ret = size;
     } else if ('\n' == cc) {
-      line[ii] = '\0';
-      ret = ii + 1;
+      line[size - 1] = '\0';
+      ret = size;
     } else {
       /* weren't about to get a line termination,
-         we really did run out of buffer */
+         we really did run out of space in output `line` buffer */
       if (EOF != cc) {
         ungetc(cc, file);
       }
