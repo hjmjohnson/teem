@@ -466,7 +466,7 @@ airOneLine(FILE *file, char *line, size_t size) {
          ==> same as Unix line termination above */
       ret = size;
     } else {
-      /* were NOT about to get a line termination,
+      /* we were NOT about to get a line termination,
          we really did run out of space in output `line` buffer */
       if (EOF != cc) {
         ungetc(cc, file);
