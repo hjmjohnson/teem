@@ -94,7 +94,8 @@ _nrrdCCFind_2(Nrrd *nout, unsigned int *numid, airArray *eqvArr, const Nrrd *nin
   out = AIR_CAST(unsigned int *, nout->data);
   sx = AIR_UINT(nin->axis[0].size);
   sy = AIR_UINT(nin->axis[1].size);
-#define IOK(I, S)       (0 <= (I) && (I) < (S))
+/* #define IOK(I, S)       (0 <= (I) && (I) < (S)) */
+#define IOK(I, S)       (AIR_UINT(I) < (S))
 #define VI2(XI, SX, YI) (AIR_INT(XI) + AIR_INT((SX) * (YI)))
   double noVal = 0.5; /* value different from any integer */
 /* with GET_V_2(., yi-1) or GET_I_2(., yi-1) with yi==0 don't need IOK(yi, sy):
