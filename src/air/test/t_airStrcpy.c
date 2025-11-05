@@ -46,5 +46,6 @@ main(int argc, const char *argv[]) {
   printf("(%s) |%s|=%zu\n", (!ret ? "NULL" : (ret == dst ? "dst" : "???")),
          dst ? dst : "NULL", dst ? strlen(dst) : 0);
 
+  free(dst);
   exit(0);
 }
