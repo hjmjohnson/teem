@@ -20,7 +20,21 @@
 #include "unrrdu.h"
 #include "privateUnrrdu.h"
 
+#ifdef _WIN32
+#include <io.h> /* for _isatty */
+#ifndef STDIN_FILENO
+#define STDIN_FILENO 0
+#endif
+#ifndef STDOUT_FILENO
+#define STDOUT_FILENO 1
+#endif
+#ifndef STDERR_FILENO
+#define STDERR_FILENO 2
+#endif
+#define isatty _isatty
+#else
 #include <unistd.h> /* for isatty() and STDIN_FILENO */
+#endif
 
 #define INFO "Print header of one or more NRRD files"
 static const char *_unrrdu_headInfoL
