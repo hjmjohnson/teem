@@ -998,7 +998,7 @@ extern float (*const nrrdFInsert[NRRD_TYPE_MAX + 1])(void *v, size_t I, float f)
 extern int (*const nrrdIInsert[NRRD_TYPE_MAX + 1])(void *v, size_t I, int j);
 extern unsigned int (*const nrrdUIInsert[NRRD_TYPE_MAX + 1])(void *v, size_t I,
                                                                   unsigned int j);
-extern int (*const nrrdSprint[NRRD_TYPE_MAX + 1])(char *, const void *);
+extern int (*const nrrdSprint[NRRD_TYPE_MAX + 1])(char *, size_t, const void *);
 /* ---- BEGIN non-NrrdIO */
 extern int (*const nrrdFprint[NRRD_TYPE_MAX + 1])(FILE *, const void *);
 extern void (*const nrrdMinMaxExactFind[NRRD_TYPE_MAX + 1])(void *minP,

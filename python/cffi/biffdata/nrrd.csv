@@ -130,10 +130,10 @@ nrrdSpaceSet,int,1,0,nrrd,nrrd/simple.c:81
 nrrdSpaceDimensionSet,int,1,0,nrrd,nrrd/simple.c:118
 nrrdSpaceOriginSet,int,1,0,nrrd,nrrd/simple.c:170
 nrrdContentSet_va,int,1,0,nrrd,nrrd/simple.c:469
-_nrrdCheck,int,1,3,nrrd,nrrd/simple.c:1291
-nrrdCheck,int,1,0,nrrd,nrrd/simple.c:1328
-nrrdSameSize,int,0,3,nrrd,nrrd/simple.c:1349
-nrrdSanity,int,0,0,nrrd,nrrd/simple.c:1534
+_nrrdCheck,int,1,3,nrrd,nrrd/simple.c:1292
+nrrdCheck,int,1,0,nrrd,nrrd/simple.c:1329
+nrrdSameSize,int,0,3,nrrd,nrrd/simple.c:1350
+nrrdSanity,int,0,0,nrrd,nrrd/simple.c:1535
 nrrdSlice,int,1,0,nrrd,nrrd/subset.c:37
 nrrdCrop,int,1,0,nrrd,nrrd/subset.c:182
 nrrdSliceSelect,int,1,0,nrrd,nrrd/subset.c:364
@@ -150,7 +150,7 @@ nrrdSimplePad_nva,int,1,0,nrrd,nrrd/superset.c:549
 nrrdIoStateSet,int,1,0,nrrd,nrrd/write.c:28
 nrrdIoStateEncodingSet,int,1,0,nrrd,nrrd/write.c:101
 nrrdIoStateFormatSet,int,1,0,nrrd,nrrd/write.c:121
-nrrdWrite,int,1,0,nrrd,nrrd/write.c:942
-nrrdStringWrite,int,1,0,nrrd,nrrd/write.c:958
-nrrdSave,int,1,0,nrrd,nrrd/write.c:979
-nrrdSaveMulti,int,1,0,nrrd,nrrd/write.c:1045
+nrrdWrite,int,1,0,nrrd,nrrd/write.c:1011
+nrrdStringWrite,int,1,0,nrrd,nrrd/write.c:1027
+nrrdSave,int,1,0,nrrd,nrrd/write.c:1048
+nrrdSaveMulti,int,1,0,nrrd,nrrd/write.c:1114

@@ -490,7 +490,8 @@ extern void *airSetNull(void **ptrP);
 extern void *airFree(void *ptr);
 extern FILE *airFopen(const char *name, FILE *std, const char *mode);
 extern FILE *airFclose(FILE *file);
-extern int airSinglePrintf(FILE *file, char *str, const char *fmt, ...);
+extern int airSinglePrintf(FILE *file, char *str, size_t strSize, /* */
+                               const char *fmt, ...);
 extern char *airSprintSize_t(char str[AIR_STRLEN_SMALL + 1], size_t val);
 /* ---- BEGIN non-NrrdIO */
 extern char *airSprintVecSize_t(char *str, const size_t *vec, unsigned int len);
