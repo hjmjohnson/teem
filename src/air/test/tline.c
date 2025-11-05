@@ -20,7 +20,7 @@
 #include "../air.h"
 
 FILE *
-myopen(char *name) {
+myopen(const char *name) {
 
   if (!strcmp(name, "-")) {
     return stdin;
@@ -39,43 +39,47 @@ myclose(FILE *file) {
 }
 
 int
-main(int argc, char *argv[]) {
-  char *me, *fileS, *line;
-  FILE *file;
-  int size, maxed, ret;
-
-  me = argv[0];
-  if (2 != argc) {
-    /*                       0   1   (2) */
-    fprintf(stderr, "usage: %s <file>\n", me);
+main(int argc, const char *argv[]) {
+  const char *me = argv[0];
+  if (3 != argc) {
+    /*                       0    1     2  (3) */
+    fprintf(stderr, "usage: %s <size> <file>\n", me);
     exit(1);
   }
-  fileS = argv[1];
+  const char *sizeStr = argv[1];
+  unsigned int sizeui;
+  if (1 != sscanf(sizeStr, "%u", &sizeui)) {
+    fprintf(stderr, "%s: couldn't parse \"%s\" as uint\n", me, sizeStr);
+    exit(1);
+  }
+  size_t size = sizeui;
+  const char *fileS = argv[2];
+  FILE *file;
   if (!(file = myopen(fileS))) {
     fprintf(stderr, "%s: couldn't open \"%s\" for reading\n", me, fileS);
     exit(1);
   }
-  myclose(file);
 
-  size = 30000;
+  char *line = size ? AIR_CALLOC(size, char) : NULL;
+  /* (copied from airOneLine info)
+   * Return values:
+   * 0 and line[0]=='\0': immediately hit EOF, or arguments are invalid
+   * 0 and line[0]!='\0': read something into `line` but hit EOF before seeing newline;
+   *                      caller will need strlen() to find out its length
+   *                   1: line was a single newline (or other line termination)
+   *      N with N<=size: line was N-1 characters followed by newline
+   *              size+1: didn't see a newline within size-1 characters
+   */
+  size_t ret;
+  printf("(using size = %zu)\n", size);
   do {
-    maxed = 0;
-    file = myopen(fileS);
-    line = (char *)calloc(size, sizeof(char));
-    printf(" ----------------- size = %d\n", size);
-    do {
-      ret = airOneLine(file, line, size);
-      if (ret) {
-        printf("%2d   |%s|\n", ret, line);
-        maxed |= (ret == size + 1);
-      }
-    } while (ret > 0);
-    myclose(file);
-    free(line);
-    size++;
-  } while (maxed);
-
-  printf("\n\nsize = %d\n", size);
-
+    ret = airOneLine(file, line, size);
+    if (ret) {
+      printf("%3zu |%s|=%zu\n", ret, line, strlen(line));
+    }
+  } while (ret > 0);
+  size++;
+  free(line);
+  myclose(file);
   exit(0);
 }
