@@ -71,11 +71,14 @@ main(int argc, const char *argv[]) {
    *              size+1: didn't see a newline within size-1 characters
    */
   size_t ret;
-  printf("(using size = %zu)\n", size);
   do {
     ret = airOneLine(file, line, size);
-    if (ret) {
-      printf("%3zu |%s|=%zu\n", ret, line, strlen(line));
+    if (ret || (line && line[0])) {
+      printf("%3zu %c|%s|=%zu\n", ret,
+             (ret == size + 1 ? 'M'                    /* maxed out */
+                              : (!ret && line[0] ? 'E' /* hit EOF before end-of-line */
+                                                 : ' ')),
+             line, strlen(line));
     }
   } while (ret > 0);
   size++;
