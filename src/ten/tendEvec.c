@@ -53,7 +53,7 @@ tend_evecMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
   for (cc = 0; cc < compLen; cc++) {
-    if (!AIR_IN_CL(0, comp[cc], 2)) {
+    if (!(comp[cc] <= 2)) {
       fprintf(stderr, "%s: requested component %u (%u of 3) not in [0..2]\n", me,
               comp[cc], cc + 1);
       airMopError(mop);
