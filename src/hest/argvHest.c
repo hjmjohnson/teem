@@ -191,6 +191,7 @@ with its (more baroque) quotearg_buffer_restyled() function
 // _hestPlainWord(str) is true if nothing in str needs quoting or escaping
 int
 _hestPlainWord(const char *s) {
+  assert(s); // quiets clang-tidy warning: Dereference of null pointer
   if (*s == '\0') {
     // wut - we got the empty string, yes needs quoting
     return 0;
