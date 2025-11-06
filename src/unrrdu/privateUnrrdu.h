@@ -22,6 +22,22 @@
 #  include <fcntl.h>
 #endif
 
+/* NOTE: this #ifdef..#endif block copied to other src/<lib>/private<Lib>.h files */
+#ifdef _WIN32
+#  ifndef STDIN_FILENO
+#    define STDIN_FILENO 0
+#  endif
+#  ifndef STDOUT_FILENO
+#    define STDOUT_FILENO 1
+#  endif
+#  ifndef STDERR_FILENO
+#    define STDERR_FILENO 2
+#  endif
+#  define isatty _isatty
+#else
+#  include <unistd.h> /* for isatty() and STDIN_FILENO */
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
