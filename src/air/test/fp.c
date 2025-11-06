@@ -36,7 +36,9 @@ main(int argc, char *argv[]) {
   g = g / g;
   printf("0.0/0.0 = %f\n", g);
   airFPFprintf_f(stdout, g);
-  hibit = (*((unsigned int *)&g) >> 22) & 1;
+  airFloat af;
+  af.f = g;
+  hibit = (af.i >> 22) & 1;
   printf("hi bit of 23-bit fraction field = %u\n", hibit);
   if (hibit == 1) {
     printf("(agrees with qnan hi bit==1 assumed in air/754.c)\n");
