@@ -223,9 +223,8 @@ _nrrdWriteEscaped(FILE *file, char *_dst, size_t _dstSize, const char *str,
                   const char *toescape, const char *tospace) {
   /* static const char me[] = "_nrrdWriteEscaped"; */
   size_t ci, dstSize, gslen; /* given strlen */
-
-  gslen = strlen(str);
   char *dst = _dst;
+  gslen = strlen(str);
   dstSize = _dstSize;
   for (ci = 0; ci < gslen; ci++) {
     char cc;
