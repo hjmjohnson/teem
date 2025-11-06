@@ -89,7 +89,8 @@ int /* Biff: 1 */
 nrrdOneLine(size_t *lenP, NrrdIoState *nio, FILE *file) {
   static const char me[] = "nrrdOneLine";
   char **line;
-  unsigned int lineIdx, len, needLen;
+  unsigned int lineIdx;
+  size_t len;
 
   if (!(lenP && nio && (file || nio->headerStringRead))) {
     biffAddf(NRRD, "%s: got NULL pointer (%p, %p, %p/%p)", me, AIR_VOIDP(lenP),
@@ -113,12 +114,12 @@ nrrdOneLine(size_t *lenP, NrrdIoState *nio, FILE *file) {
   if (file) {
     len = airOneLine(file, nio->line, nio->lineSize);
     if (nio->verbose >= 3) {
-      fprintf(stderr, "%s: (A) got len=%u |%s|=%zu (lineSize=%zu) from file\n", me, len,
+      fprintf(stderr, "%s: (A) got len=%zu |%s|=%zu (lineSize=%zu) from file\n", me, len,
               nio->line, strlen(nio->line), nio->lineSize);
     }
   } else {
     /* NOTE: NULL-ity error check above makes this safe */
-    needLen = _nrrdHeaderStringOneLineStrlen(nio);
+    size_t needLen = _nrrdHeaderStringOneLineStrlen(nio);
     if (needLen + 1 > nio->lineSize) {
       nio->lineSize = needLen + 1;
       airFree(nio->line); /* lose previous allocated line */
@@ -173,7 +174,7 @@ nrrdOneLine(size_t *lenP, NrrdIoState *nio, FILE *file) {
       }
       len = airOneLine(file, nio->line, nio->lineSize);
       if (nio->verbose >= 3) {
-        fprintf(stderr, "%s: (B) got len=%u |%s|=%zu (lineSize=%zu) from file\n", me,
+        fprintf(stderr, "%s: (B) got len=%zu |%s|=%zu (lineSize=%zu) from file\n", me,
                 len, nio->line, strlen(nio->line), nio->lineSize);
       }
     }
