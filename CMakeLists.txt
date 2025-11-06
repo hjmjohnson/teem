@@ -85,6 +85,9 @@ project(Teem VERSION 2.0.0
         HOMEPAGE_URL "https://teem.sourceforge.net/"
         LANGUAGES C)
 
+# For clang-tidy et al: generate (in build directory) compile_commands.json
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Version string (no space in version numbers, so doesn't have to be quoted)
 set(Teem_VERSION_STRING ${PROJECT_VERSION})
 
