@@ -29,7 +29,7 @@ It is still the case, however, the hest users do not need to call into biff */
 
 #include <limits.h> // for UINT_MAX
 #include <assert.h>
-#include <sys/errno.h>
+#include <errno.h>
 
 typedef unsigned int uint;
 
