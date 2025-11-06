@@ -391,7 +391,7 @@ _BIFF_DICT = {  # contents here are filled in by teem/python/cffi/exult.py Tffi.
     '_nrrdCheck': (_equals_one, 3, b'nrrd', 'nrrd/simple.c:1296'),
     'nrrdCheck': (_equals_one, 0, b'nrrd', 'nrrd/simple.c:1333'),
     'nrrdSameSize': ((lambda rv: 0 == rv), 3, b'nrrd', 'nrrd/simple.c:1354'),
-    'nrrdSanity': ((lambda rv: 0 == rv), 0, b'nrrd', 'nrrd/simple.c:1539'),
+    'nrrdSanity': ((lambda rv: 0 == rv), 0, b'nrrd', 'nrrd/simple.c:1541'),
     'nrrdSlice': (_equals_one, 0, b'nrrd', 'nrrd/subset.c:37'),
     'nrrdCrop': (_equals_one, 0, b'nrrd', 'nrrd/subset.c:182'),
     'nrrdSliceSelect': (_equals_one, 0, b'nrrd', 'nrrd/subset.c:366'),
