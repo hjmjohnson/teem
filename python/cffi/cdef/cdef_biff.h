@@ -22,20 +22,6 @@ CFFI, within its many limitations, specifically lacking a C pre-processor
 */
 /* ---- BEGIN non-NrrdIO */
 /* ---- END non-NrrdIO */
-/*
-** biffMsg struct
-**
-** externally usable thing for holding error messages
-*/
-typedef struct {
-  char *key;           /* string for identifying the general source
-                          of the error message; set once, at time
-                          of biffMsg creation */
-  char **err;          /* array of error strings; the err array itself
-                          is NOT null-terminated */
-  unsigned int errNum; /* length of "err" == # strings stored */
-  airArray *errArr;    /* air array for err and num */
-} biffMsg;
 /* biffbiff.c */
 /* ---- BEGIN non-NrrdIO */
 extern const int biffPresent;
@@ -47,15 +33,12 @@ extern void biffMaybeAdd(const char *key, const char *err, int useBiff);
 extern void biffMaybeAddf(int useBiff, const char *key, const char *errfmt, ...)
   ;
 extern char *biffGet(const char *key);
-extern unsigned int biffGetStrlen(const char *key);
-extern void biffSetStr(char *str, const char *key);
 /* ---- BEGIN non-NrrdIO */
 extern unsigned int biffCheck(const char *key);
 extern void biffMove(const char *destKey, const char *err, const char *srcKey);
 extern void biffMovef(const char *destKey, const char *srcKey, const char *errfmt,
                            ...)
   ;
-extern void biffSetStrDone(char *str, const char *key);
 /* ---- END non-NrrdIO */
 extern void biffDone(const char *key);
 extern char *biffGetDone(const char *key);
