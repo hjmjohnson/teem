@@ -21,11 +21,11 @@
 #include "privateHest.h"
 
 #ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#  define WIN32_LEAN_AND_MEAN
+#  include <windows.h>
 #else
-#include <sys/ioctl.h> // for ioctl(), TIOCGWINSZ, struct winsize
-#include <unistd.h>    // for STDOUT_FILENO and friends
+#  include <sys/ioctl.h> // for ioctl(), TIOCGWINSZ, struct winsize
+#  include <unistd.h>    // for STDOUT_FILENO and friends
 #endif
 
 const int hestPresent = 42;
@@ -391,9 +391,8 @@ hestParmColumnsIoctl(hestParm *hparm, unsigned int nonIoctlColumns) {
   CONSOLE_SCREEN_BUFFER_INFO csbi;
   int ret = 1; /* default if all attempts fail */
   unsigned int sanemin = AIR_MAX(20, hestDefaultColumns / 2);
-  HANDLE hands[3] = { GetStdHandle(STD_INPUT_HANDLE),
-                      GetStdHandle(STD_OUTPUT_HANDLE),
-                      GetStdHandle(STD_ERROR_HANDLE) };
+  HANDLE hands[3] = {GetStdHandle(STD_INPUT_HANDLE), GetStdHandle(STD_OUTPUT_HANDLE),
+                     GetStdHandle(STD_ERROR_HANDLE)};
   for (int hi = 0; hi < 3; ++hi) {
     HANDLE h = hands[hi];
     if (h && h != INVALID_HANDLE_VALUE && GetConsoleScreenBufferInfo(h, &csbi)) {
@@ -848,7 +847,6 @@ _hestOPCheck(const hestOpt *hopt, const hestParm *hparm) {
           return (free(tbuff), 1);
         }
       }
-      free(tbuff);
       if (hparm->respectDashBraceComments && (strchr(flag, '{') || strchr(flag, '}'))) {
         biffAddf(HEST,
                  "%s%srequested hparm->respectDashBraceComments but opt[%u]'s flag "
@@ -856,6 +854,7 @@ _hestOPCheck(const hestOpt *hopt, const hestParm *hparm) {
                  _ME_, opi, flag);
         return (free(tbuff), 1);
       }
+      free(tbuff);
     } else { // ------ end of if (hopt[opi].flag)
       // hopt[opi] is unflagged
       ufNum += 1;
