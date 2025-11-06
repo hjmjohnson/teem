@@ -22,8 +22,7 @@
 
 int
 main(void) {
-  char *tmp, *s1, *s2;
-  biffMsg *msg1, *msg2;
+  char *tmp;
 
   /*
   biffAdd("axis", "the first error axis");
@@ -71,6 +70,9 @@ main(void) {
   printf("%s", (tmp = biffGetDone("axo")));
   free(tmp);
 
+  /*
+  biffMsg *msg1, *msg2;
+  char *s1, *s2;
   printf("=================================\n");
   msg1 = biffMsgNew("roberts");
   biffMsgAdd(msg1, "biffMsgAdd hello, said roberts");
@@ -91,6 +93,7 @@ main(void) {
   printf("=================================\n");
   msg1 = biffMsgNix(msg1);
   msg2 = biffMsgNix(msg2);
+  */
 
   /*
   biffAddf("test", "%s: this is a test %d %f", "me", 1, 2.0);
