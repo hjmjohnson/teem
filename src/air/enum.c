@@ -328,9 +328,9 @@ airEnumCheck(char err[AIR_STRLEN_LARGE + 1], const airEnum *enm) {
       }
       if (!enm->sense) {
         char bb[2][AIR_STRLEN_SMALL + 1];
-        strcpy(bb[0], enm->str[ii]);
+        airStrcpy(bb[0], sizeof(bb[0]), enm->str[ii]);
         airToLower(bb[0]);
-        strcpy(bb[1], enm->str[jj]);
+        airStrcpy(bb[1], sizeof(bb[1]), enm->str[jj]);
         airToLower(bb[1]);
         if (!strcmp(bb[0], bb[1])) {
           if (err) {
@@ -452,9 +452,9 @@ airEnumCheck(char err[AIR_STRLEN_LARGE + 1], const airEnum *enm) {
         }
         if (!enm->sense) {
           char bb[2][AIR_STRLEN_SMALL + 1];
-          strcpy(bb[0], enm->strEqv[ii]);
+          airStrcpy(bb[0], sizeof(bb[0]), enm->strEqv[ii]);
           airToLower(bb[0]);
-          strcpy(bb[1], enm->strEqv[jj]);
+          airStrcpy(bb[1], sizeof(bb[1]), enm->strEqv[jj]);
           airToLower(bb[1]);
           if (!strcmp(bb[0], bb[1])) {
             if (err) {
