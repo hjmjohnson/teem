@@ -31,7 +31,7 @@ const char *const _nrrdTextSep = " ,\t";
 const char *const _nrrdNoSpaceVector = "none";
 
 /* returns non-zero if given char `cc` is in _nrrdFieldSep */
-int
+int /* Biff: (private) nope */
 _nrrdCharIsFieldSep(char cc) {
   unsigned int ii, fslen = (unsigned int)strlen(_nrrdFieldSep);
   int ret = 0;

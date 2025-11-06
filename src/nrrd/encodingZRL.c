@@ -26,7 +26,7 @@ _nrrdEncodingZRL_available(void) {
   return AIR_TRUE;
 }
 
-static int
+static int /* Biff: 1 */
 _nrrdEncodingZRL_read(FILE *file, void *data, size_t elementNum, Nrrd *nrrd,
                       NrrdIoState *nio) {
   static const char me[] = "_nrrdEncodingZRL_read";
