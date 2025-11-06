@@ -133,7 +133,7 @@ nrrdContentSet_va,int,1,0,nrrd,nrrd/simple.c:472
 _nrrdCheck,int,1,3,nrrd,nrrd/simple.c:1296
 nrrdCheck,int,1,0,nrrd,nrrd/simple.c:1333
 nrrdSameSize,int,0,3,nrrd,nrrd/simple.c:1354
-nrrdSanity,int,0,0,nrrd,nrrd/simple.c:1539
+nrrdSanity,int,0,0,nrrd,nrrd/simple.c:1541
 nrrdSlice,int,1,0,nrrd,nrrd/subset.c:37
 nrrdCrop,int,1,0,nrrd,nrrd/subset.c:182
 nrrdSliceSelect,int,1,0,nrrd,nrrd/subset.c:366
