@@ -1,0 +1,12 @@
+U:
+bingo
+bing
+bin
+
+D:
+bingo
+bing
+bin
+
+M:
+bingobingbin
