@@ -55,7 +55,7 @@ function(teem_create_test_bin target src)
   cmake_parse_arguments(TCTE "${options}" "" "" ${ARGN})
 
   add_executable(${target} ${src})
-  target_link_libraries(${target} PRIVATE Teem teem_testutil)
+  target_link_libraries(${target} PRIVATE teem_testutil)
 
   # Always store the data dir for later
   set_property(TARGET ${target} PROPERTY TEEM_TEST_DATA_DIR "${CMAKE_SOURCE_DIR}/data")
