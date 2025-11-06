@@ -44,13 +44,12 @@ typedef union {
 } _beu;
 
 /*
-** _bmsgStart()
-**
-** allocates data structers needed by biff.  Panics if
-** anything goes wrong.
-**
-** NOTE: Can be harmlessly called multiple times.
-*/
+ * _bmsgStart()
+ *
+ * allocates data structers needed by biff.  Panics if anything goes wrong.
+ *
+ * NOTE: Can be harmlessly called multiple times.
+ */
 static void
 _bmsgStart(void) {
   static const char me[] = "[biff] _bmsgStart";
@@ -66,7 +65,7 @@ _bmsgStart(void) {
     fprintf(stderr, "%s: PANIC: couldn't allocate internal data\n", me);
     /* exit(1); */
   }
-  /* airArrayPointerCB(_bmsgArr, NULL, (airMopper)biffMsgNix);*/
+  /* airArrayPointerCB(_bmsgArr, NULL, (airMopper)_biffMsgNix);*/
   return;
 }
 
@@ -82,11 +81,11 @@ _bmsgFinish(void) {
 }
 
 /*
-** _bmsgFind()
-**
-** returns the biffMsg (in _bmsg) of the entry with the given key, or
-** NULL if it was not found
-*/
+ * _bmsgFind()
+ *
+ * returns the biffMsg (in _bmsg) of the entry with the given `key`,
+ * or NULL if it was not found
+ */
 static biffMsg *
 _bmsgFind(const char *key) {
   static const char me[] = "[biff] _bmsgFind";
@@ -110,8 +109,8 @@ _bmsgFind(const char *key) {
 }
 
 /*
-** assumes that msg really is in _bmsg[]
-*/
+ * assumes that msg really is in _bmsg[]
+ */
 static unsigned int
 _bmsgFindIdx(biffMsg *msg) {
   unsigned int ii;
@@ -125,12 +124,12 @@ _bmsgFindIdx(biffMsg *msg) {
 }
 
 /*
-** _bmsgAdd()
-**
-** if given key already has a biffMsg in _bmsg, returns that.
-** otherise, adds a new biffMsg for given key to _bmsg, and returns it
-** panics if there is a problem
-*/
+ * _bmsgAdd()
+ *
+ * If given `key` already has a biffMsg in `_bmsg`, returns that.
+ * otherwise, adds a new biffMsg for given `key` to `_bmsg`, and returns it.
+ * Panics if there is a problem
+ */
 static biffMsg *
 _bmsgAdd(const char *key) {
   static const char me[] = "[biff] _bmsgAdd";
@@ -152,29 +151,25 @@ _bmsgAdd(const char *key) {
       fprintf(stderr, "%s: PANIC: couldn't accommodate one more key\n", me);
       return NULL; /* exit(1); */
     }
-    msg = _bmsg[ii] = biffMsgNew(key);
+    msg = _bmsg[ii] = _biffMsgNew(key);
   }
   return msg;
 }
 
-/***********************************************************************/
-/***********************************************************************/
-
 /*
-******** biffAdd()
-**
-** Adds string "err" at key "key", whether or not there are any
-** existing messages there.  Since biffSet() was killed
-** Wed Apr 20 11:11:51 EDT 2005, this has become the main biff
-** function.
-*/
+ ******** biffAdd()
+ *
+ * Adds string `err` at key `key`, whether or not there are any existing messages there.
+ * Since biffSet() was killed Wed Apr 20 11:11:51 EDT 2005, this has become the main biff
+ * function (but later the more useful biffAddf really became the main biff function)
+ */
 void
 biffAdd(const char *key, const char *err) {
   biffMsg *msg;
 
   _bmsgStart();
   msg = _bmsgAdd(key);
-  biffMsgAdd(msg, err);
+  _biffMsgAdd(msg, err);
   return;
 }
 
@@ -189,12 +184,11 @@ _biffAddVL(const char *key, const char *errfmt, va_list args) {
 }
 
 /*
-******** biffAddf()
-**
-** Adds string "err" at key "key", whether or not there are any
-** existing messages there.  This version accepts a printf style
-** format string as input.
-*/
+ ******** biffAddf()
+ *
+ * Adds string `err` at key `key`, whether or not there are any existing messages there.
+ * This version accepts a printf style format string as input.
+ */
 void
 biffAddf(const char *key, const char *errfmt, ...) {
   va_list args;
@@ -205,33 +199,11 @@ biffAddf(const char *key, const char *errfmt, ...) {
   return;
 }
 
-#if 0
 /*
-******** biffAddf_e
-**
-** calls (eventually) biffMsgAdd if msg is non-NULL, otherwise calls
-** biffAdd if msg is NULL.
-*/
-void
-biffAddf_e(biffMsg *msg, const char *key, const char *errfmt, ...) {
-  va_list args;
-
-  va_start(args, errfmt);
-  if (msg) {
-    _biffMsgAddVL(msg, errfmt, args);
-  } else {
-    _biffAddVL(key, errfmt, args);
-  }
-  va_end(args);
-  return;
-}
-#endif
-
-/*
-******** biffMaybeAdd()
-**
-** wrapper around biffAdd() but doesn't actually do anything if !useBiff
-*/
+ ******** biffMaybeAdd()
+ *
+ * wrapper around biffAdd() but doesn't actually do anything if !useBiff
+ */
 void
 biffMaybeAdd(const char *key, const char *err, int useBiff) {
 
@@ -254,114 +226,78 @@ biffMaybeAddf(int useBiff, const char *key, const char *errfmt, ...) {
 }
 
 /*
-******** biffGet()
-**
-** creates a string which records all the errors at given key and
-** returns it.  Returns NULL in case of error.  This function should
-** be considered a glorified strdup(): it is the callers responsibility
-** to free() this string later
-*/
+ ******** biffGet()
+ *
+ * creates a string which records all the errors at given `key` and returns it.
+ * Returns NULL in case of error.  This function should be considered a glorified
+ * strdup(): it is the callers responsibility to free() this string later
+ */
 char *
 biffGet(const char *key) {
   static const char me[] = "biffGet";
-  char *ret;
+  char *_ret, *ret;
+  size_t retSize;
   biffMsg *msg;
+  unsigned int ii;
 
   _bmsgStart();
   msg = _bmsgFind(key);
   if (!msg) {
     static const char err[] = "[%s] No information for this key!";
-    size_t errlen;
     fprintf(stderr, "%s: WARNING: no information for key \"%s\"\n", me, key);
-    errlen = strlen(err) + strlen(key) + 1;
-    ret = AIR_CALLOC(errlen, char);
+    retSize = strlen(err) + strlen(key) + 1;
+    ret = AIR_CALLOC(retSize, char);
     if (!ret) {
       fprintf(stderr, "%s: PANIC: unable to allocate buffer\n", me);
       return NULL; /* exit(1); */
     }
-    snprintf(ret, errlen, err, key);
+    snprintf(ret, retSize, err, key);
     return ret;
   }
-
-  ret = AIR_CALLOC(biffMsgStrlen(msg) + 1, char);
+  retSize = 0;
+  for (ii = 0; ii < msg->errNum; ii++) {
+    retSize += strlen(msg->key) + strlen(msg->err[ii]) + strlen("[] \n");
+  }
+  retSize += 1; /* for '\0' */
+  ret = _ret = AIR_CALLOC(retSize, char);
   if (!ret) {
     fprintf(stderr, "%s: PANIC: unable to allocate buffer\n", me);
     return NULL; /* exit(1); */
   }
-  biffMsgStrSet(ret, msg);
-  return ret;
-}
-
-/*
-******** biffGetStrlen()
-**
-** for when you want to allocate the buffer for the biff string, this is
-** how you learn its length
-*/
-unsigned int
-biffGetStrlen(const char *key) {
-  static const char me[] = "biffGetStrlen";
-  biffMsg *msg;
-  unsigned int len;
-
-  _bmsgStart();
-  msg = _bmsgFind(key);
-  if (!msg) {
-    fprintf(stderr, "%s: WARNING: no information for key \"%s\"\n", me, key);
-    return 0;
+  ret[0] = '\0';
+  for (ii = msg->errNum; ii > 0; ii--) {
+    snprintf(ret, retSize, "[%s] %s\n", msg->key, msg->err[ii - 1]);
+    STRINCR(ret, retSize);
   }
-  len = biffMsgStrlen(msg);
-  len += 1; /* GLK forgets if the convention is that the caller allocates
-               for one more to include '\0'; this is safer */
-  return len;
-}
-
-/*
-******** biffSetStr()
-**
-** for when you want to allocate the buffer for the biff string, this is
-** how you get the error message itself
-*/
-void
-biffSetStr(char *str, const char *key) {
-  static const char me[] = "biffSetStr";
-  biffMsg *msg;
-
-  if (!str) {
-    fprintf(stderr, "%s: ERROR: got NULL buffer for \"%s\"\n", me, key);
-    return;
-  }
-
-  _bmsgStart();
-  msg = _bmsgFind(key);
-  if (!msg) {
-    fprintf(stderr, "%s: WARNING: no information for key \"%s\"\n", me, key);
-    return;
-  }
-  biffMsgStrSet(str, msg);
-
-  return;
+  return _ret;
 }
 
 /*
 ******** biffCheck()
 **
 ** sees how many messages there are for a given key;
-** Note that this is just a simple wrapper around biffMsgErrNum
 */
 unsigned int
 biffCheck(const char *key) {
+  biffMsg *msg;
 
   _bmsgStart();
-  return biffMsgErrNum(_bmsgFind(key));
+  msg = _bmsgFind(key);
+  if (_biffMsgNoop == msg) {
+    return 0;
+  }
+  if (!msg) {
+    return 0;
+  }
+  return msg->errNum;
 }
 
 /*
-******** biffDone()
-**
-** frees everything associated with given key, and shrinks list of keys,
-** and calls _bmsgFinish() if there are no keys left
-*/
+ ******* biffDone()
+ *
+ * frees everything associated with given `key`, and shrinks list of keys,
+ * and calls _bmsgFinish() if there are no keys left
+ */
 void
 biffDone(const char *key) {
   static const char me[] = "biffDone";
@@ -376,7 +312,7 @@ biffDone(const char *key) {
     return;
   }
   idx = _bmsgFindIdx(msg);
-  biffMsgNix(msg);
+  _biffMsgNix(msg);
   if (_bmsgNum > 1) {
     /* if we have more than one key in action, move the last biffMsg
        to the position that was just cleared up */
@@ -403,7 +339,7 @@ biffMove(const char *destKey, const char *err, const char *srcKey) {
     fprintf(stderr, "%s: WARNING: key \"%s\" unknown\n", me, srcKey);
     return;
   }
-  biffMsgMove(dest, src, err);
+  _biffMsgMove(dest, src, err);
   return;
 }
 
@@ -445,17 +381,3 @@ biffGetDone(const char *key) {
 
   return ret;
 }
-
-/* ---- BEGIN non-NrrdIO */
-void
-biffSetStrDone(char *str, const char *key) {
-
-  _bmsgStart();
-
-  biffSetStr(str, key);
-  biffDone(key); /* will call _bmsgFinish if this is the last key */
-
-  return;
-}
-/* ---- END non-NrrdIO */
-/* this is the end */

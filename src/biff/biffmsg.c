@@ -26,28 +26,27 @@ buffer is used for message handling; this should eventually be avoided by using 
 like asprintf and vasprintf which allocated the string as needed.  However (writing here
 in 2025), vasprintf is not apparently part of any C standard (as per
 https://en.cppreference.com/w/c/experimental/dynamic/asprintf), so we make do with
-snprintf and vsnprintf
+snprintf and vsnprintf, used with _HACK_STRLEN.  Note that we are NOT merely hoping
+that incoming error messages are shorter than _HACK_STRLEN. If they are longer, they
+will be truncated safely to avoid any buffer overflow.
 */
 #define _HACK_STRLEN AIR_STRLEN_HUGE
 #define _MSG_INCR    2
 
-static const biffMsg _biffMsgNoop = {NULL, NULL, 0, NULL};
 /*
-******** _biffMsgNoop
-**
-** pass this instead of a real biffMsg (allocated by biffMsgNew) as a
-** flag to say, "don't bother, really".  This turns all the biffMsg
-** functions into no-ops (except that var-args are still consumed
-** where they are used)
-*/
-/* with the privitization of biffMsg stuff this alas became unavailable:
-  biffMsg *const biffMsgNoop = &_biffMsgNoop;
-  However all the code below for handling the Noop has been preserved fwiw
-*/
+ * _biffMsgNoop
+ *
+ * pass this instead of a real biffMsg (allocated by biffMsgNew) as a
+ * flag to say, "don't bother, really".  This turns all the biffMsg
+ * functions into no-ops (except that var-args are still consumed
+ * where they are used)
+ */
+static const biffMsg _biffMsgNoopStruct = {NULL, NULL, 0, NULL};
+const biffMsg *const _biffMsgNoop = &_biffMsgNoopStruct;
 
 biffMsg *
-biffMsgNew(const char *key) {
-  static const char me[] = "biffMsgNew";
+_biffMsgNew(const char *key) {
+  static const char me[] = "_biffMsgNew";
   biffMsg *msg;
 
   if (!key) {
@@ -75,9 +74,9 @@ biffMsgNew(const char *key) {
 }
 
 biffMsg *
-biffMsgNix(biffMsg *msg) {
+_biffMsgNix(biffMsg *msg) {
 
-  if (msg && msg != &_biffMsgNoop) {
+  if (msg && msg != _biffMsgNoop) {
     airFree(msg->key);
     airArrayLenSet(msg->errArr, 0); /* frees all msg->err[i] */
     airArrayNuke(msg->errArr);
@@ -87,16 +86,16 @@ biffMsgNix(biffMsg *msg) {
 }
 
 /*
-** adds a given message to the given entry.  The message is processed to
-** convert all whitespace into ' ', and to eliminate whitespace at the
-** end of the message.
-*/
+ * adds a given message to the given entry.  The message is processed to
+ * convert all whitespace into ' ', and to eliminate whitespace at the
+ * end of the message.
+ */
 void
-biffMsgAdd(biffMsg *msg, const char *err) {
-  static const char me[] = "biffMsgAdd";
+_biffMsgAdd(biffMsg *msg, const char *err) {
+  static const char me[] = "_biffMsgAdd";
   unsigned int idx;
 
-  if (&_biffMsgNoop == msg) {
+  if (_biffMsgNoop == msg) {
     return;
   }
   if (!(msg && err)) {
@@ -122,26 +121,14 @@ _biffMsgAddVL(biffMsg *msg, const char *errfmt, va_list args) {
 
   /* h/t Jorik Blaas for highlighting need for vsnprintf over vsprintf */
   vsnprintf(errstr, _HACK_STRLEN + 1, errfmt, args);
-  biffMsgAdd(msg, errstr);
+  _biffMsgAdd(msg, errstr);
   return;
 }
 
-/* ---- BEGIN non-NrrdIO */
-void
-biffMsgAddf(biffMsg *msg, const char *errfmt, ...) {
-  va_list args;
+static void
+_biffMsgClear(biffMsg *msg) {
 
-  va_start(args, errfmt);
-  _biffMsgAddVL(msg, errfmt, args);
-  va_end(args);
-  return;
-}
-/* ---- END non-NrrdIO */
-
-void
-biffMsgClear(biffMsg *msg) {
-
-  if (&_biffMsgNoop == msg) {
+  if (_biffMsgNoop == msg) {
     return;
   }
   airArrayLenSet(msg->errArr, 0); /* frees all msg->err[i] */
@@ -152,34 +139,35 @@ biffMsgClear(biffMsg *msg) {
 /*
 ** max length of line formatted "[<key>] <err>\n"
 */
-static unsigned int
+static size_t
 _biffMsgLineLenMax(const biffMsg *msg) {
-  unsigned int ii, len, maxlen;
+  unsigned int ii;
+  size_t len, maxlen;
 
-  if (&_biffMsgNoop == msg) {
+  if (_biffMsgNoop == msg) {
     return 0;
   }
   maxlen = 0;
   for (ii = 0; ii < msg->errNum; ii++) {
-    len = AIR_UINT(strlen(msg->err[ii]) + strlen(msg->key) + strlen("[] \n"));
+    len = strlen(msg->err[ii]) + strlen(msg->key) + strlen("[] \n");
     maxlen = AIR_MAX(maxlen, len);
   }
   return maxlen;
 }
 
 /*
-******** biffMsgMove
-**
-** "src" is not const because we clear it after moving things out
-*/
+ * _biffMsgMove
+ *
+ * "src" is not const because we clear it after moving things out
+ */
 void
-biffMsgMove(biffMsg *dest, biffMsg *src, const char *err) {
-  static const char me[] = "biffMsgMove";
+_biffMsgMove(biffMsg *dest, biffMsg *src, const char *err) {
+  static const char me[] = "_biffMsgMove";
   unsigned int ii;
-  size_t bsize;
+  size_t buffSize;
   char *buff;
 
-  if (&_biffMsgNoop == dest || &_biffMsgNoop == src) {
+  if (_biffMsgNoop == dest || _biffMsgNoop == src) {
     return;
   }
   if (!(dest && src)) {
@@ -187,26 +175,26 @@ biffMsgMove(biffMsg *dest, biffMsg *src, const char *err) {
             AIR_VOIDP(src));
     return; /* exit(1); */
   }
-  /* if src and dest are same, this degenerates to biffMsgAdd */
+  /* if src and dest are same, this degenerates to _biffMsgAdd */
   if (dest == src && airStrlen(err)) {
-    biffMsgAdd(dest, err);
+    _biffMsgAdd(dest, err);
     return;
   }
 
-  bsize = _biffMsgLineLenMax(src) + 1;
-  buff = AIR_CALLOC(bsize, char);
+  buffSize = _biffMsgLineLenMax(src) + 1;
+  buff = AIR_CALLOC(buffSize, char);
   if (!buff) {
     fprintf(stderr, "%s: PANIC: can't allocate buffer\n", me);
     return; /* exit(1); */
   }
   for (ii = 0; ii < src->errNum; ii++) {
-    snprintf(buff, bsize, "[%s] %s", src->key, src->err[ii]);
-    biffMsgAdd(dest, buff);
+    snprintf(buff, buffSize, "[%s] %s", src->key, src->err[ii]);
+    _biffMsgAdd(dest, buff);
   }
   free(buff);
-  biffMsgClear(src);
+  _biffMsgClear(src);
   if (airStrlen(err)) {
-    biffMsgAdd(dest, err);
+    _biffMsgAdd(dest, err);
   }
   return;
 }
@@ -216,121 +204,6 @@ _biffMsgMoveVL(biffMsg *dest, biffMsg *src, const char *errfmt, va_list args) {
   char errstr[_HACK_STRLEN + 1];
 
   vsnprintf(errstr, _HACK_STRLEN + 1, errfmt, args);
-  biffMsgMove(dest, src, errstr);
+  _biffMsgMove(dest, src, errstr);
   return;
-}
-
-void
-biffMsgMovef(biffMsg *dest, biffMsg *src, const char *errfmt, ...) {
-  va_list args;
-
-  va_start(args, errfmt);
-  _biffMsgMoveVL(dest, src, errfmt, args);
-  va_end(args);
-  return;
-}
-
-/*
-******** biffMsgErrNum
-**
-** returns number of errors in a message
-*/
-unsigned int
-biffMsgErrNum(const biffMsg *msg) {
-
-  if (&_biffMsgNoop == msg) {
-    return 0;
-  }
-  if (!msg) {
-    return 0;
-  }
-  return msg->errNum;
-}
-
-/*
-******** biffMsgStrlen
-**
-** returns length of string (not including null termination, as usual)
-** of the error message that will be generated by biffMsgStrSet
-*/
-unsigned int
-biffMsgStrlen(const biffMsg *msg) {
-  static const char me[] = "biffMsgStrlen";
-  unsigned int ii, len;
-
-  if (&_biffMsgNoop == msg) {
-    return 0;
-  }
-  if (!(msg)) {
-    fprintf(stderr, "%s: PANIC got NULL msg %p\n", me, AIR_CVOIDP(msg));
-    return 0; /* exit(1); */
-  }
-
-  len = 0;
-  for (ii = 0; ii < msg->errNum; ii++) {
-    len += AIR_UINT(strlen(msg->key) + strlen(msg->err[ii]) + strlen("[] \n"));
-  }
-  return len + 1;
-}
-
-static char *
-_biffMsgStrAlloc(const biffMsg *msg) {
-  static const char me[] = "_biffMsgStrAlloc";
-  char *ret;
-  unsigned int len;
-
-  if (&_biffMsgNoop == msg) {
-    return NULL;
-  }
-  len = biffMsgStrlen(msg);
-  ret = AIR_CALLOC(len + 1, char);
-  if (!ret) {
-    fprintf(stderr, "%s: PANIC couldn't alloc string", me);
-    return NULL; /* exit(1); */
-  }
-  return ret;
-}
-
-/*
-** ret is assumed to be allocated for biffMsgStrlen()+1, or is the
-** the return from _biffMsgStrAlloc
-*/
-void
-biffMsgStrSet(char *ret, const biffMsg *msg) {
-  static const char me[] = "biffMsgStrSet";
-  char *buff;
-  size_t bsize;
-  unsigned int ii;
-
-  if (&_biffMsgNoop == msg) {
-    return;
-  }
-  if (!ret) {
-    fprintf(stderr, "%s: PANIC got NULL ret", me);
-    return;
-  }
-  bsize = _biffMsgLineLenMax(msg) + 1;
-  buff = AIR_CALLOC(bsize, char);
-  if (!buff) {
-    fprintf(stderr, "%s: PANIC couldn't alloc buffer", me);
-    return; /* exit(1); */
-  }
-  strcpy(ret, "");
-  for (ii = msg->errNum; ii > 0; ii--) {
-    snprintf(buff, bsize, "[%s] %s\n", msg->key, msg->err[ii - 1]);
-    strcat(ret, buff);
-  }
-  free(buff);
-}
-
-char *
-biffMsgStrGet(const biffMsg *msg) {
-  char *ret;
-
-  if (&_biffMsgNoop == msg) {
-    return NULL;
-  }
-  ret = _biffMsgStrAlloc(msg);
-  biffMsgStrSet(ret, msg);
-  return ret;
 }

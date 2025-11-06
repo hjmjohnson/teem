@@ -48,21 +48,6 @@
 extern "C" {
 #endif
 
-/*
-** biffMsg struct
-**
-** externally usable thing for holding error messages
-*/
-typedef struct {
-  char *key;           /* string for identifying the general source
-                          of the error message; set once, at time
-                          of biffMsg creation */
-  char **err;          /* array of error strings; the err array itself
-                          is NOT null-terminated */
-  unsigned int errNum; /* length of "err" == # strings stored */
-  airArray *errArr;    /* air array for err and num */
-} biffMsg;
-
 /* biffbiff.c */
 /* ---- BEGIN non-NrrdIO */
 BIFF_EXPORT const int biffPresent;
@@ -80,8 +65,6 @@ BIFF_EXPORT void biffMaybeAddf(int useBiff, const char *key, const char *errfmt,
 #endif
   ;
 BIFF_EXPORT char *biffGet(const char *key);
-BIFF_EXPORT unsigned int biffGetStrlen(const char *key);
-BIFF_EXPORT void biffSetStr(char *str, const char *key);
 /* ---- BEGIN non-NrrdIO */
 BIFF_EXPORT unsigned int biffCheck(const char *key);
 BIFF_EXPORT void biffMove(const char *destKey, const char *err, const char *srcKey);
@@ -91,7 +74,6 @@ BIFF_EXPORT void biffMovef(const char *destKey, const char *srcKey, const char *
   __attribute__((format(printf, 3, 4)))
 #endif
   ;
-BIFF_EXPORT void biffSetStrDone(char *str, const char *key);
 /* ---- END non-NrrdIO */
 BIFF_EXPORT void biffDone(const char *key);
 BIFF_EXPORT char *biffGetDone(const char *key);
