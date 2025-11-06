@@ -454,7 +454,7 @@ extern char *airUnescape(char *s);
 extern char *airOneLinify(char *s);
 extern char *airToLower(char *str);
 extern char *airToUpper(char *str);
-extern unsigned int airOneLine(FILE *file, char *line, unsigned int size);
+extern size_t airOneLine(FILE *file, char *line, size_t size);
 /* sane.c */
 /*
 ******** airInsane enum
