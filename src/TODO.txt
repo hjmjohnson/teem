@@ -58,6 +58,11 @@ size_t instead of unsigned long long, or at least adding versions that
 work with size_t
 ******* consider terminating airEnum->strEqv with NULL (just like argv)
 instead of with empty string "" (or allowing either NULL or "")
+  e.g. look at src/air/enum.c:
+    /* want strlen and not airStrlen here because the strEqv array
+       should be terminated by a non-null empty string */
+    for (ii = 0; strlen(enm->strEqv[ii]); ii++) {
+      airStrcpy(test, AIR_STRLEN_SMALL + 1, enm->strEqv[ii]);
 * make airOneLine return number of bytes read; current return
   of string length is entirely redundant with return of strlen()
   and then enable the ftell() check after PNG magic read
