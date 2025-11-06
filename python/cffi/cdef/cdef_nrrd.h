@@ -50,9 +50,9 @@ CFFI, within its many limitations, specifically lacking a C pre-processor
    things in heavy-handed clang-format off/on directives, a stable and very legible
    formatting is possible by starting the comment on the left column as done here, and
    manually indenting each comment block individually. Starting on column 34 was chosen
-   as a compromise value throughout. Also, the type declaration is given explicitly for
-   nearly every member (rather than having a long multi-page comma list), which increases
-   legibility and modularity. */
+   as a compromise value for uniformity throughout. Also, the type declaration is given
+   explicitly for nearly every member (rather than having a long multi-page comma list),
+   which increases legibility and modularity. */
 typedef struct {
   size_t size;
   /*                             Number of elements along each axis */
