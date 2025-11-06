@@ -1465,65 +1465,67 @@ _nrrdSplitSizes(size_t *pieceSize, size_t *pieceNum, Nrrd *nrrd, unsigned int sp
 static int /* Biff: 1 */
 _nrrdCheckEnums(void) {
   static const char me[] = "_nrrdCheckEnums";
-  char which[AIR_STRLEN_SMALL + 1];
+#define WH_SIZE (AIR_STRLEN_SMALL + 1)
+  char wh[WH_SIZE];
 
   if (nrrdFormatTypeLast - 1 != NRRD_FORMAT_TYPE_MAX) {
-    strcpy(which, "nrrdFormat");
+    airStrcpy(wh, WH_SIZE, "nrrdFormat");
     goto err;
   }
   if (nrrdTypeLast - 1 != NRRD_TYPE_MAX) {
-    strcpy(which, "nrrdType");
+    airStrcpy(wh, WH_SIZE, "nrrdType");
     goto err;
   }
   if (nrrdEncodingTypeLast - 1 != NRRD_ENCODING_TYPE_MAX) {
-    strcpy(which, "nrrdEncodingType");
+    airStrcpy(wh, WH_SIZE, "nrrdEncodingType");
     goto err;
   }
   if (nrrdCenterLast - 1 != NRRD_CENTER_MAX) {
-    strcpy(which, "nrrdCenter");
+    airStrcpy(wh, WH_SIZE, "nrrdCenter");
     goto err;
   }
   if (nrrdAxisInfoLast - 1 != NRRD_AXIS_INFO_MAX) {
-    strcpy(which, "nrrdAxisInfo");
+    airStrcpy(wh, WH_SIZE, "nrrdAxisInfo");
     goto err;
   }
   /* can't really check on endian enum */
   if (nrrdField_last - 1 != NRRD_FIELD_MAX) {
-    strcpy(which, "nrrdField");
+    airStrcpy(wh, WH_SIZE, "nrrdField");
     goto err;
   }
   if (nrrdHasNonExistLast - 1 != NRRD_HAS_NON_EXIST_MAX) {
-    strcpy(which, "nrrdHasNonExist");
+    airStrcpy(wh, WH_SIZE, "nrrdHasNonExist");
     goto err;
   }
   /* ---- BEGIN non-NrrdIO */
   if (nrrdBoundaryLast - 1 != NRRD_BOUNDARY_MAX) {
-    strcpy(which, "nrrdBoundary");
+    airStrcpy(wh, WH_SIZE, "nrrdBoundary");
     goto err;
   }
   if (nrrdMeasureLast - 1 != NRRD_MEASURE_MAX) {
-    strcpy(which, "nrrdMeasure");
+    airStrcpy(wh, WH_SIZE, "nrrdMeasure");
     goto err;
   }
   if (nrrdUnaryOpLast - 1 != NRRD_UNARY_OP_MAX) {
-    strcpy(which, "nrrdUnaryOp");
+    airStrcpy(wh, WH_SIZE, "nrrdUnaryOp");
     goto err;
   }
   if (nrrdBinaryOpLast - 1 != NRRD_BINARY_OP_MAX) {
-    strcpy(which, "nrrdBinaryOp");
+    airStrcpy(wh, WH_SIZE, "nrrdBinaryOp");
     goto err;
   }
   if (nrrdTernaryOpLast - 1 != NRRD_TERNARY_OP_MAX) {
-    strcpy(which, "nrrdTernaryOp");
+    airStrcpy(wh, WH_SIZE, "nrrdTernaryOp");
     goto err;
   }
   /* ---- END non-NrrdIO */
+#undef WH_SIZE
 
   /* no errors so far */
   return 0;
 
 err:
-  biffAddf(NRRD, "%s: Last vs. MAX incompatibility for %s enum", me, which);
+  biffAddf(NRRD, "%s: Last vs. MAX incompatibility for %s enum", me, wh);
   return 1;
 }
 
