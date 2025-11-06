@@ -549,7 +549,7 @@ nrrdArrayCompare(int type, const void *_valA, const void *_valB,
   }
 
   if (explain) {
-    strcpy(explain, "");
+    explain[0] = '\0';
   }
   if (type == nrrdTypeLLong || type == nrrdTypeULLong) {
     fprintf(stderr, "%s: WARNING: possible erroneous comparison of "
@@ -573,12 +573,12 @@ nrrdArrayCompare(int type, const void *_valA, const void *_valB,
         if (explain) {
           airSprintSize_t(stmp, ii);
           if (0 == epsilon) {
-            sprintf(explain, "valA[%s]=%.17g %s valB[%s]=%.17g "
+            snprintf(explain, AIR_STRLEN_LARGE+1, "valA[%s]=%.17g %s valB[%s]=%.17g "
                     "by %g",
                     stmp, aa, *differ < 0 ? "<" : ">", stmp, bb,
                     fabs(aa - bb));
           } else {
-            sprintf(explain, "valA[%s]=%.17g %s valB[%s]=%.17g "
+            snprintf(explain, AIR_STRLEN_LARGE+1, "valA[%s]=%.17g %s valB[%s]=%.17g "
                     "by %g, more than eps %g",
                     stmp, aa, *differ < 0 ? "<" : ">", stmp, bb,
                     fabs(aa - bb), epsilon);
