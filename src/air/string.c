@@ -26,21 +26,23 @@
  */
 
 /*
-******** airStrdup()
-**
-** because they didn't put strdup() in ANSI.
-** This will return NULL if given NULL.
-*/
+ ******** airStrdup()
+ *
+ * because they didn't put strdup() in ANSI.
+ * This will return NULL if given NULL.
+ */
 char *
-airStrdup(const char *s) {
+airStrdup(const char *str) {
   char *ret;
+  size_t retSize;
 
-  if (!s) {
+  if (!str) {
     ret = NULL;
   } else {
-    ret = (char *)malloc(strlen(s) + 1);
+    retSize = strlen(str) + 1;
+    ret = AIR_MALLOC(retSize, char);
     if (ret) {
-      strcpy(ret, s);
+      airStrcpy(ret, retSize, str);
     }
   }
   return ret;
