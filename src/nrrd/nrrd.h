@@ -341,11 +341,11 @@ typedef struct NrrdIoState_t {
                                I/O code worked, but now it is simply the
                                place to store the dataFile in the case of
                                keepNrrdDataFileOpen */
+  size_t lineSize;          /* allocated size of `line`, including storage
+                               of the terminating '\0' */
   unsigned int dataFileDim, /* The dimension of the data in each data file.
                                Together with dataFNArr->len, this determines
                                how many bytes should be in each data file */
-    lineLen,                /* allocated size of line, including the
-                               last character for \0 */
     charsPerLine,           /* when writing ASCII data in which we
                                intend only to write a huge long list
                                of numbers whose text formatting
@@ -357,12 +357,12 @@ typedef struct NrrdIoState_t {
                                something with the formatting, then
                                what is the max number of values to
                                write on a line */
-    lineSkip,               /* if dataFile non-NULL, the number of
+    lineSkip;               /* if dataFile non-NULL, the number of
                                lines in dataFile that should be
                                skipped over (so as to bypass another
                                form of ASCII header preceeding raw
                                data) */
-    headerStrlen,           /* ON WRITE, for NRRDs, if learningHeaderStrlen,
+  size_t headerStrlen,      /* ON WRITE, for NRRDs, if learningHeaderStrlen,
                                the learned strlen of the header so far */
     headerStrpos;           /* ON READ, for NRRDs, if headerStringRead is
                                non-NULL, the current location of reading
@@ -1043,7 +1043,7 @@ NRRD_EXPORT size_t (*const nrrdStringValsParse[NRRD_TYPE_MAX + 1])(void *out,
                                                                    size_t n);
 
 /* read.c */
-NRRD_EXPORT int nrrdOneLine(unsigned int *lenP, NrrdIoState *nio, FILE *file);
+NRRD_EXPORT int nrrdOneLine(size_t *lenP, NrrdIoState *nio, FILE *file);
 NRRD_EXPORT int nrrdLineSkip(FILE *dataFile, NrrdIoState *nio);
 NRRD_EXPORT int nrrdByteSkip(FILE *dataFile, Nrrd *nrrd, NrrdIoState *nio);
 NRRD_EXPORT int nrrdLoad(Nrrd *nrrd, const char *filename, NrrdIoState *nio);

@@ -64,8 +64,7 @@ _nrrdFormatText_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
   static const char me[] = "_nrrdFormatText_read";
   const char *fs;
   char *errS;
-  unsigned int llen;
-  size_t line, plen, sx, sy, elsz, size[NRRD_DIM_MAX];
+  size_t llen, line, plen, sx, sy, elsz, size[NRRD_DIM_MAX];
   int nret, fidx, settwo = 0, gotOnePerAxis = AIR_FALSE;
   /* fl: first line (of floats) */
   airArray *flArr, *dataArr;

@@ -58,7 +58,7 @@ int
 main(int argc, char *argv[]) {
   char *me, *fileS;
   FILE *file;
-  unsigned int llen;
+  size_t llen;
   NrrdIoState *io;
 
   me = argv[0];
@@ -79,7 +79,7 @@ main(int argc, char *argv[]) {
       exit(1);
     }
     if (llen) {
-      printf("%2u   |%s|\n", llen, io->line);
+      printf("%2zu   |%s|\n", llen, io->line);
     }
   } while (llen > 0);
   nrrdIoStateNix(io);

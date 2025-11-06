@@ -246,7 +246,7 @@ _nrrdStrcatSpaceVector(char *_str, size_t _strSize, unsigned int spaceDim,
       }
     }
   } else {
-    snprintf(_str, _strSize, "%s", _nrrdNoSpaceVector);
+    airStrcpy(_str, _strSize, _nrrdNoSpaceVector);
   }
   return;
 }
@@ -617,7 +617,7 @@ _nrrdSprintFieldInfo(char **strP, const char *prefix, const Nrrd *nrrd, NrrdIoSt
     snprintf(str, strSize, "%s%s:", prefix, fs);
     STRINCR(str, strSize);
     for (ii = !!dropAxis0; ii < nrrd->dim; ii++) {
-      snprintf(str, strSize, "%s", " \"");
+      airStrcpy(str, strSize, " \"");
       STRINCR(str, strSize);
       if (nrrdField_labels == field ? airStrlen(nrrd->axis[ii].label)
                                     : airStrlen(nrrd->axis[ii].units)) {
@@ -625,7 +625,7 @@ _nrrdSprintFieldInfo(char **strP, const char *prefix, const Nrrd *nrrd, NrrdIoSt
                           _NRRD_WHITESPACE_NOTAB);
         STRINCR(str, strSize);
       }
-      snprintf(str, strSize, "%s", "\"");
+      airStrcpy(str, strSize, "\"");
       STRINCR(str, strSize);
     }
 #undef LABEL_OR_UNITS
@@ -706,14 +706,14 @@ _nrrdSprintFieldInfo(char **strP, const char *prefix, const Nrrd *nrrd, NrrdIoSt
     snprintf(str, strSize, "%s%s:", prefix, fs);
     STRINCR(str, strSize);
     for (ii = 0; ii < nrrd->spaceDim; ii++) {
-      snprintf(str, strSize, "%s", " \"");
+      airStrcpy(str, strSize, " \"");
       STRINCR(str, strSize);
       if (airStrlen(nrrd->spaceUnits[ii])) {
         _nrrdWriteEscaped(NULL, str, strSize, nrrd->spaceUnits[ii], "\"",
                           _NRRD_WHITESPACE_NOTAB);
         STRINCR(str, strSize);
       }
-      snprintf(str, strSize, "%s", "\"");
+      airStrcpy(str, strSize, "\"");
       STRINCR(str, strSize);
     }
     break;
@@ -781,7 +781,7 @@ _nrrdSprintFieldInfo(char **strP, const char *prefix, const Nrrd *nrrd, NrrdIoSt
       for (ii = 0; ii < nio->dataFNArr->len; ii++) {
         snprintf(fnb, fnbSize, "%s%s", nio->dataFN[ii],
                  ii < nio->dataFNArr->len - 1 ? "\n" : "");
-        snprintf(str, strSize, "%s", fnb);
+        airStrcpy(str, strSize, fnb);
         STRINCR(str, strSize);
       }
       free(fnb);
@@ -967,8 +967,7 @@ _nrrdWrite(FILE *file, char **stringP, const Nrrd *nrrd, NrrdIoState *_nio) {
     return 1;
   }
   if (nio->byteSkip || nio->lineSkip) {
-    /* NOTE: unu make bypasses this by calling nrrdFormatNRRD->write()
-       directly */
+    /* NOTE: unu make bypasses this by calling nrrdFormatNRRD->write() directly */
     biffAddf(NRRD, "%s: can't generate line or byte skips on data write", me);
     airMopError(mop);
     return 1;
@@ -991,7 +990,7 @@ _nrrdWrite(FILE *file, char **stringP, const Nrrd *nrrd, NrrdIoState *_nio) {
     }
     *stringP = AIR_MALLOC(nio->headerStrlen + 1, char);
     if (!*stringP) {
-      biffAddf(NRRD, "%s: couldn't allocate header string (%u len )", me,
+      biffAddf(NRRD, "%s: couldn't allocate header string (%zu len )", me,
                nio->headerStrlen);
       airMopError(mop);
       return 1;
