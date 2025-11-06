@@ -47,6 +47,7 @@ extern "C" {
 
 /* ---- END non-NrrdIO */
 
+/* NOTE: this macro copied to other src/<lib>/private<Lib>.h files */
 /* for adjusting locals `STR` and `SIZE`, assuming correct usage of snprintf.
    At worst, snprintf filled up everything except the final element for the
    '\0'-termination, and then after this, STR will be advanced to point to that '\0',
