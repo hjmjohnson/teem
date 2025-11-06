@@ -84,7 +84,8 @@ _nrrdFormatVTK_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
   int ret;
   double xm = 0.0, ym = 0.0, zm = 0.0, xs = 1.0, ys = 1.0, zs = 1.0;
   airArray *mop;
-  unsigned int sx, sy, sz, llen, N;
+  unsigned int sx, sy, sz, N;
+  size_t llen;
 
   if (!_nrrdFormatVTK_contentStartsLike(nio)) {
     biffAddf(NRRD, "%s: this doesn't look like a %s file", me, nrrdFormatVTK->name);

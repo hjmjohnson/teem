@@ -94,7 +94,7 @@ _nrrdFormatPNM_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
   const char *fs;
   char *perr;
   int color, got, want, ret, val[5], sx, sy, max, magic;
-  unsigned int i, llen;
+  size_t ii, llen;
 
   if (!_nrrdFormatPNM_contentStartsLike(nio)) {
     biffAddf(NRRD, "%s: this doesn't look like a %s file", me, nrrdFormatPNM->name);
@@ -224,9 +224,9 @@ _nrrdFormatPNM_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
 
     /* else, we couldn't parse ANY numbers on this line, which is okay
        as long as the line contains nothing but white space */
-    for (i = 0; (i <= strlen(nio->line) - 1 && isspace(AIR_INT(nio->line[i]))); i++)
+    for (ii = 0; (ii <= strlen(nio->line) - 1 && isspace(AIR_INT(nio->line[ii]))); ii++)
       ;
-    if (i != strlen(nio->line)) {
+    if (ii != strlen(nio->line)) {
       biffAddf(NRRD, "%s: \"%s\" has no integers but isn't just whitespace", me,
                nio->line);
       return 1;

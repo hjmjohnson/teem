@@ -256,12 +256,12 @@ nrrdIoStateInit(NrrdIoState *nio) {
     /* closing this is always someone else's responsibility */
     nio->headerFile = NULL;
     nio->dataFile = NULL;
+    nio->lineSize = 0;
     nio->dataFileDim = 0;
     nio->dataFNMin = 0;
     nio->dataFNMax = 0;
     nio->dataFNStep = 0;
     nio->dataFNIndex = 0;
-    nio->lineLen = 0;
     nio->pos = 0;
     nio->endian = airEndianUnknown;
     nio->lineSkip = 0;

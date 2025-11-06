@@ -236,7 +236,7 @@ _nrrdWriteEscaped(FILE *file, char *_dst, size_t _dstSize, const char *str,
         if (file) {
           fprintf(file, "\\n");
         } else {
-          snprintf(dst, dstSize, "%s", "\\n");
+          airStrcpy(dst, dstSize, "\\n");
           STRINCR(dst, dstSize);
         }
         break;
@@ -244,7 +244,7 @@ _nrrdWriteEscaped(FILE *file, char *_dst, size_t _dstSize, const char *str,
         if (file) {
           fprintf(file, "\\\\");
         } else {
-          snprintf(dst, dstSize, "%s", "\\\\");
+          airStrcpy(dst, dstSize, "\\\\");
           STRINCR(dst, dstSize);
         }
         break;
@@ -252,7 +252,7 @@ _nrrdWriteEscaped(FILE *file, char *_dst, size_t _dstSize, const char *str,
         if (file) {
           fprintf(file, "\\\"");
         } else {
-          snprintf(dst, dstSize, "%s", "\\\"");
+          airStrcpy(dst, dstSize, "\\\"");
           STRINCR(dst, dstSize);
         }
         break;
@@ -273,32 +273,39 @@ _nrrdWriteEscaped(FILE *file, char *_dst, size_t _dstSize, const char *str,
 }
 
 /*
-** _nrrdKeyValueWrite
-**
-** writes a given key and value to a file, starting with the given
-** prefix (if non-NULL), and ending with "\n"
-*/
+ * _nrrdKeyValueWrite
+ *
+ * writes a given `key` and `value`
+ * (starting with the given `prefix` (if non-NULL) and ending with "\n")
+ * to given `file` OR to given (newly allocated) `*stringP`
+ */
 int /* Biff: (private) nope */
 _nrrdKeyValueWrite(FILE *file, char **stringP, const char *prefix, const char *key,
                    const char *value) {
   size_t stringSize = 0;
   char *string = NULL;
 
-  if (!((file || stringP) && key && value)) {
+  /* (exactly one of `file` and `stringP` should be non-NULL) */
+  if (!((1 == !!file + !!stringP) && key && value)) {
     return 1;
   }
   if (stringP) {
     /* 2*strlen() because at worst all characters will be escaped */
-    stringSize = airStrlen(prefix) + 2 * airStrlen(key) + strlen(":=")
-               + 2 * airStrlen(value) + strlen("\n") + 1;
+    stringSize = (airStrlen(prefix)                /* */
+                  + 2 * strlen(key) + strlen(":=") /* */
+                  + 2 * strlen(value) + strlen("\n") + 1);
     string = *stringP = AIR_CALLOC(stringSize, char);
     assert(string);
+    if (!string) {
+      /* cannot proceed, even with NDEBUG */
+      return 1;
+    }
   }
   if (prefix) {
     if (file) {
       fprintf(file, "%s", prefix);
     } else {
-      snprintf(string, stringSize, "%s", prefix);
+      airStrcpy(string, stringSize, prefix);
       STRINCR(string, stringSize);
     }
   }
@@ -310,12 +317,12 @@ _nrrdKeyValueWrite(FILE *file, char **stringP, const char *prefix, const char *k
   } else {
     _nrrdWriteEscaped(NULL, string, stringSize, key, "\n\\", _NRRD_WHITESPACE_NOTAB);
     STRINCR(string, stringSize);
-    snprintf(string, stringSize, "%s", ":=");
+    airStrcpy(string, stringSize, ":=");
     STRINCR(string, stringSize);
     _nrrdWriteEscaped(NULL, string, stringSize, value, "\n\\", _NRRD_WHITESPACE_NOTAB);
     STRINCR(string, stringSize);
-    snprintf(string, stringSize, "%s", "\n");
-    STRINCR(string, stringSize);
+    airStrcpy(string, stringSize, "\n");
+    STRINCR(string, stringSize); /* (for consistency, though moot here at end) */
   }
   return 0;
 }

@@ -192,7 +192,7 @@ copyArgv(int *sawHelp, char **newArgv, const char **oldArgv, const hestParm *hpa
          should have been done by argsInResponseFiles() */
       file = fopen(oldArgv[argIdx] + 1, "rb");
       /* start line-reading loop */
-      len = airOneLine(file, line, AIR_STRLEN_HUGE + 1);
+      len = AIR_UINT(airOneLine(file, line, AIR_STRLEN_HUGE + 1));
       while (len > 0) {
         unsigned rgi;
         if (hparm->verbose) printf("%s: line: |%s|\n", me, line);
@@ -209,7 +209,7 @@ copyArgv(int *sawHelp, char **newArgv, const char **oldArgv, const hestParm *hpa
              not airFreeP because these will not be reset before mopping */
           airMopAdd(pmop, newArgv[newArgc + rgi], airFree, airMopAlways);
         }
-        len = airOneLine(file, line, AIR_STRLEN_HUGE + 1);
+        len = AIR_UINT(airOneLine(file, line, AIR_STRLEN_HUGE + 1));
         newArgc += incr;
       }
       fclose(file);

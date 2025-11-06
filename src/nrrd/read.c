@@ -51,45 +51,44 @@ _nrrdCharIsFieldSep(char cc) {
 /*
 ** return length of next "line" in nio->headerStringRead
 */
-static unsigned int
+static size_t
 _nrrdHeaderStringOneLineStrlen(NrrdIoState *nio) {
 
-  return AIR_UINT(strcspn(nio->headerStringRead + nio->headerStrpos, _nrrdLineSep));
+  return strcspn(nio->headerStringRead + nio->headerStrpos, _nrrdLineSep);
 }
 
 /*
 ** read next "line" in nio->headerStringRead
 */
-static unsigned int
+static size_t
 _nrrdHeaderStringOneLine(NrrdIoState *nio) {
-  unsigned int len1, len2;
+  size_t len1, len2;
 
   len1 = _nrrdHeaderStringOneLineStrlen(nio);
   strncpy(nio->line, nio->headerStringRead + nio->headerStrpos, len1);
   nio->line[len1] = '\0';
   nio->headerStrpos += len1;
-  len2 = AIR_UINT(strspn(nio->headerStringRead + nio->headerStrpos, _nrrdLineSep));
+  len2 = strspn(nio->headerStringRead + nio->headerStrpos, _nrrdLineSep);
   nio->headerStrpos += len2;
   return len1;
 }
 
 /*
-** nrrdOneLine
-**
-** wrapper around airOneLine; does re-allocation of line buffer
-** ("line") in the NrrdIoState if needed.  The return value semantics
-** are similar, except that what airOneLine would return, we put
-** in *lenP.  If there is an error (airOneLine returned 0,
-** something couldn't be allocated), *lenP is set to 0, and
-** we return 1.  HITTING EOF IS NOT ACTUALLY AN ERROR, see code
-** below.  Otherwise we return 0.
-*/
+ ******** nrrdOneLine
+ *
+ * wrapper around airOneLine when reading from `file`, else ; does re-allocation of line
+ * buffer
+ * ("line") in the NrrdIoState if needed.  The return value semantics
+ * are similar, except that what airOneLine would return, we put
+ * in *lenP.  If there is an error (airOneLine returned 0,
+ * something couldn't be allocated), *lenP is set to 0, and
+ * we return 1.  HITTING EOF IS NOT ACTUALLY AN ERROR, see code
+ * below.  Otherwise we return 0.
+ */
 int /* Biff: 1 */
-nrrdOneLine(unsigned int *lenP, NrrdIoState *nio, FILE *file) {
+nrrdOneLine(size_t *lenP, NrrdIoState *nio, FILE *file) {
   static const char me[] = "nrrdOneLine";
   char **line;
-  airArray *mop, *lineArr;
-  airPtrPtrUnion appu;
   unsigned int lineIdx, len, needLen;
 
   if (!(lenP && nio && (file || nio->headerStringRead))) {
@@ -97,34 +96,42 @@ nrrdOneLine(unsigned int *lenP, NrrdIoState *nio, FILE *file) {
              AIR_VOIDP(nio), AIR_VOIDP(file), AIR_CVOIDP(nio->headerStringRead));
     return 1;
   }
-  if (0 == nio->lineLen) {
+  if (0 == nio->lineSize) {
     /* nio->line hasn't been allocated for anything */
-    nio->lineLen = 3;
-    nio->line = (char *)malloc(nio->lineLen);
+    nio->lineSize = 4;
+    nio->line = (char *)malloc(nio->lineSize);
     if (!nio->line) {
-      biffAddf(NRRD, "%s: couldn't alloc %u-char line\n", me, nio->lineLen);
+      biffAddf(NRRD, "%s: couldn't alloc %zu-char line\n", me, nio->lineSize);
       *lenP = 0;
       return 1;
     }
+  } else {
+    if (nio->verbose >= 3) {
+      fprintf(stderr, "%s: hello came in with nio->lineSize=%zu\n", me, nio->lineSize);
+    }
   }
   if (file) {
-    len = airOneLine(file, nio->line, nio->lineLen);
+    len = airOneLine(file, nio->line, nio->lineSize);
+    if (nio->verbose >= 3) {
+      fprintf(stderr, "%s: (A) got len=%u |%s|=%zu (lineSize=%zu) from file\n", me, len,
+              nio->line, strlen(nio->line), nio->lineSize);
+    }
   } else {
     /* NOTE: NULL-ity error check above makes this safe */
     needLen = _nrrdHeaderStringOneLineStrlen(nio);
-    if (needLen + 1 > nio->lineLen) {
-      nio->lineLen = needLen + 1;
+    if (needLen + 1 > nio->lineSize) {
+      nio->lineSize = needLen + 1;
       airFree(nio->line); /* lose previous allocated line */
-      nio->line = (char *)malloc(nio->lineLen);
+      nio->line = (char *)malloc(nio->lineSize);
       if (!nio->line) {
-        biffAddf(NRRD, "%s: couldn't alloc %u-char line\n", me, nio->lineLen);
+        biffAddf(NRRD, "%s: couldn't alloc %zu-char line\n", me, nio->lineSize);
         *lenP = 0;
         return 1;
       }
     }
     len = _nrrdHeaderStringOneLine(nio);
   }
-  if (len <= nio->lineLen) {
+  if (len <= nio->lineSize) {
     /* otherwise we hit EOF (or end of nio->headerStringRead) before a
        newline, or the line (possibly empty) fit within the nio->line,
        neither of which is an error here */
@@ -133,6 +140,10 @@ nrrdOneLine(unsigned int *lenP, NrrdIoState *nio, FILE *file) {
     /* line didn't fit in buffer, so we have to increase line
        buffer size and put the line together in pieces */
     /* NOTE: this will never happen when reading from nio->headerStringRead */
+    airArray *mop, *lineArr;
+    airPtrPtrUnion appu;
+    char *lout;
+    size_t loutSize; /* lout used at very end */
     appu.cp = &line;
     lineArr = airArrayNew(appu.v, NULL, sizeof(char *), 1);
     if (!lineArr) {
@@ -143,7 +154,7 @@ nrrdOneLine(unsigned int *lenP, NrrdIoState *nio, FILE *file) {
     airArrayPointerCB(lineArr, airNull, airFree);
     mop = airMopNew();
     airMopAdd(mop, lineArr, (airMopper)airArrayNuke, airMopAlways);
-    while (len == nio->lineLen + 1) {
+    while (len == nio->lineSize + 1) { /* means airOneLine maxed out buffer */
       lineIdx = airArrayLenIncr(lineArr, 1);
       if (!lineArr->data) {
         biffAddf(NRRD, "%s: couldn't increment line buffer array", me);
@@ -152,17 +163,22 @@ nrrdOneLine(unsigned int *lenP, NrrdIoState *nio, FILE *file) {
         return 1;
       }
       line[lineIdx] = nio->line;
-      nio->lineLen *= 2;
-      nio->line = (char *)malloc(nio->lineLen);
+      nio->lineSize *= 2;
+      nio->line = AIR_MALLOC(nio->lineSize, char);
       if (!nio->line) {
-        biffAddf(NRRD, "%s: couldn't alloc %u-char line\n", me, nio->lineLen);
+        biffAddf(NRRD, "%s: couldn't alloc %zu-char line\n", me, nio->lineSize);
         *lenP = 0;
         airMopError(mop);
         return 1;
       }
-      len = airOneLine(file, nio->line, nio->lineLen);
+      len = airOneLine(file, nio->line, nio->lineSize);
+      if (nio->verbose >= 3) {
+        fprintf(stderr, "%s: (B) got len=%u |%s|=%zu (lineSize=%zu) from file\n", me,
+                len, nio->line, strlen(nio->line), nio->lineSize);
+      }
     }
-    /* last part did fit in nio->line buffer, also save this into line[] */
+    /* last part did fit in nio->line buffer, also save this into line[]
+       because we still need to expand nio->line to hold all previous parts */
     lineIdx = airArrayLenIncr(lineArr, 1);
     if (!lineArr->data) {
       biffAddf(NRRD, "%s: couldn't increment line buffer array", me);
@@ -170,22 +186,29 @@ nrrdOneLine(unsigned int *lenP, NrrdIoState *nio, FILE *file) {
       airMopError(mop);
       return 1;
     }
-    line[lineIdx] = nio->line;
-    nio->lineLen *= 3; /* for good measure */
-    nio->line = (char *)malloc(nio->lineLen);
+    line[lineIdx] = nio->line; /* contains final piece */
+    /* this is even big enough for final '\0' because the sum of smaller powers of two is
+     *less* than this power of 2 */
+    loutSize = 2 * nio->lineSize;
+    if (nio->verbose >= 3) {
+      fprintf(stderr, "%s: concat of %u lines --> new lineLen=%zu\n", me, lineArr->len,
+              loutSize);
+    }
+    lout = nio->line = AIR_MALLOC(loutSize, char);
     if (!nio->line) {
-      biffAddf(NRRD, "%s: couldn't alloc %u-char line\n", me, nio->lineLen);
+      biffAddf(NRRD, "%s: couldn't alloc %zu-char line\n", me, nio->lineSize);
       *lenP = 0;
       airMopError(mop);
       return 1;
     }
+    nio->lineSize = loutSize;
     /* now concatenate everything into a new nio->line */
-    strcpy(nio->line, "");
+    lout[0] = '\0';
     for (lineIdx = 0; lineIdx < lineArr->len; lineIdx++) {
-      strcat(nio->line, line[lineIdx]);
+      airStrcpy(lout, loutSize, line[lineIdx]);
+      STRINCR(lout, loutSize);
     }
-    /* HEY: API is bad: *lenP should be a size_t pointer! */
-    *lenP = AIR_UINT(strlen(nio->line)) + 1;
+    *lenP = strlen(nio->line) + 1;
     airMopError(mop);
   }
   return 0;
@@ -238,7 +261,8 @@ _nrrdCalloc(Nrrd *nrrd, NrrdIoState *nio) {
 int /* Biff: 1 */
 nrrdLineSkip(FILE *dataFile, NrrdIoState *nio) {
   static const char me[] = "nrrdLineSkip";
-  unsigned int lsi, skipRet;
+  unsigned int lsi;
+  size_t skipRet;
 
   /* For compressed data: If you don't actually have ascii headers on
      top of your gzipped data then you will potentially huge lines
@@ -366,7 +390,7 @@ nrrdByteSkip(FILE *dataFile, Nrrd *nrrd, NrrdIoState *nio) {
 static int /* Biff: 1 */
 _nrrdRead(Nrrd *nrrd, FILE *file, const char *string, NrrdIoState *_nio) {
   static const char me[] = "_nrrdRead";
-  unsigned int llen;
+  size_t llen;
   NrrdIoState *nio;
   int nfi;
   airArray *mop;

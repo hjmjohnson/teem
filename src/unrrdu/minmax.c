@@ -58,7 +58,7 @@ unrrdu_minmaxDoit(const char *me, char *inS, int blind8BitRange, int singleLine,
     airSinglePrintf(NULL, minStr, strSize, "%lg", range->min);
     airSinglePrintf(NULL, maxStr, strSize, "%lg", range->max);
     if (range->hasNonExist) {
-      snprintf(nexStr, strSize, " non-existent");
+      airStrcpy(nexStr, strSize, " non-existent");
     } else {
       nexStr[0] = '\0';
     }

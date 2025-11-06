@@ -246,9 +246,9 @@ nrrdIoStateDataFileIterNext(FILE **fileP, NrrdIoState *nio, int reading) {
     if (_NEED_PATH(nio->dataFNFormat)) {
       char *fn = fname;
       size_t fns = fnameSize;
-      snprintf(fn, fns, "%s", nio->path);
+      airStrcpy(fn, fns, nio->path);
       STRINCR(fn, fns);
-      snprintf(fn, fns, "/");
+      airStrcpy(fn, fns, "/");
       STRINCR(fn, fns);
       snprintf(fn, fns, nio->dataFNFormat, ii);
       STRINCR(fn, fns);
@@ -262,7 +262,7 @@ nrrdIoStateDataFileIterNext(FILE **fileP, NrrdIoState *nio, int reading) {
     if (_NEED_PATH(nio->dataFN[nio->dataFNIndex])) {
       snprintf(fname, fnameSize, "%s/%s", nio->path, nio->dataFN[nio->dataFNIndex]);
     } else {
-      snprintf(fname, fnameSize, "%s", nio->dataFN[nio->dataFNIndex]);
+      airStrcpy(fname, fnameSize, nio->dataFN[nio->dataFNIndex]);
     }
   }
   /* else data file is attached */
@@ -426,8 +426,7 @@ _nrrdFormatNRRD_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
   static const char me[] = "_nrrdFormatNRRD_read";
   /* Dynamically allocated for space reasons. */
   int ret;
-  unsigned int llen;
-  size_t valsPerPiece;
+  size_t llen, valsPerPiece;
   char *data;
   FILE *dataFile = NULL;
 
@@ -451,8 +450,8 @@ _nrrdFormatNRRD_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
         return 1;
       }
       if (nio && nio->verbose > 3) {
-        printf("%s: got line |%s|@%p len %u\n", me, nio->line, AIR_VOIDP(nio->line),
-               llen);
+        printf("%s: got line |%s|@%p len %zu\n", me, nio->line, AIR_VOIDP(nio->line),
+               llen /* using C99 %zu okay? */);
       }
       if (llen > 1) {
         char *nioLineSave = NULL;
@@ -658,8 +657,8 @@ _nrrdFormatNRRD_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
 static int /* Biff: 1 */
 _nrrdFormatNRRD_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
   static const char me[] = "_nrrdFormatNRRD_write";
-  char strbuf[AIR_STRLEN_MED + 1], *strptr, *tmp;
-  size_t tmpSize;
+  char *strptr = NULL, *hsw;
+  size_t hswSize;
   int ii;
   unsigned int jj;
   airArray *mop;
@@ -692,6 +691,8 @@ _nrrdFormatNRRD_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
   /* we have to make sure that the data filename information is set
      (if needed), so that it can be printed by _nrrdFprintFieldInfo */
   if (nio->detachedHeader && !nio->dataFNFormat && 0 == nio->dataFNArr->len) {
+    char *tmp;
+    size_t tmpSize;
     /* NOTE: this means someone requested a detached header, but we
        don't already have implicit (via dataFNFormat) or explicit
        (via dataFN[]) information about the data file */
@@ -729,14 +730,32 @@ _nrrdFormatNRRD_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
     nio->dataFN[jj] = tmp;
   }
 
-  /* the magic is in fact the first thing to be written */
+  /* NOTE: The logic of all the:
+       if (file) { (A) }
+       else if (nio->headerStringWrite) { (B2) }
+       else { (B1) }
+     conditionals is odd:
+     We are either (A) writing to file, OR, writing to a string,
+     which has to first (B1) learn the length of the string
+     which is (as of this writing) followed by (in write.c):
+         *stringP = AIR_MALLOC(nio->headerStrlen + 1, char);
+     and then second (B2) print into the string.
+     For printing in B2 we use snprintf with hsw,hswSize;
+     these variables are set to NULL,0 otherwise */
+  /* The magic is in fact the first thing to be written */
   if (file) {
     fprintf(file, "%s%04d\n", MGIC, _nrrdFormatNRRD_whichVersion(nrrd, nio));
+    hsw = NULL;
+    hswSize = 0;
   } else if (nio->headerStringWrite) {
-    sprintf(nio->headerStringWrite, "%s%04d\n", MGIC,
-            _nrrdFormatNRRD_whichVersion(nrrd, nio));
+    hsw = nio->headerStringWrite;
+    hswSize = nio->headerStrlen + 1;
+    snprintf(hsw, hswSize, "%s%04d\n", MGIC, _nrrdFormatNRRD_whichVersion(nrrd, nio));
+    STRINCR(hsw, hswSize);
   } else {
     nio->headerStrlen = AIR_UINT(strlen(MGIC) + strlen("0000")) + 1;
+    hsw = NULL;
+    hswSize = 0;
   }
 
   /* write the advertisement about where to get the file format */
@@ -745,13 +764,15 @@ _nrrdFormatNRRD_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
       fprintf(file, "# %s\n", _nrrdFormatURLLine0);
       fprintf(file, "# %s\n", _nrrdFormatURLLine1);
     } else if (nio->headerStringWrite) {
-      sprintf(strbuf, "# %s\n", _nrrdFormatURLLine0);
-      strcat(nio->headerStringWrite, strbuf);
-      sprintf(strbuf, "# %s\n", _nrrdFormatURLLine1);
-      strcat(nio->headerStringWrite, strbuf);
+      snprintf(hsw, hswSize, "# %s\n", _nrrdFormatURLLine0);
+      STRINCR(hsw, hswSize);
+      snprintf(hsw, hswSize, "# %s\n", _nrrdFormatURLLine1);
+      STRINCR(hsw, hswSize);
     } else {
-      nio->headerStrlen += sprintf(strbuf, "# %s\n", _nrrdFormatURLLine0);
-      nio->headerStrlen += sprintf(strbuf, "# %s\n", _nrrdFormatURLLine1);
+      /* this is the required length for the snprintf'ing happening above */
+      nio->headerStrlen += AIR_UINT(2 * strlen("# \n") /* */
+                                    + strlen(_nrrdFormatURLLine0)
+                                    + strlen(_nrrdFormatURLLine1));
     }
   }
 
@@ -761,18 +782,18 @@ _nrrdFormatNRRD_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
       if (file) {
         _nrrdFprintFieldInfo(file, "", nrrd, nio, ii, AIR_FALSE);
       } else if (nio->headerStringWrite) {
+        /* with each call strptr points to a newly allocated string */
         _nrrdSprintFieldInfo(&strptr, "", nrrd, nio, ii, AIR_FALSE);
         if (strptr) {
-          strcat(nio->headerStringWrite, strptr);
-          strcat(nio->headerStringWrite, "\n");
+          snprintf(hsw, hswSize, "%s\n", strptr);
+          STRINCR(hsw, hswSize);
           free(strptr);
           strptr = NULL;
         }
       } else {
         _nrrdSprintFieldInfo(&strptr, "", nrrd, nio, ii, AIR_FALSE);
         if (strptr) {
-          nio->headerStrlen += AIR_UINT(strlen(strptr));
-          nio->headerStrlen += AIR_UINT(strlen("\n"));
+          nio->headerStrlen += AIR_UINT(strlen(strptr) + strlen("\n"));
           free(strptr);
           strptr = NULL;
         }
@@ -786,37 +807,49 @@ _nrrdFormatNRRD_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
     strtmp = airOneLinify(airStrdup(nrrd->cmt[jj]));
     if (file) {
       fprintf(file, "%c %s\n", NRRD_COMMENT_CHAR, strtmp);
-    } else if (nio->headerStringWrite) {
-      strptr = (char *)malloc(1 + strlen(" ") + strlen(strtmp) + strlen("\n") + 1);
-      sprintf(strptr, "%c %s\n", NRRD_COMMENT_CHAR, strtmp);
-      strcat(nio->headerStringWrite, strptr);
-      free(strptr);
-      strptr = NULL;
     } else {
-      nio->headerStrlen += (1 + AIR_UINT(strlen(" ") + strlen(strtmp) + strlen("\n"))
-                            + 1);
+      /* in this case can can exactly calculate the added length,
+         which we use for computing headerStrlen below
+         even if we don't need it for setting headerStringWrite via `hsw` */
+      size_t strptrSize = (1 + strlen(" ")  /* for "%c ", NRRD_COMMENT_CHAR */
+                           + strlen(strtmp) /* comment string itself */
+                           + strlen("\n") + 1);
+      if (nio->headerStringWrite) {
+        snprintf(hsw, hswSize, "%c %s\n", NRRD_COMMENT_CHAR, strtmp);
+        STRINCR(hsw, hswSize);
+      } else {
+        nio->headerStrlen += strptrSize;
+      }
     }
     airFree(strtmp);
   }
   for (jj = 0; jj < nrrd->kvpArr->len; jj++) {
+    int kvret;
+    /* keyvalue.c/_nrrdKeyValueWrite() itself does write final '\n' */
     if (file) {
-      _nrrdKeyValueWrite(file, NULL, NULL, nrrd->kvp[0 + 2 * jj], nrrd->kvp[1 + 2 * jj]);
-    } else if (nio->headerStringWrite) {
-      _nrrdKeyValueWrite(NULL, &strptr, NULL, nrrd->kvp[0 + 2 * jj],
-                         nrrd->kvp[1 + 2 * jj]);
-      if (strptr) {
-        strcat(nio->headerStringWrite, strptr);
-        free(strptr);
-        strptr = NULL;
-      }
+      kvret = _nrrdKeyValueWrite(file, NULL, NULL, nrrd->kvp[0 + 2 * jj],
+                                 nrrd->kvp[1 + 2 * jj]);
     } else {
-      _nrrdKeyValueWrite(NULL, &strptr, NULL, nrrd->kvp[0 + 2 * jj],
-                         nrrd->kvp[1 + 2 * jj]);
-      if (strptr) {
-        nio->headerStrlen += AIR_UINT(strlen(strptr));
+      /* a pity that we're -- twice -- allocating and then freeing `strptr` */
+      kvret = _nrrdKeyValueWrite(NULL, &strptr, NULL, nrrd->kvp[0 + 2 * jj],
+                                 nrrd->kvp[1 + 2 * jj]);
+      if (!kvret && strptr) {
+        if (nio->headerStringWrite) {
+          airStrcpy(hsw, hswSize, strptr);
+          STRINCR(hsw, hswSize);
+        } else {
+          /* length increment for snprintf'ing above */
+          nio->headerStrlen += AIR_UINT(strlen(strptr));
+        }
         free(strptr);
         strptr = NULL;
       }
+    }
+    if (kvret) {
+      biffAddf(NRRD, "%s: trouble writing kvp[%u] to %s", me, jj,
+               file ? "file" : "string");
+      airMopError(mop);
+      return 1;
     }
   }
 

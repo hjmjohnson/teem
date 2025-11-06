@@ -1262,8 +1262,9 @@ static int /* Biff: maybe:4:1 */
 _nrrdReadNrrdParse_data_file(FILE *ffile, Nrrd *nrrd, NrrdIoState *nio, int useBiff) {
   static const char me[] = "_nrrdReadNrrdParse_data_file";
   char *info, *nums;
-  unsigned int linelen, tmp;
+  unsigned int tmp;
   airArray *mop;
+  size_t linelen;
 
   mop = airMopNew();
   info = airStrdup(nio->line + nio->pos);

@@ -35,7 +35,7 @@ static const char *_unrrdu_headInfoL
 static int /* Biff: 1 */
 unrrdu_headDoit(const char *me, NrrdIoState *nio, const char *inS, FILE *fout) {
   airArray *mop;
-  unsigned int len;
+  size_t len;
   FILE *fin;
 
   if (!strcmp("-", inS) && isatty(STDIN_FILENO)) {
