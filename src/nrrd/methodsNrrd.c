@@ -174,6 +174,7 @@ int /* Biff: 1 */
 nrrdBoundarySpecSprint(char str[AIR_STRLEN_LARGE + 1], const NrrdBoundarySpec *bspec) {
   static const char me[] = "nrrdBoundarySpecSprint";
   char *out;
+  size_t outSize;
 
   if (!(str && bspec)) {
     biffAddf(NRRD, "%s: got NULL pointer", me);
@@ -184,10 +185,12 @@ nrrdBoundarySpecSprint(char str[AIR_STRLEN_LARGE + 1], const NrrdBoundarySpec *b
     return 1;
   }
   out = str;
-  sprintf(out, "%s", airEnumStr(nrrdBoundary, bspec->boundary));
-  out += strlen(out);
+  outSize = AIR_STRLEN_LARGE + 1;
+  snprintf(out, outSize, "%s", airEnumStr(nrrdBoundary, bspec->boundary));
+  STRINCR(out, outSize);
   if (nrrdBoundaryPad == bspec->boundary) {
-    sprintf(out, ":%.17g", bspec->padValue);
+    snprintf(out, outSize, ":%.17g", bspec->padValue);
+    STRINCR(out, outSize); /* though moot here at end */
   }
   return 0;
 }
@@ -203,8 +206,8 @@ nrrdBoundarySpecCompare(const NrrdBoundarySpec *aa, const NrrdBoundarySpec *bb,
   }
   if (!!aa != !!bb) {
     if (explain) {
-      sprintf(explain, "NULL-ities differ: %s != %s", aa ? "non-NULL" : "NULL",
-              bb ? "non-NULL" : "NULL");
+      snprintf(explain, AIR_STRLEN_LARGE + 1, "NULL-ities differ: %s != %s",
+               aa ? "non-NULL" : "NULL", bb ? "non-NULL" : "NULL");
     }
     *differ = 1;
     return 0;
@@ -216,9 +219,9 @@ nrrdBoundarySpecCompare(const NrrdBoundarySpec *aa, const NrrdBoundarySpec *bb,
   }
   if (aa->boundary != bb->boundary) {
     if (explain) {
-      sprintf(explain, "boundaries differ: %s != %s",
-              airEnumStr(nrrdBoundary, aa->boundary),
-              airEnumStr(nrrdBoundary, bb->boundary));
+      snprintf(explain, AIR_STRLEN_LARGE + 1, "boundaries differ: %s != %s",
+               airEnumStr(nrrdBoundary, aa->boundary),
+               airEnumStr(nrrdBoundary, bb->boundary));
     }
     *differ = 1;
     return 0;
@@ -226,7 +229,8 @@ nrrdBoundarySpecCompare(const NrrdBoundarySpec *aa, const NrrdBoundarySpec *bb,
   if (nrrdBoundaryPad == aa->boundary) {
     if (aa->padValue != bb->padValue) {
       if (explain) {
-        sprintf(explain, "padValue differ: %.17g != %.17g", aa->padValue, bb->padValue);
+        snprintf(explain, AIR_STRLEN_LARGE + 1, "padValue differ: %.17g != %.17g",
+                 aa->padValue, bb->padValue);
       }
       *differ = 1;
       return 0;
@@ -1208,14 +1212,14 @@ nrrdCompare(const Nrrd *ninA, const Nrrd *ninB, int onlyData, double epsilon,
   }
 
   if (explain) {
-    strcpy(explain, "");
+    explain[0] = '\0';
   }
   if (!onlyData) {
     if (ninA->dim != ninB->dim) {
       *differ = ninA->dim < ninB->dim ? -1 : 1;
       if (explain) {
-        sprintf(explain, "nin{A,B}->dim %u %s %u", ninA->dim, *differ < 0 ? "<" : ">",
-                ninB->dim);
+        snprintf(explain, AIR_STRLEN_LARGE + 1, "nin{A,B}->dim %u %s %u", ninA->dim,
+                 *differ < 0 ? "<" : ">", ninB->dim);
       }
       return 0;
     }
@@ -1223,8 +1227,9 @@ nrrdCompare(const Nrrd *ninA, const Nrrd *ninB, int onlyData, double epsilon,
   if (ninA->type != ninB->type) {
     *differ = ninA->type < ninB->type ? -1 : 1;
     if (explain) {
-      sprintf(explain, "nin{A,B}->type %s %s %s", airEnumStr(nrrdType, ninA->type),
-              *differ < 0 ? "<" : ">", airEnumStr(nrrdType, ninB->type));
+      snprintf(explain, AIR_STRLEN_LARGE + 1, "nin{A,B}->type %s %s %s",
+               airEnumStr(nrrdType, ninA->type), *differ < 0 ? "<" : ">",
+               airEnumStr(nrrdType, ninB->type));
     }
     return 0;
   }
@@ -1233,8 +1238,9 @@ nrrdCompare(const Nrrd *ninA, const Nrrd *ninB, int onlyData, double epsilon,
   if (numA != numB) {
     char stmp[2][AIR_STRLEN_SMALL + 1];
     *differ = numA < numB ? -1 : 1;
-    sprintf(explain, "element # {A,B} %s %s %s", airSprintSize_t(stmp[0], numA),
-            *differ < 0 ? "<" : ">", airSprintSize_t(stmp[1], numB));
+    snprintf(explain, AIR_STRLEN_LARGE + 1, "element # {A,B} %s %s %s",
+             airSprintSize_t(stmp[0], numA), *differ < 0 ? "<" : ">",
+             airSprintSize_t(stmp[1], numB));
     return 0;
   }
   /* this will always set *differ */
@@ -1261,7 +1267,7 @@ nrrdCompare(const Nrrd *ninA, const Nrrd *ninB, int onlyData, double epsilon,
     if (*differ) {
       char tmpexplain[AIR_STRLEN_LARGE + 1];
       /* the explanation, if wanted, is in "explain", but we add context */
-      sprintf(tmpexplain, "(axis %u) %s", axi, explain);
+      snprintf(tmpexplain, sizeof(tmpexplain), "(axis %u) %s", axi, explain);
       airStrcpy(explain, AIR_STRLEN_LARGE + 1, tmpexplain);
       return 0;
     }
@@ -1272,7 +1278,8 @@ nrrdCompare(const Nrrd *ninA, const Nrrd *ninB, int onlyData, double epsilon,
   if (*differ) {                                                                        \
     if (explain) {                                                                      \
       /* can't print whole string because of fixed-size of explain */                   \
-      sprintf(explain, "ninA->%s %s ninB->%s", STR, *differ < 0 ? "<" : ">", STR);      \
+      snprintf(explain, AIR_STRLEN_LARGE + 1, "ninA->%s %s ninB->%s", STR,              \
+               *differ < 0 ? "<" : ">", STR);                                           \
     }                                                                                   \
     return 0;                                                                           \
   }
@@ -1282,17 +1289,17 @@ nrrdCompare(const Nrrd *ninA, const Nrrd *ninB, int onlyData, double epsilon,
   if (ninA->space != ninB->space) {
     *differ = ninA->space < ninB->space ? -1 : 1;
     if (explain) {
-      sprintf(explain, "ninA->space %s %s ninB->space %s",
-              airEnumStr(nrrdSpace, ninA->space), *differ < 0 ? "<" : ">",
-              airEnumStr(nrrdSpace, ninB->space));
+      snprintf(explain, AIR_STRLEN_LARGE + 1, "ninA->space %s %s ninB->space %s",
+               airEnumStr(nrrdSpace, ninA->space), *differ < 0 ? "<" : ">",
+               airEnumStr(nrrdSpace, ninB->space));
     }
     return 0;
   }
   if (ninA->spaceDim != ninB->spaceDim) {
     *differ = ninA->spaceDim < ninB->spaceDim ? -1 : 1;
     if (explain) {
-      sprintf(explain, "ninA->spaceDim %u %s ninB->spaceDim %u", ninA->spaceDim,
-              *differ < 0 ? "<" : ">", ninB->spaceDim);
+      snprintf(explain, AIR_STRLEN_LARGE + 1, "ninA->spaceDim %u %s ninB->spaceDim %u",
+               ninA->spaceDim, *differ < 0 ? "<" : ">", ninB->spaceDim);
     }
     return 0;
   }
@@ -1300,9 +1307,9 @@ nrrdCompare(const Nrrd *ninA, const Nrrd *ninB, int onlyData, double epsilon,
     *differ = ninA->blockSize < ninB->blockSize ? -1 : 1;
     if (explain) {
       char stmp[2][AIR_STRLEN_SMALL + 1];
-      sprintf(explain, "ninA->blockSize %s %s ninB->blockSize %s",
-              airSprintSize_t(stmp[0], ninA->blockSize), *differ < 0 ? "<" : ">",
-              airSprintSize_t(stmp[1], ninB->blockSize));
+      snprintf(explain, AIR_STRLEN_LARGE + 1, "ninA->blockSize %s %s ninB->blockSize %s",
+               airSprintSize_t(stmp[0], ninA->blockSize), *differ < 0 ? "<" : ">",
+               airSprintSize_t(stmp[1], ninB->blockSize));
     }
     return 0;
   }
@@ -1311,8 +1318,8 @@ nrrdCompare(const Nrrd *ninA, const Nrrd *ninB, int onlyData, double epsilon,
   *differ = _nrrdDblcmp(ninA->VAL, ninB->VAL);                                          \
   if (*differ) {                                                                        \
     if (explain) {                                                                      \
-      sprintf(explain, "ninA->%s %.17g %s ninB->%s %.17g", STR, ninA->VAL,              \
-              *differ < 0 ? "<" : ">", STR, ninB->VAL);                                 \
+      snprintf(explain, AIR_STRLEN_LARGE + 1, "ninA->%s %.17g %s ninB->%s %.17g", STR,  \
+               ninA->VAL, *differ < 0 ? "<" : ">", STR, ninB->VAL);                     \
     }                                                                                   \
     return 0;                                                                           \
   }
@@ -1320,12 +1327,12 @@ nrrdCompare(const Nrrd *ninA, const Nrrd *ninB, int onlyData, double epsilon,
   for (saxi = 0; saxi < NRRD_SPACE_DIM_MAX; saxi++) {
     char stmp[AIR_STRLEN_SMALL + 1];
     unsigned int saxj;
-    sprintf(stmp, "spaceOrigin[%u]", saxi);
+    snprintf(stmp, sizeof(stmp), "spaceOrigin[%u]", saxi);
     DOUBLE_COMPARE(spaceOrigin[saxi], stmp);
-    sprintf(stmp, "spaceUnits[%u]", saxi);
+    snprintf(stmp, sizeof(stmp), "spaceUnits[%u]", saxi);
     STRING_COMPARE(spaceUnits[saxi], stmp);
     for (saxj = 0; saxj < NRRD_SPACE_DIM_MAX; saxj++) {
-      sprintf(stmp, "measurementFrame[%u][%u]", saxi, saxj);
+      snprintf(stmp, sizeof(stmp), "measurementFrame[%u][%u]", saxi, saxj);
       DOUBLE_COMPARE(measurementFrame[saxi][saxj], stmp);
     }
   }
@@ -1336,32 +1343,33 @@ nrrdCompare(const Nrrd *ninA, const Nrrd *ninB, int onlyData, double epsilon,
   if (ninA->cmtArr->len != ninB->cmtArr->len) {
     *differ = ninA->cmtArr->len < ninB->cmtArr->len ? -1 : 1;
     if (explain) {
-      sprintf(explain, "ninA # comments %u %s ninB # comments %u", ninA->cmtArr->len,
-              *differ < 0 ? "<" : ">", ninB->cmtArr->len);
+      snprintf(explain, AIR_STRLEN_LARGE + 1, "ninA # comments %u %s ninB # comments %u",
+               ninA->cmtArr->len, *differ < 0 ? "<" : ">", ninB->cmtArr->len);
     }
     return 0;
   } else {
     unsigned int ii;
     char stmp[AIR_STRLEN_SMALL + 1];
     for (ii = 0; ii < ninA->cmtArr->len; ii++) {
-      sprintf(stmp, "comment[%u]", ii);
+      snprintf(stmp, sizeof(stmp), "comment[%u]", ii);
       STRING_COMPARE(cmt[ii], stmp);
     }
   }
   if (ninA->kvpArr->len != ninB->kvpArr->len) {
     *differ = ninA->kvpArr->len < ninB->kvpArr->len ? -1 : 1;
     if (explain) {
-      sprintf(explain, "ninA # key/values %u %s ninB # key/values %u", ninA->kvpArr->len,
-              *differ < 0 ? "<" : ">", ninB->kvpArr->len);
+      snprintf(explain, AIR_STRLEN_LARGE + 1,
+               "ninA # key/values %u %s ninB # key/values %u", ninA->kvpArr->len,
+               *differ < 0 ? "<" : ">", ninB->kvpArr->len);
     }
     return 0;
   } else {
     unsigned int ii;
     char stmp[AIR_STRLEN_SMALL + 1];
     for (ii = 0; ii < ninA->kvpArr->len; ii++) {
-      sprintf(stmp, "key/value key[%u]", ii);
+      snprintf(stmp, sizeof(stmp), "key/value key[%u]", ii);
       STRING_COMPARE(kvp[2 * ii + 0], stmp);
-      sprintf(stmp, "key/value value[%u]", ii);
+      snprintf(stmp, sizeof(stmp), "key/value value[%u]", ii);
       STRING_COMPARE(kvp[2 * ii + 1], stmp);
     }
   }

@@ -455,7 +455,7 @@ _nrrdRead(Nrrd *nrrd, FILE *file, const char *string, NrrdIoState *_nio) {
   }
   if (nrrdFormatUnknown == nio->format) {
     char linestart[AIR_STRLEN_SMALL + 1], stmp[AIR_STRLEN_SMALL + 1];
-    airStrcpy(linestart, AIR_STRLEN_SMALL + 1, nio->line);
+    airStrcpy(linestart, sizeof(linestart), nio->line);
     if (strlen(linestart) != strlen(nio->line)) {
       biffAddf(NRRD,
                "%s: couldn't parse (length %s) line starting "

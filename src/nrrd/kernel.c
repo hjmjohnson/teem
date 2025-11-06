@@ -3049,7 +3049,7 @@ nrrdKernelParse(const NrrdKernel **kernelP, double *parm, const char *_str) {
     parm[jj] = 0;
   }
 
-  airStrcpy(str, AIR_STRLEN_HUGE + 1, _str);
+  airStrcpy(str, sizeof(str), _str);
   strcpy(kstr, "");
   pstr = NULL;
   pstr = strchr(str, ':');
