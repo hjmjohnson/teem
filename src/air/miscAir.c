@@ -364,7 +364,7 @@ airSprintSize_t(char _str[AIR_STRLEN_SMALL + 1], size_t val) {
     str[--si] = AIR_CAST(char, (val % 10) + '0');
     val /= 10;
   } while (val);
-  strcpy(_str, str + si);
+  airStrcpy(_str, AIR_STRLEN_SMALL + 1, str + si);
   return _str;
 }
 
@@ -395,7 +395,7 @@ airSprintPtrdiff_t(char _str[AIR_STRLEN_SMALL + 1], ptrdiff_t val) {
   if (-1 == sign) {
     str[--si] = '-';
   }
-  strcpy(_str, str + si);
+  airStrcpy(_str, AIR_STRLEN_SMALL + 1, str + si);
   return _str;
 }
 
@@ -404,28 +404,36 @@ airSprintPtrdiff_t(char _str[AIR_STRLEN_SMALL + 1], ptrdiff_t val) {
 const int airPresent = 42;
 
 /*
-** sprints a length-"len" vector "vec" of size_t values into "dst", which is
-** simply assumed to be big enough to hold this.  Vector enclosed in "[]" and
-** values separated by ","
-*/
+ ******** airSprintVecSize_t
+ *
+ * sprints a length-`len` vector `vec` of size_t values into `_dst`, which is allocated
+ * for size `_dstSize`. Vector is enclosed in "[]" and values separated by ",".
+ * NOTE: this is not actually used in Teem, but is used in some CTests
+ */
 char *
-airSprintVecSize_t(char *dst, const size_t *vec, unsigned int len) {
-  char stmp[AIR_STRLEN_SMALL + 1];
+airSprintVecSize_t(char *_dst, size_t _dstSize, const size_t *vec, unsigned int len) {
   unsigned int axi;
+  char *dst = _dst;
+  size_t dstSize = _dstSize;
 
   /* if we got NULL to sprint into, there's nothing to do but return it */
-  if (!dst) {
-    return dst;
+  if (!_dst) {
+    return _dst;
   }
-  strcpy(dst, "[");
+  airStrcpy(dst, dstSize, "[");
+  STRINCR(dst, dstSize);
   for (axi = 0; axi < len; axi++) {
+    char stmp[AIR_STRLEN_SMALL + 1];
     if (axi) {
-      strcat(dst, ",");
+      airStrcpy(dst, dstSize, ",");
+      STRINCR(dst, dstSize);
     }
     airSprintSize_t(stmp, vec[axi]);
-    strcat(dst, stmp);
+    airStrcpy(dst, dstSize, stmp);
+    STRINCR(dst, dstSize);
   }
-  strcat(dst, "]");
+  airStrcpy(dst, dstSize, "]");
+  STRINCR(dst, dstSize); /* though moot here at end */
   return dst;
 }
 

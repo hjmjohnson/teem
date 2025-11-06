@@ -31,10 +31,9 @@ int
 main(void) {
   size_t II, *coord0, *ctmp0, *size0, coord1[1], ctmp1[1], size1[1], coord2[2], ctmp2[2],
     size2[2], coord3[3], ctmp3[3], size3[3], coord4[4], ctmp4[4], size4[4];
-  char sbuff[NRRD_DIM_MAX * AIR_STRLEN_SMALL + 1],
-    scomp[NRRD_DIM_MAX * AIR_STRLEN_SMALL + 1],
-    sigab[NRRD_DIM_MAX * AIR_STRLEN_SMALL + 1], /* index gen and back */
-    swhat[NRRD_DIM_MAX * AIR_STRLEN_SMALL + 1];
+#define BUFF_SIZE (NRRD_DIM_MAX * AIR_STRLEN_SMALL + 1)
+  char sbuff[BUFF_SIZE], scomp[BUFF_SIZE], sigab[BUFF_SIZE], /* index gen and back */
+    swhat[BUFF_SIZE];
   unsigned int ii, jj, kk, ll;
 
   /* This macro makes sure the given length-N coord##N vector is what it
@@ -43,15 +42,15 @@ main(void) {
      to go from coord##N to a linear index II and back to ctmp##N,
      and makes sure that that too matches "want" */
 #define CHECK(N, want)                                                                  \
-  airSprintVecSize_t(swhat, size##N, N);                                                \
-  airSprintVecSize_t(sbuff, coord##N, N);                                               \
+  airSprintVecSize_t(swhat, BUFF_SIZE, size##N, N);                                     \
+  airSprintVecSize_t(sbuff, BUFF_SIZE, coord##N, N);                                    \
   if (strcmp(sbuff, want)) {                                                            \
     fprintf(stderr, "for %s: got %s but wanted %s\n", swhat, sbuff, want);              \
     return 1;                                                                           \
   }                                                                                     \
   NRRD_INDEX_GEN(II, coord##N, size##N, N);                                             \
   NRRD_COORD_GEN(ctmp##N, size##N, N, II);                                              \
-  airSprintVecSize_t(sigab, ctmp##N, N);                                                \
+  airSprintVecSize_t(sigab, BUFF_SIZE, ctmp##N, N);                                     \
   if (strcmp(sbuff, want)) {                                                            \
     fprintf(stderr, "for %s: NRRD_{INDEX,COORD}_GEN gave %s but want %s\n", swhat,      \
             sbuff, want);                                                               \
@@ -85,7 +84,7 @@ main(void) {
       /* don't increment on the very first time, otherwise do */                        \
       NRRD_COORD_INCR(coord1, size1, 1, 0);                                             \
     }                                                                                   \
-    airSprintVecSize_t(sbuff, coord1, 1);                                               \
+    airSprintVecSize_t(sbuff, BUFF_SIZE, coord1, 1);                                    \
     sprintf(scomp, "[%u]", ii);                                                         \
     CHECK(1, scomp);                                                                    \
   }
@@ -106,7 +105,7 @@ main(void) {
         /* don't increment on the very first time, otherwise do */                      \
         NRRD_COORD_INCR(coord2, size2, 2, 0);                                           \
       }                                                                                 \
-      airSprintVecSize_t(sbuff, coord2, 2);                                             \
+      airSprintVecSize_t(sbuff, BUFF_SIZE, coord2, 2);                                  \
       sprintf(scomp, "[%u,%u]", ii, jj);                                                \
       CHECK(2, scomp);                                                                  \
     }                                                                                   \
@@ -135,7 +134,7 @@ main(void) {
           /* don't increment on the very first time, otherwise do */                    \
           NRRD_COORD_INCR(coord3, size3, 3, 0);                                         \
         }                                                                               \
-        airSprintVecSize_t(sbuff, coord3, 3);                                           \
+        airSprintVecSize_t(sbuff, BUFF_SIZE, coord3, 3);                                \
         sprintf(scomp, "[%u,%u,%u]", ii, jj, kk);                                       \
         CHECK(3, scomp);                                                                \
       }                                                                                 \
@@ -169,7 +168,7 @@ main(void) {
             /* don't increment on the very first time, otherwise do */                  \
             NRRD_COORD_INCR(coord4, size4, 4, 0);                                       \
           }                                                                             \
-          airSprintVecSize_t(sbuff, coord4, 4);                                         \
+          airSprintVecSize_t(sbuff, BUFF_SIZE, coord4, 4);                              \
           sprintf(scomp, "[%u,%u,%u,%u]", ii, jj, kk, ll);                              \
           CHECK(4, scomp);                                                              \
         }                                                                               \

@@ -573,7 +573,8 @@ AIR_EXPORT int airSinglePrintf(FILE *file, char *str, size_t strSize, /* */
                                const char *fmt, ...);
 AIR_EXPORT char *airSprintSize_t(char str[AIR_STRLEN_SMALL + 1], size_t val);
 /* ---- BEGIN non-NrrdIO */
-AIR_EXPORT char *airSprintVecSize_t(char *str, const size_t *vec, unsigned int len);
+AIR_EXPORT char *airSprintVecSize_t(char *dst, size_t dstSize, const size_t *vec,
+                                    unsigned int len);
 AIR_EXPORT char *airPrettySprintSize_t(char str[AIR_STRLEN_SMALL + 1], size_t v);
 AIR_EXPORT char *airSprintPtrdiff_t(char str[AIR_STRLEN_SMALL + 1], ptrdiff_t v);
 AIR_EXPORT const int airPresent;
