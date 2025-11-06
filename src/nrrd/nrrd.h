@@ -63,159 +63,163 @@ extern "C" {
 #define NRRD nrrdBiffKey
 
 /*
-******** NrrdAxisInfo struct
-**
-** all the information which can sensibly be associated with
-** one axis of a nrrd.  The only member which MUST be explicitly
-** set to something meaningful is "size".
-**
-** If an axis lies conceptually along some direction in an enclosing
-** space of dimension nrrd->spaceDim, then the first nrrd->spaceDim
-** entries of spaceDirection[] must be non-NaN, and min, max, spacing,
-** and units must NOT be set;  thickness, center, and label can still
-** be used.  The mutual exclusion between axis-aligned and general
-** direction information is enforced per-axis, not per-array.
-**
-** The min and max values give the range of positions "represented"
-** by the samples along this axis.  In node-centering, "min" IS the
-** position at the lowest index.  In cell-centering, the position at
-** the lowest index is between min and max (a touch bigger than min,
-** assuming min < max).
-**
-** There needs to be a one-to-one correspondence between these variables
-** and the nrrdAxisInfo* enum (nrrdEnums.h), the per-axis header fields
-** (see nrrdField* enum in nrrdEnums.h), and the various methods in axis.c
-*/
+ ******** NrrdAxisInfo struct
+ *
+ * all the information which can sensibly be associated with one axis of a nrrd.  The
+ * only member which MUST be explicitly set to something meaningful is `size`.
+ *
+ * If an axis lies conceptually along some direction in an enclosing space of dimension
+ * nrrd->spaceDim, then the first nrrd->spaceDim entries of `spaceDirection` must be
+ * non-NaN, and `min`, `max`, `spacing`, and `units` must NOT be set; `thickness`,
+ * `center`, and `label` can still be used.  The mutual exclusion between axis-aligned
+ * and general direction information is enforced per-axis, not per-array.
+ *
+ * The `min` and `max` values give the range of positions "represented" by the samples
+ * along this axis.  In node-centering, `min` IS the position at the lowest index.  In
+ * cell-centering, the position at the lowest index is between `min` and `max` (a touch
+ * bigger than `min`, assuming `min` < `max`).
+ *
+ * There needs to be a one-to-one correspondence between these variables and the
+ * `nrrdAxisInfo*` enum (nrrdEnums.h), the per-axis header fields (see `nrrdField*` enum
+ * in nrrdEnums.h), and the various methods in axis.c
+ */
+/* NOTE about the formatting herein of comments annotating struct fields: clang-format
+   will try valiantly to line up left margins of multiple comments across multiple lines,
+   which can easily induce multiple changes (just due to clang-format) wholly separate
+   from the single comment or field that was actually being modified.  Rather than wrap
+   things in heavy-handed clang-format off/on directives, a stable and very legible
+   formatting is possible by starting the comment on the left column as done here, and
+   manually indenting each comment block individually. Starting on column 34 was chosen
+   as a compromise value for uniformity throughout. Also, the type declaration is given
+   explicitly for nearly every member (rather than having a long multi-page comma list),
+   which increases legibility and modularity. */
 typedef struct {
   size_t size;
-  /*                number of elements along each axis */
+  /*                             Number of elements along each axis */
   double spacing;
-  /*                if non-NaN, distance between samples */
+  /*                             If non-NaN, distance between samples */
   double thickness;
-  /*                if non-NaN, nominal thickness of region represented by one
-                    sample along the axis. No semantics relative to spacing are
-                    assumed or imposed, and unlike spacing, there is no
-                    sensible way to alter thickness- it is either copied (as
-                    with cropping and slicing) or set to NaN (when
-                    resampled). */
+  /*                             If non-NaN, nominal thickness of region represented by
+                                 one sample along the axis. No semantics relative to
+                                 spacing are assumed or imposed, and unlike spacing,
+                                 there is no sensible way to alter thickness- it is
+                                 either copied (as with cropping and slicing) or set to
+                                 NaN (when resampled). */
   double min, max;
-  /*                if non-NaN, range of positions spanned by the samples on
-                    this axis.  Obviously, one can set "spacing" to something
-                    incompatible with min and max: the idea is that only one
-                    (min and max, or spacing) should be taken to be significant
-                    at any time. */
+  /*                             If non-NaN, range of positions spanned by the samples on
+                                 this axis. Obviously, one can set `spacing` to something
+                                 incompatible with `min` and `max`: the idea is that only
+                                 one (`min` and `max`, or, `spacing`) should be taken to
+                                 be significant at any time. */
   double spaceDirection[NRRD_SPACE_DIM_MAX];
-  /*                the vector, in "space" (as described by nrrd->space and/or
-                    nrrd->spaceDim), from one sample to the next sample along
-                    this axis.  It is the column vector of the transform from
-                    index space to "space" space */
+  /*                             The vector, in "space" (as described by nrrd->space
+                                 and/or nrrd->spaceDim), from one sample to the next
+                                 sample along this axis. It is the column vector of the
+                                 matrix transform from index space to "space" space
+                                 (assuming you apply the transform by left-multiplying
+                                 the coord column vector by the matrix) */
   int center;
-  /*                cell vs. node centering (value should be one of
-                    nrrdCenter{Unknown,Node,Cell} */
+  /*                             Cell vs. node centering (value should be one of
+                                 nrrdCenterUnknown, nrrdCenterNode, nrrdCenterCell) */
   int kind;
-  /*                what kind of information is along this axis (from the
-                    nrrdKind* enum) */
+  /*                             What kind of information is along this axis
+                                 (from the nrrdKind* enum) */
   char *label;
-  /*                short info string for each axis */
+  /*                             Short info string for each axis */
   char *units;
-  /*                string identifying the unit */
+  /*                             String identifying the unit */
 } NrrdAxisInfo;
 
 /*
-******** Nrrd struct
-**
-** The struct used to wrap around the raw data array
-*/
+ ******** Nrrd struct
+ *
+ * The struct used to wrap around the raw data array
+ */
 typedef struct {
   /*
-  ** NECESSARY information describing the main array.  This is
-  ** generally set at the same time that either the nrrd is created,
-  ** or at the time that the nrrd is wrapped around an existing array
-  */
+   * NECESSARY information describing the main array.  This is generally set at the same
+   * time that either the nrrd is created, or at the time that the nrrd is wrapped around
+   * an existing array
+   */
 
   void *data;
-  /*                               the data in memory */
+  /*                             The data in memory */
   int type;
-  /*                               a value from the nrrdType enum */
+  /*                             A value from the nrrdType enum */
   unsigned int dim;
-  /*                               the dimension (rank) of the array */
+  /*                             The dimension (rank) of the array */
 
   /*
-  ** All per-axis specific information
-  */
+   * All per-axis specific information
+   */
   NrrdAxisInfo axis[NRRD_DIM_MAX];
-  /*                               axis[0] is the fastest axis in the scan-
-                                   line ordering, the one who's coordinates
-                                   change the fastest as the elements are
-                                   accessed in the order in which they appear
-                                   in memory */
+  /*                             axis[0] is the fastest axis in the scan-line ordering:
+                                 the axis who's coordinates change the fastest as the
+                                 elements are accessed in the order in which they
+                                 appear in memory */
 
   /*
-  ** Optional information descriptive of whole array, some of which is
-  ** meaningfuly for only some uses of a nrrd
-  */
+   * Optional information descriptive of whole array, some of which is
+   * meaningfuly for only some uses of a nrrd
+   */
   char *content;
-  /*                               brief account of what this data is */
+  /*                             Brief account of what this data is */
   char *sampleUnits;
-  /*                               units of measurement of the values stored in
-                                   the array itself (not the array axes and not
-                                   space coordinates).  The logical name might
-                                   be "dataUnits", but that's perhaps
-                                   ambiguous.  Note that these units may apply
-                                   to non-scalar kinds (e.g. coefficients of a
-                                   vector have the same units) */
+  /*                             Units of measurement of the values stored in the array
+                                 itself (not the array axes and not space coordinates).
+                                 The logical name might be "dataUnits", but that's
+                                 perhaps ambiguous.  Note that these units may apply to
+                                 non-scalar kinds (e.g. coefficients of a vector have the
+                                 same units) */
   int space;
-  /*                               from nrrdSpace* enum, and often implies the
-                                   value of spaceDim */
+  /*                             From nrrdSpace* enum, and often implies the value of
+                                 `spaceDim` */
   unsigned int spaceDim;
-  /*                               if non-zero, the dimension of the space in
-                                   which the regular sampling grid conceptually
-                                   lies.  This is a separate variable because
-                                   this dimension can be different than the
-                                   array dimension.  The non-zero-ness of this
-                                   value is in fact the primary indicator that
-                                   space and orientation information is set.
-                                   This identifies the number of entries in
-                                   "origin" and the per-axis "direction"
-                                   vectors that are taken as meaningful */
+  /*                             If non-zero, the dimension of the space in which the
+                                 regular sampling grid conceptually lies.  This is a
+                                 separate variable because this dimension can be
+                                 different than the array dimension. The non-zero-ness of
+                                 this value is in fact the primary indicator that space
+                                 and orientation information is set. This identifies the
+                                 number of entries in `origin` and the per-axis
+                                 `spaceDirection` vectors that are taken as meaningful */
   char *spaceUnits[NRRD_SPACE_DIM_MAX];
-  /*                               units for coordinates of space */
+  /*                             Units for coordinates of space */
   double spaceOrigin[NRRD_SPACE_DIM_MAX];
-  /*                               the location of the center the first (lowest
-                                   memory address) array sample, regardless of
-                                   node-vs-cell centering */
+  /*                             The location of the center the first (lowest memory
+                                 address) array sample, regardless of node-vs-cell
+                                 centering */
   double measurementFrame[NRRD_SPACE_DIM_MAX][NRRD_SPACE_DIM_MAX];
-  /*                               if spaceDim is non-zero, this may store a
-                                   spaceDim-by-spaceDim matrix which transforms
-                                   vector/matrix coefficients in the
-                                   "measurement frame" to those in the world
-                                   space described by spaceDim (and hopefully
-                                   space).  Coeff [i][j] is *column* i & *row*
-                                   j, which is probably the *transpose* of what
-                                   you expect.  There are no semantics linking
-                                   this to the "kind" of any axis, for a
-                                   variety of reasons */
+  /*                             If `spaceDim` is non-zero, this may store a
+                                 spaceDim-by-spaceDim matrix which transforms
+                                 vector/matrix coefficients in the "measurement frame" to
+                                 those in the world space described by spaceDim (and
+                                 hopefully space).
+                                 NOTE: matrix coeff [i][j] is *column* i & *row* j
+                                 which is probably the *transpose* of what you expect.
+                                 There are no semantics linking this to the `kind` of
+                                 any axis, for a variety of reasons */
   size_t blockSize;
-  /*                               for nrrdTypeBlock, block byte size */
+  /*                             For nrrdTypeBlock, block byte size */
   double oldMin, oldMax;
-  /*                               if non-NaN, and if nrrd is of integral type,
-                                   extremal values for the array BEFORE it was
-                                   quantized */
+  /*                             If non-NaN, and if nrrd is of integral type, extremal
+                                 values for the array BEFORE it was quantized. ("old" was
+                                 a strange/ambiguous name choice; a name referring to
+                                 quantization would have better, but now it is set) */
   void *ptr;
-  /*                               never read or set by nrrd; use/abuse as you
-                                   see fit */
+  /*                             Never read or set by nrrd; use/abuse as you see fit */
 
   /*
-  ** Comments.  Read from, and written to, header.
-  ** The comment array "cmt" is NOT NULL-terminated.
-  ** The number of comments is cmtArr->len.
-  */
+   * Comments.  Read from, and written to, header.
+   * The comment array `cmt` is NOT NULL-terminated.
+   * The number of comments is cmtArr->len.
+   */
   char **cmt;
   airArray *cmtArr;
 
   /*
-  ** Key-value pairs.
-  */
+   * Key-value pairs.
+   */
   char **kvp;
   airArray *kvpArr;
 } Nrrd;
@@ -230,27 +234,30 @@ struct NrrdEncoding_t;
 */
 typedef struct {
   char name[AIR_STRLEN_SMALL + 1]; /* short identifying string */
-  int isImage, /* this format is intended solely for "2D" images, which
-                  controls the invocation of nrrdAxesInsert()
-                  if nrrdStateGrayscaleImage3D */
-    readable;  /* we can read as well as write this format */
+  int isImage;
+  /*                             This format is intended solely for "2D" images, which
+                                 controls the invocation of nrrdAxesInsert() if
+                                 nrrdStateGrayscaleImage3D */
+  int readable;
+  /*                             We can read as well as write this format */
 
-  /* tests if this format is currently available in this build */
   int (*available)(void);
+  /*                             Tells if this format is currently available in this
+                                 build */
 
-  /* (for writing) returns non-zero if a given filename could likely be
-     represented by this format */
   int (*nameLooksLike)(const char *filename);
+  /*                             (for writing) returns non-zero if a given filename could
+                                 likely be represented by this format */
 
-  /* (for writing) returns non-zero if a given nrrd/encoding pair will fit
-     in this format */
   int (*fitsInto)(const Nrrd *nrrd, const struct NrrdEncoding_t *encoding, int useBiff);
+  /*                             (for writing) returns non-zero if a given nrrd/encoding
+                                 pair will fit in this format */
 
-  /* (for reading) returns non-zero if what has been read in so far
-     is recognized as the beginning of this format */
   int (*contentStartsLike)(struct NrrdIoState_t *nio);
+  /*                             (for reading) returns non-zero if what has been read in
+                                 so far is recognized as the beginning of this format */
 
-  /* reader and writer. Both are expected to use biff */
+  /* Format reader and writer. Both are expected to use biff */
   int (*read)(FILE *file, Nrrd *nrrd, struct NrrdIoState_t *nio);
   int (*write)(FILE *file, const Nrrd *nrrd, struct NrrdIoState_t *nio);
 } NrrdFormat;
@@ -268,19 +275,18 @@ typedef struct NrrdEncoding_t {
     suffix[AIR_STRLEN_SMALL + 1];  /* customary filename suffix */
   int endianMatters, isCompression;
   int (*available)(void);
-  /* The "data" and "elementNum" values have to be passed explicitly
-     to read/wrote because they will be different from nrrd->data and
-     nrrdElementNumber(nrrd) in the case of multiple data files.  You
-     might think that the only other thing required to be passed is
-     nrrdElementSize(nrrd), but no, it is in fact best to pass the
-     whole Nrrd, instead of just certain attributes.  The stupid details:
-             nrrd->dim: needed to know whether to put one value per line
-                        in case of 1-D nrrdEncodingAscii
-    nrrd->axis[0].size: need for proper formatting of nrrdEncodingAscii
-            nrrd->type: needed for nrrdEncodingAscii, since its action is
-                        entirely parameterized by type
-       nrrd->blockSize: needed for nrrdElementSize in case of nrrdTypeBlock
-    Both read and write functions are expected to use biff. */
+  /* The `data` and `elementNum` values have to be passed explicitly to `read`/`write`
+     because they will be different from nrrd->data and nrrdElementNumber(nrrd) in the
+     case of multiple data files.  You might think that the only other thing required to
+     be passed is nrrdElementSize(nrrd), but no, it is in fact best to pass the whole
+     Nrrd, instead of just certain attributes.  The fussy details:
+                 nrrd->dim: needed to know whether to put one value per line
+                            in case of 1-D nrrdEncodingAscii
+        nrrd->axis[0].size: need for proper formatting of nrrdEncodingAscii
+                nrrd->type: needed for nrrdEncodingAscii, since its action is
+                            entirely parameterized by type
+           nrrd->blockSize: needed for nrrdElementSize in case of nrrdTypeBlock
+     Both `read` and `write` functions are expected to use biff. */
   int (*read)(FILE *file, void *data, size_t elementNum, Nrrd *nrrd,
               struct NrrdIoState_t *nio);
   int (*write)(FILE *file, const void *data, size_t elementNum, const Nrrd *nrrd,
@@ -288,97 +294,104 @@ typedef struct NrrdEncoding_t {
 } NrrdEncoding;
 
 /*
-******** NrrdIoState struct
-**
-** Everything relating to how the nrrd is read and written.
-** Multiple parameters for writing are set here (like format, encoding,
-** zlib parameters).  Also, this is the place where those few parameters
-** of reading are stored (like skipData and keepNrrdDataFileOpen).  Also,
-** after the nrrd has been read, it is a potentially useful record of what
-** it took to read it in.
-*/
+ ******** NrrdIoState struct
+ *
+ * Everything relating to how a Nrrd is read and written. Multiple parameters for
+ * writing are set here (like `format`, `encoding`, zlib parameters).  Also, this is the
+ * one place where those few parameters of reading are stored (like skipData and
+ * keepNrrdDataFileOpen).  Also, after a Nrrd has been read, the info herein is a
+ * potentially useful record of what it took to read it in.
+ */
 typedef struct NrrdIoState_t {
-  int verbose;                  /* (new for TeemV2) replaces the old global
-                                   nrrdStateVerboseIO */
-  char *path,                   /* allows us to remember the directory
-                                   from whence this nrrd was "load"ed, or
-                                   to whence this nrrd is "save"ed, MINUS the
-                                   trailing "/", so as to facilitate games with
-                                   header-relative data files */
-    *base,                      /* when "save"ing a nrrd into separate
-                                   header and data, the name of the header
-                                   file (e.g. "output.nhdr") MINUS the ".nhdr".
-                                   This is massaged to produce a header-
-                                   relative data filename.  */
-    *line,                      /* buffer for saving one line from file */
-    *dataFNFormat,              /* if non-NULL, the format string (containing
-                                   something like "%d" as a substring) to be
-                                   used to identify multiple detached datafiles.
-                                   NB: This is "format" in the sense of a printf-
-                                   style format string, not in the sense of a
-                                   file format.  This may need header-relative
-                                   path processing. */
-    **dataFN,                   /* ON READ + WRITE: array of data filenames. These
-                                   are not passed directly to fopen, they may need
-                                   header-relative path processing. Like the
-                                   cmtArr in the Nrrd, this array is not NULL-
-                                   terminated */
-    *headerStringWrite;         /* ON WRITE: string from to which the header can
-                                   be written.  On write, it is assumed allocated
-                                   for as long as it needs to be (probably via a
-                                   first pass with learningHeaderStrlen). NOTE:
-                                   It is the non-NULL-ity of this which signifies
-                                   the intent to do string-based writing */
-  const char *headerStringRead; /* ON READ: like headerStringWrite, but for
-                                   reading the header from.  NOTE: It is the
-                                   non-NULL-ity of this which signifies the
-                                   intent to do string-based reading */
-  airArray *dataFNArr;          /* for managing the above */
+  int verbose;
+  /*                             (new for TeemV2) Replaces the old global
+                                 nrrdStateVerboseIO */
+  char *path;
+  /*                             Allows us to remember the directory from whence this
+                                 Nrrd was "load"ed, or to whence this nrrd is "save"ed,
+                                 MINUS the  trailing "/", so as to facilitate games with
+                                 header-relative data files */
+  char *base;
+  /*                             When "save"ing a nrrd into separate header and data, the
+                                 name of the header file (e.g. "output.nhdr") MINUS the
+                                 ".nhdr". This is massaged to produce a header- relative
+                                 data filename.  */
+  char *line;
+  /*                             Buffer for saving one line from file */
+  char *dataFNFormat;
+  /*                             If non-NULL, the format string (containing something
+                                 like "%d" as a substring) to be used to identify
+                                 multiple detached datafiles. NB: This is "format" in the
+                                 sense of a printf- style format string, not in the sense
+                                 of a file format.  This may need header-relative path
+                                 processing. */
+  char **dataFN;
+  /*                             ON READ + WRITE: array of data filenames. These are not
+                                 passed directly to fopen, they may need header-relative
+                                 path processing. Like the cmtArr in the Nrrd, this array
+                                 is not NULL-terminated */
+  char *headerStringWrite;
+  /*                             ON WRITE: string from to which the header can be
+                                 written. On write, it is assumed allocated for as long
+                                 as it needs to be (probably via a first pass with
+                                 learningHeaderStrlen). NOTE: It is the non-NULL-ity of
+                                 this which signifies the intent to do string-based
+                                 writing */
+  const char *headerStringRead;
+  /*                             ON READ: like headerStringWrite, but for reading the
+                                 header from.  NOTE: It is the non-NULL-ity of this which
+                                 signifies the intent to do string-based reading */
+  airArray *dataFNArr;
+  /*                             For managing the above */
 
-  FILE *headerFile,         /* if non-NULL, the file from which the NRRD
-                               header is being read */
-    *dataFile;              /* this used to be a central part of how the
-                               I/O code worked, but now it is simply the
-                               place to store the dataFile in the case of
-                               keepNrrdDataFileOpen */
-  size_t lineSize;          /* allocated size of `line`, including storage
-                               of the terminating '\0' */
-  unsigned int dataFileDim, /* The dimension of the data in each data file.
-                               Together with dataFNArr->len, this determines
-                               how many bytes should be in each data file */
-    charsPerLine,           /* when writing ASCII data in which we
-                               intend only to write a huge long list
-                               of numbers whose text formatting
-                               implies nothing, then how many
-                               characters do we limit ourselves to per
-                               line */
-    valsPerLine,            /* when writing ASCII data in which we DO
-                               intend to sigify (or at least hint at)
-                               something with the formatting, then
-                               what is the max number of values to
-                               write on a line */
-    lineSkip;               /* if dataFile non-NULL, the number of
-                               lines in dataFile that should be
-                               skipped over (so as to bypass another
-                               form of ASCII header preceeding raw
-                               data) */
-  size_t headerStrlen,      /* ON WRITE, for NRRDs, if learningHeaderStrlen,
-                               the learned strlen of the header so far */
-    headerStrpos;           /* ON READ, for NRRDs, if headerStringRead is
-                               non-NULL, the current location of reading
-                               in the header */
-  long int byteSkip;        /* exactly like lineSkip, but bytes
-                               instead of lines.  First the lines are
-                               skipped, then the bytes */
-  long int *dataFSkip;      /* skip per-data-file line from a NRRD0006 "data
-                               file: SKIPLIST" specification; THIS OVERRIDES
-                               the single byteSkip above. The non-NULL-ity of
-                               this indicates there is a per-file byte skip.
-                               Line skip still precedes per-file byte skip. */
-  airArray *dataFSkipArr;   /* for managing the above */
+  FILE *headerFile;
+  /*                             If non-NULL, the file from which the NRRD header is
+                                 being read */
+  FILE *dataFile;
+  /*                             This used to be a central part of how the I/O code
+                                 worked, but now it is simply the place to store the
+                                 dataFile in the case of `keepNrrdDataFileOpen` */
+  size_t lineSize;
+  /*                             allocated size of `line`, including storage of the
+                                 terminating '\0' */
+  unsigned int dataFileDim;
+  /*                             The dimension of the data in each data file. Together
+                                 with dataFNArr->len, this determines how many bytes
+                                 should be in each data file */
+  unsigned int charsPerLine;
+  /*                             When writing ASCII data in which we intend only to write
+                                 a huge long list of numbers whose text formatting
+                                 implies nothing, then how many characters do we limit
+                                 ourselves to per line */
+  unsigned int valsPerLine;
+  /*                             When writing ASCII data in which we DO intend to sigify
+                                 (or at least hint at) something with the formatting,
+                                 then what is the max number of values to  write on a
+                                 line */
+  unsigned int lineSkip;
+  /*                             If dataFile non-NULL, the number of lines in dataFile
+                                 that should be skipped over (so as to bypass another
+                                 form of ASCII header preceeding raw data) */
+  size_t headerStrlen;
+  /*                             ON WRITE, for NRRDs, if `learningHeaderStrlen`, the
+                                 learned strlen of the header so far */
+  size_t headerStrpos;
+  /*                             ON READ, for NRRDs, if `headerStringRead` is non-NULL,
+                                 the current location of reading in the header */
+  long int byteSkip;
+  /*                             Exactly like `lineSkip`, but bytes instead of lines.
+                                 First the lines are skipped, then the bytes */
+  long int *dataFSkip;
+  /*                             Skip per-data-file line from a NRRD0006
+                                 "data file: SKIPLIST" specification; THIS OVERRIDES the
+                                 single `byteSkip` above. The non-NULL-ity of this
+                                 indicates there is a per-file byte skip. Line skip still
+                                 precedes per-file byte skip. */
+  airArray *dataFSkipArr;
+  /*                             For managing `dataFSkip` above */
 
   /* Note that the NRRD0004 and NRRD0005 file formats indicate that a numbered
-     sequence of data filenames should be indexed via a "%d" format
+     sequence of data filenames should be indexed via a "%d" (or similar) format
      specification, and that the format doc says nothing about the "min" and
      "max" fields of "data file" being only positive.  So the following three
      dataFN* fields are appropriately (signed) ints, even if all normal usage
@@ -386,103 +399,122 @@ typedef struct NrrdIoState_t {
      from _nrrdDataFNNumber(), which gives the total number of file names, is
      still appropriately an unsigned int. This may be revisited if the file
      format itself is adjusted. */
-  int dataFNMin, /* used with dataFNFormat to identify .. */
-    dataFNMax,   /* .. all the multiple detached datafiles */
-    dataFNStep;  /* how to step from max to min */
-  /* On the other hand, dataFNIndex ranges from 0 to (#datafiles-1),
-     and not dataFNMin to dataFNMax, so it really should be unsigned */
-  unsigned int dataFNIndex;   /* which of the data files are being read */
-  int pos,                    /* line[pos] is beginning of stuff which
-                                 still has yet to be parsed */
-    endian,                   /* endian-ness of the data in file, for
-                                 those encoding/type combinations for
-                                 which it matters (from nrrdEndian) */
-    seen[NRRD_FIELD_MAX + 1], /* for error checking in header parsing */
-    detachedHeader,           /* ON WRITE: request for file (NRRD format only)
-                                 to be split into distinct header and data.
-                                 This only has an effect if detaching the header
-                                 is not already necessary, as it is with multiple
-                                 data files */
-    bareText,                 /* when writing a plain text file, is there any
-                                 effort made to record the nrrd struct
-                                 info in the text file */
-    moreThanFloatInText,      /* when writing a plain text file, instead of the
-                                 usual behavior of silently converting to float,
-                                 explicitly record the type, and also ensure
-                                 that the ascii encoding is lossless */
-    skipData,                 /* if non-zero (all formats):
-                                 ON READ: don't allocate memory for, and don't
-                                 read in, the data portion of the file (but we
-                                 do verify that for nrrds, detached datafiles
-                                 can be opened).  Note: Does NOT imply
-                                 keepNrrdDataFileOpen.  Warning: resulting
-                                 nrrd struct will have "data" pointer NULL.
-                                 ON WRITE: don't write data portion of file
-                                 (for nrrds, don't even try to open detached
-                                 datafiles).  Warning: can result in broken
-                                 noncomformant files.
-                                 (be careful with this) */
-    skipFormatURL,            /* if non-zero for NRRD format ON WRITE:
-                                 skip the comment lines that document where
-                                 to find the NRRD file format specs */
-    keepNrrdDataFileOpen,     /* ON READ: when there is only a single dataFile,
-                                 don't close nio->dataFile when
-                                 you otherwise would, when reading the
-                                 nrrd format. Probably used in conjunction with
-                                 skipData.  (currently for "unu data")
-                                 ON WRITE: no semantics */
-    /* ---- BEGIN non-NrrdIO */
-    declineStdioOnTTY, /* ON READ and ON WRITE: If nrrdLoad is about to read from
-                          filename "-" (via nrrdRead), or nrrdSave is about to write to
-                          "-" (via nrrdWrite), regardless of file format (which isn't
-                          known on read, though may be known on write): if this is
-                          non-zero, decline to nrrdRead from stdin or nrrdWrite to stdout
-                          IF stdin/stdout seems to be a terminal (as per isatty()). On
-                          read, this avoids cryptic stalls as something tries to read
-                          from the terminal (where a human is unlikely to be typing the
-                          file contents), and on write, this avoids clobbering the
-                          terminal with screens of non-printing characters. Using
-                          filename "-=" is a sneaky way to name stdin/stdout while
-                          over-riding this declination and force that IO to happen. */
-    /* ---- END non-NrrdIO */
-    zlibLevel,      /* zlib compression level (0-9, -1 for
-                       default[6], 0 for no compression). */
-    zlibStrategy,   /* zlib compression strategy, can be one
-                       of the nrrdZlibStrategy enums, default is
-                       nrrdZlibStrategyDefault. */
-    bzip2BlockSize, /* block size used for compression,
-                       roughly equivalent to better but slower
-                       (1-9, -1 for default[9]). */
-    /* ---- BEGIN non-NrrdIO */
-    /* seems odd to have contents of NrrdIoState differ between full Teem
-       and NrrdIO, but these fields can't be meaningfully set or read if
-       the nrrdFormatPNGsRGBIntent is not available */
-    PNGsRGBIntentKnown, /* ON READ+WRITE: for array being read from or
-                           written to PNG, we know an sRGB intent */
-    PNGsRGBIntent,      /* ON READ+WRITE: iff sRGBIntentKnown, the intent
-                           itself, from nrrdFormatPNGsRGBIntent* enum */
-    /* ---- END non-NrrdIO */
-    learningHeaderStrlen,        /* ON WRITE, for nrrds, learn and save the total
-                                    length of header into headerStrlen. This is
-                                    used to allocate a buffer for header */
-    headerDoubleExcessPrecision; /* (new for TeemV2) ON WRITE, how to write out the
-                                    `double`s in the Nrrd struct into the NRRD header.
-                                    Turning headerDoubleExcessPrecision ON is the
-                                    pre-TeemV2 behavior of using `sprintf` conversion
-                                    sequence "%.17g", which means getting digit strings
-                                    that are sometimes longer than necessary to specify
-                                    all bits of a `double` (e.g. "0.10000000000000001"
-                                    instead of "0.1": both parse to same `double`).
-                                    Turning headerDoubleExcessPrecision OFF enables new
-                                    TeemV2 ways of writing a shorter but equivalent
-                                    (modulo parsing to `double`) digit strings */
-  void *oldData;                 /* ON READ: if non-NULL, pointer to space that
-                                    has already been allocated for oldDataSize */
-  size_t oldDataSize;            /* ON READ: size of mem pointed to by oldData */
+  int dataFNMin;
+  /*                             Used with dataFNFormat to identify .. */
+  int dataFNMax;
+  /*                             .. all the multiple detached datafiles */
+  int dataFNStep;
+  /*                             How to step from `dataFNMin` to `dataFNMax` */
+  unsigned int dataFNIndex;
+  /*                             Which of the data files are being read.
+                                 NOTE THAT unlike `dataFNMin`, `dataFNMax`, this ranges
+                                 from 0 to (#datafiles-1), so it is really unsigned */
 
-  /* The format and encoding.  These are initialized to nrrdFormatUnknown
-     and nrrdEncodingUnknown, respectively. USE THESE VALUES for
-     any kind of initialization or flagging; DO NOT USE NULL */
+  /* most of these `int`s are really booleanss */
+  int pos;
+  /*                             `line[pos]` is beginning of stuff which
+                                 still has yet to be parsed */
+  int endian;
+  /*                             (value from nrrdEndian) Endian-ness of the data in file,
+                                 for those encoding/type combinations for which it
+                                 matters  */
+  int seen[NRRD_FIELD_MAX + 1];
+  /*                             For error checking in header parsing */
+  int detachedHeader;
+  /*                             ON WRITE: request for file (NRRD format only) to be
+                                 split into distinct header and data. This only has an
+                                 effect if detaching the header is not already necessary,
+                                 as it is with multiple data files */
+  int bareText;
+  /*                             When writing a plain text file, is there any effort made
+                                 to record the nrrd struct info in the text file */
+  int moreThanFloatInText;
+  /*                             When writing a plain text file, instead of the usual
+                                 behavior of silently converting to float, explicitly
+                                 record the type, and also ensure that the ascii encoding
+                                 is lossless */
+  int skipData;
+  /*                             If non-zero (all formats): ON READ: don't allocate
+                                 memory for, and don't read in, the data portion of the
+                                 file (but do verify that for nrrds, detached datafiles
+                                 can be opened).  Note: Does NOT imply
+                                 `keepNrrdDataFileOpen`.  Warning: resulting nrrd struct
+                                 will have invalid NULL `data` pointer.
+                                 ON WRITE: don't write data portion of file (for nrrds,
+                                 don't even try to open detached datafiles).
+                                 Warning: can result in broken noncomformant NRRD files
+                                 (be careful with this). */
+  int skipFormatURL;
+  /*                             If non-zero for NRRD format ON WRITE: skip the comment
+                                 lines that document where to find NRRD format spec */
+  int keepNrrdDataFileOpen;
+  /*                             ON READ: when there is only a single dataFile, don't
+                                 close nio->dataFile when you otherwise would, when
+                                 reading the nrrd format. Probably used in conjunction
+                                 with `skipData`. (currently for "unu data")
+                                 ON WRITE: no semantics */
+  /* ---- BEGIN non-NrrdIO */
+  int declineStdioOnTTY;
+  /*                             ON READ and ON WRITE: If nrrdLoad is about to read
+                                 from filename "-" (via nrrdRead), or nrrdSave is about
+                                 to write to "-" (via nrrdWrite), regardless of file
+                                 format (which isn't known on read, though may be known
+                                 on write): if this is non-zero, decline to nrrdRead from
+                                 stdin or nrrdWrite to stdout IF stdin/stdout seems to be
+                                 a terminal (as per isatty()). On read, this avoids
+                                 cryptic stalls as something tries to read from the
+                                 terminal (where a human is unlikely to be typing the
+                                 file contents), and on write, this avoids clobbering the
+                                 terminal with screens of non-printing characters. Using
+                                 filename "-=" is a sneaky way to name stdin/stdout while
+                                 over-riding this declination and force that IO to
+                                 happen. */
+  /* ---- END non-NrrdIO */
+  int zlibLevel;
+  /*                             zlib compression level (0-9, -1 for default[6], 0 for no
+                                 compression). */
+  int zlibStrategy;
+  /*                             zlib compression strategy, can be one of the
+                                 nrrdZlibStrategy enums; default is
+                                 nrrdZlibStrategyDefault. */
+  int bzip2BlockSize;
+  /*                             block size used for compression, roughly equivalent to
+                                 better but slower (1-9, -1 for default[9]). */
+  /* ---- BEGIN non-NrrdIO */
+  /* seems odd to have contents of NrrdIoState differ between full Teem and NrrdIO, but
+     these fields can't be meaningfully set or read if the nrrdFormatPNGsRGBIntent is not
+     available */
+  int PNGsRGBIntentKnown;
+  /*                             ON READ+WRITE: for array being read from or written to
+                                 PNG, we know an sRGB intent */
+  int PNGsRGBIntent;
+  /*                             ON READ+WRITE: iff sRGBIntentKnown, the intent itself,
+                                 from nrrdFormatPNGsRGBIntent* enum */
+  /* ---- END non-NrrdIO */
+  int learningHeaderStrlen;
+  /*                             ON WRITE, for nrrds, learn and save the total length of
+                                 header into headerStrlen. This is used to allocate a
+                                 buffer for header */
+  int headerDoubleExcessPrecision;
+  /*                             (new for TeemV2) ON WRITE, how to write out the
+                                 `double`s in the Nrrd struct into the NRRD header.
+                                 Turning headerDoubleExcessPrecision ON is the pre-TeemV2
+                                 behavior of using `sprintf` conversion sequence "%.17g",
+                                 which means getting digit strings that are sometimes
+                                 longer than necessary to specify all bits of a `double`
+                                 (e.g. "0.10000000000000001" instead of "0.1": both parse
+                                 to same `double`). Turning headerDoubleExcessPrecision
+                                 OFF enables new TeemV2 ways of writing a shorter but
+                                 equivalent (modulo parsing to `double`) digit strings */
+  void *oldData;
+  /*                             ON READ: if non-NULL, pointer to space that has already
+                                 been allocated for oldDataSize */
+  size_t oldDataSize;
+  /*                             ON READ: size of mem pointed to by oldData */
+
+  /* The format and encoding.  These are initialized to `nrrdFormatUnknown`
+     and `nrrdEncodingUnknown`, respectively, and DO USE THOSE VALUES for
+     any kind of initialization or flagging; DO NOT USE NULL. */
   const NrrdFormat *format;
   const NrrdEncoding *encoding;
 } NrrdIoState;
@@ -490,240 +522,286 @@ typedef struct NrrdIoState_t {
 /* ---- BEGIN non-NrrdIO */
 
 /*
-******** NrrdRange
-**
-** information about a range of values, used as both a description
-** of an existing nrrd, or as input to functions like nrrdQuantize
-** (in which case the given min,max may not correspond to the actual
-** min,max of the nrrd in question).
-**
-** This information has been removed from the Nrrd struct (as of Teem1.6)
-** and put into this separate entity because:
-** 1) when intended to be descriptive of a nrrd, it can't be guaranteed
-** to be true across nrrd calls
-** 2) when used as input parameters (e.g. to nrrdQuantize), its not
-** data-flow friendly (you can't modify input)
-*/
+ ******** NrrdRange
+ *
+ * Information about a range of values, used as both a description of an existing nrrd,
+ * or as input to functions like nrrdQuantize (in which case the given min,max may not
+ * correspond to the actual min,max of the nrrd in question).
+ *
+ * This information has been removed from the Nrrd struct (as of Teem1.6) and put into
+ * this separate entity because: 1) when intended to be descriptive of a Nrrd, it can't
+ * be guaranteed to be true across nrrd function calls 2) when used as input parameters
+ * (e.g. to nrrdQuantize), its not data-flow friendly (you can't modify input)
+ */
 typedef struct {
-  double min, max; /* if non-NaN, nominally: extremal values for array, but
-                      practically: the min and max values to use for nrrd
-                      calls for which a min and max values are used */
-  int hasNonExist; /* from the nrrdHasNonExist* enum values */
+  double min, max;
+  /*                             If non-NaN, nominally: extremal values for array, but
+                                 practically: the min and max values to use for nrrd
+                                 calls for which a min and max values are used */
+  int hasNonExist;
+  /*                             From the `nrrdHasNonExist*` enum values */
 } NrrdRange;
 
 /*
-******** NrrdKernel struct
-**
-** these are essentially the methods of the various kernels implemented.
-**
-** Nrrd's use of this sort of kernel always assumes support symmetric
-** around zero, but does not assume anything about even- or oddness
-**
-** It is a strong but very simplifying assumption that the parameter
-** array ("parm") is always type double.  There is essentially no
-** value in allowing flexibility between float and double, and much
-** Teem code assumes that it will always be type double.
-*/
+ ******** NrrdKernel struct
+ *
+ * These are essentially the methods of the various kernels implemented.
+ *
+ * Teem's use of this sort of kernel always assumes support symmetric around zero, but
+ * does not assume anything about even- or oddness
+ *
+ * It is a strong but very simplifying assumption that the parameter array (`parm`) is
+ * always type `double`.  There is essentially no value in allowing flexibility between
+ * float and double, and much Teem code assumes that it will always be `double`.
+ */
 typedef struct {
-  /* terse string representation of kernel function, irrespective of
-     the parameter vector */
   char name[AIR_STRLEN_SMALL + 1];
+  /*                             Terse string representation of kernel function,
+                                 irrespective of the parameter vector */
 
-  /* number of parameters needed (# elements in parm[] used) */
   unsigned int parmNum;
+  /*                             # of parameters needed (# elements in `parm` used) */
 
-  /* whether parm[0]>0 is used for scaling up kernel to larger support while
-  proportionally scaling down kernel evaluations (preserving integral), e.g.
-   - (AIR_TRUE) nrrdKernelTent can be stretched out for blurring
-   - (AIR_FALSE) many nrrdKernelTMF[] use parm[0] but not for for scaling
-   - (AIR_FALSE) nrrdKernel*SupportDebug use parm[0] but only to artificially
-     increase support while otherwise preserving kernel shape
-   - (AIR_FALSE) and while nrrdKernelBSpline3 ignores parm[0] */
   int parm0IsScale;
+  /*                             Whether parm[0]>0 is used for scaling up kernel to
+                                 larger support while proportionally scaling down kernel
+                                 evaluations (preserving integral), e.g.
+                                 - (AIR_TRUE) nrrdKernelTent can be stretched out for
+                                   blurring
+                                 - (AIR_FALSE) many nrrdKernelTMF[] use parm[0] but not
+                                   for for scaling
+                                 - (AIR_FALSE) nrrdKernel*SupportDebug use parm[0] but
+                                   only to artificially increase support while otherwise
+                                   preserving kernel shape
+                                 - (AIR_FALSE) and while nrrdKernelBSpline3 ignores
+                                   parm[0] */
 
-  /* smallest x (x > 0) such that k(y) = 0 for all y > x, y < -x */
   double (*support)(const double *parm);
+  /*                             Smallest x (x > 0) such that k(y) = 0 for all
+                                 y > x, y < -x */
 
-  /* integral of kernel from -support to +support */
   double (*integral)(const double *parm);
+  /*                             Integral of kernel from -support to +support */
 
-  /* evaluate once, single precision */
   float (*eval1_f)(float x, const double *parm);
+  /*                             Evaluate once, single precision */
 
-  /* evaluate N times, single precision */
   void (*evalN_f)(float *f, const float *x, size_t N, const double *parm);
+  /*                             Evaluate N times, single precision */
 
-  /* evaluate once, double precision */
   double (*eval1_d)(double x, const double *parm);
+  /*                             Evaluate once, double precision */
 
-  /* evaluate N times, double precision */
   void (*evalN_d)(double *f, const double *x, size_t N, const double *parm);
+  /*                             Evaluate N times, double precision */
 } NrrdKernel;
 
 /*
-******** NrrdKernelSpec struct
-**
-** for those times when it makes most sense to directly associate a
-** NrrdKernel with its parameter vector (that is, a full kernel
-** "spec"ification), basically: using hest.
-*/
+ ******** NrrdKernelSpec struct
+ *
+ * for those times when it makes most sense to directly associate a NrrdKernel with its
+ * parameter vector (that is, a full kernel "spec"ification), basically: using hest.
+ */
 typedef struct {
   const NrrdKernel *kernel;
   double parm[NRRD_KERNEL_PARM_MAXNUM];
 } NrrdKernelSpec;
 
 /*
-******** NrrdResampleInfo struct
-**
-** a struct to contain the many parameters needed for nrrdSpatialResample()
-*/
+ ******** NrrdResampleInfo struct
+ *
+ * a struct to contain the many parameters needed for nrrdSpatialResample()
+ */
 typedef struct {
-  const NrrdKernel
-    *kernel[NRRD_DIM_MAX];      /* which kernel to use on each axis; use NULL to
-                                   say no resampling whatsoever on this axis */
-  size_t samples[NRRD_DIM_MAX]; /* number of samples per axis */
-  double parm[NRRD_DIM_MAX][NRRD_KERNEL_PARM_MAXNUM], /* kernel arguments */
-    min[NRRD_DIM_MAX],
-    max[NRRD_DIM_MAX]; /* min[i] and max[i] are the range, in WORLD space,
-                          along which to resample axis i.  axis mins and
-                          maxs are required on resampled axes. */
-  int boundary,        /* value from the nrrdBoundary enum */
-    type,              /* desired type of output, use nrrdTypeUnknown for
-                          "same as input" */
-    renormalize,       /* when downsampling with a kernel with non-zero
-                          integral, should we renormalize the weights to
-                          match the kernel integral so as to remove
-                          annoying ripple */
-    round,             /* when copying from the last intermediate (floating
-                          point) result to the output nrrd, for integer
-                          outputs, do we round to the nearest integer
-                          first, before clamping and assigning.  Enabling
-                          this fixed the mystery of downsampling large
-                          constant regions of 255 (uchar), and ending up
-                          with 254 */
-    clamp,             /* when copying from the last intermediate
-                          (floating point) result to the output nrrd,
-                          should we clamp the values to the range of
-                          values for the output type, a concern only for
-                          integer outputs */
-    cheap;             /* when *downsampling* (reducing the number of
-                          samples), don't bother expanding the kernel to
-                          achieve filtering in the old index space; with
-                          nrrdKernelBox this can lead to subsampling by
-                          picking using every other value */
-  double padValue;     /* if padding, what value to pad with */
+  const NrrdKernel *kernel[NRRD_DIM_MAX];
+  /*                             Which kernel to use on each axis; use NULL to say no
+                                 resampling whatsoever on this axis */
+  size_t samples[NRRD_DIM_MAX];
+  /*                             Number of samples per axis */
+  double parm[NRRD_DIM_MAX][NRRD_KERNEL_PARM_MAXNUM];
+  /*                             kernel arguments */
+  double min[NRRD_DIM_MAX], max[NRRD_DIM_MAX];
+  /*                             min[i] and max[i] are the range, in WORLD space, along
+                                 which to resample axis i.  axis mins and maxs are
+                                 required on resampled axes. */
+  int boundary;
+  /*                             Value from the nrrdBoundary enum */
+  int type;
+  /*                             Desired type of output, use nrrdTypeUnknown for
+                                 "same as input" */
+  int renormalize;
+  /*                             When downsampling with a kernel with non-zero integral,
+                                 should we renormalize the weights to match the kernel
+                                 integral so as to remove annoying ripple */
+  int round;
+  /*                             When copying from the last intermediate (floating point)
+                                 result to the output nrrd, for integer outputs, do we
+                                 round to the nearest integer first, before clamping and
+                                 assigning.  Enabling this fixed the mystery of
+                                 downsampling large constant regions of 255 (uchar), and
+                                 ending up with 254 */
+  int clamp;
+  /*                             When copying from the last intermediate (floating point)
+                                 result to the output nrrd, should we clamp the values to
+                                 the range of values for the output type, a concern only
+                                 for integer outputs */
+  int cheap;
+  /*                             When *downsampling* (reducing the number of samples),
+                                 don't bother expanding the kernel to achieve filtering
+                                 in the old index space; with nrrdKernelBox this can lead
+                                 to subsampling by picking using every other value */
+  double padValue;
+  /*                             if padding, what value to pad with */
 } NrrdResampleInfo;
 
 /*
-******** NrrdResampleAxis struct
-**
-** specific to one pass (one pass per axis) of resampling process
-*/
+ ******** NrrdResampleAxis struct
+ *
+ * specific to one pass (one pass per axis) of resampling process
+ */
 typedef struct {
   /* ----------- input ---------- */
-  const NrrdKernel *kernel;              /* which kernel to use on this axis; use NULL to
-                                            say no resampling whatsoever on this axis */
-  double kparm[NRRD_KERNEL_PARM_MAXNUM]; /* kernel arguments */
-  double min, max;                       /* range in INDEX space of resampling */
-  size_t samples;     /* number output samples on this axis (sizeOut) */
-  int overrideCenter; /* possible explicit setting of centering */
+  const NrrdKernel *kernel;
+  /*                             Which kernel to use on this axis; use NULL to
+                                 say no resampling whatsoever on this axis */
+  double kparm[NRRD_KERNEL_PARM_MAXNUM];
+  /*                             Kernel arguments */
+  double min, max;
+  /*                             Range in INDEX space of resampling */
+  size_t samples;
+  /*                             Number output samples on this axis (sizeOut) */
+  int overrideCenter;
+  /*                             Possible explicit setting of centering */
   /* ----------- internal ---------- */
-  int center;               /* centering for this axis */
-  size_t sizeIn,            /* number input samples on this axis */
-    sizePerm[NRRD_DIM_MAX]; /* permutation of axis sizes for this pass */
-  unsigned int axIdx,       /* what axis are we (redundant with other info) */
-    passIdx,                /* exactly which pass are we on */
-    axisPerm[NRRD_DIM_MAX]; /* permutation of axis indices for this pass */
-  double ratio;             /* > 1: upsampling; < 1: downsampling */
-  Nrrd *nrsmp,              /* intermediate resampling result; input to
-                               this pass */
-    *nline,                 /* input scanline buffer (includes extra sample
-                               at end for storing pad value) */
-    *nindex,                /* row of input indices for each output sample */
-    *nweight;               /* row of input weights for each output sample */
+  int center;
+  /*                             Centering for this axis */
+  size_t sizeIn;
+  /*                             Number input samples on this axis */
+  size_t sizePerm[NRRD_DIM_MAX];
+  /*                             Permutation of axis sizes for this pass */
+  unsigned int axIdx;
+  /*                             What axis are we (redundant with other info) */
+  unsigned int passIdx;
+  /*                             Exactly which pass are we on */
+  unsigned int axisPerm[NRRD_DIM_MAX];
+  /*                             Permutation of axis indices for this pass */
+  double ratio;
+  /*                             > 1: upsampling; < 1: downsampling */
+  Nrrd *nrsmp;
+  /*                             Intermediate resampling result; input to
+                                 this pass */
+  Nrrd *nline;
+  /*                             Input scanline buffer (includes extra sample
+                                 at end for storing pad value) */
+  Nrrd *nindex;
+  /*                             Row of input indices for each output sample */
+  Nrrd *nweight;
+  /*                             Row of input weights for each output sample */
 } NrrdResampleAxis;
 
 /*
-******** NrrdResampleContext struct
-**
-** contains the parameters and state associated with resampling,
-** geared towards quickly resampling multiple different nrrds with the
-** same shape.
-*/
+ ******** NrrdResampleContext struct
+ *
+ * contains the parameters and state associated with resampling, geared towards quickly
+ * resampling multiple different nrrds with the same shape.
+ */
 typedef struct {
   /* ----------- input ---------- */
-  const Nrrd *nin; /* the nrrd being resampled */
-  int verbose,     /* blah blah blah */
-    boundary,      /* value from the nrrdBoundary enum */
-    typeOut,       /* desired type of output, use nrrdTypeDefault for
-                      "same as input" */
-    renormalize,   /* when downsampling with a kernel with non-zero
-                      integral, should we renormalize the weights to
-                      match the kernel integral so as to remove
-                      annoying ripple */
-    roundlast,     /* when copying from the last intermediate
-                      (floating point) result to the output nrrd,
-                      for integer outputs, do we round to the nearest
-                      integer first, before clamping and assigning.
-                      Enabling this fixed the mystery of downsampling
-                      large constant regions of 255 (uchar), and
-                      ending up with 254
-                      (renamed from "round" to avoid shadowing) */
-    clamp,         /* when copying from the last intermediate
-                      (floating point) result to the output nrrd,
-                     should we clamp the values to the range of
-                      values for the output type, a concern only for
-                      integer outputs */
-    defaultCenter, /* lacking known centering on input axis, what
-                      centering to use when resampling */
-    nonExistent;   /* from nrrdResampleNonExistent enum */
-  double padValue; /* if padding, what value to pad with */
+  const Nrrd *nin;
+  /*                             The nrrd being resampled */
+  int verbose;
+  /*                             blah blah blah */
+  int boundary;
+  /*                             Value from the nrrdBoundary enum */
+  int typeOut;
+  /*                             Desired type of output, use nrrdTypeDefault for
+                                 "same as input" */
+  int renormalize;
+  /*                             When downsampling with a kernel with non-zero integral,
+                                 should we renormalize the weights to match the kernel
+                                 integral so as to remove annoying ripple */
+  int roundlast;
+  /*                             When copying from the last intermediate (floating point)
+                                 result to the output nrrd, for integer outputs, do we
+                                 round to the nearest integer first, before clamping and
+                                 assigning. Enabling this fixed the mystery of
+                                 downsampling large constant regions of 255 (uchar), and
+                                 ending up with 254 (renamed from "round" to avoid
+                                 shadowing) */
+  int clamp;
+  /*                             When copying from the last intermediate (floating point)
+                                 result to the output nrrd, should we clamp the values to
+                                 the range of values for the output type, a concern only
+                                 for integer outputs */
+  int defaultCenter;
+  /*                             Lacking known centering on input axis, what
+                                 centering to use when resampling */
+  int nonExistent;
+  /*                             From nrrdResampleNonExistent enum */
+  double padValue;
+  /*                             If padding, what value to pad with */
   /* ----------- input/internal ---------- */
-  unsigned int dim,            /* dimension of nin (saved here to help
-                                  manage state in NrrdResampleAxis[]) */
-    passNum,                   /* number of passes needed */
-    topRax, botRax,            /* fastest, slowest axes undergoing resampling */
-    permute[NRRD_DIM_MAX + 1], /* how each pass permutes axes */
-    passAxis[NRRD_DIM_MAX];    /* mapping from pass index to axis index */
-  NrrdResampleAxis axis[NRRD_DIM_MAX + 1]; /* axis[j] stores information for input to
-                                              pass which is resampling nin->axis[j];
-                                              axis[NRRD_DIM_MAX] stores info about the
-                                              final output of all passes */
-  int *flag;                               /* flags for managing state */
+  unsigned int dim;
+  /*                             Dimension of nin (saved here to help manage state in
+                                 NrrdResampleAxis[]) */
+  unsigned int passNum;
+  /*                             Number of passes needed */
+  unsigned int topRax, botRax;
+  /*                             Fastest, slowest axes undergoing resampling */
+  unsigned int permute[NRRD_DIM_MAX + 1];
+  /*                             How each pass permutes axes */
+  unsigned int passAxis[NRRD_DIM_MAX];
+  /*                             Mapping from pass index to axis index */
+  NrrdResampleAxis axis[NRRD_DIM_MAX + 1];
+  /*                             axis[j] stores information for input to pass which is
+                                 resampling nin->axis[j]; axis[NRRD_DIM_MAX] stores info
+                                 about the final output of all passes */
+  int *flag;
+  /*                             Flags for managing state */
   /* ----------- output ---------- */
-  double time; /* time required for resampling */
+  double time;
+  /*                             Elapsed Time required for resampling */
 } NrrdResampleContext;
 
 /*
-******** NrrdIter struct
-**
-** To hold values: either a single value, or a whole nrrd of values.
-** Also, this facilitates iterating through those values
-*/
+ ******** NrrdIter struct
+ *
+ * To hold values: either a single value, or a whole nrrd of values.
+ * Also, this facilitates iterating through those values
+ */
 typedef struct {
-  const Nrrd *nrrd;             /* read-only nrrd to get values from */
-  Nrrd *ownNrrd;                /* another nrrd to get values from, which we
-                                   do "own", and do delete on nrrdIterNix */
-  double val;                   /* single fixed value */
-  size_t size;                  /* type size */
-  char *data;                   /* where to get the next value */
-  size_t left;                  /* number of values beyond what "data"
-                                   currently points to */
-  double (*load)(const void *); /* how to get a value out of "data" */
+  const Nrrd *nrrd;
+  /*                             Read-only Nrrd to get values from */
+  Nrrd *ownNrrd;
+  /*                             Another nrrd to get values from, which we
+                                 do "own", and do delete on nrrdIterNix */
+  double val;
+  /*                             Single fixed value */
+  size_t size;
+  /*                             type size */
+  char *data;
+  /*                             From where to get the next value */
+  size_t left;
+  /*                             Number of values beyond what `data`
+                                 currently points to */
+  double (*load)(const void *);
+  /*                             how to get a value out of `data` */
 } NrrdIter;
 
 /*
-******** NrrdBoundarySpec
-**
-** In its present state, this is almost not worth having, but it nicely
-** addresses the repeated annoyance of sometimes needing both a nrrdBoundary
-** enum value and a pad value in a single place.  There may later be need for
-** other kinds of parameterized boundary behaviors (such as padding with
-** vector values, or some kind of parameterized high-order continuation)
-*/
+ ******** NrrdBoundarySpec
+ *
+ * In its present state, this is almost not worth having, but it nicely addresses the
+ * repeated annoyance of sometimes needing both a nrrdBoundary enum value and a pad value
+ * in a single place.  There may later be need for other kinds of parameterized boundary
+ * behaviors (such as padding with vector values, or some kind of parameterized
+ * high-order continuation)
+ */
 typedef struct {
-  int boundary;    /* from nrrdBoundary enum */
-  double padValue; /* padding value, if needed */
+  int boundary;
+  /*                             From nrrdBoundary enum */
+  double padValue;
+  /*                             Padding value, if needed */
 } NrrdBoundarySpec;
 
 /* ---- END non-NrrdIO */
