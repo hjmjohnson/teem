@@ -20,8 +20,6 @@
 #include "unrrdu.h"
 #include "privateUnrrdu.h"
 
-#include <unistd.h> /* for isatty() and STDIN_FILENO */
-
 #define INFO "Print out min and max values in one or more nrrds"
 static const char *_unrrdu_minmaxInfoL
   = (INFO ". Unlike other commands, this doesn't produce a nrrd.  It only "

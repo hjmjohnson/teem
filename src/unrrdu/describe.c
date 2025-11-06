@@ -20,8 +20,6 @@
 #include "unrrdu.h"
 #include "privateUnrrdu.h"
 
-#include <unistd.h> /* for isatty() and STDIN_FILENO */
-
 #define INFO "Describe Nrrd struct created by reading file(s)"
 static const char *_unrrdu_describeInfoL
   = (INFO ". This will actually nrrdLoad from the named file(s) (in NRRD or other "

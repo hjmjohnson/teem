@@ -20,8 +20,6 @@
 #include "nrrd.h"
 #include "privateNrrd.h"
 
-#include <unistd.h> /* for isatty() and STDIN_FILENO */
-
 /* ---------------------------- Nrrd ----------------------------- */
 
 /*

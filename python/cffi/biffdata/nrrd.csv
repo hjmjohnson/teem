@@ -96,6 +96,13 @@ nrrdRead,int,1,0,nrrd,nrrd/read.c:524
 nrrdStringRead,int,1,0,nrrd,nrrd/read.c:544
 nrrdLoad,int,1|2,0,nrrd,nrrd/read.c:640
 nrrdLoadMulti,int,1,0,nrrd,nrrd/read.c:707
+nrrdOneLine,int,1,0,nrrd,nrrd/read.c:85
+nrrdLineSkip,int,1,0,nrrd,nrrd/read.c:259
+nrrdByteSkip,int,1,0,nrrd,nrrd/read.c:356
+nrrdRead,int,1,0,nrrd,nrrd/read.c:520
+nrrdStringRead,int,1,0,nrrd,nrrd/read.c:540
+nrrdLoad,int,1|2,0,nrrd,nrrd/read.c:636
+nrrdLoadMulti,int,1,0,nrrd,nrrd/read.c:703
 nrrdInvertPerm,int,1,0,nrrd,nrrd/reorder.c:32
 nrrdAxesInsert,int,1,0,nrrd,nrrd/reorder.c:84
 nrrdAxesPermute,int,1,0,nrrd,nrrd/reorder.c:150
@@ -154,3 +161,10 @@ nrrdWrite,int,1,0,nrrd,nrrd/write.c:1010
 nrrdStringWrite,int,1,0,nrrd,nrrd/write.c:1026
 nrrdSave,int,1,0,nrrd,nrrd/write.c:1047
 nrrdSaveMulti,int,1,0,nrrd,nrrd/write.c:1113
+nrrdIoStateSet,int,1,0,nrrd,nrrd/write.c:24
+nrrdIoStateEncodingSet,int,1,0,nrrd,nrrd/write.c:97
+nrrdIoStateFormatSet,int,1,0,nrrd,nrrd/write.c:117
+nrrdWrite,int,1,0,nrrd,nrrd/write.c:1006
+nrrdStringWrite,int,1,0,nrrd,nrrd/write.c:1022
+nrrdSave,int,1,0,nrrd,nrrd/write.c:1043
+nrrdSaveMulti,int,1,0,nrrd,nrrd/write.c:1109

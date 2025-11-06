@@ -20,8 +20,6 @@
 #include "unrrdu.h"
 #include "privateUnrrdu.h"
 
-#include <unistd.h> /* for isatty() and STDIN_FILENO */
-
 static int /* Biff: 1 */
 gridGen(Nrrd *nout, int typeOut, const Nrrd *nin, int psz, int psg) {
   static const char me[] = "gridGen";

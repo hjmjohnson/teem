@@ -24,6 +24,8 @@
 #  include <io.h>
 #  include <fcntl.h>
 #  include <time.h>
+#  define WIN32_LEAN_AND_MEAN
+#  include <windows.h>
 #else
 #  include <sys/time.h>
 #endif
@@ -705,8 +707,17 @@ airDoneStr(double start, double here, double end, char str[13]) {
 double
 airTime(void) {
 #ifdef _WIN32
-  /* HEY: this has crummy precision */
-  return (double)clock() / CLOCKS_PER_SEC;
+  /* Use high-resolution system time; FILETIME is 100-ns ticks since Jan 1, 1601 UTC */
+  FILETIME ft;
+  ULARGE_INTEGER uli;
+  const unsigned long long EPOCH_DIFF_100NS = 116444736000000000ULL; /* 1601->1970 */
+  GetSystemTimeAsFileTime(&ft);
+  uli.LowPart = ft.dwLowDateTime;
+  uli.HighPart = ft.dwHighDateTime;
+  unsigned long long unix100ns = (uli.QuadPart >= EPOCH_DIFF_100NS)
+                                   ? (uli.QuadPart - EPOCH_DIFF_100NS)
+                                   : 0ULL;
+  return (double)unix100ns / 10000000.0; /* convert 100ns to seconds */
 #else
   double sec, usec;
   struct timeval tv;

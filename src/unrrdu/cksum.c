@@ -20,8 +20,6 @@
 #include "unrrdu.h"
 #include "privateUnrrdu.h"
 
-#include <unistd.h> /* for isatty() and STDIN_FILENO */
-
 #define INFO "Compute 32-bit CRC of nrrd data (same as via \"cksum\")"
 static const char *_unrrdu_cksumInfoL
   = (INFO ". Unlike other commands, this doesn't produce a nrrd.  It only "

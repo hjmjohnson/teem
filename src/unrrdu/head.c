@@ -20,8 +20,6 @@
 #include "unrrdu.h"
 #include "privateUnrrdu.h"
 
-#include <unistd.h> /* for isatty() and STDIN_FILENO */
-
 #define INFO "Print header of one or more NRRD files"
 static const char *_unrrdu_headInfoL
   = (INFO ".  The value of this is simply to print the contents of nrrd "

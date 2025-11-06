@@ -20,10 +20,6 @@
 #include "nrrd.h"
 #include "privateNrrd.h"
 
-/* ---- BEGIN non-NrrdIO */
-#include <unistd.h> /* for isatty() and STDIN_FILENO */
-/* ---- END non-NrrdIO */
-
 int /* Biff: 1 */
 nrrdIoStateSet(NrrdIoState *nio, int parm, int value) {
   static const char me[] = "nrrdIoStateSet";

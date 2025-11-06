@@ -24,10 +24,6 @@
 #  include <bzlib.h>
 #endif
 
-/* ---- BEGIN non-NrrdIO */
-#include <unistd.h> /* for isatty() and STDIN_FILENO */
-/* ---- END non-NrrdIO */
-
 /* (not apparently used) const char *const _nrrdRelativePathFlag = "./"; */
 const char *const _nrrdFieldSep = " \t";
 static const char *const _nrrdLineSep = "\r\n";
