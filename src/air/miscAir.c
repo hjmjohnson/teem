@@ -420,20 +420,16 @@ airSprintVecSize_t(char *_dst, size_t _dstSize, const size_t *vec, unsigned int 
   if (!_dst) {
     return _dst;
   }
-  airStrcpy(dst, dstSize, "[");
-  STRINCR(dst, dstSize);
+  SN_COPY(dst, dstSize, "[");
   for (axi = 0; axi < len; axi++) {
     char stmp[AIR_STRLEN_SMALL + 1];
     if (axi) {
-      airStrcpy(dst, dstSize, ",");
-      STRINCR(dst, dstSize);
+      SN_COPY(dst, dstSize, ",");
     }
     airSprintSize_t(stmp, vec[axi]);
-    airStrcpy(dst, dstSize, stmp);
-    STRINCR(dst, dstSize);
+    SN_COPY(dst, dstSize, stmp);
   }
-  airStrcpy(dst, dstSize, "]");
-  STRINCR(dst, dstSize); /* though moot here at end */
+  SN_COPY(dst, dstSize, "]");
   return dst;
 }
 
@@ -715,8 +711,8 @@ airTime(void) {
   uli.LowPart = ft.dwLowDateTime;
   uli.HighPart = ft.dwHighDateTime;
   unsigned long long unix100ns = (uli.QuadPart >= EPOCH_DIFF_100NS)
-                                   ? (uli.QuadPart - EPOCH_DIFF_100NS)
-                                   : 0ULL;
+                                 ? (uli.QuadPart - EPOCH_DIFF_100NS)
+                                 : 0ULL;
   return (double)unix100ns / 10000000.0; /* convert 100ns to seconds */
 #else
   double sec, usec;
