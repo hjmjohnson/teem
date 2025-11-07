@@ -38,11 +38,13 @@ extern "C" {
     airStrcpy((DST), (DST_SIZE), (SRC));                                                \
     SN_INCR(DST, DST_SIZE);                                                             \
   } while (0)
+/* oops can't use this upstream of NrrdIO; variadic macros are C99
 #define SN_PRINTF(DST, DST_SIZE, FMT, ...)                                              \
   do {                                                                                  \
     snprintf((DST), (DST_SIZE), (FMT), __VA_ARGS__);                                    \
     SN_INCR(DST, DST_SIZE);                                                             \
   } while (0)
+*/
 
 /* miscAir.c */
 extern double _airSanityHelper(double val);
