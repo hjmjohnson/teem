@@ -65,17 +65,28 @@ extern "C" {
 
 /* ---- END non-NrrdIO */
 
-/* NOTE: this macro copied to other src/<lib>/private<Lib>.h files */
-/* for adjusting locals `STR` and `SIZE`, assuming correct usage of snprintf.
-   At worst, snprintf filled up everything except the final element for the
-   '\0'-termination, and then after this, STR will be advanced to point to that '\0',
-   and SIZE will go down to 1 */
-#define STRINCR(STR, SIZE)                                                              \
+/* NOTE: these SN_ string,size macros copy-pasta's to other private<Lib>.h files:
+   SN_INCR: safely increments STR arg to point '\0'-termination of STR
+   SN_COPY: safely copies SRC to DST, then increments DST
+   SN_PRINTF: snprintf's into DST then increments DST */
+#define SN_INCR(STR, SIZE)                                                              \
   do {                                                                                  \
     size_t tmp_str_len_##STR = strlen(STR);                                             \
     STR += tmp_str_len_##STR;                                                           \
     SIZE -= tmp_str_len_##STR;                                                          \
   } while (0)
+#define SN_COPY(DST, DST_SIZE, SRC)                                                     \
+  do {                                                                                  \
+    airStrcpy((DST), (DST_SIZE), (SRC));                                                \
+    SN_INCR(DST, DST_SIZE);                                                             \
+  } while (0)
+/* oops can't use this upstream of NrrdIO; variadic macros are C99
+#define SN_PRINTF(DST, DST_SIZE, FMT, ...)                                              \
+  do {                                                                                  \
+    snprintf((DST), (DST_SIZE), (FMT), __VA_ARGS__);                                    \
+    SN_INCR(DST, DST_SIZE);                                                             \
+  } while (0)
+*/
 
 typedef union {
   char **CP;

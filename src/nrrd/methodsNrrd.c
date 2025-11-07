@@ -187,10 +187,10 @@ nrrdBoundarySpecSprint(char str[AIR_STRLEN_LARGE + 1], const NrrdBoundarySpec *b
   out = str;
   outSize = AIR_STRLEN_LARGE + 1;
   snprintf(out, outSize, "%s", airEnumStr(nrrdBoundary, bspec->boundary));
-  STRINCR(out, outSize);
+  SN_INCR(out, outSize);
   if (nrrdBoundaryPad == bspec->boundary) {
     snprintf(out, outSize, ":%.17g", bspec->padValue);
-    STRINCR(out, outSize); /* though moot here at end */
+    SN_INCR(out, outSize);
   }
   return 0;
 }

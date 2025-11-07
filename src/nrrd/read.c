@@ -202,8 +202,7 @@ nrrdOneLine(size_t *lenP, NrrdIoState *nio, FILE *file) {
     /* now concatenate everything into a new nio->line */
     lout[0] = '\0';
     for (lineIdx = 0; lineIdx < lineArr->len; lineIdx++) {
-      airStrcpy(lout, loutSize, line[lineIdx]);
-      STRINCR(lout, loutSize);
+      SN_COPY(lout, loutSize, line[lineIdx]);
     }
     *lenP = strlen(nio->line) + 1;
     airMopError(mop);

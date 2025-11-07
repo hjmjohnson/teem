@@ -235,24 +235,21 @@ _nrrdWriteEscaped(FILE *file, char *_dst, size_t _dstSize, const char *str,
         if (file) {
           fprintf(file, "\\n");
         } else {
-          airStrcpy(dst, dstSize, "\\n");
-          STRINCR(dst, dstSize);
+          SN_COPY(dst, dstSize, "\\n");
         }
         break;
       case '\\':
         if (file) {
           fprintf(file, "\\\\");
         } else {
-          airStrcpy(dst, dstSize, "\\\\");
-          STRINCR(dst, dstSize);
+          SN_COPY(dst, dstSize, "\\\\");
         }
         break;
       case '"':
         if (file) {
           fprintf(file, "\\\"");
         } else {
-          airStrcpy(dst, dstSize, "\\\"");
-          STRINCR(dst, dstSize);
+          SN_COPY(dst, dstSize, "\\\"");
         }
         break;
       }
@@ -264,7 +261,7 @@ _nrrdWriteEscaped(FILE *file, char *_dst, size_t _dstSize, const char *str,
         fputc(cc, file);
       } else {
         snprintf(dst, dstSize, "%c", cc);
-        STRINCR(dst, dstSize);
+        SN_INCR(dst, dstSize);
       }
     }
   }
@@ -304,8 +301,7 @@ _nrrdKeyValueWrite(FILE *file, char **stringP, const char *prefix, const char *k
     if (file) {
       fprintf(file, "%s", prefix);
     } else {
-      airStrcpy(string, stringSize, prefix);
-      STRINCR(string, stringSize);
+      SN_COPY(string, stringSize, prefix);
     }
   }
   if (file) {
@@ -315,13 +311,11 @@ _nrrdKeyValueWrite(FILE *file, char **stringP, const char *prefix, const char *k
     fprintf(file, "\n");
   } else {
     _nrrdWriteEscaped(NULL, string, stringSize, key, "\n\\", _NRRD_WHITESPACE_NOTAB);
-    STRINCR(string, stringSize);
-    airStrcpy(string, stringSize, ":=");
-    STRINCR(string, stringSize);
+    SN_INCR(string, stringSize);
+    SN_COPY(string, stringSize, ":=");
     _nrrdWriteEscaped(NULL, string, stringSize, value, "\n\\", _NRRD_WHITESPACE_NOTAB);
-    STRINCR(string, stringSize);
-    airStrcpy(string, stringSize, "\n");
-    STRINCR(string, stringSize); /* (for consistency, though moot here at end) */
+    SN_INCR(string, stringSize);
+    SN_COPY(string, stringSize, "\n");
   }
   return 0;
 }

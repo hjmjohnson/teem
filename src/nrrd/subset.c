@@ -315,7 +315,7 @@ nrrdCrop(Nrrd *nout, const Nrrd *nin, size_t *min, size_t *max) {
   for (ai = 0; ai < nin->dim; ai++) {
     snprintf(buff, buffSize, "%s[%s,%s]", (ai ? "x" : ""),
              airSprintSize_t(stmp[0], min[ai]), airSprintSize_t(stmp[1], max[ai]));
-    STRINCR(buff, buffSize);
+    SN_INCR(buff, buffSize);
   }
   if (nrrdContentSet_va(nout, func, nin, "%s", _buff)) {
     biffAddf(NRRD, "%s:", me);

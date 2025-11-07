@@ -257,7 +257,7 @@ nrrdAxesPermute(Nrrd *nout, const Nrrd *nin, const unsigned int *axes) {
     buff[0] = '\0';
     for (ai = 0; ai < nin->dim; ai++) {
       snprintf(buff, buffSize, "%s%u", (ai ? "," : ""), axes[ai]);
-      STRINCR(buff, buffSize);
+      SN_INCR(buff, buffSize);
     }
     if (nrrdContentSet_va(nout, func, nin, "%s", _buff)) {
       biffAddf(NRRD, "%s:", me);
@@ -411,7 +411,7 @@ nrrdShuffle(Nrrd *nout, const Nrrd *nin, unsigned int axis, const size_t *perm) 
     for (ai = 0; ai < len; ai++) {
       char stmp[AIR_STRLEN_SMALL + 1];
       snprintf(buff, buffSize, "%s%s", (ai ? "," : ""), airSprintSize_t(stmp, perm[ai]));
-      STRINCR(buff, buffSize);
+      SN_INCR(buff, buffSize);
     }
     if (nrrdContentSet_va(nout, func, nin, "%s", _buff)) {
       biffAddf(NRRD, "%s:", me);
@@ -1030,7 +1030,7 @@ nrrdReshape_nva(Nrrd *nout, const Nrrd *nin, unsigned int dim, const size_t *siz
   for (ai = 0; ai < dim; ai++) {
     snprintf(buff, buffSize, "%s%s", (ai ? "x" : ""),
              airSprintSize_t(stmp[0], size[ai]));
-    STRINCR(buff, buffSize);
+    SN_INCR(buff, buffSize);
   }
   /* basic info copied by _nrrdCopy, but probably more than we
      want- perhaps space dimension and origin should be nixed? */
