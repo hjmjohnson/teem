@@ -31,8 +31,7 @@ It is still the case, however, the hest users do not need to call into biff */
 #include <assert.h>
 #include <errno.h>
 
-/* NOTE: this macro copied to other src/<lib>/private<Lib>.h files */
-/* SN_ macros for working with string, size pairs:
+/* NOTE: these SN_ string,size macros copy-pasta's to other private<Lib>.h files:
    SN_INCR: safely increments STR arg to point '\0'-termination of STR
    SN_COPY: safely copies SRC to DST, then increments DST
    SN_PRINTF: snprintf's into DST then increments DST */
