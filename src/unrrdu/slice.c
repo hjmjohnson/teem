@@ -44,7 +44,7 @@ unrrdu_sliceMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                      "single axis or multiple axes to slice along.  "
                      "Giving multiple axes here leads to doing multiple slices "
                      "(at the corresponding positions "
-                     "given with \"-p\"). Multiple axes should be identified "
+                     "given with \"-p\"). Multiple axes should be identified\n "
                      "in terms of the axis numbering of the original nrrd; as "
                      "the slices are done (in the given ordering) the actual "
                      "slice axis will be different if previous slices were on "

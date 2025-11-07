@@ -42,8 +42,8 @@ limnPu_aboutMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   fprintf(stderr, fmt, buff);
   fprintf(stderr, "\n");
 
-  _hestPrintStr(stderr, 1, 0, 78, par1, AIR_FALSE);
-  _hestPrintStr(stderr, 1, 0, 78, par2, AIR_FALSE);
+  hestPrintStr(stderr, 1, 0, 78, par1, AIR_FALSE);
+  hestPrintStr(stderr, 1, 0, 78, par2, AIR_FALSE);
 
   return 0;
 }

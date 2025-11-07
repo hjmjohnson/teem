@@ -31,6 +31,28 @@ It is still the case, however, the hest users do not need to call into biff */
 #include <assert.h>
 #include <errno.h>
 
+/* NOTE: this macro copied to other src/<lib>/private<Lib>.h files */
+/* SN_ macros for working with string, size pairs:
+   SN_INCR: safely increments STR arg to point '\0'-termination of STR
+   SN_COPY: safely copies SRC to DST, then increments DST
+   SN_PRINTF: snprintf's into DST then increments DST */
+#define SN_INCR(STR, SIZE)                                                              \
+  do {                                                                                  \
+    size_t tmp_str_len_##STR = strlen(STR);                                             \
+    STR += tmp_str_len_##STR;                                                           \
+    SIZE -= tmp_str_len_##STR;                                                          \
+  } while (0)
+#define SN_COPY(DST, DST_SIZE, SRC)                                                     \
+  do {                                                                                  \
+    airStrcpy((DST), (DST_SIZE), (SRC));                                                \
+    SN_INCR(DST, DST_SIZE);                                                             \
+  } while (0)
+#define SN_PRINTF(DST, DST_SIZE, FMT, ...)                                              \
+  do {                                                                                  \
+    snprintf((DST), (DST_SIZE), (FMT), __VA_ARGS__);                                    \
+    SN_INCR(DST, DST_SIZE);                                                             \
+  } while (0)
+
 typedef unsigned int uint;
 
 // pre-TeemV2, these used to be change-able defaults in defaultsHest.c:

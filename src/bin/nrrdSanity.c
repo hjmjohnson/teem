@@ -45,9 +45,9 @@ main(int argc, char *argv[]) {
                     "As a convenience, nrrdSanity also list the availability of the "
                     "different formats and data encodings (for Nrrd files) supported "
                     "by this build.\n ";
-      _hestPrintStr(stdout, 1, 0, 78, par1, AIR_FALSE);
-      _hestPrintStr(stdout, 1, 0, 78, par2, AIR_FALSE);
-      _hestPrintStr(stdout, 1, 0, 78, par3, AIR_FALSE);
+      hestPrintStr(stdout, 1, 0, 78, par1, AIR_FALSE);
+      hestPrintStr(stdout, 1, 0, 78, par2, AIR_FALSE);
+      hestPrintStr(stdout, 1, 0, 78, par3, AIR_FALSE);
       exit(0);
     } else {
       fprintf(stderr,

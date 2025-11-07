@@ -785,9 +785,10 @@ _hestOPCheck(const hestOpt *hopt, const hestParm *hparm) {
     }
     if (hopt[opi].flag) {
       const char *flag = hopt[opi].flag;
-      uint fslen = AIR_UINT(strlen(flag));
-      if (fslen > AIR_STRLEN_SMALL / 2) {
-        biffAddf(HEST, "%s%sstrlen(opt[%u].flag) %u is too big", _ME_, opi, fslen);
+      size_t fslen = strlen(flag);
+      /* This strlen constraint is leveraged by usage.c/_hestSetBuff() */
+      if (fslen >= AIR_STRLEN_SMALL / 2) {
+        biffAddf(HEST, "%s%sstrlen(opt[%u].flag) %zu is too big", _ME_, opi, fslen);
         return 1;
       }
       if ('-' == flag[0]) {
@@ -795,7 +796,7 @@ _hestOPCheck(const hestOpt *hopt, const hestParm *hparm) {
                  _ME_, opi, flag);
         return 1;
       }
-      for (uint chi = 0; chi < fslen; chi++) {
+      for (uint chi = 0; chi < AIR_UINT(fslen); chi++) {
         if (!isprint(flag[chi])) {
           biffAddf(HEST, "%s%sopt[%u].flag \"%s\" char %u '%c' non-printing", _ME_, opi,
                    flag, chi, flag[chi]);

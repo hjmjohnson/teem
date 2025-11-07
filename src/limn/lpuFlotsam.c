@@ -59,6 +59,6 @@ limnPuUsage(const char *me, hestParm *hparm) {
     strcat(buff, " ... ");
     len = AIR_UINT(strlen(buff));
     fprintf(stderr, "%s", buff);
-    _hestPrintStr(stderr, len, len, hparm->columns, limnPuCmdList[i]->info, AIR_FALSE);
+    hestPrintStr(stderr, len, len, hparm->columns, limnPuCmdList[i]->info, AIR_FALSE);
   }
 }

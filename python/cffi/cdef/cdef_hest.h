@@ -372,8 +372,6 @@ extern int hestOptCheck(const hestOpt *hopt, char **errP);
 extern int hestOptParmCheck(const hestOpt *hopt, const hestParm *hparm,
                                  char **errP);
 // parseHest.c
-extern int hestParseOld(hestOpt *hopt, int argc, const char **argv, char **errP,
-                             const hestParm *hparm);
 extern hestOpt *hestParseFree(hestOpt *hopt);
 extern void hestParseOrDie(hestOpt *hopt, int argc, const char **argv,
                                 hestParm *hparm, const char *me, const char *info);
@@ -383,8 +381,8 @@ extern void hestParseOrDie(hestOpt *hopt, int argc, const char **argv,
 extern int hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
                           const hestParm *hparm);
 // usage.c
-extern void _hestPrintStr(FILE *f, unsigned int indent, unsigned int already,
-                               unsigned int width, const char *_str, int bslash);
+extern void hestPrintStr(FILE *file, size_t indent, size_t already, size_t width,
+                              const char *_str, int bslash);
 extern void hestUsage(FILE *file, const hestOpt *hopt, const char *argv0,
                            const hestParm *hparm);
 extern void hestGlossary(FILE *file, const hestOpt *hopt, const hestParm *hparm);

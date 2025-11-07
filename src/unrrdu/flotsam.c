@@ -152,7 +152,7 @@ unrrduCmdMain(int argc, const char **argv, const char *cmd, const char *title,
       strcat(buff, " ... ");
       len = AIR_UINT(strlen(buff));
       fprintf(fusage, "%s", buff);
-      _hestPrintStr(fusage, len, len, hparm->columns, cmdList[ii]->info, AIR_FALSE);
+      hestPrintStr(fusage, len, len, hparm->columns, cmdList[ii]->info, AIR_FALSE);
     }
     airMopError(mop);
     return 1;
@@ -261,11 +261,11 @@ unrrduUsageUnu(const char *me, hestParm *hparm, int alsoHidden) {
       fprintf(stdout, "Not Enabled: ");
       infop = AIR_CALLOC(strlen(unrrduCmdList[cmdi]->info) + 2, char);
       sprintf(infop, "%s)", unrrduCmdList[cmdi]->info);
-      _hestPrintStr(stdout, len, len, hparm->columns, infop, AIR_FALSE);
+      hestPrintStr(stdout, len, len, hparm->columns, infop, AIR_FALSE);
       free(infop);
     } else {
-      _hestPrintStr(stdout, len, len, hparm->columns, unrrduCmdList[cmdi]->info,
-                    AIR_FALSE);
+      hestPrintStr(stdout, len, len, hparm->columns, unrrduCmdList[cmdi]->info,
+                   AIR_FALSE);
     }
   }
   return;
@@ -310,7 +310,7 @@ unrrduUsage(const char *me, hestParm *hparm, const char *title,
     strcat(buff, " ... ");
     len = AIR_UINT(strlen(buff));
     fprintf(stdout, "%s", buff);
-    _hestPrintStr(stdout, len, len, hparm->columns, cmdList[cmdi]->info, AIR_FALSE);
+    hestPrintStr(stdout, len, len, hparm->columns, cmdList[cmdi]->info, AIR_FALSE);
   }
   return 0;
 }

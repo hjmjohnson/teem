@@ -57,7 +57,7 @@ envBool(FILE *file, const char *envKey, int currVal, const char *varName,
             airEnumStr(airBool, currVal));
     break;
   }
-  _hestPrintStr(file, 0, 0, columns, desc, AIR_FALSE);
+  hestPrintStr(file, 0, 0, columns, desc, AIR_FALSE);
   fprintf(file, "\n");
 }
 
@@ -91,7 +91,7 @@ envEnum(FILE *file, const airEnum *enm, const char *envKey, int currVal,
             airEnumStr(enm, currVal));
     break;
   }
-  _hestPrintStr(file, 0, 0, columns, desc, AIR_FALSE);
+  hestPrintStr(file, 0, 0, columns, desc, AIR_FALSE);
   fprintf(file, "\n");
   /* !!! HEY: CUT + PASTE !!! */
 }
@@ -125,7 +125,7 @@ envInt(FILE *file, const char *envKey, int currVal, const char *varName,
     fprintf(file, "  ==> %s = %d   **********************\n", varName, currVal);
     break;
   }
-  _hestPrintStr(file, 0, 0, columns, desc, AIR_FALSE);
+  hestPrintStr(file, 0, 0, columns, desc, AIR_FALSE);
   fprintf(file, "\n");
   /* !!! HEY: CUT + PASTE !!! */
 }
@@ -160,7 +160,7 @@ envUInt(FILE *file, const char *envKey, unsigned int currVal, const char *varNam
     fprintf(file, "  ==> %s = %u   **********************\n", varName, currVal);
     break;
   }
-  _hestPrintStr(file, 0, 0, columns, desc, AIR_FALSE);
+  hestPrintStr(file, 0, 0, columns, desc, AIR_FALSE);
   fprintf(file, "\n");
   /* !!! HEY: CUT + PASTE !!! */
 }
@@ -177,38 +177,38 @@ unrrdu_envMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   hestInfo(out, me, _unrrdu_envInfoL, hparm);
   fprintf(out, "\n");
 
-  _hestPrintStr(out, 0, 0, hparm->columns,
-                ("Each variable in the listing below starts with the name of "
-                 "the environment variable (\"NRRD_...\"), what type of value "
-                 "it represents (e.g. \"int\", \"bool\"), what the "
-                 "environment variable is currently set to, what the "
-                 "corresponding Nrrd global variable is set to, and a "
-                 "description of the variable."),
-                AIR_FALSE);
+  hestPrintStr(out, 0, 0, hparm->columns,
+               ("Each variable in the listing below starts with the name of "
+                "the environment variable (\"NRRD_...\"), what type of value "
+                "it represents (e.g. \"int\", \"bool\"), what the "
+                "environment variable is currently set to, what the "
+                "corresponding Nrrd global variable is set to, and a "
+                "description of the variable."),
+               AIR_FALSE);
   fprintf(out, "\n");
 
-  _hestPrintStr(out, 0, 0, hparm->columns,
-                ("Bool variables may be set to true simply by setting the "
-                 "environment variable; setting the value to \"true\" or "
-                 "\"false\" sets the bool accordingly.  Enum variables may "
-                 "be set by setting the environment variable to any string "
-                 "that parses as one of the enum values.  Int and unsigned "
-                 "int variables are set via a string parse-able as a numeric "
-                 "value."),
-                AIR_FALSE);
+  hestPrintStr(out, 0, 0, hparm->columns,
+               ("Bool variables may be set to true simply by setting the "
+                "environment variable; setting the value to \"true\" or "
+                "\"false\" sets the bool accordingly.  Enum variables may "
+                "be set by setting the environment variable to any string "
+                "that parses as one of the enum values.  Int and unsigned "
+                "int variables are set via a string parse-able as a numeric "
+                "value."),
+               AIR_FALSE);
   fprintf(out, "\n");
 
   /* UNRRDU_QUIET_QUIT functionality implemented in privateUnrrdu.h */
-  _hestPrintStr(out, 0, 0, hparm->columns,
-                ("In addition to the the \"NRRD_\" environment variables, "
-                 "there is this one, " UNRRDU_QUIET_QUIT_ENV ", which "
-                 "determines whether unu exits "
-                 "quietly (without error and usage info) when it fails "
-                 "because an input nrrd read immediately hit EOF (as "
-                 "happens when many unu invocations are piped together). "
-                 "This is currently detected by seeing if the error message "
-                 "ends with \n \"" UNRRDU_QUIET_QUIT_STR "\"."),
-                AIR_FALSE);
+  hestPrintStr(out, 0, 0, hparm->columns,
+               ("In addition to the the \"NRRD_\" environment variables, "
+                "there is this one, " UNRRDU_QUIET_QUIT_ENV ", which "
+                "determines whether unu exits "
+                "quietly (without error and usage info) when it fails "
+                "because an input nrrd read immediately hit EOF (as "
+                "happens when many unu invocations are piped together). "
+                "This is currently detected by seeing if the error message "
+                "ends with \n \"" UNRRDU_QUIET_QUIT_STR "\"."),
+               AIR_FALSE);
   fprintf(out, "\n");
 
   fprintf(out, "%s: ", UNRRDU_QUIET_QUIT_ENV);

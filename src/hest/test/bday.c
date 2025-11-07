@@ -35,8 +35,8 @@ runexp(unsigned int *year, unsigned int N, unsigned int M) {
   return 0;
 }
 
-char *info = ("simulates M people in a room finding out if two or more "
-              "of them share a birthday.  For fun, can vary the number "
+char *info = ("simulates `M` people in a room finding out if two or more "
+              "of them share a birthday.  For fun, can vary the number `N` "
               "of days in the year.");
 
 int
@@ -49,6 +49,9 @@ main(int argc, const char *argv[]) {
 
   me = argv[0];
   mop = airMopNew();
+  hestParm *hparm = hestParmNew();
+  hparm->responseFileEnable = AIR_TRUE;
+  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
   hestOptAdd_1_UInt(&hopt, "N", "days", &N, "365", "# of days in year");
   /* E != P */
   hestOptAdd_1_UInt(&hopt, "E", "exps", &P, "100000",
@@ -59,7 +62,7 @@ main(int argc, const char *argv[]) {
                       "Stop running experiments when relative change in computed "
                       "probability goes below this");
   hestOptAdd(&hopt, NULL, "M", airTypeInt, 1, 1, &M, NULL, "# of people in room");
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
+  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, info);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

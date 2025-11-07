@@ -75,10 +75,10 @@ tend_aboutMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   fprintf(stdout, fmt, buff);
   fprintf(stdout, "\n");
 
-  _hestPrintStr(stdout, 1, 0, hparm->columns, par1, AIR_FALSE);
-  _hestPrintStr(stdout, 1, 0, hparm->columns, par2, AIR_FALSE);
-  _hestPrintStr(stdout, 1, 0, hparm->columns, par3, AIR_FALSE);
-  _hestPrintStr(stdout, 2, 0, hparm->columns, par4, AIR_FALSE);
+  hestPrintStr(stdout, 1, 0, hparm->columns, par1, AIR_FALSE);
+  hestPrintStr(stdout, 1, 0, hparm->columns, par2, AIR_FALSE);
+  hestPrintStr(stdout, 1, 0, hparm->columns, par3, AIR_FALSE);
+  hestPrintStr(stdout, 2, 0, hparm->columns, par4, AIR_FALSE);
 
   return 0;
 }

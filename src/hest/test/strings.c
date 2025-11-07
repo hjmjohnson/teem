@@ -50,19 +50,19 @@ main(void) {
   printf("airStrlen(line) = %d\n", (int)airStrlen(line));
 
   fprintf(stdout, "This was found on my desk: ");
-  _hestPrintStr(stdout, 10, strlen("This was found on my desk: "), 80, line, AIR_FALSE);
+  hestPrintStr(stdout, 10, strlen("This was found on my desk: "), 80, line, AIR_FALSE);
 
   fprintf(stdout, "This was found on my desk: ");
-  _hestPrintStr(stdout, 10, strlen("This was found on my desk: "), 79, line, AIR_FALSE);
+  hestPrintStr(stdout, 10, strlen("This was found on my desk: "), 79, line, AIR_FALSE);
 
   fprintf(stdout, "This was found on my desk: ");
-  _hestPrintStr(stdout, 10, strlen("This was found on my desk: "), 78, line, AIR_FALSE);
+  hestPrintStr(stdout, 10, strlen("This was found on my desk: "), 78, line, AIR_FALSE);
 
   fprintf(stdout, "This was found on my desk: ");
-  _hestPrintStr(stdout, 10, strlen("This was found on my desk: "), 77, line, AIR_FALSE);
+  hestPrintStr(stdout, 10, strlen("This was found on my desk: "), 77, line, AIR_FALSE);
 
   fprintf(stdout, "This was found on my desk: ");
-  _hestPrintStr(stdout, 10, strlen("This was found on my desk: "), 76, line, AIR_FALSE);
+  hestPrintStr(stdout, 10, strlen("This was found on my desk: "), 76, line, AIR_FALSE);
 
   exit(0);
 }

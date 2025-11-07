@@ -938,7 +938,7 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
                identStr(ident1, theOpt));
       return (free(havStr), 1);
     }
-    havStr = airFree(havStr);
+    airFree(havStr);
     if (hitVPS) {
       // lose the variadic-parameter-stop flag
       hestArgNix(hestArgVecRemove(havec, argIdx));
@@ -1452,7 +1452,10 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
         if (!hopt[opi].parseMop) hopt[opi].parseMop = airMopNew();
         airMopMem(hopt[opi].parseMop, valueP, airMopAlways);
       }
-      *(hopt[opi].sawP) = hopt[opi].havec->len;
+      if (hopt[opi].sawP) {
+        /* quiet clang-tidy; non-NULLity enforced by methodsHest.c/_hestOPCheck() */
+        *(hopt[opi].sawP) = hopt[opi].havec->len;
+      }
       char *cvalueP = *((void **)valueP);
       // (RIP hammerhead.ucsd.edu, Intel Itanium, and last days of grad school)
       for (uint argi = 0; argi < hopt[opi].havec->len; argi++) {
@@ -1466,7 +1469,10 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
       if (airTypeString == type) {
         // finish NULL-termination sneakiness
         char **argv = (char **)cvalueP;
-        argv[hopt[opi].havec->len] = NULL;
+        if (argv && *argv) {
+          // quiet clang-tidy: non-NULLity enforced elsewhere
+          argv[hopt[opi].havec->len] = NULL;
+        }
       }
     } break;
     } // end switch
