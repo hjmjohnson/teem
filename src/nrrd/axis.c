@@ -938,15 +938,15 @@ nrrdAxisInfoCompare(const NrrdAxisInfo *axisA, const NrrdAxisInfo *axisB, int *d
   }
 
   if (explain) {
-    strcpy(explain, "");
+    explain[0] = '\0';
   }
   if (axisA->size != axisB->size) {
     char stmp[2][AIR_STRLEN_SMALL + 1];
     *differ = axisA->size < axisB->size ? -1 : 1;
     if (explain) {
-      sprintf(explain, "axisA->size=%s %s axisB->size=%s",
-              airSprintSize_t(stmp[0], axisA->size), *differ < 0 ? "<" : ">",
-              airSprintSize_t(stmp[1], axisB->size));
+      snprintf(explain, AIR_STRLEN_LARGE + 1, "axisA->size=%s %s axisB->size=%s",
+               airSprintSize_t(stmp[0], axisA->size), *differ < 0 ? "<" : ">",
+               airSprintSize_t(stmp[1], axisB->size));
     }
     return 0;
   }
@@ -955,8 +955,8 @@ nrrdAxisInfoCompare(const NrrdAxisInfo *axisA, const NrrdAxisInfo *axisB, int *d
   *differ = _nrrdDblcmp(axisA->VAL, axisB->VAL);                                        \
   if (*differ) {                                                                        \
     if (explain) {                                                                      \
-      sprintf(explain, "axisA->%s %.17g %s axisB->%s %.17g", STR, axisA->VAL,           \
-              *differ < 0 ? "<" : ">", STR, axisB->VAL);                                \
+      snprintf(explain, AIR_STRLEN_LARGE + 1, "axisA->%s %.17g %s axisB->%s %.17g",     \
+               STR, axisA->VAL, *differ < 0 ? "<" : ">", STR, axisB->VAL);              \
     }                                                                                   \
     return 0;                                                                           \
   }
@@ -975,42 +975,38 @@ nrrdAxisInfoCompare(const NrrdAxisInfo *axisA, const NrrdAxisInfo *axisB, int *d
   if (axisA->center != axisB->center) {
     *differ = axisA->center < axisB->center ? -1 : 1;
     if (explain) {
-      sprintf(explain, "axisA->center %s %s axisB->center %s",
-              airEnumStr(nrrdCenter, axisA->center), *differ < 0 ? "<" : ">",
-              airEnumStr(nrrdCenter, axisB->center));
+      snprintf(explain, AIR_STRLEN_LARGE + 1, "axisA->center %s %s axisB->center %s",
+               airEnumStr(nrrdCenter, axisA->center), *differ < 0 ? "<" : ">",
+               airEnumStr(nrrdCenter, axisB->center));
     }
     return 0;
   }
   if (axisA->kind != axisB->kind) {
     *differ = axisA->kind < axisB->kind ? -1 : 1;
     if (explain) {
-      sprintf(explain, "axisA->kind %s %s axisB->kind %s",
-              airEnumStr(nrrdKind, axisA->kind), *differ < 0 ? "<" : ">",
-              airEnumStr(nrrdKind, axisB->kind));
+      snprintf(explain, AIR_STRLEN_LARGE + 1, "axisA->kind %s %s axisB->kind %s",
+               airEnumStr(nrrdKind, axisA->kind), *differ < 0 ? "<" : ">",
+               airEnumStr(nrrdKind, axisB->kind));
     }
     return 0;
   }
   *differ = airStrcmp(axisA->label, axisB->label);
   if (*differ) {
     if (explain) {
-      /* can't safely print whole labels because of fixed-size of explain */
-      sprintf(explain, "axisA->label %s axisB->label", *differ < 0 ? "<" : ">");
-      if (strlen(explain) + airStrlen(axisA->label) + airStrlen(axisB->label)
-            + 2 * strlen(" \"\" ") + 1
-          < AIR_STRLEN_LARGE + 1) {
-        /* ok, we can print them */
-        sprintf(explain, "axisA->label \"%s\" %s axisB->label \"%s\"",
-                axisA->label ? axisA->label : "", *differ < 0 ? "<" : ">",
-                axisB->label ? axisB->label : "");
-      }
+      snprintf(explain, AIR_STRLEN_LARGE + 1,
+               "axisA->label \"%s\" %s axisB->label \"%s\"",
+               axisA->label ? axisA->label : "", *differ < 0 ? "<" : ">",
+               axisB->label ? axisB->label : "");
     }
     return 0;
   }
   *differ = airStrcmp(axisA->units, axisB->units);
   if (*differ) {
     if (explain) {
-      /* can't print whole string because of fixed-size of explain */
-      sprintf(explain, "axisA->units %s axisB->units", *differ < 0 ? "<" : ">");
+      snprintf(explain, AIR_STRLEN_LARGE + 1,
+               "axisA->units \"%s\" %s axisB->units \"%s\"",
+               axisA->units ? axisA->units : "", *differ < 0 ? "<" : ">",
+               axisB->units ? axisB->units : "");
     }
     return 0;
   }
