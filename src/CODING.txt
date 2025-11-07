@@ -1,10 +1,10 @@
 This documents coding conventions for Teem, and provides some rationale.
 
-Everything below is about C coding in Teem. Quick notes about Python coding,
-currently in teem/python/cffi:
+Everything below is about C coding in Teem.
+But first some quick notes about Python coding, currently in teem/python/cffi:
 - format with blue: https://pypi.org/project/blue
   run as: blue --line-length 99
-  (yes 99 columns, even C coding is at 89 columns)
+  (yes 99 columns, even though Teem's C coding is at 89 columns)
 - do what you can to increase pylint scores
   It is okay to silence dumb things
   # pylint: disable=c-extension-no-member
@@ -114,9 +114,17 @@ of this symbol provides a way to test which libraries are part of a given Teem
 shared library.  Tradition dictates that the libPresent variable is set to 42,
 but this is not necessary.
 
-* Every library's .h file has a LIB_EXPORT macro which serves the purpose of
-"extern" in a normal C header, but which also handles the Windows __declspec
-weirdness.  These must be used and used consistently.
+* For library `lib`, the `lib.h` file has a LIB_EXPORT macro which serves the
+purpose of "extern" in a normal C header, but which also handles the Windows
+__declspec weirdness, and which also (for non-Windows shared libraries) uses
+__attribute__((visibility("default"))).
+The LIB_EXPORT macro must be used and used consistently.
+
+* For library `lib`, the `privateLib.h` (when it exists) declares things that
+make it easier to implement the library but not for external visibility.
+This includes the copy-pasta'd `SN_` macros for processing of char*,size_t
+string,size pairs, and `typedef unsigned int uint`: `uint` can appear in
+implementation, but not in the public `lib.h`.
 
 * air.h supplies TEEM_VERSION #defines that allow other software to know what
 version of Teem a given install is supplying.  These need to be updated with
