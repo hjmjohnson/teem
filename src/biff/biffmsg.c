@@ -93,7 +93,7 @@ _biffMsgNix(biffMsg *msg) {
 void
 _biffMsgAdd(biffMsg *msg, const char *err) {
   static const char me[] = "_biffMsgAdd";
-  unsigned int idx;
+  uint idx;
 
   if (_biffMsgNoop == msg) {
     return;
@@ -141,7 +141,7 @@ _biffMsgClear(biffMsg *msg) {
 */
 static size_t
 _biffMsgLineLenMax(const biffMsg *msg) {
-  unsigned int ii;
+  uint ii;
   size_t len, maxlen;
 
   if (_biffMsgNoop == msg) {
@@ -163,7 +163,7 @@ _biffMsgLineLenMax(const biffMsg *msg) {
 void
 _biffMsgMove(biffMsg *dest, biffMsg *src, const char *err) {
   static const char me[] = "_biffMsgMove";
-  unsigned int ii;
+  uint ii;
   size_t buffSize;
   char *buff;
 

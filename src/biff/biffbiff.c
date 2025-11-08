@@ -33,7 +33,7 @@ const int biffPresent = 42;
 #endif
 
 static biffMsg **_bmsg = NULL;    /* master array of biffMsg pointers */
-static unsigned int _bmsgNum = 0; /* length of _biffErr == # keys maintained */
+static uint _bmsgNum = 0;         /* length of _biffErr == # keys maintained */
 static airArray *_bmsgArr = NULL; /* air array of _biffErr and _biffNum */
 
 #define __INCR 2
@@ -90,7 +90,7 @@ static biffMsg *
 _bmsgFind(const char *key) {
   static const char me[] = "[biff] _bmsgFind";
   biffMsg *msg;
-  unsigned int ii;
+  uint ii;
 
   if (!key) {
     fprintf(stderr, "%s: PANIC got NULL key", me);
@@ -111,9 +111,9 @@ _bmsgFind(const char *key) {
 /*
  * assumes that msg really is in _bmsg[]
  */
-static unsigned int
+static uint
 _bmsgFindIdx(biffMsg *msg) {
-  unsigned int ii;
+  uint ii;
 
   for (ii = 0; ii < _bmsgNum; ii++) {
     if (msg == _bmsg[ii]) {
@@ -133,7 +133,7 @@ _bmsgFindIdx(biffMsg *msg) {
 static biffMsg *
 _bmsgAdd(const char *key) {
   static const char me[] = "[biff] _bmsgAdd";
-  unsigned int ii;
+  uint ii;
   biffMsg *msg;
 
   msg = NULL;
@@ -238,7 +238,7 @@ biffGet(const char *key) {
   char *_ret, *ret;
   size_t retSize;
   biffMsg *msg;
-  unsigned int ii;
+  uint ii;
 
   _bmsgStart();
   msg = _bmsgFind(key);
@@ -267,7 +267,7 @@ biffGet(const char *key) {
   ret[0] = '\0';
   for (ii = msg->errNum; ii > 0; ii--) {
     snprintf(ret, retSize, "[%s] %s\n", msg->key, msg->err[ii - 1]);
-    STRINCR(ret, retSize);
+    SN_INCR(ret, retSize);
   }
   return _ret;
 }
@@ -301,7 +301,7 @@ biffCheck(const char *key) {
 void
 biffDone(const char *key) {
   static const char me[] = "biffDone";
-  unsigned int idx;
+  uint idx;
   biffMsg *msg;
 
   _bmsgStart();
