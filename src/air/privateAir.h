@@ -23,7 +23,7 @@ extern "C" {
 
 #include <assert.h> /* at least for miscAir.c/airSinglePrintf */
 
-/* NOTE: these SN_ string,size macros copy-pasta's to other private<Lib>.h files:
+/* NOTE: these SN_ string,size macros copy-pasta'd to other private<Lib>.h files:
    SN_INCR: safely increments STR arg to point '\0'-termination of STR
    SN_COPY: safely copies SRC to DST, then increments DST
    SN_PRINTF: snprintf's into DST then increments DST */
