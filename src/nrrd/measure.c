@@ -1124,7 +1124,7 @@ _nrrdMeasureType(const Nrrd *nin, int measr) {
     break;
   default:
     fprintf(stderr, "%s: PANIC: measr %d not handled\n", me, measr);
-    exit(1);
+    type = nrrdMeasureUnknown; /* was exit(1); */
   }
 
   return type;
