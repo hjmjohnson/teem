@@ -33,19 +33,19 @@
   */
 
 /* lop B
-  fprintf(stderr, "_ellAlign3: v0 = %g %g %g\n", (v+0)[0], (v+0)[1], (v+0)[2]);
-  fprintf(stderr, "_ellAlign3: v3 = %g %g %g\n", (v+3)[0], (v+3)[1], (v+3)[2]);
-  fprintf(stderr, "_ellAlign3: v6 = %g %g %g\n", (v+6)[0], (v+6)[1], (v+6)[2]);
-  fprintf(stderr, "_ellAlign3:  post dot signs %d %d %d\n",
-          airSgn(ELL_3V_DOT(v+0, v+3)),
-          airSgn(ELL_3V_DOT(v+0, v+6)),
-          airSgn(ELL_3V_DOT(v+3, v+6)));
-  if (airSgn(ELL_3V_DOT(v+0, v+3)) < 0
-      || airSgn(ELL_3V_DOT(v+0, v+6)) < 0
-      || airSgn(ELL_3V_DOT(v+3, v+6)) < 0) {
-    exit(1);
-  }
-  */
+ *   fprintf(stderr, "_ellAlign3: v0 = %g %g %g\n", (v+0)[0], (v+0)[1], (v+0)[2]);
+ *   fprintf(stderr, "_ellAlign3: v3 = %g %g %g\n", (v+3)[0], (v+3)[1], (v+3)[2]);
+ *   fprintf(stderr, "_ellAlign3: v6 = %g %g %g\n", (v+6)[0], (v+6)[1], (v+6)[2]);
+ *   fprintf(stderr, "_ellAlign3:  post dot signs %d %d %d\n",
+ *           airSgn(ELL_3V_DOT(v+0, v+3)),
+ *           airSgn(ELL_3V_DOT(v+0, v+6)),
+ *           airSgn(ELL_3V_DOT(v+3, v+6)));
+ *   if (airSgn(ELL_3V_DOT(v+0, v+3)) < 0
+ *       || airSgn(ELL_3V_DOT(v+0, v+6)) < 0
+ *       || airSgn(ELL_3V_DOT(v+3, v+6)) < 0) {
+ *     exit(1);
+ *   }
+ */
 
 /*
 ******** ell_quadratic()
