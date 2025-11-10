@@ -118,11 +118,12 @@ _miteRGBACalc(mite_t *R, mite_t *G, mite_t *B, mite_t *A, miteThread *mtt,
     break;
   case miteShadeMethodLitTen:
     fprintf(stderr, "!%s: lit-tensor not yet implemented\n", me);
+    ELL_3V_SET(s, AIR_NAN, AIR_NAN, AIR_NAN);
     break;
   default:
-    fprintf(stderr, "!%s: PANIC, shadeMethod %d unimplemented\n", me,
+    fprintf(stderr, "!%s: sorry, shadeMethod %d unimplemented\n", me,
             mrr->shadeSpec->method);
-    exit(1);
+    ELL_3V_SET(s, AIR_NAN, AIR_NAN, AIR_NAN);
     break;
   }
   *R = (E - 1 + ad[0]) * col[0] + s[0];
