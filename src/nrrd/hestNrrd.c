@@ -275,8 +275,10 @@ _nrrdHestIterParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
           nrrdIterSetValue(*iterP, val);
         } else {
           /* oh, this is bad. */
-          fprintf(stderr, "%s: PANIC, is it a number or not?", me);
-          exit(1);
+          snprintf(err, AIR_STRLEN_HUGE + 1,
+                   "%s: very confused by \"%s\": is it a number or not?", me, str);
+          airMopError(mop);
+          return 1;
         }
       } else {
         /* it doesn't look like a number, but the fopen failed, so
@@ -288,8 +290,10 @@ _nrrdHestIterParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
           return 1;
         } else {
           /* what the hell? */
-          fprintf(stderr, "%s: PANIC, is it a nrrd or not?", me);
-          exit(1);
+          snprintf(err, AIR_STRLEN_HUGE + 1,
+                   "%s: very confused by \"%s\": is it a nrrd file or not?", me, str);
+          airMopError(mop);
+          return 1;
         }
       }
     }
