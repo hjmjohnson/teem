@@ -196,7 +196,7 @@ _nrrdApply2DSetUp(Nrrd *nout, const Nrrd *nin, const NrrdRange *range0,
 ** or error handling based on nrrdStateDisallowIntegerNonExist, but
 ** there really should be.
 */
-static int
+static int /* Biff: 1 */
 _nrrdApply2DLutOrRegMap(Nrrd *nout, const Nrrd *nin, const NrrdRange *range0,
                         const NrrdRange *range1, const Nrrd *nmap, int ramps,
                         int rescale0, int rescale1) {
@@ -239,8 +239,8 @@ _nrrdApply2DLutOrRegMap(Nrrd *nout, const Nrrd *nin, const NrrdRange *range0,
   N = nrrdElementNumber(nin) / 2; /* number of value pairs to be mapped */
   /* _VV = 1; */
   if (ramps) {
-    fprintf(stderr, "%s: PANIC: unimplemented\n", me);
-    exit(1);
+    biffAddf(NRRD, "%s: sorry ramps not implemented", me);
+    return 1;
   } else {
     /* lookup table */
     for (I = 0; I < N; I++) {
