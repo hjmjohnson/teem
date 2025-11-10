@@ -554,7 +554,8 @@ tenEstimateLinearSingle_f(float *_ten, float *_B0P,              /* output */
   if (DD > DWI_NUM_MAX) {
     fprintf(stderr, "%s: PANIC: sorry, DD=%u > compile-time DWI_NUM_MAX=%u\n", me, DD,
             DWI_NUM_MAX);
-    exit(1);
+    TEN_T_SET(_ten, AIR_NAN, AIR_NAN, AIR_NAN, AIR_NAN, AIR_NAN, AIR_NAN, AIR_NAN);
+    return; /* was exit(1); */
   }
   for (dwiIdx = 0; dwiIdx < DD; dwiIdx++) {
     dwi[dwiIdx] = _dwi[dwiIdx];
