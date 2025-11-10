@@ -138,7 +138,7 @@ gageKindTotalAnswerLength(const gageKind *kind) {
     err = biffGetDone(GAGE);
     fprintf(stderr, "%s: PANIC:\n %s", me, err);
     free(err);
-    exit(1);
+    return UINT_MAX; /* was exit(1); */
   }
   alen = 0;
   for (ii = 1; ii <= kind->itemMax; ii++) {
