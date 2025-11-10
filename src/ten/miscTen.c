@@ -134,7 +134,7 @@ tenEvqSingle_f(float vec[3], float scl) {
     /* clang-format on */
     default:
       fprintf(stderr, "%s: PANIC: mi = %d\n", me, mi);
-      exit(0);
+      return 1 << 14; /* was exit(0); */
     }
     vi = airIndex(-1, vec[0] + vec[1], 1, bins);
     ui = airIndex(-1, vec[0] - vec[1], 1, bins);
