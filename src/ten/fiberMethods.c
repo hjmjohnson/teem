@@ -644,7 +644,7 @@ tenFiberAnisoSpeedSet(tenFiberContext *tfx, int aniso, double lerp, double thres
 
   if (tfx->useDwi) {
     fprintf(stderr, "!%s: sorry, can't yet work on DWIs; bye.\n", me);
-    exit(1);
+    return 1; /* was exit(1); */
   }
 
   if (airEnumValCheck(tenAniso, aniso)) {
@@ -842,7 +842,7 @@ tenFiberContextCopy(tenFiberContext *oldTfx) {
 
   if (oldTfx->useDwi) {
     fprintf(stderr, "!%s: sorry, can't copy DWI contexts; bye.\n", me);
-    exit(1);
+    return NULL; /* was exit(1); */
   }
   tfx = AIR_CALLOC(1, tenFiberContext);
   memcpy(tfx, oldTfx, sizeof(tenFiberContext));
