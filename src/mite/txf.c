@@ -390,8 +390,7 @@ miteQueryAdd(gageQuery queryScl, gageQuery queryVec, gageQuery queryTen,
       break;
     }
   } else {
-    fprintf(stderr, "%s: PANIC: unrecognized non-NULL gageKind\n", me);
-    exit(1);
+    fprintf(stderr, "\n\n%s: PANIC: unrecognized non-NULL gageKind\n\n\n", me);
   }
   return;
 }
