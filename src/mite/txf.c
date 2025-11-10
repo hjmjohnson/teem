@@ -527,7 +527,7 @@ _miteAnswerPointer(miteThread *mtt, gageItemSpec *isp) {
     ret = mtt->ansMiteVal;
   } else {
     fprintf(stderr, "\nPANIC: %s: unknown gageKind!\n", me);
-    exit(1);
+    return NULL;
   }
   ret += gageKindAnswerOffset(isp->kind, isp->item);
   return ret;
