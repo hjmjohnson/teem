@@ -450,43 +450,43 @@ tenEigensolve_d(double _eval[3], double evec[9], const double t[7]) {
 }
 
 /*  lop A
-    fprintf(stderr, "###################################  I = %d\n", (int)I);
-    tenEigensolve(teval, tevec, out);
-    fprintf(stderr, "evals: (%g %g %g) %g %g %g --> %g %g %g\n",
-            AIR_ABS(eval[0] - teval[0]) + 1,
-            AIR_ABS(eval[1] - teval[1]) + 1,
-            AIR_ABS(eval[2] - teval[2]) + 1,
-            eval[0], eval[1], eval[2],
-            teval[0], teval[1], teval[2]);
-    fprintf(stderr, "   tevec lens: %g %g %g\n", ELL_3V_LEN(tevec+3*0),
-            ELL_3V_LEN(tevec+3*1), ELL_3V_LEN(tevec+3*2));
-    ELL_3V_CROSS(tmp1, evec+3*0, evec+3*1); tmp2[0] = ELL_3V_LEN(tmp1);
-    ELL_3V_CROSS(tmp1, evec+3*0, evec+3*2); tmp2[1] = ELL_3V_LEN(tmp1);
-    ELL_3V_CROSS(tmp1, evec+3*1, evec+3*2); tmp2[2] = ELL_3V_LEN(tmp1);
-    fprintf(stderr, "   evec[0] = %g %g %g\n",
-            (evec+3*0)[0], (evec+3*0)[1], (evec+3*0)[2]);
-    fprintf(stderr, "   evec[1] = %g %g %g\n",
-            (evec+3*1)[0], (evec+3*1)[1], (evec+3*1)[2]);
-    fprintf(stderr, "   evec[2] = %g %g %g\n",
-            (evec+3*2)[0], (evec+3*2)[1], (evec+3*2)[2]);
-    fprintf(stderr, "   evec crosses: %g %g %g\n",
-            tmp2[0], tmp2[1], tmp2[2]);
-    ELL_3V_CROSS(tmp1, tevec+3*0, tevec+3*1); tmp2[0] = ELL_3V_LEN(tmp1);
-    ELL_3V_CROSS(tmp1, tevec+3*0, tevec+3*2); tmp2[1] = ELL_3V_LEN(tmp1);
-    ELL_3V_CROSS(tmp1, tevec+3*1, tevec+3*2); tmp2[2] = ELL_3V_LEN(tmp1);
-    fprintf(stderr, "   tevec[0] = %g %g %g\n",
-            (tevec+3*0)[0], (tevec+3*0)[1], (tevec+3*0)[2]);
-    fprintf(stderr, "   tevec[1] = %g %g %g\n",
-            (tevec+3*1)[0], (tevec+3*1)[1], (tevec+3*1)[2]);
-    fprintf(stderr, "   tevec[2] = %g %g %g\n",
-            (tevec+3*2)[0], (tevec+3*2)[1], (tevec+3*2)[2]);
-    fprintf(stderr, "   tevec crosses: %g %g %g\n",
-            tmp2[0], tmp2[1], tmp2[2]);
-    if (tmp2[1] < 0.5) {
-      fprintf(stderr, "(panic)\n");
-      exit(0);
-    }
-*/
+ *  fprintf(stderr, "###################################  I = %d\n", (int)I);
+ *  tenEigensolve(teval, tevec, out);
+ *  fprintf(stderr, "evals: (%g %g %g) %g %g %g --> %g %g %g\n",
+ *          AIR_ABS(eval[0] - teval[0]) + 1,
+ *          AIR_ABS(eval[1] - teval[1]) + 1,
+ *          AIR_ABS(eval[2] - teval[2]) + 1,
+ *          eval[0], eval[1], eval[2],
+ *          teval[0], teval[1], teval[2]);
+ *  fprintf(stderr, "   tevec lens: %g %g %g\n", ELL_3V_LEN(tevec+3*0),
+ *          ELL_3V_LEN(tevec+3*1), ELL_3V_LEN(tevec+3*2));
+ *  ELL_3V_CROSS(tmp1, evec+3*0, evec+3*1); tmp2[0] = ELL_3V_LEN(tmp1);
+ *  ELL_3V_CROSS(tmp1, evec+3*0, evec+3*2); tmp2[1] = ELL_3V_LEN(tmp1);
+ *  ELL_3V_CROSS(tmp1, evec+3*1, evec+3*2); tmp2[2] = ELL_3V_LEN(tmp1);
+ *  fprintf(stderr, "   evec[0] = %g %g %g\n",
+ *          (evec+3*0)[0], (evec+3*0)[1], (evec+3*0)[2]);
+ *  fprintf(stderr, "   evec[1] = %g %g %g\n",
+ *          (evec+3*1)[0], (evec+3*1)[1], (evec+3*1)[2]);
+ *  fprintf(stderr, "   evec[2] = %g %g %g\n",
+ *          (evec+3*2)[0], (evec+3*2)[1], (evec+3*2)[2]);
+ *  fprintf(stderr, "   evec crosses: %g %g %g\n",
+ *          tmp2[0], tmp2[1], tmp2[2]);
+ *  ELL_3V_CROSS(tmp1, tevec+3*0, tevec+3*1); tmp2[0] = ELL_3V_LEN(tmp1);
+ *  ELL_3V_CROSS(tmp1, tevec+3*0, tevec+3*2); tmp2[1] = ELL_3V_LEN(tmp1);
+ *  ELL_3V_CROSS(tmp1, tevec+3*1, tevec+3*2); tmp2[2] = ELL_3V_LEN(tmp1);
+ *  fprintf(stderr, "   tevec[0] = %g %g %g\n",
+ *          (tevec+3*0)[0], (tevec+3*0)[1], (tevec+3*0)[2]);
+ *  fprintf(stderr, "   tevec[1] = %g %g %g\n",
+ *          (tevec+3*1)[0], (tevec+3*1)[1], (tevec+3*1)[2]);
+ *  fprintf(stderr, "   tevec[2] = %g %g %g\n",
+ *          (tevec+3*2)[0], (tevec+3*2)[1], (tevec+3*2)[2]);
+ *  fprintf(stderr, "   tevec crosses: %g %g %g\n",
+ *          tmp2[0], tmp2[1], tmp2[2]);
+ *  if (tmp2[1] < 0.5) {
+ *    fprintf(stderr, "(panic)\n");
+ *    exit(0);
+ *  }
+ */
 
 void
 tenMakeSingle_f(float ten[7], float conf, const float eval[3], const float evec[9]) {
