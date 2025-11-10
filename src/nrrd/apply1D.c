@@ -962,11 +962,9 @@ nrrdApply1DIrregMap(Nrrd *nout, const Nrrd *nin, const NrrdRange *_range,
           break;
         default:
           mapIdx = 0;
-          fprintf(stderr,
-                  "%s: PANIC: non-existent value/class %g/%d "
-                  "not handled\n",
-                  me, val, airFPClass_d(val));
-          exit(1);
+          biffAddf(NRRD, "%s: novel non-existent value/class %g/%d not handled\n", me,
+                   val, airFPClass_d(val));
+          return 1;
         }
         entData0 = (char *)(nmap->data) + mapIdx * entSize;
         for (ii = 1; ii < entLen; ii++) {
