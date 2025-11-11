@@ -57,7 +57,7 @@ $(L).Obj = $(patsubst %.c,%.o, \
     permute.c project.c quantize.c resample.c reshape.c rmap.c save.c shuffle.c \
     slice.c splice.c sselect.c subst.c swap.c tile.c unblock.c uncmt.c undos.c \
     unorient.c unquantize.c untile.c vidicon.c w2i.c \
-    flotsam.c
+    flotsam.c \
   )
 $(L).Test =
 ####
