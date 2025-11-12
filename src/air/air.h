@@ -564,6 +564,9 @@ AIR_EXPORT const char *const airTeemVersion;
 AIR_EXPORT const int airTeemReleaseDone;
 AIR_EXPORT const char *const airTeemReleaseDate;
 AIR_EXPORT void airTeemVersionSprint(char buff[AIR_STRLEN_LARGE + 1]);
+/* ---- BEGIN non-NrrdIO */
+AIR_EXPORT void airTeemVersionPrintAndExit(const char *pfx);
+/* ---- END non-NrrdIO */
 AIR_EXPORT void *airNull(void);
 AIR_EXPORT void *airSetNull(void **ptrP);
 AIR_EXPORT void *airFree(void *ptr);

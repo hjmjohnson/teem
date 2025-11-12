@@ -56,6 +56,20 @@ airTeemVersionSprint(char buff[AIR_STRLEN_LARGE + 1]) {
   return;
 }
 
+/* ---- BEGIN non-NrrdIO */
+/* airTeemVersionPrintAndExit: how to respond to --version on command-line */
+void
+airTeemVersionPrintAndExit(const char *pfx) {
+  char vbuff[AIR_STRLEN_LARGE + 1];
+  airTeemVersionSprint(vbuff);
+  if (pfx) {
+    printf("%s ", pfx);
+  }
+  printf("%s\n", vbuff);
+  exit(0);
+}
+/* ---- END non-NrrdIO */
+
 double
 _airSanityHelper(double val) {
   return val * val * val;
