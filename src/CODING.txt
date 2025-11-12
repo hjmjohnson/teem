@@ -517,6 +517,15 @@ variable to a buffer string (typically char stmp[AIR_STRLEN_SMALL]) which is
 then handled via %s.  This is admittedly clumsy; it will hopefully be one of
 the first things to fix in Teem 3.0 (it wasn't prioritized for TeemV2).
 
+* Very few Teem functions should call exit(): it is weird for a C library to
+call `exit` for you. New for TeemV2: those functions that do call `exit`
+(whether always or only in some circumstances) should have a name ending with
+"Exit" to advertise this.  The complete list is currently:
+- airTeemVersionPrintAndExit
+- hestParseOrExit
+- nrrdSanityOrExit
+- unrrduMainOrExit
+
 ============ Other coding practices
 
 * Avoid single-letter variable names (why: too hard to search for usage) "uu"
@@ -550,7 +559,7 @@ of code brevity when those variables won't change during the scope of the
 function.  Hopefully the struct is const, so the compiler can do the right
 thing.
 
-* Use "return" correctly: no parens!  "exit()" does have parens.
+* Use "return" correctly: no parens!
 
 * If a pointer should be initialized to NULL, then set it to NULL; Don't assume
 that a pointer in a struct will be NULL following a calloc.
