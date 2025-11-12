@@ -66,7 +66,7 @@ airTeemVersionPrintAndExit(const char *pfx) {
     printf("%s ", pfx);
   }
   printf("%s\n", vbuff);
-  exit(0);
+  exit(0); /* (in airTeemVersionPrintAndExit) */
 }
 /* ---- END non-NrrdIO */
 
