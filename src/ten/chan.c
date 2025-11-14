@@ -771,6 +771,7 @@ tenEstimateLinear4D(Nrrd *nten, Nrrd **nterrP, Nrrd **nB0P, const Nrrd *ndwi,
         fprintf(stderr, "%s: input dwi1[%d] = %g\n", me, d, dwi1[d]);
       } */
     }
+    _B0 = 0; // sssh warning
     tenEstimateLinearSingle_f(ten, &_B0, dwi1, emat, vbuf, AIR_UINT(DD), knownB0,
                               AIR_FLOAT(thresh), AIR_FLOAT(soft), AIR_FLOAT(b));
     if (nB0P) {
