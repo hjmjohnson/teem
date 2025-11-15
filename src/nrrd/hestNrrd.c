@@ -58,6 +58,7 @@ parserBoth(void *ptr,
     /* else no concerns about filename being "-" and stdin being a terminal */
     if (nrrdLoad(*nrrdP, filename, NULL)) {
       airMopAdd(mop, nerr = biffGetDone(NRRD), airFree, airMopOnError);
+      // fprintf(stderr, "!%s: nerr from biff |%s|\n", __func__, nerr);
       airStrcpy(err, AIR_STRLEN_HUGE + 1, nerr);
       airMopError(mop);
       *nrrdP = NULL;
@@ -88,12 +89,12 @@ parserNoTTY(void *ptr, const char *filename, char err[AIR_STRLEN_HUGE + 1]) {
                     AIR_TRUE /* yes disallow TTY */);
 }
 
-static const hestCB _nrrdHestNrrd = {sizeof(Nrrd *), "nrrd", parserOkTTY,
+static const hestCB _nrrdHestNrrd = {sizeof(Nrrd *), "Nrrd", parserOkTTY,
                                      (airMopper)nrrdNuke};
 
 const hestCB *const nrrdHestNrrd = &_nrrdHestNrrd;
 
-static const hestCB _nrrdHestNrrdNoTTY = {sizeof(Nrrd *), "nrrd", parserNoTTY,
+static const hestCB _nrrdHestNrrdNoTTY = {sizeof(Nrrd *), "Nrrd", parserNoTTY,
                                           (airMopper)nrrdNuke};
 
 const hestCB *const nrrdHestNrrdNoTTY = &_nrrdHestNrrdNoTTY;
