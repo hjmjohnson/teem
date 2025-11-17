@@ -49,12 +49,12 @@ tend_stenMain(int argc, const char **argv, const char *me, const hestParm *hparm
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output filename");
 
   mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
   USAGE_PARSE(_tend_stenInfoL);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   if (gageStructureTensor(nout, nin, dScale, iScale, dsmp)) {
     airMopAdd(mop, err = biffGetDone(GAGE), airFree, airMopAlways);

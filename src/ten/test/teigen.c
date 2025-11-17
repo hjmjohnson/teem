@@ -374,8 +374,8 @@ main(int argc, const char *argv[]) {
   double ss;
   hestOptAdd_1_Double(&hopt, "s", "scl", &ss, "1.0", "scaling");
   hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   double tt[7];
   ELL_6V_COPY(tt + 1, _tt);

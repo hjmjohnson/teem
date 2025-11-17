@@ -203,6 +203,7 @@ gagePerVolumeNix(gagePerVolume *pvl) {
   }
   return NULL;
 }
+AIR_MOPPER(gagePerVolumeNix)
 
 /*
 ******** gageAnswerPointer()

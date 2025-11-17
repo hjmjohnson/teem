@@ -60,12 +60,12 @@ tend_anplotMain(int argc, const char **argv, const char *me, const hestParm *hpa
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output image (floating point)");
 
   mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
   USAGE_JUSTPARSE(_tend_anplotInfoL);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (tenAnisoPlot(nout, aniso, res, hflip, whole, nanout)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble making plot:\n%s\n", me, err);

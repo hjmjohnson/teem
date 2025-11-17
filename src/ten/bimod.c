@@ -53,6 +53,7 @@ tenEMBimodalParmNix(tenEMBimodalParm *biparm) {
   airFree(biparm);
   return NULL;
 }
+AIR_MOPPER(tenEMBimodalParmNix)
 
 static int /* Biff: 1 */
 _tenEMBimodalInit(tenEMBimodalParm *biparm, const Nrrd *_nhisto) {
@@ -69,8 +70,8 @@ _tenEMBimodalInit(tenEMBimodalParm *biparm, const Nrrd *_nhisto) {
 
   mop = airMopNew();
   nhisto = nrrdNew();
-  airMopAdd(mop, nhisto, (airMopper)nrrdNuke, airMopOnError);
-  airMopAdd(mop, nhisto, (airMopper)nrrdNix, airMopOnOkay);
+  airMopAdd(mop, nhisto, nrrdNuke_mop, airMopOnError);
+  airMopAdd(mop, nhisto, nrrdNix_mop, airMopOnOkay);
   if (nrrdConvert(nhisto, _nhisto, nrrdTypeDouble)) {
     biffMovef(TEN, NRRD, "%s: trouble converting histogram to double", me);
     airMopError(mop);

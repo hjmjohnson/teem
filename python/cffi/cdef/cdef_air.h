@@ -355,6 +355,7 @@ extern airRandMTState *airRandMTStateGlobal;
 extern void airRandMTStateGlobalInit(void);
 extern airRandMTState *airRandMTStateNew(unsigned int seed);
 extern airRandMTState *airRandMTStateNix(airRandMTState *state);
+extern void *airRandMTStateNix_mop(void *);
 extern void airSrandMT_r(airRandMTState *state, unsigned int seed);
 extern double airDrandMT_r(airRandMTState *state); /* [0,1] */
 extern unsigned int airUIrandMT_r(airRandMTState *state);
@@ -371,6 +372,7 @@ typedef struct {
 /* randJSF.c */
 extern airJSFRand *airJSFRandNew(unsigned int seed);
 extern airJSFRand *airJSFRandNix(airJSFRand *jsf);
+extern void *airJSFRandNix_mop(void *);
 extern void airJSFRandSeed(airJSFRand *jsf, unsigned int seed);
 extern unsigned int airJSFRandVal(airJSFRand *jsf);
 extern unsigned int airJSFRandValMod(airJSFRand *jsf, unsigned int N);

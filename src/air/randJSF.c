@@ -81,6 +81,7 @@ airJSFRand *
 airJSFRandNix(airJSFRand *jsf) {
   return airFree(jsf);
 }
+AIR_MOPPER(airJSFRandNix)
 
 unsigned int
 airJSFRandValMod(airJSFRand *jsf, unsigned int N) {

@@ -1133,6 +1133,7 @@ GAGE_EXPORT gagePerVolume *gagePerVolumeNew(gageContext *ctx,
                                             const Nrrd *nin,
                                             const gageKind *kind);
 GAGE_EXPORT gagePerVolume *gagePerVolumeNix(gagePerVolume *pvl);
+GAGE_EXPORT void *gagePerVolumeNix_mop(void *);
 GAGE_EXPORT const double *gageAnswerPointer(const gageContext *ctx,
                                             const gagePerVolume *pvl,
                                             int item);

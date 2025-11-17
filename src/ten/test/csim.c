@@ -184,8 +184,8 @@ main(int argc, const char *argv[]) {
   hestOptAdd(&hopt, "or", "filename", airTypeString, 1, 1, &outRmvS, "rout.nrrd",
              "file to write output R_i means, variances to");
   hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   if (tenGradientCheck(ngrad, nrrdTypeDefault, 7)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);
@@ -213,19 +213,19 @@ main(int argc, const char *argv[]) {
   }
 
   ninTen = nrrdNew();
-  airMopAdd(mop, ninTen, (airMopper)nrrdNuke, airMopOnError);
+  airMopAdd(mop, ninTen, nrrdNuke_mop, airMopOnError);
   nmask = nrrdNew();
-  airMopAdd(mop, nmask, (airMopper)nrrdNuke, airMopOnError);
+  airMopAdd(mop, nmask, nrrdNuke_mop, airMopOnError);
   ninB0 = nrrdNew();
-  airMopAdd(mop, ninB0, (airMopper)nrrdNuke, airMopOnError);
+  airMopAdd(mop, ninB0, nrrdNuke_mop, airMopOnError);
   noutCovar = nrrdNew();
-  airMopAdd(mop, noutCovar, (airMopper)nrrdNuke, airMopOnError);
+  airMopAdd(mop, noutCovar, nrrdNuke_mop, airMopOnError);
   noutTen = nrrdNew();
-  airMopAdd(mop, noutTen, (airMopper)nrrdNuke, airMopOnError);
+  airMopAdd(mop, noutTen, nrrdNuke_mop, airMopOnError);
   noutRmv = nrrdNew();
-  airMopAdd(mop, noutRmv, (airMopper)nrrdNuke, airMopOnError);
+  airMopAdd(mop, noutRmv, nrrdNuke_mop, airMopOnError);
   ntbuff = nrrdNew();
-  airMopAdd(mop, ntbuff, (airMopper)nrrdNuke, airMopOnError);
+  airMopAdd(mop, ntbuff, nrrdNuke_mop, airMopOnError);
 
   if (nrrdConvert(ninTen, _ninTen, nrrdTypeDouble) || nrrdSlice(nmask, ninTen, 0, 0)
       || nrrdConvert(ninB0, _ninB0, nrrdTypeDouble)
@@ -243,7 +243,7 @@ main(int argc, const char *argv[]) {
   }
 
   tec = tenEstimateContextNew();
-  airMopAdd(mop, tec, (airMopper)tenEstimateContextNix, airMopAlways);
+  airMopAdd(mop, tec, tenEstimateContextNix_mop, airMopAlways);
 
   E = 0;
   if (!E) E |= tenEstimateMethodSet(tec, tenEstimate1MethodLLS);

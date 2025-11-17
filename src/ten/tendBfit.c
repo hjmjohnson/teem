@@ -40,7 +40,7 @@ tend_bfitMain(int argc, const char **argv, const char *me, const hestParm *_hpar
 
   airArray *mop = airMopNew();
   hestParm *hparm = hestParmCopy(_hparm);
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hparm->responseFileEnable = AIR_TRUE;
 
   hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-",
@@ -58,9 +58,9 @@ tend_bfitMain(int argc, const char **argv, const char *me, const hestParm *_hpar
                       "epsilon convergence threshold for non-linear fitting");
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output tensor volume");
 
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
   USAGE_PARSE(_tend_bfitInfoL);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   if (!(bbLen == nin->axis[0].size)) {
     char stmp[AIR_STRLEN_SMALL + 1];
@@ -88,7 +88,7 @@ tend_bfitMain(int argc, const char **argv, const char *me, const hestParm *_hpar
   }
 
   nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   if (tenBVecNonLinearFit(nout, nin, bb, ww, iterMax, eps)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);

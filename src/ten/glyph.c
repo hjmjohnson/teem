@@ -65,6 +65,7 @@ tenGlyphParmNix(tenGlyphParm *parm) {
   airFree(parm);
   return NULL;
 }
+AIR_MOPPER(tenGlyphParmNix)
 
 int /* Biff: 1 */
 tenGlyphParmCheck(tenGlyphParm *parm, const Nrrd *nten, const Nrrd *npos,
@@ -194,7 +195,7 @@ tenGlyphGen(limnObject *glyphsLimn, echoScene *glyphsEcho, tenGlyphParm *parm,
   }
   mop = airMopNew();
   shape = gageShapeNew();
-  airMopAdd(mop, shape, (airMopper)gageShapeNix, airMopAlways);
+  airMopAdd(mop, shape, gageShapeNix_mop, airMopAlways);
   if (npos) {
     if (!(2 == nten->dim && 7 == nten->axis[0].size)) {
       biffAddf(TEN, "%s: nten isn't 2-D 7-by-N array", me);

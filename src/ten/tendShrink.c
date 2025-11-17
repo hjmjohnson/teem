@@ -36,7 +36,7 @@ tend_shrinkMain(int argc, const char **argv, const char *me, const hestParm *_hp
 
   airArray *mop = airMopNew();
   hestParm *hparm = hestParmCopy(_hparm);
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hparm->noArgsIsNoProblem = AIR_TRUE;
 
   hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-",
@@ -46,12 +46,12 @@ tend_shrinkMain(int argc, const char **argv, const char *me, const hestParm *_hp
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-",
                       "output tensor volume, with the 7 values per sample");
 
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
   USAGE_PARSE(_tend_shrinkInfoL);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (tenShrink(nout, NULL, nin)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble shrinking tensors:\n%s\n", me, err);

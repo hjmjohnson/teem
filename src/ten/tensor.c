@@ -663,7 +663,7 @@ tenSlice(Nrrd *nout, const Nrrd *nten, unsigned int axis, size_t pos, unsigned i
   ** Dxz Dyz Dzz     (3) (5)  6
   */
   mop = airMopNew();
-  airMopAdd(mop, nslice = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nslice = nrrdNew(), nrrdNuke_mop, airMopAlways);
   if (3 == dim) {
     if (nrrdSlice(nslice, nten, axis + 1, pos)
         || nrrdAxesInsert(nout, nslice, axis + 1)) {
@@ -677,10 +677,10 @@ tenSlice(Nrrd *nout, const Nrrd *nten, unsigned int axis, size_t pos, unsigned i
        warning; GLK not sure how else to fix it */
     ncoeff = AIR_CALLOC(4, Nrrd *);
     airMopAdd(mop, ncoeff, airFree, airMopAlways);
-    airMopAdd(mop, ncoeff[0] = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-    airMopAdd(mop, ncoeff[1] = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-    airMopAdd(mop, ncoeff[2] = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-    airMopAdd(mop, ncoeff[3] = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, ncoeff[0] = nrrdNew(), nrrdNuke_mop, airMopAlways);
+    airMopAdd(mop, ncoeff[1] = nrrdNew(), nrrdNuke_mop, airMopAlways);
+    airMopAdd(mop, ncoeff[2] = nrrdNew(), nrrdNuke_mop, airMopAlways);
+    airMopAdd(mop, ncoeff[3] = nrrdNew(), nrrdNuke_mop, airMopAlways);
     switch (axis) {
     case 0:
       ELL_4V_SET(ci, 0, 4, 5, 6);

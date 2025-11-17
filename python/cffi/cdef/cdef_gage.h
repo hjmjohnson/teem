@@ -981,6 +981,7 @@ extern gagePerVolume *gagePerVolumeNew(gageContext *ctx,
                                             const Nrrd *nin,
                                             const gageKind *kind);
 extern gagePerVolume *gagePerVolumeNix(gagePerVolume *pvl);
+extern void *gagePerVolumeNix_mop(void *);
 extern const double *gageAnswerPointer(const gageContext *ctx,
                                             const gagePerVolume *pvl,
                                             int item);

@@ -143,11 +143,11 @@ main(int argc, const char *argv[]) {
              "output file to save OFF into");
   hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
   mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   obj = limnObjectNew(1000, AIR_TRUE);
-  airMopAdd(mop, obj, (airMopper)limnObjectNix, airMopAlways);
+  airMopAdd(mop, obj, limnObjectNix_mop, airMopAlways);
 
   if (!(0 == escl[0] || 1 == escl[0] || 2 == escl[0])) {
     fprintf(stderr, "%s: escl[0] %g not 0, 1 or 2\n", me, escl[0]);
@@ -308,7 +308,7 @@ main(int argc, const char *argv[]) {
   }
 
   file = airFopen(outS, stdout, "w");
-  airMopAdd(mop, file, (airMopper)airFclose, airMopAlways);
+  airMopAdd(mop, file, airFclose_mop, airMopAlways);
 
   if (limnObjectWriteOFF(file, obj)) {
     airMopAdd(mop, err = biffGetDone(LIMN), airFree, airMopAlways);

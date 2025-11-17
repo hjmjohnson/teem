@@ -75,13 +75,13 @@ main(int argc, const char *argv[]) {
              "file to write output nrrd to");
   hestOptAdd(&hopt, "v", "verbosity", airTypeInt, 1, 1, &verb, "0", "verbosity");
   hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   tip = tenInterpParmNew();
-  airMopAdd(mop, tip, (airMopper)tenInterpParmNix, airMopAlways);
+  airMopAdd(mop, tip, tenInterpParmNix_mop, airMopAlways);
   nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   tip->verbose = verb;
   tip->convStep = stepSize;
@@ -111,7 +111,7 @@ main(int argc, const char *argv[]) {
       return 1;
     }
     nin = nrrdNew();
-    airMopAdd(mop, nin, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nin, nrrdNuke_mop, airMopAlways);
     numerical = (ptype == tenInterpTypeGeoLoxK || ptype == tenInterpTypeGeoLoxR
                  || ptype == tenInterpTypeLoxK || ptype == tenInterpTypeLoxR
                  || ptype == tenInterpTypeQuatGeoLoxK

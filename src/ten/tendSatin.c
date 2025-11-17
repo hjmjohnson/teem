@@ -225,12 +225,12 @@ tend_satinMain(int argc, const char **argv, const char *me, const hestParm *hpar
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output filename");
 
   mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
   USAGE_JUSTPARSE(_tend_satinInfoL);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   if (tend_satinGen(nout, parm, mina, maxa, wsize, thick, scaling, bnd, bndRm, evsc,
                     torus)) {
@@ -244,7 +244,7 @@ tend_satinMain(int argc, const char **argv, const char *me, const hestParm *hpar
   nrrdAxisInfoSet_va(nout, nrrdAxisInfoCenter, nrrdCenterUnknown, nrrdCenterCell,
                      nrrdCenterCell, nrrdCenterCell);
   shape = gageShapeNew();
-  airMopAdd(mop, shape, (airMopper)gageShapeNix, airMopAlways);
+  airMopAdd(mop, shape, gageShapeNix_mop, airMopAlways);
   /* this is a weird mix of new and legacy code.  At some point
      prior to Wed May 27 19:23:55 CDT 2009, it was okay to pass
      in a volume to gageShapeSet that had absolutely no notion

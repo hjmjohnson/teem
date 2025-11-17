@@ -1260,6 +1260,7 @@ TEN_EXPORT int tenTripleConvert(Nrrd *nout, int dstType, const Nrrd *nin, int sr
 /* grads.c */
 TEN_EXPORT tenGradientParm *tenGradientParmNew(void);
 TEN_EXPORT tenGradientParm *tenGradientParmNix(tenGradientParm *tgparm);
+TEN_EXPORT void *tenGradientParmNix_mop(void *);
 TEN_EXPORT int tenGradientCheck(const Nrrd *ngrad, int type, unsigned int minnum);
 TEN_EXPORT int tenGradientRandom(Nrrd *ngrad, unsigned int num, unsigned int seed);
 TEN_EXPORT double tenGradientIdealEdge(unsigned int N, int single);
@@ -1291,6 +1292,7 @@ TEN_EXPORT tenInterpParm *tenInterpParmNew(void);
 TEN_EXPORT tenInterpParm *tenInterpParmCopy(tenInterpParm *tip);
 TEN_EXPORT int tenInterpParmBufferAlloc(tenInterpParm *tip, unsigned int num);
 TEN_EXPORT tenInterpParm *tenInterpParmNix(tenInterpParm *tip);
+TEN_EXPORT void *tenInterpParmNix_mop(void *);
 TEN_EXPORT void tenInterpTwo_d(double oten[7], const double tenA[7],
                                const double tenB[7], int ptype, double aa,
                                tenInterpParm *tip);
@@ -1309,6 +1311,7 @@ TEN_EXPORT int tenInterpMulti3D(Nrrd *nout, const Nrrd *const *nin, const double
 /* glyph.c */
 TEN_EXPORT tenGlyphParm *tenGlyphParmNew(void);
 TEN_EXPORT tenGlyphParm *tenGlyphParmNix(tenGlyphParm *parm);
+TEN_EXPORT void *tenGlyphParmNix_mop(void *);
 TEN_EXPORT int tenGlyphParmCheck(tenGlyphParm *parm, const Nrrd *nten, const Nrrd *npos,
                                  const Nrrd *nslc);
 TEN_EXPORT int tenGlyphGen(limnObject *glyphs, echoScene *scene, tenGlyphParm *parm,
@@ -1439,6 +1442,7 @@ TEN_EXPORT int tenEstimate1TensorVolume4D(tenEstimateContext *tec, Nrrd *nten,
                                           Nrrd **nB0P, Nrrd **nterrP, const Nrrd *ndwi,
                                           int outType);
 TEN_EXPORT tenEstimateContext *tenEstimateContextNix(tenEstimateContext *tec);
+TEN_EXPORT void *tenEstimateContextNix_mop(void *);
 
 /* aniso.c */
 TEN_EXPORT float (*const _tenAnisoEval_f[TEN_ANISO_MAX + 1])(const float eval[3]);
@@ -1458,6 +1462,7 @@ TEN_EXPORT int tenAnisoHistogram(Nrrd *nout, const Nrrd *nin, const Nrrd *nwght,
                                  int right, int version, unsigned int resolution);
 TEN_EXPORT tenEvecRGBParm *tenEvecRGBParmNew(void);
 TEN_EXPORT tenEvecRGBParm *tenEvecRGBParmNix(tenEvecRGBParm *rgbp);
+TEN_EXPORT void *tenEvecRGBParmNix_mop(void *);
 TEN_EXPORT int tenEvecRGBParmCheck(const tenEvecRGBParm *rgbp);
 TEN_EXPORT void tenEvecRGBSingle_f(float RGB[3], float conf, const float eval[3],
                                    const float evec[3], const tenEvecRGBParm *rgbp);
@@ -1477,6 +1482,7 @@ TEN_EXPORT void tenFiberSingleInit(tenFiberSingle *tfbs);
 TEN_EXPORT void tenFiberSingleDone(tenFiberSingle *tfbs);
 TEN_EXPORT tenFiberSingle *tenFiberSingleNew(void);
 TEN_EXPORT tenFiberSingle *tenFiberSingleNix(tenFiberSingle *tfbs);
+TEN_EXPORT void *tenFiberSingleNix_mop(void *);
 TEN_EXPORT tenFiberContext *tenFiberContextNew(const Nrrd *dtvol);
 TEN_EXPORT tenFiberContext *tenFiberContextDwiNew(const Nrrd *dwivol,
                                                   double thresh,
@@ -1506,6 +1512,7 @@ TEN_EXPORT int tenFiberParmSet(tenFiberContext *tfx, int parm, double val);
 TEN_EXPORT int tenFiberUpdate(tenFiberContext *tfx);
 TEN_EXPORT tenFiberContext *tenFiberContextCopy(tenFiberContext *tfx);
 TEN_EXPORT tenFiberContext *tenFiberContextNix(tenFiberContext *tfx);
+TEN_EXPORT void *tenFiberContextNix_mop(void *);
 
 /* fiber.c */
 TEN_EXPORT int tenFiberTraceSet(tenFiberContext *tfx, Nrrd *nfiber, double *buff,
@@ -1517,6 +1524,7 @@ TEN_EXPORT int tenFiberSingleTrace(tenFiberContext *tfx, tenFiberSingle *tfbs,
                                    double seed[3], unsigned int which);
 TEN_EXPORT tenFiberMulti *tenFiberMultiNew(void);
 TEN_EXPORT tenFiberMulti *tenFiberMultiNix(tenFiberMulti *tfm);
+TEN_EXPORT void *tenFiberMultiNix_mop(void *);
 TEN_EXPORT int tenFiberMultiTrace(tenFiberContext *tfx, tenFiberMulti *tfml,
                                   const Nrrd *nseed);
 TEN_EXPORT int tenFiberMultiPolyData(tenFiberContext *tfx, limnPolyData *lpld,
@@ -1556,6 +1564,7 @@ TEN_EXPORT int tenExperSpecGradBValSet(tenExperSpec *espec,
 
 TEN_EXPORT int tenExperSpecFromKeyValueSet(tenExperSpec *espec, const Nrrd *ndwi);
 TEN_EXPORT tenExperSpec *tenExperSpecNix(tenExperSpec *espec);
+TEN_EXPORT void *tenExperSpecNix_mop(void *);
 TEN_EXPORT double tenExperSpecKnownB0Get(const tenExperSpec *espec, const double *dwi);
 TEN_EXPORT double tenExperSpecMaxBGet(const tenExperSpec *espec);
 TEN_EXPORT int tenDWMRIKeyValueFromExperSpecSet(Nrrd *ndwi, const tenExperSpec *espec);
@@ -1658,6 +1667,7 @@ TEN_EXPORT gageKind *const tenGageKind;
 TEN_EXPORT const airEnum *const tenDwiGage;
 TEN_EXPORT gageKind *tenDwiGageKindNew(void);
 TEN_EXPORT gageKind *tenDwiGageKindNix(gageKind *dwiKind);
+TEN_EXPORT void *tenDwiGageKindNix_mop(void *);
 /* warning: this function will likely change its arguments in the future */
 TEN_EXPORT int tenDwiGageKindSet(gageKind *dwiKind, double thresh, double soft,
                                  double bval, double valueMin, const Nrrd *ngrad,
@@ -1668,6 +1678,7 @@ TEN_EXPORT int tenDwiGageKindCheck(const gageKind *kind);
 /* bimod.c */
 TEN_EXPORT tenEMBimodalParm *tenEMBimodalParmNew(void);
 TEN_EXPORT tenEMBimodalParm *tenEMBimodalParmNix(tenEMBimodalParm *biparm);
+TEN_EXPORT void *tenEMBimodalParmNix_mop(void *);
 TEN_EXPORT int tenEMBimodal(tenEMBimodalParm *biparm, const Nrrd *nhisto);
 
 /* tend{Flotsam,Anplot,Anvol,Evec,Eval,. . .}.c */

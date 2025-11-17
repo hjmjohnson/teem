@@ -1306,6 +1306,7 @@ tenEvecRGBParmNix(tenEvecRGBParm *rgbp) {
   }
   return NULL;
 }
+AIR_MOPPER(tenEvecRGBParmNix)
 
 int /* Biff: 1 */
 tenEvecRGBParmCheck(const tenEvecRGBParm *rgbp) {

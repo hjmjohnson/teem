@@ -37,8 +37,8 @@ main(int argc, const char *argv[]) {
              "sequence of triple types to convert through", &itypeNum, tenTripleType);
   hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
   mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   printf("%s", space + strlen(airEnumStr(tenTripleType, itype[0])));
   printf("%s", airEnumStr(tenTripleType, itype[0]));

@@ -43,12 +43,12 @@ tend_tconvMain(int argc, const char **argv, const char *me, const hestParm *hpar
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output array");
 
   mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
   USAGE_PARSE(_tend_tconvInfoL);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (tenTripleConvert(nout, ttype[1], nin, ttype[0])) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble converting:\n%s\n", me, err);

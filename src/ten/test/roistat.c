@@ -46,8 +46,8 @@ main(int argc, const char *argv[]) {
   hestOptAdd(&hopt, "m,measr", "measr", airTypeEnum, 1, -1, &measr, NULL,
              "which measures/statistics to calculate", &statNum, nrrdMeasure);
   hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   if (tenTensorCheck(nten, nrrdTypeFloat, AIR_TRUE, AIR_TRUE)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);

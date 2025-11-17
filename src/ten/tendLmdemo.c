@@ -136,7 +136,7 @@ dataSynth(Nrrd *ndata, const bagOstate *bag, const double rndStdvSeed[2],
   airJSFRand *jsf = NULL;
   if (rndStdvSeed[0] > 0) {
     jsf = airJSFRandNew(AIR_UINT(rndStdvSeed[1]));
-    airMopAdd(mop, jsf, (airMopper)airJSFRandNix, airMopAlways);
+    airMopAdd(mop, jsf, airJSFRandNix_mop, airMopAlways);
   }
   unsigned int N = AIR_UINT(ndata->axis[0].size); // N = # of data points
   assert(N == bag->N);
@@ -426,10 +426,10 @@ tend_lmdemoMain(int argc, const char **argv, const char *me, const hestParm *hpa
   hestOptAdd_1_Int(&hopt, "v", "verbosity", &(bag->verb), "1", "verbosity level");
 
   airArray *mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
   USAGE(_tend_lmdemoInfoL);
   JUSTPARSE(_tend_lmdemoInfoL);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
   if (!(bag->N >= 1)) {
     fprintf(stderr, "%s: Need at least N=1 datapoint, not N=%u\n", me, bag->N);
     airMopError(mop);
@@ -441,7 +441,7 @@ tend_lmdemoMain(int argc, const char **argv, const char *me, const hestParm *hpa
            me, bag->M, bag->N);
   }
   Nrrd *ndata = nrrdNew();
-  airMopAdd(mop, ndata, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ndata, nrrdNuke_mop, airMopAlways);
   if (nrrdMaybeAlloc_va(ndata, nrrdTypeDouble, 1, bag->N)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble allocating data:\n%s\n", me, err);
@@ -452,7 +452,7 @@ tend_lmdemoMain(int argc, const char **argv, const char *me, const hestParm *hpa
   dataSynth(ndata, bag, rndStdvSeed, mop);
   if (airStrlen(outS)) {
     NrrdIoState *nio = nrrdIoStateNew();
-    airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
+    airMopAdd(mop, nio, nrrdIoStateNix_mop, airMopAlways);
     nio->bareText = AIR_FALSE;
     nio->moreThanFloatInText = AIR_TRUE;
     if (nrrdSave(outS, ndata, nio)) {

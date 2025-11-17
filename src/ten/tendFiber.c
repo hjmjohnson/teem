@@ -106,12 +106,12 @@ tend_fiberMain(int argc, const char **argv, const char *me, const hestParm *hpar
   hestOptAdd_1_String(&hopt, "o", "out", &outS, "-", "output fiber(s)");
 
   mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
   USAGE_PARSE(_tend_fiberInfoL);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   tfbs = tenFiberSingleNew();
-  airMopAdd(mop, tfbs, (airMopper)tenFiberSingleNix, airMopAlways);
+  airMopAdd(mop, tfbs, tenFiberSingleNix_mop, airMopAlways);
 
   if (_nmat) {
     if (!(2 == _nmat->dim && 4 == _nmat->axis[0].size && 4 == _nmat->axis[1].size)) {
@@ -123,7 +123,7 @@ tend_fiberMain(int argc, const char **argv, const char *me, const hestParm *hpar
       return 1;
     }
     nmat = nrrdNew();
-    airMopAdd(mop, nmat, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nmat, nrrdNuke_mop, airMopAlways);
     if (nrrdConvert(nmat, _nmat, nrrdTypeDouble)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
       fprintf(stderr, "%s: problem with transform matrix\n%s\n", me, err);
@@ -146,7 +146,7 @@ tend_fiberMain(int argc, const char **argv, const char *me, const hestParm *hpar
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, tfx, (airMopper)tenFiberContextNix, airMopAlways);
+  airMopAdd(mop, tfx, tenFiberContextNix_mop, airMopAlways);
   E = 0;
   for (si = 0, stop = _stop; si < stopLen; si++, stop += 3) {
     int istop; /* not from Apple */
@@ -257,17 +257,17 @@ tend_fiberMain(int argc, const char **argv, const char *me, const hestParm *hpar
       return 1;
     }
     tfml = tenFiberMultiNew();
-    airMopAdd(mop, tfml, (airMopper)tenFiberMultiNix, airMopAlways);
+    airMopAdd(mop, tfml, tenFiberMultiNix_mop, airMopAlways);
     /*
     fiberArr = airArrayNew(AIR_CAST(void **, &fiber), NULL,
                            sizeof(tenFiberSingle), 1024);
     airArrayStructCB(fiberArr,
                      AIR_CAST(void (*)(void *), tenFiberSingleInit),
                      AIR_CAST(void (*)(void *), tenFiberSingleDone));
-    airMopAdd(mop, fiberArr, (airMopper)airArrayNuke, airMopAlways);
+    airMopAdd(mop, fiberArr, airArrayNuke_mop, airMopAlways);
     */
     fiberPld = limnPolyDataNew();
-    airMopAdd(mop, fiberPld, (airMopper)limnPolyDataNix, airMopAlways);
+    airMopAdd(mop, fiberPld, limnPolyDataNix_mop, airMopAlways);
     if (tenFiberMultiTrace(tfx, tfml, nseed)
         || tenFiberMultiPolyData(tfx, fiberPld, tfml)) {
       airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);

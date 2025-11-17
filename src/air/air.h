@@ -428,6 +428,7 @@ AIR_EXPORT airRandMTState *airRandMTStateGlobal;
 AIR_EXPORT void airRandMTStateGlobalInit(void);
 AIR_EXPORT airRandMTState *airRandMTStateNew(unsigned int seed);
 AIR_EXPORT airRandMTState *airRandMTStateNix(airRandMTState *state);
+AIR_EXPORT void *airRandMTStateNix_mop(void *);
 AIR_EXPORT void airSrandMT_r(airRandMTState *state, unsigned int seed);
 AIR_EXPORT double airDrandMT_r(airRandMTState *state); /* [0,1] */
 AIR_EXPORT unsigned int airUIrandMT_r(airRandMTState *state);
@@ -445,6 +446,7 @@ typedef struct {
 /* randJSF.c */
 AIR_EXPORT airJSFRand *airJSFRandNew(unsigned int seed);
 AIR_EXPORT airJSFRand *airJSFRandNix(airJSFRand *jsf);
+AIR_EXPORT void *airJSFRandNix_mop(void *);
 AIR_EXPORT void airJSFRandSeed(airJSFRand *jsf, unsigned int seed);
 AIR_EXPORT unsigned int airJSFRandVal(airJSFRand *jsf);
 AIR_EXPORT unsigned int airJSFRandValMod(airJSFRand *jsf, unsigned int N);

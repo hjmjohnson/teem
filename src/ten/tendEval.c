@@ -48,9 +48,9 @@ tend_evalMain(int argc, const char **argv, const char *me, const hestParm *hparm
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output image (floating point)");
 
   mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
   USAGE_PARSE(_tend_evalInfoL);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   for (cc = 0; cc < compLen; cc++) {
     if (!(comp[cc] <= 2)) {
@@ -72,7 +72,7 @@ tend_evalMain(int argc, const char **argv, const char *me, const hestParm *hparm
   sz = nin->axis[3].size;
 
   nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (1 == compLen) {
     ret = nrrdMaybeAlloc_va(nout, nrrdTypeFloat, 3, sx, sy, sz);
   } else {

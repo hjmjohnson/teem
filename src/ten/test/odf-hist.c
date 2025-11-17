@@ -53,8 +53,8 @@ main(int argc, const char *argv[]) {
   hestOptAdd_1_String(&hopt, "co", "covariance out", &covarS, "covar.nrrd",
                       "covariance output file");
   hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   if (!(nrrdTypeFloat == nvec->type)) {
     fprintf(stderr, "%s vector type (%s) not %s\n", me, airEnumStr(nrrdType, nvec->type),
@@ -78,7 +78,7 @@ main(int argc, const char *argv[]) {
   nrrdAxisInfoGet_nva(_nodf, nrrdAxisInfoSize, size);
   size[0] = bins;
   nhist = nrrdNew();
-  airMopAdd(mop, nhist, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nhist, nrrdNuke_mop, airMopAlways);
   if (nrrdMaybeAlloc_nva(nhist, nrrdTypeFloat, _nodf->dim, size)) {
     airMopAdd(mop, errS = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble allocating output:\n%s", me, errS);
@@ -86,7 +86,7 @@ main(int argc, const char *argv[]) {
     return 1;
   }
   ncovar = nrrdNew();
-  airMopAdd(mop, ncovar, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ncovar, nrrdNuke_mop, airMopAlways);
   if (nrrdMaybeAlloc_va(ncovar, nrrdTypeFloat, 2, AIR_SIZE_T(bins), AIR_SIZE_T(bins))) {
     airMopAdd(mop, errS = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble allocating covariance output:\n%s", me, errS);
@@ -106,7 +106,7 @@ main(int argc, const char *argv[]) {
     NN = AIR_UINT(nrrdElementNumber(_nodf) / VV);
 
     nanglut = nrrdNew();
-    airMopAdd(mop, nanglut, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nanglut, nrrdNuke_mop, airMopAlways);
     if (nrrdMaybeAlloc_va(nanglut, nrrdTypeInt, 2, AIR_SIZE_T(VV), AIR_SIZE_T(VV))) {
       airMopAdd(mop, errS = biffGetDone(NRRD), airFree, airMopAlways);
       fprintf(stderr, "%s: trouble allocating lookup table:\n%s", me, errS);
@@ -117,7 +117,7 @@ main(int argc, const char *argv[]) {
       nodf = _nodf;
     } else {
       nodf = nrrdNew();
-      airMopAdd(mop, nodf, (airMopper)nrrdNuke, airMopAlways);
+      airMopAdd(mop, nodf, nrrdNuke_mop, airMopAlways);
       if (nrrdConvert(nodf, _nodf, nrrdTypeFloat)) {
         airMopAdd(mop, errS = biffGetDone(NRRD), airFree, airMopAlways);
         fprintf(stderr, "%s: trouble converting input:\n%s", me, errS);

@@ -14,10 +14,10 @@ gageOptimSigErrorPlot,int,1,0,gage,gage/optimsig.c:1160
 gageOptimSigErrorPlotSliding,int,1,0,gage,gage/optimsig.c:1251
 gageVolumeCheck,int,1,0,gage,gage/pvl.c:34
 gagePerVolumeNew,gagePerVolume *,NULL,0,gage,gage/pvl.c:55
-gageQueryReset,int,1,0,gage,gage/pvl.c:258
-gageQuerySet,int,1,0,gage,gage/pvl.c:284
-gageQueryAdd,int,1,0,gage,gage/pvl.c:340
-gageQueryItemOn,int,1,0,gage,gage/pvl.c:358
+gageQueryReset,int,1,0,gage,gage/pvl.c:259
+gageQuerySet,int,1,0,gage,gage/pvl.c:285
+gageQueryAdd,int,1,0,gage,gage/pvl.c:341
+gageQueryItemOn,int,1,0,gage,gage/pvl.c:359
 gageShapeSet,int,1,0,gage,gage/shape.c:402
 gageShapeEqual,int,0,0,gage,gage/shape.c:465
 gageStructureTensor,int,1,0,gage,gage/st.c:81

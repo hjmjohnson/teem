@@ -41,9 +41,9 @@ tend_pointMain(int argc, const char **argv, const char *me, const hestParm *hpar
                      nrrdHestNrrd);
 
   mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
   USAGE_PARSE(_tend_pointInfoL);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   if (tenTensorCheck(nin, nrrdTypeFloat, AIR_TRUE, AIR_TRUE)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);

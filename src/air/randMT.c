@@ -153,6 +153,7 @@ airRandMTStateNix(airRandMTState *state) {
   airFree(state);
   return NULL;
 }
+AIR_MOPPER(airRandMTStateNix);
 
 void
 airSrandMT_r(airRandMTState *rng, unsigned int seed) {

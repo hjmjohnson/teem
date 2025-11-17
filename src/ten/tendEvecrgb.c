@@ -35,10 +35,10 @@ tend_evecrgbMain(int argc, const char **argv, const char *me, const hestParm *hp
   char *outS;
 
   mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
 
   rgbp = tenEvecRGBParmNew();
-  airMopAdd(mop, rgbp, AIR_CAST(airMopper, tenEvecRGBParmNix), airMopAlways);
+  airMopAdd(mop, rgbp, tenEvecRGBParmNix_mop, airMopAlways);
 
   hestOptAdd_1_UInt(&hopt, "c", "evec index", &(rgbp->which), NULL,
                     "which eigenvector will be colored. \"0\" for the "
@@ -60,12 +60,12 @@ tend_evecrgbMain(int argc, const char **argv, const char *me, const hestParm *hp
                      nrrdHestNrrd);
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output image (floating point)");
 
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
   USAGE_PARSE(_tend_evecrgbInfoL);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (tenEvecRGB(nout, nin, rgbp)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble doing colormapping:\n%s\n", me, err);
