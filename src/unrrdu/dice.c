@@ -105,6 +105,13 @@ unrrdu_diceMain(int argc, const char **argv, const char *me, const hestParm *hpa
        to sprintf the slice number into the filename with e.g. "%03u.nrrd" */
     snprintf(fffname, sizeof(fffname), "%%s%%0%uu.nrrd", dignum);
   }
+  size_t fn_len = strlen(fffname);
+  if (fn_len + 1 == sizeof(fffname)) {
+    fprintf(stderr, "%s: filename format \"%s\" may have exceeded %zu-size buffer\n", me,
+            fffname, sizeof(fffname));
+    airMopError(mop);
+    return 1;
+  }
 
   Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
@@ -116,18 +123,20 @@ unrrdu_diceMain(int argc, const char **argv, const char *me, const hestParm *hpa
       return 1;
     }
     if (0 == pos && !airStrlen(ftmpl)) {
-      /* See if these slices would be better saved as PNG or PNM images.
-         Altering the file name will tell nrrdSave() to use a different
-         file format.  We wait till now to check this so that we can
-         work from the actual slice */
+      /* See if these slices would be better saved as PNG or PNM images. Altering the
+         file name (to longer end with ".nrrd") will tell nrrdSave() to use a different
+         file format.
+         We wait till now to check this so that we can work from the actual slice. */
+      char *fn_end = fffname + fn_len - 4;
+      size_t fn_size = sizeof(fffname) - fn_len;
       if (nrrdFormatPNG->fitsInto(nout, nrrdEncodingRaw, AIR_FALSE)) {
-        strcpy(fffname + strlen(fffname) - 4, "png");
+        airStrcpy(fn_end, fn_size, "png");
       } else {
         int fit = nrrdFormatPNM->fitsInto(nout, nrrdEncodingRaw, AIR_FALSE);
         if (2 == fit) {
-          strcpy(fffname + strlen(fffname) - 4, "pgm");
+          airStrcpy(fn_end, fn_size, "pgm");
         } else if (3 == fit) {
-          strcpy(fffname + strlen(fffname) - 4, "ppm");
+          airStrcpy(fn_end, fn_size, "ppm");
         }
       }
     }
