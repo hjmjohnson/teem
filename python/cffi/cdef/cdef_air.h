@@ -485,7 +485,7 @@ extern int airSanity(void);
 extern const char *const airTeemVersion;
 extern const int airTeemReleaseDone;
 extern const char *const airTeemReleaseDate;
-extern void airTeemVersionSprint(char buff[AIR_STRLEN_LARGE + 1]);
+extern void airTeemVersionSprint(char buff[AIR_STRLEN_SMALL + 1]);
 /* ---- BEGIN non-NrrdIO */
 extern void airTeemVersionPrintAndExit(const char *pfx);
 /* ---- END non-NrrdIO */

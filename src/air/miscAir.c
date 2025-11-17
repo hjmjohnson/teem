@@ -49,8 +49,8 @@ const char *const airTeemReleaseDate = "hopefully 2025";
 ** uniform way of printing information about the Teem version
 */
 void
-airTeemVersionSprint(char buff[AIR_STRLEN_LARGE + 1]) {
-  snprintf(buff, AIR_STRLEN_LARGE + 1, "Teem version %s, %s%s%s", airTeemVersion,
+airTeemVersionSprint(char buff[AIR_STRLEN_SMALL + 1]) {
+  snprintf(buff, AIR_STRLEN_SMALL + 1, "Teem version %s, %s%s%s", airTeemVersion,
            airTeemReleaseDone ? "released on " : "", airTeemReleaseDate,
            airTeemReleaseDone ? "" : " (not yet released)");
   return;
@@ -60,7 +60,7 @@ airTeemVersionSprint(char buff[AIR_STRLEN_LARGE + 1]) {
 /* airTeemVersionPrintAndExit: how to respond to --version on command-line */
 void
 airTeemVersionPrintAndExit(const char *pfx) {
-  char vbuff[AIR_STRLEN_LARGE + 1];
+  char vbuff[AIR_STRLEN_SMALL + 1];
   airTeemVersionSprint(vbuff);
   if (pfx) {
     printf("%s ", pfx);
