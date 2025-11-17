@@ -367,9 +367,9 @@ _plainParmFree(hestParm *hparm) {
 static AIR_MOPPER(_plainParmFree);
 
 /*
-if you are going to be passing a hestParm to hestParseOrExit, or passing it to something
-that will be be calling hestParseOrExit (and unfortunately you have to know), then you
-should be making the hparm via hestParmMopNew, not plain hestParmNew
+if you are going to be passing a hestParm to hestParseOrExit, or passing it to
+something that will be be calling hestParseOrExit (and unfortunately you have to know),
+then you should be making the hparm via hestParmMopNew, not plain hestParmNew
 */
 hestParm * /* Biff: nope */
 hestParmMopNew(void) {

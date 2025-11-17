@@ -150,4 +150,4 @@ nrrdIterNix(NrrdIter *iter) {
   }
   return NULL;
 }
-AIR_MOPPER(nrrdIterNix);
+AIR_MOPPER(nrrdIterNix)

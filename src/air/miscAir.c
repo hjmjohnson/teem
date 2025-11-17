@@ -100,7 +100,7 @@ airSetNull(void **ptrP) {
   return NULL;
 }
 
-AIR_MOPPER(airSetNull);
+AIR_MOPPER(airSetNull)
 
 /*
 ******** airFree()
@@ -168,7 +168,7 @@ airFclose(FILE *file) {
   }
   return NULL;
 }
-AIR_MOPPER(airFclose);
+AIR_MOPPER(airFclose)
 
 /* helper function for airSinglePrintf:
    shift characters between clo and chi (inclusive) up by 2 */

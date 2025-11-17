@@ -50,7 +50,7 @@ nrrdRangeNix(NrrdRange *range) {
   airFree(range);
   return NULL;
 }
-AIR_MOPPER(nrrdRangeNix);
+AIR_MOPPER(nrrdRangeNix)
 
 void
 nrrdRangeReset(NrrdRange *range) {

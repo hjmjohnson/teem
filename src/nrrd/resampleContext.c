@@ -163,7 +163,7 @@ nrrdResampleContextNix(NrrdResampleContext *rsmc) {
   }
   return NULL;
 }
-AIR_MOPPER(nrrdResampleContextNix);
+AIR_MOPPER(nrrdResampleContextNix)
 
 int /* Biff: 1 */
 nrrdResampleDefaultCenterSet(NrrdResampleContext *rsmc, int center) {
