@@ -106,31 +106,32 @@ hestPrintStr(FILE *file, size_t indent, size_t already, size_t width, const char
   char *last;
 
   for (uint wrdIdx = 0; wrdIdx < wrdNum; wrdIdx++) {
-    size_t ii;
     /* we used airStrtok() to delimit words on spaces ... */
     char *ws = airStrtok(!wrdIdx ? str : NULL, " ", &last);
     /* ... but then convert tabs to spaces */
     airStrtrans(ws, '\t', ' ');
-    if (pos + 1 + strlen(ws) <= width - !!bslash) {
+    // fprintf(stderr, "!%s:\nws[%u]=|%s|\n\n", __func__, wrdIdx, ws);
+    size_t slws = strlen(ws);
+    if (pos + 1 + slws <= width - !!bslash) {
       /* if this word would still fit on the current line */
-      if (wrdIdx && pos > indent) fputc(' ', file);
+      if (wrdIdx) fputc(' ', file);
       fprintf(file, "%s", ws);
-      pos += 1 + strlen(ws);
+      pos += 1 + slws;
     } else {
       /* else we start a new line and print the indent */
       if (bslash) {
         fprintf(file, " \\");
       }
       fputc('\n', file);
-      for (ii = 0; ii < indent; ii++) {
+      for (size_t ii = 0; ii < indent; ii++) {
         fputc(' ', file);
       }
       fprintf(file, "%s", ws);
-      pos = indent + strlen(ws);
+      pos = indent + slws;
     }
     /* if the last character of the word was a newline, then indent */
-    if ('\n' == ws[strlen(ws) - 1]) {
-      for (ii = 0; ii < indent; ii++) {
+    if ('\n' == ws[slws - 1]) {
+      for (size_t ii = 0; ii < indent; ii++) {
         fputc(' ', file);
       }
       pos = indent;
