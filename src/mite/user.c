@@ -52,17 +52,17 @@ miteUserNew(void) {
   muu->hctx = hooverContextNew();
   ELL_3V_SET(muu->fakeFrom, AIR_NAN, AIR_NAN, AIR_NAN);
   ELL_3V_SET(muu->vectorD, 0, 0, 0);
-  airMopAdd(muu->umop, muu->hctx, (airMopper)hooverContextNix, airMopAlways);
+  airMopAdd(muu->umop, muu->hctx, hooverContextNix_mop, airMopAlways);
   for (i = gageKernelUnknown + 1; i < gageKernelLast; i++) {
     muu->ksp[i] = NULL;
   }
   muu->shape = gageShapeNew();
   muu->gctx0 = gageContextNew();
-  airMopAdd(muu->umop, muu->shape, (airMopper)gageShapeNix, airMopAlways);
-  airMopAdd(muu->umop, muu->gctx0, (airMopper)gageContextNix, airMopAlways);
+  airMopAdd(muu->umop, muu->shape, gageShapeNix_mop, airMopAlways);
+  airMopAdd(muu->umop, muu->gctx0, gageContextNix_mop, airMopAlways);
   /* gageParmSet(muu->gctx0, gageParmRequireAllSpacings, AIR_FALSE); */
   muu->lit = limnLightNew();
-  airMopAdd(muu->umop, muu->lit, (airMopper)limnLightNix, airMopAlways);
+  airMopAdd(muu->umop, muu->lit, limnLightNix_mop, airMopAlways);
   muu->normalSide = miteDefaultNormalSide;
   muu->verbUi = muu->verbVi = -1;
   muu->rendTime = 0;
@@ -79,6 +79,7 @@ miteUserNix(miteUser *muu) {
   }
   return NULL;
 }
+AIR_MOPPER(miteUserNix)
 
 int /* Biff: (private) 1 */
 _miteUserCheck(miteUser *muu) {
@@ -156,7 +157,7 @@ _miteUserCheck(miteUser *muu) {
 
   /* add on shading-based queries */
   shpec = miteShadeSpecNew();
-  airMopAdd(mop, shpec, (airMopper)miteShadeSpecNix, airMopAlways);
+  airMopAdd(mop, shpec, miteShadeSpecNix_mop, airMopAlways);
   if (miteShadeSpecParse(shpec, muu->shadeStr)) {
     biffAddf(MITE, "%s: couldn't parse shading spec \"%s\"", me, muu->shadeStr);
     airMopError(mop);

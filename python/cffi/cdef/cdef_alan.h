@@ -117,6 +117,7 @@ extern const char *const alanBiffKey;
 extern void alanContextInit(alanContext *actx);
 extern alanContext *alanContextNew(void);
 extern alanContext *alanContextNix(alanContext *actx);
+extern void *alanContextNix_mop(void *);
 extern int alanDimensionSet(alanContext *actx, unsigned int dim);
 extern int alan2DSizeSet(alanContext *actx, unsigned int sizeX, unsigned int sizeY);
 extern int alan3DSizeSet(alanContext *actx, unsigned int sizeX, unsigned int sizeY,

@@ -411,7 +411,7 @@ _miteNtxfCopy(miteRender *mrr, miteUser *muu) {
   E = 0;
   for (ni = 0; ni < mrr->ntxfNum; ni++) {
     mrr->ntxf[ni] = nrrdNew();
-    if (!E) airMopAdd(mrr->rmop, mrr->ntxf[ni], (airMopper)nrrdNuke, airMopAlways);
+    if (!E) airMopAdd(mrr->rmop, mrr->ntxf[ni], nrrdNuke_mop, airMopAlways);
     if (!(nrrdTypeUChar == muu->ntxf[ni]->type || nrrdTypeFloat == muu->ntxf[ni]->type
           || nrrdTypeDouble == muu->ntxf[ni]->type)) {
       biffAddf(MITE, "%s: sorry, can't handle txf of type %s (only %s, %s, %s)", me,

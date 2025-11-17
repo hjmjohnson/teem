@@ -920,6 +920,7 @@ extern void gagePointReset(gagePoint *point);
 extern gageItemSpec *gageItemSpecNew(void);
 extern void gageItemSpecInit(gageItemSpec *isp);
 extern gageItemSpec *gageItemSpecNix(gageItemSpec *isp);
+extern void *gageItemSpecNix_mop(void *);
 /* kind.c */
 extern int gageKindCheck(const gageKind *kind);
 extern unsigned int gageKindTotalAnswerLength(const gageKind *kind);
@@ -1000,6 +1001,7 @@ extern gageOptimSigContext *gageOptimSigContextNew(unsigned int dim,
                                                         double sigmaMin, double sigmaMax,
                                                         double cutoff);
 extern gageOptimSigContext *gageOptimSigContextNix(gageOptimSigContext *oscx);
+extern void *gageOptimSigContextNix_mop(void *);
 extern int gageOptimSigCalculate(gageOptimSigContext *oscx,
                                       /* output */ double *sigma, unsigned int sigmaNum,
                                       const NrrdKernelSpec *kssSpec, int imgMeasr,

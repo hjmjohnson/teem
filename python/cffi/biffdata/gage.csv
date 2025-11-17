@@ -9,9 +9,9 @@ gageKindCheck,int,1,0,gage,gage/kind.c:31
 gageKindVolumeCheck,int,1,0,gage,gage/kind.c:216
 gageOptimSigSet,int,1,0,gage,gage/optimsig.c:215
 gageOptimSigContextNew,gageOptimSigContext *,NULL,0,gage,gage/optimsig.c:309
-gageOptimSigCalculate,int,1,0,gage,gage/optimsig.c:1088
-gageOptimSigErrorPlot,int,1,0,gage,gage/optimsig.c:1160
-gageOptimSigErrorPlotSliding,int,1,0,gage,gage/optimsig.c:1251
+gageOptimSigCalculate,int,1,0,gage,gage/optimsig.c:1089
+gageOptimSigErrorPlot,int,1,0,gage,gage/optimsig.c:1161
+gageOptimSigErrorPlotSliding,int,1,0,gage,gage/optimsig.c:1252
 gageVolumeCheck,int,1,0,gage,gage/pvl.c:34
 gagePerVolumeNew,gagePerVolume *,NULL,0,gage,gage/pvl.c:55
 gageQueryReset,int,1,0,gage,gage/pvl.c:259

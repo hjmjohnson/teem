@@ -613,6 +613,7 @@ extern int limnEnvMapCheck(Nrrd *envMap);
 extern limnLight *limnLightNew(void);
 extern void limnCameraInit(limnCamera *cam);
 extern limnLight *limnLightNix(limnLight *);
+extern void *limnLightNix_mop(void *);
 extern limnCamera *limnCameraNew(void);
 extern limnCamera *limnCameraNix(limnCamera *cam);
 extern void *limnCameraNix_mop(void *);

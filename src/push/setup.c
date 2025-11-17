@@ -42,7 +42,7 @@ _pushTensorFieldSetup(pushContext *pctx) {
 
   mop = airMopNew();
   ntmp = nrrdNew();
-  airMopAdd(mop, ntmp, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ntmp, nrrdNuke_mop, airMopAlways);
   pctx->nten = nrrdNew();
   pctx->ninv = nrrdNew();
   pctx->nmask = nrrdNew();
@@ -91,7 +91,7 @@ _pushTensorFieldSetup(pushContext *pctx) {
     return 1;
   }
   nrange = nrrdRangeNewSet(pctx->nmask, nrrdBlind8BitRangeFalse);
-  airMopAdd(mop, nrange, (airMopper)nrrdRangeNix, airMopAlways);
+  airMopAdd(mop, nrange, nrrdRangeNix_mop, airMopAlways);
   if (AIR_ABS(1.0 - nrange->max) > 0.005) {
     biffAddf(PUSH, "%s: tensor mask max %g not close 1.0", me, nrange->max);
     airMopError(mop);

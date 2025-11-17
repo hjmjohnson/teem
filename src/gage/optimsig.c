@@ -476,6 +476,7 @@ gageOptimSigContextNix(gageOptimSigContext *oscx) {
   }
   return NULL;
 }
+AIR_MOPPER(gageOptimSigContextNix)
 
 static int /* Biff: 1 */
 _volInterp(Nrrd *ninterp, double rho, gageOptimSigContext *oscx) {

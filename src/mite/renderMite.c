@@ -37,9 +37,9 @@ _miteRenderNew(void) {
     mrr->vecPvlIdx = -1;
     mrr->tenPvlIdx = -1;
     mrr->normalSpec = gageItemSpecNew();
-    airMopAdd(mrr->rmop, mrr->normalSpec, (airMopper)gageItemSpecNix, airMopAlways);
+    airMopAdd(mrr->rmop, mrr->normalSpec, gageItemSpecNix_mop, airMopAlways);
     mrr->shadeSpec = miteShadeSpecNew();
-    airMopAdd(mrr->rmop, mrr->shadeSpec, (airMopper)miteShadeSpecNix, airMopAlways);
+    airMopAdd(mrr->rmop, mrr->shadeSpec, miteShadeSpecNix_mop, airMopAlways);
     mrr->time0 = AIR_NAN;
     GAGE_QUERY_RESET(mrr->queryMite);
     mrr->queryMiteNonzero = AIR_FALSE;
@@ -155,7 +155,7 @@ miteRenderBegin(miteRender **mrrP, miteUser *muu) {
       biffAddf(MITE, "%s: couldn't allocate thread[%u]", me, thr);
       return 1;
     }
-    airMopAdd((*mrrP)->rmop, (*mrrP)->tt[thr], (airMopper)miteThreadNix, airMopAlways);
+    airMopAdd((*mrrP)->rmop, (*mrrP)->tt[thr], miteThreadNix_mop, airMopAlways);
   }
 
   (*mrrP)->time0 = airTime();

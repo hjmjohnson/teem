@@ -82,7 +82,7 @@ gridProbe(gageContext *ctx, gagePerVolume *pvl, int what, Nrrd *nout, int typeOu
 
   mop = airMopNew();
   ngrid = nrrdNew();
-  airMopAdd(mop, ngrid, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ngrid, nrrdNuke_mop, airMopAlways);
   if (ctx->stackPos) {
     if (nrrdConvert(ngrid, _ngrid, nrrdTypeDouble)) {
       biffMovef(GAGE, NRRD, "%s: trouble converting ngrid", me);
@@ -96,7 +96,7 @@ gridProbe(gageContext *ctx, gagePerVolume *pvl, int what, Nrrd *nout, int typeOu
     maxIdx[0] = 4;                                             /* pad by one sample */
     maxIdx[1] = AIR_CAST(ptrdiff_t, _ngrid->axis[1].size - 1); /* no padding */
     ntmp = nrrdNew();
-    airMopAdd(mop, ntmp, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, ntmp, nrrdNuke_mop, airMopAlways);
     if (nrrdConvert(ntmp, _ngrid, nrrdTypeDouble)
         || nrrdPad_nva(ngrid, ntmp, minIdx, maxIdx, nrrdBoundaryPad, 0.0)) {
       biffMovef(GAGE, NRRD, "%s: trouble converting/padding ngrid", me);
@@ -268,7 +268,7 @@ main(int argc, const char *argv[]) {
 
   mop = airMopNew();
   hparm = hestParmMopNew();
-  airMopAdd(mop, hparm, AIR_CAST(airMopper, hestParmFree), airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hestParmColumnsIoctl(hparm, hestDefaultColumns);
   hparm->elideSingleOtherType = AIR_TRUE;
   hparm->respectDashDashHelp = AIR_TRUE;
@@ -392,8 +392,8 @@ main(int argc, const char *argv[]) {
                     nrrdType);
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output volume");
   hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, probeInfo);
-  airMopAdd(mop, hopt, AIR_CAST(airMopper, hestOptFree), airMopAlways);
-  airMopAdd(mop, hopt, AIR_CAST(airMopper, hestParseFree), airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   what = airEnumVal(kind->enm, whatS);
   if (!what) {
@@ -474,7 +474,7 @@ main(int argc, const char *argv[]) {
       /* old way of doing things; depending on many separate options
          to set numSS, rangeSS, uniformSS, optimSS, etc */
       sbpIN = gageStackBlurParmNew();
-      airMopAdd(mop, sbpIN, (airMopper)gageStackBlurParmNix, airMopAlways);
+      airMopAdd(mop, sbpIN, gageStackBlurParmNix_mop, airMopAlways);
       if (gageStackBlurParmVerboseSet(sbpIN, verbose)
           || gageStackBlurParmScaleSet(sbpIN, numSS, rangeSS[0], rangeSS[1], uniformSS,
                                        optimSS)
@@ -510,7 +510,7 @@ main(int argc, const char *argv[]) {
   **** calls which set up (and take down) the context and state are here.
   ***/
   ctx = gageContextNew();
-  airMopAdd(mop, ctx, AIR_CAST(airMopper, gageContextNix), airMopAlways);
+  airMopAdd(mop, ctx, gageContextNix_mop, airMopAlways);
   gageParmSet(ctx, gageParmGradMagCurvMin, gmc);
   gageParmSet(ctx, gageParmVerbose, verbose);
   gageParmSet(ctx, gageParmTwoDimZeroZ, zeroZ);
@@ -530,7 +530,7 @@ main(int argc, const char *argv[]) {
     if (!E)
       E |= !(pvlSS = AIR_CAST(gagePerVolume **,
                               calloc(sbp->num, sizeof(gagePerVolume *))));
-    if (!E) airMopAdd(mop, pvlSS, (airMopper)airFree, airMopAlways);
+    if (!E) airMopAdd(mop, pvlSS, airFree, airMopAlways);
     if (!E)
       E |= gageStackPerVolumeNew(ctx, pvlSS, AIR_CAST(const Nrrd *const *, ninSS),
                                  sbp->num, kind);
@@ -661,9 +661,9 @@ main(int argc, const char *argv[]) {
     }
     NN = _npos->axis[1].size;
     npos = nrrdNew();
-    airMopAdd(mop, npos, AIR_CAST(airMopper, nrrdNuke), airMopAlways);
+    airMopAdd(mop, npos, nrrdNuke_mop, airMopAlways);
     nout = nrrdNew();
-    airMopAdd(mop, nout, AIR_CAST(airMopper, nrrdNuke), airMopAlways);
+    airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
     if (nrrdConvert(npos, _npos, nrrdTypeDouble)
         || nrrdMaybeAlloc_va(nout, otype, 2, AIR_SIZE_T(ansLen), AIR_SIZE_T(NN))) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
@@ -718,7 +718,7 @@ main(int argc, const char *argv[]) {
 
   /* else, we're sampling on some kind of grid */
   ngrid = nrrdNew();
-  airMopAdd(mop, ngrid, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ngrid, nrrdNuke_mop, airMopAlways);
   iBaseDim = kind->baseDim;
   oBaseDim = 1 == ansLen ? 0 : 1;
   if (!_ngrid) {
@@ -826,7 +826,7 @@ main(int argc, const char *argv[]) {
 
   /* probe onto grid */
   nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   gageParmSet(ctx, gageParmVerbose, verbose);
   t0 = airTime();
   if (gridProbe(ctx, pvl, what, nout, otype, ngrid,

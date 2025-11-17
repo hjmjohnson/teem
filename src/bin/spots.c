@@ -46,7 +46,7 @@ main(int argc, const char *argv[]) {
 
   mop = airMopNew();
   hparm = hestParmMopNew();
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hparm->respectDashDashHelp = AIR_TRUE;
 
   me = argv[0];
@@ -108,11 +108,11 @@ main(int argc, const char *argv[]) {
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, NULL,
                       "filename for output of final converged (two-channel) texture");
   hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, spotsInfo);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   actx = alanContextNew();
-  airMopAdd(mop, actx, (airMopper)alanContextNix, airMopAlways);
+  airMopAdd(mop, actx, alanContextNix_mop, airMopAlways);
   if (nten) {
     if (alanDimensionSet(actx, nten->dim - 1) || alanTensorSet(actx, nten, 1)) {
       airMopAdd(mop, err = biffGetDone(ALAN), airFree, airMopAlways);

@@ -97,6 +97,7 @@ pullPointNix(pullPoint *pnt) {
   airFree(pnt);
   return NULL;
 }
+AIR_MOPPER(pullPointNix)
 
 #if PULL_PHIST
 void
@@ -1092,7 +1093,7 @@ _pullPointSetup(pullContext *pctx) {
   switch (pctx->initParm.method) {
   case pullInitMethodGivenPos:
     npos = nrrdNew();
-    airMopAdd(mop, npos, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, npos, nrrdNuke_mop, airMopAlways);
     /* even if npos came in as double, we have to copy it */
     if (nrrdConvert(npos, pctx->initParm.npos, nrrdTypeDouble)) {
       biffMovef(PULL, NRRD, "%s: trouble converting npos", me);

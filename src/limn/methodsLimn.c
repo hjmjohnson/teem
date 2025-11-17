@@ -35,6 +35,7 @@ limnLightNix(limnLight *lit) {
   }
   return NULL;
 }
+AIR_MOPPER(limnLightNix)
 
 void
 limnCameraInit(limnCamera *cam) {

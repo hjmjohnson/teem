@@ -156,9 +156,9 @@ main(int argc, const char *argv[]) {
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output volume");
   hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, probeInfo);
   mop = airMopNew();
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   what = airEnumVal(kind->enm, whatS);
   if (!what) {
@@ -198,7 +198,7 @@ main(int argc, const char *argv[]) {
   if (numSS) {
     unsigned int vi;
     sbp = gageStackBlurParmNew();
-    airMopAdd(mop, sbp, (airMopper)gageStackBlurParmNix, airMopAlways);
+    airMopAdd(mop, sbp, gageStackBlurParmNix_mop, airMopAlways);
     ninSS = AIR_CAST(Nrrd **, calloc(numSS, sizeof(Nrrd *)));
     if (!ninSS) {
       fprintf(stderr, "%s: couldn't allocate ninSS", me);
@@ -207,7 +207,7 @@ main(int argc, const char *argv[]) {
     }
     for (ninSSIdx = 0; ninSSIdx < numSS; ninSSIdx++) {
       ninSS[ninSSIdx] = nrrdNew();
-      airMopAdd(mop, ninSS[ninSSIdx], (airMopper)nrrdNuke, airMopAlways);
+      airMopAdd(mop, ninSS[ninSSIdx], nrrdNuke_mop, airMopAlways);
     }
     if (gageStackBlurParmScaleSet(sbp, numSS, rangeSS[0], rangeSS[1], SSuniform, SSoptim)
         || gageStackBlurParmKernelSet(sbp, kSSblur)
@@ -284,7 +284,7 @@ main(int argc, const char *argv[]) {
   **** calls which set up (and take down) the context and state are here.
   ***/
   ctx = gageContextNew();
-  airMopAdd(mop, ctx, AIR_CAST(airMopper, gageContextNix), airMopAlways);
+  airMopAdd(mop, ctx, gageContextNix_mop, airMopAlways);
   gageParmSet(ctx, gageParmGradMagCurvMin, gmc);
   gageParmSet(ctx, gageParmVerbose, verbose);
   gageParmSet(ctx, gageParmTwoDimZeroZ, zeroZ);
@@ -302,7 +302,7 @@ main(int argc, const char *argv[]) {
     gageParmSet(ctx, gageParmStackNormalizeDeriv, SSnormd);
     if (!E)
       E |= !(pvlSS = AIR_CAST(gagePerVolume **, calloc(numSS, sizeof(gagePerVolume *))));
-    if (!E) airMopAdd(mop, pvlSS, (airMopper)airFree, airMopAlways);
+    if (!E) airMopAdd(mop, pvlSS, airFree, airMopAlways);
     if (!E)
       E |= gageStackPerVolumeNew(ctx, pvlSS, AIR_CAST(const Nrrd *const *, ninSS), numSS,
                                  kind);
@@ -376,7 +376,7 @@ main(int argc, const char *argv[]) {
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, nout, AIR_CAST(airMopper, nrrdNuke), airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   hackSet = nrrdGetenvUInt(&hackZi, &hackValStr, hackKeyStr);
   if (AIR_FALSE == hackSet) {

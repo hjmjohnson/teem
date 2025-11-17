@@ -1052,7 +1052,7 @@ tenFiberMultiTrace(tenFiberContext *tfx, tenFiberMulti *tfml, const Nrrd *_nseed
     seedData = AIR_CAST(const double *, _nseed->data);
   } else {
     nseed = nrrdNew();
-    airMopAdd(mop, nseed, AIR_CAST(airMopper, nrrdNuke), airMopAlways);
+    airMopAdd(mop, nseed, nrrdNuke_mop, airMopAlways);
     if (nrrdConvert(nseed, _nseed, nrrdTypeDouble)) {
       biffMovef(TEN, NRRD, "%s: couldn't convert seed list", me);
       return 1;

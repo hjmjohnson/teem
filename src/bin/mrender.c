@@ -88,9 +88,9 @@ mrendUserNew(void) {
   uu->hctx = hooverContextNew();
   uu->outS = NULL;
   uu->mrmop = airMopNew();
-  airMopAdd(uu->mrmop, uu->shape, (airMopper)gageShapeNix, airMopAlways);
-  airMopAdd(uu->mrmop, uu->gctx0, (airMopper)gageContextNix, airMopAlways);
-  airMopAdd(uu->mrmop, uu->hctx, (airMopper)hooverContextNix, airMopAlways);
+  airMopAdd(uu->mrmop, uu->shape, gageShapeNix_mop, airMopAlways);
+  airMopAdd(uu->mrmop, uu->gctx0, gageContextNix_mop, airMopAlways);
+  airMopAdd(uu->mrmop, uu->hctx, hooverContextNix_mop, airMopAlways);
   return uu;
 }
 
@@ -103,6 +103,7 @@ mrendUserNix(mrendUser *uu) {
   }
   return NULL;
 }
+AIR_MOPPER(mrendUserNix)
 
 int
 mrendUserCheck(mrendUser *uu) {
@@ -204,7 +205,7 @@ mrendRenderBegin(mrendRender **rrP, mrendUser *uu) {
   (*rrP)->nout->axis[0].max = uu->hctx->cam->uRange[1];
   (*rrP)->nout->axis[1].min = uu->hctx->cam->vRange[0];
   (*rrP)->nout->axis[1].max = uu->hctx->cam->vRange[1];
-  airMopAdd(uu->mrmop, (*rrP)->nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(uu->mrmop, (*rrP)->nout, nrrdNuke_mop, airMopAlways);
   (*rrP)->imgData = AIR_CAST(double *, (*rrP)->nout->data);
   (*rrP)->sx = uu->hctx->imgSize[0];
   (*rrP)->sy = uu->hctx->imgSize[1];
@@ -452,11 +453,11 @@ main(int argc, const char *argv[]) {
   me = argv[0];
   mop = airMopNew();
   hparm = hestParmMopNew();
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hparm->responseFileEnable = AIR_TRUE;
   hparm->respectDashDashHelp = AIR_TRUE;
   uu = mrendUserNew();
-  airMopAdd(mop, uu, (airMopper)mrendUserNix, airMopAlways);
+  airMopAdd(mop, uu, mrendUserNix_mop, airMopAlways);
 
   hestOptAdd_1_Other(&hopt, "i", "nin", &(uu->nin), NULL, "input nrrd to render",
                      nrrdHestNrrd);
@@ -507,10 +508,10 @@ main(int argc, const char *argv[]) {
                    "debugging messages, or \"-1 -1\" to disable this.");
   hestOptAdd_1_String(&hopt, "o", "filename", &(uu->outS), "-",
                       "file to write output nrrd to.  Defaults to stdout (\"-\").");
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
 
   hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, info);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   uu->hctx->imgSize[0] = AIR_INT(isScale * uu->hctx->imgSize[0]);
   uu->hctx->imgSize[1] = AIR_INT(isScale * uu->hctx->imgSize[1]);

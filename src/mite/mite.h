@@ -446,10 +446,12 @@ MITE_EXPORT void miteQueryAdd(gageQuery queryScl, gageQuery queryVec, gageQuery 
 /* user.c */
 MITE_EXPORT miteUser *miteUserNew(void);
 MITE_EXPORT miteUser *miteUserNix(miteUser *muu);
+MITE_EXPORT void *miteUserNix_mop(void *);
 
 /* shade.c */
 MITE_EXPORT miteShadeSpec *miteShadeSpecNew(void);
 MITE_EXPORT miteShadeSpec *miteShadeSpecNix(miteShadeSpec *);
+MITE_EXPORT void *miteShadeSpecNix_mop(void *);
 MITE_EXPORT int miteShadeSpecParse(miteShadeSpec *shpec, char *shadeStr);
 MITE_EXPORT void miteShadeSpecPrint(char *buff, const miteShadeSpec *shpec);
 MITE_EXPORT void miteShadeSpecQueryAdd(gageQuery queryScl, gageQuery queryVec,
@@ -463,6 +465,7 @@ MITE_EXPORT int miteRenderEnd(miteRender *mrr, miteUser *muu);
 /* thread.c */
 MITE_EXPORT miteThread *miteThreadNew(void);
 MITE_EXPORT miteThread *miteThreadNix(miteThread *mtt);
+MITE_EXPORT void *miteThreadNix_mop(void *);
 MITE_EXPORT int miteThreadBegin(miteThread **mttP, miteRender *mrr, miteUser *muu,
                                 int whichThread);
 MITE_EXPORT int miteThreadEnd(miteThread *mtt, miteRender *mrr, miteUser *muu);

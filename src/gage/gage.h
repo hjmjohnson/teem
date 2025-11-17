@@ -1064,6 +1064,7 @@ GAGE_EXPORT void gagePointReset(gagePoint *point);
 GAGE_EXPORT gageItemSpec *gageItemSpecNew(void);
 GAGE_EXPORT void gageItemSpecInit(gageItemSpec *isp);
 GAGE_EXPORT gageItemSpec *gageItemSpecNix(gageItemSpec *isp);
+GAGE_EXPORT void *gageItemSpecNix_mop(void *);
 
 /* kind.c */
 GAGE_EXPORT int gageKindCheck(const gageKind *kind);
@@ -1153,6 +1154,7 @@ GAGE_EXPORT gageOptimSigContext *gageOptimSigContextNew(unsigned int dim,
                                                         double sigmaMin, double sigmaMax,
                                                         double cutoff);
 GAGE_EXPORT gageOptimSigContext *gageOptimSigContextNix(gageOptimSigContext *oscx);
+GAGE_EXPORT void *gageOptimSigContextNix_mop(void *);
 GAGE_EXPORT int gageOptimSigCalculate(gageOptimSigContext *oscx,
                                       /* output */ double *sigma, unsigned int sigmaNum,
                                       const NrrdKernelSpec *kssSpec, int imgMeasr,

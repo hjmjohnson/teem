@@ -931,6 +931,7 @@ extern void pullEnergySpecSet(pullEnergySpec *ensp,
                                    const double parm[PULL_ENERGY_PARM_NUM]);
 extern void pullEnergySpecCopy(pullEnergySpec *esDst, const pullEnergySpec *esSrc);
 extern pullEnergySpec *pullEnergySpecNix(pullEnergySpec *ensp);
+extern void *pullEnergySpecNix_mop(void *);
 extern int pullEnergySpecParse(pullEnergySpec *ensp, const char *str);
 extern const hestCB *const pullHestEnergySpec;
 /* volumePull.c */
@@ -970,6 +971,7 @@ extern unsigned int pullPropLen(int prop);
 extern unsigned int pullInfoLen(int info);
 extern pullInfoSpec *pullInfoSpecNew(void);
 extern pullInfoSpec *pullInfoSpecNix(pullInfoSpec *ispec);
+extern void *pullInfoSpecNix_mop(void *);
 extern int pullInfoSpecAdd(pullContext *pctx, pullInfoSpec *ispec);
 extern int pullInfoGet(Nrrd *ninfo, int info, pullContext *pctx);
 extern int pullInfoSpecSprint(char str[AIR_STRLEN_LARGE + 1],
@@ -978,6 +980,7 @@ extern int pullInfoSpecSprint(char str[AIR_STRLEN_LARGE + 1],
 /* contextPull.c */
 extern pullContext *pullContextNew(void);
 extern pullContext *pullContextNix(pullContext *pctx);
+extern void *pullContextNix_mop(void *);
 extern int pullOutputGet(Nrrd *nPosOut, Nrrd *nTenOut, Nrrd *nStrengthOut,
                               const double scaleVec[3], double scaleRad,
                               pullContext *pctx);
@@ -1012,6 +1015,7 @@ extern unsigned int pullPointNumberFilter(const pullContext *pctx,
                                                unsigned int idtagMax);
 extern pullPoint *pullPointNew(pullContext *pctx);
 extern pullPoint *pullPointNix(pullPoint *pnt);
+extern void *pullPointNix_mop(void *);
 extern int pullProbe(pullTask *task, pullPoint *point);
 /* binningPull.c */
 extern int pullBinsPointAdd(pullContext *pctx, pullPoint *point,
@@ -1038,6 +1042,7 @@ extern int pullTraceSet(pullContext *pctx, pullTrace *trc, int recordStrength,
                              const double seedPos[4]);
 extern pullTraceMulti *pullTraceMultiNew(void);
 extern pullTraceMulti *pullTraceMultiNix(pullTraceMulti *mtrc);
+extern void *pullTraceMultiNix_mop(void *);
 extern int pullTraceMultiAdd(pullTraceMulti *mtrc, pullTrace *trc, int *addedP);
 /* where is this function defined? seems to be lost */
 /* PULL_EXPORT int pullTraceMultiFilterConcaveDown(Nrrd *nfilt,

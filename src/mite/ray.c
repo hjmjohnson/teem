@@ -49,7 +49,7 @@ miteRayBegin(miteThread *mtt, miteRender *mrr, miteUser *muu, int uIndex, int vI
     /* we really do want to associate ndebug with the miteUser's mop,
        because the information stored in it has to persist for as long as
        the user wants: mite itself doesn't call miteUserNix */
-    airMopAdd(muu->umop, muu->ndebug, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(muu->umop, muu->ndebug, nrrdNuke_mop, airMopAlways);
     /* but the scope of the debug array allocation is within this ray */
     muu->debugArr = airArrayNew((appu.d = &(muu->debug), appu.v), NULL, sizeof(double),
                                 128);

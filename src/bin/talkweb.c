@@ -82,6 +82,7 @@ tkwbSlideNix(tkwbSlide *slide) {
   slide = (tkwbSlide *)airFree(slide);
   return NULL;
 }
+AIR_MOPPER(tkwbSlideNix)
 
 typedef union {
   tkwbSlide ***ps;
@@ -135,7 +136,7 @@ tkwbReadTemplate(char **tmplSP, char *filename) {
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, file, (airMopper)airFclose, airMopAlways);
+  airMopAdd(mop, file, airFclose_mop, airMopAlways);
 
   if (tkwbReadFileToString(tmplSP, NULL, file, NULL)) {
     biffAddf(TKWB, "%s: couldn't read in template file %s", me, filename);
@@ -164,7 +165,7 @@ tkwbReadSlides(tkwbSlide ***slideP, char *filename, airArray *pmop) {
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, file, (airMopper)airFclose, airMopAlways);
+  airMopAdd(mop, file, airFclose_mop, airMopAlways);
 
   len = airOneLine(file, stop, AIR_STRLEN_HUGE + 1);
   if (!(len > 1)) {
@@ -175,7 +176,7 @@ tkwbReadSlides(tkwbSlide ***slideP, char *filename, airArray *pmop) {
 
   uu.ps = &slide;
   slideArr = airArrayNew(uu.v, NULL, sizeof(tkwbSlide *), tkwbArrayIncr);
-  airMopAdd(mop, slideArr, (airMopper)airArrayNix, airMopAlways);
+  airMopAdd(mop, slideArr, airArrayNix_mop, airMopAlways);
   hitEOF = notReally = AIR_FALSE;
   while (!hitEOF) {
     slideIdx = airArrayLenIncr(slideArr, 1); /* HEY error checking */
@@ -197,7 +198,7 @@ tkwbReadSlides(tkwbSlide ***slideP, char *filename, airArray *pmop) {
       return 1;
     }
     slide[slideIdx] = tkwbSlideNew(title, image, text);
-    airMopAdd(pmop, slide[slideIdx], (airMopper)tkwbSlideNix, airMopAlways);
+    airMopAdd(pmop, slide[slideIdx], tkwbSlideNix_mop, airMopAlways);
   }
   if (!hitEOF && !notReally) {
     biffAddf(TKWB, "%s: got incomplete slide info for slide %d\n", me, slideIdx);
@@ -224,7 +225,7 @@ tkwbExpandImageInfo(tkwbSlide **slide) {
 
   mop = airMopNew();
   nimg = nrrdNew();
-  airMopAdd(mop, nimg, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nimg, nrrdNuke_mop, airMopAlways);
   for (si = 0; slide[si]; si++) {
     if (nrrdLoad(nimg, slide[si]->image, NULL)) {
       biffMovef(TKWB, NRRD, "%s: trouble reading slide image \"%s\"", me,
@@ -507,8 +508,8 @@ main(int argc, const char *argv[]) {
                       "HTML for link to last slide");
   hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, tkwbInfo);
   mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   link[0] = frstLink;
   link[1] = prevLink;

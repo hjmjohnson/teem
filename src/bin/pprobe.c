@@ -76,7 +76,7 @@ main(int argc, const char *argv[]) {
   mop = airMopNew();
   me = argv[0];
   hparm = hestParmMopNew();
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hparm->elideSingleOtherType = AIR_TRUE;
   hparm->respectDashDashHelp = AIR_TRUE;
   hestOptAdd_1_Other(&hopt, "i", "nin", &nin, NULL, "input volume", nrrdHestNrrd);
@@ -148,8 +148,8 @@ main(int argc, const char *argv[]) {
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-",
                       "output array, when probing on polydata vertices");
   hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, probeInfo);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   what = airEnumVal(kind->enm, whatS);
   if (!what) {
@@ -202,7 +202,7 @@ main(int argc, const char *argv[]) {
   /* for setting up pre-blurred scale-space samples */
   if (numSS) {
     sbp = gageStackBlurParmNew();
-    airMopAdd(mop, sbp, (airMopper)gageStackBlurParmNix, airMopAlways);
+    airMopAdd(mop, sbp, gageStackBlurParmNix_mop, airMopAlways);
     ninSS = AIR_CAST(Nrrd **, calloc(numSS, sizeof(Nrrd *)));
     if (!ninSS) {
       fprintf(stderr, "%s: couldn't allocate ninSS", me);
@@ -211,7 +211,7 @@ main(int argc, const char *argv[]) {
     }
     for (ninSSIdx = 0; ninSSIdx < numSS; ninSSIdx++) {
       ninSS[ninSSIdx] = nrrdNew();
-      airMopAdd(mop, ninSS[ninSSIdx], (airMopper)nrrdNuke, airMopAlways);
+      airMopAdd(mop, ninSS[ninSSIdx], nrrdNuke_mop, airMopAlways);
     }
     if (gageStackBlurParmScaleSet(sbp, numSS, rangeSS[0], rangeSS[1], SSuniform,
                                   AIR_FALSE)
@@ -242,7 +242,7 @@ main(int argc, const char *argv[]) {
   }
 
   ctx = gageContextNew();
-  airMopAdd(mop, ctx, AIR_CAST(airMopper, gageContextNix), airMopAlways);
+  airMopAdd(mop, ctx, gageContextNix_mop, airMopAlways);
   gageParmSet(ctx, gageParmGradMagCurvMin, gmc);
   gageParmSet(ctx, gageParmVerbose, verbose);
   gageParmSet(ctx, gageParmRenormalize, renorm ? AIR_TRUE : AIR_FALSE);
@@ -259,7 +259,7 @@ main(int argc, const char *argv[]) {
     gageParmSet(ctx, gageParmStackNormalizeDeriv, SSnormd ? AIR_TRUE : AIR_FALSE);
     if (!E)
       E |= !(pvlSS = AIR_CAST(gagePerVolume **, calloc(numSS, sizeof(gagePerVolume *))));
-    if (!E) airMopAdd(mop, pvlSS, (airMopper)airFree, airMopAlways);
+    if (!E) airMopAdd(mop, pvlSS, airFree, airMopAlways);
     if (!E)
       E |= gageStackPerVolumeNew(ctx, pvlSS, AIR_CAST(const Nrrd *const *, ninSS), numSS,
                                  kind);
@@ -284,7 +284,7 @@ main(int argc, const char *argv[]) {
     double *dout, xyzw[4];
     unsigned int vidx, ai;
     nout = nrrdNew();
-    airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
     if (1 == ansLen) {
       E = nrrdAlloc_va(nout, nrrdTypeDouble, 1, AIR_SIZE_T(lpld->xyzwNum));
     } else {
@@ -322,7 +322,7 @@ main(int argc, const char *argv[]) {
     double start[3], dir[3], end[3], lpos[3];
     unsigned int vidx, ai;
     nout = nrrdNew();
-    airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
     if (1 == ansLen) {
       E = nrrdAlloc_va(nout, nrrdTypeDouble, 1, AIR_SIZE_T(lineStepNum));
     } else {

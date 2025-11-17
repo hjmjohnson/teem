@@ -131,6 +131,7 @@ pullContextNix(pullContext *pctx) {
   }
   return NULL;
 }
+AIR_MOPPER(pullContextNix)
 
 static int /* Biff: 1 */
 _pullMiscParmCheck(pullContext *pctx) {

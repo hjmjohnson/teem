@@ -79,7 +79,7 @@ main(int argc, const char *argv[]) {
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
-  airMopAdd(mop, nout, AIR_CAST(airMopper, nrrdNuke), airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   osctx = gageOptimSigContextNew(dim, sampleNum[1], measrSampleNum, sigma[0], sigma[1],
                                  cutoff);
@@ -89,7 +89,7 @@ main(int argc, const char *argv[]) {
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, osctx, AIR_CAST(airMopper, gageOptimSigContextNix), airMopAlways);
+  airMopAdd(mop, osctx, gageOptimSigContextNix_mop, airMopAlways);
 
   scalePos = AIR_CALLOC(sampleNum[1], double);
   airMopAdd(mop, scalePos, airFree, airMopAlways);

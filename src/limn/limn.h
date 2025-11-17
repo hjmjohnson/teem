@@ -689,6 +689,7 @@ LIMN_EXPORT int limnEnvMapCheck(Nrrd *envMap);
 LIMN_EXPORT limnLight *limnLightNew(void);
 LIMN_EXPORT void limnCameraInit(limnCamera *cam);
 LIMN_EXPORT limnLight *limnLightNix(limnLight *);
+LIMN_EXPORT void *limnLightNix_mop(void *);
 LIMN_EXPORT limnCamera *limnCameraNew(void);
 LIMN_EXPORT limnCamera *limnCameraNix(limnCamera *cam);
 LIMN_EXPORT void *limnCameraNix_mop(void *);

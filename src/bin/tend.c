@@ -37,7 +37,7 @@ main(int argc, const char **argv) {
 
   airArray *mop = airMopNew();
   hestParm *hparm = hestParmMopNew();
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hparm->elideSingleEnumType = AIR_TRUE;
   hparm->elideSingleOtherType = AIR_TRUE;
   hparm->elideSingleOtherDefault = AIR_FALSE;

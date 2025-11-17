@@ -172,7 +172,7 @@ coilContextAllSet(coilContext *cctx, const Nrrd *nin, const coilKind *kind,
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, cctx->nvol, (airMopper)nrrdNuke, airMopOnError);
+  airMopAdd(mop, cctx->nvol, nrrdNuke_mop, airMopOnError);
 
   cctx->nin = nin;
   cctx->kind = kind;
@@ -232,3 +232,4 @@ coilContextNix(coilContext *cctx) {
   }
   return NULL;
 }
+AIR_MOPPER(coilContextNix)

@@ -45,9 +45,9 @@ main(int argc, const char *argv[]) {
   me = argv[0];
   mop = airMopNew();
   hparm = hestParmMopNew();
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   muu = miteUserNew();
-  airMopAdd(mop, muu, (airMopper)miteUserNix, airMopAlways);
+  airMopAdd(mop, muu, miteUserNix_mop, airMopAlways);
 
   hparm->respectDashDashHelp = AIR_TRUE;
   hparm->responseFileEnable = AIR_TRUE;
@@ -126,8 +126,8 @@ main(int argc, const char *argv[]) {
   hestOptAdd_1_String(&hopt, "o", "filename", &outS, NULL,
                       "file to write output nrrd to");
   hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, miteInfo);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   if (muu->nsin) {
     nin = muu->nsin;
@@ -159,7 +159,7 @@ main(int argc, const char *argv[]) {
   muu->hctx->imgSize[1] = AIR_INT(isScale * muu->hctx->imgSize[1]);
 
   muu->nout = nrrdNew();
-  airMopAdd(mop, muu->nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, muu->nout, nrrdNuke_mop, airMopAlways);
   ELL_3V_SET(muu->lit->col[0], 1, 1, 1);
   muu->lit->on[0] = AIR_TRUE;
   muu->lit->vsp[0] = AIR_TRUE;

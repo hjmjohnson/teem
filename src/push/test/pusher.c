@@ -40,7 +40,7 @@ main(int argc, const char *argv[]) {
 
   mop = airMopNew();
   pctx = pushContextNew();
-  airMopAdd(mop, pctx, (airMopper)pushContextNix, airMopAlways);
+  airMopAdd(mop, pctx, pushContextNix_mop, airMopAlways);
 
   hestOptAdd(&hopt, "i", "nin", airTypeOther, 1, 1, &_nin, NULL,
              "input volume to filter", NULL, NULL, nrrdHestNrrd);
@@ -125,19 +125,19 @@ main(int argc, const char *argv[]) {
              "output files to save position and tensor info into");
 
   hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nPosOut = nrrdNew();
-  airMopAdd(mop, nPosOut, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nPosOut, nrrdNuke_mop, airMopAlways);
   nTenOut = nrrdNew();
-  airMopAdd(mop, nTenOut, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nTenOut, nrrdNuke_mop, airMopAlways);
   nEnrOut = nrrdNew();
-  airMopAdd(mop, nEnrOut, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nEnrOut, nrrdNuke_mop, airMopAlways);
 
   if (3 == _nin->spaceDim && AIR_EXISTS(_nin->measurementFrame[0][0])) {
     nin = nrrdNew();
-    airMopAdd(mop, nin, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nin, nrrdNuke_mop, airMopAlways);
     if (tenMeasurementFrameReduce(nin, _nin)) {
       airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);
       fprintf(stderr, "%s: trouble undoing measurement frame:\n%s", me, err);

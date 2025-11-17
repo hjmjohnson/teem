@@ -52,11 +52,11 @@ main(int argc, const char *argv[]) {
   me = argv[0];
   mop = airMopNew();
   hparm = hestParmMopNew();
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hparm->elideSingleEmptyStringDefault = AIR_TRUE;
   hparm->respectDashDashHelp = AIR_TRUE;
   cam = limnCameraNew();
-  airMopAdd(mop, cam, (airMopper)limnCameraNix, airMopAlways);
+  airMopAdd(mop, cam, limnCameraNix_mop, airMopAlways);
   hestOptAdd_1_Other(&hopt, "i", "nlight", &nlight, NULL,
                      "input nrrd containing light information", nrrdHestNrrd);
   hestOptAdd_1_UInt(&hopt, "b", "# bits", &bits, "16",
@@ -86,8 +86,8 @@ main(int argc, const char *argv[]) {
                   "If using \"-d\", make the image represent the error between the "
                   "real and quantized vector");
   hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, emapInfo);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   switch (bits) {
   case 16:
@@ -145,7 +145,7 @@ main(int argc, const char *argv[]) {
   }
 
   light = limnLightNew();
-  airMopAdd(mop, light, (airMopper)limnLightNix, airMopAlways);
+  airMopAdd(mop, light, limnLightNix_mop, airMopAlways);
   limnLightAmbientSet(light, amb[0], amb[1], amb[2]);
   for (li = 0; li < nlight->axis[1].size; li++) {
     int vsp;
@@ -167,7 +167,7 @@ main(int argc, const char *argv[]) {
   }
 
   nmap = nrrdNew();
-  airMopAdd(mop, nmap, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nmap, nrrdNuke_mop, airMopAlways);
   if (limnEnvMapFill(nmap, limnLightDiffuseCB, method, light)) {
     airMopAdd(mop, errS = biffGetDone(LIMN), airFree, airMopAlways);
     fprintf(stderr, "%s: problem making environment map:\n%s\n", me, errS);
@@ -187,7 +187,7 @@ main(int argc, const char *argv[]) {
     ndebug = nrrdNew();
     nrrdMaybeAlloc_va(ndebug, nrrdTypeFloat, 3, AIR_SIZE_T(3), AIR_SIZE_T(1024),
                       AIR_SIZE_T(512));
-    airMopAdd(mop, ndebug, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, ndebug, nrrdNuke_mop, airMopAlways);
     debug = (float *)ndebug->data;
     for (vi = 0; vi <= 511; vi++) {
       v = AIR_AFFINE(0, vi, 511, -0.999, 0.999);

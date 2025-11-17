@@ -52,7 +52,7 @@ main(int argc, const char *argv[]) {
   mop = airMopNew();
   me = argv[0];
   hparm = hestParmMopNew();
-  airMopAdd(mop, hparm, AIR_CAST(airMopper, hestParmFree), airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hparm->elideSingleOtherType = AIR_TRUE;
   hparm->respectDashDashHelp = AIR_TRUE;
   hestOptAdd_1_Other(&hopt, "i", "nin", &nin, NULL, "input volume", nrrdHestNrrd);
@@ -77,11 +77,11 @@ main(int argc, const char *argv[]) {
                     "brute-force iterative method");
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output volume");
   hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, deconvInfo);
-  airMopAdd(mop, hopt, AIR_CAST(airMopper, hestOptFree), airMopAlways);
-  airMopAdd(mop, hopt, AIR_CAST(airMopper, hestParseFree), airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
-  airMopAdd(mop, nout, AIR_CAST(airMopper, nrrdNuke), airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   if (separ) {
     ret = gageDeconvolveSeparable(nout, nin, kind, ksp, otype);

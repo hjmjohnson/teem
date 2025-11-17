@@ -45,17 +45,17 @@ main(int argc, const char **argv) {
 
   mop = airMopNew();
   hparm = hestParmNew();
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
 
   npos = nrrdNew();
-  airMopAdd(mop, npos, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, npos, nrrdNuke_mop, airMopAlways);
 
   hparm->responseFileEnable = AIR_TRUE;
   me = argv[0];
 
   /* these don't need to be visible on the command-line */
   enspR = pullEnergySpecNew();
-  airMopAdd(mop, enspR, (airMopper)pullEnergySpecNix, airMopAlways);
+  airMopAdd(mop, enspR, pullEnergySpecNix_mop, airMopAlways);
   pullEnergySpecParse(enspR, "cotan");
 
   hestOptAdd(&hopt, "i", "nin", airTypeOther, 1, 1, &nin, NULL, "input volume", NULL,
@@ -86,18 +86,18 @@ main(int argc, const char **argv) {
   hestOptAdd(&hopt, "o", "nout", airTypeString, 1, 1, &outS, "out.nrrd",
              "filename for saving positions");
   hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, info);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   /* other parms that we set just to keep pull happy */
   enspR = pullEnergySpecNew();
-  airMopAdd(mop, enspR, (airMopper)pullEnergySpecNix, airMopAlways);
+  airMopAdd(mop, enspR, pullEnergySpecNix_mop, airMopAlways);
   k00 = nrrdKernelSpecNew();
-  airMopAdd(mop, k00, (airMopper)nrrdKernelSpecNix, airMopAlways);
+  airMopAdd(mop, k00, nrrdKernelSpecNix_mop, airMopAlways);
   k11 = nrrdKernelSpecNew();
-  airMopAdd(mop, k11, (airMopper)nrrdKernelSpecNix, airMopAlways);
+  airMopAdd(mop, k11, nrrdKernelSpecNix_mop, airMopAlways);
   k22 = nrrdKernelSpecNew();
-  airMopAdd(mop, k22, (airMopper)nrrdKernelSpecNix, airMopAlways);
+  airMopAdd(mop, k22, nrrdKernelSpecNix_mop, airMopAlways);
   if (pullEnergySpecParse(enspR, "cotan")) {
     airMopAdd(mop, err = biffGetDone(PULL), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble setting up faux energies:\n%s", me, err);
@@ -114,13 +114,13 @@ main(int argc, const char **argv) {
 #define VNAME "bingo"
 
   pctx = pullContextNew();
-  airMopAdd(mop, pctx, (airMopper)pullContextNix, airMopAlways);
+  airMopAdd(mop, pctx, pullContextNix_mop, airMopAlways);
   minf[0] = meetPullInfoNew();
-  airMopAdd(mop, minf[0], (airMopper)*meetPullInfoNix, airMopAlways);
+  airMopAdd(mop, minf[0], meetPullInfoNix_mop, airMopAlways);
   minf[1] = meetPullInfoNew();
-  airMopAdd(mop, minf[1], (airMopper)*meetPullInfoNix, airMopAlways);
+  airMopAdd(mop, minf[1], meetPullInfoNix_mop, airMopAlways);
   minf[2] = meetPullInfoNew();
-  airMopAdd(mop, minf[2], (airMopper)*meetPullInfoNix, airMopAlways);
+  airMopAdd(mop, minf[2], meetPullInfoNix_mop, airMopAlways);
   int E = pullVerboseSet(pctx, verbose);
   if (pullInitMethodRandom == method) {
     if (!E) E |= pullRngSeedSet(pctx, ss);
@@ -176,7 +176,7 @@ main(int argc, const char **argv) {
     return 1;
   }
   nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   size_t cmin[2] = {0, 0};
   size_t cmax[2] = {2, npos->axis[1].size - 1};
   if (nrrdCrop(nout, npos, cmin, cmax) || nrrdSave(outS, nout, NULL)) {

@@ -52,7 +52,7 @@ main(int argc, const char *argv[]) {
   me = argv[0];
   mop = airMopNew();
   hparm = hestParmMopNew();
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hparm->elideSingleEnumType = AIR_TRUE;
   hparm->elideSingleOtherType = AIR_TRUE;
   hparm->elideSingleOtherDefault = AIR_FALSE;
@@ -117,8 +117,8 @@ main(int argc, const char *argv[]) {
   hestOptAdd_1_String(&hopt, "o", "filename", &outS, "-",
                       "file to write output nrrd to");
   hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, ilkInfo);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   fprintf(stderr,
           "NOTE: *********\n"
@@ -128,9 +128,9 @@ main(int argc, const char *argv[]) {
           "NOTE: *********\n");
 
   nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   msp = mossSamplerNew();
-  airMopAdd(mop, msp, (airMopper)mossSamplerNix, airMopAlways);
+  airMopAdd(mop, msp, mossSamplerNix_mop, airMopAlways);
   if (mossSamplerKernelSet(msp, ksp)) {
     fprintf(stderr, "%s: trouble with setting kernel:\n%s\n", me,
             errS = biffGetDone(MOSS));
@@ -238,13 +238,13 @@ main(int argc, const char *argv[]) {
     int E;
 
     ntmp = nrrdNew();
-    airMopAdd(mop, ntmp, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, ntmp, nrrdNuke_mop, airMopAlways);
     nacc = nrrdNew();
-    airMopAdd(mop, nacc, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nacc, nrrdNuke_mop, airMopAlways);
     itA = nrrdIterNew();
-    airMopAdd(mop, itA, (airMopper)nrrdIterNix, airMopAlways);
+    airMopAdd(mop, itA, nrrdIterNix_mop, airMopAlways);
     itB = nrrdIterNew();
-    airMopAdd(mop, itB, (airMopper)nrrdIterNix, airMopAlways);
+    airMopAdd(mop, itB, nrrdIterNix_mop, airMopAlways);
     E = 0;
     angleMax = atan2(mat[3], mat[0]);
     fprintf(stderr, "%s: %u angles ", me, avgNum);
