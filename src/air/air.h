@@ -579,7 +579,6 @@ AIR_EXPORT int airSinglePrintf(FILE *file, char *str, size_t strSize, /* */
   __attribute__((format(printf, 4, 5)))
 #endif
   ;
-;
 AIR_EXPORT char *airSprintSize_t(char str[AIR_STRLEN_SMALL + 1], size_t val);
 /* ---- BEGIN non-NrrdIO */
 AIR_EXPORT char *airSprintVecSize_t(char *dst, size_t dstSize, const size_t *vec,
