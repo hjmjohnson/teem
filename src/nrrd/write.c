@@ -1109,7 +1109,7 @@ nrrdSaveMulti(const char *fnameFormat, const Nrrd *const *nin, unsigned int ninL
   if (!(nrrdContainsPercentThisAndMore(fnameFormat, 'u'))) {
     biffAddf(NRRD,
              "%s: given format \"%s\" doesn't seem to "
-             "have the \"%%u\" conversion specification to sprintf "
+             "have the \"%%u\" conversion specification to s(n)printf "
              "an unsigned int\n",
              me, fnameFormat);
     return 1;
