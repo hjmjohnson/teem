@@ -953,7 +953,7 @@ over the years had accumulated some weirdly complicated logic. Time to clean it 
   but now we just do the expected thing: in case of parse error (or empty argv
   implicit ask for help) show the usage (but not info or glossary), and also print
   a message about using --help for more info.
-* API NEW: hestParm->dieWithoutNewerFeatures control was added, to contol whether
+* API NEW: hestParm->dieWithoutNewerFeatures control was added, to control whether
   the new hestParseOrDie would opportunistically turn on new features:
   - set hparm->columns via hestParmColumnsIoctl(hparm, hestDefaultColumns)
   - set hparm->respectDashDashHelp = AIR_TRUE
