@@ -1548,7 +1548,7 @@ hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
   hestParm *hparm = NULL;
   if (!_hparm) {
     hparm = hestParmNew();
-    airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+    airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   }
   // how to const-correctly use hparm or _hparm in an expression
 #define HPARM (_hparm ? _hparm : hparm)
@@ -1603,14 +1603,14 @@ hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
 
   // allocate the state we use during parsing
   hestInputStack *hist = hestInputStackNew();
-  airMopAdd(mop, hist, (airMopper)hestInputStackNix, airMopAlways);
+  airMopAdd(mop, hist, hestInputStackNix_mop, airMopAlways);
   hestArgVec *havec = hestArgVecNew();
-  airMopAdd(mop, havec, (airMopper)hestArgVecNix, airMopAlways);
+  airMopAdd(mop, havec, hestArgVecNix_mop, airMopAlways);
   hestArg *tharg = hestArgNew(); // tmp hestArg
-  airMopAdd(mop, tharg, (airMopper)hestArgNix, airMopAlways);
+  airMopAdd(mop, tharg, hestArgNix_mop, airMopAlways);
   /* in case we have a parsing error, we make ourselves responsible for
      cleaning up the things allocated by parsing, prior to the error */
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopOnError);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopOnError);
   if (HPARM->verbose > 1) {
     printf("%s: parsing state allocated\n", __func__);
   }

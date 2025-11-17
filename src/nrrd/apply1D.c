@@ -449,7 +449,7 @@ nrrdApply1DLut(Nrrd *nout, const Nrrd *nin, const NrrdRange *_range, const Nrrd 
   } else {
     range = nrrdRangeNewSet(nin, nrrdBlind8BitRangeState);
   }
-  airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
+  airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
   if (_nrrdApply1DSetUp(nout, nin, range, nlut, kindLut, typeOut, rescale,
                         AIR_FALSE /* multi */)
       || _nrrdApply1DLutOrRegMap(nout, nin, range, nlut, AIR_FALSE /* ramps */, rescale,
@@ -480,7 +480,7 @@ nrrdApplyMulti1DLut(Nrrd *nout, const Nrrd *nin, const NrrdRange *_range,
   } else {
     range = nrrdRangeNewSet(nin, nrrdBlind8BitRangeState);
   }
-  airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
+  airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
   if (_nrrdApply1DSetUp(nout, nin, range, nmlut, kindLut, typeOut, rescale,
                         AIR_TRUE /* multi */)
       || _nrrdApply1DLutOrRegMap(nout, nin, range, nmlut, AIR_FALSE /* ramps */, rescale,
@@ -528,7 +528,7 @@ nrrdApply1DRegMap(Nrrd *nout, const Nrrd *nin, const NrrdRange *_range, const Nr
   } else {
     range = nrrdRangeNewSet(nin, nrrdBlind8BitRangeState);
   }
-  airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
+  airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
   if (_nrrdApply1DSetUp(nout, nin, range, nmap, kindRmap, typeOut, rescale,
                         AIR_FALSE /* multi */)
       || _nrrdApply1DLutOrRegMap(nout, nin, range, nmap, AIR_TRUE /* ramps */, rescale,
@@ -559,7 +559,7 @@ nrrdApplyMulti1DRegMap(Nrrd *nout, const Nrrd *nin, const NrrdRange *_range,
   } else {
     range = nrrdRangeNewSet(nin, nrrdBlind8BitRangeState);
   }
-  airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
+  airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
   if (_nrrdApply1DSetUp(nout, nin, range, nmmap, kindRmap, typeOut, rescale,
                         AIR_TRUE /* multi */)
       || _nrrdApply1DLutOrRegMap(nout, nin, range, nmmap, AIR_TRUE /* ramps */, rescale,
@@ -896,7 +896,7 @@ nrrdApply1DIrregMap(Nrrd *nout, const Nrrd *nin, const NrrdRange *_range,
   } else {
     range = nrrdRangeNewSet(nin, nrrdBlind8BitRangeState);
   }
-  airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
+  airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
   if (_nrrdApply1DSetUp(nout, nin, range, nmap, kindImap, typeOut, rescale,
                         AIR_FALSE /* multi */)) {
     biffAddf(NRRD, "%s:", me);
@@ -1079,7 +1079,7 @@ nrrdApply1DSubstitution(Nrrd *nout, const Nrrd *nin, const Nrrd *_nsubst) {
 
   mop = airMopNew();
   nsubst = nrrdNew();
-  airMopAdd(mop, nsubst, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nsubst, nrrdNuke_mop, airMopAlways);
   if (nrrdConvert(nsubst, _nsubst, nrrdTypeDouble)) {
     biffAddf(NRRD, "%s: couldn't create double copy of substitution table", me);
     airMopError(mop);

@@ -414,6 +414,7 @@ extern unsigned int hestDefaultIndent;
 // argvHest.c
 extern hestArg *hestArgNew(void);
 extern hestArg *hestArgNix(hestArg *harg);
+extern void *hestArgNix_mop(void *);
 extern void hestArgReset(hestArg *harg);
 extern void hestArgAddChar(hestArg *harg, char cc);
 extern void hestArgSetString(hestArg *harg, const char *str);
@@ -421,6 +422,7 @@ extern void hestArgAddString(hestArg *harg, const char *str);
 extern hestArgVec *hestArgVecNew(void);
 extern void hestArgVecReset(hestArgVec *havec);
 extern hestArgVec *hestArgVecNix(hestArgVec *havec);
+extern void *hestArgVecNix_mop(void *);
 extern hestArg *hestArgVecRemove(hestArgVec *havec, unsigned int popIdx);
 extern char *hestArgVecSprint(const hestArgVec *havec, int showIndices);
 extern void hestArgVecAppendString(hestArgVec *havec, const char *str);
@@ -431,6 +433,7 @@ extern hestInput *hestInputNew(void);
 extern hestInput *hestInputNix(hestInput *hin);
 extern hestInputStack *hestInputStackNew(void);
 extern hestInputStack *hestInputStackNix(hestInputStack *hist);
+extern void *hestInputStackNix_mop(void *);
 // methodsHest.c
 extern const int hestPresent;
 extern const airEnum *const hestSource;
@@ -440,6 +443,7 @@ extern hestParm *hestParmMopNew(void);
 extern void hestParmUnmop(hestParm *hparm);
 extern hestParm *hestParmCopy(const hestParm *hparm);
 extern hestParm *hestParmFree(hestParm *hparm);
+extern void *hestParmFree_mop(void *);
 extern const hestParm *hestParmMopDone(const hestParm *hparm);
 extern int hestParmColumnsIoctl(hestParm *hparm, unsigned int nonIoctlColumns);
 extern void hestOptSingleSet(hestOpt *hopt, const char *flag, const char *name,
@@ -478,11 +482,13 @@ extern unsigned int hestOptAdd(hestOpt **optP,
                                            const hestCB *CB */);
 extern unsigned int hestOptNum(const hestOpt *hopt);
 extern hestOpt *hestOptFree(hestOpt *hopt);
+extern void *hestOptFree_mop(void *);
 extern int hestOptCheck(const hestOpt *hopt, char **errP);
 extern int hestOptParmCheck(const hestOpt *hopt, const hestParm *hparm,
                                  char **errP);
 // parseHest.c
 extern hestOpt *hestParseFree(hestOpt *hopt);
+extern void *hestParseFree_mop(void *);
 extern int hestParseOrExit(hestOpt *hopt, int argc, const char **argv,
                                 const hestParm *hparm, const char *me, const char *info);
 /* TeemV2 removed hestParseOrDie and replaced it with hestParseOrExit, which

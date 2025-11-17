@@ -3467,9 +3467,9 @@ nrrdKernelCheck(const NrrdKernel *kern, const double parm[NRRD_KERNEL_PARM_MAXNU
     ERRR;
   }
   kspA = nrrdKernelSpecNew();
-  airMopAdd(mop, kspA, (airMopper)nrrdKernelSpecNix, airMopAlways);
+  airMopAdd(mop, kspA, nrrdKernelSpecNix_mop, airMopAlways);
   kspB = nrrdKernelSpecNew();
-  airMopAdd(mop, kspB, (airMopper)nrrdKernelSpecNix, airMopAlways);
+  airMopAdd(mop, kspB, nrrdKernelSpecNix_mop, airMopAlways);
   nrrdKernelSpecSet(kspA, kern, parm);
   if (nrrdKernelSprint(kstr, kern, parm) || nrrdKernelSpecSprint(kspstr, kspA)) {
     biffAddf(NRRD, "%s: trouble", me);

@@ -81,7 +81,7 @@ main(int argc, char *argv[]) {
       exit(1);
     }
     ksp[kii] = nrrdKernelSpecNew();
-    airMopAdd(mop, ksp[kii], (airMopper)nrrdKernelSpecNix, airMopAlways);
+    airMopAdd(mop, ksp[kii], nrrdKernelSpecNix_mop, airMopAlways);
     nrrdKernelSpecSet(ksp[kii], kern[kii], parm);
     if (nrrdKernelSpecSprint(kstr, ksp[kii])) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);

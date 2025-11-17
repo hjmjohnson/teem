@@ -55,7 +55,7 @@ parserBoth(void *ptr,
     }
     mop = airMopNew();
     *nrrdP = nrrdNew();
-    airMopAdd(mop, *nrrdP, (airMopper)nrrdNuke, airMopOnError);
+    airMopAdd(mop, *nrrdP, nrrdNuke_mop, airMopOnError);
     /* else no concerns about filename being "-" and stdin being a terminal */
     if (nrrdLoad(*nrrdP, filename, NULL)) {
       airMopAdd(mop, nerr = biffGetDone(NRRD), airFree, airMopOnError);
@@ -94,13 +94,12 @@ parserNoTTY(void *ptr, const char *filename, char err[AIR_STRLEN_HUGE + 1]) {
                     AIR_TRUE /* yes disallow TTY */);
 }
 
-static const hestCB _nrrdHestNrrd = {sizeof(Nrrd *), "Nrrd", parserOkTTY,
-                                     (airMopper)nrrdNuke};
+static const hestCB _nrrdHestNrrd = {sizeof(Nrrd *), "Nrrd", parserOkTTY, nrrdNuke_mop};
 
 const hestCB *const nrrdHestNrrd = &_nrrdHestNrrd;
 
 static const hestCB _nrrdHestNrrdNoTTY = {sizeof(Nrrd *), "Nrrd", parserNoTTY,
-                                          (airMopper)nrrdNuke};
+                                          nrrdNuke_mop};
 
 const hestCB *const nrrdHestNrrdNoTTY = &_nrrdHestNrrdNoTTY;
 
@@ -130,7 +129,7 @@ _nrrdHestKernelSpecParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 
 static const hestCB _nrrdHestKernelSpec = {sizeof(NrrdKernelSpec *),
                                            "kernel specification",
                                            _nrrdHestKernelSpecParse,
-                                           (airMopper)nrrdKernelSpecNix};
+                                           nrrdKernelSpecNix_mop};
 
 const hestCB *const nrrdHestKernelSpec = &_nrrdHestKernelSpec;
 
@@ -161,7 +160,7 @@ _nrrdHestBoundarySpecParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE 
 static const hestCB _nrrdHestBoundarySpec = {sizeof(NrrdBoundarySpec *),
                                              "boundary specification",
                                              _nrrdHestBoundarySpecParse,
-                                             (airMopper)nrrdBoundarySpecNix};
+                                             nrrdBoundarySpecNix_mop};
 
 const hestCB *const nrrdHestBoundarySpec = &_nrrdHestBoundarySpec;
 
@@ -235,7 +234,7 @@ _nrrdHestIterParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
   iterP = (NrrdIter **)ptr;
   mop = airMopNew();
   *iterP = nrrdIterNew();
-  airMopAdd(mop, *iterP, (airMopper)nrrdIterNix, airMopOnError);
+  airMopAdd(mop, *iterP, nrrdIterNix_mop, airMopOnError);
 
   /* the challenge here is determining if a given string represents a
      filename or a number.  Obviously there are cases where it could
@@ -305,12 +304,12 @@ _nrrdHestIterParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
       }
     }
   }
-  airMopAdd(mop, iterP, (airMopper)airSetNull, airMopOnError);
+  airMopAdd(mop, iterP, airSetNull_mop, airMopOnError);
   airMopOkay(mop);
   return 0;
 }
 
 static const hestCB _nrrdHestIter = {sizeof(NrrdIter *), "nrrd/value",
-                                     _nrrdHestIterParse, (airMopper)nrrdIterNix};
+                                     _nrrdHestIterParse, nrrdIterNix_mop};
 
 const hestCB *const nrrdHestIter = &_nrrdHestIter;

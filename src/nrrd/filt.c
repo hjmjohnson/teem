@@ -453,9 +453,9 @@ nrrdCheapMedian(Nrrd *_nout, const Nrrd *_nin, int pad, int mode, unsigned int r
 
   mop = airMopNew();
   /* set nin based on _nin */
-  airMopAdd(mop, nin = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nin = nrrdNew(), nrrdNuke_mop, airMopAlways);
   if (pad) {
-    airMopAdd(mop, nout = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nout = nrrdNew(), nrrdNuke_mop, airMopAlways);
     if (nrrdSimplePad_va(nin, _nin, radius, nrrdBoundaryBleed)) {
       biffAddf(NRRD, "%s: trouble padding input", me);
       airMopError(mop);
@@ -475,7 +475,7 @@ nrrdCheapMedian(Nrrd *_nout, const Nrrd *_nin, int pad, int mode, unsigned int r
     return 1;
   }
   range = nrrdRangeNewSet(nin, nrrdBlind8BitRangeFalse);
-  airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
+  airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
   if (!(hist = (float *)calloc(bins, sizeof(float)))) {
     biffAddf(NRRD, "%s: couldn't allocate histogram (%u bins)", me, bins);
     airMopError(mop);
@@ -654,10 +654,10 @@ distanceL2Sqrd(Nrrd *ndist, double *spcMean) {
   /* create mop and allocate tmp buffers */
   mop = airMopNew();
   ntmpA = nrrdNew();
-  airMopAdd(mop, ntmpA, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ntmpA, nrrdNuke_mop, airMopAlways);
   if (ndist->dim > 2) {
     ntmpB = nrrdNew();
-    airMopAdd(mop, ntmpB, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, ntmpB, nrrdNuke_mop, airMopAlways);
   } else {
     ntmpB = NULL;
   }
@@ -846,7 +846,7 @@ nrrdDistanceL2Signed(Nrrd *nout, const Nrrd *nin, int typeOut, const int *axisDo
 
   mop = airMopNew();
   ninv = nrrdNew();
-  airMopAdd(mop, ninv, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ninv, nrrdNuke_mop, airMopAlways);
 
   if (nrrdDistanceL2(nout, nin, typeOut, axisDo, thresh, insideHigher)
       || nrrdDistanceL2(ninv, nin, typeOut, axisDo, thresh, !insideHigher)

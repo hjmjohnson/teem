@@ -88,7 +88,7 @@ nrrdSlice(Nrrd *nout, const Nrrd *cnin, unsigned int saxi, size_t pos) {
        cnin), even if pointlessly so; this expression that can't be assigned
        to a new variable because of the difference in const. */
     nin = nrrdNew();
-    airMopAdd(mop, nin, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nin, nrrdNuke_mop, airMopAlways);
     if (nrrdAxesInsert(nin, cnin, 1)) {
       biffAddf(NRRD, "%s: trouble inserting axis on 1-D array", me);
       airMopError(mop);
@@ -420,7 +420,7 @@ nrrdSliceSelect(Nrrd *noutAbove, Nrrd *noutBelow, const Nrrd *nin, unsigned int 
 
   mop = airMopNew();
   rng = nrrdRangeNewSet(_nline, AIR_FALSE);
-  airMopAdd(mop, rng, (airMopper)nrrdRangeNix, airMopAlways);
+  airMopAdd(mop, rng, nrrdRangeNix_mop, airMopAlways);
   if (rng->hasNonExist) {
     biffAddf(NRRD, "%s: had non-existent values in line", me);
     airMopError(mop);
@@ -429,9 +429,9 @@ nrrdSliceSelect(Nrrd *noutAbove, Nrrd *noutBelow, const Nrrd *nin, unsigned int 
 
   nslice = nrrdNew();
   /* NB: nix, not nuke, because of the pointer games involved */
-  airMopAdd(mop, nslice, (airMopper)nrrdNix, airMopAlways);
+  airMopAdd(mop, nslice, nrrdNix_mop, airMopAlways);
   nline = nrrdNew();
-  airMopAdd(mop, nline, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nline, nrrdNuke_mop, airMopAlways);
   if (nrrdConvert(nline, _nline, nrrdTypeDouble)) {
     biffAddf(NRRD, "%s: problem copying line", me);
     airMopError(mop);
@@ -458,7 +458,7 @@ nrrdSliceSelect(Nrrd *noutAbove, Nrrd *noutBelow, const Nrrd *nin, unsigned int 
       return 1;
     }
     noutPrep[0] = nrrdNew();
-    airMopAdd(mop, noutPrep[0], (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, noutPrep[0], nrrdNuke_mop, airMopAlways);
     nout[0] = noutAbove;
   } else {
     noutPrep[0] = nout[0] = NULL;
@@ -473,7 +473,7 @@ nrrdSliceSelect(Nrrd *noutAbove, Nrrd *noutBelow, const Nrrd *nin, unsigned int 
       return 1;
     }
     noutPrep[1] = nrrdNew();
-    airMopAdd(mop, noutPrep[1], (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, noutPrep[1], nrrdNuke_mop, airMopAlways);
     nout[1] = noutBelow;
   } else {
     noutPrep[1] = nout[1] = NULL;
@@ -718,9 +718,9 @@ nrrdCropAuto(Nrrd *nout, const Nrrd *nin, size_t _min[NRRD_DIM_MAX],
   /* else there's work to do */
   mop = airMopNew();
   nperm = nrrdNew();
-  airMopAdd(mop, nperm, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nperm, nrrdNuke_mop, airMopAlways);
   nline = nrrdNew();
-  airMopAdd(mop, nline, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nline, nrrdNuke_mop, airMopAlways);
   for (axi = 0; axi < nin->dim; axi++) {
     double wsum, part;
     min[axi] = 0;

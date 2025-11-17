@@ -255,7 +255,9 @@ AIR_EXPORT void airArrayLenPreSet(airArray *a, unsigned int newlen);
 /* ---- END non-NrrdIO */
 AIR_EXPORT unsigned int airArrayLenIncr(airArray *a, int delta);
 AIR_EXPORT airArray *airArrayNix(airArray *a);
+AIR_EXPORT void *airArrayNix_mop(void *);
 AIR_EXPORT airArray *airArrayNuke(airArray *a);
+AIR_EXPORT void *airArrayNuke_mop(void *);
 
 /* ---- BEGIN non-NrrdIO */
 
@@ -570,9 +572,11 @@ AIR_EXPORT void airTeemVersionPrintAndExit(const char *pfx);
 /* ---- END non-NrrdIO */
 AIR_EXPORT void *airNull(void);
 AIR_EXPORT void *airSetNull(void **ptrP);
+AIR_EXPORT void *airSetNull_mop(void *);
 AIR_EXPORT void *airFree(void *ptr);
 AIR_EXPORT FILE *airFopen(const char *name, FILE *std, const char *mode);
 AIR_EXPORT FILE *airFclose(FILE *file);
+AIR_EXPORT void *airFclose_mop(void *);
 AIR_EXPORT int airSinglePrintf(FILE *file, char *str, size_t strSize, /* */
                                const char *fmt, ...)
 #ifdef __GNUC__
@@ -646,6 +650,23 @@ AIR_EXPORT unsigned int airCRC32(const unsigned char *data, size_t len, size_t u
 /* ---- END non-NrrdIO */
 
 /* mop.c: clean-up utilities */
+/* for a function named `FUNC` that takes and returns some kind of pointer,
+   AIR_MOPPER(FUNC) defines a wrapper function FUNC_mop taking and returning a void*.
+   The value of function pointers is preserved across casts, but calling a cast function
+   pointer, as with `(airMopper)foo`, is unfortunately undefined behavior. Routinely
+   following the definition of some free-er/nix-er function `libFoo` with
+   `AIR_MOPPER(libFoo);` defines the `libFoo_mop` function that should be passed to
+   airMopAdd. This should replace in TeemV2 code the `(airMopper)` casting that was
+   ubiquitous in pre-TeemV2 code. We are essentially pushing the casting from the
+   function level down to the level of its argument and return.
+   NOTE! There are some real drawback with using AIR_MOPPER:
+   - You can no longer simply grep or ack to find where a function is defined;
+     but this is the only way Teem violates this basic principle.
+     You have to know to look for `AIR_MOPPER(libFoo)`
+   - Adding the `libFoo_mop` declaration to the header is a manual process
+   - The _mop function cannot have Biff: annotation (should not be a big loss) */
+#define AIR_MOPPER(FUNC)                                                                \
+  void *FUNC##_mop(void *ptr) { return FUNC(ptr); }
 enum {
   airMopNever,
   airMopOnError,

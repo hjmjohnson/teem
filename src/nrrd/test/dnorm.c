@@ -47,7 +47,7 @@ main(int argc, const char **argv) {
   mop = airMopNew();
   hparm = hestParmMopNew();
   hopt = NULL;
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hestOptAdd(&hopt, "h,header", NULL, airTypeInt, 0, 0, &headerOnly, NULL,
              "output header of nrrd file only, not the data itself");
   hestOptAdd(&hopt, "i", "nin", airTypeOther, 1, 1, &nin, NULL, "input image", NULL,
@@ -56,8 +56,8 @@ main(int argc, const char **argv) {
              NULL);
 
   hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, dnormInfo);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   /* can't deal with block type */
   if (nrrdTypeBlock == nin->type) {
@@ -123,7 +123,7 @@ main(int argc, const char **argv) {
 
   /* initialize output by copying */
   nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdCopy(nout, nin)) {
     airMopAdd(mop, err = biffGet(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble copying:\n%s", me, err);
@@ -133,7 +133,7 @@ main(int argc, const char **argv) {
 
   /* no comments, either advertising the format URL or anything else */
   nio = nrrdIoStateNew();
-  airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
+  airMopAdd(mop, nio, nrrdIoStateNix_mop, airMopAlways);
   nio->skipFormatURL = AIR_TRUE;
   if (headerOnly) {
     nio->skipData = AIR_TRUE;

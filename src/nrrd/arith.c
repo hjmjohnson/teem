@@ -83,7 +83,7 @@ nrrdArithGamma(Nrrd *nout, const Nrrd *nin, const NrrdRange *_range, double Gamm
   } else {
     range = nrrdRangeNewSet(nin, nrrdBlind8BitRangeTrue);
   }
-  airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
+  airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
   min = range->min;
   max = range->max;
   if (min == max) {
@@ -167,7 +167,7 @@ nrrdArithSRGBGamma(Nrrd *nout, const Nrrd *nin, const NrrdRange *_range, int for
   } else {
     range = nrrdRangeNewSet(nin, nrrdBlind8BitRangeTrue);
   }
-  airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
+  airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
   min = range->min;
   max = range->max;
   if (min == max) {

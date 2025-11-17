@@ -64,12 +64,7 @@ hestArgNix(hestArg *harg) {
   }
   return NULL;
 }
-
-static void *
-_hestArgNix_vp(void *_harg) {
-  hestArg *harg = (hestArg *)_harg;
-  return AIR_VOIDP(hestArgNix(harg));
-}
+AIR_MOPPER(hestArgNix);
 
 void
 hestArgReset(hestArg *harg) {
@@ -138,7 +133,7 @@ hestArgVecNew(void) {
   // underlying array havec->harg will not be reallocated if shrunk
   havec->hargArr->noReallocWhenSmaller = AIR_TRUE;
   // airArrayStructCB(havec->hargArr, hargInit, hargDone);
-  airArrayPointerCB(havec->hargArr, _hestArgNew_vp, _hestArgNix_vp);
+  airArrayPointerCB(havec->hargArr, _hestArgNew_vp, hestArgNix_mop);
   return havec;
 }
 
@@ -158,6 +153,7 @@ hestArgVecNix(hestArgVec *havec) {
   }
   return NULL;
 }
+AIR_MOPPER(hestArgVecNix);
 
 // return havec->harg[popIdx] and shift higher indices down
 hestArg *
@@ -379,3 +375,4 @@ hestInputStackNix(hestInputStack *hist) {
   free(hist);
   return NULL;
 }
+AIR_MOPPER(hestInputStackNix);

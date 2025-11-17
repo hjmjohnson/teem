@@ -104,7 +104,7 @@ nrrdHisto(Nrrd *nout, const Nrrd *nin, const NrrdRange *_range, const Nrrd *nwgh
     } else {
       range = nrrdRangeNewSet(nin, nrrdBlind8BitRangeState);
     }
-    airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
+    airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
     min = range->min;
     max = range->max;
     nout->axis[0].min = min;
@@ -360,7 +360,7 @@ nrrdHistoAxis(Nrrd *nout, const Nrrd *nin, const NrrdRange *_range, unsigned int
   } else {
     range = nrrdRangeNewSet(nin, nrrdBlind8BitRangeState);
   }
-  airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
+  airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
   nrrdAxisInfoGet_nva(nin, nrrdAxisInfoSize, size);
   size[hax] = bins;
   if (nrrdMaybeAlloc_nva(nout, type, nin->dim, size)) {
@@ -491,7 +491,7 @@ nrrdHistoJoint(Nrrd *nout, const Nrrd *const *nin, const NrrdRange *const *_rang
     } else {
       range[ai] = nrrdRangeNewSet(nin[ai], nrrdBlind8BitRangeState);
     }
-    airMopAdd(mop, range[ai], (airMopper)nrrdRangeNix, airMopAlways);
+    airMopAdd(mop, range[ai], nrrdRangeNix_mop, airMopAlways);
   }
   for (ai = 0; ai < numNin; ai++) {
     if (!nin[ai]) {
@@ -662,8 +662,8 @@ nrrdHistoThresholdOtsu(double *threshP, const Nrrd *_nhist, double expo) {
   }
 
   mop = airMopNew();
-  airMopAdd(mop, nhist = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nbvar = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nhist = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nbvar = nrrdNew(), nrrdNuke_mop, airMopAlways);
   if (nrrdConvert(nhist, _nhist, nrrdTypeDouble) || nrrdCopy(nbvar, nhist)) {
     biffAddf(NRRD, "%s: making local copies", me);
     airMopError(mop);

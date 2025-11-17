@@ -28,7 +28,7 @@ main(int argc, const char *argv[]) {
   airArray *mop = airMopNew();
   hestParm *hparm = hestParmMopNew(); /* Mop for hestParseOrExit */
   /* hparm not actually used, but that's ok */
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   Nrrd *nin;
   hestOptAdd(&hopt, "i", "nin", airTypeOther, 1, 1, &nin, NULL, "input image", NULL,
              NULL, nrrdHestNrrd);
@@ -53,8 +53,8 @@ main(int argc, const char *argv[]) {
   hestOptAdd(&hopt, "o", "filename", airTypeString, 1, 1, &outS, "-",
              "file to write histogram to");
   hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, histradInfo);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   if (2 != nin->dim) {
     fprintf(stderr, "%s: need 2-D input (not %u-D)\n", me, nin->dim);
@@ -66,7 +66,7 @@ main(int argc, const char *argv[]) {
   int rbins = bins[0];
   int hbins = bins[1];
   Nrrd *nhist = nrrdNew();
-  airMopAdd(mop, nhist, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nhist, nrrdNuke_mop, airMopAlways);
   if (nrrdMaybeAlloc_va(nhist, nrrdTypeDouble, 2, AIR_SIZE_T(rbins),
                         AIR_SIZE_T(hbins))) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
@@ -76,7 +76,7 @@ main(int argc, const char *argv[]) {
   }
   if (!(AIR_EXISTS(vmin) && AIR_EXISTS(vmax))) {
     NrrdRange *range = nrrdRangeNewSet(nin, nrrdStateBlind8BitRange);
-    airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
+    airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
     vmin = AIR_EXISTS(vmin) ? vmin : range->min;
     vmax = AIR_EXISTS(vmax) ? vmax : range->max;
   }

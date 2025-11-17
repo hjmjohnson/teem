@@ -151,7 +151,7 @@ nrrdFFT(Nrrd *nout, const Nrrd *_nin, unsigned int *axes, unsigned int axesNum, 
   mop = airMopNew();
   airMopAdd(mop, inData, _nrrdFftwFreeWrapper, airMopAlways);
   nin = nrrdNew();
-  airMopAdd(mop, nin, (airMopper)nrrdNix /* NOT Nuke */, airMopAlways);
+  airMopAdd(mop, nin, nrrdNix_mop /* NOT Nuke */, airMopAlways);
   nrrdAxisInfoGet_nva(_nin, nrrdAxisInfoSize, inSize);
   /* we don't copy data yet; it may be over-written during plan creation */
   if (nrrdWrap_nva(nin, inData, nrrdTypeDouble, _nin->dim, inSize)) {

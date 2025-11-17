@@ -929,7 +929,7 @@ _nrrdWrite(FILE *file, char **stringP, const Nrrd *nrrd, NrrdIoState *_nio) {
       airMopError(mop);
       return 1;
     }
-    airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
+    airMopAdd(mop, nio, nrrdIoStateNix_mop, airMopAlways);
   }
   if (_nrrdEncodingMaybeSet(nio) || _nrrdFormatMaybeSet(nio)) {
     biffAddf(NRRD, "%s: ", me);
@@ -1044,7 +1044,7 @@ nrrdSave(const char *filename, const Nrrd *nrrd, NrrdIoState *nio) {
       biffAddf(NRRD, "%s: couldn't alloc local NrrdIoState", me);
       return 1;
     }
-    airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
+    airMopAdd(mop, nio, nrrdIoStateNix_mop, airMopAlways);
   }
   if (_nrrdEncodingMaybeSet(nio) || _nrrdFormatMaybeGuess(nrrd, nio, filename)) {
     biffAddf(NRRD, "%s: ", me);
@@ -1081,7 +1081,7 @@ nrrdSave(const char *filename, const Nrrd *nrrd, NrrdIoState *nio) {
     return 1;
   }
   /* ---- END non-NrrdIO */
-  airMopAdd(mop, file, (airMopper)airFclose, airMopAlways);
+  airMopAdd(mop, file, airFclose_mop, airMopAlways);
 
   if (nrrdWrite(file, nrrd, nio)) {
     biffAddf(NRRD, "%s:", me);

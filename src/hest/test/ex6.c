@@ -67,8 +67,9 @@ quat_free(void *_ptr) {
   }
   return NULL;
 }
+AIR_MOPPER(quat_free);
 
-hestCB quatCB = {sizeof(Quat *), "quatty", quat_parse, (airMopper)quat_free};
+hestCB quatCB = {sizeof(Quat *), "quatty", quat_parse, quat_free_mop};
 
 int
 main(int argc, const char **argv) {
@@ -78,7 +79,7 @@ main(int argc, const char **argv) {
 
   airArray *mop = airMopNew();
   hparm = hestParmNew();
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hparm->responseFileEnable = AIR_TRUE;
   hparm->respectDashDashHelp = AIR_TRUE;
   hparm->noArgsIsNoProblem = AIR_TRUE;

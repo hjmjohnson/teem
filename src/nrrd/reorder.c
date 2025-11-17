@@ -674,7 +674,7 @@ nrrdJoin(Nrrd *nout, const Nrrd *const *nin, unsigned int ninNum, unsigned int a
          on the parts that don't actually need it */
       /* NB: we register nrrdNix, not nrrdNuke */
       /* fprintf(stderr, "!%s: %d: tacit reshape/permute\n", me, ni); */
-      airMopAdd(mop, ninperm[ni], (airMopper)nrrdNix, airMopAlways);
+      airMopAdd(mop, ninperm[ni], nrrdNix_mop, airMopAlways);
       nrrdAxisInfoGet_nva(nin[ni], nrrdAxisInfoSize, size);
       for (ai = nin[ni]->dim - 1; ai >= mindim + 1; ai--) {
         size[ai] = size[ai - 1];
@@ -705,7 +705,7 @@ nrrdJoin(Nrrd *nout, const Nrrd *const *nin, unsigned int ninNum, unsigned int a
                         | NRRD_AXIS_INFO_SPACEDIRECTION_BIT));
     } else {
       /* on this part, we permute (no need for a reshape) */
-      airMopAdd(mop, ninperm[ni], (airMopper)nrrdNuke, airMopAlways);
+      airMopAdd(mop, ninperm[ni], nrrdNuke_mop, airMopAlways);
       if (nrrdAxesPermute(ninperm[ni], nin[ni], permute)) {
         biffAddf(NRRD, "%s: trouble permuting input part %u", me, ni);
         airMopError(mop);
@@ -771,7 +771,7 @@ nrrdJoin(Nrrd *nout, const Nrrd *const *nin, unsigned int ninNum, unsigned int a
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, ntmpperm, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ntmpperm, nrrdNuke_mop, airMopAlways);
   dataPerm = AIR_CAST(char *, ntmpperm->data);
   for (ni = 0; ni < ninNum; ni++) {
     /* here is where the actual joining happens */

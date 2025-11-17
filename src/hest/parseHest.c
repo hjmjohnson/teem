@@ -49,6 +49,7 @@ hestParseFree(hestOpt *opt) {
   }
   return opt;
 }
+AIR_MOPPER(hestParseFree);
 
 /*
 hestParseOrExit()  (replaces pre-TeemV2 hestParseOrDie)

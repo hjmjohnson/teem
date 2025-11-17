@@ -50,6 +50,7 @@ nrrdRangeNix(NrrdRange *range) {
   airFree(range);
   return NULL;
 }
+AIR_MOPPER(nrrdRangeNix);
 
 void
 nrrdRangeReset(NrrdRange *range) {
@@ -147,7 +148,7 @@ nrrdRangePercentileSet(NrrdRange *range, const Nrrd *nrrd, double minPerc,
   allmax = range->max;
 
   nhist = nrrdNew();
-  airMopAdd(mop, nhist, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nhist, nrrdNuke_mop, airMopAlways);
   /* the histogram is over the entire range of values */
   if (nrrdHisto(nhist, nrrd, range, NULL, hbins, nrrdTypeDouble)) {
     biffAddf(NRRD, "%s: trouble making histogram", me);
@@ -293,7 +294,7 @@ nrrdRangePercentileFromStringSet(NrrdRange *range, const Nrrd *nin, const char *
       return 1;
     }
     nneg = nrrdNew();
-    airMopAdd(mop, nneg, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nneg, nrrdNuke_mop, airMopAlways);
     if (nrrdArithUnaryOp(nneg, nrrdUnaryOpNegative, nin)) {
       biffAddf(NRRD, "%s: trouble negating input", me);
       airMopError(mop);
@@ -302,7 +303,7 @@ nrrdRangePercentileFromStringSet(NrrdRange *range, const Nrrd *nin, const char *
     nji[0] = nin;
     nji[1] = nneg;
     njoin = nrrdNew();
-    airMopAdd(mop, njoin, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, njoin, nrrdNuke_mop, airMopAlways);
     if (nrrdJoin(njoin, nji, 2, nin->dim, AIR_TRUE)) {
       biffAddf(NRRD, "%s: trouble joining input with negation", me);
       airMopError(mop);

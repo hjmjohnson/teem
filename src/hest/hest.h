@@ -455,6 +455,7 @@ HEST_EXPORT unsigned int hestDefaultIndent;
 // argvHest.c
 HEST_EXPORT hestArg *hestArgNew(void);
 HEST_EXPORT hestArg *hestArgNix(hestArg *harg);
+HEST_EXPORT void *hestArgNix_mop(void *);
 HEST_EXPORT void hestArgReset(hestArg *harg);
 HEST_EXPORT void hestArgAddChar(hestArg *harg, char cc);
 HEST_EXPORT void hestArgSetString(hestArg *harg, const char *str);
@@ -462,6 +463,7 @@ HEST_EXPORT void hestArgAddString(hestArg *harg, const char *str);
 HEST_EXPORT hestArgVec *hestArgVecNew(void);
 HEST_EXPORT void hestArgVecReset(hestArgVec *havec);
 HEST_EXPORT hestArgVec *hestArgVecNix(hestArgVec *havec);
+HEST_EXPORT void *hestArgVecNix_mop(void *);
 HEST_EXPORT hestArg *hestArgVecRemove(hestArgVec *havec, unsigned int popIdx);
 HEST_EXPORT char *hestArgVecSprint(const hestArgVec *havec, int showIndices);
 HEST_EXPORT void hestArgVecAppendString(hestArgVec *havec, const char *str);
@@ -472,6 +474,7 @@ HEST_EXPORT hestInput *hestInputNew(void);
 HEST_EXPORT hestInput *hestInputNix(hestInput *hin);
 HEST_EXPORT hestInputStack *hestInputStackNew(void);
 HEST_EXPORT hestInputStack *hestInputStackNix(hestInputStack *hist);
+HEST_EXPORT void *hestInputStackNix_mop(void *);
 
 // methodsHest.c
 HEST_EXPORT const int hestPresent;
@@ -482,6 +485,7 @@ HEST_EXPORT hestParm *hestParmMopNew(void);
 HEST_EXPORT void hestParmUnmop(hestParm *hparm);
 HEST_EXPORT hestParm *hestParmCopy(const hestParm *hparm);
 HEST_EXPORT hestParm *hestParmFree(hestParm *hparm);
+HEST_EXPORT void *hestParmFree_mop(void *);
 HEST_EXPORT const hestParm *hestParmMopDone(const hestParm *hparm);
 HEST_EXPORT int hestParmColumnsIoctl(hestParm *hparm, unsigned int nonIoctlColumns);
 HEST_EXPORT void hestOptSingleSet(hestOpt *hopt, const char *flag, const char *name,
@@ -520,12 +524,14 @@ HEST_EXPORT unsigned int hestOptAdd(hestOpt **optP,
                                            const hestCB *CB */);
 HEST_EXPORT unsigned int hestOptNum(const hestOpt *hopt);
 HEST_EXPORT hestOpt *hestOptFree(hestOpt *hopt);
+HEST_EXPORT void *hestOptFree_mop(void *);
 HEST_EXPORT int hestOptCheck(const hestOpt *hopt, char **errP);
 HEST_EXPORT int hestOptParmCheck(const hestOpt *hopt, const hestParm *hparm,
                                  char **errP);
 
 // parseHest.c
 HEST_EXPORT hestOpt *hestParseFree(hestOpt *hopt);
+HEST_EXPORT void *hestParseFree_mop(void *);
 HEST_EXPORT int hestParseOrExit(hestOpt *hopt, int argc, const char **argv,
                                 const hestParm *hparm, const char *me, const char *info);
 /* TeemV2 removed hestParseOrDie and replaced it with hestParseOrExit, which

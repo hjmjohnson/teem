@@ -190,7 +190,7 @@ parseSingleO(void *out, const char *str, _hestPPair *hpp) {
     if (hpp->hopt->CB->destroy) {
       /* out is the address of a void*, we manage the void* */
       if (!hpp->hopt->parseMop) hpp->hopt->parseMop = airMopNew();
-      airMopAdd(hpp->hopt->parseMop, (void **)out, (airMopper)airSetNull, airMopAlways);
+      airMopAdd(hpp->hopt->parseMop, (void **)out, airSetNull_mop, airMopAlways);
       airMopAdd(hpp->hopt->parseMop, *((void **)out), hpp->hopt->CB->destroy,
                 airMopAlways);
     }
@@ -364,6 +364,7 @@ _plainParmFree(hestParm *hparm) {
   airFree(hparm);
   return NULL;
 }
+static AIR_MOPPER(_plainParmFree);
 
 /*
 if you are going to be passing a hestParm to hestParseOrExit, or passing it to something
@@ -380,7 +381,7 @@ hestParmMopNew(void) {
   fprintf(stderr, "%s: created %p with mop %p with _plainParmFree(%p)\n", __func__,
           AIR_VOIDP(ret), AIR_VOIDP(ret->_selfMop), AIR_VOIDP(ret));
 #endif
-  airMopAdd(ret->_selfMop, ret, (airMopper)_plainParmFree, airMopAlways);
+  airMopAdd(ret->_selfMop, ret, _plainParmFree_mop, airMopAlways);
   return ret;
 }
 
@@ -404,7 +405,7 @@ hestParmCopy(const hestParm *hparm) {
               __func__, AIR_CVOIDP(hparm), AIR_VOIDP(ret->_selfMop),
               AIR_UINT(ret->_selfMop->len), AIR_VOIDP(ret));
 #endif
-      airMopAdd(ret->_selfMop, ret, (airMopper)_plainParmFree, airMopAlways);
+      airMopAdd(ret->_selfMop, ret, _plainParmFree_mop, airMopAlways);
     }
   }
   return ret;
@@ -425,7 +426,7 @@ hestParmUnmop(hestParm *hparm) {
             __func__, AIR_VOIDP(hparm), AIR_UINT(hparm->_selfMop->len),
             AIR_VOIDP(hparm->_selfMop), AIR_VOIDP(hparm));
 #endif
-    airMopSub(hparm->_selfMop, hparm, (airMopper)_plainParmFree);
+    airMopSub(hparm->_selfMop, hparm, _plainParmFree_mop);
     /* btw: airMopSub does not actually shorten the mop; it just turns
        the removed entry into a no-op, which is harmless */
     hparm->_selfMop = NULL;
@@ -470,6 +471,7 @@ hestParmFree(hestParm *hparm) {
   }
   return NULL;
 }
+AIR_MOPPER(hestParmFree);
 
 const hestParm * /* Biff: nope */
 hestParmMopDone(const hestParm *hparm) {
@@ -826,6 +828,7 @@ hestOptFree(hestOpt *hopt) {
   free(hopt);
   return NULL;
 }
+AIR_MOPPER(hestOptFree);
 
 /* _hestOPCheck
 New biff-based container for all logic that originated in _hestOptCheck (which is the

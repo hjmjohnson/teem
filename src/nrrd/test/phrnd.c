@@ -21,7 +21,7 @@
 
 #define NRRDNEW(X)                                                                      \
   (X) = nrrdNew();                                                                      \
-  airMopAdd(mop, (X), (airMopper)nrrdNuke, airMopAlways)
+  airMopAdd(mop, (X), nrrdNuke_mop, airMopAlways)
 
 const char *phrndInfo = ("randomizes phase of a real-valued array "
                          "while preserving the spectrum");
@@ -62,7 +62,7 @@ main(int argc, const char *argv[]) {
   mop = airMopNew();
   hparm = hestParmMopNew();
   hopt = NULL;
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hestOptAdd(&hopt, "i", "nin", airTypeOther, 1, 1, &nrin, NULL, "input array", NULL,
              NULL, nrrdHestNrrd);
   hestOptAdd(&hopt, "n", "len", airTypeUInt, 1, 1, &len, "65536",
@@ -98,8 +98,8 @@ main(int argc, const char *argv[]) {
   hestOptAdd(&hopt, "o", "filename", airTypeString, 1, 1, &outS, NULL,
              "file to write output nrrd to");
   hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, phrndInfo);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   if (0 != len % 2) {
     fprintf(stderr, "%s: given length %u is not even\n", me, len);

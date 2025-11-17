@@ -326,6 +326,7 @@ airArrayNuke(airArray *a) {
   }
   return NULL;
 }
+AIR_MOPPER(airArrayNuke);
 
 /*
 ******** airArrayNix()
@@ -340,3 +341,4 @@ airArrayNix(airArray *a) {
   }
   return NULL;
 }
+AIR_MOPPER(airArrayNix);

@@ -29,7 +29,7 @@ main(int argc, const char **argv) {
 
   airArray *mop = airMopNew();
   hestParm *hparm = hestParmMopNew();
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hparm->verbose = 10;
 
   hestOpt *hopt = NULL;
@@ -71,8 +71,8 @@ main(int argc, const char **argv) {
                        &numIn);
   // hparm->orExitWithoutNewerFeatures = AIR_TRUE;
   hestParseOrExit(hopt, argc - 1, argv + 1, hparm, argv[0], info);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
   {
     unsigned int opi, numO;
     numO = hestOptNum(hopt);

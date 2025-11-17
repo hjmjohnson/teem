@@ -28,7 +28,7 @@ main(int argc, const char *argv[]) {
   hestParm *hparm;
   airArray *mop = airMopNew();
   hparm = hestParmNew();
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
 
   hopt = NULL;
   char *name;
@@ -37,8 +37,8 @@ main(int argc, const char *argv[]) {
   hestOptAdd_3_Int(&hopt, "s", "sx sy sz", size, "128 128 128",
                    "dimensions of something");
   hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, tmplInfo);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   airMopOkay(mop);
   exit(0);

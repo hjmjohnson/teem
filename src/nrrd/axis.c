@@ -1400,7 +1400,7 @@ nrrdMetaDataNormalize(Nrrd *nout, const Nrrd *nin, int version, int trivialOrien
   /* initialize output by copying meta-data from nin to ntmp */
   mop = airMopNew();
   ntmp = nrrdNew();
-  airMopAdd(mop, ntmp, (airMopper)nrrdNix, airMopAlways);
+  airMopAdd(mop, ntmp, nrrdNix_mop, airMopAlways);
   /* HEY this is doing the work of a shallow copy, which isn't
      available in the API.  You can pass nrrdCopy() a nin with NULL
      nin->data, which implements a shallow copy, but we can't set

@@ -361,9 +361,9 @@ nrrdCCFind(Nrrd *nout, Nrrd **nvalP, const Nrrd *nin, int type, unsigned int con
   }
 
   mop = airMopNew();
-  airMopAdd(mop, nfpid, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nfpid, nrrdNuke_mop, airMopAlways);
   eqvArr = airArrayNew(NULL, NULL, 2 * sizeof(unsigned int), _nrrdCC_EqvIncr);
-  airMopAdd(mop, eqvArr, (airMopper)airArrayNuke, airMopAlways);
+  airMopAdd(mop, eqvArr, airArrayNuke_mop, airMopAlways);
   ret = 0;
   switch (nin->dim) {
   case 1:
@@ -403,8 +403,8 @@ nrrdCCFind(Nrrd *nout, Nrrd **nvalP, const Nrrd *nin, int type, unsigned int con
       airMopError(mop);
       return 1;
     }
-    airMopAdd(mop, nvalP, (airMopper)airSetNull, airMopOnError);
-    airMopAdd(mop, *nvalP, (airMopper)nrrdNuke, airMopOnError);
+    airMopAdd(mop, nvalP, airSetNull_mop, airMopOnError);
+    airMopAdd(mop, *nvalP, nrrdNuke_mop, airMopOnError);
     val = (*nvalP)->data;
     lup = nrrdUILookup[nin->type];
     ins = nrrdUIInsert[nin->type];
@@ -694,7 +694,7 @@ nrrdCCMerge(Nrrd *nout, const Nrrd *nin, Nrrd *_nval, int valDir, unsigned int m
     return 1;
   }
   if (valDir) {
-    airMopAdd(mop, nval = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nval = nrrdNew(), nrrdNuke_mop, airMopAlways);
     if (nrrdConvert(nval, _nval, nrrdTypeUInt)) {
       biffAddf(NRRD, "%s: value-directed merging needs usable nval", me);
       airMopError(mop);
@@ -709,9 +709,9 @@ nrrdCCMerge(Nrrd *nout, const Nrrd *nin, Nrrd *_nval, int valDir, unsigned int m
       return 1;
     }
   }
-  airMopAdd(mop, nadj = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nsize = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nnn = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nadj = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nsize = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nnn = nrrdNew(), nrrdNuke_mop, airMopAlways);
 
   if (nrrdCCSize(nsize, nin)
       || nrrdCopy(nnn, nsize) /* just to allocate to right size and type */
@@ -896,8 +896,8 @@ nrrdCCSettle(Nrrd *nout, Nrrd **nvalP, const Nrrd *nin) {
       airMopError(mop);
       return 1;
     }
-    airMopAdd(mop, nvalP, (airMopper)airSetNull, airMopOnError);
-    airMopAdd(mop, *nvalP, (airMopper)nrrdNuke, airMopOnError);
+    airMopAdd(mop, nvalP, airSetNull_mop, airMopOnError);
+    airMopAdd(mop, *nvalP, nrrdNuke_mop, airMopOnError);
   }
 
   id = 0;

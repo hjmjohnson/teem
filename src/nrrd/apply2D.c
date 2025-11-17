@@ -311,7 +311,7 @@ nrrdApply2DLut(Nrrd *nout, const Nrrd *nin, unsigned int domainAxis,
   mop = airMopNew();
   if (_range0) {
     range0 = nrrdRangeCopy(_range0);
-    airMopAdd(mop, nin0 = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nin0 = nrrdNew(), nrrdNuke_mop, airMopAlways);
     if (nrrdSlice(nin0, nin, 0, 0)) {
       biffAddf(NRRD, "%s: trouble learning range 0", me);
       airMopError(mop);
@@ -323,7 +323,7 @@ nrrdApply2DLut(Nrrd *nout, const Nrrd *nin, unsigned int domainAxis,
   }
   if (_range1) {
     range1 = nrrdRangeCopy(_range1);
-    airMopAdd(mop, nin1 = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nin1 = nrrdNew(), nrrdNuke_mop, airMopAlways);
     if (nrrdSlice(nin1, nin, 0, 1)) {
       biffAddf(NRRD, "%s: trouble learning range 1", me);
       airMopError(mop);
@@ -333,8 +333,8 @@ nrrdApply2DLut(Nrrd *nout, const Nrrd *nin, unsigned int domainAxis,
   } else {
     range1 = nrrdRangeNewSet(nin, nrrdBlind8BitRangeState);
   }
-  airMopAdd(mop, range0, (airMopper)nrrdRangeNix, airMopAlways);
-  airMopAdd(mop, range1, (airMopper)nrrdRangeNix, airMopAlways);
+  airMopAdd(mop, range0, nrrdRangeNix_mop, airMopAlways);
+  airMopAdd(mop, range1, nrrdRangeNix_mop, airMopAlways);
   if (_nrrdApply2DSetUp(nout, nin, range0, range1, nlut, kindLut, typeOut, rescale0,
                         rescale1)
       || _nrrdApply2DLutOrRegMap(nout, nin, range0, range1, nlut, AIR_FALSE, rescale0,
@@ -372,7 +372,7 @@ nrrdApply2DRegMap(Nrrd *nout, const Nrrd *nin,
   } else {
     range = nrrdRangeNewSet(nin, nrrdBlind8BitRangeState);
   }
-  airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
+  airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
   if (_nrrdApply2DSetUp(nout, nin, range, nmap, kindRmap, typeOut,
                         rescale, AIR_FALSE)
       || _nrrdApply2DLutOrRegMap(nout, nin, range, nmap, AIR_TRUE,

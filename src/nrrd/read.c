@@ -154,7 +154,7 @@ nrrdOneLine(size_t *lenP, NrrdIoState *nio, FILE *file) {
     }
     airArrayPointerCB(lineArr, airNull, airFree);
     mop = airMopNew();
-    airMopAdd(mop, lineArr, (airMopper)airArrayNuke, airMopAlways);
+    airMopAdd(mop, lineArr, airArrayNuke_mop, airMopAlways);
     while (len == nio->lineSize + 1) { /* means airOneLine maxed out buffer */
       lineIdx = airArrayLenIncr(lineArr, 1);
       if (!lineArr->data) {
@@ -418,7 +418,7 @@ _nrrdRead(Nrrd *nrrd, FILE *file, const char *string, NrrdIoState *_nio) {
       biffAddf(NRRD, "%s: couldn't alloc I/O struct", me);
       return 1;
     }
-    airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
+    airMopAdd(mop, nio, nrrdIoStateNix_mop, airMopAlways);
   }
 
   /* remember old data pointer and allocated size.  Whether or not to
@@ -654,7 +654,7 @@ nrrdLoad(Nrrd *nrrd, const char *filename, NrrdIoState *nio) {
       biffAddf(NRRD, "%s: couldn't alloc I/O struct", me);
       return 1;
     }
-    airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
+    airMopAdd(mop, nio, nrrdIoStateNix_mop, airMopAlways);
   }
 
   /* we save the directory of the filename given to us so that if it turns
@@ -681,7 +681,7 @@ nrrdLoad(Nrrd *nrrd, const char *filename, NrrdIoState *nio) {
     return 1;
   }
   /* ---- END non-NrrdIO */
-  airMopAdd(mop, file, (airMopper)airFclose, airMopOnError);
+  airMopAdd(mop, file, airFclose_mop, airMopOnError);
   /* non-error exiting is handled below */
 
   if (nrrdRead(nrrd, file, nio)) {
