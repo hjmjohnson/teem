@@ -56,8 +56,8 @@ main(int argc, const char *argv[]) {
              &numB);
   hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
   mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   fprintf(stderr, "a =");
   for (idx = 0; idx < numA; idx++) {

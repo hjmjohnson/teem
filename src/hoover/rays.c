@@ -109,6 +109,7 @@ _hooverExtraContextNix(_hooverExtraContext *ec) {
   }
   return NULL;
 }
+static AIR_MOPPER(_hooverExtraContextNix); /* semicolon just for clang-format */
 
 /*
 ** _hooverThreadArg struct
@@ -387,7 +388,7 @@ hooverRender(hooverContext *ctx, int *errCodeP, int *errThreadP) {
     return hooverErrInit;
   }
   mop = airMopNew();
-  airMopAdd(mop, ec, (airMopper)_hooverExtraContextNix, airMopAlways);
+  airMopAdd(mop, ec, _hooverExtraContextNix_mop, airMopAlways);
   if ((ret = (ctx->renderBegin)(&render, ctx->user))) {
     *errCodeP = ret;
     *errCodeP = 0;

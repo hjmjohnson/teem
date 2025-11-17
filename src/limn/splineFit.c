@@ -242,6 +242,7 @@ limnCbfPointsNix(limnCbfPoints *lpnt) {
   }
   return NULL;
 }
+AIR_MOPPER(limnCbfPointsNix)
 
 int /* Biff: 1 */
 limnCbfPointsCheck(const limnCbfPoints *lpnt) {
@@ -308,6 +309,7 @@ limnCbfPathNix(limnCbfPath *path) {
   }
   return NULL;
 }
+AIR_MOPPER(limnCbfPathNix)
 
 void
 limnCbfPathJoin(limnCbfPath *dst, const limnCbfPath *src) {
@@ -375,6 +377,7 @@ limnCbfCtxNix(limnCbfCtx *fctx) {
   }
   return NULL;
 }
+AIR_MOPPER(limnCbfCtxNix)
 
 /*
 ctxBuffersSet: ensures that some buffers in fctx: uu, vw, tw are set up for current

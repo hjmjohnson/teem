@@ -59,6 +59,7 @@ echoRTParmNix(echoRTParm *parm) {
   airFree(parm);
   return NULL;
 }
+AIR_MOPPER(echoRTParmNix);
 
 echoGlobalState * /* Biff: nope */
 echoGlobalStateNew(void) {
@@ -85,6 +86,7 @@ echoGlobalStateNix(echoGlobalState *state) {
   /* mutex freed at end of echoRTRender() */
   return NULL;
 }
+AIR_MOPPER(echoGlobalStateNix)
 
 echoThreadState * /* Biff: nope */
 echoThreadStateNew(void) {
@@ -120,6 +122,7 @@ echoThreadStateNix(echoThreadState *state) {
   }
   return NULL;
 }
+AIR_MOPPER(echoThreadStateNix)
 
 echoScene * /* Biff: nope */
 echoSceneNew(void) {
@@ -194,3 +197,4 @@ echoSceneNix(echoScene *scene) {
   }
   return NULL;
 }
+AIR_MOPPER(echoSceneNix)

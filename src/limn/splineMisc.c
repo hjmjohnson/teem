@@ -302,7 +302,7 @@ limnSplineParse(const char *_str) {
   fnameS = str;
   *col = 0;
   tmpS = col + 1;
-  airMopAdd(mop, ninA = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ninA = nrrdNew(), nrrdNuke_mop, airMopAlways);
   if (nrrdLoad(ninA, fnameS, NULL)) {
     biffMovef(LIMN, NRRD, "%s: couldn't read control point nrrd:\n", me);
     airMopError(mop);
@@ -342,7 +342,7 @@ limnSplineParse(const char *_str) {
     return NULL;
   }
 
-  airMopAdd(mop, ninB = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ninB = nrrdNew(), nrrdNuke_mop, airMopAlways);
   if (limnSplineNrrdCleverFix(ninB, ninA, info, spec->type)) {
     biffAddf(LIMN, "%s: couldn't reshape given nrrd:\n", me);
     airMopError(mop);
@@ -388,7 +388,7 @@ _limnHestSplineTypeSpecParse(void *ptr, const char *str, char err[AIR_STRLEN_HUG
 static const hestCB _limnHestSplineTypeSpec = {sizeof(limnSplineTypeSpec *),
                                                "spline type specification",
                                                _limnHestSplineTypeSpecParse,
-                                               (airMopper)limnSplineTypeSpecNix};
+                                               limnSplineTypeSpecNix_mop};
 
 const hestCB *const limnHestSplineTypeSpec = &_limnHestSplineTypeSpec;
 
@@ -426,6 +426,6 @@ _limnHestSplineParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) 
 }
 
 static const hestCB _limnHestSpline = {sizeof(limnSpline *), "spline specification",
-                                       _limnHestSplineParse, (airMopper)limnSplineNix};
+                                       _limnHestSplineParse, limnSplineNix_mop};
 
 const hestCB *const limnHestSpline = &_limnHestSpline;

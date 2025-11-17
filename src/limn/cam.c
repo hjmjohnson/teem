@@ -221,21 +221,21 @@ limnCameraPathMake(limnCamera *cam, int numFrames, limnCamera *keycam, double *t
      for example.  However, we do make an effort to only do the spline
      evaluation on the things we actually need to know. */
   mop = airMopNew();
-  airMopAdd(mop, nquat = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nfrom = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, natpt = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nupvc = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, ndist = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nfova = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, ntime = nrrdNew(), (airMopper)nrrdNix, airMopAlways);
+  airMopAdd(mop, nquat = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nfrom = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, natpt = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nupvc = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, ndist = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nfova = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, ntime = nrrdNew(), nrrdNix_mop, airMopAlways);
   if (nrrdWrap_va(ntime, time, nrrdTypeDouble, 1, AIR_SIZE_T(numKeys))) {
     biffMovef(LIMN, NRRD, "%s: trouble wrapping time values", me);
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, nsample = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nsample = nrrdNew(), nrrdNuke_mop, airMopAlways);
   timeType = limnSplineTypeSpecNew(limnSplineTypeTimeWarp);
-  airMopAdd(mop, timeType, (airMopper)limnSplineTypeSpecNix, airMopAlways);
+  airMopAdd(mop, timeType, limnSplineTypeSpecNix_mop, airMopAlways);
   if (nrrdMaybeAlloc_va(nquat, nrrdTypeDouble, 2, AIR_SIZE_T(4), AIR_SIZE_T(numKeys))
       || nrrdMaybeAlloc_va(nfrom, nrrdTypeDouble, 2, AIR_SIZE_T(3), AIR_SIZE_T(numKeys))
       || nrrdMaybeAlloc_va(natpt, nrrdTypeDouble, 2, AIR_SIZE_T(3), AIR_SIZE_T(numKeys))
@@ -301,13 +301,13 @@ limnCameraPathMake(limnCamera *cam, int numFrames, limnCamera *keycam, double *t
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, quatSpline, (airMopper)limnSplineNix, airMopAlways);
-  airMopAdd(mop, fromSpline, (airMopper)limnSplineNix, airMopAlways);
-  airMopAdd(mop, atptSpline, (airMopper)limnSplineNix, airMopAlways);
-  airMopAdd(mop, upvcSpline, (airMopper)limnSplineNix, airMopAlways);
-  airMopAdd(mop, distSpline, (airMopper)limnSplineNix, airMopAlways);
-  airMopAdd(mop, fovaSpline, (airMopper)limnSplineNix, airMopAlways);
-  airMopAdd(mop, timeSpline, (airMopper)limnSplineNix, airMopAlways);
+  airMopAdd(mop, quatSpline, limnSplineNix_mop, airMopAlways);
+  airMopAdd(mop, fromSpline, limnSplineNix_mop, airMopAlways);
+  airMopAdd(mop, atptSpline, limnSplineNix_mop, airMopAlways);
+  airMopAdd(mop, upvcSpline, limnSplineNix_mop, airMopAlways);
+  airMopAdd(mop, distSpline, limnSplineNix_mop, airMopAlways);
+  airMopAdd(mop, fovaSpline, limnSplineNix_mop, airMopAlways);
+  airMopAdd(mop, timeSpline, limnSplineNix_mop, airMopAlways);
 
   /* evaluate splines */
   E = AIR_FALSE;

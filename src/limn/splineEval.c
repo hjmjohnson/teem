@@ -368,7 +368,7 @@ limnSplineSample(Nrrd *nout, limnSpline *spline, double minT, size_t M, double m
     return 1;
   }
   mop = airMopNew();
-  airMopAdd(mop, ntt = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ntt = nrrdNew(), nrrdNuke_mop, airMopAlways);
   if (nrrdMaybeAlloc_va(ntt, nrrdTypeDouble, 1, M)) {
     biffMovef(LIMN, NRRD, "%s: trouble allocating tmp nrrd", me);
     airMopError(mop);

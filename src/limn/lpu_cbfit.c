@@ -79,7 +79,7 @@ limnPu_cbfitMain(int argc, const char **argv, const char *me, const hestParm *hp
   // making mop early since we want hest to parse fields of fctx
   airArray *mop = airMopNew();
   limnCbfCtx *fctx = limnCbfCtxNew();
-  airMopAdd(mop, fctx, (airMopper)limnCbfCtxNix, airMopAlways);
+  airMopAdd(mop, fctx, limnCbfCtxNix_mop, airMopAlways);
   Nrrd *_nin = NULL;
   hestOptAdd_1_Other(&hopt, "i", "input", &_nin, NULL, "input xy points", nrrdHestNrrd);
   int loop;
@@ -172,8 +172,8 @@ limnPu_cbfitMain(int argc, const char **argv, const char *me, const hestParm *hp
    */
 
   hestParseOrExit(hopt, argc, argv, hparm, me, myinfo);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
   char *err;
 
   if (!(2 == _nin->dim)) {
@@ -200,7 +200,7 @@ limnPu_cbfitMain(int argc, const char **argv, const char *me, const hestParm *hp
   }
 
   Nrrd *nin = nrrdNew();
-  airMopAdd(mop, nin, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nin, nrrdNuke_mop, airMopAlways);
   if (nrrdConvert(nin, _nin, nrrdTypeDouble)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble:\n%s", me, err);
@@ -227,7 +227,7 @@ limnPu_cbfitMain(int argc, const char **argv, const char *me, const hestParm *hp
       return 1;
     }
     Nrrd *ntmp = nrrdNew();
-    airMopAdd(mop, ntmp, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, ntmp, nrrdNuke_mop, airMopAlways);
     if (nrrdCopy(ntmp, nin)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
       fprintf(stderr, "%s: trouble:\n%s", me, err);
@@ -276,7 +276,7 @@ limnPu_cbfitMain(int argc, const char **argv, const char *me, const hestParm *hp
     } else {
       unsigned int ci, si;
       limnCbfPath *spath = limnCbfPathNew(size1);
-      airMopAdd(mop, spath, (airMopper)limnCbfPathNix, airMopAlways);
+      airMopAdd(mop, spath, limnCbfPathNix_mop, airMopAlways);
       fprintf(stderr, "%s: synthetically sampling %u splines with %u points\n", me,
               size1, synthNum);
       /* copy in control point data */
@@ -289,7 +289,7 @@ limnPu_cbfitMain(int argc, const char **argv, const char *me, const hestParm *hp
     }
 
     nsyn = nrrdNew();
-    airMopAdd(mop, nsyn, (airMopper)nrrdNix, airMopAlways);
+    airMopAdd(mop, nsyn, nrrdNix_mop, airMopAlways);
     if (nrrdWrap_va(nsyn, xy, nrrdTypeDouble, 2, (size_t)2, (size_t)synthNum)
         || nrrdSave(synthOut, nsyn, NULL)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
@@ -311,9 +311,9 @@ limnPu_cbfitMain(int argc, const char **argv, const char *me, const hestParm *hp
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, lpnt, (airMopper)limnCbfPointsNix, airMopAlways);
+  airMopAdd(mop, lpnt, limnCbfPointsNix_mop, airMopAlways);
   limnCbfPath *path = limnCbfPathNew(0);
-  airMopAdd(mop, path, (airMopper)limnCbfPathNix, airMopAlways);
+  airMopAdd(mop, path, limnCbfPathNix_mop, airMopAlways);
   if (fctx->cornerAngle) {
     fctx->cornerFind = AIR_TRUE;
   } else {

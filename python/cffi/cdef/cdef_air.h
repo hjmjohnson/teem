@@ -264,6 +264,7 @@ extern airThreadMutex *airThreadMutexNew(void);
 extern int airThreadMutexLock(airThreadMutex *mutex);
 extern int airThreadMutexUnlock(airThreadMutex *mutex);
 extern airThreadMutex *airThreadMutexNix(airThreadMutex *mutex);
+extern void *airThreadMutexNix_mop(void *);
 extern airThreadCond *airThreadCondNew(void);
 extern int airThreadCondWait(airThreadCond *cond, airThreadMutex *mutex);
 extern int airThreadCondSignal(airThreadCond *cond);

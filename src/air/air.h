@@ -331,6 +331,7 @@ AIR_EXPORT airThreadMutex *airThreadMutexNew(void);
 AIR_EXPORT int airThreadMutexLock(airThreadMutex *mutex);
 AIR_EXPORT int airThreadMutexUnlock(airThreadMutex *mutex);
 AIR_EXPORT airThreadMutex *airThreadMutexNix(airThreadMutex *mutex);
+AIR_EXPORT void *airThreadMutexNix_mop(void *);
 
 AIR_EXPORT airThreadCond *airThreadCondNew(void);
 AIR_EXPORT int airThreadCondWait(airThreadCond *cond, airThreadMutex *mutex);

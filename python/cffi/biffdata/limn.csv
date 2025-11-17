@@ -9,16 +9,16 @@ limnPolyDataWriteIV,int,1,0,limn,limn/io.c:136
 limnObjectReadOFF,int,1,0,limn,limn/io.c:262
 limnPolyDataWriteLMPD,int,1,0,limn,limn/io.c:453
 limnPolyDataReadLMPD,int,1,0,limn,limn/io.c:580
-limnPolyDataWriteVTK,int,1,0,limn,limn/io.c:960
-limnPolyDataReadOFF,int,1,0,limn,limn/io.c:1050
-limnPolyDataSave,int,1,0,limn,limn/io.c:1155
+limnPolyDataWriteVTK,int,1,0,limn,limn/io.c:959
+limnPolyDataReadOFF,int,1,0,limn,limn/io.c:1049
+limnPolyDataSave,int,1,0,limn,limn/io.c:1154
 limnLightUpdate,int,1,0,limn,limn/light.c:65
-limnPolyDataAlloc,int,1,0,limn,limn/polydata.c:147
-limnPolyDataCopy,int,1,0,limn,limn/polydata.c:226
-limnPolyDataCopyN,int,1,0,limn,limn/polydata.c:258
-limnPolyDataPrimitiveVertexNumber,int,1,0,limn,limn/polydata.c:549
-limnPolyDataPrimitiveArea,int,1,0,limn,limn/polydata.c:571
-limnPolyDataRasterize,int,1,0,limn,limn/polydata.c:629
+limnPolyDataAlloc,int,1,0,limn,limn/polydata.c:148
+limnPolyDataCopy,int,1,0,limn,limn/polydata.c:227
+limnPolyDataCopyN,int,1,0,limn,limn/polydata.c:259
+limnPolyDataPrimitiveVertexNumber,int,1,0,limn,limn/polydata.c:550
+limnPolyDataPrimitiveArea,int,1,0,limn,limn/polydata.c:572
+limnPolyDataRasterize,int,1,0,limn,limn/polydata.c:630
 limnPolyDataSpiralTubeWrap,int,1,0,limn,limn/polyfilter.c:24
 limnPolyDataSmoothHC,int,-1,0,limn,limn/polyfilter.c:334
 limnPolyDataVertexWindingFix,int,1,0,limn,limn/polymod.c:1228
@@ -54,18 +54,18 @@ limnObjectPSDrawConcave,int,1,0,limn,limn/renderLimn.c:312
 limnSplineNrrdEvaluate,int,1,0,limn,limn/splineEval.c:321
 limnSplineSample,int,1,0,limn,limn/splineEval.c:359
 limnCbfPointsNew,limnCbfPoints *,NULL,0,limn,limn/splineFit.c:175
-limnCbfPointsCheck,int,1,0,limn,limn/splineFit.c:247
-limnCbfCtxPrep,int,1,0,limn,limn/splineFit.c:518
-limnCbfTVT,int,1,0,limn,limn/splineFit.c:786
-limnCbfSingle,int,1,0,limn,limn/splineFit.c:1526
-limnCbfCorners,int,1,0,limn,limn/splineFit.c:1577
-limnCbfMulti,int,1,0,limn,limn/splineFit.c:1779
-limnCbfGo,int,1,0,limn,limn/splineFit.c:1897
+limnCbfPointsCheck,int,1,0,limn,limn/splineFit.c:248
+limnCbfCtxPrep,int,1,0,limn,limn/splineFit.c:521
+limnCbfTVT,int,1,0,limn,limn/splineFit.c:789
+limnCbfSingle,int,1,0,limn,limn/splineFit.c:1529
+limnCbfCorners,int,1,0,limn,limn/splineFit.c:1580
+limnCbfMulti,int,1,0,limn,limn/splineFit.c:1782
+limnCbfGo,int,1,0,limn,limn/splineFit.c:1900
 limnSplineTypeSpecNew,limnSplineTypeSpec *,NULL,0,limn,limn/splineMethods.c:23
-limnSplineNew,limnSpline *,NULL,0,limn,limn/splineMethods.c:122
-limnSplineNrrdCleverFix,int,1,0,limn,limn/splineMethods.c:247
-limnSplineCleverNew,limnSpline *,NULL,0,limn,limn/splineMethods.c:392
-limnSplineUpdate,int,1,0,limn,limn/splineMethods.c:420
+limnSplineNew,limnSpline *,NULL,0,limn,limn/splineMethods.c:123
+limnSplineNrrdCleverFix,int,1,0,limn,limn/splineMethods.c:249
+limnSplineCleverNew,limnSpline *,NULL,0,limn,limn/splineMethods.c:394
+limnSplineUpdate,int,1,0,limn,limn/splineMethods.c:422
 limnSplineTypeSpecParse,limnSplineTypeSpec *,NULL,0,limn,limn/splineMisc.c:220
 limnSplineParse,limnSpline *,NULL,0,limn,limn/splineMisc.c:276
 limnObjectWorldHomog,int,1,0,limn,limn/transform.c:23

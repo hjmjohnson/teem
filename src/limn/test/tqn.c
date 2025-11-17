@@ -40,11 +40,11 @@ main(int argc, const char *argv[]) {
              "which quantization scheme");
   hestOptAdd(&hopt, "o", "out", airTypeString, 1, 1, &outS, "-", "output image");
   hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nqn = nrrdNew();
-  airMopAdd(mop, nqn, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nqn, nrrdNuke_mop, airMopAlways);
   if (limnQNDemo(nqn, reso, qni)) {
     airMopAdd(mop, err = biffGetDone(LIMN), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble:\n%s\n", me, err);

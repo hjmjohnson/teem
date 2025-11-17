@@ -691,8 +691,10 @@ LIMN_EXPORT void limnCameraInit(limnCamera *cam);
 LIMN_EXPORT limnLight *limnLightNix(limnLight *);
 LIMN_EXPORT limnCamera *limnCameraNew(void);
 LIMN_EXPORT limnCamera *limnCameraNix(limnCamera *cam);
+LIMN_EXPORT void *limnCameraNix_mop(void *);
 LIMN_EXPORT limnWindow *limnWindowNew(int device);
 LIMN_EXPORT limnWindow *limnWindowNix(limnWindow *win);
+LIMN_EXPORT void *limnWindowNix_mop(void *);
 
 /* hestLimn.c */
 LIMN_EXPORT void limnHestCameraOptAdd(hestOpt **hoptP, limnCamera *cam,
@@ -717,6 +719,7 @@ LIMN_EXPORT int limnCameraPathMake(limnCamera *cam, int numFrames, limnCamera *k
 LIMN_EXPORT int limnObjectLookAdd(limnObject *obj);
 LIMN_EXPORT limnObject *limnObjectNew(int incr, int doEdges);
 LIMN_EXPORT limnObject *limnObjectNix(limnObject *obj);
+LIMN_EXPORT void *limnObjectNix_mop(void *);
 LIMN_EXPORT void limnObjectEmpty(limnObject *obj);
 LIMN_EXPORT int limnObjectPreSet(limnObject *obj,
                                  unsigned int partNum,
@@ -748,6 +751,7 @@ LIMN_EXPORT int limnObjectFaceAdd(limnObject *obj,
 /* polydata.c */
 LIMN_EXPORT limnPolyData *limnPolyDataNew(void);
 LIMN_EXPORT limnPolyData *limnPolyDataNix(limnPolyData *pld);
+LIMN_EXPORT void *limnPolyDataNix_mop(void *);
 LIMN_EXPORT unsigned int limnPolyDataInfoBitFlag(const limnPolyData *pld);
 LIMN_EXPORT int limnPolyDataAlloc(limnPolyData *pld,
                                   unsigned int infoBitFlag,
@@ -898,8 +902,10 @@ LIMN_EXPORT int limnObjectPSDrawConcave(limnObject *obj, limnCamera *cam, Nrrd *
 /* splineMethods.c */
 LIMN_EXPORT limnSplineTypeSpec *limnSplineTypeSpecNew(int type, ...);
 LIMN_EXPORT limnSplineTypeSpec *limnSplineTypeSpecNix(limnSplineTypeSpec *spec);
+LIMN_EXPORT void *limnSplineTypeSpecNix_mop(void *);
 LIMN_EXPORT limnSpline *limnSplineNew(Nrrd *ncpt, int info, limnSplineTypeSpec *spec);
 LIMN_EXPORT limnSpline *limnSplineNix(limnSpline *spline);
+LIMN_EXPORT void *limnSplineNix_mop(void *);
 LIMN_EXPORT int limnSplineNrrdCleverFix(Nrrd *nout, Nrrd *nin, int info, int type);
 LIMN_EXPORT limnSpline *limnSplineCleverNew(Nrrd *ncpt, int info,
                                             limnSplineTypeSpec *spec);
@@ -930,12 +936,15 @@ LIMN_EXPORT limnCbfPoints *limnCbfPointsNew(const void *pdata, int ptype,
                                             unsigned int dim, unsigned int pnum,
                                             int isLoop);
 LIMN_EXPORT limnCbfPoints *limnCbfPointsNix(limnCbfPoints *lpnt);
+LIMN_EXPORT void *limnCbfPointsNix_mop(void *);
 LIMN_EXPORT int limnCbfPointsCheck(const limnCbfPoints *lpnt);
 LIMN_EXPORT limnCbfPath *limnCbfPathNew(unsigned segNum);
 LIMN_EXPORT limnCbfPath *limnCbfPathNix(limnCbfPath *path);
+LIMN_EXPORT void *limnCbfPathNix_mop(void *);
 LIMN_EXPORT void limnCbfPathJoin(limnCbfPath *dst, const limnCbfPath *src);
 LIMN_EXPORT limnCbfCtx *limnCbfCtxNew(void);
 LIMN_EXPORT limnCbfCtx *limnCbfCtxNix(limnCbfCtx *fctx);
+LIMN_EXPORT void *limnCbfCtxNix_mop(void *);
 LIMN_EXPORT int limnCbfCtxPrep(limnCbfCtx *fctx, const limnCbfPoints *lpnt);
 LIMN_EXPORT void limnCbfSegEval(double *xy, const limnCbfSeg *seg, double tt);
 LIMN_EXPORT void limnCbfPathSample(double *xy, unsigned int pointNum,

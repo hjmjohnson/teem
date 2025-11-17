@@ -34,12 +34,12 @@ limnPu_ccfindMain(int argc, const char **argv, const char *me, const hestParm *h
 
   hestParseOrExit(hopt, argc, argv, hparm, me, myinfo);
   airArray *mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
   char *err;
 
   Nrrd *nmeas = nrrdNew();
-  airMopAdd(mop, nmeas, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nmeas, nrrdNuke_mop, airMopAlways);
 
   if (limnPolyDataCCFind(pld) || limnPolyDataPrimitiveArea(nmeas, pld)
       || limnPolyDataPrimitiveSort(pld, nmeas) || limnPolyDataSave(out, pld)) {

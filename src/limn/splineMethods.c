@@ -46,6 +46,7 @@ limnSplineTypeSpecNix(limnSplineTypeSpec *spec) {
   airFree(spec);
   return NULL;
 }
+AIR_MOPPER(limnSplineTypeSpecNix);
 
 /*
 ** _limnSplineTimeWarpSet
@@ -172,7 +173,7 @@ limnSplineNew(Nrrd *_ncpt, int info, limnSplineTypeSpec *spec) {
     return NULL;
   }
 
-  airMopAdd(mop, spline, (airMopper)limnSplineNix, airMopOnError);
+  airMopAdd(mop, spline, limnSplineNix_mop, airMopOnError);
   spline->time = NULL;
   spline->ncpt = NULL;
   spline->type = spec->type;
@@ -181,7 +182,7 @@ limnSplineNew(Nrrd *_ncpt, int info, limnSplineTypeSpec *spec) {
   spline->B = spec->B;
   spline->C = spec->C;
   nin = nrrdNew();
-  airMopAdd(mop, nin, (airMopper)nrrdNuke, airMopOnError);
+  airMopAdd(mop, nin, nrrdNuke_mop, airMopOnError);
   if (nrrdConvert(nin, _ncpt, nrrdTypeDouble)) {
     biffMovef(LIMN, NRRD, "%s: trouble allocating internal nrrd", me);
     airMopError(mop);
@@ -190,11 +191,11 @@ limnSplineNew(Nrrd *_ncpt, int info, limnSplineTypeSpec *spec) {
   if (limnSplineTypeTimeWarp == spec->type) {
     /* set the time array to the data of the double-converted nin,
        but the nin itself is scheduled to be nixed */
-    airMopAdd(mop, nin, (airMopper)nrrdNix, airMopOnOkay);
+    airMopAdd(mop, nin, nrrdNix_mop, airMopOnOkay);
     spline->time = (double *)(nin->data);
     /* now allocate the real control point information */
     spline->ncpt = nrrdNew();
-    airMopAdd(mop, spline->ncpt, (airMopper)nrrdNuke, airMopOnError);
+    airMopAdd(mop, spline->ncpt, nrrdNuke_mop, airMopOnError);
     if (nrrdMaybeAlloc_va(spline->ncpt, nrrdTypeDouble, 3, AIR_SIZE_T(1), AIR_SIZE_T(3),
                           _ncpt->axis[0].size)) {
       biffMovef(LIMN, NRRD, "%s: trouble allocating real control points", me);
@@ -225,6 +226,7 @@ limnSplineNix(limnSpline *spline) {
   }
   return NULL;
 }
+AIR_MOPPER(limnSplineNix)
 
 /*
 ******** limnSplineNrrdCleverFix
@@ -267,8 +269,8 @@ limnSplineNrrdCleverFix(Nrrd *nout, Nrrd *nin, int info, int type) {
   }
 
   mop = airMopNew();
-  airMopAdd(mop, ntmpA = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, ntmpB = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ntmpA = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, ntmpB = nrrdNew(), nrrdNuke_mop, airMopAlways);
   wantSize = limnSplineInfoSize[info];
   switch (nin->dim) {
   case 3:
@@ -400,7 +402,7 @@ limnSplineCleverNew(Nrrd *ncpt, int info, limnSplineTypeSpec *spec) {
     return NULL;
   }
   mop = airMopNew();
-  airMopAdd(mop, ntmp = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ntmp = nrrdNew(), nrrdNuke_mop, airMopAlways);
   if (limnSplineNrrdCleverFix(ntmp, ncpt, info, spec->type)) {
     biffAddf(LIMN, "%s: couldn't fix up given control point nrrd", me);
     airMopError(mop);

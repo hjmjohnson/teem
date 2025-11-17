@@ -426,7 +426,7 @@ echoRTRender(Nrrd *nraw, limnCamera *cam, echoScene *scene, echoRTParm *parm,
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, nraw, (airMopper)nrrdNix, airMopOnError);
+  airMopAdd(mop, nraw, nrrdNix_mop, airMopOnError);
   nrrdAxisInfoSet_va(nraw, nrrdAxisInfoLabel, "r,g,b,a,t", "x", "y");
   nrrdAxisInfoSet_va(nraw, nrrdAxisInfoMin, AIR_NAN, cam->uRange[0], cam->vRange[0]);
   nrrdAxisInfoSet_va(nraw, nrrdAxisInfoMax, AIR_NAN, cam->uRange[1], cam->vRange[1]);
@@ -434,7 +434,7 @@ echoRTRender(Nrrd *nraw, limnCamera *cam, echoScene *scene, echoRTParm *parm,
 
   if (parm->numThreads > 1) {
     gstate->workMutex = airThreadMutexNew();
-    airMopAdd(mop, gstate->workMutex, (airMopper)airThreadMutexNix, airMopAlways);
+    airMopAdd(mop, gstate->workMutex, airThreadMutexNix_mop, airMopAlways);
   } else {
     gstate->workMutex = NULL;
   }
@@ -449,7 +449,7 @@ echoRTRender(Nrrd *nraw, limnCamera *cam, echoScene *scene, echoRTParm *parm,
       airMopError(mop);
       return 1;
     }
-    airMopAdd(mop, tstate[tid], (airMopper)echoThreadStateNix, airMopAlways);
+    airMopAdd(mop, tstate[tid], echoThreadStateNix_mop, airMopAlways);
   }
   fprintf(stderr, "%s:       ", me); /* prep for printing airDoneStr */
   gstate->workIdx = 0;

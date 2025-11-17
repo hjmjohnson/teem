@@ -99,24 +99,24 @@ main(int argc, const char *argv[]) {
              "output file to save LMPD into");
   hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
   mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   itemGrad = airEnumVal(kind->enm, itemGradS);
 
   pld = limnPolyDataNew();
-  airMopAdd(mop, pld, (airMopper)limnPolyDataNix, airMopAlways);
+  airMopAdd(mop, pld, limnPolyDataNix_mop, airMopAlways);
   pldSub = limnPolyDataNew();
-  airMopAdd(mop, pldSub, (airMopper)limnPolyDataNix, airMopAlways);
+  airMopAdd(mop, pldSub, limnPolyDataNix_mop, airMopAlways);
 
   file = airFopen(outS, stdout, "w");
-  airMopAdd(mop, file, (airMopper)airFclose, airMopAlways);
+  airMopAdd(mop, file, airFclose_mop, airMopAlways);
 
   sctx = seekContextNew();
-  airMopAdd(mop, sctx, (airMopper)seekContextNix, airMopAlways);
+  airMopAdd(mop, sctx, seekContextNix_mop, airMopAlways);
 
   gctx = gageContextNew();
-  airMopAdd(mop, gctx, (airMopper)gageContextNix, airMopAlways);
+  airMopAdd(mop, gctx, gageContextNix_mop, airMopAlways);
   ELL_3V_SET(kparm, 1, 1.0, 0.0);
   if (!(pvl = gagePerVolumeNew(gctx, nin, kind)) || gagePerVolumeAttach(gctx, pvl)
       || gageKernelSet(gctx, gageKernel00, nrrdKernelBCCubic, kparm)
@@ -161,7 +161,7 @@ main(int argc, const char *argv[]) {
   fprintf(stderr, "%s: extraction time = %g\n", me, sctx->time);
 
   nmeas = nrrdNew();
-  airMopAdd(mop, nmeas, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nmeas, nrrdNuke_mop, airMopAlways);
   if (limnPolyDataVertexWindingFix(pld, AIR_TRUE) || limnPolyDataVertexWindingFlip(pld)
       || limnPolyDataVertexNormals(pld) || limnPolyDataCCFind(pld)
       || limnPolyDataPrimitiveArea(nmeas, pld)

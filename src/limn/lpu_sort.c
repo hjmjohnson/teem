@@ -37,8 +37,8 @@ limnPu_sortMain(int argc, const char **argv, const char *me, const hestParm *hpa
 
   hestParseOrExit(hopt, argc, argv, hparm, me, myinfo);
   airArray *mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
   char *err;
 
   if (limnPolyDataPrimitiveSort(pld, nin)) {

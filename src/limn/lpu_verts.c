@@ -34,12 +34,12 @@ limnPu_vertsMain(int argc, const char **argv, const char *me, const hestParm *hp
 
   hestParseOrExit(hopt, argc, argv, hparm, me, myinfo);
   airArray *mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
   char *err;
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNix, airMopAlways); /* NOT nrrdNuke */
+  airMopAdd(mop, nout, nrrdNix_mop, airMopAlways); /* NOT nrrdNuke */
   if (nrrdWrap_va(nout, pld->xyzw, nrrdTypeFloat, 2, 4, pld->xyzwNum)
       || nrrdSave(out, nout, NULL)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);

@@ -186,7 +186,7 @@ echoParseTenNrrd(void *ptr, char *str, char err[AIR_STRLEN_HUGE + 1]) {
   nrrdP = ptr;
   mop = airMopNew();
   *nrrdP = nrrdNew();
-  airMopAdd(mop, *nrrdP, (airMopper)nrrdNuke, airMopOnError);
+  airMopAdd(mop, *nrrdP, nrrdNuke_mop, airMopOnError);
   if (nrrdLoad(*nrrdP, str)) {
     airMopAdd(mop, nerr = biffGetDone(NRRD), airFree, airMopOnError);
     if (strlen(nerr) > AIR_STRLEN_HUGE) nerr[AIR_STRLEN_HUGE] = '\0';
@@ -213,8 +213,7 @@ echoParseTenNrrd(void *ptr, char *str, char err[AIR_STRLEN_HUGE + 1]) {
   return 0;
 }
 
-hestCB echoParseTenNrrdCB = {sizeof(Nrrd *), "nrrd", echoParseTenNrrd,
-                             (airMopper)nrrdNuke};
+hestCB echoParseTenNrrdCB = {sizeof(Nrrd *), "nrrd", echoParseTenNrrd, nrrdNuke_mop};
 
 int
 main(int argc, char *argv[]) {
@@ -239,17 +238,17 @@ main(int argc, char *argv[]) {
   hparm->verbose = 0;
 
   cam = echoLimnCamNew();
-  airMopAdd(mop, cam, (airMopper)limnCamNix, airMopAlways);
+  airMopAdd(mop, cam, limnCamNix_mop, airMopAlways);
   cam->neer = 0;
   cam->dist = 0;
   cam->faar = 0;
   cam->atRel = AIR_TRUE;
 
   state = echoGlobalStateNew();
-  airMopAdd(mop, state, (airMopper)echoGlobalStateNix, airMopAlways);
+  airMopAdd(mop, state, echoGlobalStateNix_mop, airMopAlways);
 
   eparm = echoParmNew();
-  airMopAdd(mop, eparm, (airMopper)echoParmNix, airMopAlways);
+  airMopAdd(mop, eparm, echoParmNix_mop, airMopAlways);
 
   hestOptAdd(&opt, "i", "nin", airTypeOther, 1, 1, &nten, NULL, "diffusion tensor data",
              NULL, NULL, &echoParseTenNrrdCB);
@@ -334,11 +333,11 @@ main(int argc, char *argv[]) {
   nppm = nrrdNew();
   ntmp = nrrdNew();
   npgm = nrrdNew();
-  airMopAdd(mop, nraw, (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nimg, (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nppm, (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, ntmp, (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, npgm, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nraw, nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nimg, nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nppm, nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, ntmp, nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, npgm, nrrdNuke_mop, airMopAlways);
   E = 0;
   printf("%s: rendering (%d samples)... ", me, eparm->samples);
   fflush(stdout);

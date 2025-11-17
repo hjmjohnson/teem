@@ -37,7 +37,7 @@ main(int argc, const char *argv[]) {
 
   mop = airMopNew();
   cam = limnCameraNew();
-  airMopAdd(mop, cam, (airMopper)limnCameraNix, airMopAlways);
+  airMopAdd(mop, cam, limnCameraNix_mop, airMopAlways);
 
   me = argv[0];
   hestOptAdd(&hopt, "i", "input OFF", airTypeString, 1, 1, &inS, NULL, "input OFF file");
@@ -83,8 +83,8 @@ main(int argc, const char *argv[]) {
   hestOptAdd(&hopt, "o", "output PS", airTypeString, 1, 1, &outS, "out.ps",
              "output file to render postscript into");
   hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   cam->neer = -0.000000001;
   cam->dist = 0;
@@ -98,13 +98,13 @@ main(int argc, const char *argv[]) {
   }
 
   obj = limnObjectNew(10, AIR_TRUE);
-  airMopAdd(mop, obj, (airMopper)limnObjectNix, airMopAlways);
+  airMopAdd(mop, obj, limnObjectNix_mop, airMopAlways);
   if (!(file = airFopen(inS, stdin, "r"))) {
     fprintf(stderr, "%s: couldn't open \"%s\" for reading\n", me, inS);
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, file, (airMopper)airFclose, airMopAlways);
+  airMopAdd(mop, file, airFclose_mop, airMopAlways);
   if (limnObjectReadOFF(obj, file)) {
     airMopAdd(mop, err = biffGetDone(LIMN), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble:\n%s\n", me, err);
@@ -142,7 +142,7 @@ main(int argc, const char *argv[]) {
   ELL_3V_COPY(win->ps.bg, bg);
 
   win->file = airFopen(outS, stdout, "w");
-  airMopAdd(mop, win, (airMopper)limnWindowNix, airMopAlways);
+  airMopAdd(mop, win, limnWindowNix_mop, airMopAlways);
   win->scale = winscale;
 
   if (limnObjectRender(obj, cam, win)

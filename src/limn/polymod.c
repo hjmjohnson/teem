@@ -1114,9 +1114,9 @@ _limnPolyDataVertexWindingProcess(limnPolyData *pld, int splitting) {
 
   /* allocate TriWithVert, VertWithTri, intxBuff */
   nTriWithVert = nrrdNew();
-  airMopAdd(mop, nTriWithVert, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nTriWithVert, nrrdNuke_mop, airMopAlways);
   nVertWithTri = nrrdNew();
-  airMopAdd(mop, nVertWithTri, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nVertWithTri, nrrdNuke_mop, airMopAlways);
   if (triangleWithVertex(nTriWithVert, pld) || vertexWithTriangle(nVertWithTri, pld)) {
     biffAddf(LIMN, "%s: couldn't set nTriWithVert or nVertWithTri", me);
     airMopError(mop);
@@ -1142,7 +1142,7 @@ _limnPolyDataVertexWindingProcess(limnPolyData *pld, int splitting) {
   /* create the stack of recently fixed triangles */
   appu.ui = &okay;
   okayArr = airArrayNew(appu.v, NULL, sizeof(unsigned int), maxTriPerPrim);
-  airMopAdd(mop, okayArr, (airMopper)airArrayNuke, airMopAlways);
+  airMopAdd(mop, okayArr, airArrayNuke_mop, airMopAlways);
   if (splitting) {
     appu.ui = &split;
     splitArr = airArrayNew(appu.v, NULL, 5 * sizeof(unsigned int), maxTriPerPrim);
@@ -1274,10 +1274,10 @@ limnPolyDataCCFind(limnPolyData *pld) {
 
   eqvArr = airArrayNew(NULL, NULL, 2 * sizeof(unsigned int),
                        /* this is only a heuristic */ pld->xyzwNum);
-  airMopAdd(mop, eqvArr, (airMopper)airArrayNuke, airMopAlways);
+  airMopAdd(mop, eqvArr, airArrayNuke_mop, airMopAlways);
 
   nTriWithVert = nrrdNew();
-  airMopAdd(mop, nTriWithVert, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nTriWithVert, nrrdNuke_mop, airMopAlways);
   if (triangleWithVertex(nTriWithVert, pld)) {
     biffAddf(LIMN, "%s: couldn't set nTriWithVert", me);
     airMopError(mop);
@@ -1309,9 +1309,9 @@ limnPolyDataCCFind(limnPolyData *pld) {
   }
 
   nTriMap = nrrdNew();
-  airMopAdd(mop, nTriMap, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nTriMap, nrrdNuke_mop, airMopAlways);
   nccSize = nrrdNew();
-  airMopAdd(mop, nccSize, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nccSize, nrrdNuke_mop, airMopAlways);
   if (nrrdMaybeAlloc_va(nTriMap, nrrdTypeUInt, 1, AIR_SIZE_T(realTriNum))) {
     biffMovef(LIMN, NRRD, "%s: couldn't allocate equivalence map", me);
     airMopError(mop);
@@ -1401,9 +1401,9 @@ limnPolyDataPrimitiveSort(limnPolyData *pld, const Nrrd *_nval) {
 
   mop = airMopNew();
   nval = nrrdNew();
-  airMopAdd(mop, nval, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nval, nrrdNuke_mop, airMopAlways);
   nrec = nrrdNew();
-  airMopAdd(mop, nrec, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nrec, nrrdNuke_mop, airMopAlways);
   E = 0;
   if (!E) E |= nrrdConvert(nval, _nval, nrrdTypeDouble);
   ntwo[0] = nval;
@@ -1514,7 +1514,7 @@ limnPolyDataPrimitiveSelect(limnPolyData *pldOut,
 
   mop = airMopNew();
   nmask = nrrdNew();
-  airMopAdd(mop, nmask, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nmask, nrrdNuke_mop, airMopAlways);
   if (nrrdConvert(nmask, _nmask, nrrdTypeDouble)) {
     biffMovef(LIMN, NRRD, "%s: trouble converting mask to %s", me,
               airEnumStr(nrrdType, nrrdTypeDouble));
@@ -1767,7 +1767,7 @@ limnPolyDataClipMulti(limnPolyData *pld, Nrrd *nval, double *thresh) {
     E |= !(llistArr = airArrayNew(appu.v, NULL, 3 * sizeof(int), incr));
   }
   if (!E) {
-    airMopAdd(mop, llistArr, (airMopper)airArrayNuke, airMopAlways);
+    airMopAdd(mop, llistArr, airArrayNuke_mop, airMopAlways);
     E |= !(newpld = limnPolyDataNew());
   }
   bitflag = limnPolyDataInfoBitFlag(pld);
@@ -1779,40 +1779,40 @@ limnPolyDataClipMulti(limnPolyData *pld, Nrrd *nval, double *thresh) {
     appu.f = &(newpld->xyzw);
     E |= !(xyzwArr = airArrayNew(appu.v, &(newpld->xyzwNum), 4 * sizeof(float), incr));
     if (!E) {
-      airMopAdd(mop, xyzwArr, (airMopper)airArrayNuke, airMopOnError);
-      airMopAdd(mop, xyzwArr, (airMopper)airArrayNix, airMopOnOkay);
+      airMopAdd(mop, xyzwArr, airArrayNuke_mop, airMopOnError);
+      airMopAdd(mop, xyzwArr, airArrayNix_mop, airMopOnOkay);
     }
     if (!E && (1 << limnPolyDataInfoRGBA) & bitflag) {
       appu.uc = &(newpld->rgba);
       E |= !(rgbaArr = airArrayNew(appu.v, &(newpld->rgbaNum), 4 * sizeof(unsigned char),
                                    incr));
       if (!E) {
-        airMopAdd(mop, rgbaArr, (airMopper)airArrayNuke, airMopOnError);
-        airMopAdd(mop, rgbaArr, (airMopper)airArrayNix, airMopOnOkay);
+        airMopAdd(mop, rgbaArr, airArrayNuke_mop, airMopOnError);
+        airMopAdd(mop, rgbaArr, airArrayNix_mop, airMopOnOkay);
       }
     }
     if (!E && (1 << limnPolyDataInfoNorm) & bitflag) {
       appu.f = &(newpld->norm);
       E |= !(normArr = airArrayNew(appu.v, &(newpld->normNum), 3 * sizeof(float), incr));
       if (!E) {
-        airMopAdd(mop, normArr, (airMopper)airArrayNuke, airMopOnError);
-        airMopAdd(mop, normArr, (airMopper)airArrayNix, airMopOnOkay);
+        airMopAdd(mop, normArr, airArrayNuke_mop, airMopOnError);
+        airMopAdd(mop, normArr, airArrayNix_mop, airMopOnOkay);
       }
     }
     if (!E && (1 << limnPolyDataInfoTex2) & bitflag) {
       appu.f = &(newpld->tex2);
       E |= !(tex2Arr = airArrayNew(appu.v, &(newpld->tex2Num), 2 * sizeof(float), incr));
       if (!E) {
-        airMopAdd(mop, tex2Arr, (airMopper)airArrayNuke, airMopOnError);
-        airMopAdd(mop, tex2Arr, (airMopper)airArrayNix, airMopOnOkay);
+        airMopAdd(mop, tex2Arr, airArrayNuke_mop, airMopOnError);
+        airMopAdd(mop, tex2Arr, airArrayNix_mop, airMopOnOkay);
       }
     }
     if (!E && (1 << limnPolyDataInfoTang) & bitflag) {
       appu.f = &(newpld->tang);
       E |= !(tangArr = airArrayNew(appu.v, &(newpld->tangNum), 3 * sizeof(float), incr));
       if (!E) {
-        airMopAdd(mop, tangArr, (airMopper)airArrayNuke, airMopOnError);
-        airMopAdd(mop, tangArr, (airMopper)airArrayNix, airMopOnOkay);
+        airMopAdd(mop, tangArr, airArrayNuke_mop, airMopOnError);
+        airMopAdd(mop, tangArr, airArrayNix_mop, airMopOnOkay);
       }
     }
     if (!E) {
@@ -1822,8 +1822,8 @@ limnPolyDataClipMulti(limnPolyData *pld, Nrrd *nval, double *thresh) {
       E |= !(indxArr = airArrayNew(appu.v, &(newpld->indxNum), sizeof(unsigned int),
                                    incr));
       if (!E) {
-        airMopAdd(mop, indxArr, (airMopper)airArrayNuke, airMopOnError);
-        airMopAdd(mop, indxArr, (airMopper)airArrayNix, airMopOnOkay);
+        airMopAdd(mop, indxArr, airArrayNuke_mop, airMopOnError);
+        airMopAdd(mop, indxArr, airArrayNix_mop, airMopOnOkay);
       }
     }
     if (!E) {
@@ -1833,14 +1833,14 @@ limnPolyDataClipMulti(limnPolyData *pld, Nrrd *nval, double *thresh) {
       E |= !(typeArr = airArrayNew(appu.v, &(newpld->primNum), sizeof(unsigned char),
                                    incr));
       if (!E) {
-        airMopAdd(mop, typeArr, (airMopper)airArrayNuke, airMopOnError);
-        airMopAdd(mop, typeArr, (airMopper)airArrayNix, airMopOnOkay);
+        airMopAdd(mop, typeArr, airArrayNuke_mop, airMopOnError);
+        airMopAdd(mop, typeArr, airArrayNix_mop, airMopOnOkay);
       }
       appu.ui = &(newpld->icnt);
       E |= !(icntArr = airArrayNew(appu.v, NULL, sizeof(unsigned int), incr));
       if (!E) {
-        airMopAdd(mop, icntArr, (airMopper)airArrayNuke, airMopOnError);
-        airMopAdd(mop, icntArr, (airMopper)airArrayNix, airMopOnOkay);
+        airMopAdd(mop, icntArr, airArrayNuke_mop, airMopOnError);
+        airMopAdd(mop, icntArr, airArrayNix_mop, airMopOnOkay);
       }
     }
   }
@@ -2165,7 +2165,7 @@ limnPolyDataEdgeHalve(limnPolyData *pldOut, const limnPolyData *pldIn) {
   }
   mop = airMopNew();
   nnewvert = nrrdNew();
-  airMopAdd(mop, nnewvert, AIR_CAST(airMopper, nrrdNuke), airMopAlways);
+  airMopAdd(mop, nnewvert, nrrdNuke_mop, airMopAlways);
   nvold = pldIn->xyzwNum;
   if (nrrdMaybeAlloc_va(nnewvert, nrrdTypeUInt, 2, nvold, nvold)) {
     biffMovef(LIMN, NRRD, "%s: couldn't allocate buffer", me);
