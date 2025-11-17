@@ -29,10 +29,12 @@
 # GNUmake's implicit rules, which is annoying because implicit rules are
 # annoying. If you want different values for these variables, then change them.
 
+## https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
 #UBSAN=-fsanitize=undefined
-UBSAN=
+#UBSAN=
+
 # CC = scan-build clang # to run static analyzer https://clang.llvm.org/docs/ClangStaticAnalyzer.html
-CC := cc
+CC ?= cc
 LD := ld $(UBSAN)
 ifeq ($(shell uname -s),Darwin)
   # on mac
