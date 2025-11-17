@@ -39,13 +39,13 @@ extern "C" {
     airStrcpy((DST), (DST_SIZE), (SRC));                                                \
     SN_INCR(DST, DST_SIZE);                                                             \
   } while (0)
-/* oops can't use this upstream of NrrdIO; variadic macros are C99
+/* ---- BEGIN non-NrrdIO */
 #define SN_PRINTF(DST, DST_SIZE, FMT, ...)                                              \
   do {                                                                                  \
     snprintf((DST), (DST_SIZE), (FMT), __VA_ARGS__);                                    \
     SN_INCR(DST, DST_SIZE);                                                             \
   } while (0)
-*/
+/* ---- END non-NrrdIO */
 #define ASP1_S (AIR_STRLEN_SMALL + 1)
 #define ASP1_M (AIR_STRLEN_MEDIUM + 1)
 #define ASP1_L (AIR_STRLEN_LARGE + 1)
