@@ -254,7 +254,7 @@ hestArgVecSprint(const hestArgVec *havec, int showIdx) {
     }
     if (showIdx) {
       char buff[AIR_STRLEN_SMALL + 1];
-      sprintf(buff, "%u", ai);
+      snprintf(buff, sizeof(buff), "%u", ai);
       hestArgAddString(retArg, buff);
       hestArgAddChar(retArg, ':');
     }

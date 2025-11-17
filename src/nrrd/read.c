@@ -76,14 +76,14 @@ _nrrdHeaderStringOneLine(NrrdIoState *nio) {
 /*
  ******** nrrdOneLine
  *
- * wrapper around airOneLine when reading from `file`, else ; does re-allocation of line
- * buffer
- * ("line") in the NrrdIoState if needed.  The return value semantics
+ * wrapper around airOneLine when reading from `file`, though does re-allocation of line
+ * buffer `line` in the NrrdIoState when needed.  The return value semantics
  * are similar, except that what airOneLine would return, we put
- * in *lenP.  If there is an error (airOneLine returned 0,
- * something couldn't be allocated), *lenP is set to 0, and
- * we return 1.  HITTING EOF IS NOT ACTUALLY AN ERROR, see code
- * below.  Otherwise we return 0.
+ * in `*lenP`.
+ * If there is an error (airOneLine returned 0, something couldn't be allocated),
+ * *lenP is set to 0, and we return 1.
+ * HITTING EOF IS NOT ACTUALLY AN ERROR, see code below.
+ * Otherwise we return 0.
  */
 int /* Biff: 1 */
 nrrdOneLine(size_t *lenP, NrrdIoState *nio, FILE *file) {
@@ -720,7 +720,7 @@ nrrdLoadMulti(Nrrd *const *nin, unsigned int ninLen, const char *fnameFormat,
   if (!(nrrdContainsPercentThisAndMore(fnameFormat, 'u'))) {
     biffAddf(NRRD,
              "%s: given format \"%s\" doesn't seem to "
-             "have the \"%%u\" conversion specification to sprintf "
+             "have the \"%%u\" conversion specification to s(n)printf "
              "an unsigned int\n",
              me, fnameFormat);
     return 1;

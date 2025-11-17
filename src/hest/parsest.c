@@ -708,22 +708,24 @@ whichOptFlag(const hestOpt *hopt, const char *flarg, const hestParm *hparm) {
     if (!optFlag) continue; // it can't be for this unflagged option
     if (strchr(optFlag, MULTI_FLAG_SEP)) {
       // look for both long and short versions
-      char *buff = AIR_CALLOC(strlen("--") + strlen(flarg) + strlen(optFlag) + 1, char);
+      size_t buffSize = strlen("--") + strlen(flarg) + strlen(optFlag) + 1;
+      char *buff = AIR_CALLOC(buffSize, char);
       char *ofboth = airStrdup(optFlag);
       char *sep = strchr(ofboth, MULTI_FLAG_SEP);
       *sep = '\0'; // break short and long into separate strings
       /* first try the short version */
-      sprintf(buff, "-%s", ofboth);
+      snprintf(buff, buffSize, "-%s", ofboth);
       if (!strcmp(flarg, buff)) return (free(buff), free(ofboth), optIdx);
       /* else try the long version */
-      sprintf(buff, "--%s", sep + 1);
+      snprintf(buff, buffSize, "--%s", sep + 1);
       if (!strcmp(flarg, buff)) return (free(buff), free(ofboth), optIdx);
       free(buff);
       free(ofboth);
     } else {
       /* flag only comes in short version */
-      char *buff = AIR_CALLOC(strlen("-") + strlen(optFlag) + 1, char);
-      sprintf(buff, "-%s", optFlag);
+      size_t buffSize = strlen("-") + strlen(optFlag) + 1;
+      char *buff = AIR_CALLOC(buffSize, char);
+      snprintf(buff, buffSize, "-%s", optFlag);
       if (!strcmp(flarg, buff)) return (free(buff), optIdx);
       free(buff);
     }
@@ -954,10 +956,11 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     }
     if (hparm->verbose) {
       char info[AIR_STRLEN_HUGE + 1];
-      sprintf(info, "main havec after extracting optIdx %u |%s| and %u parms", optIdx,
-              theOpt->flag, parmNum);
+      snprintf(info, sizeof(info),
+               "main havec after extracting optIdx %u |%s| and %u parms", optIdx,
+               theOpt->flag, parmNum);
       hestArgVecPrint(__func__, info, havec);
-      sprintf(info, "optIdx %u |%s|'s own havec", optIdx, theOpt->flag);
+      snprintf(info, sizeof(info), "optIdx %u |%s|'s own havec", optIdx, theOpt->flag);
       hestArgVecPrint(__func__, info, theOpt->havec);
     }
     // do NOT increment argIdx

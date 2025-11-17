@@ -973,7 +973,7 @@ nrrdAxisInfoCompare(const NrrdAxisInfo *axisA, const NrrdAxisInfo *axisB, int *d
   DOUBLE_COMPARE(max, "max");
   for (saxi = 0; saxi < NRRD_SPACE_DIM_MAX; saxi++) {
     char stmp[AIR_STRLEN_SMALL + 1];
-    sprintf(stmp, "spaceDirection[%u]", saxi);
+    snprintf(stmp, sizeof(stmp), "spaceDirection[%u]", saxi);
     DOUBLE_COMPARE(spaceDirection[saxi], stmp);
   }
 #undef DOUBLE_COMPARE

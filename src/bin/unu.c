@@ -22,10 +22,11 @@
 #define UNU "unu"
 
 /* copied from a privateLib.h */
-/* NOTE: these SN_ string,size macros copy-pasta'd to other private<Lib>.h files:
+/* NOTE: these SN_,ASP1_ string macros copy-pasta'd to other private<Lib>.h files:
    SN_INCR: safely increments STR arg to point '\0'-termination of STR
    SN_COPY: safely copies SRC to DST, then increments DST
-   SN_PRINTF: snprintf's into DST then increments DST */
+   SN_PRINTF: snprintf's into DST then increments DST
+   ASP1_X: short version of AIR_STRLEN_X + 1 */
 #define SN_INCR(STR, SIZE)                                                              \
   do {                                                                                  \
     size_t tmp_str_len_##STR = strlen(STR);                                             \
@@ -42,6 +43,10 @@
     snprintf((DST), (DST_SIZE), (FMT), __VA_ARGS__);                                    \
     SN_INCR(DST, DST_SIZE);                                                             \
   } while (0)
+#define ASP1_S (AIR_STRLEN_SMALL + 1)
+#define ASP1_M (AIR_STRLEN_MEDIUM + 1)
+#define ASP1_L (AIR_STRLEN_LARGE + 1)
+#define ASP1_H (AIR_STRLEN_HUGE + 1)
 
 typedef unsigned int uint; /* uint is just more concise */
 
@@ -57,8 +62,8 @@ _unuUsage(const char *me, const hestParm *hparm, int alsoHidden) {
     size_t cnsize = strlen(unrrduUnuCmdList[cmdi]->name);
     maxlen = AIR_MAX(maxlen, cnsize);
   }
-  char _buff[AIR_STRLEN_LARGE + 1], _fmt[AIR_STRLEN_LARGE + 1];
-  size_t _buffSize = AIR_STRLEN_LARGE + 1, _fmtSize = AIR_STRLEN_LARGE + 1;
+  char _buff[ASP1_L], _fmt[ASP1_L];
+  size_t _buffSize = ASP1_L, _fmtSize = ASP1_L;
   airStrcpy(_buff, _buffSize, "--- unu: Utah Nrrd Utilities command-line interface ---");
   size_t len = strlen(_buff);
   uint half = (hparm->columns > len ? hparm->columns - len : 0) / 2 + len - 1;
@@ -178,7 +183,7 @@ main(int argc, const char **argv) {
   }
   /* else, we see if its unu --version */
   if (!strcmp("--version", argv[1])) {
-    char vbuff[AIR_STRLEN_LARGE + 1];
+    char vbuff[ASP1_L];
     airTeemVersionSprint(vbuff);
     printf("%s\n", vbuff);
     hestParmFree(hparm);

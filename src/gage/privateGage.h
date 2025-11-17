@@ -21,6 +21,34 @@
 extern "C" {
 #endif
 
+/* NOTE: these SN_,ASP1_ string macros copy-pasta'd to other private<Lib>.h files:
+   SN_INCR: safely increments STR arg to point '\0'-termination of STR
+   SN_COPY: safely copies SRC to DST, then increments DST
+   SN_PRINTF: snprintf's into DST then increments DST
+   ASP1_X: short version of AIR_STRLEN_X + 1 */
+#define SN_INCR(STR, SIZE)                                                              \
+  do {                                                                                  \
+    size_t tmp_str_len_##STR = strlen(STR);                                             \
+    STR += tmp_str_len_##STR;                                                           \
+    SIZE -= tmp_str_len_##STR;                                                          \
+  } while (0)
+#define SN_COPY(DST, DST_SIZE, SRC)                                                     \
+  do {                                                                                  \
+    airStrcpy((DST), (DST_SIZE), (SRC));                                                \
+    SN_INCR(DST, DST_SIZE);                                                             \
+  } while (0)
+#define SN_PRINTF(DST, DST_SIZE, FMT, ...)                                              \
+  do {                                                                                  \
+    snprintf((DST), (DST_SIZE), (FMT), __VA_ARGS__);                                    \
+    SN_INCR(DST, DST_SIZE);                                                             \
+  } while (0)
+#define ASP1_S (AIR_STRLEN_SMALL + 1)
+#define ASP1_M (AIR_STRLEN_MEDIUM + 1)
+#define ASP1_L (AIR_STRLEN_LARGE + 1)
+#define ASP1_H (AIR_STRLEN_HUGE + 1)
+
+typedef unsigned int uint; /* uint is just more concise */
+
 /*
  define ell_3v_PRINT ell_3v_print_d
  define ell_3m_PRINT ell_3m_print_d
@@ -31,8 +59,6 @@ extern "C" {
 
 /* the what to put in gctx->errStr when !generateErrStr */
 #define _GAGE_NON_ERR_STR "(error)"
-
-typedef unsigned int uint; /* uint is just more concise */
 
 /* shape.c */
 extern int _gageShapeSet(const gageContext *ctx, gageShape *shape, const Nrrd *nin,

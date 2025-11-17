@@ -44,6 +44,15 @@ main(int argc, const char **argv) {
   hestOptAdd_1v_Int(&hopt, "v,verbose", "level", &v, "0", "verbosity level");
   char *blah[3];
   hestOptAdd_3_String(&hopt, "blah", "input", blah, "a b c", "input image file(s)");
+  int norenorm;
+  hestOptAdd_Flag(&hopt, "nrn", &norenorm,
+                  "do NOT do per-pass kernel weight renormalization. "
+                  "Doing the renormalization is not a performance hit (hence is "
+                  "enabled by default), and the renormalization is sometimes "
+                  "needed to avoid \"grating\" on non-integral "
+                  "down-sampling.  Disabling the renormalization is needed for "
+                  "correct results with artificially narrow kernels. ");
+
   /*
   // 2025 re-write: only allow simple scalar types as single variadic parm (not String)
   char *option = NULL;

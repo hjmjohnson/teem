@@ -73,16 +73,17 @@ _hestSetBuff(char *_buff, size_t _buffSize, const hestOpt *hopt, /* */
   return;
 }
 
-/* early version of _hestSetBuff() function preserved for nostalgia */
-#define SETBUFF(B, O)                                                                   \
-  strcat(B, O.flag ? "-" : ""), strcat(B, O.flag ? O.flag : ""),                        \
-    strcat(B, O.flag && (O.min || _hestMax(O.max)) ? "\t" : ""),                        \
-    strcat(B, !O.min && _hestMax(O.max) ? "[" : ""),                                    \
-    strcat(B, O.min || _hestMax(O.max) ? "<" : ""),                                     \
-    strcat(B, O.min || _hestMax(O.max) ? O.name : ""),                                  \
-    strcat(B, (O.min < _hestMax(O.max) && (_hestMax(O.max) > 1)) ? " ..." : ""),        \
-    strcat(B, O.min || _hestMax(O.max) ? ">" : ""),                                     \
-    strcat(B, !O.min && _hestMax(O.max) ? "]" : "");
+/* early version of _hestSetBuff() function preserved for nostalgia
+ * #define SETBUFF(B, O)                                                              \
+ *   strcat(B, O.flag ? "-" : ""), strcat(B, O.flag ? O.flag : ""),                   \
+ *     strcat(B, O.flag && (O.min || _hestMax(O.max)) ? "\t" : ""),                   \
+ *     strcat(B, !O.min && _hestMax(O.max) ? "[" : ""),                               \
+ *     strcat(B, O.min || _hestMax(O.max) ? "<" : ""),                                \
+ *     strcat(B, O.min || _hestMax(O.max) ? O.name : ""),                             \
+ *     strcat(B, (O.min < _hestMax(O.max) && (_hestMax(O.max) > 1)) ? " ..." : ""),   \
+ *     strcat(B, O.min || _hestMax(O.max) ? ">" : ""),                                \
+ *     strcat(B, !O.min && _hestMax(O.max) ? "]" : "");
+ */
 
 /*
  ******** hestPrintStr()
@@ -374,11 +375,11 @@ hestGlossary(FILE *file, const hestOpt *hopt, const hestParm *_hparm) {
       } else {
         SN_COPY(buff, buffSize, "; ");
       }
-      snprintf(tmpS, sizeof(tmpS), "default:\t%s", hopt[opi].dflt);
+      snprintf(tmpS, sizeof(tmpS), "default:\t\"%s\"", hopt[opi].dflt);
       if (HPARM->usageDefaultDisplayAvoidsWrapping) {
         airStrtrans(tmpS, ' ', '\t');
       }
-      SN_PRINTF(buff, buffSize, "\"%s\"", tmpS);
+      SN_COPY(buff, buffSize, tmpS);
     }
     hestPrintStr(file, maxlen + 3 + HPARM->indent, maxlen + 3, HPARM->columns, _buff,
                  AIR_FALSE);

@@ -568,7 +568,7 @@ deringPtxfDo(NrrdDeringContext *drc, deringBag *dbg) {
   }
   if (DEBUG) {
     char fname[AIR_STRLEN_SMALL + 1];
-    sprintf(fname, "wght-%02u.nrrd", dbg->zi);
+    snprintf(fname, sizeof(fname), "wght-%02u.nrrd", dbg->zi);
     nrrdSave(fname, dbg->nptxf[WGHT], NULL);
   }
 
@@ -618,21 +618,21 @@ deringPtxfFilter(NrrdDeringContext *drc, deringBag *dbg, unsigned int zi) {
     }
     if (DEBUG) {
       char fn[AIR_STRLEN_SMALL + 1];
-      sprintf(fn, "rshp-%02u.nrrd", dbg->zi);
+      snprintf(fn, sizeof(fn), "rshp-%02u.nrrd", dbg->zi);
       nrrdSave(fn, dbg->nptxf[RSHP], NULL);
-      sprintf(fn, "crop-%02u.nrrd", dbg->zi);
+      snprintf(fn, sizeof(fn), "crop-%02u.nrrd", dbg->zi);
       nrrdSave(fn, dbg->nptxf[CROP], NULL);
     }
   }
   if (DEBUG) {
     char fn[AIR_STRLEN_SMALL + 1];
-    sprintf(fn, "orig-%02u.nrrd", dbg->zi);
+    snprintf(fn, sizeof(fn), "orig-%02u.nrrd", dbg->zi);
     nrrdSave(fn, dbg->nptxf[ORIG], NULL);
-    sprintf(fn, "blrr-%02u.nrrd", dbg->zi);
+    snprintf(fn, sizeof(fn), "blrr-%02u.nrrd", dbg->zi);
     nrrdSave(fn, dbg->nptxf[BLRR], NULL);
-    sprintf(fn, "diff-%02u.nrrd", dbg->zi);
+    snprintf(fn, sizeof(fn), "diff-%02u.nrrd", dbg->zi);
     nrrdSave(fn, dbg->nptxf[DIFF], NULL);
-    sprintf(fn, "ring-%02u.nrrd", dbg->zi);
+    snprintf(fn, sizeof(fn), "ring-%02u.nrrd", dbg->zi);
     nrrdSave(fn, dbg->nptxf[RING], NULL);
   }
 
@@ -694,9 +694,9 @@ deringSubtract(NrrdDeringContext *drc, deringBag *dbg) {
   }
   if (DEBUG) {
     char fname[AIR_STRLEN_SMALL + 1];
-    sprintf(fname, "ring2-%02u.nrrd", dbg->zi);
+    snprintf(fname, sizeof(fname), "ring2-%02u.nrrd", dbg->zi);
     nrrdSave(fname, dbg->nptxf[RING], NULL);
-    sprintf(fname, "drng-%02u.nrrd", dbg->zi);
+    snprintf(fname, sizeof(fname), "drng-%02u.nrrd", dbg->zi);
     nrrdSave(fname, dbg->nslice, NULL);
   }
   return 0;

@@ -42,14 +42,15 @@ parserBoth(void *ptr,
   airArray *mop;
 
   if (!(ptr && filename)) {
-    sprintf(err, "%s: got NULL pointer", me);
+    snprintf(err, ASP1_H, "%s: got NULL pointer", me);
     return 1;
   }
   nrrdP = (Nrrd **)ptr;
   *nrrdP = NULL;
   if (airStrlen(filename)) {
     if (disallowTTY && !strcmp("-", filename) && isatty(STDIN_FILENO)) {
-      sprintf(err, "%s: declining to try reading Nrrd from stdin as tty (terminal)", me);
+      snprintf(err, ASP1_H,
+               "%s: declining to try reading Nrrd from stdin as tty (terminal)", me);
       return 1;
     }
     mop = airMopNew();
@@ -59,7 +60,7 @@ parserBoth(void *ptr,
     if (nrrdLoad(*nrrdP, filename, NULL)) {
       airMopAdd(mop, nerr = biffGetDone(NRRD), airFree, airMopOnError);
       // fprintf(stderr, "!%s: nerr from biff |%s|\n", __func__, nerr);
-      airStrcpy(err, AIR_STRLEN_HUGE + 1, nerr);
+      airStrcpy(err, ASP1_H, nerr);
       airMopError(mop);
       *nrrdP = NULL;
       /* THIS is where the sneaky EOF-indicating parse return comes from.
@@ -112,14 +113,14 @@ _nrrdHestKernelSpecParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 
   char *nerr;
 
   if (!(ptr && str)) {
-    sprintf(err, "%s: got NULL pointer", me);
+    snprintf(err, ASP1_H, "%s: got NULL pointer", me);
     return 1;
   }
   ksP = (NrrdKernelSpec **)ptr;
   *ksP = nrrdKernelSpecNew();
   if (nrrdKernelParse(&((*ksP)->kernel), (*ksP)->parm, str)) {
     nerr = biffGetDone(NRRD);
-    airStrcpy(err, AIR_STRLEN_HUGE + 1, nerr);
+    airStrcpy(err, ASP1_H, nerr);
     free(nerr);
     return 1;
   }
@@ -142,14 +143,14 @@ _nrrdHestBoundarySpecParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE 
   char *nerr;
 
   if (!(ptr && str)) {
-    sprintf(err, "%s: got NULL pointer", me);
+    snprintf(err, ASP1_H, "%s: got NULL pointer", me);
     return 1;
   }
   bsp = (NrrdBoundarySpec **)ptr;
   *bsp = nrrdBoundarySpecNew();
   if (nrrdBoundarySpecParse(*bsp, str)) {
     nerr = biffGetDone(NRRD);
-    airStrcpy(err, AIR_STRLEN_HUGE + 1, nerr);
+    airStrcpy(err, ASP1_H, nerr);
     /* HEY: why not freeing bsp? */
     free(nerr);
     return 1;
@@ -228,7 +229,7 @@ _nrrdHestIterParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
   int ret;
 
   if (!(ptr && str)) {
-    sprintf(err, "%s: got NULL pointer", me);
+    snprintf(err, ASP1_H, "%s: got NULL pointer", me);
     return 1;
   }
   iterP = (NrrdIter **)ptr;
@@ -263,7 +264,7 @@ _nrrdHestIterParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
     if (2 != ret) {
       /* it failed because of something besides the fopen(), so complain */
       nerr = biffGetDone(NRRD);
-      airStrcpy(err, AIR_STRLEN_HUGE + 1, nerr);
+      airStrcpy(err, ASP1_H, nerr);
       airMopError(mop);
       /* COPY of sneaky EOF-indicating parse return in parserBoth() above */
       return (strstr(err, _nrrdReadHitEOF) ? 2 : 1);
@@ -281,8 +282,8 @@ _nrrdHestIterParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
           nrrdIterSetValue(*iterP, val);
         } else {
           /* oh, this is bad. */
-          snprintf(err, AIR_STRLEN_HUGE + 1,
-                   "%s: very confused by \"%s\": is it a number or not?", me, str);
+          snprintf(err, ASP1_H, "%s: very confused by \"%s\": is it a number or not?",
+                   me, str);
           airMopError(mop);
           return 1;
         }
@@ -291,13 +292,13 @@ _nrrdHestIterParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
            we'll let it fail again and pass back the error messages */
         if (nrrdLoad(nrrd = nrrdNew(), str, NULL)) {
           nerr = biffGetDone(NRRD);
-          airStrcpy(err, AIR_STRLEN_HUGE + 1, nerr);
+          airStrcpy(err, ASP1_H, nerr);
           airMopError(mop);
           return 1;
         } else {
           /* what the hell? */
-          snprintf(err, AIR_STRLEN_HUGE + 1,
-                   "%s: very confused by \"%s\": is it a nrrd file or not?", me, str);
+          snprintf(err, ASP1_H, "%s: very confused by \"%s\": is it a nrrd file or not?",
+                   me, str);
           airMopError(mop);
           return 1;
         }
