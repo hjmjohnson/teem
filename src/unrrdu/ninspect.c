@@ -325,44 +325,38 @@ doit(Nrrd *nout, const Nrrd *nin, int smart, float amount, unsigned int margin,
 }
 
 static int
-unrrdu_ninspectMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  int pret;
-  hestOpt *opt = NULL;
-  airArray *mop;
-  char *outS, *err;
-  Nrrd *nin, *nout;
-  NrrdIoState *nio;
-  unsigned int margin;
-  float heqamount;
-  unsigned int back[3];
-  unsigned char backUC[3];
-
-  mop = airMopNew();
-
-  hestOptAdd_1_Other(&opt, "i", "nin", &nin, "-",
+unrrdu_ninspectMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  Nrrd *nin;
+  hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-",
                      "input nrrd to project.  Must be three dimensional.",
                      nrrdHestNrrdNoTTY);
-  hestOptAdd_1_Float(&opt, "amt", "heq", &heqamount, "0.5",
+  float heqamount;
+  hestOptAdd_1_Float(&hopt, "amt", "heq", &heqamount, "0.5",
                      "how much to apply histogram equalization to projection images");
-  hestOptAdd_1_UInt(
-    &opt, "m", "margin", &margin, "6",
-    "pixel size of margin on boundary, and space between the projections");
-  hestOptAdd_3_UInt(&opt, "b", "background", back, "0 0 0",
+  uint margin;
+  hestOptAdd_1_UInt(&hopt, "m", "margin", &margin, "6",
+                    "pixel size of margin on boundary, and space between "
+                    "the projections");
+  uint back[3];
+  hestOptAdd_3_UInt(&hopt, "b", "background", back, "0 0 0",
                     "background color (8-bit RGB)");
-  hestOptAdd_1_String(&opt, "o", "img out", &outS, NULL,
+  char *outS;
+  hestOptAdd_1_String(&hopt, "o", "img out", &outS, NULL,
                       "output image to save to.  Will try to use whatever "
                       "format is implied by extension, but will fall back to PPM.");
-  USAGE_OR_PARSE(_unrrdu_infoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
 
-  nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
-  nio = nrrdIoStateNew();
-  airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_infoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
   nrrdStateDisableContent = AIR_TRUE;
 
+  unsigned char backUC[3];
   ELL_3V_COPY_TT(backUC, unsigned char, back);
+  Nrrd *nout = nrrdNew();
+  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
   if (doit(nout, nin, 1, heqamount, margin, backUC)) {
     err = biffGetDone(UNRRDU);
     airMopAdd(mop, err, airFree, airMopAlways);
@@ -371,6 +365,8 @@ unrrdu_ninspectMain(int argc, const char **argv, const char *me, hestParm *hparm
     return 1;
   }
 
+  NrrdIoState *nio = nrrdIoStateNew();
+  airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
   if (nrrdFormatPNG->nameLooksLike(outS) && !nrrdFormatPNG->available()) {
     fprintf(stderr, "(%s: using PPM format for output)\n", me);
     nio->format = nrrdFormatPNM;

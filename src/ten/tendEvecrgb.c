@@ -24,7 +24,7 @@
 static const char *_tend_evecrgbInfoL = (INFO ". ");
 
 static int
-tend_evecrgbMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_evecrgbMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;

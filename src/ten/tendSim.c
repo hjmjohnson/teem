@@ -32,18 +32,20 @@ static const char *_tend_simInfoL
           "measurement frame. ");
 
 static int
-tend_simMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_simMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
   tenEstimateContext *tec;
-  airArray *mop;
 
   int E, oldstuff, seed, keyValueSet, outType, preOutType;
   Nrrd *nin, *nT2, *nbmat, *ngrad, *nout, *ntmp;
   char *outS;
   float b, sigma;
 
+  airArray *mop = airMopNew();
+  hestParm *hparm = hestParmCopy(_hparm);
+  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
   /* maybe this can go in tend.c, but for some reason its explicitly
      set to AIR_FALSE there */
   hparm->elideSingleOtherDefault = AIR_TRUE;
@@ -73,7 +75,6 @@ tend_simMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                     nrrdType);
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output image (floating point)");
 
-  mop = airMopNew();
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   USAGE_PARSE(_tend_simInfoL);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);

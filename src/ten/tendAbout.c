@@ -23,7 +23,7 @@
 #define INFO "Information about this program and its use"
 
 static int
-tend_aboutMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_aboutMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   char buff[AIR_STRLEN_LARGE + 1], fmt[AIR_STRLEN_MED + 1];
   char par1[] = "\t\t\t\t"
                 "\"tend\" is a command-line interface to much of the functionality "
@@ -32,25 +32,37 @@ tend_aboutMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                 "about Teem is at <http://teem.sf.net>. A checkout of Teem source "
                 "is available via:\n "
                 "git clone http://git.code.sf.net/p/teem/teem.git\n ";
-  /* old: "svn co http://svn.code.sf.net/p/teem/code/teem/trunk teem\n "; */
-  /* older: "svn co http://teem.svn.sf.net/svnroot/teem/teem/trunk teem\n "; */
+/* old: "svn co http://svn.code.sf.net/p/teem/code/teem/trunk teem\n "; */
+/* older: "svn co http://teem.svn.sf.net/svnroot/teem/teem/trunk teem\n "; */
+// NOTE: This is copy-pasta'd in unrrdu/about.c (with WUT tweaked)
+#define WUT "Teem or tend"
   char par2[]
     = "\t\t\t\t"
+      "Many people have probably used and relied on " WUT " for their work, "
+      "but it is very hard to find evidence of them respecting the long-standing "
+      "request made in the following paragraph. Nevertheless, it persists, in "
+      "the interest of posterity if not irony.\n "
+      "\n "
+      "\t\t\t"
       "Long-term maintenance of this software depends on funding, and "
       "funding depends on being able to document who is using it for what.  "
-      "If tend or Ten has helped in your research, including for simple one-off "
+      "If " WUT " has helped in your research, including for simple one-off "
       "experiments or mundane data hacking, the developers of Teem would love "
       "to know. There are multiple ways of communicating this.  "
       "In your publications, consider adding a line such as this "
       "in the Acknowledgments: "
-      "\"Data processing performed with the tend tool, "
+      "\"Data processing performed with the unu tool, "
       "part of the Teem toolkit available at "
       "http://teem.sf.net\". "
       "Alternatively, please email glk@uchicago.edu and briefly describe "
-      "how Teem software has helped in your work. "
-      "Please also consider joining the teem-users mailing list: "
-      "<http://lists.sourceforge.net/lists/listinfo/teem-users>. This is "
-      "the primary forum for feedback, questions, and feature requests.\n ";
+      "how Teem software has helped in your work.\n "
+      "\n "
+      "\t\t\t"
+      "(New for 2025 and TeemV2) Join the Teem-users Discord via "
+      "<https://discord.gg/xBBqZGXkF7> to share how Teem works or doesn't work "
+      "for you. Or, traditionalists can join the teem-users mailing list via "
+      "<http://lists.sourceforge.net/lists/listinfo/teem-users>.\n ";
+#undef WUT
   char par3[] = "\t\t\t\t"
                 "Like \"unu\", another Teem command-line binary, it is often useful "
                 "to chain together invocations of tend with pipes, as in the "

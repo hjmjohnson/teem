@@ -33,29 +33,27 @@ static const char *_unrrdu_convertInfoL
           "* Uses nrrdConvert or nrrdClampConvert");
 
 static int
-unrrdu_convertMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *nout;
-  int type, pret, E, doClamp;
-  airArray *mop;
-
+unrrdu_convertMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  int type;
   OPT_ADD_TYPE(type, "type to convert to", NULL);
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
-  hestOptAdd_Flag(&opt, "clamp", &doClamp,
+  int doClamp;
+  hestOptAdd_Flag(&hopt, "clamp", &doClamp,
                   "clamp input values to representable range of values of "
                   "output type, to avoid wrap-around problems");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_convertInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_convertInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
-
+  int E;
   if (doClamp) {
     E = nrrdClampConvert(nout, nin, type);
   } else {

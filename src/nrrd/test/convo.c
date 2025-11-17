@@ -159,7 +159,7 @@ int
 main(int argc, const char *argv[]) {
   const char *me = argv[0];
   airArray *mop = airMopNew();
-  hestParm *hparm = hestParmNew();
+  hestParm *hparm = hestParmMopNew(); /* Mop for hestParseOrExit */
   hestOpt *hopt = NULL;
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
   int uncrop;
@@ -178,7 +178,7 @@ main(int argc, const char *argv[]) {
   char *out;
   hestOptAdd_1_String(&hopt, NULL, "filename", &out, NULL,
                       "file to write output nrrd to");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, convoInfo);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, convoInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

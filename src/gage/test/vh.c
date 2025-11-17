@@ -44,9 +44,9 @@ main(int argc, const char *argv[]) {
 
   me = argv[0];
   mop = airMopNew();
-  hparm = hestParmNew();
-  hopt = NULL;
+  hparm = hestParmMopNew();
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  hopt = NULL;
   hestOptAdd(&hopt, "i", "nin", airTypeOther, 1, 1, &nin, NULL, "input volume", NULL,
              NULL, nrrdHestNrrd);
   hestOptAdd(&hopt, "kb0", "kernel", airTypeOther, 1, 1, &kb0, "guass:3,5",
@@ -75,7 +75,7 @@ main(int argc, const char *argv[]) {
              "how much to scale hack to decrease input value");
   hestOptAdd(&hopt, "o", "filename", airTypeString, 1, 1, &outS, "-",
              "fixed volume output");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, vhInfo);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, vhInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

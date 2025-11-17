@@ -27,7 +27,7 @@ static const char *_tend_makeInfoL
           "one for eigenvectors (4D, nine evec components per voxel).");
 
 static int
-tend_makeMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_makeMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;

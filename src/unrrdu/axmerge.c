@@ -29,30 +29,27 @@ static const char *_unrrdu_axmergeInfoL
           "* Uses nrrdAxesMerge");
 
 static int
-unrrdu_axmergeMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *nout[2];
-  int pret;
-  unsigned int ni, ii, jj, *axes, axesLen;
-  airArray *mop;
-
-  hestOptAdd_Nv_UInt(&opt, "a,axis", "ax0", 1, -1, &axes, NULL,
+unrrdu_axmergeMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  uint *axes, axesLen;
+  hestOptAdd_Nv_UInt(&hopt, "a,axis", "ax0", 1, -1, &axes, NULL,
                      "axis (or axes) to merge.  Each axis index identified is the "
                      "lower of the pair of axes that will be merged.  Saying \"-a 2\" "
                      "means to merge axis 2 and axis 3 into axis 2.  If multiple "
                      "merges are to be done, the indices listed here are for "
                      "the axes prior to any merging.",
                      &axesLen);
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_axmergeInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_axmergeInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
+  Nrrd *nout[2];
   /* make two nout buffers, will alternate between them */
   airMopAdd(mop, nout[0] = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
   airMopAdd(mop, nout[1] = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
@@ -62,15 +59,15 @@ unrrdu_axmergeMain(int argc, const char **argv, const char *me, hestParm *hparm)
     qsort(axes, axesLen, sizeof(*axes), nrrdValCompare[nrrdTypeInt]);
   }
 
-  ni = 0;
-  for (ii = 0; ii < axesLen; ii++) {
+  uint ni = 0;
+  for (uint ii = 0; ii < axesLen; ii++) {
     if (nrrdAxesMerge(nout[ni], !ii ? nin : nout[1 - ni], axes[ii])) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
       fprintf(stderr, "%s: error merging axes:\n%s", me, err);
       airMopError(mop);
       return 1;
     }
-    for (jj = ii + 1; jj < axesLen; jj++) {
+    for (uint jj = ii + 1; jj < axesLen; jj++) {
       axes[jj] -= 1;
     }
     ni = 1 - ni;

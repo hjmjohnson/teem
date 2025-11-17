@@ -47,7 +47,7 @@ main(int argc, const char *argv[]) {
              "put little labels on things; fix with psfrag in LaTeX");
   hestOptAdd(&hopt, "o", "output EPS", airTypeString, 1, 1, &outS, NULL,
              "output file to render postscript into");
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
+  hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

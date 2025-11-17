@@ -60,7 +60,7 @@ main(int argc, const char *argv[]) {
 
   me = argv[0];
   mop = airMopNew();
-  hparm = hestParmNew();
+  hparm = hestParmMopNew();
   hopt = NULL;
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
   hestOptAdd(&hopt, "i", "nin", airTypeOther, 1, 1, &nrin, NULL, "input array", NULL,
@@ -97,7 +97,7 @@ main(int argc, const char *argv[]) {
              "permit confirming that it doesn't carry significant info");
   hestOptAdd(&hopt, "o", "filename", airTypeString, 1, 1, &outS, NULL,
              "file to write output nrrd to");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, phrndInfo);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, phrndInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

@@ -29,6 +29,10 @@ const char *const _nrrdFieldSep = " \t";
 static const char *const _nrrdLineSep = "\r\n";
 const char *const _nrrdTextSep = " ,\t";
 const char *const _nrrdNoSpaceVector = "none";
+/* special string that signals that _nrrdRead() failed because it hit EOF,
+   which is used in hestNrrd.c to give a different parse (error) return value,
+   which in turn enables unu's quiet quitting */
+const char *const _nrrdReadHitEOF = ": immediately hit EOF";
 
 /* returns non-zero if given char `cc` is in _nrrdFieldSep */
 int /* Biff: (private) nope */
@@ -440,7 +444,7 @@ _nrrdRead(Nrrd *nrrd, FILE *file, const char *string, NrrdIoState *_nio) {
     return 1;
   }
   if (!llen) {
-    biffAddf(NRRD, "%s: immediately hit EOF", me);
+    biffAddf(NRRD, "%s%s", me, _nrrdReadHitEOF);
     airMopError(mop);
     return 1;
   }
@@ -629,7 +633,9 @@ _nrrdSplitName(char **dirP, char **baseP, const char *name) {
 ** (more documentation here)
 **
 ** sneakiness: returns 2 if the reason for problem was a failed fopen().
-**
+** BUT: this return 2 is NOT the same as the 2 returned from
+** nrrdHestNrrd->parse() or nrrdHestNrrdNoTTY->parse() or nrrdHestIter->parse()
+** as a way to initiate quiet quitting for hestParseOrExit
 */
 int /* Biff: 1|2 */
 nrrdLoad(Nrrd *nrrd, const char *filename, NrrdIoState *nio) {

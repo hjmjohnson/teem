@@ -33,7 +33,7 @@ extern "C" {
 #define USAGE(INFO)                                                                     \
   if (!argc && !hparm->noArgsIsNoProblem) {                                             \
     hestInfo(stdout, me, (INFO), hparm);                                                \
-    hestUsage(stdout, hopt, me, hparm);                                                 \
+    hestUsage(stdout, hopt, me, hparm, AIR_FALSE);                                      \
     hestGlossary(stdout, hopt, hparm);                                                  \
     airMopError(mop);                                                                   \
     return 0;                                                                           \
@@ -47,7 +47,7 @@ extern "C" {
     if (1 == pret) {                                                                    \
       fprintf(stderr, "%s: %s", me, perr);                                              \
       free(perr);                                                                       \
-      hestUsage(stderr, hopt, me, hparm);                                               \
+      hestUsage(stderr, hopt, me, hparm, AIR_FALSE);                                    \
       if (hparm && hparm->noArgsIsNoProblem) {                                          \
         fprintf(stderr, "\nFor more info: \"%s --help\"\n", me);                        \
       } else {                                                                          \
@@ -60,7 +60,7 @@ extern "C" {
     }                                                                                   \
   } else if (hopt->helpWanted) {                                                        \
     hestInfo(stdout, me, (INFO), hparm);                                                \
-    hestUsage(stdout, hopt, me, hparm);                                                 \
+    hestUsage(stdout, hopt, me, hparm, AIR_FALSE);                                      \
     hestGlossary(stdout, hopt, hparm);                                                  \
     return 0;                                                                           \
   }

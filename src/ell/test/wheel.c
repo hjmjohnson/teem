@@ -232,10 +232,10 @@ main(int argc, const char *argv[]) {
 
   me = argv[0];
   mop = airMopNew();
-  hparm = hestParmNew();
+  hparm = hestParmMopNew();
   hparm->elideMultipleNonExistFloatDefault = AIR_TRUE;
-  hopt = NULL;
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  hopt = NULL;
   hestOptAdd(&hopt, "t", "a b c d e f", airTypeDouble, 6, 6, tval,
              "nan nan nan nan nan nan nan", "six values of symmetric tensors");
   hestOptAdd(&hopt, "ABC", "A B C", airTypeDouble, 3, 3, ABC, "nan nan nan",
@@ -268,7 +268,7 @@ main(int argc, const char *argv[]) {
              "scaling from world space to PostScript points");
   hestOptAdd(&hopt, "o", "filename", airTypeString, 1, 1, &outS, "-",
              "file to write EPS output to");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, wheelInfo);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, wheelInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

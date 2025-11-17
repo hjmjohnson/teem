@@ -32,41 +32,34 @@ static const char *_unrrdu_distInfoL
           "* Uses nrrdDistanceL2 or nrrdDistanceL2Signed");
 
 static int
-unrrdu_distMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *nout;
-  int pret;
-
-  int E, typeOut, invert, sign;
+unrrdu_distMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
   double thresh, bias;
-  airArray *mop;
-
-  hestOptAdd_1_Double(&opt, "th,thresh", "val", &thresh, NULL,
+  hestOptAdd_1_Double(&hopt, "th,thresh", "val", &thresh, NULL,
                       "threshold value to separate inside from outside");
-  hestOptAdd_1_Double(&opt, "b,bias", "val", &bias, "0.0",
+  hestOptAdd_1_Double(&hopt, "b,bias", "val", &bias, "0.0",
                       "if non-zero, bias the distance transform by this amount "
                       "times the difference in value from the threshold");
-  hestOptAdd_1_Enum(&opt, "t,type", "type", &typeOut, "float", "type to save output in",
+  int typeOut;
+  hestOptAdd_1_Enum(&hopt, "t,type", "type", &typeOut, "float", "type to save output in",
                     nrrdType);
-  hestOptAdd_Flag(&opt, "sgn", &sign,
+  int sign, invert;
+  hestOptAdd_Flag(&hopt, "sgn", &sign,
                   "also compute signed (negative) distances inside objects, "
                   "instead of leaving them as zero");
-  hestOptAdd_Flag(&opt, "inv", &invert,
+  hestOptAdd_Flag(&hopt, "inv", &invert,
                   "values *below* threshold are considered interior to object. "
                   "By default (not using this option), values above threshold "
                   "are considered interior. ");
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
-
-  USAGE_OR_PARSE(_unrrdu_distInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_distInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
   if (bias && sign) {
     fprintf(stderr,
@@ -77,6 +70,9 @@ unrrdu_distMain(int argc, const char **argv, const char *me, hestParm *hparm) {
     return 1;
   }
 
+  Nrrd *nout = nrrdNew();
+  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  int E;
   if (sign) {
     E = nrrdDistanceL2Signed(nout, nin, typeOut, NULL, thresh, !invert);
   } else {

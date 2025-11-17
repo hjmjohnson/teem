@@ -28,28 +28,22 @@ static const char *_unrrdu_hackInfoL
           "* (not based on any particular nrrd function)");
 
 static int
-unrrdu_hackMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *nout;
-  int pret;
-  airArray *mop;
-
+unrrdu_hackMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
   char *what;
-
-  hestOptAdd_1_String(&opt, NULL, "what", &what, NULL, "what hack to do");
+  hestOptAdd_1_String(&hopt, NULL, "what", &what, NULL, "what hack to do");
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_hackInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_hackInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
-
   if (!strcmp(what, "sdincr")) {
     unsigned int sdim, axi;
     sdim = nin->spaceDim;

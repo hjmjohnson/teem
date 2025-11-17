@@ -25,7 +25,7 @@ static const char *_tend_stenInfoL
   = (INFO ".  Not a diffusion tensor, but it is symmetric and positive-definate.");
 
 static int
-tend_stenMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_stenMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;

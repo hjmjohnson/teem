@@ -8,9 +8,9 @@ tenBVecNonLinearFit,int,1,0,ten,ten/bvec.c:97
 tenDWMRIKeyValueParse,int,1,0,ten,ten/chan.c:58
 tenBMatrixCalc,int,1,0,ten,ten/chan.c:346
 tenEMatrixCalc,int,1,0,ten,ten/chan.c:387
-tenEstimateLinear3D,int,1,0,ten,ten/chan.c:580
-tenEstimateLinear4D,int,1,0,ten,ten/chan.c:627
-tenSimulate,int,1,0,ten,ten/chan.c:868
+tenEstimateLinear3D,int,1,0,ten,ten/chan.c:581
+tenEstimateLinear4D,int,1,0,ten,ten/chan.c:628
+tenSimulate,int,1,0,ten,ten/chan.c:870
 tenEpiRegister3D,int,1,0,ten,ten/epireg.c:1042
 tenEpiRegister4D,int,1,0,ten,ten/epireg.c:1193
 tenEstimateMethodSet,int,1,0,ten,ten/estimate.c:281

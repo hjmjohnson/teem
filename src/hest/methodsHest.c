@@ -114,7 +114,7 @@ static int parseSingleI (_PARSE_1_ARGS) { _PARSE_1_BODY("int",            "%d" )
 static int parseSingleUI(_PARSE_1_ARGS) { _PARSE_1_BODY("unsigned int",   "%u" ); }
 static int parseSingleL (_PARSE_1_ARGS) { _PARSE_1_BODY("long",           "%ld"); }
 static int parseSingleUL(_PARSE_1_ARGS) { _PARSE_1_BODY("unsigned long",  "%lu"); }
-static int parseSingleZ (_PARSE_1_ARGS) { _PARSE_1_BODY("size_t",         "%z" ); }
+static int parseSingleZ (_PARSE_1_ARGS) { _PARSE_1_BODY("size_t",         "%zu" ); }
 static int parseSingleF (_PARSE_1_ARGS) { _PARSE_1_BODY("float",          "%f" ); }
 static int parseSingleD (_PARSE_1_ARGS) { _PARSE_1_BODY("double",         "%lf"); }
 // clang-format on
@@ -175,8 +175,9 @@ parseSingleO(void *out, const char *str, _hestPPair *hpp) {
   int ret = hpp->hopt->CB->parse(out, str, myerr);
   if (ret) {
     if (strlen(myerr)) {
+      // myerr as sprinted by parse(), can contain newlines
       snprintf(hpp->err, AIR_STRLEN_HUGE + 1,
-               "error parsing \"%s\" (from %s) as %s:\n%s\n", str,
+               "error (ret=%d) parsing \"%s\" from %s as %s:\n%s", ret, str,
                airEnumStr(hestSource, hpp->hopt->source), hpp->hopt->CB->type,
                airStrunc(myerr, AIR_STRLEN_HUGE + 1,
                          strlen(str) + strlen(hpp->hopt->CB->type) + 100));
@@ -254,27 +255,6 @@ void (*const _hestInvertScalar[_HEST_TYPE_MAX + 1])(void *) = {
   NULL             // not ?, "other"
 };
 
-// HEY these are sticking around just for the old implementation of hestParse
-unsigned int (*const _hestParseStr[_HEST_TYPE_MAX + 1])(void *, const char *,
-                                                        const char *, unsigned int)
-  = {NULL,
-     (unsigned int (*)(void *, const char *, const char *, unsigned int))airParseStrB,
-     (unsigned int (*)(void *, const char *, const char *, unsigned int))airParseStrH,
-     (unsigned int (*)(void *, const char *, const char *, unsigned int))airParseStrUH,
-     (unsigned int (*)(void *, const char *, const char *, unsigned int))airParseStrI,
-     (unsigned int (*)(void *, const char *, const char *, unsigned int))airParseStrUI,
-     (unsigned int (*)(void *, const char *, const char *, unsigned int))airParseStrL,
-     (unsigned int (*)(void *, const char *, const char *, unsigned int))airParseStrUL,
-     (unsigned int (*)(void *, const char *, const char *, unsigned int))airParseStrZ,
-     (unsigned int (*)(void *, const char *, const char *, unsigned int))airParseStrF,
-     (unsigned int (*)(void *, const char *, const char *, unsigned int))airParseStrD,
-     (unsigned int (*)(void *, const char *, const char *, unsigned int))airParseStrC,
-     (unsigned int (*)(void *, const char *, const char *, unsigned int))airParseStrS,
-     // airParseStrE needs final airEnum* arg, no longer enforceing fake uniformity
-     NULL,
-     // no uniform of parsing type "other"; handled via hestCB in hest
-     NULL};
-
 // loving how C99 simplifies creating an airEnum at compile-time
 static const airEnum _hestSource
   = {.name = "source",
@@ -308,12 +288,18 @@ hestOpt array. Very few uses of hest within Teem use more than 32 options. Hopef
 this avoids all the reallocations in the past action of hestOptAdd and the like. */
 #define INCR 32
 
+// for debugging allocation and especially hestParm->_selfMop usage
+#define SMVERB 0
+
 hestParm * /* Biff: nope */
 hestParmNew(void) {
   hestParm *hparm;
 
   hparm = AIR_CALLOC(1, hestParm);
   assert(hparm);
+#if defined(SMVERB) && SMVERB
+  fprintf(stderr, "%s: newly allocated hestParm %p\n", __func__, AIR_VOIDP(hparm));
+#endif
   hparm->verbose = hestDefaultVerbose;
   hparm->responseFileEnable = hestDefaultResponseFileEnable;
   hparm->elideSingleEnumType = hestDefaultElideSingleEnumType;
@@ -331,42 +317,172 @@ hestParmNew(void) {
     from the command-line or from supplied defaults), and
   - non-zero has meant that there was an error parsing the command-line arguments
   But seeing and recognizing "--help" means that options have NOT had values
-  set, and, that's not an error, which is outside that binary.  But that binary
-  is the precedent, so we have to work with it by default.
+  set, and, that's not an error: this is outside the error/no-error binary.
+  But that binary is the precedent, so we have to work with that by default.
   Now, with parm->respectDashDashHelp, upon seeing "--help", hestParse returns 0,
   and sets helpWanted in the first hestOpt, and the caller will have to know
   to check for that.  This logic is handled by hestParse but maybe in the future there
   can be a different top-level parser function that turns on parm->respectDashDashHelp
   and knows how to check the results.
-  2025 rewrite (for TeemV2): respectDashDashHelp is now turned on in hestParseOrDie;
-  this function that has been part of hest since at least 2003's version 1.5 release,
-  so it is not a new or different top-level parser function, but it seems like there
-  is no other new top-level parser function on the horizon. Still, that is just for
-  users who want the one-stop convenience of hestParseOrDie. Users who do not want
-  that convenience are signing up for more work, which includes deciding how to respond
-  to --help (which is non-trivial as just explained) */
+  2025 rewrite (for TeemV2): respectDashDashHelp is now turned on in hestParseOrExit,
+  this replaces the hestParseOrDie that has been part of hest since at least 2003's
+  version 1.5 release, so it is not a new or different top-level parser function,
+  but it seems like no other new top-level parser function is coming soon.
+  Still, that is just for users who want the one-stop convenience of hestParseOrExit.
+  Users who do not want that convenience are signing up for more work, which includes
+  deciding how to respond to --help (which is non-trivial as just explained) */
   hparm->respectDashDashHelp = AIR_FALSE;
   /* for these most recent addition to the hestParm,
      abstaining from adding yet another default global variable */
   hparm->respectDashBraceComments = AIR_TRUE;
   hparm->noArgsIsNoProblem = hestDefaultNoArgsIsNoProblem;
   hparm->cleverPluralizeOtherY = hestDefaultCleverPluralizeOtherY;
-  /* here too: newer addition to hestParm avoid adding another default global */
-  hparm->dieWithoutNewerFeatures = AIR_FALSE;
-  hparm->noBlankLineBeforeUsage = AIR_FALSE;
+  /* this mimics pre-TeemV2 behavior of always preventing line wrapping */
+  hparm->usageDefaultDisplayAvoidsWrapping = AIR_TRUE;
   hparm->columns = hestDefaultColumns;
+  hparm->indent = hestDefaultIndent;
   // see note in privateHest.h about the removal of these
   // hparm->responseFileFlag = hestDefaultRespFileFlag;
   // hparm->responseFileComment = hestDefaultRespFileComment;
   // hparm->varParamStopFlag = hestDefaultVarParamStopFlag;
   // hparm->multiFlagSep = hestDefaultMultiFlagSep;
+  hparm->orExitWithoutNewerFeatures = AIR_FALSE;
+  hparm->_selfMop = NULL; /* handling this is subtle: see hestParmMopNew,
+                        hestParmUnmop, hestParmCopy, and hestParmFree */
+  hparm->quietQuit = NULL;
   return hparm;
 }
 
+/* any usage of this could just as well be replaced by `free()`
+   but the printed diagnostics are good for debugging */
+static hestParm * /* Biff: nope */
+_plainParmFree(hestParm *hparm) {
+#if defined(SMVERB) && SMVERB
+  fprintf(stderr, "%s(%p): hello\n", __func__, AIR_VOIDP(hparm));
+#endif
+  /* ignore the hparm->_selfMop to avoid recursion */
+  airFree(hparm);
+  return NULL;
+}
+
+/*
+if you are going to be passing a hestParm to hestParseOrExit, or passing it to something
+that will be be calling hestParseOrExit (and unfortunately you have to know), then you
+should be making the hparm via hestParmMopNew, not plain hestParmNew
+*/
+hestParm * /* Biff: nope */
+hestParmMopNew(void) {
+  hestParm *ret = hestParmNew();
+  ret->_selfMop = airMopNew();
+  /* we choose airMopAlways but really we don't know the `when` of
+     the mopping, see hestParmFree */
+#if defined(SMVERB) && SMVERB
+  fprintf(stderr, "%s: created %p with mop %p with _plainParmFree(%p)\n", __func__,
+          AIR_VOIDP(ret), AIR_VOIDP(ret->_selfMop), AIR_VOIDP(ret));
+#endif
+  airMopAdd(ret->_selfMop, ret, (airMopper)_plainParmFree, airMopAlways);
+  return ret;
+}
+
+hestParm * /* Biff: nope */
+hestParmCopy(const hestParm *hparm) {
+  hestParm *ret = hestParmNew();
+  assert(ret);
+  if (hparm) {
+#if defined(SMVERB) && SMVERB
+    fprintf(stderr, "%s(%p): created %p\n", __func__, AIR_CVOIDP(hparm), AIR_VOIDP(ret));
+#endif
+    memcpy(ret, hparm, sizeof(hestParm));
+    /* if hparm->_selfMop was non-NULL, then we've just copied that pointer to the
+       airArray mop. If hparm was in the hparm->_selfMop, it still is: ret->_selfMop ==
+       hparm->_selfMop and hestParmFree(ret) will free it. But now we have a new
+       hestParm*, this `ret`. We avoid creating new memory sloppiness, by adding `ret` to
+       the same mop, and thus removing the need for a separate hestParmMopCopy */
+    if (ret->_selfMop) {
+#if defined(SMVERB) && SMVERB
+      fprintf(stderr, "%s(%p): copied mop %p (len %u), adding _plainParmFree(%p)\n",
+              __func__, AIR_CVOIDP(hparm), AIR_VOIDP(ret->_selfMop),
+              AIR_UINT(ret->_selfMop->len), AIR_VOIDP(ret));
+#endif
+      airMopAdd(ret->_selfMop, ret, (airMopper)_plainParmFree, airMopAlways);
+    }
+  }
+  return ret;
+}
+
+/* should be used after hestParmCopy() of a self-mopping hparm */
+void
+hestParmUnmop(hestParm *hparm) {
+#if defined(SMVERB) && SMVERB
+  fprintf(stderr, "%s(%p): hello\n", __func__, AIR_VOIDP(hparm));
+#endif
+  if (hparm && hparm->_selfMop && hparm->_selfMop->len > 1) {
+    /* This is how to check that this is plausibly the result of a hestParmCopy of a
+       self-mopping hestParm. airMopSub can be safely called even when the
+       (pointer,callback) pair is not actually in the mop */
+#if defined(SMVERB) && SMVERB
+    fprintf(stderr, "%s(%p): (mop len %u) --> airMopSub(%p, %p, _plainParmFree)\n",
+            __func__, AIR_VOIDP(hparm), AIR_UINT(hparm->_selfMop->len),
+            AIR_VOIDP(hparm->_selfMop), AIR_VOIDP(hparm));
+#endif
+    airMopSub(hparm->_selfMop, hparm, (airMopper)_plainParmFree);
+    /* btw: airMopSub does not actually shorten the mop; it just turns
+       the removed entry into a no-op, which is harmless */
+    hparm->_selfMop = NULL;
+    /* and with that are no longer self-mopping; so a subsequent call to hestParmFree
+       will call _plainParmFree */
+  }
+  return;
+}
+
+/*
+hestParmFree, by itself, without additional args, cannot disambiguate between
+the caller being in two different situations
+(1) I'm about to call exit() and need to clean up everything, versus,
+(2) I'm about to return and need to clean up what I locally allocated.
+==> hestParseOrExit cannot simply call hestParmFree on both cases and have things
+work, and, we shouldn't attempt internal cleverness towards that end.
+==> for case (1), hestParseOrExit needs to first call hestParmUnmop,
+and can then call hestParmFree.
+*/
 hestParm * /* Biff: nope */
 hestParmFree(hestParm *hparm) {
+#if defined(SMVERB) && SMVERB
+  fprintf(stderr, "%s(%p): hello\n", __func__, AIR_VOIDP(hparm));
+#endif
+  if (hparm) {
+    if (hparm->_selfMop) {
+#if defined(SMVERB) && SMVERB
+      fprintf(stderr, "%s(%p): mopping mop %p (len %u)\n", __func__, AIR_VOIDP(hparm),
+              AIR_VOIDP(hparm->_selfMop), AIR_UINT(hparm->_selfMop->len));
+#endif
+      /* if hparm->_selfMop->len > 1 (and hparm->_selfMop has not been meddled with)
+         then we are the result of a hestParmCopy. If we were to just
+         `airMopOkay(hparm->_selfMop)` then we'd also end up freeing the (self-mopping)
+         parm that we are a copy of, confusing */
+      /* we could free up hparm->_selfMop and then airFree(hparm), but it would
+         be easier to just use the mop as intended. We are going to assume
+         that the caller created this via hestParmMopNew */
+      airMopOkay(hparm->_selfMop);
+    } else {
+      _plainParmFree(hparm);
+    }
+  }
+  return NULL;
+}
 
-  airFree(hparm);
+const hestParm * /* Biff: nope */
+hestParmMopDone(const hestParm *hparm) {
+  if (hparm && hparm->_selfMop) {
+    /* if this in in fact properly self-mopping running mop will clean up the same
+    `hparm` that we can't call hestParmFree on because for us `hparm` is const. It seems
+    like maybe we should have a special 2nd arg to airMopDone to mean "everything": to
+    call callback on pointer even if it was added only airMopOnError or airMopOnOkay. But
+    not a problem as long rest of hest code here uses airMopAlways */
+    airMopDone(hparm->_selfMop, AIR_FALSE /* error */);
+  }
+  /* else NULL hparm or NULL hparm->_selfMop:
+     either way, nothing for us to do here */
   return NULL;
 }
 
@@ -715,7 +831,7 @@ hestOptFree(hestOpt *hopt) {
 New biff-based container for all logic that originated in _hestOptCheck (which is the
 2025 rename of what had long been called _hestPanic): the validation of the given hestOpt
 array `hopt` itself (but *not* anything about the command-line or its parsing), relative
-to the given (non-NULL) hestParm `hparm`.
+to the given hestParm `hparm` (if non-NULL).
 
 Pre-2025, hest did not depend on biff, and this instead took a 'char *err' that somehow
 magically had to be allocated for the size of any possible error message generated here.
@@ -730,15 +846,16 @@ like "panic 0.5" which were totally uninformative.  Now, hestOptCheck() and
 hestOptParmCheck(), which both call _hestOPCheck, will fprintf(stderr) the informative
 biff message.
 
-Prior to 2023 code revisit: this used to set the "kind" in all the opts, but now that is
-more appropriately done at the time the option is added. This particular change closes
-off the possibility of doing an argtable-style static creation of a hestOpt array, sigh.
+Prior to 2023 code revisit: this (when named _hestPanic, of all things) used to set the
+"kind" in all the opts, but now that is more appropriately done at the time the option is
+added. This particular change closes off the possibility of doing an argtable-style
+static creation of a hestOpt array, sigh.
 */
 int /* Biff: (private) 1 */
 _hestOPCheck(const hestOpt *hopt, const hestParm *hparm) {
-  if (!(hopt && hparm)) {
-    biffAddf(HEST, "%s%sgot NULL hopt (%p) or hparm (%p)", _ME_, AIR_CVOIDP(hopt),
-             AIR_CVOIDP(hparm));
+  if (!hopt) {
+    /* we allow hparm to be NULL because sometimes we just want to check hopt! */
+    biffAddf(HEST, "%s%sgot NULL hopt", _ME_);
     return 1;
   }
   uint optNum = hopt->arrLen;
@@ -835,7 +952,7 @@ _hestOPCheck(const hestOpt *hopt, const hestParm *hparm) {
                    _ME_, sep + 1, flag, opi);
           return 1;
         }
-        if (hparm->respectDashDashHelp && !strcmp("help", sep + 1)) {
+        if (hparm && hparm->respectDashDashHelp && !strcmp("help", sep + 1)) {
           biffAddf(HEST,
                    "%s%slong \"--%s\" flag of opt[%u] is same as \"--help\" "
                    "that requested hparm->respectDashDashHelp handles separately",
@@ -848,7 +965,8 @@ _hestOPCheck(const hestOpt *hopt, const hestParm *hparm) {
           return (free(tbuff), 1);
         }
       }
-      if (hparm->respectDashBraceComments && (strchr(flag, '{') || strchr(flag, '}'))) {
+      if (hparm && hparm->respectDashBraceComments
+          && (strchr(flag, '{') || strchr(flag, '}'))) {
         biffAddf(HEST,
                  "%s%srequested hparm->respectDashBraceComments but opt[%u]'s flag "
                  "\"%s\" confusingly contains '{' or '}'",
@@ -986,8 +1104,7 @@ _hestOPCheck(const hestOpt *hopt, const hestParm *hparm) {
  */
 int /* Biff: nope # biff use is internal */
 hestOptCheck(const hestOpt *hopt, char **errP) {
-  hestParm *hparm = hestParmNew();
-  if (_hestOPCheck(hopt, hparm)) {
+  if (_hestOPCheck(hopt, NULL)) {
     char *err = biffGetDone(HEST);
     if (errP) {
       /* they did give a pointer address; they'll free it */
@@ -997,12 +1114,10 @@ hestOptCheck(const hestOpt *hopt, char **errP) {
       fprintf(stderr, "%s: problem with given hestOpt array:\n%s", __func__, err);
       free(err);
     }
-    hestParmFree(hparm);
     return 1;
   }
   /* else, no problems */
   if (errP) *errP = NULL;
-  hestParmFree(hparm);
   return 0;
 }
 

@@ -178,7 +178,7 @@ tend_satinGen(Nrrd *nout, float parm, float mina, float maxa, unsigned int wsize
 }
 
 static int
-tend_satinMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_satinMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;

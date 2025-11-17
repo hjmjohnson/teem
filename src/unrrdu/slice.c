@@ -30,17 +30,10 @@ static const char *_unrrdu_sliceInfoL
           "* Uses nrrdSlice (possibly called multiple times)");
 
 static int
-unrrdu_sliceMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *nout;
-  unsigned int *axis, axi, axisNum, posNum;
-  int pret;
-  size_t pos[NRRD_DIM_MAX];
-  long int *_pos;
-  airArray *mop;
-
-  hestOptAdd_Nv_UInt(&opt, "a,axis", "axis", 1, -1, &axis, NULL,
+unrrdu_sliceMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  uint *axis, axisNum;
+  hestOptAdd_Nv_UInt(&hopt, "a,axis", "axis", 1, -1, &axis, NULL,
                      "single axis or multiple axes to slice along.  "
                      "Giving multiple axes here leads to doing multiple slices "
                      "(at the corresponding positions "
@@ -50,20 +43,24 @@ unrrdu_sliceMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                      "slice axis will be different if previous slices were on "
                      "lower-numbered (faster) axes.",
                      &axisNum);
-  hestOptAdd_Nv_Other(&opt, "p,position", "pos", 1, -1, &_pos, NULL,
+  long int *_pos;
+  uint posNum;
+  hestOptAdd_Nv_Other(&hopt, "p,position", "pos", 1, -1, &_pos, NULL,
                       "position(s) to slice at:\n "
                       "\b\bo <int> gives 0-based index\n "
                       "\b\bo M-<int> give index relative "
                       "to the last sample on the axis (M == #samples-1).",
                       &posNum, &unrrduHestPosCB);
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_sliceInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_sliceInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
   if (axisNum != posNum) {
     fprintf(stderr, "%s: # axes %u != # positions %u\n", me, axisNum, posNum);
     airMopError(mop);
@@ -75,7 +72,8 @@ unrrdu_sliceMain(int argc, const char **argv, const char *me, hestParm *hparm) {
     airMopError(mop);
     return 1;
   }
-  for (axi = 0; axi < axisNum; axi++) {
+  size_t pos[NRRD_DIM_MAX];
+  for (uint axi = 0; axi < axisNum; axi++) {
     char stmp[AIR_STRLEN_SMALL + 1];
     if (axisNum > 1) {
       sprintf(stmp, "[%u]", axi);
@@ -101,9 +99,8 @@ unrrdu_sliceMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   }
   /* check on possibly adjust slice axes downward */
   if (axisNum > 1) {
-    unsigned int axj;
-    for (axi = 0; axi < axisNum - 1; axi++) {
-      for (axj = axi + 1; axj < axisNum; axj++) {
+    for (uint axi = 0; axi < axisNum - 1; axi++) {
+      for (uint axj = axi + 1; axj < axisNum; axj++) {
         if (axis[axi] == axis[axj]) {
           fprintf(stderr, "%s: can't repeat axis: axis[%u] = axis[%u] = %u\n", me, axi,
                   axj, axis[axj]);
@@ -112,8 +109,8 @@ unrrdu_sliceMain(int argc, const char **argv, const char *me, hestParm *hparm) {
         }
       }
     }
-    for (axi = 0; axi < axisNum - 1; axi++) {
-      for (axj = axi + 1; axj < axisNum; axj++) {
+    for (uint axi = 0; axi < axisNum - 1; axi++) {
+      for (uint axj = axi + 1; axj < axisNum; axj++) {
         axis[axj] -= (axis[axj] > axis[axi]);
       }
     }
@@ -124,7 +121,7 @@ unrrdu_sliceMain(int argc, const char **argv, const char *me, hestParm *hparm) {
     */
   }
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
 
   if (1 == axisNum) {
@@ -138,12 +135,12 @@ unrrdu_sliceMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   } else {
     /* have to do multiple slices */
     Nrrd *ntmp[2];
-    unsigned int tidx = 0;
     ntmp[0] = nrrdNew();
     airMopAdd(mop, ntmp[0], (airMopper)nrrdNuke, airMopAlways);
     ntmp[1] = nrrdNew();
     airMopAdd(mop, ntmp[1], (airMopper)nrrdNuke, airMopAlways);
-    for (axi = 0; axi < axisNum; axi++) {
+    uint tidx = 0;
+    for (uint axi = 0; axi < axisNum; axi++) {
       if (nrrdSlice((axi < axisNum - 1
                        ? ntmp[1 - tidx]      /* use an ntmp for all but last output */
                        : nout),              /* and use nout for last output */

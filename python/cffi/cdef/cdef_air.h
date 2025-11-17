@@ -452,6 +452,7 @@ extern char *airStrcpy(char *dst, size_t dstSize, const char *src);
 extern int airEndsWith(const char *s, const char *suff);
 extern char *airUnescape(char *s);
 extern char *airOneLinify(char *s);
+extern char *airMultiLinify(char *str);
 extern char *airToLower(char *str);
 extern char *airToUpper(char *str);
 extern size_t airOneLine(FILE *file, char *line, size_t size);
@@ -485,13 +486,18 @@ extern const char *const airTeemVersion;
 extern const int airTeemReleaseDone;
 extern const char *const airTeemReleaseDate;
 extern void airTeemVersionSprint(char buff[AIR_STRLEN_LARGE + 1]);
+/* ---- BEGIN non-NrrdIO */
+extern void airTeemVersionPrintAndExit(const char *pfx);
+/* ---- END non-NrrdIO */
 extern void *airNull(void);
 extern void *airSetNull(void **ptrP);
 extern void *airFree(void *ptr);
 extern FILE *airFopen(const char *name, FILE *std, const char *mode);
 extern FILE *airFclose(FILE *file);
 extern int airSinglePrintf(FILE *file, char *str, size_t strSize, /* */
-                               const char *fmt, ...);
+                               const char *fmt, ...)
+  ;
+;
 extern char *airSprintSize_t(char str[AIR_STRLEN_SMALL + 1], size_t val);
 /* ---- BEGIN non-NrrdIO */
 extern char *airSprintVecSize_t(char *dst, size_t dstSize, const size_t *vec,

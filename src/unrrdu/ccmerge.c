@@ -30,52 +30,57 @@ static const char *_unrrdu_ccmergeInfoL
           "* Uses nrrdCCMerge");
 
 static int
-unrrdu_ccmergeMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *nout, *nout2, *nval;
-  airArray *mop;
-  int pret, maxSize, dir, maxNeigh, revalue;
-  unsigned int conny;
-
-  hestOptAdd_1_Int(&opt, "d,directed", "dir", &dir, "0",
+unrrdu_ccmergeMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+  hestOpt *hopt = NULL;
+  int dir;
+  hestOptAdd_1_Int(&hopt, "d,directed", "dir", &dir, "0",
                    "do value-driven merging.  Using (positive) \"1\" says that "
                    "dark islands get merged with bright surrounds, while \"-1\" "
                    "says the opposite.  By default, merging can go either way. ");
-  hestOptAdd_1_Int(&opt, "s,size", "max size", &maxSize, "0",
+  int maxSize;
+  hestOptAdd_1_Int(&hopt, "s,size", "max size", &maxSize, "0",
                    "a cap on the CC size that will be absorbed into its "
                    "surround.  CCs larger than this are deemed too significant "
                    "to mess with.  Or, use \"0\" to remove any such restriction "
                    "on merging.");
-  hestOptAdd_1_Int(&opt, "n,neighbor", "max # neigh", &maxNeigh, "1",
+  int maxNeigh;
+  hestOptAdd_1_Int(&hopt, "n,neighbor", "max # neigh", &maxNeigh, "1",
                    "a cap on the number of neighbors that a CC may have if it is "
                    "to be be merged.  \"1\" allows only islands to be merged, "
                    "\"2\" does merging with bigger of two neighbors, etc, while "
                    "\"0\" says that number of neighbors is no constraint");
-  hestOptAdd_1_UInt(&opt, "c,connect", "connectivity", &conny, NULL,
+  uint conny;
+  hestOptAdd_1_UInt(&hopt, "c,connect", "connectivity", &conny, "1",
                     "what kind of connectivity to use: the number of coordinates "
                     "that vary in order to traverse the neighborhood of a given "
                     "sample.  In 2D: \"1\": 4-connected, \"2\": 8-connected");
-  hestOptAdd_Flag(&opt, "revalue", &revalue,
-                  "If this option is given, then after the merging, the CCs "
+  int revalue;
+  hestOptAdd_Flag(&hopt, "revalue", &revalue,
+                  "If this hoption is given, then after the merging, the CCs "
                   "are re-assigned their original datavalues, as given by "
                   "the \"-v\" option");
-  OPT_ADD_NIN(nin, "input nrrd");
-  hestOptAdd_1_Other(&opt, "v,values", "values", &nval, "",
+  Nrrd *nin;
+  hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-", "input nrrd",
+                     nrrdHestNrrdNoTTY);
+  Nrrd *nval;
+  hestOptAdd_1_Other(&hopt, "v,values", "values", &nval, "",
                      "result of using \"ccfind -v\", the record of which values "
                      "were originally associated with each CC.  This is required "
                      "for value-directed merging (with non-zero \"-d\" option), "
                      "or if the \"-revalue\" option is given, "
                      "but is not needed otherwise",
                      nrrdHestNrrdNoTTY);
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for YES some hparm modification)
+  hestParm *hparm = hestParmCopy(_hparm);
+  hparm->noArgsIsNoProblem = AIR_TRUE; // thanks to nrrdHestNrrdNoTTY
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_ccmergeInfoL);
+  airArray *mop = unrrduMopNew(hopt, hparm);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_ccmergeInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
+  Nrrd *nout, *nout2;
   airMopAdd(mop, nout = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
   airMopAdd(mop, nout2 = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
 

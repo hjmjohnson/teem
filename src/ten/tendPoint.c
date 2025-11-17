@@ -24,7 +24,7 @@
 static const char *_tend_pointInfoL = (INFO ". ");
 
 static int
-tend_pointMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_pointMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;

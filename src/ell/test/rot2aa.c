@@ -34,17 +34,17 @@ main(int argc, const char *argv[]) {
 
   me = argv[0];
   mop = airMopNew();
-  hparm = hestParmNew();
+  hparm = hestParmMopNew();
   hparm->elideMultipleNonExistFloatDefault = AIR_TRUE;
-  hopt = NULL;
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  hopt = NULL;
   hestOptAdd(&hopt, NULL, "input matrices", airTypeOther, 1, 1, &_nmat, NULL,
              "list of rotation matrices, 2-D array with one matrix "
              "(in ROW-major order) per scanline",
              NULL, NULL, nrrdHestNrrd);
   hestOptAdd(&hopt, NULL, "output filename", airTypeString, 1, 1, &outS, "-",
              "file to write EPS output to");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, rot2aaInfo);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, rot2aaInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

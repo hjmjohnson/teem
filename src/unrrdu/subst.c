@@ -31,27 +31,23 @@ static const char *_unrrdu_substInfoL
           "* Uses nrrdApply1DSubstitution");
 
 static int
-unrrdu_substMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  int pret;
-  Nrrd *nin, *nsubst, *nout;
-  airArray *mop;
-
-  hestOptAdd_1_Other(&opt, "s,subst", "subst", &nsubst, NULL,
+unrrdu_substMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  Nrrd *nsubst;
+  hestOptAdd_1_Other(&hopt, "s,subst", "subst", &nsubst, NULL,
                      "substition table to map input nrrd through", nrrdHestNrrd);
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_substInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_substInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
-
   if (nrrdApply1DSubstitution(nout, nin, nsubst)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble applying SUBST:\n%s", me, err);

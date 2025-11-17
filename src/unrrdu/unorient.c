@@ -25,14 +25,9 @@ static const char *_unrrdu_unorientInfoL = (INFO ". Does various tricks.\n "
                                                  "* Uses nrrdOrientationReduce");
 
 static int
-unrrdu_unorientMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *nout;
-  int pret;
-  int setMinsFromOrigin;
-  airArray *mop;
-
+unrrdu_unorientMain(int argc, const char **argv, const char *me,
+                    const hestParm *_hparm) {
+  hestOpt *hopt = NULL;
   /*
    * with new nrrdHestNrrdNoTTY, can let "-" be default input as normal; no more need
    * for this awkwardness:
@@ -40,28 +35,30 @@ unrrdu_unorientMain(int argc, const char **argv, const char *me, hestParm *hparm
    * / * if we gave a default for this, then there it would fine to have
    * no command-line arguments whatsoever, and then the user would not
    * know how to get the basic usage information * /
-   * hestOptAdd(&opt, "i,input", "nin", airTypeOther, 1, 1, &nin, NULL,
+   * hestOptAdd(&hopt, "i,input", "nin", airTypeOther, 1, 1, &nin, NULL,
    *            "input nrrd "
    *            "(sorry, can't use usual default of \"-\" for stdin "
    *            "because of hest quirk)",
    *            NULL, NULL, nrrdHestNrrd);
    */
-  hparm->noArgsIsNoProblem = AIR_TRUE;
-  hestOptAdd_1_Other(&opt, "i,input", "nin", &nin, "-",
+  Nrrd *nin;
+  hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-",
                      "input nrrd. By default reads from stdin", nrrdHestNrrdNoTTY);
-  hestOptAdd_Flag(&opt, "smfo", &setMinsFromOrigin,
+  int setMinsFromOrigin;
+  hestOptAdd_Flag(&hopt, "smfo", &setMinsFromOrigin,
                   "set some axis mins based on space origin (hack)");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for YES some hparm modification)
+  hestParm *hparm = hestParmCopy(_hparm);
+  hparm->noArgsIsNoProblem = AIR_TRUE; // thanks to nrrdHestNrrdNoTTY
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_unorientInfoL);
+  airArray *mop = unrrduMopNew(hopt, hparm);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_unorientInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
-
   if (nrrdOrientationReduce(nout, nin, setMinsFromOrigin)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error unorienting nrrd:\n%s", me, err);

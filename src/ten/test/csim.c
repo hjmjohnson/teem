@@ -183,7 +183,7 @@ main(int argc, const char *argv[]) {
              "file to write output covariance nrrd to");
   hestOptAdd(&hopt, "or", "filename", airTypeString, 1, 1, &outRmvS, "rout.nrrd",
              "file to write output R_i means, variances to");
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
+  hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

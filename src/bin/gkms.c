@@ -84,7 +84,7 @@ main(int argc, const char **argv) {
     sprintf(argv0, "%s %s", GKMS, argv[1]);
 
     /* run the individual unu program, saving its exit status */
-    ret = baneGkmsCmdList[i]->main(argc - 2, argv + 2, argv0, hparm);
+    ret = baneGkmsCmdList[i]->mainFunc(argc - 2, argv + 2, argv0, hparm);
     if (1 == ret) {
       airMopAdd(mop, err = biffGetDone(BANE), airFree, airMopAlways);
       fprintf(stderr, "%s: error:\n%s", argv0, err);

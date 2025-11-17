@@ -451,7 +451,7 @@ main(int argc, const char *argv[]) {
 
   me = argv[0];
   mop = airMopNew();
-  hparm = hestParmNew();
+  hparm = hestParmMopNew();
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
   hparm->responseFileEnable = AIR_TRUE;
   hparm->respectDashDashHelp = AIR_TRUE;
@@ -509,7 +509,7 @@ main(int argc, const char *argv[]) {
                       "file to write output nrrd to.  Defaults to stdout (\"-\").");
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
 
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, info);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, info);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
   uu->hctx->imgSize[0] = AIR_INT(isScale * uu->hctx->imgSize[0]);
@@ -520,7 +520,7 @@ main(int argc, const char *argv[]) {
     /* -1 indeed always means "unknown" for any gageKind */
     fprintf(stderr, "%s: couldn't parse \"%s\" as measure of \"%s\" volume\n", me, whatS,
             uu->kind->name);
-    hestUsage(stderr, hopt, me, hparm);
+    hestUsage(stderr, hopt, me, hparm, AIR_FALSE /* oneline */);
     hestGlossary(stderr, hopt, hparm);
     airMopError(mop);
     return 1;

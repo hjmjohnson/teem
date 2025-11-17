@@ -27,8 +27,10 @@ main(int argc, const char **argv) {
                 "As usual, any implied functionality is purely coincidental, "
                 "especially since this is the output of a unicyclist.";
 
-  hestParm *hparm = hestParmNew();
-  hparm->verbose = 3;
+  airArray *mop = airMopNew();
+  hestParm *hparm = hestParmMopNew();
+  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  hparm->verbose = 10;
 
   hestOpt *hopt = NULL;
   int flag;
@@ -36,10 +38,10 @@ main(int argc, const char **argv) {
              "a flag created via hestOptAdd");
   int glag;
   hestOptAdd_Flag(&hopt, "g,glag", &glag, "a flag created via hestOptAdd_Flag");
-  int v;
-  hestOptAdd_1v_Int(&hopt, "v,verbose", "level", &v, "0", "verbosity level");
   char *out;
   hestOptAdd_1_String(&hopt, "out", "file", &out, "output.ppm", "PPM image output");
+  int v;
+  hestOptAdd_1v_Int(&hopt, "v,verbose", "level", &v, "0", "verbosity level");
   char *blah[3];
   hestOptAdd_3_String(&hopt, "blah", "input", blah, "a b c", "input image file(s)");
   /*
@@ -58,9 +60,10 @@ main(int argc, const char **argv) {
   unsigned int numIn;
   hestOptAdd_Nv_String(&hopt, NULL, "input", 1, -1, &in, NULL, "input image file(s)",
                        &numIn);
-  hparm->dieWithoutNewerFeatures = 0;
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, argv[0], info);
-
+  // hparm->orExitWithoutNewerFeatures = AIR_TRUE;
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, argv[0], info);
+  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
   {
     unsigned int opi, numO;
     numO = hestOptNum(hopt);
@@ -93,9 +96,7 @@ main(int argc, const char **argv) {
   printf("\n");
 
   /* free the memory allocated by parsing ... */
-  hestParseFree(hopt);
   /* ... and the other stuff */
-  hopt = hestOptFree(hopt);
-  hparm = hestParmFree(hparm);
+  airMopOkay(mop);
   exit(0);
 }

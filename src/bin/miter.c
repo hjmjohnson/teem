@@ -44,7 +44,7 @@ main(int argc, const char *argv[]) {
 
   me = argv[0];
   mop = airMopNew();
-  hparm = hestParmNew();
+  hparm = hestParmMopNew();
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
   muu = miteUserNew();
   airMopAdd(mop, muu, (airMopper)miteUserNix, airMopAlways);
@@ -125,7 +125,7 @@ main(int argc, const char *argv[]) {
                          "you would control the number of threads hoover should use"));
   hestOptAdd_1_String(&hopt, "o", "filename", &outS, NULL,
                       "file to write output nrrd to");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, miteInfo);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, miteInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

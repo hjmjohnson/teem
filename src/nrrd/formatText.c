@@ -19,6 +19,7 @@
 
 #include "nrrd.h"
 #include "privateNrrd.h"
+#include <assert.h>
 
 static int
 _nrrdFormatText_available(void) {

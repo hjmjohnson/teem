@@ -32,7 +32,7 @@ static const char *_tend_expandInfoL
           "(conf, Dxx, Dxy, Dyy) to (Dxx, Dxy, Dxy, Dyy). ");
 
 static int
-tend_expandMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_expandMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;

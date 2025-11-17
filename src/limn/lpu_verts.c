@@ -24,30 +24,22 @@
 static const char *myinfo = (INFO ". ");
 
 static int
-limnPu_vertsMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+limnPu_vertsMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
-  char *err, *perr;
-  airArray *mop;
-  int pret;
-
   limnPolyData *pld;
-  Nrrd *nout;
-  char *out;
-
   hestOptAdd_1_Other(&hopt, NULL, "input", &pld, NULL, "input polydata filename",
                      limnHestPolyDataLMPD);
+  char *out;
   hestOptAdd_1_String(&hopt, NULL, "output", &out, NULL, "output nrrd filename");
 
-  mop = airMopNew();
+  hestParseOrExit(hopt, argc, argv, hparm, me, myinfo);
+  airArray *mop = airMopNew();
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-
-  USAGE(myinfo);
-  PARSE(myinfo);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  char *err;
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNix, airMopAlways); /* NOT nrrdNuke */
-
   if (nrrdWrap_va(nout, pld->xyzw, nrrdTypeFloat, 2, 4, pld->xyzwNum)
       || nrrdSave(out, nout, NULL)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);

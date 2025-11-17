@@ -87,9 +87,7 @@ main(int argc, const char *argv[]) {
     return 1;
   }
 
-  mop = airMopNew();
-  hparm = hestParmNew();
-  airMopAdd(mop, hparm, AIR_CAST(airMopper, hestParmFree), airMopAlways);
+  hparm = hestParmMopNew();
   hparm->elideSingleOtherType = AIR_TRUE;
   hparm->respectDashDashHelp = AIR_TRUE;
   hestOptAdd_1_Other(&hopt, "i", "nin", &nin, NULL, "input volume", nrrdHestNrrd);
@@ -156,16 +154,18 @@ main(int argc, const char *argv[]) {
   hestOptAdd_1_Enum(&hopt, "t", "type", &otype, "float", "type of output volume",
                     nrrdType);
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output volume");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, probeInfo);
-  airMopAdd(mop, hopt, AIR_CAST(airMopper, hestOptFree), airMopAlways);
-  airMopAdd(mop, hopt, AIR_CAST(airMopper, hestParseFree), airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, probeInfo);
+  mop = airMopNew();
+  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
   what = airEnumVal(kind->enm, whatS);
   if (!what) {
     /* 0 indeed always means "unknown" for any gageKind */
     fprintf(stderr, "%s: couldn't parse \"%s\" as measure of \"%s\" volume\n", me, whatS,
             kind->name);
-    hestUsage(stderr, hopt, me, hparm);
+    hestUsage(stderr, hopt, me, hparm, AIR_FALSE /* oneline */);
     hestGlossary(stderr, hopt, hparm);
     airMopError(mop);
     return 1;

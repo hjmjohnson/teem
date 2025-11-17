@@ -275,61 +275,91 @@ airUnescape(char *s) {
   return s;
 }
 
-/*
-******** airOneLinify()
-**
-** converts all contiguous white space (as determined by isspace()) to
-** a single ' ', entirely removes non-printable (as determined by
-** isprint()) characters, and entirely removes white space contiguous
-** with the end of the string, even if that means shrinking the string
-** to "".
-**
-** Useful for cleaning up lines of text to be saved as strings in
-** fields of other structs.
-**
-** Whatever happens, this returns the pointer passed to it
-*/
-char *
-airOneLinify(char *s) {
-  size_t i, j, len;
+static char *
+oneLinifyMore(char *str, int keepInternalNewline) {
+  size_t ii, jj, len;
 
-  len = airStrlen(s);
-  if (!len) return s;
-
-  /* convert white space to space (' '), and delete unprintables */
-  for (i = 0; i < len; i++) {
-    if (isspace(AIR_INT(s[i]))) {
-      s[i] = ' ';
+  len = airStrlen(str);
+  if (!len) return str;
+#define SP(I) (' ' == str[(I)])
+#define NL(I) ('\n' == str[(I)])
+  /* convert white space to space (' '), and delete unprintables
+     actually (for TeemV2) sometimes keep internal newlines */
+  for (ii = 0; ii < len; ii++) {
+    if (isspace(str[ii]) && (!keepInternalNewline || !NL(ii))) {
+      str[ii] = ' ';
       continue;
     }
-    if (!isprint(AIR_INT(s[i]))) {
-      for (j = i; j < len; j++) {
+    if (!isprint(str[ii]) && (!keepInternalNewline || !NL(ii))) {
+      for (jj = ii; jj < len; jj++) {
         /* this will copy the '\0' at the end */
-        s[j] = s[j + 1];
+        str[jj] = str[jj + 1];
       }
-      i--;
+      ii--;
       /* string got shorter (prevent ininite loop) */
       len--;
       continue;
     }
   }
-
-  /* compress all contiguous spaces into one */
-  for (i = 0; i < len; i++) {
-    while (' ' == s[i] && ' ' == s[i + 1]) {
-      for (j = i + 1; j < len; j++) {
-        s[j] = s[j + 1];
+  /* compress all contiguous spaces into one
+     except also handle any newlines that keepInternalNewline preserved */
+  for (ii = 0; ii < len; ii++) {
+    while ((SP(ii) || NL(ii)) && (SP(ii + 1) || NL(ii + 1))) {
+      /* something probably needs to be compacted */
+      size_t kk; /* index of first character to over-write by shifting */
+      if ((SP(ii) && SP(ii + 1)) || (NL(ii) && NL(ii + 1))) {
+        /* two contiguous spaces, or two contiguous newlines */
+        kk = ii + 1;
+      } else if (SP(ii) && NL(ii + 1)) {
+        /* space at ii should be over-written by newline at ii+1 */
+        kk = ii;
+      } else {
+        /* newline at ii should be preserved; move along */
+        break;
+      }
+      for (jj = kk; jj < len; jj++) {
+        str[jj] = str[jj + 1];
       }
     }
   }
-
   /* lose trailing white space */
-  i = airStrlen(s);
-  if (' ' == s[i - 1]) {
-    s[i - 1] = '\0';
+  ii = airStrlen(str);
+  while (ii && (SP(ii - 1) || NL(ii - 1))) {
+    str[ii - 1] = '\0';
+    ii--;
   }
+#undef SP
+#undef NL
 
-  return s;
+  return str;
+}
+
+/*
+ ******** airOneLinify()
+ *
+ * converts all contiguous white space (as determined by isspace()) to a single ' ',
+ * entirely removes non-printable (as determined by isprint()) characters, and entirely
+ * removes white space contiguous with the end of the string, even if that means
+ * shrinking the string to "".
+ *
+ * Useful for cleaning up lines of text to be saved as strings in fields of other
+ * structs.
+ *
+ * Whatever happens, this returns the pointer passed to it
+ */
+char *
+airOneLinify(char *str) {
+  return oneLinifyMore(str, AIR_FALSE /* keepInternalNewline */);
+}
+
+/*
+ ******** airMultiLinify
+ *
+ * like airOneLinify but non-contiugous internal newlines are preserved
+ */
+char *
+airMultiLinify(char *str) {
+  return oneLinifyMore(str, AIR_TRUE /* keepInternalNewline */);
 }
 
 /*

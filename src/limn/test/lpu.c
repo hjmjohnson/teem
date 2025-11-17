@@ -19,90 +19,15 @@
 
 #include "../limn.h"
 
-#define LPU "lpu"
-
-/* massive copy and paste from teem/src/bin/tend.c ... */
+/* This WAS a massive gangly copy and paste from teem/src/bin/tend.c ...
+   but now it is a single simple call to unrrduMainOrExit */
 
 int
 main(int argc, const char **argv) {
-  int i, ret;
-  const char *me;
-  char *err, *argv0 = NULL;
-  hestParm *hparm;
-  airArray *mop;
-
-  me = argv[0];
-
-  /* parse environment variables first, in case they break nrrdDefault*
-     or nrrdState* variables in a way that nrrdSanity() should see */
-  nrrdDefaultGetenv();
-  nrrdStateGetenv();
-
-  /* no harm done in making sure we're sane */
-  if (!nrrdSanity()) {
-    fprintf(stderr, "******************************************\n");
-    fprintf(stderr, "******************************************\n");
-    fprintf(stderr, "\n");
-    fprintf(stderr, "  %s: nrrd sanity check FAILED.\n", me);
-    fprintf(stderr, "\n");
-    fprintf(stderr, "  This means that either nrrd can't work on this "
-                    "platform, or (more likely)\n");
-    fprintf(stderr, "  there was an error in the compilation options "
-                    "and variable definitions\n");
-    fprintf(stderr, "  for how Teem was built here.\n");
-    fprintf(stderr, "\n");
-    fprintf(stderr, "  %s\n", err = biffGetDone(NRRD));
-    fprintf(stderr, "\n");
-    fprintf(stderr, "******************************************\n");
-    fprintf(stderr, "******************************************\n");
-    free(err);
-    return 1;
-  }
-
-  mop = airMopNew();
-  hparm = hestParmNew();
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
-  hparm->elideSingleEnumType = AIR_TRUE;
-  hparm->elideSingleOtherType = AIR_TRUE;
-  hparm->elideSingleOtherDefault = AIR_FALSE;
-  hparm->elideSingleNonExistFloatDefault = AIR_TRUE;
-  hparm->elideMultipleNonExistFloatDefault = AIR_TRUE;
-  hparm->elideSingleEmptyStringDefault = AIR_TRUE;
-  hparm->elideMultipleEmptyStringDefault = AIR_TRUE;
-  hparm->cleverPluralizeOtherY = AIR_TRUE;
-  hparm->respectDashDashHelp = AIR_TRUE;
-  hestParmColumnsIoctl(hparm, hestDefaultColumns);
-
-  /* if there are no arguments, then we give general usage information */
-  if (1 >= argc) {
-    limnPuUsage(LPU, hparm);
-    airMopError(mop);
-    exit(1);
-  }
-  /* else, we should see if they're asking for a command we know about */
-  for (i = 0; limnPuCmdList[i]; i++) {
-    if (!strcmp(argv[1], limnPuCmdList[i]->name)) {
-      break;
-    }
-  }
-  if (limnPuCmdList[i]) {
-    /* yes, we have that command */
-    /* initialize variables used by the various commands */
-    argv0 = (char *)calloc(strlen(LPU) + strlen(argv[1]) + 2, sizeof(char));
-
-    airMopMem(mop, &argv0, airMopAlways);
-    sprintf(argv0, "%s %s", LPU, argv[1]);
-
-    /* run the individual unu program, saving its exit status */
-    ret = limnPuCmdList[i]->main(argc - 2, argv + 2, argv0, hparm);
-  } else {
-    fprintf(stderr,
-            "%s: unrecognized command: \"%s\"; type \"%s\" for "
-            "complete list\n",
-            me, argv[1], me);
-    ret = 1;
-  }
-
-  airMopDone(mop, ret);
-  return ret;
+  /* this doesn't really need a hestParm to customize;
+     but could use one here a test of the unrrduMainOrExit's handling of it */
+  // hestParm *hparm = hestParmMopNew();
+  // hparm->respectDashDashHelp = AIR_TRUE;
+  return unrrduMainOrExit(argc, argv, "lpu", "limnPolyData Hacking", limnPuCmdList,
+                          NULL);
 }

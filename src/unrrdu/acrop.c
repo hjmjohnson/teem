@@ -31,23 +31,13 @@ static const char *_unrrdu_acropInfoL
           "* Uses nrrdCropAuto");
 
 static int
-unrrdu_acropMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *nout;
-  int pret;
-  airArray *mop;
-
-  size_t min[NRRD_DIM_MAX], max[NRRD_DIM_MAX];
-  unsigned int *axes, axesLen;
-  double frac;
-  int measr, offset;
-  Nrrd *nbounds;
-  char *boundsSave;
-
-  hestOptAdd_Nv_UInt(&opt, "a,axes", "ax0", 0, -1, &axes, "",
+unrrdu_acropMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  uint *axes, axesLen;
+  hestOptAdd_Nv_UInt(&hopt, "a,axes", "ax0", 0, -1, &axes, "",
                      "the axes (if any) that should NOT be cropped", &axesLen);
-  hestOptAdd_1_Enum(&opt, "m,measure", "measr", &measr, NULL,
+  int measr;
+  hestOptAdd_1_Enum(&hopt, "m,measure", "measr", &measr, NULL,
                     "How to measure slices (along axes to crop) as scalars, "
                     "to form 1-D array analyzed to determine cropping extent. "
                     "All the measures from \"unu project\" can be used, but "
@@ -60,31 +50,36 @@ unrrdu_acropMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                     "\b\bo \"L1\", \"L2\", \"NL2\", \"RMS\", \"Linf\": "
                     "different norms.",
                     nrrdMeasure);
-  hestOptAdd_1_Double(&opt, "f,frac", "frac", &frac, "0.1",
+  double frac;
+  hestOptAdd_1_Double(&hopt, "f,frac", "frac", &frac, "0.1",
                       "threshold of cumulative sum of 1-D array at which to crop. "
                       "Needs to be in interval [0.0,0.5).");
-  hestOptAdd_1_Int(&opt, "off,offset", "offset", &offset, "1",
+  int offset;
+  hestOptAdd_1_Int(&hopt, "off,offset", "offset", &offset, "1",
                    "how much to offset the numerically determined cropping; "
                    "positive offsets means expanding the interval of kept "
                    "indices (less cropping)");
-  hestOptAdd_1_String(&opt, "b,bounds", "filename", &boundsSave, "",
+  char *boundsSave;
+  hestOptAdd_1_String(&hopt, "b,bounds", "filename", &boundsSave, "",
                       "if a filename is given here, the automatically determined "
                       "min and max bounds for cropping are saved to this file "
                       "as a 2-D array; first scanline is for -min, second is for -max. "
                       "Unfortunately nothing using the \"m\" and \"M\" semantics "
                       "(above) can currently be saved in the bounds file.");
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_acropInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_acropInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
 
+  size_t min[NRRD_DIM_MAX], max[NRRD_DIM_MAX];
   if (nrrdCropAuto(nout, nin, min, max, axes, axesLen, measr, frac, offset)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error cropping nrrd:\n%s", me, err);
@@ -94,7 +89,7 @@ unrrdu_acropMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   if (airStrlen(boundsSave)) {
     unsigned int axi;
     airULLong *bounds;
-    nbounds = nrrdNew();
+    Nrrd *nbounds = nrrdNew();
     airMopAdd(mop, nbounds, (airMopper)nrrdNuke, airMopAlways);
     if (nrrdMaybeAlloc_va(nbounds, nrrdTypeULLong, 2, AIR_CAST(airULLong, nin->dim),
                           AIR_CAST(airULLong, 2))) {

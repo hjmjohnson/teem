@@ -50,7 +50,7 @@ main(int argc, const char **argv) {
     /* print program information ... */
     hestInfo(stderr, argv[0], info, parm);
     /* ... and usage information ... */
-    hestUsage(stderr, opt, argv[0], parm);
+    hestUsage(stderr, opt, argv[0], parm, AIR_FALSE /* oneline */);
     hestGlossary(stderr, opt, parm);
     /* ... and avoid memory leaks */
     opt = hestOptFree(opt);
@@ -67,7 +67,7 @@ main(int argc, const char **argv) {
     }
     /* print usage information ... */
     FILE *stdo = pret ? stderr : stdout;
-    hestUsage(stdo, opt, argv[0], parm);
+    hestUsage(stdo, opt, argv[0], parm, AIR_FALSE /* oneline */);
     hestGlossary(stdo, opt, parm);
     /* ... and then avoid memory leaks */
     opt = hestOptFree(opt);

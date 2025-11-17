@@ -45,7 +45,7 @@ main(int argc, const char *argv[]) {
              "which anisotropy measures to measure", &anisoTypeNum, tenAniso);
   hestOptAdd(&hopt, "m,measr", "measr", airTypeEnum, 1, -1, &measr, NULL,
              "which measures/statistics to calculate", &statNum, nrrdMeasure);
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
+  hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

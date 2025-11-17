@@ -35,27 +35,24 @@ static const char *_unrrdu_cmedianInfoL
           "case of \"-c\"");
 
 static int
-unrrdu_cmedianMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *nout, *ntmp, **mnout;
-  int pad, pret, mode, chan, ni, nsize;
-  unsigned int bins, radius;
-  airArray *mop;
-  float wght;
-
-  hestOptAdd_1_UInt(&opt, "r,radius", "radius", &radius, NULL,
+unrrdu_cmedianMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+  hestOpt *hopt = NULL;
+  uint radius;
+  hestOptAdd_1_UInt(&hopt, "r,radius", "radius", &radius, "1",
                     "how big a window to filter over. \"-r 1\" leads to a "
                     "3x3 window in an image, and a 3x3x3 window in a volume");
-  hestOptAdd_Flag(&opt, "mode", &mode,
+  int mode;
+  hestOptAdd_Flag(&hopt, "mode", &mode,
                   "By default, median filtering is done.  Using this option "
                   "enables mode filtering, in which the most common value is "
                   "used as output");
-  hestOptAdd_1_UInt(&opt, "b,bins", "num", &bins, "256",
+  uint bins;
+  hestOptAdd_1_UInt(&hopt, "b,bins", "num", &bins, "256",
                     "# of bins in histogram.  It is in your interest to minimize "
                     "this number, since big histograms mean slower execution "
                     "times.  8-bit data needs at most 256 bins.");
-  hestOptAdd_1_Float(&opt, "w,weight", "weight", &wght, "1.0",
+  float wght;
+  hestOptAdd_1_Float(&hopt, "w,weight", "weight", &wght, "1.0",
                      "How much higher to preferentially weight samples that are "
                      "closer to the center of the window.  \"1.0\" weight means that "
                      "all samples are uniformly weighted over the window, which "
@@ -65,37 +62,42 @@ unrrdu_cmedianMain(int argc, const char **argv, const char *me, hestParm *hparm)
      1: 7.695
      2: 6.160
      3: 4.829 (actually only the middle pixel remains */
-  hestOptAdd_Flag(&opt, "p,pad", &pad,
+  int pad;
+  hestOptAdd_Flag(&hopt, "p,pad", &pad,
                   "Pad the input (with boundary method \"bleed\"), "
                   "and crop the output, so as to "
                   "overcome our cheapness and correctly "
                   "handle the border.  Obviously, this takes more memory.");
-  hestOptAdd_Flag(&opt, "c,channel", &chan,
+  int chan;
+  hestOptAdd_Flag(&hopt, "c,channel", &chan,
                   "Slice the input along axis 0, run filtering on all slices, "
                   "and join the results back together.  This is the way you'd "
                   "want to process color (multi-channel) images or volumes.");
-  OPT_ADD_NIN(nin, "input nrrd");
+  Nrrd *nin;
+  hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-", "input nrrd",
+                     nrrdHestNrrdNoTTY);
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for YES some hparm modification)
+  hestParm *hparm = hestParmCopy(_hparm);
+  hparm->noArgsIsNoProblem = AIR_TRUE; // thanks to nrrdHestNrrdNoTTY
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_cmedianInfoL);
+  airArray *mop = unrrduMopNew(hopt, hparm);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_cmedianInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
-
   if (chan) {
-    nsize = AIR_UINT(nin->axis[0].size);
-    mnout = AIR_CALLOC(nsize, Nrrd *);
+    uint nsize = AIR_UINT(nin->axis[0].size);
+    Nrrd **mnout = AIR_CALLOC(nsize, Nrrd *);
     airMopAdd(mop, mnout, airFree, airMopAlways);
-    ntmp = nrrdNew();
+    Nrrd *ntmp = nrrdNew();
     airMopAdd(mop, ntmp, (airMopper)nrrdNuke, airMopAlways);
-    for (ni = 0; ni < nsize; ni++) {
+    for (uint ni = 0; ni < nsize; ni++) {
       if (nrrdSlice(ntmp, nin, 0, ni)) {
         airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
-        fprintf(stderr, "%s: error slicing input at pos = %d:\n%s", me, ni, err);
+        fprintf(stderr, "%s: error slicing input at pos = %u:\n%s", me, ni, err);
         airMopError(mop);
         return 1;
       }

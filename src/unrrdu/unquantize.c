@@ -28,18 +28,13 @@ static const char *_unrrdu_unquantizeInfoL
           "* Uses nrrdUnquantize");
 
 static int
-unrrdu_unquantizeMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *nout;
-  int dbl, pret;
-  double oldMin, oldMax;
-  airArray *mop;
-
+unrrdu_unquantizeMain(int argc, const char **argv, const char *me,
+                      const hestParm *_hparm) {
+  hestOpt *hopt = NULL;
   /*
    * with new nrrdHestNrrdNoTTY, can let "-" be default input as normal; no more need
    * for this awkwardness:
-   * hestOptAdd(&opt, "i,input", "nin", airTypeOther, 1, 1, &nin, NULL,
+   * hestOptAdd(&hopt, "i,input", "nin", airTypeOther, 1, 1, &nin, NULL,
    *            "input nrrd.  That this argument is required instead of "
    *            "optional, as with most unu commands, is a quirk caused by the "
    *            "need to have \"unu unquantize\" generate usage info, combined "
@@ -47,28 +42,32 @@ unrrdu_unquantizeMain(int argc, const char **argv, const char *me, hestParm *hpa
    *            "defaults",
    *            NULL, NULL, nrrdHestNrrd);
    */
-  hparm->noArgsIsNoProblem = AIR_TRUE;
-  hestOptAdd_1_Other(&opt, "i,input", "nin", &nin, "-", "input nrrd", nrrdHestNrrdNoTTY);
-  hestOptAdd_1_Double(&opt, "min,minimum", "value", &oldMin, "nan",
+  Nrrd *nin;
+  hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-", "input nrrd",
+                     nrrdHestNrrdNoTTY);
+  double oldMin, oldMax;
+  hestOptAdd_1_Double(&hopt, "min,minimum", "value", &oldMin, "nan",
                       "Lowest value prior to quantization.  Defaults to "
                       "nin->oldMin if it exists, otherwise 0.0");
-  hestOptAdd_1_Double(&opt, "max,maximum", "value", &oldMax, "nan",
+  hestOptAdd_1_Double(&hopt, "max,maximum", "value", &oldMax, "nan",
                       "Highest value prior to quantization.  Defaults to "
                       "nin->oldMax if it exists, otherwise 1.0");
-  hestOptAdd_Flag(&opt, "double", &dbl, "Use double for output type, instead of float");
+  int dbl;
+  hestOptAdd_Flag(&hopt, "double", &dbl, "Use double for output type, instead of float");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
-
-  USAGE_OR_PARSE(_unrrdu_unquantizeInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  // (boilerplate for YES some hparm modification)
+  hestParm *hparm = hestParmCopy(_hparm);
+  hparm->noArgsIsNoProblem = AIR_TRUE; // thanks to nrrdHestNrrdNoTTY
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_unquantizeInfoL);
+  airArray *mop = unrrduMopNew(hopt, hparm);
+  char *err;
 
   if (AIR_EXISTS(oldMin)) nin->oldMin = oldMin;
   if (AIR_EXISTS(oldMax)) nin->oldMax = oldMax;
+  Nrrd *nout = nrrdNew();
+  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
   if (nrrdUnquantize(nout, nin, dbl ? nrrdTypeDouble : nrrdTypeFloat)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error unquantizing nrrd:\n%s", me, err);

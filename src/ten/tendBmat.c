@@ -34,7 +34,7 @@ static const char *_tend_bmatInfoL
           "elements NOT pre-multiplied by 2.");
 
 static int
-tend_bmatMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_bmatMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;

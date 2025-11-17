@@ -139,47 +139,45 @@ static const char *_unrrdu_gridInfoL
           "* (not based on any particular nrrd function)");
 
 static int
-unrrdu_gridMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *outS, *err;
-  int pret;
-  airArray *mop;
+unrrdu_gridMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+  hestOpt *hopt = NULL;
+  /* we parse filename, not Nrrd since we always want to skipData */
   char *inS;
-
-  Nrrd *nin, *nout;
-  int typeOut, psz, psg;
-  NrrdIoState *nio;
-  hparm->noArgsIsNoProblem = AIR_TRUE;
-  hestOptAdd_1_String(&opt, "i,input", "nin", &inS, "-",
+  hestOptAdd_1_String(&hopt, "i,input", "nin", &inS, "-",
                       "input nrrd. By default reads from stdin");
-  hestOptAdd_Flag(&opt, "ps", &psz,
+  int psz;
+  hestOptAdd_Flag(&hopt, "ps", &psz,
                   "instead of the default behavior of flattening all but the "
                   "fastest axis, preserve the sizes of axes, so that the output "
                   "is more like that of the input");
-  hestOptAdd_Flag(&opt, "pg", &psg,
+  int psg;
+  hestOptAdd_Flag(&hopt, "pg", &psg,
                   "(overrides -ps) generate a 2D array that represents "
                   "the sampling grid in the way that \"gprobe -pg\" understands");
+  int typeOut;
   OPT_ADD_TYPE(typeOut, "type of output", "double");
+  char *outS;
   OPT_ADD_NOUT(outS, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
-
-  USAGE_OR_PARSE(_unrrdu_gridInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
+  // (boilerplate for YES some hparm modification)
+  hestParm *hparm = hestParmCopy(_hparm);
+  hparm->noArgsIsNoProblem = AIR_TRUE; // thanks to nrrdHestNrrdNoTTY
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_gridInfoL);
+  airArray *mop = unrrduMopNew(hopt, hparm);
+  char *err;
 
   if (!strcmp("-", inS) && isatty(STDIN_FILENO)) {
     fprintf(stderr, "%s: declining to try reading Nrrd from stdin as tty (terminal)\n",
             me);
-    hestUsage(stderr, opt, me, hparm);
+    hestUsage(stderr, hopt, me, hparm, AIR_TRUE /* oneline */);
     fprintf(stderr, "\nFor more info: \"%s --help\"\n", me);
     airMopError(mop);
     return 1;
   }
 
-  nio = nrrdIoStateNew();
+  NrrdIoState *nio = nrrdIoStateNew();
   airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
-  nin = nrrdNew();
+  Nrrd *nin = nrrdNew();
   airMopAdd(mop, nin, (airMopper)nrrdNuke /* but Nix enough */, airMopAlways);
   nio->skipData = AIR_TRUE;
   if (nrrdLoad(nin, inS, nio)) {
@@ -188,7 +186,7 @@ unrrdu_gridMain(int argc, const char **argv, const char *me, hestParm *hparm) {
     airMopError(mop);
     return 1;
   }
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
 
   if (gridGen(nout, typeOut, nin, psz, psg)) {

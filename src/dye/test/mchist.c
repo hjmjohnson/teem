@@ -72,17 +72,12 @@ const char *mchistInfo = ("Makes a color histogram of frames. ");
 
 int
 main(int argc, const char *argv[]) {
-  const char *me;
-  hestOpt *hopt;
-  hestParm *hparm;
-  airArray *mop;
-
-  me = argv[0];
-  mop = airMopNew();
-  hopt = NULL;
-  hparm = hestParmNew();
+  const char *me = argv[0];
+  airArray *mop = airMopNew();
+  hestParm *hparm = hestParmMopNew();
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
   hparm->responseFileEnable = AIR_TRUE;
+  hestOpt *hopt = NULL;
   char **ninStr;
   unsigned int ninLen;
   hestOptAdd_Nv_String(&hopt, "i", "images", 1, -1, &ninStr, NULL,
@@ -108,7 +103,7 @@ main(int argc, const char *argv[]) {
   char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output filename");
 
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, mchistInfo);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, mchistInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
@@ -185,9 +180,6 @@ main(int argc, const char *argv[]) {
   airMopAdd(mop, nhproj[2], (airMopper)nrrdNix, airMopAlways);
 
   printf("working ...       ");
-  float *hist[2];
-  hist[0] = AIR_CAST(float *, nhist[0]->data);
-  hist[1] = AIR_CAST(float *, nhist[1]->data);
   Nrrd *nin = nrrdNew();
   airMopAdd(mop, nin, (airMopper)nrrdNuke, airMopAlways);
   Nrrd *npreout = nrrdNew();

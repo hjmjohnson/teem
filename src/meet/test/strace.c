@@ -429,7 +429,7 @@ main(int argc, const char **argv) {
   hestOptAdd(&hopt, "tvo", "fname", airTypeString, 1, 1, &trcVolOutS, "",
              "output filename for rasterized trace of scale-space volume");
 
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, info);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, info);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

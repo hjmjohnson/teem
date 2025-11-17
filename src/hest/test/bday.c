@@ -49,7 +49,7 @@ main(int argc, const char *argv[]) {
 
   me = argv[0];
   mop = airMopNew();
-  hestParm *hparm = hestParmNew();
+  hestParm *hparm = hestParmMopNew();
   hparm->responseFileEnable = AIR_TRUE;
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
   hestOptAdd_1_UInt(&hopt, "N", "days", &N, "365", "# of days in year");
@@ -62,7 +62,7 @@ main(int argc, const char *argv[]) {
                       "Stop running experiments when relative change in computed "
                       "probability goes below this");
   hestOptAdd(&hopt, NULL, "M", airTypeInt, 1, 1, &M, NULL, "# of people in room");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, info);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, info);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

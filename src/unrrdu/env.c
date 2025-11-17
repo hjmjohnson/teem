@@ -166,7 +166,7 @@ envUInt(FILE *file, const char *envKey, unsigned int currVal, const char *varNam
 }
 
 static int
-unrrdu_envMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+unrrdu_envMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   FILE *out;
 
   AIR_UNUSED(argc);
@@ -200,22 +200,20 @@ unrrdu_envMain(int argc, const char **argv, const char *me, hestParm *hparm) {
 
   /* UNRRDU_QUIET_QUIT functionality implemented in privateUnrrdu.h */
   hestPrintStr(out, 0, 0, hparm->columns,
-               ("In addition to the the \"NRRD_\" environment variables, "
+               ("In addition to the many \"NRRD_\" environment variables, "
                 "there is this one, " UNRRDU_QUIET_QUIT_ENV ", which "
                 "determines whether unu exits "
                 "quietly (without error and usage info) when it fails "
                 "because an input nrrd read immediately hit EOF (as "
-                "happens when many unu invocations are piped together). "
-                "This is currently detected by seeing if the error message "
-                "ends with \n \"" UNRRDU_QUIET_QUIT_STR "\"."),
+                "happens when many unu invocations are piped together)."),
                AIR_FALSE);
   fprintf(out, "\n");
 
   fprintf(out, "%s: ", UNRRDU_QUIET_QUIT_ENV);
   if (getenv(UNRRDU_QUIET_QUIT_ENV)) {
-    fprintf(out, "is set (to what doesn't matter); quiet-quit enabled\n");
+    fprintf(out, "is set (to what doesn't matter); quiet-quit testing enabled\n");
   } else {
-    fprintf(out, "is NOT set; quiet-quit NOT enabled\n");
+    fprintf(out, "is NOT set; quiet-quit testing NOT enabled\n");
   }
   fprintf(out, "\n");
 
@@ -328,9 +326,6 @@ unrrdu_envMain(int argc, const char **argv, const char *me, hestParm *hparm) {
           "3-D image with a single sample (size=1) on the first "
           "(fastest) axis.",
           hparm->columns);
-
-  /* NOTE: this is an exceptional unu command that doesn't rely on
-     privateUnrrdu.h USAGE() macro; so we determine our own return value */
   return 0;
 }
 

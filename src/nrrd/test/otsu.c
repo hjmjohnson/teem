@@ -25,15 +25,15 @@ int
 main(int argc, const char *argv[]) {
   const char *me = argv[0];
   airArray *mop = airMopNew();
-  hestParm *hparm = hestParmNew();
-  hestOpt *hopt = NULL;
+  hestParm *hparm = hestParmMopNew();
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  hestOpt *hopt = NULL;
   Nrrd *nhist;
   hestOptAdd_1_Other(&hopt, "i", "nhist", &nhist, NULL, "input histogram", nrrdHestNrrd);
   double expo;
   hestOptAdd_1_Double(&hopt, "e", "expo", &expo, "2.0",
                       "exponent to use for variance calculation");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, otsuInfo);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, otsuInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

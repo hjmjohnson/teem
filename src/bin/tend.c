@@ -24,12 +24,8 @@
 int
 main(int argc, const char **argv) {
   int i, ret;
-  const char *me;
+  const char *me = argv[0];
   char *argv0 = NULL;
-  hestParm *hparm;
-  airArray *mop;
-
-  me = argv[0];
 
   /* parse environment variables first, in case they break nrrdDefault*
      or nrrdState* variables in a way that nrrdSanity() should see */
@@ -37,10 +33,10 @@ main(int argc, const char **argv) {
   nrrdStateGetenv();
 
   /* no harm done in making sure we're sane */
-  nrrdSanityOrDie(me);
+  nrrdSanityOrExit(me);
 
-  mop = airMopNew();
-  hparm = hestParmNew();
+  airArray *mop = airMopNew();
+  hestParm *hparm = hestParmMopNew();
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
   hparm->elideSingleEnumType = AIR_TRUE;
   hparm->elideSingleOtherType = AIR_TRUE;
@@ -57,7 +53,7 @@ main(int argc, const char **argv) {
 
   /* if there are no arguments, then we give general usage information */
   if (1 >= argc) {
-    unrrduUsage(TEND, hparm, tendTitle, tendCmdList);
+    unrrduUsage(argv[0], TEND, tendTitle, tendCmdList, hparm);
     airMopError(mop);
     exit(1);
   }
@@ -88,7 +84,7 @@ main(int argc, const char **argv) {
     sprintf(argv0, "%s %s", TEND, argv[1]);
 
     /* run the individual tend program, saving its exit status */
-    ret = tendCmdList[i]->main(argc - 2, argv + 2, argv0, hparm);
+    ret = tendCmdList[i]->mainFunc(argc - 2, argv + 2, argv0, hparm);
   } else {
     fprintf(stderr,
             "%s: unrecognized command: \"%s\"; type \"%s\" for "

@@ -350,7 +350,7 @@ levmarCall(Nrrd *ndata, int ajac, int itmax,
 }
 
 static int
-tend_lmdemoMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_lmdemoMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;

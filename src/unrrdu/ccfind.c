@@ -27,42 +27,42 @@ static const char *_unrrdu_ccfindInfoL
           "* Uses nrrdCCFind");
 
 static int
-unrrdu_ccfindMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err, *valS;
-  Nrrd *nin, *nout, *nval = NULL;
-  airArray *mop;
-  int type, pret;
-  unsigned int conny;
-
-  hestOptAdd_1_String(&opt, "v,values", "filename", &valS, "",
+unrrdu_ccfindMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+  hestOpt *hopt = NULL;
+  char *valS;
+  hestOptAdd_1_String(&hopt, "v,values", "filename", &valS, "",
                       "Giving a filename here allows you to save out the values "
                       "associated with each connect component.  This can be used "
                       "later with \"ccmerge -d\".  By default, no record of the "
                       "original CC values is kept.");
-  hestOptAdd_1_Other(&opt, "t,type", "type", &type, "default",
+  int type;
+  hestOptAdd_1_Other(&hopt, "t,type", "type", &type, "default",
                      "type to use for output, to store the CC ID values.  By default "
                      "(not using this option), the type used will be the smallest of "
                      "uchar, ushort, or int, that can represent all the CC ID values. "
                      "Using this option allows one to specify the integral type to "
                      "be used.",
                      &unrrduHestMaybeTypeCB);
-  hestOptAdd_1_UInt(&opt, "c,connect", "connectivity", &conny, NULL,
+  uint conny;
+  hestOptAdd_1_UInt(&hopt, "c,connect", "connectivity", &conny, "1",
                     "what kind of connectivity to use: the number of coordinates "
                     "that vary in order to traverse the neighborhood of a given "
                     "sample.  In 2D: \"1\": 4-connected, \"2\": 8-connected");
-  OPT_ADD_NIN(nin, "input nrrd");
+  Nrrd *nin;
+  hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-", "input nrrd",
+                     nrrdHestNrrdNoTTY);
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for YES some hparm modification)
+  hestParm *hparm = hestParmCopy(_hparm);
+  hparm->noArgsIsNoProblem = AIR_TRUE; // thanks to nrrdHestNrrdNoTTY
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_ccfindInfoL);
+  airArray *mop = unrrduMopNew(hopt, hparm);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_ccfindInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  nout = nrrdNew();
+  Nrrd *nval = NULL, *nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
-
   if (nrrdCCFind(nout, airStrlen(valS) ? &nval : NULL, nin, type, conny)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error doing connected components:\n%s", me, err);

@@ -29,29 +29,24 @@ static const char *_unrrdu_reshapeInfoL
           "* Uses nrrdReshape_nva");
 
 static int
-unrrdu_reshapeMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *nout;
-  int pret;
+unrrdu_reshapeMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
   size_t *size;
-  unsigned int sizeLen;
-  airArray *mop;
-
-  hestOptAdd_Nv_Size_t(&opt, "s,size", "sz0 sz1 ", 1, -1, &size, NULL, "new axes sizes",
+  uint sizeLen;
+  hestOptAdd_Nv_Size_t(&hopt, "s,size", "sz0 sz1 ", 1, -1, &size, NULL, "new axes sizes",
                        &sizeLen);
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_reshapeInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_reshapeInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
-
   if (nrrdReshape_nva(nout, nin, sizeLen, size)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error reshaping nrrd:\n%s", me, err);

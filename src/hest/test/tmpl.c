@@ -23,22 +23,20 @@ char *tmplInfo = ("shows minimal usage of hest with mops");
 
 int
 main(int argc, const char *argv[]) {
-  const char *me;
+  const char *me = argv[0];
   hestOpt *hopt;
   hestParm *hparm;
-  airArray *mop;
-
-  int size[3];
-
-  me = argv[0];
-  mop = airMopNew();
+  airArray *mop = airMopNew();
   hparm = hestParmNew();
-  hopt = NULL;
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
 
-  hestOptAdd(&hopt, "s", "sx sy sz", airTypeInt, 3, 3, size, "128 128 128",
-             "dimensions of output volume");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, tmplInfo);
+  hopt = NULL;
+  char *name;
+  hestOptAdd_1_String(&hopt, NULL, "name", &name, NULL, "name of something");
+  int size[3];
+  hestOptAdd_3_Int(&hopt, "s", "sx sy sz", size, "128 128 128",
+                   "dimensions of something");
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, tmplInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

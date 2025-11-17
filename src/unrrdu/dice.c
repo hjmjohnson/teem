@@ -28,22 +28,17 @@ static const char *_unrrdu_diceInfoL
           "* Uses repeated calls to nrrdSlice and nrrdSave");
 
 static int
-unrrdu_diceMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *base, *err, fnout[AIR_STRLEN_MED + 1], /* file name out */
-    fffname[AIR_STRLEN_MED + 1],               /* format for filename */
-    *ftmpl;                                    /* format template */
-  Nrrd *nin, *nout;
-  int pret, fit;
-  unsigned int axis, start, pos, top, size, sanity;
-  airArray *mop;
-  NrrdIoState *nio;
-
+unrrdu_diceMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  uint axis;
   OPT_ADD_AXIS(axis, "axis to slice along");
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
-  hestOptAdd_1_UInt(&opt, "s,start", "start", &start, "0",
+  uint start;
+  hestOptAdd_1_UInt(&hopt, "s,start", "start", &start, "0",
                     "integer value to start numbering with");
-  hestOptAdd_1_String(&opt, "ff,format", "form", &ftmpl, "",
+  char *ftmpl; /* format template */
+  hestOptAdd_1_String(&hopt, "ff,format", "form", &ftmpl, "",
                       "a printf-style format to use for generating all "
                       "filenames.  Use this to override the number of characters "
                       "used to represent the slice position, or the file format "
@@ -51,25 +46,22 @@ unrrdu_diceMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                       "001.ppm, etc. By default (not using this option), slices "
                       "are saved in NRRD format (or PNM or PNG where possible) "
                       "with shortest possible filenames.");
-  /* the fact that we're using unsigned int instead of size_t is
-     its own kind of sanity check */
-  hestOptAdd_1_UInt(&opt, "l,limit", "max#", &sanity, "9999",
+  // the fact that we're using uint instead of size_t is its own kind of sanity check
+  uint sanity;
+  hestOptAdd_1_UInt(&hopt, "l,limit", "max#", &sanity, "999",
                     "a sanity check on how many slice files should be saved "
                     "out, to prevent accidentally dicing the wrong axis "
                     "or the wrong array. Can raise this value if needed.");
-  hestOptAdd_1_String(&opt, "o,output", "prefix", &base, NULL,
+  char *base;
+  hestOptAdd_1_String(&hopt, "o,output", "prefix", &base, NULL,
                       "output filename prefix (excluding info set via \"-ff\"), "
                       "basically to set path of output files (so be sure to end "
                       "with \"/\".");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
-  /* (getting this just for the verbose value) */
-  nio = nrrdIoStateNew();
-  airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
-
-  USAGE_OR_PARSE(_unrrdu_diceInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_diceInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
   if (!(axis < nin->dim)) {
     fprintf(stderr, "%s: given axis (%u) outside range [0,%u]\n", me, axis,
@@ -78,44 +70,45 @@ unrrdu_diceMain(int argc, const char **argv, const char *me, hestParm *hparm) {
     return 1;
   }
   if (nin->axis[axis].size > sanity) {
-    char stmp[AIR_STRLEN_SMALL + 1];
-    fprintf(stderr,
-            "%s: axis %u size %s > sanity limit %u; "
-            "increase via \"-l\"\n",
-            me, axis, airSprintSize_t(stmp, nin->axis[axis].size), sanity);
+    fprintf(stderr, "%s: axis %u size %zu > sanity limit %u; increase via \"-l\"\n", me,
+            axis, nin->axis[axis].size, sanity);
     airMopError(mop);
     return 1;
   }
-  size = AIR_UINT(nin->axis[axis].size);
+  uint size = AIR_UINT(nin->axis[axis].size);
+  /* (getting this just for the verbose value) */
+  NrrdIoState *nio = nrrdIoStateNew();
+  airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
 
   /* HEY: this should use nrrdSaveMulti(), and if there's additional
      smarts here, they should be moved into nrrdSaveMulti() */
+  char fffname[AIR_STRLEN_MED + 1]; /* format for filename */
   if (airStrlen(ftmpl)) {
     if (!(nrrdContainsPercentThisAndMore(ftmpl, 'd')
           || nrrdContainsPercentThisAndMore(ftmpl, 'u'))) {
       fprintf(stderr,
               "%s: given filename format \"%s\" doesn't seem to "
-              "have the converstion specification to print an integer\n",
+              "have the conversion specification to print an integer\n",
               me, ftmpl);
       airMopError(mop);
       return 1;
     }
-    sprintf(fffname, "%%s%s", ftmpl);
+    snprintf(fffname, sizeof(fffname), "%%s%s", ftmpl);
   } else {
-    unsigned int dignum = 0, tmps;
-    tmps = top = start + size - 1;
+    uint dignum = 0, tmps, top = start + size - 1;
+    tmps = top;
     do {
       dignum++;
       tmps /= 10;
     } while (tmps);
     /* sprintf the number of digits into the string that will be used
-       to sprintf the slice number into the filename */
-    sprintf(fffname, "%%s%%0%uu.nrrd", dignum);
+       to sprintf the slice number into the filename with e.g. "%03u.nrrd" */
+    snprintf(fffname, sizeof(fffname), "%%s%%0%uu.nrrd", dignum);
   }
-  nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
 
-  for (pos = 0; pos < size; pos++) {
+  Nrrd *nout = nrrdNew();
+  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  for (uint pos = 0; pos < size; pos++) {
     if (nrrdSlice(nout, nin, axis, pos)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
       fprintf(stderr, "%s: error slicing nrrd:%s\n", me, err);
@@ -130,7 +123,7 @@ unrrdu_diceMain(int argc, const char **argv, const char *me, hestParm *hparm) {
       if (nrrdFormatPNG->fitsInto(nout, nrrdEncodingRaw, AIR_FALSE)) {
         strcpy(fffname + strlen(fffname) - 4, "png");
       } else {
-        fit = nrrdFormatPNM->fitsInto(nout, nrrdEncodingRaw, AIR_FALSE);
+        int fit = nrrdFormatPNM->fitsInto(nout, nrrdEncodingRaw, AIR_FALSE);
         if (2 == fit) {
           strcpy(fffname + strlen(fffname) - 4, "pgm");
         } else if (3 == fit) {
@@ -138,7 +131,8 @@ unrrdu_diceMain(int argc, const char **argv, const char *me, hestParm *hparm) {
         }
       }
     }
-    sprintf(fnout, fffname, base, pos + start);
+    char fnout[AIR_STRLEN_MED + 1]; /* file name out */
+    snprintf(fnout, sizeof(fnout), fffname, base, pos + start);
     if (nio->verbose > 0) {
       fprintf(stderr, "%s: %s ...\n", me, fnout);
     }

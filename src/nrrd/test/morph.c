@@ -101,7 +101,7 @@ int
 main(int argc, const char **argv) {
   const char *me = argv[0];
   airArray *mop = airMopNew();
-  hestParm *hparm = hestParmNew();
+  hestParm *hparm = hestParmMopNew();
   hestOpt *hopt = NULL;
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
   Nrrd *nin;
@@ -113,7 +113,7 @@ main(int argc, const char **argv) {
   char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output filename");
 
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, morphInfo);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, morphInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

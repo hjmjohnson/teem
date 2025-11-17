@@ -51,7 +51,7 @@ main(int argc, const char *argv[]) {
 
   mop = airMopNew();
   me = argv[0];
-  hparm = hestParmNew();
+  hparm = hestParmMopNew();
   airMopAdd(mop, hparm, AIR_CAST(airMopper, hestParmFree), airMopAlways);
   hparm->elideSingleOtherType = AIR_TRUE;
   hparm->respectDashDashHelp = AIR_TRUE;
@@ -76,7 +76,7 @@ main(int argc, const char *argv[]) {
                     "use fast separable deconvolution instead of brain-dead "
                     "brute-force iterative method");
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output volume");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, deconvInfo);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, deconvInfo);
   airMopAdd(mop, hopt, AIR_CAST(airMopper, hestOptFree), airMopAlways);
   airMopAdd(mop, hopt, AIR_CAST(airMopper, hestParseFree), airMopAlways);
 

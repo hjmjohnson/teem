@@ -146,7 +146,7 @@ tend_helixDoit(Nrrd *nout, double bnd, double orig[3], double i2w[9], double mf[
 }
 
 static int
-tend_helixMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_helixMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;

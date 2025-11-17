@@ -25,15 +25,10 @@ static const char *_unrrdu_1opInfoL = (INFO ".\n "
                                             "* Uses nrrdArithUnaryOp");
 
 static int
-unrrdu_1opMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *nout, *ntmp = NULL;
-  int op, pret, type;
-  airArray *mop;
-  unsigned int seed, seedOI;
-
-  hestOptAdd_1_Enum(&opt, NULL, "operator", &op, NULL,
+unrrdu_1opMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  int op;
+  hestOptAdd_1_Enum(&hopt, NULL, "operator", &op, NULL,
                     "Unary operator. Possibilities include:\n "
                     "\b\bo \"-\": negative (multiply by -1.0)\n "
                     "\b\bo \"r\": reciprocal (1.0/value)\n "
@@ -56,30 +51,34 @@ unrrdu_1opMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                     "\b\bo \"0\": output always 0\n "
                     "\b\bo \"1\": output always 1",
                     nrrdUnaryOp);
-  seedOI = hestOptAdd_1_UInt(&opt, "s,seed", "seed", &seed, "0",
-                             "seed value for random number generator (RNG), to "
-                             "enable repeatable results between runs, or, "
-                             "by not using this option, the RNG seeding will be "
-                             "based on the current time");
-  hestOptAdd_1_Other(&opt, "t,type", "type", &type, "default",
+  uint seed;
+  uint seedOI = hestOptAdd_1_UInt(&hopt, "s,seed", "seed", &seed, "0",
+                                  "seed value for random number generator (RNG), to "
+                                  "enable repeatable results between runs, or, "
+                                  "by not using this option, the RNG seeding will be "
+                                  "based on the current time");
+  int type;
+  hestOptAdd_1_Other(&hopt, "t,type", "type", &type, "default",
                      "convert input nrrd to this type prior to "
                      "doing operation.  Useful when desired output is float "
                      "(e.g., with log1p), but input is integral. By default "
                      "(not using this option), the types of "
                      "the input nrrds are left unchanged.",
                      &unrrduHestMaybeTypeCB);
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_1opInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_1opInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
 
+  Nrrd *ntmp = NULL;
   if (nrrdTypeDefault != type) {
     /* they requested conversion to another type prior to the 1op */
     airMopAdd(mop, ntmp = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
@@ -97,7 +96,7 @@ unrrdu_1opMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   ** if (nrrdUnaryOpRand == op
   **     || nrrdUnaryOpNormalRand == op) {
   */
-  if (hestSourceDefault != opt[seedOI].source) {
+  if (hestSourceDefault != hopt[seedOI].source) {
     airSrandMT(seed);
   } else {
     /* got no request for specific seed */

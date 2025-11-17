@@ -30,24 +30,19 @@ static const char *_unrrdu_minmaxInfoL
 static int /* Biff: 1 */
 unrrdu_minmaxDoit(const char *me, char *inS, int blind8BitRange, int singleLine,
                   FILE *fout) {
-  Nrrd *nrrd;
-  NrrdRange *range;
-  airArray *mop;
-
   if (!strcmp("-", inS) && isatty(STDIN_FILENO)) {
     biffAddf(me, "declining to try reading Nrrd from stdin as tty (terminal)");
     return 1;
   }
-
-  mop = airMopNew();
+  airArray *mop = airMopNew();
+  Nrrd *nrrd;
   airMopAdd(mop, nrrd = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
   if (nrrdLoad(nrrd, inS, NULL)) {
     biffMovef(me, NRRD, "%s: trouble loading \"%s\"", me, inS);
     airMopError(mop);
     return 1;
   }
-
-  range = nrrdRangeNewSet(nrrd, blind8BitRange);
+  NrrdRange *range = nrrdRangeNewSet(nrrd, blind8BitRange);
   airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
   if (singleLine) {
     char minStr[128], maxStr[128], nexStr[128];
@@ -76,23 +71,16 @@ unrrdu_minmaxDoit(const char *me, char *inS, int blind8BitRange, int singleLine,
       fprintf(fout, "# has non-existent values\n");
     }
   }
-
   airMopOkay(mop);
   return 0;
 }
 
 static int
-unrrdu_minmaxMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *err, **inS;
-  airArray *mop;
-  int pret, blind8BitRange, singleLine, okay;
-  unsigned int ni, ninLen;
+unrrdu_minmaxMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+  hestOpt *hopt = NULL;
 #define B8DEF "false"
-
-  mop = airMopNew();
-  hparm->noArgsIsNoProblem = AIR_TRUE;
-  hestOptAdd_1_Bool(&opt, "blind8", "bool", &blind8BitRange,
+  int blind8BitRange;
+  hestOptAdd_1_Bool(&hopt, "blind8", "bool", &blind8BitRange,
                     B8DEF, /* NOTE: not using nrrdStateBlind8BitRange here
                               for consistency with previous behavior */
                     "whether to blindly assert the range of 8-bit data, "
@@ -102,23 +90,29 @@ unrrdu_minmaxMain(int argc, const char **argv, const char *me, hestParm *hparm) 
                     "(" B8DEF ") is potentialy over-riding the effect of "
                     "environment variable NRRD_STATE_BLIND_8_BIT_RANGE; "
                     "see \"unu env\"");
+  int singleLine;
   hestOptAdd_Flag(
-    &opt, "sl", &singleLine,
+    &hopt, "sl", &singleLine,
     "Without this option, output is on multiple lines (for min, for max, "
     "and then maybe more lines about non-existent values or min, max "
     "conditions). With \"-sl\", output is a single line containing just min "
     "and max, possibly followed by the single word \"non-existent\" if and "
     "only if there were non-existent values. If there are multiple inputs, "
     "the input filename is printed first on the per-input single line.");
-  hestOptAdd_Nv_String(&opt, NULL, "nin1", 1, -1, &inS, "-", "input nrrd(s)", &ninLen);
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  char **inS;
+  uint ninLen;
+  hestOptAdd_Nv_String(&hopt, NULL, "nin1", 1, -1, &inS, "-", "input nrrd(s)", &ninLen);
 
-  USAGE_OR_PARSE(_unrrdu_minmaxInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
+  // (boilerplate for YES some hparm modification)
+  hestParm *hparm = hestParmCopy(_hparm);
+  hparm->noArgsIsNoProblem = AIR_TRUE; // thanks to nrrdHestNrrdNoTTY
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_minmaxInfoL);
+  airArray *mop = unrrduMopNew(hopt, hparm);
+  char *err;
 
   /* HEY "okay" logic copied from head.c */
-  okay = AIR_FALSE;
-  for (ni = 0; ni < ninLen; ni++) {
+  int okay = AIR_FALSE;
+  for (uint ni = 0; ni < ninLen; ni++) {
     if (ninLen > 1) {
       if (singleLine) {
         fprintf(stdout, "%s ", inS[ni]);
@@ -143,7 +137,7 @@ unrrdu_minmaxMain(int argc, const char **argv, const char *me, hestParm *hparm) 
     if (ninLen > 1) {
       fprintf(stderr, "\n%s: Unable to read data from any file\n", me);
     }
-    hestUsage(stderr, opt, me, hparm);
+    hestUsage(stderr, hopt, me, hparm, AIR_TRUE /* oneline */);
     fprintf(stderr, "\nFor more info: \"%s --help\"\n", me);
   }
 

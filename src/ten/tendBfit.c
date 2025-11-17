@@ -27,11 +27,10 @@ static const char *_tend_bfitInfoL
           "values along input axis 0, as a function of changing b values.  ");
 
 static int
-tend_bfitMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_bfitMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
-  airArray *mop;
 
   Nrrd *nin, *nout;
   double *bb, *ww, *_ww, eps;
@@ -39,6 +38,9 @@ tend_bfitMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   int iterMax;
   char *outS;
 
+  airArray *mop = airMopNew();
+  hestParm *hparm = hestParmCopy(_hparm);
+  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
   hparm->responseFileEnable = AIR_TRUE;
 
   hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-",
@@ -56,7 +58,6 @@ tend_bfitMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                       "epsilon convergence threshold for non-linear fitting");
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output tensor volume");
 
-  mop = airMopNew();
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   USAGE_PARSE(_tend_bfitInfoL);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);

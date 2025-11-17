@@ -32,7 +32,7 @@ extern int _baneAxisCheck(baneAxis *axis);
 #define USAGE(INFO)                                                                     \
   if (!argc && !hparm->noArgsIsNoProblem) {                                             \
     hestInfo(stderr, me, (INFO), hparm);                                                \
-    hestUsage(stderr, opt, me, hparm);                                                  \
+    hestUsage(stderr, opt, me, hparm, AIR_FALSE);                                       \
     hestGlossary(stderr, opt, hparm);                                                   \
     airMopError(mop);                                                                   \
     return 2;                                                                           \
@@ -43,7 +43,7 @@ extern int _baneAxisCheck(baneAxis *axis);
     if (1 == pret) {                                                                    \
       fprintf(stderr, "%s: %s\n", me, perr);                                            \
       free(perr);                                                                       \
-      hestUsage(stderr, opt, me, hparm);                                                \
+      hestUsage(stderr, opt, me, hparm, AIR_FALSE);                                     \
       if (hparm && hparm->noArgsIsNoProblem) {                                          \
         fprintf(stderr, "\nFor more info: \"%s --help\"\n", me);                        \
       } else {                                                                          \
@@ -56,7 +56,7 @@ extern int _baneAxisCheck(baneAxis *axis);
     }                                                                                   \
   } else if (opt->helpWanted) {                                                         \
     hestInfo(stdout, me, (INFO), hparm);                                                \
-    hestUsage(stdout, opt, me, hparm);                                                  \
+    hestUsage(stdout, opt, me, hparm, AIR_FALSE);                                       \
     hestGlossary(stdout, opt, hparm);                                                   \
     return 0;                                                                           \
   }

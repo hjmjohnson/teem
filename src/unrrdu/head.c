@@ -32,15 +32,12 @@ static const char *_unrrdu_headInfoL
 
 static int /* Biff: 1 */
 unrrdu_headDoit(const char *me, NrrdIoState *nio, const char *inS, FILE *fout) {
-  airArray *mop;
-  size_t len;
-  FILE *fin;
-
   if (!strcmp("-", inS) && isatty(STDIN_FILENO)) {
     biffAddf(me, "declining to try reading Nrrd from stdin as tty (terminal)");
     return 1;
   }
-  mop = airMopNew();
+  airArray *mop = airMopNew();
+  FILE *fin;
   if (!(fin = airFopen(inS, stdin, "rb"))) {
     biffAddf(me, "couldn't fopen(\"%s\",\"rb\"): %s\n", inS, strerror(errno));
     airMopError(mop);
@@ -48,6 +45,7 @@ unrrdu_headDoit(const char *me, NrrdIoState *nio, const char *inS, FILE *fout) {
   }
   airMopAdd(mop, fin, (airMopper)airFclose, airMopAlways);
 
+  size_t len;
   if (nrrdOneLine(&len, nio, fin)) {
     biffAddf(me, "error getting first line of file \"%s\"", inS);
     airMopError(mop);
@@ -83,28 +81,24 @@ unrrdu_headDoit(const char *me, NrrdIoState *nio, const char *inS, FILE *fout) {
 }
 
 static int
-unrrdu_headMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *err, **inS;
-  NrrdIoState *nio;
-  airArray *mop;
-  int pret, okay;
-  unsigned int ni, ninLen;
-
-  mop = airMopNew();
-  hparm->noArgsIsNoProblem = AIR_TRUE;
-  hestOptAdd_Nv_String(&opt, NULL, "nin1", 1, -1, &inS, "-",
+unrrdu_headMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+  hestOpt *hopt = NULL;
+  char **inS;
+  uint ninLen;
+  hestOptAdd_Nv_String(&hopt, NULL, "nin1", 1, -1, &inS, "-",
                        "input nrrd(s). By default tries to read from stdin", &ninLen);
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
 
-  USAGE_OR_PARSE(_unrrdu_headInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
+  // (boilerplate for YES some hparm modification)
+  hestParm *hparm = hestParmCopy(_hparm);
+  hparm->noArgsIsNoProblem = AIR_TRUE;
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_headInfoL);
+  airArray *mop = unrrduMopNew(hopt, hparm);
+  char *err;
 
-  nio = nrrdIoStateNew();
+  NrrdIoState *nio = nrrdIoStateNew();
   airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
-
-  okay = AIR_FALSE;
-  for (ni = 0; ni < ninLen; ni++) {
+  int okay = AIR_FALSE;
+  for (uint ni = 0; ni < ninLen; ni++) {
     if (ninLen > 1) {
       fprintf(stdout, "==> %s <==\n", inS[ni]);
     }
@@ -125,7 +119,7 @@ unrrdu_headMain(int argc, const char **argv, const char *me, hestParm *hparm) {
     if (ninLen > 1) {
       fprintf(stderr, "\n%s: Unable to read from any file\n", me);
     }
-    hestUsage(stderr, opt, me, hparm);
+    hestUsage(stderr, hopt, me, hparm, AIR_TRUE /* oneline */);
     fprintf(stderr, "\nFor more info: \"%s --help\"\n", me);
   }
 

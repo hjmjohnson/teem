@@ -32,54 +32,54 @@ static const char *_unrrdu_lut2InfoL
      "* Uses nrrdApply2DLut");
 
 static int
-unrrdu_lut2Main(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *nlut, *nout, *ntmp[2];
-  airArray *mop;
-  int typeOut, rescale[2], pret, blind8BitRange;
-  double min[2], max[2];
-  NrrdRange *range[2] = {NULL, NULL};
-  unsigned int mapAxis, rai;
-
-  hestOptAdd_1_Other(&opt, "m,map", "lut", &nlut, NULL,
+unrrdu_lut2Main(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  Nrrd *nlut;
+  hestOptAdd_1_Other(&hopt, "m,map", "lut", &nlut, NULL,
                      "lookup table to map input nrrd through", nrrdHestNrrdNoTTY);
-  int rsclOptIdx
-    = hestOptAdd_2_Bool(&opt, "r,rescale", "bool bool", rescale, "false false",
+  int rescale[2];
+  uint rsclOptIdx
+    = hestOptAdd_2_Bool(&hopt, "r,rescale", "bool bool", rescale, "false false",
                         "rescale one or both of the input values from the "
                         "input range to the lut domain.  The lut domain is either "
                         "explicitly defined by the axis min,max along axis 0 or 1, "
                         "or, it is implicitly defined as zero to the length of that "
                         "axis minus one.");
-  hestOptAdd_2_Double(&opt, "min,minimum", "min0 min1", min, "nan nan",
+  double min[2], max[2];
+  hestOptAdd_2_Double(&hopt, "min,minimum", "min0 min1", min, "nan nan",
                       "Low ends of input range. Defaults to lowest values "
                       "found in input nrrd.  Explicitly setting this is useful "
                       "only with rescaling (\"-r\")");
-  hestOptAdd_2_Double(&opt, "max,maximum", "max0 max1", max, "nan nan",
+  hestOptAdd_2_Double(&hopt, "max,maximum", "max0 max1", max, "nan nan",
                       "High end of input range. Defaults to highest values "
                       "found in input nrrd.  Explicitly setting this is useful "
                       "only with rescaling (\"-r\")");
-  hestOptAdd_1_Bool(&opt, "blind8", "bool", &blind8BitRange,
+  int blind8BitRange;
+  hestOptAdd_1_Bool(&hopt, "blind8", "bool", &blind8BitRange,
                     nrrdStateBlind8BitRange ? "true" : "false",
                     "Whether to know the range of 8-bit data blindly "
                     "(uchar is always [0,255], signed char is [-128,127]). "
                     "Explicitly setting this is useful only with rescaling (\"-r\")");
-  hestOptAdd_1_Other(&opt, "t,type", "type", &typeOut, "default",
+  int typeOut;
+  hestOptAdd_1_Other(&hopt, "t,type", "type", &typeOut, "default",
                      "specify the type (\"int\", \"float\", etc.) of the "
                      "output nrrd. "
                      "By default (not using this option), the output type "
                      "is the lut's type.",
                      &unrrduHestMaybeTypeCB);
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_lut2InfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_lut2InfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
+  NrrdRange *range[2] = {NULL, NULL};
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
 
   if (!(nin->dim > 1 && 2 == nin->axis[0].size)) {
@@ -91,7 +91,7 @@ unrrdu_lut2Main(int argc, const char **argv, const char *me, hestParm *hparm) {
     airMopError(mop);
     return 1;
   }
-  mapAxis = nlut->dim - 2;
+  uint mapAxis = nlut->dim - 2;
   if (!(0 == mapAxis || 1 == mapAxis)) {
     fprintf(stderr, "%s: dimension of lut should be 2 or 3, not %u", me, nlut->dim);
     airMopError(mop);
@@ -99,9 +99,10 @@ unrrdu_lut2Main(int argc, const char **argv, const char *me, hestParm *hparm) {
   }
 
   unrrduGetenvDefaultImplicitLutRmapRescale();
+  Nrrd *ntmp[2];
   /* NOTE: comment in lut.c describes logic for how rescale is set */
-  for (rai = 0; rai <= 1; rai++) {
-    if (!hestSourceUser(opt[rsclOptIdx].source)) {
+  for (uint rai = 0; rai <= 1; rai++) {
+    if (!hestSourceUser(hopt[rsclOptIdx].source)) {
       if (!(AIR_EXISTS(nlut->axis[mapAxis + rai].min)
             && AIR_EXISTS(nlut->axis[mapAxis + rai].max))) {
         rescale[rai] = unrrduDefaultImplicitLutRmapRescale;

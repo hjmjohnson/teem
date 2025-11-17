@@ -19,20 +19,20 @@
 
 #include "../gage.h"
 
+typedef unsigned int uint; /* uint is just more concise */
+
 void
 maxes1(Nrrd *nout, const Nrrd *nin) {
-  unsigned int sx, xi, xd;
-  int xo, ismax;
-  double val, (*lup)(const void *, size_t), (*ins)(void *, size_t, double);
+  double (*lup)(const void *, size_t), (*ins)(void *, size_t, double);
 
   lup = nrrdDLookup[nin->type];
-  ins = nrrdDInsert[nin->type];
-  sx = AIR_UINT(nin->axis[0].size);
-  for (xi = 0; xi < sx; xi++) {
-    ismax = AIR_TRUE;
-    val = lup(nin->data, xi);
-    for (xo = -1; xo <= 1; xo += 2) {
-      xd = !xi && xo < 0 ? sx - 1 : AIR_MOD(xi + xo, sx);
+  ins = nrrdDInsert[nout->type];
+  int sx = AIR_UINT(nin->axis[0].size);
+  for (int xi = 0; xi < sx; xi++) {
+    int ismax = AIR_TRUE;
+    double val = lup(nin->data, xi);
+    for (int xo = -1; xo <= 1; xo += 2) {
+      uint xd = !xi && xo < 0 ? sx - 1 : AIR_MOD(xi + xo, AIR_INT(sx));
       ismax &= lup(nin->data, xd) < val;
       if (!ismax) break;
     }
@@ -43,23 +43,21 @@ maxes1(Nrrd *nout, const Nrrd *nin) {
 
 void
 maxes2(Nrrd *nout, const Nrrd *nin) {
-  unsigned int sx, sy, xi, yi, xd, yd;
-  int xo, yo, ismax;
-  double val, (*lup)(const void *, size_t), (*ins)(void *, size_t, double);
+  double (*lup)(const void *, size_t), (*ins)(void *, size_t, double);
 
   lup = nrrdDLookup[nin->type];
-  ins = nrrdDInsert[nin->type];
-  sx = AIR_UINT(nin->axis[0].size);
-  sy = AIR_UINT(nin->axis[1].size);
-  for (yi = 0; yi < sy; yi++) {
-    for (xi = 0; xi < sx; xi++) {
-      ismax = AIR_TRUE;
-      val = lup(nin->data, xi + sx * yi);
-      for (yo = -1; yo <= 1; yo++) {
-        yd = !yi && yo < 0 ? sy - 1 : AIR_MOD(yi + yo, sy);
-        for (xo = -1; xo <= 1; xo++) {
+  ins = nrrdDInsert[nout->type];
+  int sx = AIR_UINT(nin->axis[0].size);
+  int sy = AIR_UINT(nin->axis[1].size);
+  for (int yi = 0; yi < sy; yi++) {
+    for (int xi = 0; xi < sx; xi++) {
+      int ismax = AIR_TRUE;
+      double val = lup(nin->data, xi + sx * yi);
+      for (int yo = -1; yo <= 1; yo++) {
+        uint yd = !yi && yo < 0 ? sy - 1 : AIR_MOD(yi + yo, sy);
+        for (int xo = -1; xo <= 1; xo++) {
           if (!xo && !yo) continue;
-          xd = !xi && xo < 0 ? sx - 1 : AIR_MOD(xi + xo, sx);
+          uint xd = !xi && xo < 0 ? sx - 1 : AIR_MOD(xi + xo, sx);
           ismax &= lup(nin->data, xd + sx * yd) < val;
         }
       }
@@ -71,27 +69,25 @@ maxes2(Nrrd *nout, const Nrrd *nin) {
 
 void
 maxes3(Nrrd *nout, const Nrrd *nin) {
-  unsigned int sx, sy, sz, xi, yi, zi, xd, yd, zd;
-  int xo, yo, zo, ismax;
-  double val, (*lup)(const void *, size_t), (*ins)(void *, size_t, double);
+  double (*lup)(const void *, size_t), (*ins)(void *, size_t, double);
 
   lup = nrrdDLookup[nin->type];
-  ins = nrrdDInsert[nin->type];
-  sx = AIR_UINT(nin->axis[0].size);
-  sy = AIR_UINT(nin->axis[1].size);
-  sz = AIR_UINT(nin->axis[2].size);
-  for (zi = 0; zi < sz; zi++) {
-    for (yi = 0; yi < sy; yi++) {
-      for (xi = 0; xi < sx; xi++) {
-        ismax = AIR_TRUE;
-        val = lup(nin->data, xi + sx * (yi + sy * zi));
-        for (zo = -1; zo <= 1; zo++) {
-          zd = !zi && zo < 0 ? sz - 1 : AIR_MOD(zi + zo, sz);
-          for (yo = -1; yo <= 1; yo++) {
-            yd = !yi && yo < 0 ? sy - 1 : AIR_MOD(yi + yo, sy);
-            for (xo = -1; xo <= 1; xo++) {
+  ins = nrrdDInsert[nout->type];
+  int sx = AIR_UINT(nin->axis[0].size);
+  int sy = AIR_UINT(nin->axis[1].size);
+  int sz = AIR_UINT(nin->axis[2].size);
+  for (int zi = 0; zi < sz; zi++) {
+    for (int yi = 0; yi < sy; yi++) {
+      for (int xi = 0; xi < sx; xi++) {
+        int ismax = AIR_TRUE;
+        double val = lup(nin->data, xi + sx * (yi + sy * zi));
+        for (int zo = -1; zo <= 1; zo++) {
+          uint zd = !zi && zo < 0 ? sz - 1 : AIR_MOD(zi + zo, sz);
+          for (int yo = -1; yo <= 1; yo++) {
+            uint yd = !yi && yo < 0 ? sy - 1 : AIR_MOD(yi + yo, sy);
+            for (int xo = -1; xo <= 1; xo++) {
               if (!xo && !yo && !zo) continue;
-              xd = !xi && xo < 0 ? sx - 1 : AIR_MOD(xi + xo, sx);
+              uint xd = !xi && xo < 0 ? sx - 1 : AIR_MOD(xi + xo, sx);
               ismax &= lup(nin->data, xd + sx * (yd + sy * zd)) < val;
             }
           }
@@ -103,7 +99,7 @@ maxes3(Nrrd *nout, const Nrrd *nin) {
   return;
 }
 
-char *maxesInfo = ("sets maxima to 1, else 0");
+char *maxesInfo = ("sets point-wise local maxima to 1, else 0");
 
 int
 main(int argc, const char *argv[]) {
@@ -118,13 +114,13 @@ main(int argc, const char *argv[]) {
 
   me = argv[0];
   mop = airMopNew();
-  hparm = hestParmNew();
-  hopt = NULL;
+  hparm = hestParmMopNew();
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  hopt = NULL;
   hestOptAdd(&hopt, "i", "nin", airTypeOther, 1, 1, &nin, NULL, "input image", NULL,
              NULL, nrrdHestNrrd);
   hestOptAdd(&hopt, "o", "filename", airTypeString, 1, 1, &outS, NULL, "output volume");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, maxesInfo);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, maxesInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

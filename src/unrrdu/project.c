@@ -36,37 +36,37 @@ static const char *_unrrdu_projectInfoL
           "* Uses nrrdProject, and nrrdJoin if multiple measures");
 
 static int
-unrrdu_projectMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char **out, *err;
-  Nrrd *nin, *nout;
-  Nrrd **nslice;
-  unsigned int *axis, axisLen, outLen, measrLen, outIdx, measrIdx;
-  int *measr, pret, type;
-  airArray *mop;
-
-  hestOptAdd_Nv_UInt(&opt, "a,axis", "axis", 1, -1, &axis, NULL,
+unrrdu_projectMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  uint *axis, axisLen;
+  hestOptAdd_Nv_UInt(&hopt, "a,axis", "axis", 1, -1, &axis, NULL,
                      "axis or axes to project along", &axisLen);
-  hestOptAdd_Nv_Enum(&opt, "m,measure", "measr", 1, -1, &measr, NULL,
+  int *measr;
+  uint measrLen;
+  hestOptAdd_Nv_Enum(&hopt, "m,measure", "measr", 1, -1, &measr, NULL,
                      "How to \"measure\" a scanline, by summarizing all its values "
                      "with a single scalar. Multiple measures will be joined along "
                      "fastest axis if output, but you may need to set output type "
                      "explicitly via \"-t\" so that the join works. " NRRD_MEASURE_DESC,
                      &measrLen, nrrdMeasure);
-  hestOptAdd_1_Other(&opt, "t,type", "type", &type, "default",
+  int type;
+  hestOptAdd_1_Other(&hopt, "t,type", "type", &type, "default",
                      "type to use for output. By default (not using this option), "
                      "the output type is determined auto-magically",
                      &unrrduHestMaybeTypeCB);
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
-  hestOptAdd_Nv_String(&opt, "o,output", "nout", 1, -1, &out, "-",
+  char **out;
+  uint outLen;
+  hestOptAdd_Nv_String(&hopt, "o,output", "nout", 1, -1, &out, "-",
                        "one or more output nrrd filenames. Number of names here "
                        "has to match number of axes specified.",
                        &outLen);
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
 
-  USAGE_OR_PARSE(_unrrdu_projectInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_projectInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
   if (axisLen != outLen) {
     fprintf(stderr, "%s: got %u \"-a\" axes but %u \"-o\" outputs\n", me, axisLen,
@@ -75,23 +75,24 @@ unrrdu_projectMain(int argc, const char **argv, const char *me, hestParm *hparm)
     return 1;
   }
 
+  Nrrd **nslice;
   if (measrLen > 1) {
     nslice = AIR_CALLOC(measrLen, Nrrd *);
     airMopAdd(mop, nslice, airFree, airMopAlways);
-    for (measrIdx = 0; measrIdx < measrLen; measrIdx++) {
+    for (uint measrIdx = 0; measrIdx < measrLen; measrIdx++) {
       nslice[measrIdx] = nrrdNew();
       airMopAdd(mop, nslice[measrIdx], (airMopper)nrrdNuke, airMopAlways);
     }
   } else {
     nslice = NULL;
   }
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
 
-  for (outIdx = 0; outIdx < outLen; outIdx++) {
+  for (uint outIdx = 0; outIdx < outLen; outIdx++) {
     if (measrLen > 1) {
       /* first project into slices */
-      for (measrIdx = 0; measrIdx < measrLen; measrIdx++) {
+      for (uint measrIdx = 0; measrIdx < measrLen; measrIdx++) {
         if (nrrdProject(nslice[measrIdx], nin, axis[outIdx], measr[measrIdx], type)) {
           airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
           fprintf(stderr, "%s: error projecting nrrd %u/%u:\n%s", me, outIdx, measrIdx,

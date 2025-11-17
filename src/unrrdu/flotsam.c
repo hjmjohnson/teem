@@ -25,22 +25,36 @@
 const int unrrduPresent = 42;
 
 const char *const unrrduBiffKey = "unrrdu";
-
-/* number of columns that hest will used */
-unsigned int unrrduDefaultNumColumns = 78;
-
 /* how rescale was set in {lut,rmap,mlut,mrmap}.c when
    lut,rmap,mlut,mrmap domain is implicit */
 int unrrduDefaultImplicitLutRmapRescale = AIR_TRUE;
 const char *const unrrduEnvVarDefaultImplicitLutRmapRescale = UNRRDU_DILRR;
 
-/*
-******** unrrduCmdList[]
-**
-** NULL-terminated array of unrrduCmd pointers, as ordered by UNRRDU_MAP macro
-*/
-const unrrduCmd *const unrrduCmdList[] = {UNRRDU_MAP(UNRRDU_LIST) NULL};
+// (new for TeemV2) how unu (and others, if they want) can test for quiet quitting
+// see more info in unrrdu.h's description of UNRRDU_QUIET_QUIT_ENV
+int
+unrrdQuietQuitTest(const char *parseErrStr, const hestOpt *errOpt) {
+  int ret = 0;
+  AIR_UNUSED(parseErrStr);
+  /*
+  fprintf(stderr, "!%s: hello from a qq tester\n", __func__);
+  fprintf(stderr, "!%s: flag=|%s|\n", __func__, errOpt->flag);
+  fprintf(stderr, "!%s: type=|%d|\n", __func__, errOpt->type);
+  fprintf(stderr, "!%s: parseErr=|%d|\n", __func__, errOpt->parseErr);
+  */
+  if (getenv(UNRRDU_QUIET_QUIT_ENV)          /* quiet-quit testing enabled */
+      && errOpt->type == airTypeOther        /* tried to parse an "other" */
+      && (errOpt->CB == nrrdHestNrrd         /* */
+          || errOpt->CB == nrrdHestNrrdNoTTY /* */
+          || errOpt->CB == nrrdHestIter)     /* tried to parse a Nrrd */
+      && 2 == errOpt->parseErr) { /* value set by nrrd/hestNrrd.c parser functions
+                                     for those hestCBs above */
+    ret = 1;
+  }
+  return ret;
+}
 
+// setter-from-env-far for unrrduDefaultImplicitLutRmapRescale
 void
 unrrduGetenvDefaultImplicitLutRmapRescale(void) {
   char *envStr = NULL;
@@ -57,48 +71,274 @@ unrrduGetenvDefaultImplicitLutRmapRescale(void) {
 }
 
 /*
-******** unrrduCmdMain
-**
-** A "main" function for unu-like programs, which is very similar to
-** teem/src/bin/unu.c:main(), and
-** teem/src/bin/tend.c:main(), and
-** teem/src/limn/test/lpu.c:main().
-** With more time (and a major Teem release), this function may change,
-** and those programs may use this.
-**
-** A sneaky but basic issue is the const-correctness of how the hestParm
-** is used; we'd like to take a const hestParm* to communicate parameters
-** the caller has set, but the show-stopper is that unrrduCmd->main()
-** takes a non-const hestParm, and it has to be that way, because some
-** unu commands alter the given hparm (which probably shouldn't happen).
-** Until that's fixed, we have a non-const hestParm* coming in here.
-*/
+ ******** unrrduUnuCmdList[]
+ *
+ * NULL-terminated array of unrrduCmd pointers, as ordered by UNRRDU_MAP macro
+ */
+const unrrduCmd *const unrrduUnuCmdList[] = {UNRRDU_MAP(UNRRDU_LIST) NULL};
+
+/*
+ ******** unrrduMopNew
+ * helper function probably useful mainly to unu command implementation, but not at all
+ * specific to unu.
+ *
+ * To be call JUST AFTER hestParseOrExit, where we now have to take on the management of
+ * anything dynamically allocated.
+ *     if hparm is NULL: the unrrduCmd->mainFunc did NOT need to modify the incoming
+ *                       `const hestParm *hparm` before passing to hestParseOrExit,
+ *                       so there is nothing more to manage in the mop
+ * if hparm is non-NULL: the unrrduCmd->mainFunc DID need to make local hestParm
+ *                       modifications, so copied incoming `const hestParm *_hparm` via:
+ *                       hestParm *hparm = hestParmCopy(_hparm)
+ *                       and now has to manage the local hparm
+ */
+airArray * /* Biff: nope */
+unrrduMopNew(hestOpt *hopt, hestParm *hparm) {
+  airArray *mop = airMopNew();
+  if (hparm) {
+    hestParmUnmop(hparm); // in case we got a self-mopping _hparm
+    airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  }
+  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  return mop;
+}
+
+/*
+ * (tweaked and tried-to-make-uniform for TeemV2)
+ * variable names and terminology for some of the following:
+ * `prog` or "program" = name of the command-line program that we're here to implement
+ *                       e.g. "unu" or "lpu"
+ * `cmd` or  "command" = a sub-command of `prog`, like the "slice" of "unu slice"
+ *      `argc`, `argv` = within this file: the way the actual top-level `main() function
+ *                       received the command-line arguments.
+ *                       BUT, unrrduCmd->mainFunc is called with argc-2,argv+2
+ *                       so downstream of there, argc and argv describe all the
+ *                       arguments AFTER the program command
+ *             `argv0` = like it says, just argv[0] = what user typed (modulo aliases)
+ *                       to get here, which probably ending with `prog`
+ *                `me` = "`prog` `cmd`", the way a downstream "main" function
+ *                       (a unrrduCmd->mainFunc) may self-identify e.g. "unu slice",
+ *                       but confusingly *not* the current function name
+ *                       i.e. what C99 calls __func__
+ *           `cmdList` = an array of unrrduCmd structs, one per command
+ * NOTE: This terminology may not have propogated to other unu-specific code;
+ */
+
+/* cmdListCheckLen:
+ * helper function for unrrduUsage an unrrduMainOrExit
+ * that checks cmdList and does other things involving cmdList
+ * ensuring that you can safely sprintf "<prog> <cmd>" into str[AIR_STRLEN_SMALL+1]
+ */
+static int /* Biff: nope */
+cmdListCheckLen(const char *prog, const unrrduCmd *const *cmdList, size_t *maxlenP,
+                uint *aboutIdxP) {
+  if (!(prog && cmdList)) {
+    fprintf(stderr, "%s: got NULL prog (%p) or cmdList (%p)\n", __func__,
+            AIR_CVOIDP(prog), AIR_CVOIDP(cmdList));
+    return 1;
+  }
+  if (maxlenP) {
+    // learn max length of a command-line, AND validate list of names
+    *maxlenP = UINT_MAX;
+    size_t maxlen = 0, minlen = UINT_MAX; // max,min length of command names
+    size_t proglen = strlen(prog);
+    for (uint ci = 0; cmdList[ci]; ci++) {
+      size_t len = airStrlen(cmdList[ci]->name);
+      minlen = AIR_MIN(minlen, len);
+      maxlen = AIR_MAX(maxlen, len);
+    }
+    /* maxlen + proglen + 2 == max strlen("<prog> <cmd>") + 1 */
+    if (!(minlen >= 3 && maxlen + proglen + 2 < AIR_STRLEN_SMALL)) {
+      fprintf(stderr,
+              "%s: min (%zu), max (%zu) strlen of %s command names seem not right",
+              __func__, minlen, maxlen, prog);
+      return 1;
+    }
+    for (uint ci = 0; cmdList[ci]; ci++) {
+      for (uint cj = 0; cj < ci; cj++) {
+        if (!strcmp(cmdList[ci]->name, cmdList[cj]->name)) {
+          fprintf(stderr, "%s: %s commands [%u] and [%u] have same name: \"%s\"\n",
+                  __func__, prog, ci, cj, cmdList[cj]->name);
+          return 1;
+        }
+      }
+    }
+    *maxlenP = maxlen;
+  }
+  if (aboutIdxP) {
+    *aboutIdxP = UINT_MAX;
+    for (uint ci = 0; cmdList[ci]; ci++) {
+      if (!strcmp("about", cmdList[ci]->name)) {
+        *aboutIdxP = ci;
+        break;
+      }
+    }
+  }
+  return 0;
+}
+
+/*
+ ******** unrrduUsage
+ *
+ * For other programs (not unu) that are leveraging the unrrduCmd infrastructure: a
+ * simple implementation of the top-level usage command that lists (on stdout) all the
+ * other commands (so this is *not* for giving usage info specific to one command), or,
+ * in case of bad args will fprintf(stderr) what went wrong and return 1.
+ *
+ * Why not use biff: because whatever gave rise to the error is something that very
+ * likely set up at compile-time (as opposed to based on any user inputs), so there's no
+ * run-time way to fix the error.
+ */
 int /* Biff: nope */
-unrrduCmdMain(int argc, const char **argv, const char *cmd, const char *title,
-              const unrrduCmd *const *cmdList, hestParm *_hparm, FILE *fusage) {
-  int i, ret;
-  const char *me;
-  char *argv0 = NULL;
-  hestParm *hparm;
-  airArray *mop;
+unrrduUsage(const char *argv0, const char *prog, const char *title,
+            const unrrduCmd *const *cmdList, const hestParm *hparm) {
+  if (!(argv0 && prog && title)) {
+    fprintf(stderr, "%s: need non-NULL title", __func__);
+    return 1;
+  }
+  size_t maxlen;
+  if (cmdListCheckLen(prog, cmdList, &maxlen, NULL)) {
+    /* already fprintf(stderr) what went wrong */
+    return 1;
+  }
+  char _buff[ASP1_L], fmt[ASP1_L];
+  snprintf(_buff, sizeof(_buff), "--- %s: %s ---", prog, title);
+  size_t len = strlen(_buff);
+  uint columns = hparm ? hparm->columns : hestDefaultColumns;
+  uint indent = hparm ? hparm->indent : hestDefaultIndent;
+  size_t spleft = (columns > len ? columns - len : 0) / 2 + len - 1;
+  snprintf(fmt, sizeof(fmt), "%%%zus\n", spleft);
+  fprintf(stdout, fmt, _buff);
+  for (uint ci = 0; cmdList[ci]; ci++) {
+    char *buff = _buff;
+    size_t buffSize = sizeof(_buff);
+    len = strlen(cmdList[ci]->name);
+    buff[0] = '\0';
+    for (uint chi = len; chi < maxlen + indent; chi++) {
+      SN_COPY(buff, buffSize, " ");
+    }
+    SN_PRINTF(buff, buffSize, "%s %s ... ", prog, cmdList[ci]->name);
+    printf("%s", _buff);
+    len = buff - _buff;
+    hestPrintStr(stdout, len + indent, len, columns, cmdList[ci]->info,
+                 AIR_FALSE /* bslash */);
+  }
+  printf("For more on using \"%s <cmd>\" listed above run: %s <cmd> --help\n", prog,
+         argv0);
+  return 0;
+}
 
-  me = argv[0];
-
+/*
+ ******** unrrduMainOrExit
+ *
+ * A "main" function for unu-like programs, which is very similar to
+ * teem/src/bin/unu.c:main() and teem/src/bin/tend.c:main().
+ * As of TeemV2, now used for src/limn/test/lpu.c
+ *
+ * Like hestParseOrExit: this is an odd function that (like the name implies) does
+ * sometimes call `exit`. Purists will point out that once the real `main()` function
+ * is called, it never returns to any other user-controlled function, so `main` may as
+ * well end by calling `exit`, thus the "Main" in our name is inaccurate. Sure. Unlike
+ * real `main`, this function *does* `return` when we are able to find and run the
+ * requested command without problems.  We `return` instead of `exit` because the caller
+ * may have other clean-up, timing, or other post-processing to do.
+ * NOTE that when we call the command's `mainFunc`, we are careful to not have done any
+ * additional dynamic allocation, besides the hparm, that needs clean-up: we do not
+ * get to pass a mop of other things that need cleanin up. The self-mopping hparm is it.
+ *
+ * There are many circumstances were we call exit:
+ * - bad arguments (likely can only be fixed by code modification i.e. not at run-time)
+ * - got no command-line arguments ==> implicitly asking for command listing
+ * - got "--version": call airTeemVersionPrintAndExit
+ * - got "--usage": prints a short message and exits
+ * - got "--help" and cmdList has an "about" command: another way to get command listing
+ * - got an unknown command: prints error message and exits
+ * - if nrrdSanityOrExit() fails then that exits
+ * else we actually have a command to run;
+ * we return from here the return value of the command's `mainFunc`
+ */
+int                                 /* Biff: nope */
+unrrduMainOrExit(int argc,          /* as received by main() */
+                 const char **argv, /* as received by main() */
+                 const char *prog,  /* conventional name of command-line program */
+                 const char *title, /* for top of listing sub-commands */
+                 const unrrduCmd *const *cmdList, /* all the sub-commands */
+                 const hestParm *_hparm) {
+  if (!(argc >= 1 && argv && airStrlen(argv[0]) && airStrlen(prog) && airStrlen(title)
+        && cmdList)) { // bad args (_hparm allowed to be NULL)
+    fprintf(stderr,
+            "%s: got weird argc (%d) NULL argv (%p) (or empty argv[0] (%p)), "
+            "prog (%p), title (%p), or cmdList (%p)",
+            __func__, argc, AIR_CVOIDP(argv), AIR_CVOIDP(argv[0]), AIR_CVOIDP(prog),
+            AIR_CVOIDP(title), AIR_CVOIDP(cmdList));
+    exit(1); // (in unrrduMainOrExit)
+  }
+  int ret;
+  if (1 == argc) {
+    ret = unrrduUsage(argv[0], prog, title, cmdList, _hparm);
+    /* if `ret`: already fprintf(stderr) what went wrong */
+    exit(ret); // (in unrrduMainOrExit)
+  }
+  // else argc >= 2
+  if (2 == argc && !strcmp("--version", argv[1])) {
+    char pfx[ASP1_L];
+    snprintf(pfx, ASP1_L, "%s built with", prog);
+    airTeemVersionPrintAndExit(pfx);
+  }
+  // handle "--usage" (but not yet "--help" or "about")
+  uint aboutCmdIdx;
+  if (cmdListCheckLen(prog, cmdList, NULL, &aboutCmdIdx)) {
+    /* already fprintf(stderr) what went wrong */
+    exit(1); // (in unrrduMainOrExit)
+  }
+  int aboutHave = (aboutCmdIdx != UINT_MAX);
+  if (2 == argc && !strcmp("--usage", argv[1])) {
+    printf("Usage: %s <command> [options ...]\n", prog);
+    if (aboutHave) {
+      printf("Run just \"%s\" for list of %s commands, or\n", argv[0], prog);
+      printf("\"%s --help\" or \"%s about\" to learn more about %s.\n", argv[0], argv[0],
+             prog);
+    } else {
+      printf("Run \"%s\" or \"%s --help\" for list of %s commands\n", argv[0], argv[0],
+             prog);
+    }
+    exit(0); // (in unrrduMainOrExit)
+  }
+  if (2 == argc && !strcmp("--help", argv[1]) && !aboutHave) {
+    // without an "about" command, --help is another way to ask for command list
+    exit(unrrduUsage(argv[0], prog, title, cmdList, _hparm)); // (in unrrduMainOrExit)
+  }
+  /* now:
+     either we're run with "--help" which effectively equals "about",
+     or, we're here to try running some other command */
+  const unrrduCmd *torun = NULL;
+  if (!strcmp("--help", argv[1]) && aboutHave) {
+    torun = cmdList[aboutCmdIdx];
+  } else {
+    for (uint ci = 0; cmdList[ci]; ci++) {
+      if (!strcmp(argv[1], cmdList[ci]->name)) {
+        torun = cmdList[ci];
+        break;
+      }
+    }
+  }
+  if (!torun) {
+    fprintf(stderr, "%s: unknown %s command \"%s\"; run \"%s\" for complete list\n",
+            argv[0], prog, argv[1], argv[0]);
+    exit(1); // (in unrrduMainOrExit)
+  }
+  // now: we actually know we're going to run `torun`
   /* parse environment variables first, in case they break nrrdDefault*
      or nrrdState* variables in a way that nrrdSanity() should see */
   nrrdDefaultGetenv();
   nrrdStateGetenv();
+  /* unu would do some unu-specific environment-variable handling here */
+  nrrdSanityOrExit(argv[0]);
 
-  /* unu does some unu-specific environment-variable handling here */
-
-  nrrdSanityOrDie(me);
-
-  mop = airMopNew();
-  if (_hparm) {
-    hparm = _hparm;
-  } else {
-    hparm = hestParmNew();
-    airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  hestParm *hparm = _hparm ? hestParmCopy(_hparm) : hestParmMopNew();
+  if (!_hparm) {
+    /* if nothing given, enstate some useful things */
     hparm->elideSingleEnumType = AIR_TRUE;
     hparm->elideSingleOtherType = AIR_TRUE;
     hparm->elideSingleOtherDefault = AIR_FALSE;
@@ -107,246 +347,52 @@ unrrduCmdMain(int argc, const char **argv, const char *cmd, const char *title,
     hparm->elideSingleEmptyStringDefault = AIR_TRUE;
     hparm->elideMultipleEmptyStringDefault = AIR_TRUE;
     hparm->cleverPluralizeOtherY = AIR_TRUE;
-    /* it is up to caller to try hestParmColumnsIoctl if they want
-    output to vary depending on current terminal. If nothing else;
-    hestParmNew() above sets hparm->columns to hestDefaultColumns */
+    /* columns aren't set here:
+       either caller can to hestParmColumnsIoctl(), or it will
+       be tried later if mainFunc calls hestParseOrExit */
   }
-
-  /* if there are no arguments, then we give general usage information */
-  if (1 >= argc) {
-    /* this is like unrrduUsageUnu() */
-    unsigned int ii, maxlen = 0;
-    char *buff, *fmt, tdash[] = "--- %s ---";
-    for (ii = 0; cmdList[ii]; ii++) {
-      if (cmdList[ii]->hidden) {
-        continue;
-      }
-      maxlen = AIR_MAX(maxlen, AIR_UINT(strlen(cmdList[ii]->name)));
-    }
-    if (!maxlen) {
-      fprintf(fusage, "%s: problem: maxlen = %u\n", me, maxlen);
-      airMopError(mop);
-      return 1;
-    }
-    buff = AIR_CALLOC(strlen(tdash) + strlen(title) + 1, char);
-    airMopAdd(mop, buff, airFree, airMopAlways);
-    sprintf(buff, tdash, title);
-    fmt = AIR_CALLOC(hparm->columns + strlen(buff) + 1, char); /* generous */
-    airMopAdd(mop, buff, airFree, airMopAlways);
-    sprintf(fmt, "%%%us\n",
-            AIR_UINT((hparm->columns - strlen(buff)) / 2 + strlen(buff) - 1));
-    fprintf(fusage, fmt, buff);
-
-    for (ii = 0; cmdList[ii]; ii++) {
-      unsigned int cc, len;
-      if (cmdList[ii]->hidden) {
-        continue;
-      }
-      len = AIR_UINT(strlen(cmdList[ii]->name));
-      strcpy(buff, "");
-      for (cc = len; cc < maxlen; cc++)
-        strcat(buff, " ");
-      strcat(buff, cmd);
-      strcat(buff, " ");
-      strcat(buff, cmdList[ii]->name);
-      strcat(buff, " ... ");
-      len = AIR_UINT(strlen(buff));
-      fprintf(fusage, "%s", buff);
-      hestPrintStr(fusage, len, len, hparm->columns, cmdList[ii]->info, AIR_FALSE);
-    }
-    airMopError(mop);
-    return 1;
-  }
-  /* else, we see if its --version */
-  if (!strcmp("--version", argv[1])) {
-    char vbuff[AIR_STRLEN_LARGE + 1];
-    airTeemVersionSprint(vbuff);
-    printf("%s\n", vbuff);
-    exit(0);
-  }
-  /* else, we should see if they're asking for a command we know about */
-  for (i = 0; cmdList[i]; i++) {
-    if (!strcmp(argv[1], cmdList[i]->name)) {
-      break;
-    }
-    /* if user typed "prog --help" we treat it as "prog about",
-       but only if there is an "about" command */
-    if (!strcmp("--help", argv[1]) && !strcmp("about", cmdList[i]->name)) {
-      break;
-    }
-  }
-  if (cmdList[i]) {
-    /* yes, we have that command */
-    /* initialize variables used by the various commands */
-    argv0 = AIR_CALLOC(strlen(cmd) + strlen(argv[1]) + 2, char);
-
-    airMopMem(mop, &argv0, airMopAlways);
-    sprintf(argv0, "%s %s", cmd, argv[1]);
-
-    /* run the individual command, saving its exit status */
-    ret = cmdList[i]->main(argc - 2, argv + 2, argv0, hparm);
-  } else {
-    fprintf(stderr,
-            "%s: unrecognized command: \"%s\"; type \"%s\" for "
-            "complete list\n",
-            cmd /* not me==argv[0] */, argv[1], me);
-    ret = 1;
-  }
-
-  airMopDone(mop, ret);
+  // NOTE: this is a STATIC allocation of the string!
+  char me[AIR_STRLEN_SMALL + 1]; // size sufficiency ensured by cmdListCheckLen
+  snprintf(me, sizeof(me), "%s %s", prog, torun->name);
+  // run the individual command, saving its exit status
+  ret = torun->mainFunc(argc - 2, argv + 2, me, hparm);
+  /* if mainFunc returned, unhook any self-mopping that hestParmCopy may have created,
+     just like hestParseOrExit does after successful hestParse */
+  hestParmUnmop(hparm);
+  hestParmFree(hparm);
   return ret;
 }
 
-/*
-******** unrrduUsageUnu
-**
-** prints out a little banner, and a listing of all available unu
-** commands with their one-line descriptions
-*/
-void
-unrrduUsageUnu(const char *me, hestParm *hparm, int alsoHidden) {
-  char buff[AIR_STRLEN_LARGE + 1], fmt[AIR_STRLEN_LARGE + 1];
-  unsigned int cmdi, chi, len, maxlen;
-
-  maxlen = 0;
-  for (cmdi = 0; unrrduCmdList[cmdi]; cmdi++) {
-    maxlen = AIR_MAX(maxlen, AIR_UINT(strlen(unrrduCmdList[cmdi]->name)));
-  }
-
-  sprintf(buff, "--- unu: Utah Nrrd Utilities command-line interface ---");
-  len = AIR_UINT(strlen(buff));
-  sprintf(fmt, "%%%us\n",
-          (hparm->columns > len ? hparm->columns - len : 0) / 2 + len - 1);
-  printf(fmt, buff);
-  if (alsoHidden) {
-    sprintf(buff, "(hidden commands have \" : \" in listing)");
-    len = AIR_UINT(strlen(buff));
-    sprintf(fmt, "%%%us\n",
-            (hparm->columns > len ? hparm->columns - len : 0) / 2 + len - 1);
-    printf(fmt, buff);
-  }
-  for (cmdi = 0; unrrduCmdList[cmdi]; cmdi++) {
-    int nofft, hidden;
-    if (unrrduCmdList[cmdi]->hidden) {
-      if (!alsoHidden) {
-        /* nothing to see here! */
-        continue;
-      }
-      hidden = AIR_TRUE;
-    } else {
-      hidden = AIR_FALSE;
-    }
-    nofft = !strcmp(unrrduCmdList[cmdi]->name, "fft") && !nrrdFFTWEnabled;
-    len = AIR_UINT(strlen(unrrduCmdList[cmdi]->name));
-    len += !!nofft;
-    strcpy(buff, "");
-    for (chi = len; chi < maxlen; chi++)
-      strcat(buff, " ");
-    if (nofft) {
-      strcat(buff, "(");
-    }
-    strcat(buff, me);
-    strcat(buff, " ");
-    strcat(buff, unrrduCmdList[cmdi]->name);
-    if (!hidden) {
-      strcat(buff, " ... ");
-    } else {
-      strcat(buff, "  :  ");
-    }
-    len = AIR_UINT(strlen(buff));
-    fprintf(stdout, "%s", buff);
-    if (nofft) {
-      char *infop;
-      /* luckily, still fits within 80 columns */
-      fprintf(stdout, "Not Enabled: ");
-      infop = AIR_CALLOC(strlen(unrrduCmdList[cmdi]->info) + 2, char);
-      sprintf(infop, "%s)", unrrduCmdList[cmdi]->info);
-      hestPrintStr(stdout, len, len, hparm->columns, infop, AIR_FALSE);
-      free(infop);
-    } else {
-      hestPrintStr(stdout, len, len, hparm->columns, unrrduCmdList[cmdi]->info,
-                   AIR_FALSE);
-    }
-  }
-  return;
-}
-
-/*
-******** unrrduUsage
-**
-** A generic version of the usage command, which can be used by other
-** programs that are leveraging the unrrduCmd infrastructure.
-**
-** does not use biff
-*/
-int /* Biff: nope */
-unrrduUsage(const char *me, hestParm *hparm, const char *title,
-            const unrrduCmd *const *cmdList) {
-  char buff[AIR_STRLEN_LARGE + 1], fmt[AIR_STRLEN_LARGE + 1];
-  unsigned int cmdi, chi, len, maxlen;
-
-  if (!(title && cmdList)) {
-    /* got NULL pointer */
-    return 1;
-  }
-  maxlen = 0;
-  for (cmdi = 0; cmdList[cmdi]; cmdi++) {
-    maxlen = AIR_MAX(maxlen, AIR_UINT(strlen(cmdList[cmdi]->name)));
-  }
-
-  sprintf(buff, "--- %s ---", title);
-  len = AIR_UINT(strlen(buff));
-  sprintf(fmt, "%%%us\n",
-          (hparm->columns > len ? hparm->columns - len : 0) / 2 + len - 1);
-  fprintf(stdout, fmt, buff);
-  for (cmdi = 0; cmdList[cmdi]; cmdi++) {
-    len = AIR_UINT(strlen(cmdList[cmdi]->name));
-    strcpy(buff, "");
-    for (chi = len; chi < maxlen; chi++)
-      strcat(buff, " ");
-    strcat(buff, me);
-    strcat(buff, " ");
-    strcat(buff, cmdList[cmdi]->name);
-    strcat(buff, " ... ");
-    len = AIR_UINT(strlen(buff));
-    fprintf(stdout, "%s", buff);
-    hestPrintStr(stdout, len, len, hparm->columns, cmdList[cmdi]->info, AIR_FALSE);
-  }
-  return 0;
-}
-
 /* --------------------------------------------------------- */
 /* --------------------------------------------------------- */
 /* --------------------------------------------------------- */
 
 /*
-******** unrrduHestPosCB
-**
-** For parsing position along an axis. Can be a simple (long) integer,
-** or M to signify last position along axis (#samples-1), or
-** M+<int> or M-<int> to signify some position relative to the end.
-**
-** It can also be m+<int> to signify some position relative to some
-** "minimum", assuming that a minimum position is being specified
-** at the same time as this one.  Obviously, there has to be some
-** error handling to make sure that no one is trying to define a
-** minimum position with respect to itself.  And, the ability to
-** specify a position as "m+<int>" shouldn't be advertised in situations
-** (unu slice) where you only have one position, rather than an interval
-** between two positions (unu crop and unu pad).
-**
-** This information is represented with two integers, pos[0] and pos[1]:
-** pos[0] ==  0: pos[1] gives the absolute position
-** pos[0] ==  1: pos[1] gives the position relative to the last index
-** pos[0] == -1: pos[1] gives the position relative to a "minimum" position
-*/
+ ******** unrrduHestPosCB
+ *
+ * For parsing position along an axis. Can be a simple (long) integer, or "M" to signify
+ * last position along axis (#samples-1), or "M+<int>"" or "M-<int>"" to signify some
+ * position relative to the end.
+ *
+ * It can also be "m+<int>"" to signify some position relative to some "minimum",
+ * assuming that a minimum position is being specified at the same time as this one.
+ * Obviously, there has to be some error handling to make sure that no one is trying to
+ * define a minimum position with respect to itself.  And, the ability to specify a
+ * position as "m+<int>" shouldn't be advertised in situations (unu slice) where you only
+ * have one position, rather than an interval between two positions (unu crop and unu
+ * pad).
+ *
+ * This information is represented with two integers, pos[0] and pos[1]:
+ * pos[0] ==  0: pos[1] gives the absolute position
+ * pos[0] ==  1: pos[1] gives the position relative to the last index
+ * pos[0] == -1: pos[1] gives the position relative to a "minimum" position
+ */
 static int
-parsePos(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
-  static const char me[] = "parsePos";
+parsePos(void *ptr, const char *str, char err[ASP1_H]) {
   long int *pos;
 
   if (!(ptr && str)) {
-    sprintf(err, "%s: got NULL pointer", me);
+    snprintf(err, ASP1_H, "%s: got NULL pointer", __func__);
     return 1;
   }
   pos = (long int *)ptr;
@@ -357,28 +403,31 @@ parsePos(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
   }
   if ('M' == str[0]) {
     if (!('-' == str[1] || '+' == str[1])) {
-      sprintf(err, "%s: \'M\' can be followed only by \'+\' or \'-\'", me);
+      snprintf(err, ASP1_H, "%s: \'M\' can be followed only by \'+\' or \'-\'",
+               __func__);
       return 1;
     }
     pos[0] = 1;
     if (1 != sscanf(str + 1, "%ld", &(pos[1]))) {
-      sprintf(err, "%s: can't parse \"%s\" as M+<int> or M-<int>", me, str);
+      snprintf(err, ASP1_H, "%s: can't parse \"%s\" as M+<int> or M-<int>", __func__,
+               str);
       return 1;
     }
     return 0;
   }
   if ('m' == str[0]) {
     if ('+' != str[1]) {
-      sprintf(err, "%s: \'m\' can only be followed by \'+\'", me);
+      snprintf(err, ASP1_H, "%s: \'m\' can only be followed by \'+\'", __func__);
       return 1;
     }
     pos[0] = -1;
     if (1 != sscanf(str + 1, "%ld", &(pos[1]))) {
-      sprintf(err, "%s: can't parse \"%s\" as m+<int>", me, str);
+      snprintf(err, ASP1_H, "%s: can't parse \"%s\" as m+<int>", __func__, str);
       return 1;
     }
     if (pos[1] < 0) {
-      sprintf(err, "%s: int in m+<int> must be non-negative (not %ld)", me, pos[1]);
+      snprintf(err, ASP1_H, "%s: int in m+<int> must be non-negative (not %ld)",
+               __func__, pos[1]);
       return 1;
     }
     return 0;
@@ -386,7 +435,7 @@ parsePos(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
   /* else its just a plain unadorned integer */
   pos[0] = 0;
   if (1 != sscanf(str, "%ld", &(pos[1]))) {
-    sprintf(err, "%s: can't parse \"%s\" as int", me, str);
+    snprintf(err, ASP1_H, "%s: can't parse \"%s\" as int", __func__, str);
     return 1;
   }
   return 0;
@@ -399,29 +448,25 @@ const hestCB unrrduHestPosCB = {2 * sizeof(long int), "position", parsePos, NULL
 /* --------------------------------------------------------- */
 
 /*
-******** unrrduHestMaybeTypeCB
-**
-** although nrrdType is an airEnum that hest already knows how
-** to parse, we want the ability to have "unknown" be a valid
-** parsable value, contrary to how airEnums usually work with hest.
-** For instance, we might want to use "unknown" to represent
-** "same type as the input, whatever that is".
-**
-** 18 July 03: with new nrrdTypeDefault, this function becomes
-** less of a hack, and more necessary, because the notion of an
-** unknown but valid type (as a default type is) falls squarely
-** outside the nrrdType airEnum framework.  Added a separate test
-** for "default", even though currently nrrdTypeUnknown is the same
-** value as nrrdTypeDefault.
-*/
+ ******** unrrduHestMaybeTypeCB
+ *
+ * although nrrdType is an airEnum that hest already knows how to parse, we want the
+ * ability to have "unknown" be a valid parsable value, contrary to how airEnums usually
+ * work with hest. For instance, we might want to use "unknown" to represent "same type
+ * as the input, whatever that is".
+ *
+ * 18 July 03: with new nrrdTypeDefault, this function becomes less of a hack, and more
+ * necessary, because the notion of an unknown but valid type (as a default type is)
+ * falls squarely outside the nrrdType airEnum framework.  Added a separate test for
+ * "default", even though currently nrrdTypeUnknown is the same value as nrrdTypeDefault.
+ */
 static int
-parseMaybeType(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
-  static const char me[] = "parseMaybeType";
+parseMaybeType(void *ptr, const char *str, char err[ASP1_H]) {
   int *typeP;
 
-  /* fprintf(stderr, "!%s: str = \"%s\"\n", me, str); */
+  /* fprintf(stderr, "!%s: str = \"%s\"\n", __func__, str); */
   if (!(ptr && str)) {
-    sprintf(err, "%s: got NULL pointer", me);
+    snprintf(err, ASP1_H, "%s: got NULL pointer", __func__);
     return 1;
   }
   typeP = (int *)ptr;
@@ -432,11 +477,11 @@ parseMaybeType(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
   } else {
     *typeP = airEnumVal(nrrdType, str);
     if (nrrdTypeUnknown == *typeP) {
-      sprintf(err, "%s: can't parse \"%s\" as type", me, str);
+      snprintf(err, ASP1_H, "%s: can't parse \"%s\" as type", __func__, str);
       return 1;
     }
   }
-  /* fprintf(stderr, "!%s: *typeP = %d\n", me, *typeP); */
+  /* fprintf(stderr, "!%s: *typeP = %d\n", __func__, *typeP); */
   return 0;
 }
 
@@ -447,26 +492,25 @@ const hestCB unrrduHestMaybeTypeCB = {sizeof(int), "type", parseMaybeType, NULL}
 /* --------------------------------------------------------- */
 
 /*
-******** unrrduHestBitsCB
-**
-** for parsing an int that can be 8, 16, or 32
-*/
+ ******** unrrduHestBitsCB
+ *
+ * for parsing an int that can be 8, 16, or 32
+ */
 static int
-parseBits(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
-  static const char me[] = "parseBits";
+parseBits(void *ptr, const char *str, char err[ASP1_H]) {
   unsigned int *bitsP;
 
   if (!(ptr && str)) {
-    sprintf(err, "%s: got NULL pointer", me);
+    snprintf(err, ASP1_H, "%s: got NULL pointer", __func__);
     return 1;
   }
   bitsP = (unsigned int *)ptr;
   if (1 != sscanf(str, "%u", bitsP)) {
-    sprintf(err, "%s: can't parse \"%s\" as int", me, str);
+    snprintf(err, ASP1_H, "%s: can't parse \"%s\" as int", __func__, str);
     return 1;
   }
   if (!(8 == *bitsP || 16 == *bitsP || 32 == *bitsP)) {
-    sprintf(err, "%s: bits (%u) not 8, 16, or 32", me, *bitsP);
+    snprintf(err, ASP1_H, "%s: bits (%u) not 8, 16, or 32", __func__, *bitsP);
     return 1;
   }
   return 0;
@@ -479,29 +523,28 @@ const hestCB unrrduHestBitsCB = {sizeof(int), "quantization bits", parseBits, NU
 /* --------------------------------------------------------- */
 
 /*
-******** unrrduParseScale
-**
-** parse the strings used with "unu resample -s" to indicate
-** the new number of samples.
-** =         : unrrduScaleNothing
-** a         : unrrduScaleAspectRatio
-** x<float>  : unrrduScaleMultiply
-** x=<float> : unrrduScaleMultiply
-** /<float>  : unrrduScaleDivide
-** /=<float> : unrrduScaleDivide
-** +=<uint>  : unrrduScaleAdd
-** -=<uint>  : unrrduScaleSubstract
-** <uint>    : unrrduScaleExact
-** s<float>  : unrrduScaleSpacingTarget
-*/
+ ******** unrrduParseScale
+ *
+ * parse the strings used with "unu resample -s" to indicate
+ * the new number of samples.
+ * =         : unrrduScaleNothing
+ * a         : unrrduScaleAspectRatio
+ * x<float>  : unrrduScaleMultiply
+ * x=<float> : unrrduScaleMultiply
+ * /<float>  : unrrduScaleDivide
+ * /=<float> : unrrduScaleDivide
+ * +=<uint>  : unrrduScaleAdd
+ * -=<uint>  : unrrduScaleSubstract
+ * <uint>    : unrrduScaleExact
+ * s<float>  : unrrduScaleSpacingTarget
+ */
 static int
-parseScale(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
-  static const char me[] = "parseScale";
+parseScale(void *ptr, const char *str, char err[ASP1_H]) {
   double *scale;
   unsigned int num;
 
   if (!(ptr && str)) {
-    sprintf(err, "%s: got NULL pointer", me);
+    snprintf(err, ASP1_H, "%s: got NULL pointer", __func__);
     return 1;
   }
   scale = AIR_CAST(double *, ptr);
@@ -513,25 +556,28 @@ parseScale(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
     scale[1] = 0.0;
   } else if (strlen(str) > 2 && ('x' == str[0] || '/' == str[0]) && '=' == str[1]) {
     if (1 != sscanf(str + 2, "%lf", scale + 1)) {
-      sprintf(err, "%s: can't parse \"%s\" as x=<float> or /=<float>", me, str);
+      snprintf(err, ASP1_H, "%s: can't parse \"%s\" as x=<float> or /=<float>", __func__,
+               str);
       return 1;
     }
     if (!(scale[1] > 0)) {
-      sprintf(err, "%s: need positive float from \"%s\" (not %g)", me, str, scale[1]);
+      snprintf(err, ASP1_H, "%s: need positive float from \"%s\" (not %g)", __func__,
+               str, scale[1]);
       return 1;
     }
     scale[0] = AIR_CAST(double,
                         ('x' == str[0] ? unrrduScaleMultiply : unrrduScaleDivide));
   } else if (strlen(str) > 1 && ('x' == str[0] || '/' == str[0] || 's' == str[0])) {
     if (1 != sscanf(str + 1, "%lf", scale + 1)) {
-      sprintf(err,
-              "%s: can't parse \"%s\" as x<float>, /<float>, "
-              "or s<float>",
-              me, str);
+      snprintf(err, ASP1_H,
+               "%s: can't parse \"%s\" as x<float>, /<float>, "
+               "or s<float>",
+               __func__, str);
       return 1;
     }
     if (!(scale[1] > 0)) {
-      sprintf(err, "%s: need positive float from \"%s\" (not %g)", me, str, scale[1]);
+      snprintf(err, ASP1_H, "%s: need positive float from \"%s\" (not %g)", __func__,
+               str, scale[1]);
       return 1;
     }
     scale[0] = AIR_CAST(double,
@@ -540,14 +586,15 @@ parseScale(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
                                                         : unrrduScaleSpacingTarget)));
   } else if (strlen(str) > 2 && ('+' == str[0] || '-' == str[0]) && '=' == str[1]) {
     if (1 != sscanf(str + 2, "%u", &num)) {
-      sprintf(err, "%s: can't parse \"%s\" as +=<uint> or -=<uint>", me, str);
+      snprintf(err, ASP1_H, "%s: can't parse \"%s\" as +=<uint> or -=<uint>", __func__,
+               str);
       return 1;
     }
     scale[0] = AIR_CAST(double, ('+' == str[0] ? unrrduScaleAdd : unrrduScaleSubtract));
     scale[1] = AIR_CAST(double, num);
   } else {
     if (1 != sscanf(str, "%u", &num)) {
-      sprintf(err, "%s: can't parse \"%s\" as uint", me, str);
+      snprintf(err, ASP1_H, "%s: can't parse \"%s\" as uint", __func__, str);
       return 1;
     }
     scale[0] = AIR_CAST(double, unrrduScaleExact);
@@ -564,35 +611,35 @@ const hestCB unrrduHestScaleCB = {2 * sizeof(double), "sampling/scaling specific
 /* --------------------------------------------------------- */
 
 /*
-******** unrrduHestFileCB
-**
-** for parsing a filename, which means opening it in "rb" mode and
-** getting a FILE *.  "-" is interpreted as stdin, which is not
-** fclose()ed at the end, unlike all other files.
-*/
+ ******** unrrduHestFileCB
+ *
+ * for parsing a filename, which means opening it in "rb" mode and getting a FILE *.
+ * "-" is interpreted as stdin, which is not fclose()ed at the end,
+ * unlike all other files.
+ */
 static void *
 maybeFclose(void *_file) {
   FILE *file;
 
   file = (FILE *)_file;
   if (stdin != file) {
-    file = airFclose(file);
+    /* file = */ airFclose(file);
   }
   return NULL;
 }
 
 static int
-parseFile(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
-  static const char me[] = "parseFile";
+parseFile(void *ptr, const char *str, char err[ASP1_H]) {
   FILE **fileP;
 
   if (!(ptr && str)) {
-    sprintf(err, "%s: got NULL pointer", me);
+    snprintf(err, ASP1_H, "%s: got NULL pointer", __func__);
     return 1;
   }
   fileP = (FILE **)ptr;
   if (!(*fileP = airFopen(str, stdin, "rb"))) {
-    sprintf(err, "%s: fopen(\"%s\",\"rb\") failed: %s", me, str, strerror(errno));
+    snprintf(err, ASP1_H, "%s: fopen(\"%s\",\"rb\") failed: %s", __func__, str,
+             strerror(errno));
     return 1;
   }
   return 0;
@@ -610,22 +657,21 @@ const hestCB unrrduHestFileCB = {
 /* --------------------------------------------------------- */
 
 /*
-******** unrrduHestEncodingCB
-**
-** for parsing output encoding, including compression flags
-** enc[0]: which encoding, from nrrdEncodingType* enum
-** enc[1]: for compressions: zlib "level" and bzip2 "blocksize"
-** enc[2]: for zlib: strategy, from nrrdZlibStrategy* enum
-*/
+ ******** unrrduHestEncodingCB
+ *
+ * for parsing output encoding, including compression flags
+ * enc[0]: which encoding, from nrrdEncodingType* enum
+ * enc[1]: for compressions: zlib "level" and bzip2 "blocksize"
+ * enc[2]: for zlib: strategy, from nrrdZlibStrategy* enum
+ */
 static int
-parseEncoding(void *ptr, const char *_str, char err[AIR_STRLEN_HUGE + 1]) {
-  static const char me[] = "parseEncoding";
+parseEncoding(void *ptr, const char *_str, char err[ASP1_H]) {
   char *str, *opt;
   int *enc;
   airArray *mop;
 
   if (!(ptr && _str)) {
-    sprintf(err, "%s: got NULL pointer", me);
+    snprintf(err, ASP1_H, "%s: got NULL pointer", __func__);
     return 1;
   }
   enc = (int *)ptr;
@@ -644,7 +690,7 @@ parseEncoding(void *ptr, const char *_str, char err[AIR_STRLEN_HUGE + 1]) {
   opt = strchr(str, ':');
   if (!opt) {
     /* couldn't parse string as nrrdEncodingType, but there wasn't a colon */
-    sprintf(err, "%s: didn't recognize \"%s\" as an encoding", me, str);
+    snprintf(err, ASP1_H, "%s: didn't recognize \"%s\" as an encoding", __func__, str);
     airMopError(mop);
     return 1;
   } else {
@@ -652,12 +698,12 @@ parseEncoding(void *ptr, const char *_str, char err[AIR_STRLEN_HUGE + 1]) {
     opt++;
     enc[0] = airEnumVal(nrrdEncodingType, str);
     if (nrrdEncodingTypeUnknown == enc[0]) {
-      sprintf(err, "%s: didn't recognize \"%s\" as an encoding", me, str);
+      snprintf(err, ASP1_H, "%s: didn't recognize \"%s\" as an encoding", __func__, str);
       airMopError(mop);
       return 1;
     }
     if (!nrrdEncodingArray[enc[0]]->isCompression) {
-      sprintf(err, "%s: only compression encodings have parameters", me);
+      snprintf(err, ASP1_H, "%s: only compression encodings have parameters", __func__);
       airMopError(mop);
       return 1;
     }
@@ -672,7 +718,8 @@ parseEncoding(void *ptr, const char *_str, char err[AIR_STRLEN_HUGE + 1]) {
       } else if ('f' == tolower(opti)) {
         enc[2] = nrrdZlibStrategyFiltered;
       } else {
-        sprintf(err, "%s: parameter char \"%c\" not a digit or 'd','h','f'", me, *opt);
+        snprintf(err, ASP1_H, "%s: parameter char \"%c\" not a digit or 'd','h','f'",
+                 __func__, *opt);
         airMopError(mop);
         return 1;
       }
@@ -690,20 +737,19 @@ const hestCB unrrduHestEncodingCB = {3 * sizeof(int), "encoding", parseEncoding,
 /* --------------------------------------------------------- */
 
 /*
-******** unrrduHestFormatCB
-**
-** for parsing output format
-** enc[0]: which format, from nrrdFormatType* enum
-** enc[1]: for nrrdFormatText: bool for whether to enforce plain "bare" text
-**         as indicated by one of: btext, ptext, baretext, plaintext
-*/
+ ******** unrrduHestFormatCB
+ *
+ * for parsing output format
+ * enc[0]: which format, from nrrdFormatType* enum
+ * enc[1]: for nrrdFormatText: bool for whether to enforce plain "bare" text
+ *         as indicated by one of: btext, ptext, baretext, plaintext
+ */
 static int
-parseFormat(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
-  static const char me[] = "parseFormat";
+parseFormat(void *ptr, const char *str, char err[ASP1_H]) {
   int *enc;
 
   if (!(ptr && str)) {
-    sprintf(err, "%s: got NULL pointer", me);
+    snprintf(err, ASP1_H, "%s: got NULL pointer", __func__);
     return 1;
   }
   enc = (int *)ptr;
@@ -721,8 +767,8 @@ parseFormat(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
     enc[0] = nrrdFormatTypeText;
     enc[1] = AIR_TRUE;
   } else {
-    sprintf(err, "%s: format \"%s\" not a %s or recognized alternate", me, str,
-            nrrdFormatType->name);
+    snprintf(err, ASP1_H, "%s: format \"%s\" not a %s or recognized alternate", __func__,
+             str, nrrdFormatType->name);
     return 1;
   }
   return 0;

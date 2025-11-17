@@ -32,6 +32,8 @@ extern "C" {
 /* the what to put in gctx->errStr when !generateErrStr */
 #define _GAGE_NON_ERR_STR "(error)"
 
+typedef unsigned int uint; /* uint is just more concise */
+
 /* shape.c */
 extern int _gageShapeSet(const gageContext *ctx, gageShape *shape, const Nrrd *nin,
                          unsigned int baseDim);

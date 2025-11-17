@@ -267,7 +267,7 @@ main(int argc, const char *argv[]) {
   }
 
   mop = airMopNew();
-  hparm = hestParmNew();
+  hparm = hestParmMopNew();
   airMopAdd(mop, hparm, AIR_CAST(airMopper, hestParmFree), airMopAlways);
   hestParmColumnsIoctl(hparm, hestDefaultColumns);
   hparm->elideSingleOtherType = AIR_TRUE;
@@ -391,7 +391,7 @@ main(int argc, const char *argv[]) {
   hestOptAdd_1_Enum(&hopt, "t", "type", &otype, "float", "type of output volume",
                     nrrdType);
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output volume");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, probeInfo);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, probeInfo);
   airMopAdd(mop, hopt, AIR_CAST(airMopper, hestOptFree), airMopAlways);
   airMopAdd(mop, hopt, AIR_CAST(airMopper, hestParseFree), airMopAlways);
 
@@ -400,7 +400,7 @@ main(int argc, const char *argv[]) {
     /* 0 indeed always means "unknown" for any gageKind */
     fprintf(stderr, "%s: couldn't parse \"%s\" as measure of \"%s\" volume\n", me, whatS,
             kind->name);
-    hestUsage(stderr, hopt, me, hparm);
+    hestUsage(stderr, hopt, me, hparm, AIR_FALSE /* oneline */);
     hestGlossary(stderr, hopt, hparm);
     airMopError(mop);
     return 1;

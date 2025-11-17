@@ -24,28 +24,21 @@
 static const char *myinfo = (INFO ", and then sorts primitive according to area.");
 
 static int
-limnPu_ccfindMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+limnPu_ccfindMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
-  char *err, *perr;
-  airArray *mop;
-  int pret;
-
   limnPolyData *pld;
-  Nrrd *nmeas;
-  char *out;
-
   hestOptAdd_1_Other(&hopt, NULL, "input", &pld, NULL, "input polydata filename",
                      limnHestPolyDataLMPD);
+  char *out;
   hestOptAdd_1_String(&hopt, NULL, "output", &out, NULL, "output polydata filename");
 
-  mop = airMopNew();
+  hestParseOrExit(hopt, argc, argv, hparm, me, myinfo);
+  airArray *mop = airMopNew();
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-
-  USAGE(myinfo);
-  PARSE(myinfo);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  char *err;
 
-  nmeas = nrrdNew();
+  Nrrd *nmeas = nrrdNew();
   airMopAdd(mop, nmeas, (airMopper)nrrdNuke, airMopAlways);
 
   if (limnPolyDataCCFind(pld) || limnPolyDataPrimitiveArea(nmeas, pld)

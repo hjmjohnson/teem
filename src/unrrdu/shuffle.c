@@ -34,33 +34,26 @@ static const char *_unrrdu_shuffleInfoL
           "* Uses nrrdShuffle");
 
 static int
-unrrdu_shuffleMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *nout;
-  unsigned int di, axis, permLen, *perm, *iperm, *whichperm;
-  size_t *realperm;
-  int inverse, pret;
-  airArray *mop;
-
-  /* so that long permutations can be read from file */
-  hparm->responseFileEnable = AIR_TRUE;
-
-  hestOptAdd_Nv_UInt(&opt, "p,permute", "slc0 slc1", 1, -1, &perm, NULL,
+unrrdu_shuffleMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+  hestOpt *hopt = NULL;
+  uint *perm, permLen;
+  hestOptAdd_Nv_UInt(&hopt, "p,permute", "slc0 slc1", 1, -1, &perm, NULL,
                      "new slice ordering", &permLen);
-  hestOptAdd_Flag(&opt, "inv,inverse", &inverse, "use inverse of given permutation");
+  int inverse;
+  hestOptAdd_Flag(&hopt, "inv,inverse", &inverse, "use inverse of given permutation");
+  uint axis;
   OPT_ADD_AXIS(axis, "axis to shuffle along");
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
-
-  USAGE_OR_PARSE(_unrrdu_shuffleInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  // (boilerplate for YES some hparm modification)
+  hestParm *hparm = hestParmCopy(_hparm);
+  hparm->responseFileEnable = AIR_TRUE; // to read long permutations from a file
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_shuffleInfoL);
+  airArray *mop = unrrduMopNew(hopt, hparm);
+  char *err;
 
   /* we have to do error checking on axis in order to do error
      checking on length of permutation */
@@ -76,6 +69,7 @@ unrrdu_shuffleMain(int argc, const char **argv, const char *me, hestParm *hparm)
     airMopError(mop);
     return 1;
   }
+  uint *iperm = NULL, *whichperm;
   if (inverse) {
     iperm = AIR_CALLOC(permLen, unsigned int);
     airMopAdd(mop, iperm, airFree, airMopAlways);
@@ -89,11 +83,13 @@ unrrdu_shuffleMain(int argc, const char **argv, const char *me, hestParm *hparm)
     whichperm = perm;
   }
 
-  realperm = AIR_CALLOC(permLen, size_t);
+  size_t *realperm = AIR_CALLOC(permLen, size_t);
   airMopAdd(mop, realperm, airFree, airMopAlways);
-  for (di = 0; di < permLen; di++) {
+  for (uint di = 0; di < permLen; di++) {
     realperm[di] = whichperm[di];
   }
+  Nrrd *nout = nrrdNew();
+  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
   if (nrrdShuffle(nout, nin, axis, realperm)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error shuffling nrrd:\n%s", me, err);

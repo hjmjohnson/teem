@@ -78,7 +78,7 @@ main(int argc, const char *argv[]) {
                       "when NOT doing clampging (no \"-clamp\"), what value to the "
                       "boundary of the volume with");
   hestOptAdd_1_String(&hopt, "o", "output", &outS, NULL, "output volume in nrrd format");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, info);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, info);
 
   sx = AIR_UINT(nin->axis[0].size);
   sy = AIR_UINT(nin->axis[1].size);

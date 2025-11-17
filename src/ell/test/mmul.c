@@ -32,16 +32,16 @@ main(int argc, const char *argv[]) {
 
   me = argv[0];
   mop = airMopNew();
-  hparm = hestParmNew();
-  hopt = NULL;
+  hparm = hestParmMopNew();
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  hopt = NULL;
   hestOptAdd(&hopt, NULL, "matrix", airTypeOther, 1, 1, &_ninA, NULL, "first matrix",
              NULL, NULL, nrrdHestNrrd);
   hestOptAdd(&hopt, NULL, "matrix", airTypeOther, 1, 1, &_ninB, NULL, "first matrix",
              NULL, NULL, nrrdHestNrrd);
   hestOptAdd(&hopt, "o", "filename", airTypeString, 1, 1, &outS, "-",
              "file to write output nrrd to");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, mulInfo);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, mulInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

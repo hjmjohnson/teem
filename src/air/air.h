@@ -529,6 +529,7 @@ AIR_EXPORT char *airStrcpy(char *dst, size_t dstSize, const char *src);
 AIR_EXPORT int airEndsWith(const char *s, const char *suff);
 AIR_EXPORT char *airUnescape(char *s);
 AIR_EXPORT char *airOneLinify(char *s);
+AIR_EXPORT char *airMultiLinify(char *str);
 AIR_EXPORT char *airToLower(char *str);
 AIR_EXPORT char *airToUpper(char *str);
 AIR_EXPORT size_t airOneLine(FILE *file, char *line, size_t size);
@@ -573,7 +574,12 @@ AIR_EXPORT void *airFree(void *ptr);
 AIR_EXPORT FILE *airFopen(const char *name, FILE *std, const char *mode);
 AIR_EXPORT FILE *airFclose(FILE *file);
 AIR_EXPORT int airSinglePrintf(FILE *file, char *str, size_t strSize, /* */
-                               const char *fmt, ...);
+                               const char *fmt, ...)
+#ifdef __GNUC__
+  __attribute__((format(printf, 4, 5)))
+#endif
+  ;
+;
 AIR_EXPORT char *airSprintSize_t(char str[AIR_STRLEN_SMALL + 1], size_t val);
 /* ---- BEGIN non-NrrdIO */
 AIR_EXPORT char *airSprintVecSize_t(char *dst, size_t dstSize, const size_t *vec,

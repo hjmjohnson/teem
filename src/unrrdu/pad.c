@@ -25,17 +25,10 @@ static const char *_unrrdu_padInfoL = (INFO ".\n "
                                             "* Uses nrrdPad_nva");
 
 static int
-unrrdu_padMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *nout;
-  unsigned int minLen, maxLen, ai;
-  int bb, pret;
+unrrdu_padMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
   long int *minOff, *maxOff;
-  ptrdiff_t min[NRRD_DIM_MAX], max[NRRD_DIM_MAX];
-  double padVal;
-  airArray *mop;
-
+  uint minLen, maxLen;
   OPT_ADD_BOUND("min,minimum", 1, minOff, NULL,
                 "low corner of bounding box.\n "
                 "\b\bo <int> gives 0-based index\n "
@@ -48,38 +41,44 @@ unrrdu_padMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                 "there's also:\n "
                 "\b\bo m+<int> give index relative to minimum.",
                 maxLen);
-  hestOptAdd_1_Enum(&opt, "b,boundary", "behavior", &bb, "bleed",
+  int bb;
+  hestOptAdd_1_Enum(&hopt, "b,boundary", "behavior", &bb, "bleed",
                     "How to handle samples beyond the input bounds:\n "
                     "\b\bo \"pad\": use some specified value\n "
                     "\b\bo \"bleed\": extend border values outward\n "
                     "\b\bo \"mirror\": repeated reflections\n "
                     "\b\bo \"wrap\": wrap-around to other side",
                     nrrdBoundary);
-  hestOptAdd_1_Double(&opt, "v,value", "val", &padVal, "0.0",
+  double padVal;
+  hestOptAdd_1_Double(&hopt, "v,value", "val", &padVal, "0.0",
                       "for \"pad\" boundary behavior, pad with this value");
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
-
-  USAGE_OR_PARSE(_unrrdu_padInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_padInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
   if (!(minLen == nin->dim && maxLen == nin->dim)) {
-    fprintf(stderr, "%s: # min coords (%u) or max coords (%u) != nrrd dim (%u)\n", me,
-            minLen, maxLen, nin->dim);
+    fprintf(stderr,
+            "%s: # \"-min\" coords (%u) or \"-max\" coords (%u) given "
+            "!= nrrd dim (%u)\n",
+            me, minLen, maxLen, nin->dim);
     airMopError(mop);
     return 1;
   }
-  for (ai = 0; ai < nin->dim; ai++) {
+  for (uint ai = 0; ai < nin->dim; ai++) {
     if (-1 == minOff[0 + 2 * ai]) {
       fprintf(stderr, "%s: can't use m+<int> specification for axis %u min\n", me, ai);
       airMopError(mop);
       return 1;
     }
   }
-  for (ai = 0; ai < nin->dim; ai++) {
+  ptrdiff_t min[NRRD_DIM_MAX], max[NRRD_DIM_MAX];
+  for (uint ai = 0; ai < nin->dim; ai++) {
     min[ai] = minOff[0 + 2 * ai] * (nin->axis[ai].size - 1) + minOff[1 + 2 * ai];
     if (-1 == maxOff[0 + 2 * ai]) {
       max[ai] = min[ai] + maxOff[1 + 2 * ai];
@@ -92,9 +91,8 @@ unrrdu_padMain(int argc, const char **argv, const char *me, hestParm *hparm) {
     */
   }
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
-
   if (nrrdPad_nva(nout, nin, min, max, bb, padVal)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error padding nrrd:\n%s", me, err);

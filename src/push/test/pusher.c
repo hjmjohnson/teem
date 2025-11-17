@@ -124,7 +124,7 @@ main(int argc, const char *argv[]) {
   hestOptAdd(&hopt, "o", "nout", airTypeString, 3, 3, outS, "p.nrrd t.nrrd e.nrrd",
              "output files to save position and tensor info into");
 
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
+  hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

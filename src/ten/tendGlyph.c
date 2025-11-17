@@ -95,11 +95,10 @@ _tendGlyphReadCams(int imgSize[2], limnCamera **camP, unsigned int *numCamsP,
 }
 
 static int
-tend_glyphMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_glyphMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   int pret, doRT = AIR_FALSE;
   hestOpt *hopt = NULL;
   char *perr, *err;
-  airArray *mop;
 
   Nrrd *nin, *emap, *nraw, *npos, *nslc;
   char *outS;
@@ -122,11 +121,13 @@ tend_glyphMain(int argc, const char **argv, const char *me, hestParm *hparm) {
 
   double v2w[9], ldir[3], edir[3], fdir[3], corn[3], len;
 
+  airArray *mop = airMopNew();
+  hestParm *hparm = hestParmCopy(_hparm);
+  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
   /* so that command-line options can be read from file */
   hparm->responseFileEnable = AIR_TRUE;
   hparm->elideSingleEmptyStringDefault = AIR_TRUE;
 
-  mop = airMopNew();
   cam = limnCameraNew();
   airMopAdd(mop, cam, (airMopper)limnCameraNix, airMopAlways);
   glyph = limnObjectNew(1000, AIR_TRUE);

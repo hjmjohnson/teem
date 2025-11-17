@@ -25,28 +25,23 @@ static const char *_unrrdu_swapInfoL = (INFO ". Special case of \"unu\tpermute\"
                                              "* Uses nrrdAxesSwap");
 
 static int
-unrrdu_swapMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *nout;
-  int pret;
-  unsigned int ax[2];
-  airArray *mop;
-
-  hestOptAdd_2_UInt(&opt, "a,axis", "axisA axisB", ax, NULL,
+unrrdu_swapMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  uint ax[2];
+  hestOptAdd_2_UInt(&hopt, "a,axis", "axisA axisB", ax, NULL,
                     "the two axes to switch (0-based numbering)");
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_swapInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_swapInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
-
   if (nrrdAxesSwap(nout, nin, ax[0], ax[1])) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error swapping nrrd:\n%s", me, err);

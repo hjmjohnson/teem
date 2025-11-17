@@ -25,21 +25,14 @@ static const char *_unrrdu_cropInfoL = (INFO ".\n "
                                              "* Uses nrrdCrop");
 
 static int
-unrrdu_cropMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *nout;
-  unsigned int ai, minLen, maxLen;
-  int pret;
-  long int *minOff, *maxOff;
-  size_t min[NRRD_DIM_MAX], max[NRRD_DIM_MAX];
-  airArray *mop;
-  Nrrd *_nbounds;
-
+unrrdu_cropMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
   /* one might think this is a candidate for hparm->noArgsIsNoProblem, but really
   the "-b" option is an alternative to -min,-max: it is not the case that neither
   one can be used. It is a weakness of hest that we can't say: "either -b, or,
-  both -min and -max, must be set" */
+  both -min and -max, must be set"; maybe for TeemV3! */
+  long int *minOff, *maxOff;
+  uint minLen, maxLen;
   OPT_ADD_BOUND("min,minimum", 0, minOff, "0",
                 "low corner of bounding box.\n "
                 "\b\bo <int> gives 0-based index\n "
@@ -52,7 +45,8 @@ unrrdu_cropMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                 "there's also:\n "
                 "\b\bo m+<int> give index relative to minimum.",
                 maxLen);
-  hestOptAdd_1_Other(&opt, "b,bounds", "filename", &_nbounds, "",
+  Nrrd *_nbounds;
+  hestOptAdd_1_Other(&hopt, "b,bounds", "filename", &_nbounds, "",
                      "a filename given here overrides the -min and -max "
                      "options (they don't need to be used) and provides the "
                      "cropping bounds as a 2-D array; first scanline is for "
@@ -60,15 +54,17 @@ unrrdu_cropMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                      "\"m\" and \"M\" semantics (above) are currently not "
                      "supported in the bounds file.",
                      nrrdHestNrrdNoTTY);
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_cropInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_cropInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
+  size_t min[NRRD_DIM_MAX], max[NRRD_DIM_MAX];
   if (!_nbounds) {
     if (!(minLen == nin->dim && maxLen == nin->dim)) {
       fprintf(stderr, "%s: # min coords (%u) or max coords (%u) != nrrd dim (%u)\n", me,
@@ -76,14 +72,14 @@ unrrdu_cropMain(int argc, const char **argv, const char *me, hestParm *hparm) {
       airMopError(mop);
       return 1;
     }
-    for (ai = 0; ai < nin->dim; ai++) {
+    for (uint ai = 0; ai < nin->dim; ai++) {
       if (-1 == minOff[0 + 2 * ai]) {
         fprintf(stderr, "%s: can't use m+<int> specification for axis %u min\n", me, ai);
         airMopError(mop);
         return 1;
       }
     }
-    for (ai = 0; ai < nin->dim; ai++) {
+    for (uint ai = 0; ai < nin->dim; ai++) {
       min[ai] = minOff[0 + 2 * ai] * (nin->axis[ai].size - 1) + minOff[1 + 2 * ai];
       if (-1 == maxOff[0 + 2 * ai]) {
         max[ai] = min[ai] + maxOff[1 + 2 * ai];
@@ -98,7 +94,6 @@ unrrdu_cropMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   } else {
     Nrrd *nbounds;
     airULLong *bounds;
-    unsigned int axi;
     if (!(2 == _nbounds->dim && nin->dim == AIR_UINT(_nbounds->axis[0].size)
           && 2 == _nbounds->axis[1].size)) {
       char stmp[2][AIR_STRLEN_SMALL + 1];
@@ -126,13 +121,13 @@ unrrdu_cropMain(int argc, const char **argv, const char *me, hestParm *hparm) {
       return 1;
     }
     bounds = AIR_CAST(airULLong *, nbounds->data);
-    for (axi = 0; axi < nin->dim; axi++) {
+    for (uint axi = 0; axi < nin->dim; axi++) {
       min[axi] = AIR_SIZE_T(bounds[axi + 0 * (nin->dim)]);
       max[axi] = AIR_SIZE_T(bounds[axi + 1 * (nin->dim)]);
     }
   }
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
 
   if (nrrdCrop(nout, nin, min, max)) {

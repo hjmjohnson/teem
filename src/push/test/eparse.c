@@ -35,7 +35,7 @@ main(int argc, const char *argv[]) {
   me = argv[0];
   hestOptAdd(&hopt, "energy", "spec", airTypeOther, 1, 1, &ensp, NULL,
              "specification of force function to use", NULL, NULL, pushHestEnergySpec);
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
+  hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

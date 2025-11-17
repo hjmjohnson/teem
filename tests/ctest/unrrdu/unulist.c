@@ -47,21 +47,22 @@ main(int argc, const char **argv) {
      the use of stderr vs stdout, and return values, is consistent
      across all commands */
 
-  fprintf(out, "%s: ################### BEGIN unu\n", me);
-  unrrduUsageUnu("unu", hparm, AIR_TRUE /* alsoHidden */);
-  fprintf(out, "%s: ################### END unu\n", me);
+  // fprintf(out, "%s: ################### BEGIN unu\n", me);
+  // This was moved into unu itself for TeemV2
+  // unrrduUsageUnu("unu", hparm, AIR_TRUE /* alsoHidden */);
+  // fprintf(out, "%s: ################### END unu\n", me);
 
   uci = 0;
   hparm->respectDashDashHelp = AIR_TRUE;
   const char *hargv[2] = {"--help", NULL};
   do {
-    fprintf(out, "%s: ################### BEGIN (%u) unu %s\n", me, uci,
-            unrrduCmdList[uci]->name);
-    ret = unrrduCmdList[uci]->main(1, hargv, unrrduCmdList[uci]->name, hparm);
+    const unrrduCmd *cmd = unrrduUnuCmdList[uci];
+    fprintf(out, "%s: ################### BEGIN (%u) unu %s\n", me, uci, cmd->name);
+    ret = cmd->mainFunc(1, hargv, cmd->name, hparm);
     fprintf(out, "%s: ################### END (%u) unu %s (ret=%d)\n", me, uci,
-            unrrduCmdList[uci]->name, ret);
+            cmd->name, ret);
     uci++;
-  } while (unrrduCmdList[uci]);
+  } while (unrrduUnuCmdList[uci]);
 
   airMopOkay(mop);
   return 0;

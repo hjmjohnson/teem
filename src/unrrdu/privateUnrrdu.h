@@ -42,6 +42,11 @@
 extern "C" {
 #endif
 
+#define ASP1_S (AIR_STRLEN_SMALL + 1)
+#define ASP1_M (AIR_STRLEN_MEDIUM + 1)
+#define ASP1_L (AIR_STRLEN_LARGE + 1)
+#define ASP1_H (AIR_STRLEN_HUGE + 1)
+
 #define UNRRDU_DILRR "UNRRDU_DEFAULT_IMPLICIT_LUT_RMAP_RESCALE"
 
 #define UNRRDU_DILRR_INFO(WUT)                                                          \
@@ -49,6 +54,29 @@ extern "C" {
   "control whether, with the \"-r\" option is not used, to rescale "                    \
   "data values to the domain of a " WUT " with an implicit domain "                     \
   "(by default rescaling does happen in this case).\n "
+
+/* NOTE: these SN_ string,size macros copy-pasta'd to other private<Lib>.h files:
+   SN_INCR: safely increments STR arg to point '\0'-termination of STR
+   SN_COPY: safely copies SRC to DST, then increments DST
+   SN_PRINTF: snprintf's into DST then increments DST */
+#define SN_INCR(STR, SIZE)                                                              \
+  do {                                                                                  \
+    size_t tmp_str_len_##STR = strlen(STR);                                             \
+    STR += tmp_str_len_##STR;                                                           \
+    SIZE -= tmp_str_len_##STR;                                                          \
+  } while (0)
+#define SN_COPY(DST, DST_SIZE, SRC)                                                     \
+  do {                                                                                  \
+    airStrcpy((DST), (DST_SIZE), (SRC));                                                \
+    SN_INCR(DST, DST_SIZE);                                                             \
+  } while (0)
+#define SN_PRINTF(DST, DST_SIZE, FMT, ...)                                              \
+  do {                                                                                  \
+    snprintf((DST), (DST_SIZE), (FMT), __VA_ARGS__);                                    \
+    SN_INCR(DST, DST_SIZE);                                                             \
+  } while (0)
+
+typedef unsigned int uint; /* uint is just more concise */
 
 /*
 Twisted C-preprocessor tricks.  The idea is to make it as simple as possible to add new
@@ -165,7 +193,6 @@ unu commands.  Functional programming meets the C pre-processor.  Therefore:
   F(undos)                                                                              \
   F(uncmt)                                                                              \
   F(save)
-
 /* xxx.c */
 /* Declare the extern unrrduCmds unrrdu_xxxCmd, for all xxx.  These are
    defined in as many different source files as there are commands. */
@@ -183,18 +210,6 @@ UNRRDU_MAP(UNRRDU_DECLARE)
 #define UNRRDU_CMD_HIDE(name, info)                                                     \
   const unrrduCmd unrrdu_##name##Cmd = {#name, info, unrrdu_##name##Main, AIR_TRUE}
 
-/* handling of "quiet quit", to avoid having a string of piped unu
-   commands generate multiple pages of unwelcome usage info */
-/* the environment variable to look for */
-#define UNRRDU_QUIET_QUIT_ENV "UNRRDU_QUIET_QUIT"
-/* the string to search for in the error message that signifies that
-   we should die quietly; this is clearly a hack because it depends on
-   the text of error messages set by a different library.  With more
-   work it could be made into less of a hack.  At worst the hack's
-   breakage will lead again to the many error messages that inspired
-   the hack in the first place , and will inspire fixing it again */
-#define UNRRDU_QUIET_QUIT_STR "[nrrd] _nrrdRead: immediately hit EOF"
-
 /*
 ** OPT_ADD_XXX
 **
@@ -207,92 +222,24 @@ UNRRDU_MAP(UNRRDU_DECLARE)
 */
 /* Nrrd *var */
 #define OPT_ADD_NIN(var, desc)                                                          \
-  hestOptAdd_1_Other(&opt, "i,input", "nin", &(var), "-", desc, nrrdHestNrrdNoTTY)
+  hestOptAdd_1_Other(&hopt, "i,input", "nin", &(var), "-", desc, nrrdHestNrrdNoTTY)
 
 /* char *var */
 #define OPT_ADD_NOUT(var, desc)                                                         \
-  hestOptAdd_1_String(&opt, "o,output", "nout", &(var), "-", desc)
+  hestOptAdd_1_String(&hopt, "o,output", "nout", &(var), "-", desc)
 
 /* unsigned int var */
 #define OPT_ADD_AXIS(var, desc)                                                         \
-  hestOptAdd_1_UInt(&opt, "a,axis", "axis", &(var), NULL, desc)
+  hestOptAdd_1_UInt(&hopt, "a,axis", "axis", &(var), NULL, desc)
 
 /* int *var; int saw */
 #define OPT_ADD_BOUND(name, needmin, var, deflt, desc, saw)                             \
-  hestOptAdd_Nv_Other(&opt, name, "pos0", needmin, -1, &(var), deflt, desc, &(saw),     \
+  hestOptAdd_Nv_Other(&hopt, name, "pos0", needmin, -1, &(var), deflt, desc, &(saw),    \
                       &unrrduHestPosCB)
 
 /* int var */
 #define OPT_ADD_TYPE(var, desc, dflt)                                                   \
-  hestOptAdd_1_Enum(&opt, "t,type", "type", &(var), dflt, desc, nrrdType)
-
-/*
-** USAGE, PARSE, SAVE
-**
-** These are macros at their worst and most fragile, because of how
-** many local variables are assumed.  This code is basically the same,
-** verbatim, across all the different unrrdu functions, and having
-** them as macros just shortens (without necessarily clarifying) their
-** code.
-**
-** The return value for generating usage information was changed from
-** 1 to 0 with the thought that merely asking for usage info shouldn't
-** be treated as an erroneous invocation; unu about and unu env (which
-** don't use this macro) had already been this way.
-*/
-#define USAGE(INFO)                                                                     \
-  if (!argc && !hparm->noArgsIsNoProblem) {                                             \
-    hestInfo(stdout, me, (INFO), hparm);                                                \
-    hestUsage(stdout, opt, me, hparm);                                                  \
-    hestGlossary(stdout, opt, hparm);                                                   \
-    airMopError(mop);                                                                   \
-    return 0;                                                                           \
-  }
-
-/*
-** NOTE: of all places it is inside the PARSE() macro that the
-** "quiet-quit" functionality is implemented; this is defensible
-** because all unu commands use PARSE
-*/
-#define PARSE(INFO)                                                                     \
-  if ((pret = hestParse(opt, argc, argv, &err, hparm))) {                               \
-    if (-1 == pret) {                                                                   \
-      /* hestOpt array malformed, this will explain how */                              \
-      fprintf(stderr, "%s: %s\n", me, err);                                             \
-      exit(1);                                                                          \
-    } else if (1 == pret || 2 == pret) {                                                \
-      if (!(getenv(UNRRDU_QUIET_QUIT_ENV)                                               \
-            && airEndsWith(err, UNRRDU_QUIET_QUIT_STR "\n"))) {                         \
-        fprintf(stderr, "%s: %s", me, err);                                             \
-        free(err);                                                                      \
-        hestUsage(stderr, opt, me, hparm);                                              \
-        /* Its gotten too annoying to always get this glossary; */                      \
-        /* unu <cmd> --help will print it. */                                           \
-        /* hestGlossary(stderr, opt, hparm); */                                         \
-        if (hparm && hparm->noArgsIsNoProblem) {                                        \
-          fprintf(stderr, "\nFor more info: \"%s --help\"\n", me);                      \
-        } else {                                                                        \
-          fprintf(stderr, "\nFor more info: \"%s\" or \"%s --help\"\n", me, me);        \
-        }                                                                               \
-      }                                                                                 \
-      airMopError(mop);                                                                 \
-      return 1;                                                                         \
-    } else {                                                                            \
-      /* . . . like tears . . . in rain. Time . . . to die. */                          \
-      exit(1);                                                                          \
-    }                                                                                   \
-  } else if (opt->helpWanted) {                                                         \
-    hestInfo(stdout, me, (INFO), hparm);                                                \
-    hestUsage(stdout, opt, me, hparm);                                                  \
-    hestGlossary(stdout, opt, hparm);                                                   \
-    return 0;                                                                           \
-  }
-
-/* For the (many) times that USAGE and PARSE are used together, useful
-   now that using INFO is part of how PARSE responds to --help */
-#define USAGE_OR_PARSE(INFO)                                                            \
-  USAGE(INFO)                                                                           \
-  PARSE(INFO)
+  hestOptAdd_1_Enum(&hopt, "t,type", "type", &(var), dflt, desc, nrrdType)
 
 #define SAVE(outS, nout, io)                                                            \
   if (nrrdSave((outS), (nout), (io))) {                                                 \

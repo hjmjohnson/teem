@@ -968,7 +968,7 @@ extern int nrrdSpaceVecExists(unsigned int sdim,
                                    const double vec[NRRD_SPACE_DIM_MAX]);
 extern void nrrdSpaceVecSetNaN(double vec[NRRD_SPACE_DIM_MAX]);
 /* ---- BEGIN non-NrrdIO */
-extern void nrrdSanityOrDie(const char *me);
+extern void nrrdSanityOrExit(const char *me);
 extern void nrrdSpaceVecSetZero(double vec[NRRD_SPACE_DIM_MAX]);
 extern void nrrdZeroSet(Nrrd *nout);
 extern void nrrdNaNSet(Nrrd *nout);

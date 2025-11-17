@@ -26,7 +26,7 @@ static const char *_baneGkms_infoInfoL
                "to create either 1-D or 2-D opacity functions.");
 
 static int /* Biff: 1 */
-baneGkms_infoMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+baneGkms_infoMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *opt = NULL;
   char *outS, *perr;
   Nrrd *hvol, *nout;

@@ -35,7 +35,7 @@ static const char *_tend_gradsInfoL
           "restarting with a different \"-seed\".");
 
 static int
-tend_gradsMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_gradsMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;

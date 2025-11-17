@@ -28,44 +28,41 @@ static const char *_unrrdu_diffInfoL
           "* Uses nrrdCompare");
 
 static int
-unrrdu_diffMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *err;
-  airArray *mop;
-  int pret;
-
+unrrdu_diffMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
   Nrrd *ninA, *ninB;
-  int quiet, exitstat, onlyData, differ, ret;
+  hestOptAdd_1_Other(&hopt, NULL, "ninA", &ninA, NULL, "First input nrrd.",
+                     nrrdHestNrrdNoTTY);
+  hestOptAdd_1_Other(&hopt, NULL, "ninB", &ninB, NULL, "Second input nrrd.",
+                     nrrdHestNrrdNoTTY);
   double epsilon;
-  char explain[AIR_STRLEN_LARGE + 1];
-
-  mop = airMopNew();
-  hestOptAdd_1_Other(&opt, NULL, "ninA", &ninA, NULL, "First input nrrd.",
-                     nrrdHestNrrdNoTTY);
-  hestOptAdd_1_Other(&opt, NULL, "ninB", &ninB, NULL, "Second input nrrd.",
-                     nrrdHestNrrdNoTTY);
-  hestOptAdd_1_Double(&opt, "eps,epsilon", "eps", &epsilon, "0.0",
+  hestOptAdd_1_Double(&hopt, "eps,epsilon", "eps", &epsilon, "0.0",
                       "threshold for allowable difference in values in "
                       "data values");
-  hestOptAdd_Flag(&opt, "q,quiet", &quiet,
+  int quiet, exitstat, onlyData;
+  hestOptAdd_Flag(&hopt, "q,quiet", &quiet,
                   "be quiet (like regular diff), so that nothing is printed "
                   "if the nrrds are the same");
-  hestOptAdd_Flag(&opt, "x,exit", &exitstat,
+  hestOptAdd_Flag(&hopt, "x,exit", &exitstat,
                   "use the exit status (like regular diff) to indicate if "
                   "there was a significant difference (as if it's an error)");
-  hestOptAdd_Flag(&opt, "od,onlydata", &onlyData,
+  hestOptAdd_Flag(&hopt, "od,onlydata", &onlyData,
                   "Compare data values only, excluding array meta-data");
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
 
-  USAGE_OR_PARSE(_unrrdu_diffInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_diffInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
+  int differ;
+  char explain[AIR_STRLEN_LARGE + 1];
   if (nrrdCompare(ninA, ninB, onlyData, epsilon, &differ, explain)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error doing compare:\n%s", me, err);
     airMopError(mop);
     return 1;
   }
+  int ret;
   if (differ) {
     printf("%s: %s differ: %s\n", me, onlyData ? "data values" : "nrrds", explain);
     ret = 1;

@@ -26,16 +26,10 @@ static const char *_unrrdu_insetInfoL
           "* Uses nrrdInset");
 
 static int
-unrrdu_insetMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *nout, *nsub;
-  unsigned int ai, minLen;
-  int pret;
+unrrdu_insetMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
   long int *minOff;
-  size_t min[NRRD_DIM_MAX];
-  airArray *mop;
-
+  uint minLen;
   OPT_ADD_BOUND("min,minimum", 1, minOff, NULL,
                 "coordinates of where to locate sub-volume within "
                 "input nrrd.\n "
@@ -43,37 +37,39 @@ unrrdu_insetMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                 "\b\bo M, M+<int>, M-<int> give index relative "
                 "to the last sample on the axis (M == #samples-1).",
                 minLen);
-  hestOptAdd_1_Other(&opt, "s,subset", "nsub", &(nsub), NULL,
+  Nrrd *nsub = NULL;
+  hestOptAdd_1_Other(&hopt, "s,subset", "nsub", &nsub, NULL,
                      "sub-region nrrd.  This the data to be inset in \"nin\"",
                      nrrdHestNrrdNoTTY);
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
-
-  USAGE_OR_PARSE(_unrrdu_insetInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_insetInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
   if (!(minLen == nin->dim)) {
     fprintf(stderr, "%s: # min coords (%u) != nrrd dim (%u)\n", me, minLen, nin->dim);
     airMopError(mop);
     return 1;
   }
-  for (ai = 0; ai < nin->dim; ai++) {
+  for (uint ai = 0; ai < nin->dim; ai++) {
     if (-1 == minOff[0 + 2 * ai]) {
       fprintf(stderr, "%s: can't use m+<int> specification for axis %u min\n", me, ai);
       airMopError(mop);
       return 1;
     }
   }
-  for (ai = 0; ai <= nin->dim - 1; ai++) {
+  size_t min[NRRD_DIM_MAX];
+  for (uint ai = 0; ai <= nin->dim - 1; ai++) {
     min[ai] = minOff[0 + 2 * ai] * (nin->axis[ai].size - 1) + minOff[1 + 2 * ai];
   }
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
-
   if (nrrdInset(nout, nin, nsub, min)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error insetting nrrd:\n%s", me, err);

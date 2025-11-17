@@ -75,7 +75,7 @@ main(int argc, const char *argv[]) {
 
   mop = airMopNew();
   me = argv[0];
-  hparm = hestParmNew();
+  hparm = hestParmMopNew();
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
   hparm->elideSingleOtherType = AIR_TRUE;
   hparm->respectDashDashHelp = AIR_TRUE;
@@ -147,7 +147,7 @@ main(int argc, const char *argv[]) {
                   "guess orientation info");
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-",
                       "output array, when probing on polydata vertices");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, probeInfo);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, probeInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
@@ -156,7 +156,7 @@ main(int argc, const char *argv[]) {
     /* 0 indeed always means "unknown" for any gageKind */
     fprintf(stderr, "%s: couldn't parse \"%s\" as measure of \"%s\" volume\n", me, whatS,
             kind->name);
-    hestUsage(stderr, hopt, me, hparm);
+    hestUsage(stderr, hopt, me, hparm, AIR_FALSE /* oneline */);
     hestGlossary(stderr, hopt, hparm);
     airMopError(mop);
     return 1;
@@ -167,7 +167,7 @@ main(int argc, const char *argv[]) {
             "%s: gave line info (\"-pl\") but not "
             "# samples (\"-pln\")",
             me);
-    hestUsage(stderr, hopt, me, hparm);
+    hestUsage(stderr, hopt, me, hparm, AIR_FALSE /* oneline */);
     hestGlossary(stderr, hopt, hparm);
     airMopError(mop);
     return 1;

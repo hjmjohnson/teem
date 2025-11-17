@@ -74,82 +74,78 @@ pathPrint(const char *me, const limnCbfPath *path) {
 }
 
 static int
-limnPu_cbfitMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+limnPu_cbfitMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
-  char *err, *perr;
-  airArray *mop;
-  int pret;
-
-  Nrrd *_nin, *nin;
-  double *xy, deltaThresh, psi, cangle, epsilon, nrpIota, time0, dtime, scale, nrpCap,
-    synthPow, fitTT[4];
-  unsigned int size0, size1, ii, synthNum, pNum, nrpIterMax;
-  int loop, roll, petc, verbose, tvt[4], fitSingleLoHi[2], fitMultiLoHi[2], corner2[2];
-  char *synthOut, buff[AIR_STRLEN_SMALL + 1];
-  limnCbfCtx *fctx;
-  limnCbfPath *path;
-  limnCbfPoints *lpnt;
-
-  mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  fctx = limnCbfCtxNew();
+  // making mop early since we want hest to parse fields of fctx
+  airArray *mop = airMopNew();
+  limnCbfCtx *fctx = limnCbfCtxNew();
   airMopAdd(mop, fctx, (airMopper)limnCbfCtxNix, airMopAlways);
-
+  Nrrd *_nin = NULL;
   hestOptAdd_1_Other(&hopt, "i", "input", &_nin, NULL, "input xy points", nrrdHestNrrd);
+  int loop;
   hestOptAdd_Flag(&hopt, "loop", &loop,
                   "-i input xy points are actually a loop: the first point logically "
                   "follows the last point");
-  hestOptAdd_1_Int(
-    &hopt, "roll", "n", &roll, "0",
-    "if points are in a loop, then it shouldn't really matter which point has index 0. "
-    "For debugging, roll the input data by this amount prior to doing any work.");
-  hestOptAdd_1_Int(&hopt, "v", "verbose", &verbose, "1", "verbosity level");
+  int roll;
+  hestOptAdd_1_Int(&hopt, "roll", "n", &roll, "0",
+                   "if points are in a loop, then it shouldn't really matter which "
+                   "point has index 0. For debugging, roll the input data by this "
+                   "amount prior to doing any work.");
+  hestOptAdd_1_Int(&hopt, "v", "verbose", &(fctx->verbose), "1", "verbosity level");
+  uint synthNum;
   hestOptAdd_1_UInt(&hopt, "synthn", "num", &synthNum, "51",
                     "if saving spline sampling to -so, how many sample.");
-  hestOptAdd_1_String(
-    &hopt, "syntho", "synth out", &synthOut, "",
-    "if non-empty, input xy points are actually either: (1) 2-by-4 array of control "
-    "points for a single spline segment, or (2) an 8-by-N array for a sequence of "
-    "splines; either way the path should be sampled -sn times, and this is the filename "
-    "into which to save the synthesized xy pts, and then quit without any fitting.");
+  char *synthOut;
+  hestOptAdd_1_String(&hopt, "syntho", "synth out", &synthOut, "",
+                      "if non-empty, input xy points are actually either: "
+                      "(1) 2-by-4 array of control points for a single spline "
+                      "segment, or (2) an 8-by-N array for a sequence of "
+                      "splines; either way the path should be sampled -sn times, "
+                      "and this is the filename into which to save the synthesized "
+                      "xy pts, and then quit without any fitting.");
+  double synthPow;
   hestOptAdd_1_Double(&hopt, "sup", "expo", &synthPow, "1",
                       "when synthesizing data on a single segment, warp U parameters "
                       "by raising to this power.");
+  int tvt[4];
   hestOptAdd_4_Int(&hopt, "tvt", "loi hii vvi 1s", tvt, "0 0 0 -1",
                    "if last value is >= 0: quit after making single call to limnCbfTVT, "
                    "with final 1s value being passed for oneSided");
-  sprintf(buff, "%u", fctx->nrpIterMax);
-  hestOptAdd_1_UInt(&hopt, "nim", "max", &nrpIterMax, buff,
+  char buff[AIR_STRLEN_SMALL + 1];
+  snprintf(buff, sizeof(buff), "%u", fctx->nrpIterMax);
+  hestOptAdd_1_UInt(&hopt, "nim", "max", &(fctx->nrpIterMax), buff,
                     "max # nrp iterations to run");
-  sprintf(buff, "%.17g", fctx->nrpDeltaThresh);
-  hestOptAdd_1_Double(&hopt, "deltathr", "delta", &deltaThresh, buff,
+  airSinglePrintf(NULL, buff, sizeof(buff), "%lg", fctx->nrpDeltaThresh);
+  hestOptAdd_1_Double(&hopt, "deltathr", "delta", &(fctx->nrpDeltaThresh), buff,
                       "(if non-zero) stop nrp when change in spline "
                       "domain sampling goes below this");
   /* fctx does not come with useful default epsilon */
-  hestOptAdd_1_Double(&hopt, "eps", "dist", &epsilon, "0.01",
+  hestOptAdd_1_Double(&hopt, "eps", "dist", &(fctx->epsilon), "0.01",
                       "(if non-zero) stop nrp when distance between spline "
                       "and points goes below this");
-  sprintf(buff, "%.17g", fctx->nrpIota);
-  hestOptAdd_1_Double(&hopt, "iota", "scl", &nrpIota, buff,
+  airSinglePrintf(NULL, buff, sizeof(buff), "%lg", fctx->nrpIota);
+  hestOptAdd_1_Double(&hopt, "iota", "scl", &(fctx->nrpIota), buff,
                       "scaling on nrp epsilon check");
-  sprintf(buff, "%.17g", fctx->nrpPsi);
-  hestOptAdd_1_Double(&hopt, "psi", "psi", &psi, buff, "psi, of course");
-  sprintf(buff, "%.17g", fctx->cornerAngle);
-  hestOptAdd_1_Double(&hopt, "ca", "angle", &cangle, buff,
+  airSinglePrintf(NULL, buff, sizeof(buff), "%lg", fctx->nrpPsi);
+  hestOptAdd_1_Double(&hopt, "psi", "psi", &(fctx->nrpPsi), buff, "psi, of course");
+  airSinglePrintf(NULL, buff, sizeof(buff), "%lg", fctx->cornerAngle);
+  hestOptAdd_1_Double(&hopt, "ca", "angle", &(fctx->cornerAngle), buff,
                       "angle indicating a corner, or, "
                       "0 to say that no corner finding should be done");
-  sprintf(buff, "%.17g", fctx->scale);
-  hestOptAdd_1_Double(&hopt, "scl", "scale", &scale, buff,
+  airSinglePrintf(NULL, buff, sizeof(buff), "%lg", fctx->scale);
+  hestOptAdd_1_Double(&hopt, "scl", "scale", &(fctx->scale), buff,
                       "scale for geometry estimation");
-  sprintf(buff, "%.17g", fctx->nrpCap);
-  hestOptAdd_1_Double(&hopt, "cap", "cap", &nrpCap, buff,
+  airSinglePrintf(NULL, buff, sizeof(buff), "%lg", fctx->nrpCap);
+  hestOptAdd_1_Double(&hopt, "cap", "cap", &(fctx->nrpCap), buff,
                       "nrp cap parameterization change");
+  int fitSingleLoHi[2];
   hestOptAdd_2_Int(&hopt, "fs", "loi hii", fitSingleLoHi, "-1 -1",
                    "(if loi is >= 0) just do a single call to limnCbfSingle and "
                    "quit, using the -i input points, and fitting a spline between "
                    "the loi and hii indices given here. A negative hii will be "
                    "incremented by the number of points, so -1 works to indicate "
                    "the last point.");
+  double fitTT[4];
   hestOptAdd_4_Double(&hopt, "ftt", "T1x T1y T2x T2y", fitTT, "0 0 0 0",
                       "(if non-zero): help out call to either -fs limnCbfSingle or -fm "
                       "limnCbfMulti by giving these vectors for T1 (outgoing from V0) "
@@ -157,33 +153,37 @@ limnPu_cbfitMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                       "the data. If this is used; V0 and V3 are set as the first and "
                       "last points (there is currently no ability to set only some of "
                       "the 4 vector args to limnCbfSingle or limnCbfMulti)");
+  int fitMultiLoHi[2];
   hestOptAdd_2_Int(&hopt, "fm", "loi hii", fitMultiLoHi, "-1 -1",
                    "(if loi is >= 0) just do a single call to limnCbfMulti and "
                    "quit, using the -i input points, fitting a multi-spline path "
                    "between the loi and hii indices given here. A negative hii will be "
                    "incremented by the number of points, so -1 works to indicate "
                    "the last point.");
+  int corner2[2];
   hestOptAdd_2_Int(&hopt, "corn", "val nms", corner2, "0 0",
                    "if 1st val non-zero: call limnCbfCorners and quit. fctx->cornerFind "
                    "is set to true if 1st value given here is positive, fctx->cornerNMS "
                    "is set to !! of second value");
+  int petc;
   hestOptAdd_Flag(&hopt, "petc", &petc, "(Press Enter To Continue) ");
   /*
   hestOptAdd_1_String(&hopt, NULL, "output", &out, NULL, "output nrrd filename");
    */
 
-  USAGE(myinfo);
-  PARSE(myinfo);
+  hestParseOrExit(hopt, argc, argv, hparm, me, myinfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  char *err;
 
   if (!(2 == _nin->dim)) {
     fprintf(stderr, "%s: need 2-D (not %u) input array\n", me, _nin->dim);
     airMopError(mop);
     return 1;
   }
-  size0 = AIR_UINT(_nin->axis[0].size);
-  size1 = AIR_UINT(_nin->axis[1].size);
+
+  uint size0 = AIR_UINT(_nin->axis[0].size);
+  uint size1 = AIR_UINT(_nin->axis[1].size);
   if (airStrlen(synthOut)) {
     if (!((2 == size0 && 4 == size1) || (8 == size0))) {
       fprintf(stderr,
@@ -199,7 +199,7 @@ limnPu_cbfitMain(int argc, const char **argv, const char *me, hestParm *hparm) {
     return 1;
   }
 
-  nin = nrrdNew();
+  Nrrd *nin = nrrdNew();
   airMopAdd(mop, nin, (airMopper)nrrdNuke, airMopAlways);
   if (nrrdConvert(nin, _nin, nrrdTypeDouble)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
@@ -207,10 +207,9 @@ limnPu_cbfitMain(int argc, const char **argv, const char *me, hestParm *hparm) {
     airMopError(mop);
     return 1;
   }
+
+  double *xy;
   if (roll) {
-    Nrrd *ntmp;
-    double *tmp;
-    int pnum, pi;
     if (airStrlen(synthOut)) {
       fprintf(stderr, "%s: can only roll (%d) input XY points, not splines\n", me, roll);
       airMopError(mop);
@@ -227,7 +226,7 @@ limnPu_cbfitMain(int argc, const char **argv, const char *me, hestParm *hparm) {
       airMopError(mop);
       return 1;
     }
-    ntmp = nrrdNew();
+    Nrrd *ntmp = nrrdNew();
     airMopAdd(mop, ntmp, (airMopper)nrrdNuke, airMopAlways);
     if (nrrdCopy(ntmp, nin)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
@@ -235,10 +234,10 @@ limnPu_cbfitMain(int argc, const char **argv, const char *me, hestParm *hparm) {
       airMopError(mop);
       return 1;
     }
-    pnum = AIR_INT(nin->axis[1].size);
+    int pnum = AIR_INT(nin->axis[1].size);
     xy = nin->data;
-    tmp = ntmp->data;
-    for (pi = 0; pi < pnum; pi++) {
+    double *tmp = ntmp->data;
+    for (int pi = 0; pi < pnum; pi++) {
       int pt = AIR_MOD(pi - roll, pnum);
       ELL_2V_COPY(xy + 2 * pi, tmp + 2 * pt);
       if (!pi) {
@@ -247,7 +246,6 @@ limnPu_cbfitMain(int argc, const char **argv, const char *me, hestParm *hparm) {
       }
     }
   }
-
   if (airStrlen(synthOut)) {
     /* synthesize data from control points */
     double *cpt = (double *)nin->data;
@@ -262,16 +260,15 @@ limnPu_cbfitMain(int argc, const char **argv, const char *me, hestParm *hparm) {
     xy = AIR_MALLOC(2 * synthNum, double);
     airMopAdd(mop, xy, airFree, airMopAlways);
     if (2 == size0) {
-      unsigned int ci;
       fprintf(stderr, "%s: synthetically sampling single spline with %u points\n", me,
               synthNum);
-      for (ci = 0; ci < 8; ci++) {
+      for (uint ci = 0; ci < 8; ci++) {
         seg.xy[ci] = cpt[ci];
       }
       fprintf(stderr, "%s: synth seg: (%g,%g) -- (%g,%g) -- (%g,%g) -- (%g,%g)\n", me,
               seg.xy[0], seg.xy[1], seg.xy[2], seg.xy[3], seg.xy[4], seg.xy[5],
               seg.xy[6], seg.xy[7]);
-      for (ii = 0; ii < synthNum; ii++) {
+      for (uint ii = 0; ii < synthNum; ii++) {
         double uu = AIR_AFFINE(0, ii, synthNum - 1, 0, 1);
         uu = pow(uu, synthPow);
         limnCbfSegEval(xy + 2 * ii, &seg, uu);
@@ -306,7 +303,8 @@ limnPu_cbfitMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   }
 
   xy = (double *)nin->data;
-  pNum = (unsigned int)nin->axis[1].size;
+  uint pNum = (uint)nin->axis[1].size;
+  limnCbfPoints *lpnt;
   if (!(lpnt = limnCbfPointsNew(xy, nrrdTypeDouble, 2, pNum, loop))) {
     airMopAdd(mop, err = biffGetDone(LIMN), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble setting up points:\n%s", me, err);
@@ -314,18 +312,9 @@ limnPu_cbfitMain(int argc, const char **argv, const char *me, hestParm *hparm) {
     return 1;
   }
   airMopAdd(mop, lpnt, (airMopper)limnCbfPointsNix, airMopAlways);
-  path = limnCbfPathNew(0);
+  limnCbfPath *path = limnCbfPathNew(0);
   airMopAdd(mop, path, (airMopper)limnCbfPathNix, airMopAlways);
-  fctx->verbose = verbose;
-  fctx->nrpIterMax = nrpIterMax;
-  fctx->scale = scale;
-  fctx->nrpCap = nrpCap;
-  fctx->epsilon = epsilon;
-  fctx->nrpDeltaThresh = deltaThresh;
-  fctx->nrpIota = nrpIota;
-  fctx->nrpPsi = psi;
-  if (cangle) {
-    fctx->cornerAngle = cangle;
+  if (fctx->cornerAngle) {
     fctx->cornerFind = AIR_TRUE;
   } else {
     fctx->cornerFind = AIR_FALSE;
@@ -383,7 +372,7 @@ limnPu_cbfitMain(int argc, const char **argv, const char *me, hestParm *hparm) {
            fctx->nrpIterDone, fctx->nrpPuntFlop, fctx->distMax, fctx->distMaxIdx,
            lpnt->num, fctx->distBig);
     printf("%s: limnCbfSingle spline result:\n", me);
-    for (ii = 0; ii < 4; ii++) {
+    for (uint ii = 0; ii < 4; ii++) {
       printf("%g %g\n", seg.xy[0 + 2 * ii], seg.xy[1 + 2 * ii]);
     }
     airMopOkay(mop);
@@ -435,7 +424,7 @@ limnPu_cbfitMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   }
 
   /* whoa - we're actually here to call limnCbfGo! */
-  time0 = airTime();
+  double time0 = airTime();
   if (petc) {
     fprintf(stderr, "%s: Press Enter to Continue ... ", me);
     fflush(stderr);
@@ -449,8 +438,7 @@ limnPu_cbfitMain(int argc, const char **argv, const char *me, hestParm *hparm) {
     airMopError(mop);
     return 1;
   }
-
-  dtime = (airTime() - time0) * 1000;
+  double dtime = (airTime() - time0) * 1000;
   printf("%s: time=%g ms   iterDone=%u   deltaDone=%g   distMax=%g @ %u\n", me, dtime,
          fctx->nrpIterDone, fctx->nrpDeltaDone, fctx->distMax, fctx->distMaxIdx);
   pathPrint(me, path);

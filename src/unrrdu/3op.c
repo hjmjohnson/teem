@@ -29,15 +29,10 @@ static const char *_unrrdu_3opInfoL
           "* Uses nrrdArithIterTernaryOp or (with -w) nrrdArithIterTernaryOpSelect");
 
 static int
-unrrdu_3opMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  NrrdIter *in1, *in2, *in3;
-  Nrrd *nout, *ntmp = NULL;
-  int op, type, E, pret, which;
-  airArray *mop;
-
-  hestOptAdd_1_Enum(&opt, NULL, "operator", &op, NULL,
+unrrdu_3opMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  int op;
+  hestOptAdd_1_Enum(&hopt, NULL, "operator", &op, NULL,
                     "Ternary operator. Possibilities include:\n "
                     "\b\bo \"+\", \"x\": sum or product of three values\n "
                     "\b\bo \"min\", \"max\": minimum, maximum\n "
@@ -67,31 +62,34 @@ unrrdu_3opMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                     "\b\bo \"rician\": evaluate (at 1st value) Rician with mean=2nd "
                     "and stdv=3rd value",
                     nrrdTernaryOp);
-  hestOptAdd_1_Other(&opt, NULL, "in1", &in1, NULL,
+  NrrdIter *in1, *in2, *in3;
+  hestOptAdd_1_Other(&hopt, NULL, "in1", &in1, NULL,
                      "First input.  Can be a single value or a nrrd.", nrrdHestIter);
-  hestOptAdd_1_Other(&opt, NULL, "in2", &in2, NULL,
+  hestOptAdd_1_Other(&hopt, NULL, "in2", &in2, NULL,
                      "Second input.  Can be a single value or a nrrd.", nrrdHestIter);
-  hestOptAdd_1_Other(&opt, NULL, "in3", &in3, NULL,
+  hestOptAdd_1_Other(&hopt, NULL, "in3", &in3, NULL,
                      "Third input.  Can be a single value or a nrrd.", nrrdHestIter);
-  hestOptAdd_1_Other(&opt, "t,type", "type", &type, "default",
+  int type;
+  hestOptAdd_1_Other(&hopt, "t,type", "type", &type, "default",
                      "type to convert all nrrd inputs to, prior to "
                      "doing operation.  This also determines output type. "
                      "By default (not using this option), the types of the input "
                      "nrrds are left unchanged.",
                      &unrrduHestMaybeTypeCB);
-  hestOptAdd_1_Int(&opt, "w,which", "arg", &which, "-1",
+  int which;
+  hestOptAdd_1_Int(&hopt, "w,which", "arg", &which, "-1",
                    "Which argument (0, 1, or 2) should be used to determine the "
                    "shape of the output nrrd. By default (not using this option), "
                    "the first non-constant argument is used. ");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_3opInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_3opInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
 
   /*
@@ -101,7 +99,8 @@ unrrdu_3opMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   */
   if (nrrdTypeDefault != type) {
     /* they wanted to convert nrrds to some other type first */
-    E = 0;
+    Nrrd *ntmp;
+    int E = 0;
     if (in1->ownNrrd) {
       if (!E) E |= nrrdConvert(ntmp = nrrdNew(), in1->ownNrrd, type);
       if (!E) nrrdIterSetOwnNrrd(in1, ntmp);

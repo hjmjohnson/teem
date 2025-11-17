@@ -27,62 +27,56 @@ static const char *_unrrdu_axinfoInfoL
           "* Uses no particular function; just sets fields in the NrrdAxisInfo");
 
 static int
-unrrdu_axinfoMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err, *label, *units, *centerStr, *kindStr, *_dirStr, *dirStr, *mmStr[2];
-  Nrrd *nin, *nout;
-  int pret, center, kind;
-  unsigned int *axes, axesLen, axi, mmIdx, spIdx;
-  double mm[2], spc, sdir[NRRD_SPACE_DIM_MAX];
-  airArray *mop;
-
-  hestOptAdd_Nv_UInt(&opt, "a,axes", "ax0", 1, -1, &axes, NULL,
+unrrdu_axinfoMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  uint *axes, axesLen;
+  hestOptAdd_Nv_UInt(&hopt, "a,axes", "ax0", 1, -1, &axes, NULL,
                      "the one or more axes that should be modified", &axesLen);
-  hestOptAdd_1_String(&opt, "l,label", "label", &label, "",
+  char *label;
+  hestOptAdd_1_String(&hopt, "l,label", "label", &label, "",
                       "label to associate with axis");
-  hestOptAdd_1_String(&opt, "u,units", "units", &units, "", "units of measurement");
-  mmIdx = hestOptAdd_2_String(&opt, "mm,minmax", "min max", mmStr, "nan nan",
-                              "min and max values along axis");
-  spIdx = hestOptAdd_1_Double(&opt, "sp,spacing", "spacing", &spc, "nan",
-                              "spacing between samples along axis");
+  char *units;
+  hestOptAdd_1_String(&hopt, "u,units", "units", &units, "", "units of measurement");
+  char *mmStr[2];
+  uint mmIdx = hestOptAdd_2_String(&hopt, "mm,minmax", "min max", mmStr, "nan nan",
+                                   "min and max values along axis");
+  double spc;
+  uint spIdx = hestOptAdd_1_Double(&hopt, "sp,spacing", "spacing", &spc, "nan",
+                                   "spacing between samples along axis");
   /* There used to be a complaint here about how hest doesn't allow you to learn whether
   the option was parsed from the supplied default versus from the command-line itself.
   That issue has been solved: opt[oi].source now takes on values from the hestSource*
   enum; axinsert.c now provides an example of this. However, parsing from a string is
   still needed here, because here we need to allow the string that represents "no
   centering"; this is a current weakness of airEnumStr.
-  hestOptAdd_1_Enum(&opt, "c,center", "center", &cent, "unknown",
+  hestOptAdd_1_Enum(&hopt, "c,center", "center", &cent, "unknown",
                     "centering of axis: \"cell\" or \"node\"",
                     nrrdCenter);
   */
-  hestOptAdd_1_String(&opt, "c,center", "center", &centerStr, "",
+  char *centerStr;
+  hestOptAdd_1_String(&hopt, "c,center", "center", &centerStr, "",
                       "axis centering: \"cell\" or \"node\".  Not using this option "
                       "leaves the centering as it is on input");
-  hestOptAdd_1_String(&opt, "dir,direction", "svec", &_dirStr, "",
+  char *_dirStr;
+  hestOptAdd_1_String(&hopt, "dir,direction", "svec", &_dirStr, "",
                       "(NOTE: must quote vector) The \"space direction\": the vector "
                       "in space spanned by incrementing (by one) the axis index.");
-  hestOptAdd_1_String(&opt, "k,kind", "kind", &kindStr, "",
+  char *kindStr;
+  hestOptAdd_1_String(&hopt, "k,kind", "kind", &kindStr, "",
                       "axis kind. Not using this option "
                       "leaves the kind as it is on input");
-
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_axinfoInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_axinfoInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  for (axi = 0; axi < axesLen; axi++) {
-    if (!(axes[axi] < nin->dim)) {
-      fprintf(stderr, "%s: axis %u not in valid range [0,%u]\n", me, axes[axi],
-              nin->dim - 1);
-      airMopError(mop);
-      return 1;
-    }
-  }
   /* parse the strings given via -mm */
+  double mm[2];
   if (2
       != airSingleSscanf(mmStr[0], "%lf", mm + 0)
            + airSingleSscanf(mmStr[1], "%lf", mm + 1)) {
@@ -94,7 +88,7 @@ unrrdu_axinfoMain(int argc, const char **argv, const char *me, hestParm *hparm) 
     return 1;
   }
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
   if (nrrdCopy(nout, nin)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
@@ -102,6 +96,8 @@ unrrdu_axinfoMain(int argc, const char **argv, const char *me, hestParm *hparm) 
     airMopError(mop);
     return 1;
   }
+  char *dirStr;
+  double sdir[NRRD_SPACE_DIM_MAX];
   if (airStrlen(_dirStr)) {
     if (!nin->spaceDim) {
       fprintf(stderr,
@@ -128,7 +124,7 @@ unrrdu_axinfoMain(int argc, const char **argv, const char *me, hestParm *hparm) 
     dirStr = NULL;
   }
 
-  for (axi = 0; axi < axesLen; axi++) {
+  for (uint axi = 0; axi < axesLen; axi++) {
     unsigned int axis;
     axis = axes[axi];
     if (strlen(label)) {
@@ -139,7 +135,7 @@ unrrdu_axinfoMain(int argc, const char **argv, const char *me, hestParm *hparm) 
       nout->axis[axis].units = (char *)airFree(nout->axis[axis].units);
       nout->axis[axis].units = airStrdup(units);
     }
-    if (hestSourceUser(opt[mmIdx].source)) {
+    if (hestSourceUser(hopt[mmIdx].source)) {
       /* if it came from user, set the value, even if its nan. Actually,
          especially if its nan: that is the purpose of this extra logic */
       nout->axis[axis].min = mm[0];
@@ -152,7 +148,7 @@ unrrdu_axinfoMain(int argc, const char **argv, const char *me, hestParm *hparm) 
         nout->axis[axis].max = mm[1];
       }
     }
-    if (hestSourceUser(opt[spIdx].source)) {
+    if (hestSourceUser(hopt[spIdx].source)) {
       /* same logic as with min,max above */
       nout->axis[axis].spacing = spc;
     } else {
@@ -166,6 +162,7 @@ unrrdu_axinfoMain(int argc, const char **argv, const char *me, hestParm *hparm) 
     }
     */
     if (airStrlen(centerStr)) {
+      int center;
       if (!strcmp("none", centerStr) || !strcmp("???", centerStr)) {
         center = nrrdCenterUnknown;
       } else {
@@ -179,6 +176,7 @@ unrrdu_axinfoMain(int argc, const char **argv, const char *me, hestParm *hparm) 
       nout->axis[axis].center = center;
     }
     if (airStrlen(kindStr)) {
+      int kind;
       if (!strcmp("none", kindStr) || !strcmp("???", kindStr)) {
         kind = nrrdKindUnknown;
       } else {

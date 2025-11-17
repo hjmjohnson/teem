@@ -54,7 +54,7 @@ main(int argc, const char *argv[]) {
              &numA);
   hestOptAdd(&hopt, "b", "vals", airTypeUInt, 1, -1, &srcB, NULL, "list of values",
              &numB);
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
+  hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
   mop = airMopNew();
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);

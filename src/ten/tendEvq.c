@@ -31,7 +31,7 @@ static const char *_tend_evqInfoL
      "anisotropy metric.");
 
 static int
-tend_evqMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_evqMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;

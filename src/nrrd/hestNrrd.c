@@ -62,7 +62,11 @@ parserBoth(void *ptr,
       airStrcpy(err, AIR_STRLEN_HUGE + 1, nerr);
       airMopError(mop);
       *nrrdP = NULL;
-      return (strstr(err, "EOF") ? 2 : 1);
+      /* THIS is where the sneaky EOF-indicating parse return comes from.
+         it is based looking for _nrrdReadHitEOF in the biff error string
+         we just got from biffGetDone(NRRD) (and copied into given `err` buffer);
+         if we see that EOF-indicating error message return 2, else 1. */
+      return (strstr(err, _nrrdReadHitEOF) ? 2 : 1);
     }
     airMopOkay(mop);
   }
@@ -261,7 +265,8 @@ _nrrdHestIterParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
       nerr = biffGetDone(NRRD);
       airStrcpy(err, AIR_STRLEN_HUGE + 1, nerr);
       airMopError(mop);
-      return 1;
+      /* COPY of sneaky EOF-indicating parse return in parserBoth() above */
+      return (strstr(err, _nrrdReadHitEOF) ? 2 : 1);
     } else {
       /* fopen() failed, so it probably wasn't meant to be a filename */
       free(biffGetDone(NRRD));

@@ -99,7 +99,7 @@ main(int argc, const char *argv[]) {
   hestOptAdd(&hopt, "c", "conv", airTypeDouble, 1, 1, &(tip->convEps), "0.0001",
              "convergence threshold of length fraction");
 
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
+  hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

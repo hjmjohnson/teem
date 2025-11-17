@@ -26,7 +26,7 @@ static const char *_tend_avgInfoL
           "The individual tensors may be averaged in various ways.");
 
 static int
-tend_avgMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_avgMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;

@@ -28,27 +28,20 @@ static const char *_unrrdu_permuteInfoL
           "* Uses nrrdAxesPermute");
 
 static int
-unrrdu_permuteMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *nout;
-  unsigned int *perm, permLen;
-  int pret;
-  airArray *mop;
-
-  hestOptAdd_Nv_UInt(&opt, "p,permute", "ax0 ax1", 1, -1, &perm, NULL,
+unrrdu_permuteMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  uint *perm, permLen;
+  hestOptAdd_Nv_UInt(&hopt, "p,permute", "ax0 ax1", 1, -1, &perm, NULL,
                      "new axis ordering", &permLen);
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
-
-  USAGE_OR_PARSE(_unrrdu_permuteInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_permuteInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
   if (!(permLen == nin->dim)) {
     fprintf(stderr, "%s: # axes in permutation (%u) != nrrd dim (%u)\n", me, permLen,
@@ -57,6 +50,8 @@ unrrdu_permuteMain(int argc, const char **argv, const char *me, hestParm *hparm)
     return 1;
   }
 
+  Nrrd *nout = nrrdNew();
+  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
   if (nrrdAxesPermute(nout, nin, perm)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error permuting nrrd:\n%s", me, err);

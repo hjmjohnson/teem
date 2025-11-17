@@ -24,7 +24,7 @@
 static const char *_tend_evecInfoL = (INFO ". ");
 
 static int
-tend_evecMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_evecMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;

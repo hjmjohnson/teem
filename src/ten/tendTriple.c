@@ -26,7 +26,7 @@ static const char *_tend_tripleInfoL
           "and lots of other things.");
 
 static int
-tend_tripleMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_tripleMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;

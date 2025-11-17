@@ -30,17 +30,10 @@ static const char *_unrrdu_w2iInfoL
           "* Uses NRRD_IDX macro");
 
 static int
-unrrdu_w2iMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  airArray *mop;
-  int pret;
-  char *err;
-
+unrrdu_w2iMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
   int center;
-  double minPos, maxPos, pos, indx, size;
-
-  mop = airMopNew();
-  hestOptAdd_1_Enum(&opt, NULL, "center", &center, NULL,
+  hestOptAdd_1_Enum(&hopt, NULL, "center", &center, NULL,
                     "which centering applies to the quantized position.\n "
                     "Possibilities are:\n "
                     "\b\bo \"cell\": for histogram bins, quantized values, and "
@@ -48,20 +41,23 @@ unrrdu_w2iMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                     "\b\bo \"node\": for non-trivially interpolated "
                     "sample points",
                     nrrdCenter);
-  hestOptAdd_1_Double(&opt, NULL, "minPos", &minPos, NULL,
+  double minPos, maxPos, size, pos;
+  hestOptAdd_1_Double(&hopt, NULL, "minPos", &minPos, NULL,
                       "smallest position associated with index 0");
-  hestOptAdd_1_Double(&opt, NULL, "maxPos", &maxPos, NULL,
+  hestOptAdd_1_Double(&hopt, NULL, "maxPos", &maxPos, NULL,
                       "highest position associated with highest index");
-  hestOptAdd_1_Double(&opt, NULL, "num", &size, NULL,
+  hestOptAdd_1_Double(&hopt, NULL, "num", &size, NULL,
                       "number of intervals into which position has been quantized");
-  hestOptAdd_1_Double(&opt, NULL, "world", &pos, NULL,
+  hestOptAdd_1_Double(&hopt, NULL, "world", &pos, NULL,
                       "the input world position, to be converted to index");
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
-  USAGE_OR_PARSE(_unrrdu_w2iInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
 
-  indx = NRRD_IDX(center, minPos, maxPos, size, pos);
-  printf("%g\n", indx);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_w2iInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  // char *err;
+
+  double indx = NRRD_IDX(center, minPos, maxPos, size, pos);
+  airSinglePrintf(stdout, NULL, 0, "%lg", indx);
 
   airMopOkay(mop);
   return 0;

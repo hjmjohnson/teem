@@ -34,15 +34,15 @@ main(int argc, const char *argv[]) {
 
   me = argv[0];
   mop = airMopNew();
-  hparm = hestParmNew();
-  hopt = NULL;
+  hparm = hestParmMopNew();
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  hopt = NULL;
   hestOptAdd(&hopt, NULL, "val0 val1", airTypeDouble, 1, -1, &val, NULL, "input values",
              &valLen, NULL);
   hestOptAdd(&hopt, "c,center", "center", airTypeEnum, 1, 1, &center, NULL,
              "centering (cell or node)", NULL, nrrdCenter);
   hestOptAdd(&hopt, "s", "size", airTypeUInt, 1, 1, &size, NULL, "number of samples");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, indxInfo);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, indxInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

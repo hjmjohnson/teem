@@ -65,7 +65,7 @@ extern "C" {
 
 /* ---- END non-NrrdIO */
 
-/* NOTE: these SN_ string,size macros copy-pasta's to other private<Lib>.h files:
+/* NOTE: these SN_ string,size macros copy-pasta'd to other private<Lib>.h files:
    SN_INCR: safely increments STR arg to point '\0'-termination of STR
    SN_COPY: safely copies SRC to DST, then increments DST
    SN_PRINTF: snprintf's into DST then increments DST */
@@ -174,6 +174,7 @@ extern void (*const _nrrdCastClampRound[][NRRD_TYPE_MAX + 1])(void *, const void
 /* ---- END non-NrrdIO */
 
 /* read.c */
+extern const char *const _nrrdReadHitEOF;
 extern const char *const _nrrdFieldSep;
 extern const char *const _nrrdTextSep;
 extern const char *const _nrrdNoSpaceVector;

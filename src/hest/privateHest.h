@@ -31,7 +31,7 @@ It is still the case, however, the hest users do not need to call into biff */
 #include <assert.h>
 #include <errno.h>
 
-/* NOTE: these SN_ string,size macros copy-pasta's to other private<Lib>.h files:
+/* NOTE: these SN_ string,size macros copy-pasta'd to other private<Lib>.h files:
    SN_INCR: safely increments STR arg to point '\0'-termination of STR
    SN_COPY: safely copies SRC to DST, then increments DST
    SN_PRINTF: snprintf's into DST then increments DST */
@@ -52,7 +52,7 @@ It is still the case, however, the hest users do not need to call into biff */
     SN_INCR(DST, DST_SIZE);                                                             \
   } while (0)
 
-typedef unsigned int uint;
+typedef unsigned int uint; /* uint is just more concise */
 
 // pre-TeemV2, these used to be change-able defaults in defaultsHest.c:
 //   char hestDefaultRespFileFlag = '@';
@@ -109,10 +109,6 @@ typedef struct {
 } _hestPPair;
 extern int (*const _hestParseSingle[_HEST_TYPE_MAX + 1])(void *, const char *,
                                                          _hestPPair *);
-// HEY these are sticking around just for the old implementation of hestParse
-extern unsigned int (*const _hestParseStr[_HEST_TYPE_MAX + 1])(void *, const char *,
-                                                               const char *,
-                                                               unsigned int);
 extern const char *const _hestBiffKey;
 extern int _hestMax(int max);
 extern int _hestOPCheck(const hestOpt *hopt, const hestParm *parm);

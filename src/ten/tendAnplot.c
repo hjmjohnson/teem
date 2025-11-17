@@ -32,7 +32,7 @@ static const char *_tend_anplotInfoL
           "triangle.");
 
 static int
-tend_anplotMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_anplotMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;

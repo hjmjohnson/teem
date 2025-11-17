@@ -27,7 +27,7 @@ static const char *_tend_normInfoL
           "some user-defined amount (\"-a\").");
 
 static int
-tend_normMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_normMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;

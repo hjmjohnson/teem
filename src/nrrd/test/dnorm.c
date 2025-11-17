@@ -45,7 +45,7 @@ main(int argc, const char **argv) {
 
   me = argv[0];
   mop = airMopNew();
-  hparm = hestParmNew();
+  hparm = hestParmMopNew();
   hopt = NULL;
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
   hestOptAdd(&hopt, "h,header", NULL, airTypeInt, 0, 0, &headerOnly, NULL,
@@ -55,7 +55,7 @@ main(int argc, const char **argv) {
   hestOptAdd(&hopt, "o", "nout", airTypeString, 1, 1, &outS, "-", "output filename",
              NULL);
 
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, dnormInfo);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, dnormInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

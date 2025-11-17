@@ -45,9 +45,9 @@ main(int argc, const char *argv[]) {
 
   me = argv[0];
   mop = airMopNew();
-  hparm = hestParmNew();
-  hopt = NULL;
+  hparm = hestParmMopNew();
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  hopt = NULL;
   hestOptAdd(&hopt, "i", "nin", airTypeOther, 1, 1, &nin, NULL, "input volume", NULL,
              NULL, nrrdHestNrrd);
   hestOptAdd(&hopt, "k00", "kernel", airTypeOther, 1, 1, &k00, "tent", "k00", NULL, NULL,
@@ -70,7 +70,7 @@ main(int argc, const char *argv[]) {
              "maximum # iterations");
   hestOptAdd(&hopt, "o", "filename", airTypeString, 1, 1, &outS, "-",
              "fixed volume output");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, aaliasInfo);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, aaliasInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

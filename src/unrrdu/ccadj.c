@@ -28,30 +28,27 @@ static const char *_unrrdu_ccadjInfoL
           "* Uses nrrdCCAdjacency");
 
 static int
-unrrdu_ccadjMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *nout;
-  airArray *mop;
-  int pret;
-  unsigned int conny;
-
-  hestOptAdd_1_UInt(&opt, "c,connect", "connectivity", &conny, NULL,
+unrrdu_ccadjMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+  hestOpt *hopt = NULL;
+  uint conny;
+  hestOptAdd_1_UInt(&hopt, "c,connect", "connectivity", &conny, "1",
                     "what kind of connectivity to use: the number of coordinates "
                     "that vary in order to traverse the neighborhood of a given "
                     "sample.  In 2D: \"1\": 4-connected, \"2\": 8-connected");
-  OPT_ADD_NIN(nin, "input nrrd");
+  Nrrd *nin;
+  hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-", "input nrrd",
+                     nrrdHestNrrdNoTTY);
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  hestParm *hparm = hestParmCopy(_hparm);
+  hparm->noArgsIsNoProblem = AIR_TRUE; // thanks to nrrdHestNrrdNoTTY
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_ccadjInfoL);
+  airArray *mop = unrrduMopNew(hopt, hparm);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_ccadjInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
-
   if (nrrdCCAdjacency(nout, nin, conny)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error finding adjacencies:\n%s", me, err);

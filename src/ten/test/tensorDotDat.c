@@ -89,7 +89,7 @@ main(int argc, const char *argv[]) {
   hestOptAdd(&hopt, "odir", "out", airTypeString, 1, 1, &outStr, ".",
              "output directory for all grad files and logs, you should "
              "leave off the trailing /");
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
+  hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

@@ -24,38 +24,30 @@
 static const char *myinfo = (INFO ". ");
 
 static int
-limnPu_rastMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+limnPu_rastMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
-  char *err, *perr;
-  airArray *mop;
-  int pret;
-
-  limnPolyData *pld;
   double min[3], max[3];
-  Nrrd *nout;
-  char *out;
-  int type;
-  size_t size[NRRD_DIM_MAX];
-
   hestOptAdd_3_Double(&hopt, "min", "min", min, NULL, "bottom corner");
   hestOptAdd_3_Double(&hopt, "max", "max", max, NULL, "top corner");
+  size_t size[NRRD_DIM_MAX];
   hestOptAdd_3_Size_t(&hopt, "s", "size", size, NULL,
                       "number of samples along each axis");
+  int type;
   hestOptAdd_1_Enum(&hopt, "t", "type", &type, "uchar", "type of output nrrd", nrrdType);
+  limnPolyData *pld;
   hestOptAdd_1_Other(&hopt, NULL, "input", &pld, NULL, "input polydata filename",
                      limnHestPolyDataLMPD);
+  char *out;
   hestOptAdd_1_String(&hopt, NULL, "output", &out, NULL, "output nrrd filename");
 
-  mop = airMopNew();
+  hestParseOrExit(hopt, argc, argv, hparm, me, myinfo);
+  airArray *mop = airMopNew();
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-
-  USAGE(myinfo);
-  PARSE(myinfo);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  char *err;
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
-
   if (limnPolyDataRasterize(nout, pld, min, max, size, type)) {
     airMopAdd(mop, err = biffGetDone(LIMN), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble:%s", me, err);

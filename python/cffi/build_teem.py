@@ -187,6 +187,8 @@ def proc_hdr(fout, fin, hname: str) -> None:  # out, fin: files
         idx = drop_at(
             '#if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MINGW32__)', 15, lines
         )
+        # drop the attribute directives about airSinglePrintf like printf
+        drop_at_all('#ifdef __GNUC__', 3, lines)
         # restore definitions that seem to work for mac/linux
         lines.insert(idx, 'typedef signed long long airLLong;')
         lines.insert(idx, 'typedef unsigned long long airULLong;')

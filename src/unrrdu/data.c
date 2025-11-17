@@ -38,26 +38,21 @@ static const char *_unrrdu_dataInfoL
           "true in the NrrdIoState nio.");
 
 static int
-unrrdu_dataMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *err, *inS = NULL;
-  Nrrd *nin;
-  NrrdIoState *nio;
-  airArray *mop;
-  int car, pret;
+unrrdu_dataMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  char *inS = NULL;
+  hestOptAdd_1_String(&hopt, NULL, "nin", &inS, NULL, "input nrrd");
 
-  mop = airMopNew();
-  hestOptAdd_1_String(&opt, NULL, "nin", &inS, NULL, "input nrrd");
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_dataInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_dataInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  nio = nrrdIoStateNew();
+  NrrdIoState *nio = nrrdIoStateNew();
   airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
   nio->skipData = AIR_TRUE;
   nio->keepNrrdDataFileOpen = AIR_TRUE;
-  nin = nrrdNew();
+  Nrrd *nin = nrrdNew();
   airMopAdd(mop, nin, (airMopper)nrrdNuke, airMopAlways);
 
   if (nrrdLoad(nin, inS, nio)) {
@@ -79,7 +74,7 @@ unrrdu_dataMain(int argc, const char **argv, const char *me, hestParm *hparm) {
     airMopError(mop);
     return 1;
   }
-  car = fgetc(nio->dataFile);
+  int car = fgetc(nio->dataFile);
 #ifdef _MSC_VER
   /* needed because otherwise printing a carraige return will
      automatically also produce a newline */

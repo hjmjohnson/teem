@@ -24,12 +24,18 @@ main(int argc, char *argv[]) {
   char *me, *ns;
   unsigned int cc, nn;
 
-  char str[] = "this is a line";
+  char str[] = "one two  three   four    \n    line\n  \nbingo   \n\n\n\n   END   ";
   char *dup = airStrdup(str);
-  str[5] = (char)130;
-  printf("str\n|%s| == |%s|\n", str, dup);
+  dup[5] = (char)130;
+  printf("str\n|%s| --> |%s|\n", str, dup);
   airOneLinify(dup);
-  printf("|%s|\n", dup);
+  printf("airOneLinify: |%s|\n", dup);
+  free(dup);
+  dup = airStrdup(str);
+  dup[5] = (char)130;
+  printf("str\n|%s| --> |%s|\n", str, dup);
+  airMultiLinify(dup);
+  printf("airMultiLinify: |%s|\n", dup);
 
   me = argv[0];
   if (2 != argc) {

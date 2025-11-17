@@ -35,7 +35,7 @@ int
 main(int argc, const char *argv[]) {
   const char *me = argv[0];
   airArray *mop = airMopNew();
-  hestParm *hparm = hestParmNew();
+  hestParm *hparm = hestParmMopNew(); /* Mop for hestParseOrExit */
   hestOpt *hopt = NULL;
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
   uint size[3];
@@ -53,7 +53,7 @@ main(int argc, const char *argv[]) {
   hestOptAdd_1_Float(&hopt, "off", "z offset", &off, "0.0", "vertical offset");
   char *out;
   hestOptAdd_1_String(&hopt, "o", "filename", &out, "-", "file to write output nrrd to");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, quadInfo);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, quadInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

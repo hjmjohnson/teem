@@ -576,7 +576,7 @@ main(int argc, const char *argv[]) {
 
   mop = airMopNew();
   me = argv[0];
-  hparm = hestParmNew();
+  hparm = hestParmMopNew();
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
 
   hparm->elideSingleOtherType = AIR_TRUE;
@@ -634,7 +634,7 @@ main(int argc, const char *argv[]) {
                     "named \"vg.pgm\" (and \"vh.pgm\").");
   hestOptAdd_1_String(&hopt, "o", "output", &outS, NULL, "output volume in nrrd format");
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, qbertInfo);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, qbertInfo);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 
   if (3 != nin->dim) {

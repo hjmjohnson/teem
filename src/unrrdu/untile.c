@@ -33,34 +33,29 @@ static const char *_unrrdu_untileInfoL
           "* Uses nrrdUntile2D");
 
 static int
-unrrdu_untileMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *nout;
-  unsigned int axes[3];
-  int pret;
-  size_t size[2];
-  airArray *mop;
-
-  hestOptAdd_3_UInt(&opt, "a,axis", "axMerge ax0 ax1", axes, NULL,
+unrrdu_untileMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  uint axes[3];
+  hestOptAdd_3_UInt(&hopt, "a,axis", "axMerge ax0 ax1", axes, NULL,
                     "the slow parts of axes ax0 and ax1 are merged into a (new) "
                     "axis axMerge, with the axis ax0 part being faster than ax1.");
-  hestOptAdd_2_Size_t(&opt, "s,size", "size0 size1", size, NULL,
+  size_t size[2];
+  hestOptAdd_2_Size_t(&hopt, "s,size", "size0 size1", size, NULL,
                       "the slow parts of axes ax0 and ax1 are taken to have size "
                       "size0 and size1, respectively, and axis axMerge will have "
                       "size size0*size1.");
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_untileInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_untileInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
-
   if (nrrdUntile2D(nout, nin, axes[1], axes[2], axes[0], size[0], size[1])) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error tiling nrrd:\n%s", me, err);

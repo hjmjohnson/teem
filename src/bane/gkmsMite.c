@@ -27,7 +27,7 @@ static const char *_baneGkms_miteInfoL
                "axis labels to identify the domain and range of the opacity function. "
                "The underlying opacity function is not modified.");
 static int /* Biff: 1 */
-baneGkms_miteMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+baneGkms_miteMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *opt = NULL;
   char *out, *perr;
   Nrrd *nin, *nout;

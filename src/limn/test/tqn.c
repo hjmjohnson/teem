@@ -39,7 +39,7 @@ main(int argc, const char *argv[]) {
   hestOptAdd(&hopt, "q", "which", airTypeInt, 1, 1, &qni, NULL,
              "which quantization scheme");
   hestOptAdd(&hopt, "o", "out", airTypeString, 1, 1, &outS, "-", "output image");
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
+  hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

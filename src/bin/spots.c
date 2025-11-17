@@ -45,7 +45,7 @@ main(int argc, const char *argv[]) {
   Nrrd *ninit = NULL, *nten = NULL, *nparm = NULL;
 
   mop = airMopNew();
-  hparm = hestParmNew();
+  hparm = hestParmMopNew();
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
   hparm->respectDashDashHelp = AIR_TRUE;
 
@@ -107,7 +107,7 @@ main(int argc, const char *argv[]) {
                          "multi-threading. "));
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, NULL,
                       "filename for output of final converged (two-channel) texture");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, spotsInfo);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, spotsInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

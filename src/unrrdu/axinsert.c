@@ -28,56 +28,57 @@ static const char *_unrrdu_axinsertInfoL
           "* Uses nrrdAxesInsert, and with \"-s\", nrrdPad_nva");
 
 static int
-unrrdu_axinsertMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err, *label;
-  Nrrd *nin, *nout;
-  int pret, kind, center;
-  unsigned int axis, size, opi, centOptIdx;
-  double mm[2];
-  airArray *mop;
-  NrrdBoundarySpec *bspec;
-
-  hparm->elideSingleOtherDefault = AIR_FALSE;
+unrrdu_axinsertMain(int argc, const char **argv, const char *me,
+                    const hestParm *_hparm) {
+  hestOpt *hopt = NULL;
+  uint axis;
   OPT_ADD_AXIS(axis, "dimension (axis index) at which to insert the new axis");
-  hestOptAdd_1_String(&opt, "l,label", "label", &label, "",
+  char *label;
+  hestOptAdd_1_String(&hopt, "l,label", "label", &label, "",
                       "label to associate with new axis");
-  opi = hestOptAdd_1_Enum(&opt, "k,kind", "kind", &kind, "stub",
-                          "axis kind to associate with new axis", nrrdKind);
-  hestOptAdd_2_Double(&opt, "mm,minmax", "min max", mm, "nan nan",
+  int kind;
+  uint kindOpi = hestOptAdd_1_Enum(&hopt, "k,kind", "kind", &kind, "stub",
+                                   "axis kind to associate with new axis", nrrdKind);
+  double mm[2];
+  hestOptAdd_2_Double(&hopt, "mm,minmax", "min max", mm, "nan nan",
                       "min and max values along new axis");
-  centOptIdx = hestOptAdd_1_Enum(&opt, "c,center", "center", &center, "cell",
-                                 "centering of inserted axis: \"cell\" or \"node\"",
-                                 nrrdCenter);
-  hestOptAdd_1_UInt(&opt, "s,size", "size", &size, "1",
+  int center;
+  uint centOpi = hestOptAdd_1_Enum(&hopt, "c,center", "center", &center, "cell",
+                                   "centering of inserted axis: \"cell\" or \"node\"",
+                                   nrrdCenter);
+  uint size;
+  hestOptAdd_1_UInt(&hopt, "s,size", "size", &size, "1",
                     "after inserting stub axis, also pad out to some length, "
                     "according to the \"-b\" option");
-  hestOptAdd_1_Other(&opt, "b,boundary", "behavior", &bspec, "bleed",
+  NrrdBoundarySpec *bspec;
+  hestOptAdd_1_Other(&hopt, "b,boundary", "behavior", &bspec, "bleed",
                      "How to handle samples beyond the input bounds:\n "
                      "\b\bo \"pad:<val>\": use specified value\n "
                      "\b\bo \"bleed\": extend border values outward\n "
                      "\b\bo \"mirror\": repeated reflections\n "
                      "\b\bo \"wrap\": wrap-around to other side",
                      nrrdHestBoundarySpec);
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for YES some hparm modification)
+  hestParm *hparm = hestParmCopy(_hparm);
+  hparm->elideSingleOtherDefault = AIR_FALSE;
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_axinsertInfoL);
+  airArray *mop = unrrduMopNew(hopt, hparm);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_axinsertInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
-
   if (nrrdAxesInsert(nout, nin, axis)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error inserting axis:\n%s", me, err);
     airMopError(mop);
     return 1;
   }
-  if (hestSourceUser(opt[centOptIdx].source)) {
+  if (hestSourceUser(hopt[centOpi].source)) {
     nout->axis[axis].center = center;
   }
   if (1 < size) {
@@ -102,7 +103,7 @@ unrrdu_axinsertMain(int argc, const char **argv, const char *me, hestParm *hparm
     nout = npad;
     /* only set output kind if explicitly requested
        (since the default is not appropriate) */
-    if (hestSourceUser(opt[opi].source)) {
+    if (hestSourceUser(hopt[kindOpi].source)) {
       nout->axis[axis].kind = kind;
     }
   } else {

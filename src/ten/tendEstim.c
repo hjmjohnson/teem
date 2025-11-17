@@ -30,7 +30,7 @@ static const char *_tend_estimInfoL
           "according to the threshold and softness parameters. ");
 
 static int
-tend_estimMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_estimMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;

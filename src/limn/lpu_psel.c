@@ -25,31 +25,22 @@ static const char *myinfo
   = (INFO ". Can either specify a range, or a list, or not, until implemented.");
 
 static int
-limnPu_pselMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+limnPu_pselMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
-  char *err, *perr;
-  airArray *mop;
-  int pret;
-
-  limnPolyData *pldIn, *pldOut;
-  unsigned int prange[2], pi;
-  Nrrd *nsel;
-  double *sel;
-  char *out;
-  size_t size[NRRD_DIM_MAX];
-
+  uint prange[2];
   hestOptAdd_2_UInt(&hopt, "r", "range", prange, NULL,
                     "range of indices of primitives to select");
+  limnPolyData *pldIn;
   hestOptAdd_1_Other(&hopt, NULL, "input", &pldIn, NULL, "input polydata filename",
                      limnHestPolyDataLMPD);
+  char *out;
   hestOptAdd_1_String(&hopt, NULL, "output", &out, NULL, "output polydata filename");
 
-  mop = airMopNew();
+  hestParseOrExit(hopt, argc, argv, hparm, me, myinfo);
+  airArray *mop = airMopNew();
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-
-  USAGE(myinfo);
-  PARSE(myinfo);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  char *err;
 
   if (!(prange[0] <= pldIn->primNum - 1 && prange[1] <= pldIn->primNum - 1)) {
     fprintf(stderr, "%s: prange[0] %u or [1] %u outside range [0,%u]", me, prange[0],
@@ -63,8 +54,9 @@ limnPu_pselMain(int argc, const char **argv, const char *me, hestParm *hparm) {
     return 1;
   }
 
-  nsel = nrrdNew();
+  Nrrd *nsel = nrrdNew();
   airMopAdd(mop, nsel, (airMopper)nrrdNuke, airMopAlways);
+  size_t size[NRRD_DIM_MAX];
   size[0] = pldIn->primNum;
   if (nrrdMaybeAlloc_nva(nsel, nrrdTypeDouble, 1, size)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
@@ -73,12 +65,12 @@ limnPu_pselMain(int argc, const char **argv, const char *me, hestParm *hparm) {
     return 1;
   }
 
-  sel = AIR_CAST(double *, nsel->data);
-  for (pi = prange[0]; pi <= prange[1]; pi++) {
+  double *sel = AIR_CAST(double *, nsel->data);
+  for (uint pi = prange[0]; pi <= prange[1]; pi++) {
     sel[pi] = 1;
   }
 
-  pldOut = limnPolyDataNew();
+  limnPolyData *pldOut = limnPolyDataNew();
   airMopAdd(mop, pldOut, (airMopper)limnPolyDataNix, airMopAlways);
   if (limnPolyDataPrimitiveSelect(pldOut, pldIn, nsel)
       || limnPolyDataSave(out, pldOut)) {

@@ -59,40 +59,40 @@ unrrdu_describeDoit(const char *me, char *fname, int skipData, int showPtrs,
 }
 
 static int
-unrrdu_describeMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  airArray *mop = airMopNew();
-  hparm->noArgsIsNoProblem = AIR_TRUE;
-
-  hestOpt *opt = NULL;
-  char **inS;
+unrrdu_describeMain(int argc, const char **argv, const char *me,
+                    const hestParm *_hparm) {
+  hestOpt *hopt = NULL;
   int skipData;
-  hestOptAdd_Flag(&opt,
+  hestOptAdd_Flag(&hopt,
                   "skip,skipdata",
                   &skipData,
                   "Do not try to read in data from NRRD files");
   unsigned int sepWidth;
-  hestOptAdd_1_UInt(&opt, "sw,sepwidth", "width", &sepWidth, "25",
+  hestOptAdd_1_UInt(&hopt, "sw,sepwidth", "width", &sepWidth, "25",
                     "print separators (between info sections) of "
                     "this width");
   char *sepStr;
-  hestOptAdd_1_String(&opt, "ss,sepstr", "sep", &sepStr, "- ",
+  hestOptAdd_1_String(&hopt, "ss,sepstr", "sep", &sepStr, "- ",
                       "if printing separators between info sections "
                       "via `-sw`, what string to repeat");
   int showPtr;
-  hestOptAdd_1_Bool(&opt, "ptr,showptr", "bool", &showPtr, "false",
+  hestOptAdd_1_Bool(&hopt, "ptr,showptr", "bool", &showPtr, "false",
                     "show actual hex values for pointers into memory");
   int elideNonExist;
-  hestOptAdd_1_Bool(&opt, "ene,elidenonexist", "bool", &elideNonExist, "true",
+  hestOptAdd_1_Bool(&hopt, "ene,elidenonexist", "bool", &elideNonExist, "true",
                     "if a Nrrd struct field is NaN meaning \"not set\" or \"unknown\", "
                     "then don't print it");
+  char **inS;
   unsigned int inLen;
-  hestOptAdd_Nv_String(&opt, NULL, "nin1", 1, -1, &inS, "-", "input nrrd filename(s)",
+  hestOptAdd_Nv_String(&hopt, NULL, "nin1", 1, -1, &inS, "-", "input nrrd filename(s)",
                        &inLen);
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+
+  // (boilerplate for YES some hparm modification)
+  hestParm *hparm = hestParmCopy(_hparm);
+  hparm->noArgsIsNoProblem = AIR_TRUE; // thanks to nrrdHestNrrdNoTTY
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_describeInfoL);
+  airArray *mop = unrrduMopNew(hopt, hparm);
   char *err;
-  int pret;
-  USAGE_OR_PARSE(_unrrdu_describeInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
 
   /* HEY "okay" logic copied from head.c */
   int okay = AIR_FALSE;
@@ -118,7 +118,7 @@ unrrdu_describeMain(int argc, const char **argv, const char *me, hestParm *hparm
     if (inLen > 1) {
       fprintf(stderr, "\n%s: Unable to read data from any file\n", me);
     }
-    hestUsage(stderr, opt, me, hparm);
+    hestUsage(stderr, hopt, me, hparm, AIR_TRUE /* oneline */);
     fprintf(stderr, "\nFor more info: \"%s --help\"\n", me);
   }
 

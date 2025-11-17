@@ -30,55 +30,55 @@ static const char *_unrrdu_jhistoInfoL
           "* Uses nrrdHistoJoint");
 
 static int
-unrrdu_jhistoMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd **nin, **npass;
-  Nrrd *nout, *nwght;
+unrrdu_jhistoMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
   size_t *bin;
-  int type, clamp[NRRD_DIM_MAX], pret;
-  unsigned int minLen, maxLen, ninLen, binLen, ai, diceax;
-  airArray *mop;
-  double *min, *max;
-  NrrdRange **range;
-
-  hestOptAdd_Nv_Size_t(&opt, "b,bin", "bins0 bins1", 2, -1, &bin, NULL,
+  uint binLen;
+  hestOptAdd_Nv_Size_t(&hopt, "b,bin", "bins0 bins1", 2, -1, &bin, NULL,
                        "bins<i> is the number of bins to use along axis i (of joint "
                        "histogram), which represents the values of nin<i> ",
                        &binLen);
-  hestOptAdd_1_Other(&opt, "w,weight", "nweight", &nwght, "",
+  Nrrd *nwght = NULL;
+  hestOptAdd_1_Other(&hopt, "w,weight", "nweight", &nwght, "",
                      "how to weigh contributions to joint histogram.  By default "
                      "(not using this option), the increment is one bin count per "
                      "sample, but by giving a nrrd, the value in the nrrd at the "
                      "corresponding location will be the bin count increment ",
                      nrrdHestNrrdNoTTY);
-  hestOptAdd_Nv_Double(&opt, "min,minimum", "min0 min1", 2, -1, &min, "nan nan",
+  double *min, *max;
+  uint minLen, maxLen;
+  hestOptAdd_Nv_Double(&hopt, "min,minimum", "min0 min1", 2, -1, &min, "nan nan",
                        "min<i> is the low range of values to be quantized along "
                        "axis i; use \"nan\" to represent lowest value present ",
                        &minLen);
-  hestOptAdd_Nv_Double(&opt, "max,maximum", "max0 max1", 2, -1, &max, "nan nan",
+  hestOptAdd_Nv_Double(&hopt, "max,maximum", "max0 max1", 2, -1, &max, "nan nan",
                        "max<i> is the high range of values to be quantized along "
                        "axis i; use \"nan\" to represent highest value present ",
                        &maxLen);
+  int type;
   OPT_ADD_TYPE(type,
                "type to use for output (the type used to store hit "
                "counts in the joint histogram).  Clamping is done on hit "
                "counts so that they never overflow a fixed-point type",
                "uint");
-  hestOptAdd_Nv_Other(&opt, "i,input", "nin0 [nin1]", 1, -1, &nin, "-",
+  Nrrd **nin;
+  uint ninLen;
+  hestOptAdd_Nv_Other(&hopt, "i,input", "nin0 [nin1]", 1, -1, &nin, "-",
                       "list of nrrds (one for each axis of joint histogram), "
                       "or, single nrrd that will be sliced along specified axis.",
                       &ninLen, nrrdHestNrrdNoTTY);
-  hestOptAdd_1_UInt(&opt, "a,axis", "axis", &diceax, "0",
+  uint diceax;
+  hestOptAdd_1_UInt(&hopt, "a,axis", "axis", &diceax, "0",
                     "axis to slice along when working with single nrrd. ");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_jhistoInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_jhistoInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
+  Nrrd **npass = NULL;
   if (ninLen == 1) {
     /* Slice a nrrd on the fly */
     size_t asize;
@@ -103,7 +103,7 @@ unrrdu_jhistoMain(int argc, const char **argv, const char *me, hestParm *hparm) 
     }
     airMopMem(mop, &npass, airMopAlways);
     /* slice this nrrd, allocate new nrrds, and store the slices in nin */
-    for (ai = 0; ai < binLen; ai++) {
+    for (uint ai = 0; ai < binLen; ai++) {
       /* Allocate each slice nrrd */
       if (!(npass[ai] = nrrdNew())) {
         fprintf(stderr, "%s: couldn't allocate npass[%u]\n", me, ai);
@@ -132,13 +132,13 @@ unrrdu_jhistoMain(int argc, const char **argv, const char *me, hestParm *hparm) 
       airMopError(mop);
       return 1;
     }
-    for (ai = 0; ai < binLen; ai++) {
+    for (uint ai = 0; ai < binLen; ai++) {
       npass[ai] = nin[ai];
     }
   }
-  range = AIR_CALLOC(binLen, NrrdRange *);
+  NrrdRange **range = AIR_CALLOC(binLen, NrrdRange *);
   airMopAdd(mop, range, airFree, airMopAlways);
-  for (ai = 0; ai < binLen; ai++) {
+  for (uint ai = 0; ai < binLen; ai++) {
     range[ai] = nrrdRangeNew(AIR_NAN, AIR_NAN);
     airMopAdd(mop, range[ai], (airMopper)nrrdRangeNix, airMopAlways);
   }
@@ -148,7 +148,7 @@ unrrdu_jhistoMain(int argc, const char **argv, const char *me, hestParm *hparm) 
       airMopError(mop);
       return 1;
     }
-    for (ai = 0; ai < binLen; ai++) {
+    for (uint ai = 0; ai < binLen; ai++) {
       range[ai]->min = min[ai];
     }
   }
@@ -158,17 +158,16 @@ unrrdu_jhistoMain(int argc, const char **argv, const char *me, hestParm *hparm) 
       airMopError(mop);
       return 1;
     }
-    for (ai = 0; ai < binLen; ai++) {
+    for (uint ai = 0; ai < binLen; ai++) {
       range[ai]->max = max[ai];
     }
   }
-  for (ai = 0; ai < binLen; ai++) {
+  int clamp[NRRD_DIM_MAX];
+  for (uint ai = 0; ai < binLen; ai++) {
     clamp[ai] = 0;
   }
-
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
-
   if (nrrdHistoJoint(nout, (const Nrrd *const *)npass, (const NrrdRange *const *)range,
                      binLen, nwght, bin, type, clamp)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
