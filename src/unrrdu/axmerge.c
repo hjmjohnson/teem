@@ -51,8 +51,8 @@ unrrdu_axmergeMain(int argc, const char **argv, const char *me, const hestParm *
 
   Nrrd *nout[2];
   /* make two nout buffers, will alternate between them */
-  airMopAdd(mop, nout[0] = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nout[1] = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout[0] = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nout[1] = nrrdNew(), nrrdNuke_mop, airMopAlways);
 
   if (axesLen > 1) {
     /* sort merge axes into ascending order */

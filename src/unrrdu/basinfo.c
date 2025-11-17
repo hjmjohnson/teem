@@ -79,7 +79,7 @@ unrrdu_basinfoMain(int argc, const char **argv, const char *me, const hestParm *
   char *err;
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdCopy(nout, nin)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error copying input:\n%s", me, err);
@@ -123,7 +123,7 @@ unrrdu_basinfoMain(int argc, const char **argv, const char *me, const hestParm *
 
   /* HEY: copy and paste from unrrdu/make.c */
   NrrdIoState *nio = nrrdIoStateNew();
-  airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
+  airMopAdd(mop, nio, nrrdIoStateNix_mop, airMopAlways);
   if (airStrlen(_origStr)) {
     char *origStr;
     /* why this is necessary is a bit confusing to me, both the check for

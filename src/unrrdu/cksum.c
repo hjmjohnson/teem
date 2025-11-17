@@ -35,7 +35,7 @@ unrrdu_cksumDoit(const char *me, char *inS, int endian, int printendian, FILE *f
   }
   airArray *mop = airMopNew();
   Nrrd *nrrd = nrrdNew();
-  airMopAdd(mop, nrrd, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nrrd, nrrdNuke_mop, airMopAlways);
   if (nrrdLoad(nrrd, inS, NULL)) {
     biffMovef(me, NRRD, "%s: trouble loading \"%s\"", me, inS);
     airMopError(mop);

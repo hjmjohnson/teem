@@ -199,7 +199,7 @@ unrrdu_resampleMain(int argc, const char **argv, const char *me,
   }
   size_t samplesOut = 0; /* initializing to quiet a warning */
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (!older) {
     int offSet = AIR_FALSE;
     if (offLen >= 1) {
@@ -291,7 +291,7 @@ unrrdu_resampleMain(int argc, const char **argv, const char *me,
     }
     NrrdResampleContext *rsmc = nrrdResampleContextNew();
     rsmc->verbose = verbose;
-    airMopAdd(mop, rsmc, (airMopper)nrrdResampleContextNix, airMopAlways);
+    airMopAdd(mop, rsmc, nrrdResampleContextNix_mop, airMopAlways);
     double aspRatScl = AIR_NAN;
     int E = AIR_FALSE;
     if (!E) E |= nrrdResampleDefaultCenterSet(rsmc, defaultCenter);
@@ -442,7 +442,7 @@ unrrdu_resampleMain(int argc, const char **argv, const char *me,
     }
   } else {
     NrrdResampleInfo *rinfo = nrrdResampleInfoNew();
-    airMopAdd(mop, rinfo, (airMopper)nrrdResampleInfoNix, airMopAlways);
+    airMopAdd(mop, rinfo, nrrdResampleInfoNix_mop, airMopAlways);
     rinfo->cheap = infoCheap;
     for (uint ai = 0; ai < nin->dim; ai++) {
       int dowhat = AIR_INT(scale[0 + 2 * ai]);

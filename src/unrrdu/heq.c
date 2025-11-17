@@ -67,7 +67,7 @@ unrrdu_heqMain(int argc, const char **argv, const char *me, const hestParm *hpar
   char *err;
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   Nrrd *nmap = NULL;
   if (nrrdHistoEq(nout, nin, airStrlen(mapS) ? &nmap : NULL, bins, smart, amount)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);

@@ -343,9 +343,9 @@ unrrdu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hp
   /* ----------------- END ERROR CHECKING ---------------- */
   /* ----------------- BEGIN SETTING INFO ---------------- */
   NrrdIoState *nio = nrrdIoStateNew();
-  airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
+  airMopAdd(mop, nio, nrrdIoStateNix_mop, airMopAlways);
   Nrrd *nrrd = nrrdNew();
-  airMopAdd(mop, nrrd, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nrrd, nrrdNuke_mop, airMopAlways);
   char *parseBuf = NULL;
   size_t bufLen;
   unsigned int spaceDim;
@@ -678,7 +678,7 @@ unrrdu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hp
       airMopError(mop);
       return 1;
     }
-    airMopAdd(mop, fileOut, (airMopper)airFclose, airMopAlways);
+    airMopAdd(mop, fileOut, airFclose_mop, airMopAlways);
     /* whatever line and byte skipping is required will be simply
        recorded in the header, and done by the next reader */
     nio->detachedHeader = AIR_TRUE;

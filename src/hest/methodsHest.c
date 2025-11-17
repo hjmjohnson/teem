@@ -364,7 +364,7 @@ _plainParmFree(hestParm *hparm) {
   airFree(hparm);
   return NULL;
 }
-static AIR_MOPPER(_plainParmFree);
+static AIR_MOPPER(_plainParmFree); /* semicolon just for clang-format */
 
 /*
 if you are going to be passing a hestParm to hestParseOrExit, or passing it to
@@ -471,7 +471,7 @@ hestParmFree(hestParm *hparm) {
   }
   return NULL;
 }
-AIR_MOPPER(hestParmFree);
+AIR_MOPPER(hestParmFree)
 
 const hestParm * /* Biff: nope */
 hestParmMopDone(const hestParm *hparm) {
@@ -828,7 +828,7 @@ hestOptFree(hestOpt *hopt) {
   free(hopt);
   return NULL;
 }
-AIR_MOPPER(hestOptFree);
+AIR_MOPPER(hestOptFree)
 
 /* _hestOPCheck
 New biff-based container for all logic that originated in _hestOptCheck (which is the

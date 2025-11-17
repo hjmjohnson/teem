@@ -58,7 +58,7 @@ unrrdu_unorientMain(int argc, const char **argv, const char *me,
   char *err;
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdOrientationReduce(nout, nin, setMinsFromOrigin)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error unorienting nrrd:\n%s", me, err);

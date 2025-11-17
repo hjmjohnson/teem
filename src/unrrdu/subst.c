@@ -47,7 +47,7 @@ unrrdu_substMain(int argc, const char **argv, const char *me, const hestParm *hp
   char *err;
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdApply1DSubstitution(nout, nin, nsubst)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble applying SUBST:\n%s", me, err);

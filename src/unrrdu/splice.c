@@ -63,7 +63,7 @@ unrrdu_spliceMain(int argc, const char **argv, const char *me, const hestParm *h
   size_t pos = _pos[0] * (nin->axis[axis].size - 1) + _pos[1];
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdSplice(nout, nin, nslice, axis, pos)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error splicing nrrd:\n%s", me, err);

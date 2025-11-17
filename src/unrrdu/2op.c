@@ -91,7 +91,7 @@ unrrdu_2opMain(int argc, const char **argv, const char *me, const hestParm *hpar
   char *err;
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   /*
   fprintf(stderr, "%s: op = %d\n", me, op);

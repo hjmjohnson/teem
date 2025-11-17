@@ -78,9 +78,9 @@ unrrdu_histaxMain(int argc, const char **argv, const char *me, const hestParm *h
   char *err;
 
   NrrdRange *range = nrrdRangeNew(AIR_NAN, AIR_NAN);
-  airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
+  airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdRangePercentileFromStringSet(range, nin, minStr, maxStr, zeroCenter,
                                        10 * bins /* HEY magic */, blind8BitRange)
       || nrrdHistoAxis(nout, nin, range, axis, bins, type)) {

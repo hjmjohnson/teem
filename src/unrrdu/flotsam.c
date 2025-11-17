@@ -97,10 +97,10 @@ unrrduMopNew(hestOpt *hopt, hestParm *hparm) {
   airArray *mop = airMopNew();
   if (hparm) {
     hestParmUnmop(hparm); // in case we got a self-mopping _hparm
-    airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+    airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   }
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
   return mop;
 }
 

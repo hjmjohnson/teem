@@ -82,7 +82,7 @@ unrrdu_lutMain(int argc, const char **argv, const char *me, const hestParm *hpar
   char *err;
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   unrrduGetenvDefaultImplicitLutRmapRescale();
   /* Pre-TeemV2: "here is a big difference between unu and nrrd: we enforce rescaling any
@@ -103,7 +103,7 @@ unrrdu_lutMain(int argc, const char **argv, const char *me, const hestParm *hpar
   NrrdRange *range = NULL;
   if (rescale) {
     range = nrrdRangeNew(min, max);
-    airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
+    airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
     nrrdRangeSafeSet(range, nin, blind8BitRange);
   }
 

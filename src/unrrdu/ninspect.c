@@ -57,10 +57,10 @@ fixproj(Nrrd *nproj[3], const Nrrd *nvol) {
     return 1;
   }
 
-  airMopAdd(mop, nt = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, ntmp[0] = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, ntmp[1] = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, ntmp[2] = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nt = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, ntmp[0] = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, ntmp[1] = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, ntmp[2] = nrrdNew(), nrrdNuke_mop, airMopAlways);
 
   /*                 RL  AP  SI */
   ELL_3V_SET(vec[0], 1, 0, 0);
@@ -173,16 +173,16 @@ ninspect_proj(Nrrd *nout, const Nrrd *nin, int axis, int smart, float amount) {
 
   /* allocate a bunch of nrrds to use as basically temp variables */
   mop = airMopNew();
-  airMopAdd(mop, ntmpA = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, ntmpB = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ntmpA = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, ntmpB = nrrdNew(), nrrdNuke_mop, airMopAlways);
   /* HEY: this used to be nrgb[3], but its passing to nrrdJoin caused
      "dereferencing type-punned pointer might break strict-aliasing rules"
      warning; GLK not sure how else to fix it */
   nrgb = AIR_CALLOC(3, Nrrd *);
   airMopAdd(mop, nrgb, airFree, airMopAlways);
-  airMopAdd(mop, nrgb[0] = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nrgb[1] = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nrgb[2] = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nrgb[0] = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nrgb[1] = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nrgb[2] = nrrdNew(), nrrdNuke_mop, airMopAlways);
 
   /* these arguments to nrrdHistoEq will control its behavior */
   bins = 3000; /* equalization will use a histogram with this many bins */
@@ -233,9 +233,9 @@ doit(Nrrd *nout, const Nrrd *nin, int smart, float amount, unsigned int margin,
   }
 
   mop = airMopNew();
-  airMopAdd(mop, nproj[0] = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nproj[1] = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nproj[2] = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nproj[0] = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nproj[1] = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nproj[2] = nrrdNew(), nrrdNuke_mop, airMopAlways);
 
   /* do projections for each axis, with some progress indication to sterr */
   for (axis = 0; axis <= 2; axis++) {
@@ -356,7 +356,7 @@ unrrdu_ninspectMain(int argc, const char **argv, const char *me, const hestParm 
   unsigned char backUC[3];
   ELL_3V_COPY_TT(backUC, unsigned char, back);
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (doit(nout, nin, 1, heqamount, margin, backUC)) {
     err = biffGetDone(UNRRDU);
     airMopAdd(mop, err, airFree, airMopAlways);
@@ -366,7 +366,7 @@ unrrdu_ninspectMain(int argc, const char **argv, const char *me, const hestParm 
   }
 
   NrrdIoState *nio = nrrdIoStateNew();
-  airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
+  airMopAdd(mop, nio, nrrdIoStateNix_mop, airMopAlways);
   if (nrrdFormatPNG->nameLooksLike(outS) && !nrrdFormatPNG->available()) {
     fprintf(stderr, "(%s: using PPM format for output)\n", me);
     nio->format = nrrdFormatPNM;

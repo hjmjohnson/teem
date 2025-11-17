@@ -48,7 +48,7 @@ unrrdu_axdeleteMain(int argc, const char **argv, const char *me, const hestParm 
   char *err;
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   if (_axis < -1) {
     fprintf(stderr, "%s: given -a axis %d negative but not -1 for squeeze\n", me, _axis);
@@ -56,7 +56,7 @@ unrrdu_axdeleteMain(int argc, const char **argv, const char *me, const hestParm 
     return 1;
   } else if (-1 == _axis) {
     Nrrd *ntmp = nrrdNew();
-    airMopAdd(mop, ntmp, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, ntmp, nrrdNuke_mop, airMopAlways);
     if (nrrdCopy(nout, nin)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
       fprintf(stderr, "%s: error copying axis:\n%s", me, err);

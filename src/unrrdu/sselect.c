@@ -63,13 +63,13 @@ unrrdu_sselectMain(int argc, const char **argv, const char *me, const hestParm *
   Nrrd *noutAbove, *noutBelow;
   if (strcmp(outS[0], "x")) {
     noutAbove = nrrdNew();
-    airMopAdd(mop, noutAbove, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, noutAbove, nrrdNuke_mop, airMopAlways);
   } else {
     noutAbove = NULL;
   }
   if (strcmp(outS[1], "x")) {
     noutBelow = nrrdNew();
-    airMopAdd(mop, noutBelow, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, noutBelow, nrrdNuke_mop, airMopAlways);
   } else {
     noutBelow = NULL;
   }

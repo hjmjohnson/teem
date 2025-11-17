@@ -87,13 +87,13 @@ unrrdu_cmedianMain(int argc, const char **argv, const char *me, const hestParm *
   char *err;
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (chan) {
     uint nsize = AIR_UINT(nin->axis[0].size);
     Nrrd **mnout = AIR_CALLOC(nsize, Nrrd *);
     airMopAdd(mop, mnout, airFree, airMopAlways);
     Nrrd *ntmp = nrrdNew();
-    airMopAdd(mop, ntmp, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, ntmp, nrrdNuke_mop, airMopAlways);
     for (uint ni = 0; ni < nsize; ni++) {
       if (nrrdSlice(ntmp, nin, 0, ni)) {
         airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
@@ -101,7 +101,7 @@ unrrdu_cmedianMain(int argc, const char **argv, const char *me, const hestParm *
         airMopError(mop);
         return 1;
       }
-      airMopAdd(mop, mnout[ni] = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+      airMopAdd(mop, mnout[ni] = nrrdNew(), nrrdNuke_mop, airMopAlways);
       if (nrrdCheapMedian(mnout[ni], ntmp, pad, mode, radius, wght, bins)) {
         airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
         fprintf(stderr, "%s: error doing cheap median:\n%s", me, err);

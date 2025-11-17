@@ -98,7 +98,7 @@ unrrdu_rmapMain(int argc, const char **argv, const char *me, const hestParm *hpa
   NrrdRange *range = NULL;
   if (rescale) {
     range = nrrdRangeNew(min, max);
-    airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
+    airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
     nrrdRangeSafeSet(range, nin, blind8BitRange);
   }
 
@@ -106,7 +106,7 @@ unrrdu_rmapMain(int argc, const char **argv, const char *me, const hestParm *hpa
     typeOut = nmap->type;
   }
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdApply1DRegMap(nout, nin, range, nmap, typeOut, rescale)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble applying map:\n%s", me, err);

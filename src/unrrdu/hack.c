@@ -43,7 +43,7 @@ unrrdu_hackMain(int argc, const char **argv, const char *me, const hestParm *hpa
   char *err;
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (!strcmp(what, "sdincr")) {
     unsigned int sdim, axi;
     sdim = nin->spaceDim;

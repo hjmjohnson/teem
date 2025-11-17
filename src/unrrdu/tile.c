@@ -52,7 +52,7 @@ unrrdu_tileMain(int argc, const char **argv, const char *me, const hestParm *hpa
   char *err;
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdTile2D(nout, nin, axes[1], axes[2], axes[0], size[0], size[1])) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error tiling nrrd:\n%s", me, err);

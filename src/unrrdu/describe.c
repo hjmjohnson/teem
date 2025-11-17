@@ -40,11 +40,11 @@ unrrdu_describeDoit(const char *me, char *fname, int skipData, int showPtrs,
 
   airArray *mop = airMopNew();
   Nrrd *nrrd = nrrdNew();
-  airMopAdd(mop, nrrd, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nrrd, nrrdNuke_mop, airMopAlways);
   NrrdIoState *nio = NULL;
   if (skipData) {
     nio = nrrdIoStateNew();
-    airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
+    airMopAdd(mop, nio, nrrdIoStateNix_mop, airMopAlways);
     nio->skipData = AIR_TRUE;
   }
   if (nrrdLoad(nrrd, fname, nio)) {

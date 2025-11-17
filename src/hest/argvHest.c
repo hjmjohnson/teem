@@ -64,7 +64,7 @@ hestArgNix(hestArg *harg) {
   }
   return NULL;
 }
-AIR_MOPPER(hestArgNix);
+AIR_MOPPER(hestArgNix)
 
 void
 hestArgReset(hestArg *harg) {
@@ -153,7 +153,7 @@ hestArgVecNix(hestArgVec *havec) {
   }
   return NULL;
 }
-AIR_MOPPER(hestArgVecNix);
+AIR_MOPPER(hestArgVecNix)
 
 // return havec->harg[popIdx] and shift higher indices down
 hestArg *
@@ -375,4 +375,4 @@ hestInputStackNix(hestInputStack *hist) {
   free(hist);
   return NULL;
 }
-AIR_MOPPER(hestInputStackNix);
+AIR_MOPPER(hestInputStackNix)

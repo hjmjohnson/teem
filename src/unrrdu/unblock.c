@@ -47,7 +47,7 @@ unrrdu_unblockMain(int argc, const char **argv, const char *me, const hestParm *
   char *err;
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   nout->blockSize = blockSize;
 
   if (nrrdUnblock(nout, nin, type)) {

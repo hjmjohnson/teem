@@ -101,7 +101,7 @@ unrrdu_saveMain(int argc, const char **argv, const char *me, const hestParm *hpa
   char *err;
 
   NrrdIoState *nio = nrrdIoStateNew();
-  airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
+  airMopAdd(mop, nio, nrrdIoStateNix_mop, airMopAlways);
   nio->format = nrrdFormatArray[frmt[0]];
   nio->endian = nioEndian;
   if (nrrdFormatTypeText == frmt[0] && frmt[1]) {
@@ -116,7 +116,7 @@ unrrdu_saveMain(int argc, const char **argv, const char *me, const hestParm *hpa
   }
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   nrrdCopy(nout, nin);
   if (airMyEndian() != nio->endian) {
     nrrdSwapEndian(nout);

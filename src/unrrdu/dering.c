@@ -93,9 +93,9 @@ unrrdu_deringMain(int argc, const char **argv, const char *me, const hestParm *_
   }
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   NrrdDeringContext *drc = nrrdDeringContextNew();
-  airMopAdd(mop, drc, (airMopper)nrrdDeringContextNix, airMopAlways);
+  airMopAdd(mop, drc, nrrdDeringContextNix_mop, airMopAlways);
   if (nrrdDeringVerboseSet(drc, verbose) || nrrdDeringLinearInterpSet(drc, linterp)
       || nrrdDeringVerticalSeamSet(drc, vertSeam) || nrrdDeringInputSet(drc, nin)
       || nrrdDeringCenterSet(drc, center[0], center[1])
@@ -114,15 +114,15 @@ unrrdu_deringMain(int argc, const char **argv, const char *me, const hestParm *_
     NrrdIter *nitout, *nitmask, *nitback;
     Nrrd *ntmp;
     nitout = nrrdIterNew();
-    airMopAdd(mop, nitout, (airMopper)nrrdIterNix, airMopAlways);
+    airMopAdd(mop, nitout, nrrdIterNix_mop, airMopAlways);
     nitmask = nrrdIterNew();
-    airMopAdd(mop, nitmask, (airMopper)nrrdIterNix, airMopAlways);
+    airMopAdd(mop, nitmask, nrrdIterNix_mop, airMopAlways);
     nitback = nrrdIterNew();
-    airMopAdd(mop, nitback, (airMopper)nrrdIterNix, airMopAlways);
+    airMopAdd(mop, nitback, nrrdIterNix_mop, airMopAlways);
     nrrdIterSetValue(nitback, backval);
 
     ntmp = nrrdNew();
-    airMopAdd(mop, ntmp, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, ntmp, nrrdNuke_mop, airMopAlways);
 
     nrrdIterSetNrrd(nitout, nout);
     nrrdIterSetNrrd(nitmask, nmask);

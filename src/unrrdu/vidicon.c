@@ -75,9 +75,9 @@ unrrdu_vidiconMain(int argc, const char **argv, const char *me, const hestParm *
   char *err;
 
   Nrrd *ntmp = nrrdNew();
-  airMopAdd(mop, ntmp, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ntmp, nrrdNuke_mop, airMopAlways);
   NrrdRange *b8range = nrrdRangeNew(0.0, 255.0);
-  airMopAdd(mop, b8range, (airMopper)nrrdRangeNix, airMopAlways);
+  airMopAdd(mop, b8range, nrrdRangeNix_mop, airMopAlways);
 
   if (!(2 == nin->dim && nrrdTypeBlock != nin->type)) {
     fprintf(stderr, "%s: need input as 2D grayscale image (not %u-d %s)\n", me, nin->dim,
@@ -86,11 +86,11 @@ unrrdu_vidiconMain(int argc, const char **argv, const char *me, const hestParm *
     return 1;
   }
   Nrrd *nrescale = nrrdNew();
-  airMopAdd(mop, nrescale, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nrescale, nrrdNuke_mop, airMopAlways);
 
   fprintf(stderr, "%s: rescaling by %g ... \n", me, rescale);
   NrrdResampleContext *rsmc = nrrdResampleContextNew();
-  airMopAdd(mop, rsmc, (airMopper)nrrdResampleContextNix, airMopAlways);
+  airMopAdd(mop, rsmc, nrrdResampleContextNix_mop, airMopAlways);
   if (nrrdResampleDefaultCenterSet(rsmc, nrrdCenterCell)
       || nrrdResampleInputSet(rsmc, nin)
       || nrrdResampleKernelSet(rsmc, 0, rescaleKsp->kernel, rescaleKsp->parm)
@@ -128,7 +128,7 @@ unrrdu_vidiconMain(int argc, const char **argv, const char *me, const hestParm *
     airArray *submop = airMopNew();
     Nrrd *nhist = nrrdNew();
     hbins = 3000;
-    airMopAdd(submop, nhist, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(submop, nhist, nrrdNuke_mop, airMopAlways);
     if (nrrdHisto(nhist, nrescale, NULL, NULL, hbins, nrrdTypeDouble)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
       fprintf(stderr, "%s: trouble making histogram:\n%s", me, err);
@@ -188,7 +188,7 @@ unrrdu_vidiconMain(int argc, const char **argv, const char *me, const hestParm *
   fprintf(stderr, "%s: padding in rescaled image: %u x %u\n", me, rpadding[0],
           rpadding[1]);
   Nrrd *npad = nrrdNew();
-  airMopAdd(mop, npad, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, npad, nrrdNuke_mop, airMopAlways);
   {
     ptrdiff_t pmin[2], pmax[2];
     pmin[0] = -AIR_CAST(ptrdiff_t, rpadding[0]);
@@ -207,7 +207,7 @@ unrrdu_vidiconMain(int argc, const char **argv, const char *me, const hestParm *
   fprintf(stderr, "%s: downsampling to %u x %u\n", me,
           AIR_UINT(vsize[0] + 2 * vpadding[0]), AIR_UINT(vsize[1] + 2 * vpadding[1]));
   Nrrd *nvbase = nrrdNew();
-  airMopAdd(mop, nvbase, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nvbase, nrrdNuke_mop, airMopAlways);
   if (nrrdResampleDefaultCenterSet(rsmc, nrrdCenterCell)
       || nrrdResampleInputSet(rsmc, npad)
       || nrrdResampleKernelSet(rsmc, 0, vdsmp[0]->kernel, vdsmp[0]->parm)
@@ -227,7 +227,7 @@ unrrdu_vidiconMain(int argc, const char **argv, const char *me, const hestParm *
   /* halo, lowfilt, windowing, noise, filt, interlace, noise, fuzz, upsample */
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   nrrdCopy(nout, nvbase);
 
   SAVE(out, nout, NULL);

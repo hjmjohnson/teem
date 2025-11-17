@@ -71,7 +71,7 @@ unrrdu_axinsertMain(int argc, const char **argv, const char *me,
   char *err;
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdAxesInsert(nout, nin, axis)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error inserting axis:\n%s", me, err);
@@ -92,7 +92,7 @@ unrrdu_axinsertMain(int argc, const char **argv, const char *me,
     }
     max[axis] = size - 1;
     npad = nrrdNew();
-    airMopAdd(mop, npad, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, npad, nrrdNuke_mop, airMopAlways);
     if (nrrdPad_nva(npad, nout, min, max, bspec->boundary, bspec->padValue)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
       fprintf(stderr, "%s: error padding:\n%s", me, err);

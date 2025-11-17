@@ -81,8 +81,8 @@ unrrdu_ccmergeMain(int argc, const char **argv, const char *me, const hestParm *
   char *err;
 
   Nrrd *nout, *nout2;
-  airMopAdd(mop, nout = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nout2 = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nout2 = nrrdNew(), nrrdNuke_mop, airMopAlways);
 
   if (nrrdCCMerge(nout, nin, nval, dir, maxSize, maxNeigh, conny)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);

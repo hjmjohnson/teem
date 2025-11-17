@@ -63,7 +63,7 @@ unrrdu_affineMain(int argc, const char **argv, const char *me, const hestParm *h
   char *err;
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   NrrdIter *args[5] = {minIn, in, maxIn, minOut, maxOut};
   uint nn = 0;

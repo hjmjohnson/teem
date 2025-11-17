@@ -47,7 +47,7 @@ unrrdu_ccsettleMain(int argc, const char **argv, const char *me,
   char *err;
 
   Nrrd *nval = NULL, *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdCCSettle(nout, airStrlen(valS) ? &nval : NULL, nin)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error settling connected components:\n%s", me, err);
@@ -55,7 +55,7 @@ unrrdu_ccsettleMain(int argc, const char **argv, const char *me,
     return 1;
   }
   if (nval) {
-    airMopAdd(mop, nval, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nval, nrrdNuke_mop, airMopAlways);
   }
 
   if (airStrlen(valS)) {

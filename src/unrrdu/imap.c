@@ -82,7 +82,7 @@ unrrdu_imapMain(int argc, const char **argv, const char *me, const hestParm *hpa
   Nrrd *nacl;
   if (aclLen) {
     nacl = nrrdNew();
-    airMopAdd(mop, nacl, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nacl, nrrdNuke_mop, airMopAlways);
     if (nrrd1DIrregAclGenerate(nacl, nmap, aclLen)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
       fprintf(stderr, "%s: trouble generating accelerator:\n%s", me, err);
@@ -95,7 +95,7 @@ unrrdu_imapMain(int argc, const char **argv, const char *me, const hestParm *hpa
   NrrdRange *range = NULL;
   if (rescale) {
     range = nrrdRangeNew(min, max);
-    airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
+    airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
     nrrdRangeSafeSet(range, nin, blind8BitRange);
   }
   if (nrrdTypeDefault == typeOut) {
@@ -108,7 +108,7 @@ unrrdu_imapMain(int argc, const char **argv, const char *me, const hestParm *hpa
      in which case the binary search in _nrrd1DIrregFindInterval()
      will finish quickly ... */
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdApply1DIrregMap(nout, nin, range, nmap, nacl, typeOut, rescale)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble applying map:\n%s", me, err);

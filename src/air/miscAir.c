@@ -99,7 +99,6 @@ airSetNull(void **ptrP) {
   }
   return NULL;
 }
-
 AIR_MOPPER(airSetNull)
 
 /*

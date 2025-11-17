@@ -43,7 +43,7 @@ unrrdu_headDoit(const char *me, NrrdIoState *nio, const char *inS, FILE *fout) {
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, fin, (airMopper)airFclose, airMopAlways);
+  airMopAdd(mop, fin, airFclose_mop, airMopAlways);
 
   size_t len;
   if (nrrdOneLine(&len, nio, fin)) {
@@ -96,7 +96,7 @@ unrrdu_headMain(int argc, const char **argv, const char *me, const hestParm *_hp
   char *err;
 
   NrrdIoState *nio = nrrdIoStateNew();
-  airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
+  airMopAdd(mop, nio, nrrdIoStateNix_mop, airMopAlways);
   int okay = AIR_FALSE;
   for (uint ni = 0; ni < ninLen; ni++) {
     if (ninLen > 1) {

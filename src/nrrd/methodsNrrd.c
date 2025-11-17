@@ -390,6 +390,7 @@ nrrdResampleInfoNix(NrrdResampleInfo *info) {
   info = (NrrdResampleInfo *)airFree(info);
   return NULL;
 }
+AIR_MOPPER(nrrdResampleInfoNix)
 
 /* ------------------------------------------------------------ */
 
@@ -427,7 +428,7 @@ nrrdKernelSpecNix(NrrdKernelSpec *ksp) {
   ksp = (NrrdKernelSpec *)airFree(ksp);
   return NULL;
 }
-AIR_MOPPER(nrrdKernelSpecNix);
+AIR_MOPPER(nrrdKernelSpecNix)
 
 void
 nrrdKernelSpecSet(NrrdKernelSpec *ksp, const NrrdKernel *k,

@@ -125,7 +125,7 @@ unrrdu_quantizeMain(int argc, const char **argv, const char *me, const hestParm 
   }
 
   NrrdRange *range = nrrdRangeNew(AIR_NAN, AIR_NAN);
-  airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
+  airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
   if (nrrdRangePercentileFromStringSet(range, nin, minStr, maxStr, zeroCenter, hbins,
                                        blind8BitRange)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
@@ -146,7 +146,7 @@ unrrdu_quantizeMain(int argc, const char **argv, const char *me, const hestParm 
     return 1;
   }
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdQuantize(nout, nin, range, bits)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error quantizing:\n%s", me, err);
@@ -158,7 +158,7 @@ unrrdu_quantizeMain(int argc, const char **argv, const char *me, const hestParm 
   if (hestSourceUser(hopt[srgbIdx].source)) {
     /* HEY copied from overrgb.c */
     nio = nrrdIoStateNew();
-    airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
+    airMopAdd(mop, nio, nrrdIoStateNix_mop, airMopAlways);
     nio->PNGsRGBIntentKnown = AIR_TRUE;
     nio->PNGsRGBIntent = srgb; /* even if it is nrrdFormatPNGsRGBIntentNone;
                                   that's handled by the writer */

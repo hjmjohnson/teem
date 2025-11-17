@@ -71,7 +71,7 @@ undosConvert(const char *me, const char *name, int reverse, int mac, int quiet,
     airMopError(mop);
     return;
   }
-  airMopAdd(mop, fin, (airMopper)airFclose, airMopOnError);
+  airMopAdd(mop, fin, airFclose_mop, airMopOnError);
 
   /* -------------------------------------------------------- */
   /* create buffer */
@@ -84,7 +84,7 @@ undosConvert(const char *me, const char *name, int reverse, int mac, int quiet,
     airMopError(mop);
     return;
   }
-  airMopAdd(mop, dataArr, (airMopper)airArrayNuke, airMopAlways);
+  airMopAdd(mop, dataArr, airArrayNuke_mop, airMopAlways);
 
   /* -------------------------------------------------------- */
   /* read input file, testing for binary-ness along the way */
@@ -184,7 +184,7 @@ undosConvert(const char *me, const char *name, int reverse, int mac, int quiet,
     airMopError(mop);
     return;
   }
-  airMopAdd(mop, fout, (airMopper)airFclose, airMopOnError);
+  airMopAdd(mop, fout, airFclose_mop, airMopOnError);
 
   /* -------------------------------------------------------- */
   /* write output file */

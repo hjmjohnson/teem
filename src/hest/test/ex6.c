@@ -67,7 +67,7 @@ quat_free(void *_ptr) {
   }
   return NULL;
 }
-AIR_MOPPER(quat_free);
+AIR_MOPPER(quat_free)
 
 hestCB quatCB = {sizeof(Quat *), "quatty", quat_parse, quat_free_mop};
 

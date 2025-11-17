@@ -69,7 +69,7 @@ unrrdu_insetMain(int argc, const char **argv, const char *me, const hestParm *hp
   }
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdInset(nout, nin, nsub, min)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error insetting nrrd:\n%s", me, err);

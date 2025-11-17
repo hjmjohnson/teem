@@ -48,7 +48,7 @@ unrrdu_ccadjMain(int argc, const char **argv, const char *me, const hestParm *_h
   char *err;
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdCCAdjacency(nout, nin, conny)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error finding adjacencies:\n%s", me, err);

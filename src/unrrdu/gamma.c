@@ -80,10 +80,10 @@ unrrdu_gammaMain(int argc, const char **argv, const char *me, const hestParm *hp
     }
   }
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   NrrdRange *range = nrrdRangeNew(min, max);
-  airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
+  airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
   nrrdRangeSafeSet(range, nin, blind8BitRange);
   int E;
   if (srgb) {

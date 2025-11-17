@@ -92,7 +92,7 @@ unrrdu_padMain(int argc, const char **argv, const char *me, const hestParm *hpar
   }
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdPad_nva(nout, nin, min, max, bb, padVal)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error padding nrrd:\n%s", me, err);

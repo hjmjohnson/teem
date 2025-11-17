@@ -46,7 +46,7 @@ unrrdu_reshapeMain(int argc, const char **argv, const char *me, const hestParm *
   char *err;
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdReshape_nva(nout, nin, sizeLen, size)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error reshaping nrrd:\n%s", me, err);

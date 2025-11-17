@@ -67,7 +67,7 @@ unrrdu_unquantizeMain(int argc, const char **argv, const char *me,
   if (AIR_EXISTS(oldMin)) nin->oldMin = oldMin;
   if (AIR_EXISTS(oldMax)) nin->oldMax = oldMax;
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdUnquantize(nout, nin, dbl ? nrrdTypeDouble : nrrdTypeFloat)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error unquantizing nrrd:\n%s", me, err);

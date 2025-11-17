@@ -49,11 +49,11 @@ unrrdu_dataMain(int argc, const char **argv, const char *me, const hestParm *hpa
   char *err;
 
   NrrdIoState *nio = nrrdIoStateNew();
-  airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
+  airMopAdd(mop, nio, nrrdIoStateNix_mop, airMopAlways);
   nio->skipData = AIR_TRUE;
   nio->keepNrrdDataFileOpen = AIR_TRUE;
   Nrrd *nin = nrrdNew();
-  airMopAdd(mop, nin, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nin, nrrdNuke_mop, airMopAlways);
 
   if (nrrdLoad(nin, inS, nio)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);

@@ -76,12 +76,12 @@ unrrdu_1opMain(int argc, const char **argv, const char *me, const hestParm *hpar
   char *err;
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   Nrrd *ntmp = NULL;
   if (nrrdTypeDefault != type) {
     /* they requested conversion to another type prior to the 1op */
-    airMopAdd(mop, ntmp = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, ntmp = nrrdNew(), nrrdNuke_mop, airMopAlways);
     if (nrrdConvert(ntmp, nin, type)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
       fprintf(stderr, "%s: error converting input nrrd:\n%s", me, err);

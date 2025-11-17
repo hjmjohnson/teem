@@ -122,7 +122,7 @@ unrrdu_sliceMain(int argc, const char **argv, const char *me, const hestParm *hp
   }
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   if (1 == axisNum) {
     /* old single axis code */
@@ -136,9 +136,9 @@ unrrdu_sliceMain(int argc, const char **argv, const char *me, const hestParm *hp
     /* have to do multiple slices */
     Nrrd *ntmp[2];
     ntmp[0] = nrrdNew();
-    airMopAdd(mop, ntmp[0], (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, ntmp[0], nrrdNuke_mop, airMopAlways);
     ntmp[1] = nrrdNew();
-    airMopAdd(mop, ntmp[1], (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, ntmp[1], nrrdNuke_mop, airMopAlways);
     uint tidx = 0;
     for (uint axi = 0; axi < axisNum; axi++) {
       if (nrrdSlice((axi < axisNum - 1

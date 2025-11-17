@@ -77,7 +77,7 @@ unrrdu_acropMain(int argc, const char **argv, const char *me, const hestParm *hp
   char *err;
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   size_t min[NRRD_DIM_MAX], max[NRRD_DIM_MAX];
   if (nrrdCropAuto(nout, nin, min, max, axes, axesLen, measr, frac, offset)) {
@@ -90,7 +90,7 @@ unrrdu_acropMain(int argc, const char **argv, const char *me, const hestParm *hp
     unsigned int axi;
     airULLong *bounds;
     Nrrd *nbounds = nrrdNew();
-    airMopAdd(mop, nbounds, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nbounds, nrrdNuke_mop, airMopAlways);
     if (nrrdMaybeAlloc_va(nbounds, nrrdTypeULLong, 2, AIR_CAST(airULLong, nin->dim),
                           AIR_CAST(airULLong, 2))) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);

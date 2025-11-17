@@ -112,7 +112,7 @@ unrrdu_fftMain(int argc, const char **argv, const char *me, const hestParm *hpar
   Nrrd *nin = NULL;
   if (realInput) {
     Nrrd *ntmp = nrrdNew();
-    airMopAdd(mop, ntmp, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, ntmp, nrrdNuke_mop, airMopAlways);
     if (nrrdAxesInsert(ntmp, _nin, 0)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
       fprintf(stderr, "%s: error creating complex axis:\n%s", me, err);
@@ -120,7 +120,7 @@ unrrdu_fftMain(int argc, const char **argv, const char *me, const hestParm *hpar
       return 1;
     }
     nin = nrrdNew();
-    airMopAdd(mop, nin, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nin, nrrdNuke_mop, airMopAlways);
     ptrdiff_t minPad[NRRD_DIM_MAX], maxPad[NRRD_DIM_MAX];
     minPad[0] = 0;
     maxPad[0] = 1;
@@ -140,7 +140,7 @@ unrrdu_fftMain(int argc, const char **argv, const char *me, const hestParm *hpar
     }
     /* ntmp is really done with, we can free up the space now; this
        is one of the rare times we want airMopSub */
-    airMopSub(mop, ntmp, (airMopper)nrrdNuke);
+    airMopSub(mop, ntmp, nrrdNuke_mop);
     nrrdNuke(ntmp);
   } else {
     /* input is apparently already complex */
@@ -167,7 +167,7 @@ unrrdu_fftMain(int argc, const char **argv, const char *me, const hestParm *hpar
   }
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdFFT(nout, nin, axes, axesLen, sign, rescale, rigor)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error with fft:\n%s", me, err);

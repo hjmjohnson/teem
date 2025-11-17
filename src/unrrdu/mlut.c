@@ -80,7 +80,7 @@ unrrdu_mlutMain(int argc, const char **argv, const char *me, const hestParm *hpa
   char *err;
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   /* by the end of this block we need to have nmlut and mapAxis */
   uint mapAxis;
@@ -94,7 +94,7 @@ unrrdu_mlutMain(int argc, const char **argv, const char *me, const hestParm *hpa
   } else {
     /* we have to join together multiple nrrds to get the mlut */
     nmlut = nrrdNew();
-    airMopAdd(mop, nmlut, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nmlut, nrrdNuke_mop, airMopAlways);
     /* assume that mlut component nrrds are all compatible sizes,
        nrrdJoin will fail if they aren't */
     mapAxis = _nmlut[0]->dim - nin->dim;
@@ -120,7 +120,7 @@ unrrdu_mlutMain(int argc, const char **argv, const char *me, const hestParm *hpa
   NrrdRange *range = NULL;
   if (rescale) {
     range = nrrdRangeNew(min, max);
-    airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
+    airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
     nrrdRangeSafeSet(range, nin, blind8BitRange);
   }
 

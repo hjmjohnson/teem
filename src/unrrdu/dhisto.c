@@ -57,7 +57,7 @@ unrrdu_dhistoMain(int argc, const char **argv, const char *me, const hestParm *h
   char *err;
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   if (nrrdHistoDraw(nout, nin, size, nolog ? AIR_FALSE : (notick ? 2 : AIR_TRUE), max)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);

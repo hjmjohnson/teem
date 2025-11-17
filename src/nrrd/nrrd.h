@@ -933,6 +933,7 @@ NRRD_EXPORT void *nrrdIoStateNix_mop(void *);
 /* ---- BEGIN non-NrrdIO */
 NRRD_EXPORT NrrdResampleInfo *nrrdResampleInfoNew(void);
 NRRD_EXPORT NrrdResampleInfo *nrrdResampleInfoNix(NrrdResampleInfo *info);
+NRRD_EXPORT void *nrrdResampleInfoNix_mop(void *);
 NRRD_EXPORT NrrdKernelSpec *nrrdKernelSpecNew(void);
 NRRD_EXPORT NrrdKernelSpec *nrrdKernelSpecCopy(const NrrdKernelSpec *ksp);
 NRRD_EXPORT void nrrdKernelSpecSet(NrrdKernelSpec *ksp, const NrrdKernel *k,
@@ -1436,6 +1437,7 @@ typedef struct {
 } NrrdDeringContext;
 NRRD_EXPORT NrrdDeringContext *nrrdDeringContextNew(void);
 NRRD_EXPORT NrrdDeringContext *nrrdDeringContextNix(NrrdDeringContext *drc);
+NRRD_EXPORT void *nrrdDeringContextNix_mop(void *);
 NRRD_EXPORT int nrrdDeringVerboseSet(NrrdDeringContext *drc, int verbose);
 NRRD_EXPORT int nrrdDeringLinearInterpSet(NrrdDeringContext *drc, int linterp);
 NRRD_EXPORT int nrrdDeringVerticalSeamSet(NrrdDeringContext *drc, int vertSeam);

@@ -78,7 +78,7 @@ unrrdu_diceMain(int argc, const char **argv, const char *me, const hestParm *hpa
   uint size = AIR_UINT(nin->axis[axis].size);
   /* (getting this just for the verbose value) */
   NrrdIoState *nio = nrrdIoStateNew();
-  airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
+  airMopAdd(mop, nio, nrrdIoStateNix_mop, airMopAlways);
 
   /* HEY: this should use nrrdSaveMulti(), and if there's additional
      smarts here, they should be moved into nrrdSaveMulti() */
@@ -114,7 +114,7 @@ unrrdu_diceMain(int argc, const char **argv, const char *me, const hestParm *hpa
   }
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   for (uint pos = 0; pos < size; pos++) {
     if (nrrdSlice(nout, nin, axis, pos)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);

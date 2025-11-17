@@ -74,7 +74,7 @@ unrrdu_joinMain(int argc, const char **argv, const char *me, const hestParm *_hp
   char *err;
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdJoin(nout, AIR_CAST(const Nrrd *const *, nin), ninLen, axis, incrDim)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error joining nrrds:\n%s", me, err);

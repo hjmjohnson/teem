@@ -110,7 +110,7 @@ unrrdu_jhistoMain(int argc, const char **argv, const char *me, const hestParm *h
         airMopError(mop);
         return 1;
       }
-      airMopAdd(mop, npass[ai], (airMopper)nrrdNuke, airMopAlways);
+      airMopAdd(mop, npass[ai], nrrdNuke_mop, airMopAlways);
       if (nrrdSlice(npass[ai], nin[0], diceax, ai)) {
         airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
         fprintf(stderr, "%s: error slicing:\n%s", me, err);
@@ -140,7 +140,7 @@ unrrdu_jhistoMain(int argc, const char **argv, const char *me, const hestParm *h
   airMopAdd(mop, range, airFree, airMopAlways);
   for (uint ai = 0; ai < binLen; ai++) {
     range[ai] = nrrdRangeNew(AIR_NAN, AIR_NAN);
-    airMopAdd(mop, range[ai], (airMopper)nrrdRangeNix, airMopAlways);
+    airMopAdd(mop, range[ai], nrrdRangeNix_mop, airMopAlways);
   }
   if (2 != minLen || (AIR_EXISTS(min[0]) || AIR_EXISTS(min[1]))) {
     if (minLen != binLen) {
@@ -167,7 +167,7 @@ unrrdu_jhistoMain(int argc, const char **argv, const char *me, const hestParm *h
     clamp[ai] = 0;
   }
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdHistoJoint(nout, (const Nrrd *const *)npass, (const NrrdRange *const *)range,
                      binLen, nwght, bin, type, clamp)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);

@@ -64,6 +64,7 @@ mossSamplerNix(mossSampler *smplr) {
   }
   return NULL;
 }
+AIR_MOPPER(mossSamplerNix)
 
 /*
 ** mossImageCheck: ensures that given image works as an *input* image

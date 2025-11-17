@@ -75,7 +75,7 @@ unrrdu_dnormMain(int argc, const char **argv, const char *me, const hestParm *_h
     nout = nin;
   } else {
     nout = nrrdNew();
-    airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   }
 
   int lostmf;
@@ -95,7 +95,7 @@ unrrdu_dnormMain(int argc, const char **argv, const char *me, const hestParm *_h
             me);
   }
   NrrdIoState *nio = nrrdIoStateNew();
-  airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
+  airMopAdd(mop, nio, nrrdIoStateNix_mop, airMopAlways);
   /* disable printing comments about NRRD format URL */
   nio->skipFormatURL = AIR_TRUE;
   if (headerOnly) {

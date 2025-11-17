@@ -40,7 +40,7 @@ unrrdu_flipMain(int argc, const char **argv, const char *me, const hestParm *hpa
   char *err;
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdFlip(nout, nin, axis)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error flipping nrrd:\n%s", me, err);

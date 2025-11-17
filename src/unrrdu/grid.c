@@ -176,9 +176,9 @@ unrrdu_gridMain(int argc, const char **argv, const char *me, const hestParm *_hp
   }
 
   NrrdIoState *nio = nrrdIoStateNew();
-  airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
+  airMopAdd(mop, nio, nrrdIoStateNix_mop, airMopAlways);
   Nrrd *nin = nrrdNew();
-  airMopAdd(mop, nin, (airMopper)nrrdNuke /* but Nix enough */, airMopAlways);
+  airMopAdd(mop, nin, nrrdNuke_mop /* but Nix enough */, airMopAlways);
   nio->skipData = AIR_TRUE;
   if (nrrdLoad(nin, inS, nio)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
@@ -187,7 +187,7 @@ unrrdu_gridMain(int argc, const char **argv, const char *me, const hestParm *_hp
     return 1;
   }
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   if (gridGen(nout, typeOut, nin, psz, psg)) {
     airMopAdd(mop, err = biffGetDone(UNRRDU), airFree, airMopAlways);

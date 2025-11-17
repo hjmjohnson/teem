@@ -89,7 +89,7 @@ unrrdu_shuffleMain(int argc, const char **argv, const char *me, const hestParm *
     realperm[di] = whichperm[di];
   }
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdShuffle(nout, nin, axis, realperm)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error shuffling nrrd:\n%s", me, err);

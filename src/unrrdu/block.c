@@ -46,7 +46,7 @@ unrrdu_blockMain(int argc, const char **argv, const char *me, const hestParm *_h
   char *err;
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   if (nrrdBlock(nout, nin)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);

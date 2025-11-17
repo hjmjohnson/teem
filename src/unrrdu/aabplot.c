@@ -57,7 +57,7 @@ unrrdu_aabplotMain(int argc, const char **argv, const char *me, const hestParm *
     return 1;
   }
   Nrrd *nin = nrrdNew();
-  airMopAdd(mop, nin, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nin, nrrdNuke_mop, airMopAlways);
   if (nrrdConvert(nin, _nin, nrrdTypeDouble)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error converting \"-s\" input:\n%s", me, err);
@@ -80,7 +80,7 @@ unrrdu_aabplotMain(int argc, const char **argv, const char *me, const hestParm *
       return 1;
     }
     Nrrd *nsingle = nrrdNew();
-    airMopAdd(mop, nsingle, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nsingle, nrrdNuke_mop, airMopAlways);
     if (nrrdConvert(nsingle, _nsingle, nrrdTypeDouble)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
       fprintf(stderr, "%s: error converting \"-s\" input:\n%s", me, err);
@@ -102,7 +102,7 @@ unrrdu_aabplotMain(int argc, const char **argv, const char *me, const hestParm *
     sx = AIR_UINT(nin->axis[0].size);
     sy = AIR_UINT(nin->axis[1].size);
     nbuff = nrrdNew();
-    airMopAdd(mop, nbuff, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nbuff, nrrdNuke_mop, airMopAlways);
     if (nrrdSlice(nbuff, nin, 1, 0)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
       fprintf(stderr, "%s: error making buffer:\n%s", me, err);

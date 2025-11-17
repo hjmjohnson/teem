@@ -81,13 +81,13 @@ unrrdu_projectMain(int argc, const char **argv, const char *me, const hestParm *
     airMopAdd(mop, nslice, airFree, airMopAlways);
     for (uint measrIdx = 0; measrIdx < measrLen; measrIdx++) {
       nslice[measrIdx] = nrrdNew();
-      airMopAdd(mop, nslice[measrIdx], (airMopper)nrrdNuke, airMopAlways);
+      airMopAdd(mop, nslice[measrIdx], nrrdNuke_mop, airMopAlways);
     }
   } else {
     nslice = NULL;
   }
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   for (uint outIdx = 0; outIdx < outLen; outIdx++) {
     if (measrLen > 1) {

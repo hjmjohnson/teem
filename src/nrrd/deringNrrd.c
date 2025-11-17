@@ -94,6 +94,7 @@ nrrdDeringContextNix(NrrdDeringContext *drc) {
   }
   return NULL;
 }
+AIR_MOPPER(nrrdDeringContextNix)
 
 int /* Biff: 1 */
 nrrdDeringVerboseSet(NrrdDeringContext *drc, int verbose) {
@@ -368,7 +369,7 @@ deringBagNix(deringBag *dbg) {
   airFree(dbg);
   return NULL;
 }
-static AIR_MOPPER(deringBagNix);
+static AIR_MOPPER(deringBagNix); /* semicolon just for clang-format */
 
 static int /* Biff: 1 */
 deringPtxfAlloc(NrrdDeringContext *drc, deringBag *dbg) {

@@ -47,7 +47,7 @@ unrrdu_axsplitMain(int argc, const char **argv, const char *me, const hestParm *
   char *err;
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   if (nrrdAxesSplit(nout, nin, axis, size[0], size[1])) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);

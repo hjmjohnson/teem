@@ -80,7 +80,7 @@ unrrdu_lut2Main(int argc, const char **argv, const char *me, const hestParm *hpa
   NrrdRange *range[2] = {NULL, NULL};
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   if (!(nin->dim > 1 && 2 == nin->axis[0].size)) {
     char stmp[AIR_STRLEN_SMALL + 1];
@@ -110,7 +110,7 @@ unrrdu_lut2Main(int argc, const char **argv, const char *me, const hestParm *hpa
     }
     if (rescale[rai]) {
       ntmp[rai] = nrrdNew();
-      airMopAdd(mop, ntmp[rai], AIR_CAST(airMopper, nrrdNuke), airMopAlways);
+      airMopAdd(mop, ntmp[rai], nrrdNuke_mop, airMopAlways);
       if (nrrdSlice(ntmp[rai], nin, 0, rai)) {
         airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
         fprintf(stderr, "%s: trouble slicing input value %u:\n%s", me, rai, err);
@@ -118,7 +118,7 @@ unrrdu_lut2Main(int argc, const char **argv, const char *me, const hestParm *hpa
         return 1;
       }
       range[rai] = nrrdRangeNew(min[rai], max[rai]);
-      airMopAdd(mop, range[rai], (airMopper)nrrdRangeNix, airMopAlways);
+      airMopAdd(mop, range[rai], nrrdRangeNix_mop, airMopAlways);
       nrrdRangeSafeSet(range[rai], ntmp[rai], blind8BitRange);
     }
   }

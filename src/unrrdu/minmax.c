@@ -36,14 +36,14 @@ unrrdu_minmaxDoit(const char *me, char *inS, int blind8BitRange, int singleLine,
   }
   airArray *mop = airMopNew();
   Nrrd *nrrd;
-  airMopAdd(mop, nrrd = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nrrd = nrrdNew(), nrrdNuke_mop, airMopAlways);
   if (nrrdLoad(nrrd, inS, NULL)) {
     biffMovef(me, NRRD, "%s: trouble loading \"%s\"", me, inS);
     airMopError(mop);
     return 1;
   }
   NrrdRange *range = nrrdRangeNewSet(nrrd, blind8BitRange);
-  airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
+  airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
   if (singleLine) {
     char minStr[128], maxStr[128], nexStr[128];
     size_t strSize = 128;

@@ -113,7 +113,7 @@ unrrdu_cropMain(int argc, const char **argv, const char *me, const hestParm *hpa
       return 1;
     }
     nbounds = nrrdNew();
-    airMopAdd(mop, nbounds, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nbounds, nrrdNuke_mop, airMopAlways);
     if (nrrdConvert(nbounds, _nbounds, nrrdTypeULLong)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
       fprintf(stderr, "%s: error converting bounds array:\n%s", me, err);
@@ -128,7 +128,7 @@ unrrdu_cropMain(int argc, const char **argv, const char *me, const hestParm *hpa
   }
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   if (nrrdCrop(nout, nin, min, max)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);

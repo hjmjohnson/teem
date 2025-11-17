@@ -89,7 +89,7 @@ unrrdu_axinfoMain(int argc, const char **argv, const char *me, const hestParm *h
   }
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdCopy(nout, nin)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error copying input:\n%s", me, err);

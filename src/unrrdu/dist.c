@@ -71,7 +71,7 @@ unrrdu_distMain(int argc, const char **argv, const char *me, const hestParm *hpa
   }
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   int E;
   if (sign) {
     E = nrrdDistanceL2Signed(nout, nin, typeOut, NULL, thresh, !invert);

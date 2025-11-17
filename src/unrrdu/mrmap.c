@@ -84,7 +84,7 @@ unrrdu_mrmapMain(int argc, const char **argv, const char *me, const hestParm *hp
   char *err;
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   /* see comment rmap.c */
 
@@ -100,7 +100,7 @@ unrrdu_mrmapMain(int argc, const char **argv, const char *me, const hestParm *hp
   } else {
     /* we have to join together multiple nrrds to get the mmap */
     nmmap = nrrdNew();
-    airMopAdd(mop, nmmap, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nmmap, nrrdNuke_mop, airMopAlways);
     /* assume that mmap component nrrds are all compatible sizes,
        nrrdJoin will fail if they aren't */
     mapAxis = _nmmap[0]->dim - nin->dim;
@@ -126,7 +126,7 @@ unrrdu_mrmapMain(int argc, const char **argv, const char *me, const hestParm *hp
   NrrdRange *range = NULL;
   if (rescale) {
     range = nrrdRangeNew(min, max);
-    airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
+    airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
     nrrdRangeSafeSet(range, nin, blind8BitRange);
   }
 

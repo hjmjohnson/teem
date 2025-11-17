@@ -64,7 +64,7 @@ perspGo(airArray *mop, Nrrd *nout, const Nrrd *nin, mossSampler *msp, int bound,
     return 1;
   }
   nxyc = nrrdNew();
-  airMopAdd(mop, nxyc, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nxyc, nrrdNuke_mop, airMopAlways);
   if (nrrdConvert(nxyc, _nxyc, nrrdTypeDouble)) {
     biffMovef(UNRRDU, NRRD, "%s: trouble converting XY corners to double", me);
     return 1;
@@ -178,13 +178,13 @@ ilkGo(airArray *mop, Nrrd *nout, Nrrd *nin, mossSampler *msp, int bound,
     int E;
 
     ntmp = nrrdNew();
-    airMopAdd(mop, ntmp, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, ntmp, nrrdNuke_mop, airMopAlways);
     nacc = nrrdNew();
-    airMopAdd(mop, nacc, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nacc, nrrdNuke_mop, airMopAlways);
     itA = nrrdIterNew();
-    airMopAdd(mop, itA, (airMopper)nrrdIterNix, airMopAlways);
+    airMopAdd(mop, itA, nrrdIterNix_mop, airMopAlways);
     itB = nrrdIterNew();
-    airMopAdd(mop, itB, (airMopper)nrrdIterNix, airMopAlways);
+    airMopAdd(mop, itB, nrrdIterNix_mop, airMopAlways);
     E = 0;
     angleMax = atan2(mat[3], mat[0]);
     fprintf(stderr, "%s: %u angles ", me, avgNum);
@@ -337,9 +337,9 @@ unrrdu_ilkMain(int argc, const char **argv, const char *me, const hestParm *hpar
   }
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   mossSampler *msp = mossSamplerNew();
-  airMopAdd(mop, msp, (airMopper)mossSamplerNix, airMopAlways);
+  airMopAdd(mop, msp, mossSamplerNix_mop, airMopAlways);
   if (mossSamplerKernelSet(msp, ksp)) {
     fprintf(stderr, "%s: trouble with setting kernel", me);
     airMopError(mop);
