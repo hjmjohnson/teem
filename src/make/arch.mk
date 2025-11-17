@@ -29,9 +29,11 @@
 # GNUmake's implicit rules, which is annoying because implicit rules are
 # annoying. If you want different values for these variables, then change them.
 
+#UBSAN=-fsanitize=undefined
+UBSAN=
 # CC = scan-build clang # to run static analyzer https://clang.llvm.org/docs/ClangStaticAnalyzer.html
 CC := cc
-LD := ld
+LD := ld $(UBSAN)
 ifeq ($(shell uname -s),Darwin)
   # on mac
   AR := libtool
@@ -52,7 +54,7 @@ CHMOD := chmod
 
 # other $(CC) flags for .c compilation (e.g. optimization and warnings)
 # Any existing CFLAGS variable (e.g. from environment) is added at end
-CFLAGS := -O3 -g -W -Wall -Wextra $(CFLAGS)
+CFLAGS := -O3 -g -W -Wall -Wextra $(UBSAN) $(CFLAGS)
 
 # further $(CC) flags for creating executables when linking with (static) library
 BIN_CFLAGS :=

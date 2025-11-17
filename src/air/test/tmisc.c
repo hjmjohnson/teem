@@ -52,5 +52,15 @@ main(int argc, char *argv[]) {
   cc = airBitsSet(nn);
   printf("%u bits set in %u\n", cc, nn);
 
+  unsigned int tmpu = AIR_UINT((1llu << 32) - 1);
+  printf("tmpu = %u --> ", tmpu);
+  tmpu = tmpu / 2 - 5;
+  printf("%u\n", tmpu);
+  int tmpi = AIR_INT(tmpu);
+  for (unsigned int ii = 0; ii < 12; ii++) {
+    printf("%u: %d\n", ii, tmpi);
+    tmpi++;
+  }
+
   exit(0);
 }
