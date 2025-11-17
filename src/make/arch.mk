@@ -31,7 +31,7 @@
 
 ## https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
 #UBSAN=-fsanitize=undefined
-#UBSAN=
+UBSAN=
 
 # CC = scan-build clang # to run static analyzer https://clang.llvm.org/docs/ClangStaticAnalyzer.html
 CC ?= cc
