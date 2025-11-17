@@ -18,6 +18,7 @@
 */
 
 #include "meet.h"
+#include "privateMeet.h"
 
 meetPullVol * /* Biff: nope */
 meetPullVolNew(void) {
@@ -239,7 +240,7 @@ meetHestPullVolParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) 
   airArray *mop;
 
   if (!(ptr && str)) {
-    sprintf(err, "%s: got NULL pointer", me);
+    snprintf(err, ASP1_H, "%s: got NULL pointer", me);
     return 1;
   }
   mop = airMopNew();
@@ -250,7 +251,7 @@ meetHestPullVolParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) 
   if (meetPullVolParse(mpv, str)) {
     char *ler;
     airMopAdd(mop, ler = biffGetDone(MEET), airFree, airMopOnError);
-    airStrcpy(err, AIR_STRLEN_HUGE + 1, ler);
+    airStrcpy(err, ASP1_L, ler);
     airMopError(mop);
     return 1;
   }
@@ -323,7 +324,7 @@ meetPullVolLeechable(const meetPullVol *lchr, const meetPullVol *orig, int *can,
   *can = !!strcmp(orig->fileName, "-");
   if (!*can) {
     if (explain) {
-      sprintf(explain, "original loaded from stdin");
+      snprintf(explain, ASP1_H, "original loaded from stdin");
     }
     return 0;
   }
@@ -331,8 +332,8 @@ meetPullVolLeechable(const meetPullVol *lchr, const meetPullVol *orig, int *can,
   *can = !strcmp(orig->fileName, lchr->fileName);
   if (!*can) {
     if (explain) {
-      sprintf(explain, "not from same file (\"%s\" vs \"%s\")\n", lchr->fileName,
-              orig->fileName);
+      snprintf(explain, ASP1_H, "not from same file (\"%s\" vs \"%s\")\n",
+               lchr->fileName, orig->fileName);
     }
     return 0;
   }
@@ -340,7 +341,8 @@ meetPullVolLeechable(const meetPullVol *lchr, const meetPullVol *orig, int *can,
   *can = (orig->kind == lchr->kind);
   if (!*can) {
     if (explain) {
-      sprintf(explain, "not same kind (%s vs %s)\n", lchr->kind->name, orig->kind->name);
+      snprintf(explain, ASP1_H, "not same kind (%s vs %s)\n", lchr->kind->name,
+               orig->kind->name);
     }
     return 0;
   }
@@ -348,8 +350,8 @@ meetPullVolLeechable(const meetPullVol *lchr, const meetPullVol *orig, int *can,
   *can = (!!lchr->sbp == !!orig->sbp);
   if (!*can) {
     if (explain) {
-      sprintf(explain, "not agreeing on use of scale-space (%s vs %s)\n",
-              lchr->sbp ? "yes" : "no", orig->sbp ? "yes" : "no");
+      snprintf(explain, ASP1_H, "not agreeing on use of scale-space (%s vs %s)\n",
+               lchr->sbp ? "yes" : "no", orig->sbp ? "yes" : "no");
     }
     return 0;
   }
@@ -362,7 +364,7 @@ meetPullVolLeechable(const meetPullVol *lchr, const meetPullVol *orig, int *can,
     }
     if (differ) {
       if (explain) {
-        sprintf(explain, "different uses of scale-space: %s", subexplain);
+        snprintf(explain, ASP1_H, "different uses of scale-space: %s", subexplain);
       }
       *can = AIR_FALSE;
       return 0;
@@ -520,7 +522,8 @@ meetPullVolLoadMulti(meetPullVol **mpv, unsigned int mpvNum, char *cachePath,
     }
     if (vol->sbp) {
       char formatSS[AIR_STRLEN_LARGE + 1];
-      sprintf(formatSS, "%s/%s-%%03u-%03u.nrrd", cachePath, vol->volName, vol->sbp->num);
+      snprintf(formatSS, sizeof(formatSS), "%s/%s-%%03u-%03u.nrrd", cachePath,
+               vol->volName, vol->sbp->num);
       if (verbose) {
         fprintf(stderr, "%s: managing %s ... \n", me, formatSS);
       }
@@ -734,7 +737,7 @@ meetHestPullInfoParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1])
   meetPullInfo **minfP, *minf;
 
   if (!(ptr && str)) {
-    sprintf(err, "%s: got NULL pointer", me);
+    snprintf(err, ASP1_H, "%s: got NULL pointer", me);
     return 1;
   }
   mop = airMopNew();

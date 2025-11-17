@@ -18,6 +18,7 @@
 */
 
 #include "meet.h"
+#include "privateMeet.h"
 
 typedef union {
   const NrrdKernel ***k;
