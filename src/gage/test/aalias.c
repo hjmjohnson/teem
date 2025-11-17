@@ -46,7 +46,7 @@ main(int argc, const char *argv[]) {
   me = argv[0];
   mop = airMopNew();
   hparm = hestParmMopNew();
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hopt = NULL;
   hestOptAdd(&hopt, "i", "nin", airTypeOther, 1, 1, &nin, NULL, "input volume", NULL,
              NULL, nrrdHestNrrd);
@@ -71,15 +71,15 @@ main(int argc, const char *argv[]) {
   hestOptAdd(&hopt, "o", "filename", airTypeString, 1, 1, &outS, "-",
              "fixed volume output");
   hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, aaliasInfo);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   ndist = nrrdNew();
   nmask = nrrdNew();
   nupdate = nrrdNew();
-  airMopAdd(mop, ndist, (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nmask, (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nupdate, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ndist, nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nmask, nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nupdate, nrrdNuke_mop, airMopAlways);
   if (nrrdConvert(ndist, nin, nrrdTypeDouble) || nrrdConvert(nmask, nin, nrrdTypeDouble)
       || nrrdConvert(nupdate, nin, nrrdTypeDouble)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
@@ -92,7 +92,7 @@ main(int argc, const char *argv[]) {
   update = AIR_CAST(double *, nupdate->data);
 
   ctx = gageContextNew();
-  airMopAdd(mop, ctx, (airMopper)gageContextNix, airMopAlways);
+  airMopAdd(mop, ctx, gageContextNix_mop, airMopAlways);
   gageParmSet(ctx, gageParmRenormalize, AIR_TRUE);
   gageParmSet(ctx, gageParmCheckIntegrals, AIR_TRUE);
   E = 0;
@@ -176,7 +176,7 @@ main(int argc, const char *argv[]) {
   }
 
   nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdCopy(nout, ndist)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: couldn't allocate output:\n%s", me, err);

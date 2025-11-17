@@ -106,14 +106,14 @@ baneGkms_pvgMain(int argc, const char **argv, const char *me, const hestParm *hp
   hestOptAdd_1_String(&opt, "o", "imageOut", &outS, NULL, "output image, in PPM format");
 
   mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, opt, hestOptFree_mop, airMopAlways);
   USAGE_PARSE(_baneGkms_pvgInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-  airMopAdd(mop, ndon = _baneGkmsDonNew(invert), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nposA = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nposB = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, npvg = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nio = nrrdIoStateNew(), (airMopper)nrrdIoStateNix, airMopAlways);
+  airMopAdd(mop, opt, hestParseFree_mop, airMopAlways);
+  airMopAdd(mop, ndon = _baneGkmsDonNew(invert), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nposA = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nposB = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, npvg = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nio = nrrdIoStateNew(), nrrdIoStateNix_mop, airMopAlways);
 
   if (airStrlen(mapS)) {
     if (nrrdSave(mapS, ndon, NULL)) {
@@ -192,7 +192,7 @@ baneGkms_pvgMain(int argc, const char **argv, const char *me, const hestParm *hp
     }
   }
   range = nrrdRangeNew(newmin, newmax);
-  airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
+  airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
 
   if (nrrdFlip(nposA, nposB, 1)
       || nrrdApply1DIrregMap(npvg, nposA, range, ndon, NULL, nrrdTypeUChar, AIR_TRUE)) {

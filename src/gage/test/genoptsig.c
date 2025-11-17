@@ -43,7 +43,7 @@ main(int argc, const char *argv[]) {
   me = argv[0];
   mop = airMopNew();
   hparm = hestParmMopNew();
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hopt = NULL;
   hestOptAdd(&hopt, "num", "# samp", airTypeUInt, 2, 2, sampleNum, NULL,
              "min and max number of samples to optimize");
@@ -75,8 +75,8 @@ main(int argc, const char *argv[]) {
              "same hack: plot error with tent recon, not hermite");
   hestOptAdd(&hopt, "o", "nout", airTypeString, 1, 1, &outS, NULL, "output array");
   hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, optsigInfo);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
   airMopAdd(mop, nout, AIR_CAST(airMopper, nrrdNuke), airMopAlways);

@@ -35,7 +35,7 @@ main(int argc, const char *argv[]) {
   me = argv[0];
   mop = airMopNew();
   hparm = hestParmMopNew();
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hopt = NULL;
   hestOptAdd(&hopt, NULL, "val0 val1", airTypeDouble, 1, -1, &val, NULL, "input values",
              &valLen, NULL);
@@ -43,8 +43,8 @@ main(int argc, const char *argv[]) {
              "centering (cell or node)", NULL, nrrdCenter);
   hestOptAdd(&hopt, "s", "size", airTypeUInt, 1, 1, &size, NULL, "number of samples");
   hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, indxInfo);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   fprintf(stderr, "%s: using %s centering\n", me, airEnumStr(nrrdCenter, center));
 

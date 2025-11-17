@@ -57,14 +57,14 @@ gageDeconvolve(Nrrd *_nout, double *lastDiffP, const Nrrd *nin, const gageKind *
   mop = airMopNew();
   for (iter = 0; iter < 2; iter++) {
     nout[iter] = nrrdNew();
-    airMopAdd(mop, nout[iter], (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nout[iter], nrrdNuke_mop, airMopAlways);
     if (nrrdConvert(nout[iter], nin, nrrdTypeDouble)) {
       biffMovef(GAGE, NRRD, "%s: couldn't allocate working buffer %u", me, iter);
       airMopError(mop);
       return 1;
     }
     ctx[iter] = gageContextNew();
-    airMopAdd(mop, ctx[iter], (airMopper)gageContextNix, airMopAlways);
+    airMopAdd(mop, ctx[iter], gageContextNix_mop, airMopAlways);
     E = 0;
     if (!E) E |= !(pvl[iter] = gagePerVolumeNew(ctx[iter], nout[iter], kind));
     if (!E) E |= gagePerVolumeAttach(ctx[iter], pvl[iter]);

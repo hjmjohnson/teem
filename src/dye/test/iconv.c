@@ -58,9 +58,9 @@ main(int argc, char *argv[]) {
 
   mop = airMopNew();
   nin = nrrdNew();
-  airMopAdd(mop, nin, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nin, nrrdNuke_mop, airMopAlways);
   nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdLoad(nin, inFN, NULL) || nrrdCopy(nout, nin)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble:\n%s", me, err);
@@ -91,7 +91,7 @@ main(int argc, char *argv[]) {
   od = AIR_CAST(float *, nout->data);
 
   col = dyeColorNew();
-  airMopAdd(mop, col, (airMopper)dyeColorNix, airMopAlways);
+  airMopAdd(mop, col, dyeColorNix_mop, airMopAlways);
 
   nn = AIR_UINT(nin->axis[1].size * nin->axis[2].size);
   for (ii = 0; ii < nn; ii++) {

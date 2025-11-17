@@ -85,6 +85,7 @@ DYE_EXPORT int dyeColorGetAs(float *v0P, float *v1P, float *v2P, dyeColor *col,
 DYE_EXPORT dyeColor *dyeColorNew(void);
 DYE_EXPORT dyeColor *dyeColorCopy(dyeColor *c1, dyeColor *c0);
 DYE_EXPORT dyeColor *dyeColorNix(dyeColor *col);
+DYE_EXPORT void *dyeColorNix_mop(void *);
 DYE_EXPORT int dyeColorParse(dyeColor *col, char *str);
 DYE_EXPORT char *dyeColorSprintf(char *str, dyeColor *col);
 

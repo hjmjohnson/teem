@@ -767,6 +767,7 @@ nrrdEmpty(Nrrd *nrrd) {
   }
   return nrrd;
 }
+AIR_MOPPER(nrrdEmpty)
 
 /*
 ******** nrrdNuke()

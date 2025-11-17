@@ -80,15 +80,15 @@ baneGkms_hvolMain(int argc, const char **argv, const char *me, const hestParm *h
                       "\"gkms info\"");
 
   mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, opt, hestOptFree_mop, airMopAlways);
   USAGE_PARSE(_baneGkms_hvolInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, opt, hestParseFree_mop, airMopAlways);
   nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   nio = nrrdIoStateNew();
-  airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
+  airMopAdd(mop, nio, nrrdIoStateNix_mop, airMopAlways);
   hvp = baneHVolParmNew();
-  airMopAdd(mop, hvp, (airMopper)baneHVolParmNix, airMopAlways);
+  airMopAdd(mop, hvp, baneHVolParmNix_mop, airMopAlways);
   baneHVolParmGKMSInit(hvp);
   hvp->makeMeasrVol = !slow;
 

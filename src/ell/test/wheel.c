@@ -234,7 +234,7 @@ main(int argc, const char *argv[]) {
   mop = airMopNew();
   hparm = hestParmMopNew();
   hparm->elideMultipleNonExistFloatDefault = AIR_TRUE;
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hopt = NULL;
   hestOptAdd(&hopt, "t", "a b c d e f", airTypeDouble, 6, 6, tval,
              "nan nan nan nan nan nan nan", "six values of symmetric tensors");
@@ -269,15 +269,15 @@ main(int argc, const char *argv[]) {
   hestOptAdd(&hopt, "o", "filename", airTypeString, 1, 1, &outS, "-",
              "file to write EPS output to");
   hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, wheelInfo);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   if (!(wps.file = airFopen(outS, stdout, "wb"))) {
     fprintf(stderr, "%s: couldn't open output file\n", me);
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, wps.file, (airMopper)airFclose, airMopAlways);
+  airMopAdd(mop, wps.file, airFclose_mop, airMopAlways);
 
   if (AIR_EXISTS(rnth[0])) {
     RA = rnth[0];

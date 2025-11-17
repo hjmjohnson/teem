@@ -115,6 +115,7 @@ gageStackBlurParmNix(gageStackBlurParm *sbp) {
   }
   return NULL;
 }
+AIR_MOPPER(gageStackBlurParmNix)
 
 /*
 ** *differ is set to 0 or 1; not useful for sorting
@@ -572,7 +573,7 @@ gageStackBlurParmParse(gageStackBlurParm *sbp,
   if (extraParmsP) {
     /* start with empty string */
     epsArr = airArrayNew(AIR_CAST(void **, &eps), NULL, sizeof(char), 42);
-    airMopAdd(mop, epsArr, (airMopper)airArrayNuke, airMopAlways);
+    airMopAdd(mop, epsArr, airArrayNuke_mop, airMopAlways);
     airArrayLenIncr(epsArr, 1);
     *eps = '\0';
   } else {
@@ -675,7 +676,7 @@ gageStackBlurParmParse(gageStackBlurParm *sbp,
       if (strcpy(xeq, "k=") && stok == strstr(stok, xeq)) {
         pval = stok + strlen(xeq);
         kspec = nrrdKernelSpecNew();
-        airMopAdd(mop, kspec, (airMopper)nrrdKernelSpecNix, airMopAlways);
+        airMopAdd(mop, kspec, nrrdKernelSpecNix_mop, airMopAlways);
         if (nrrdKernelSpecParse(kspec, pval)) {
           biffMovef(GAGE, NRRD, "%s: couldn't parse \"%s\" as blurring kernel", me,
                     pval);
@@ -685,7 +686,7 @@ gageStackBlurParmParse(gageStackBlurParm *sbp,
       } else if (strcpy(xeq, "b=") && strstr(stok, xeq) == stok) {
         pval = stok + strlen(xeq);
         bspec = nrrdBoundarySpecNew();
-        airMopAdd(mop, bspec, (airMopper)nrrdBoundarySpecNix, airMopAlways);
+        airMopAdd(mop, bspec, nrrdBoundarySpecNix_mop, airMopAlways);
         if (nrrdBoundarySpecParse(bspec, pval)) {
           biffMovef(GAGE, NRRD, "%s: couldn't parse \"%s\" as boundary", me, pval);
           airMopError(mop);
@@ -926,7 +927,7 @@ _gageHestStackBlurParmParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE
 static const hestCB _gageHestStackBlurParm = {sizeof(gageStackBlurParm *),
                                               "stack blur specification",
                                               _gageHestStackBlurParmParse,
-                                              (airMopper)gageStackBlurParmNix};
+                                              gageStackBlurParmNix_mop};
 
 const hestCB *const gageHestStackBlurParm = &_gageHestStackBlurParm;
 
@@ -1035,15 +1036,15 @@ _stackBlurDiscreteGaussFFT(Nrrd *const nblur[], gageStackBlurParm *sbp, const Nr
 
   mop = airMopNew();
   ninC = nrrdNew();
-  airMopAdd(mop, ninC, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ninC, nrrdNuke_mop, airMopAlways);
   ninFT = nrrdNew();
-  airMopAdd(mop, ninFT, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ninFT, nrrdNuke_mop, airMopAlways);
   noutFT = nrrdNew();
-  airMopAdd(mop, noutFT, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, noutFT, nrrdNuke_mop, airMopAlways);
   noutCd = nrrdNew();
-  airMopAdd(mop, noutCd, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, noutCd, nrrdNuke_mop, airMopAlways);
   noutC = nrrdNew();
-  airMopAdd(mop, noutC, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, noutC, nrrdNuke_mop, airMopAlways);
 
   if (gageKindScl != kind) {
     biffAddf(GAGE, "%s: sorry, non-scalar kind not yet implemented", me);
@@ -1211,14 +1212,14 @@ _stackBlurSpatial(Nrrd *const nblur[], gageStackBlurParm *sbp, NrrdKernelSpec *k
 
   mop = airMopNew();
   rsmc = nrrdResampleContextNew();
-  airMopAdd(mop, rsmc, (airMopper)nrrdResampleContextNix, airMopAlways);
+  airMopAdd(mop, rsmc, nrrdResampleContextNix_mop, airMopAlways);
   if (nrrdKernelDiscreteGaussian == kssb->kernel) {
     iterative = AIR_TRUE;
     /* we don't want to lose precision when iterating */
     rsmpType = nrrdResample_nt;
     /* may be used with iterative diffusion */
     niter = nrrdNew();
-    airMopAdd(mop, niter, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, niter, nrrdNuke_mop, airMopAlways);
   } else {
     iterative = AIR_FALSE;
     rsmpType = nrrdTypeDefault;
@@ -1408,7 +1409,7 @@ gageStackBlur(Nrrd *const nblur[], gageStackBlurParm *sbp, const Nrrd *nin,
   }
   mop = airMopNew();
   kssb = nrrdKernelSpecCopy(sbp->kspec);
-  airMopAdd(mop, kssb, (airMopper)nrrdKernelSpecNix, airMopAlways);
+  airMopAdd(mop, kssb, nrrdKernelSpecNix_mop, airMopAlways);
   /* see if we can use FFT-based implementation */
   fftable = (!sbp->needSpatialBlur && nrrdBoundaryWrap == sbp->bspec->boundary
              && nrrdKernelDiscreteGaussian == sbp->kspec->kernel);
@@ -1503,7 +1504,7 @@ gageStackBlurCheck(const Nrrd *const nblur[], gageStackBlurParm *sbp, const Nrrd
   }
   mop = airMopNew();
   kssb = nrrdKernelSpecCopy(sbp->kspec);
-  airMopAdd(mop, kssb, (airMopper)nrrdKernelSpecNix, airMopAlways);
+  airMopAdd(mop, kssb, nrrdKernelSpecNix_mop, airMopAlways);
   if (gageStackBlurParmCheck(sbp)
       || _checkNrrd(NULL, nblur, sbp->num, AIR_TRUE, nin, kind)
       || (!(blurVal = _blurValAlloc(mop, sbp, kssb, nin,
@@ -1514,14 +1515,14 @@ gageStackBlurCheck(const Nrrd *const nblur[], gageStackBlurParm *sbp, const Nrrd
   }
 
   shapeNew = gageShapeNew();
-  airMopAdd(mop, shapeNew, (airMopper)gageShapeNix, airMopAlways);
+  airMopAdd(mop, shapeNew, gageShapeNix_mop, airMopAlways);
   if (gageShapeSet(shapeNew, nin, kind->baseDim)) {
     biffAddf(GAGE, "%s: trouble setting up reference shape", me);
     airMopError(mop);
     return 1;
   }
   shapeOld = gageShapeNew();
-  airMopAdd(mop, shapeOld, (airMopper)gageShapeNix, airMopAlways);
+  airMopAdd(mop, shapeOld, gageShapeNix_mop, airMopAlways);
 
   for (blIdx = 0; blIdx < sbp->num; blIdx++) {
     if (nin->type != nblur[blIdx]->type) {
@@ -1717,11 +1718,11 @@ gageStackBlurManage(Nrrd ***nblurP, int *recomputedP, gageStackBlurParm *sbp,
   }
 
   mop = airMopNew();
-  airMopAdd(mop, nblurP, (airMopper)airSetNull, airMopOnError);
+  airMopAdd(mop, nblurP, airSetNull_mop, airMopOnError);
   airMopAdd(mop, *nblurP, airFree, airMopOnError);
   for (ii = 0; ii < sbp->num; ii++) {
     nblur[ii] = nrrdNew();
-    airMopAdd(mop, nblur[ii], (airMopper)nrrdNuke, airMopOnError);
+    airMopAdd(mop, nblur[ii], nrrdNuke_mop, airMopOnError);
   }
   if (gageStackBlurGet(nblur, &recomputed, sbp, format, nin, kind)) {
     biffAddf(GAGE, "%s: trouble getting nblur", me);
@@ -1745,7 +1746,7 @@ gageStackBlurManage(Nrrd ***nblurP, int *recomputedP, gageStackBlurParm *sbp,
         return 1;
       }
       nio = nrrdIoStateNew();
-      airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
+      airMopAdd(mop, nio, nrrdIoStateNix_mop, airMopAlways);
       if (!E) E |= nrrdIoStateEncodingSet(nio, nrrdEncodingGzip);
     } else {
       nio = NULL;

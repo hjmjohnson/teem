@@ -868,6 +868,7 @@ extern Nrrd *nrrdNew(void);
 extern Nrrd *nrrdNix(Nrrd *nrrd);
 extern void *nrrdNix_mop(void *nrr);
 extern Nrrd *nrrdEmpty(Nrrd *nrrd);
+extern void *nrrdEmpty_mop(void *);
 extern Nrrd *nrrdNuke(Nrrd *nrrd);
 extern void *nrrdNuke_mop(void *);
 extern int nrrdWrap_nva(Nrrd *nrrd, void *data, int type, unsigned int dim,

@@ -73,13 +73,13 @@ baneGkms_opacMain(int argc, const char **argv, const char *me, const hestParm *h
                       "output 1D or 2D opacity function");
 
   mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, opt, hestOptFree_mop, airMopAlways);
   USAGE_PARSE(_baneGkms_opacInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-  airMopAdd(mop, nmax = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, npos = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nopac = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nout = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, opt, hestParseFree_mop, airMopAlways);
+  airMopAdd(mop, nmax = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, npos = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nopac = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nout = nrrdNew(), nrrdNuke_mop, airMopAlways);
 
   if (baneInfoCheck(ninfo, AIR_FALSE)) {
     biffAddf(BANE, "%s: didn't get a valid histogram info file", me);

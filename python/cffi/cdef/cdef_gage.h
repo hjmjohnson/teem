@@ -961,6 +961,7 @@ extern void gageShapeReset(gageShape *shp);
 extern gageShape *gageShapeNew(void);
 extern gageShape *gageShapeCopy(const gageShape *shp);
 extern gageShape *gageShapeNix(gageShape *shape);
+extern void *gageShapeNix_mop(void *);
 extern int gageShapeSet(gageShape *shp, const Nrrd *nin, int baseDim);
 extern void gageShapeWtoI(const gageShape *shape, double index[3],
                                const double world[3]);
@@ -1041,6 +1042,7 @@ extern int gageStackBlurParmCopy(gageStackBlurParm *sbpDst,
                                       const gageStackBlurParm *sbpSrc);
 extern void gageStackBlurParmInit(gageStackBlurParm *parm);
 extern gageStackBlurParm *gageStackBlurParmNix(gageStackBlurParm *sbp);
+extern void *gageStackBlurParmNix_mop(void *);
 extern int gageStackBlurParmCompare(const gageStackBlurParm *sbpA,
                                          const char *nameA,
                                          const gageStackBlurParm *sbpB,
@@ -1092,6 +1094,7 @@ extern int gageStackBlurManage(Nrrd ***nblurP, int *recomputedP,
 extern gageContext *gageContextNew(void);
 extern gageContext *gageContextCopy(gageContext *ctx);
 extern gageContext *gageContextNix(gageContext *ctx);
+extern void *gageContextNix_mop(void *);
 extern void gageParmSet(gageContext *ctx, int which, double val);
 extern int gagePerVolumeIsAttached(const gageContext *ctx,
                                         const gagePerVolume *pvl);

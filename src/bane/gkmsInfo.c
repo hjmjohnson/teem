@@ -49,11 +49,11 @@ baneGkms_infoMain(int argc, const char **argv, const char *me, const hestParm *h
                       "output info file, used by \"gkms pvg\" and \"gkms opac\"");
 
   mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, opt, hestOptFree_mop, airMopAlways);
   USAGE_PARSE(_baneGkms_infoInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, opt, hestParseFree_mop, airMopAlways);
   nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   if (baneOpacInfo(nout, hvol, one ? 1 : 2, measr)) {
     biffAddf(BANE, "%s: trouble distilling histogram info", me);

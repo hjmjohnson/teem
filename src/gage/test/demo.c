@@ -40,7 +40,7 @@ main(int argc, char *argv[]) {
 
   mop = airMopNew();
   nin = nrrdNew();
-  airMopAdd(mop, nin, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nin, nrrdNuke_mop, airMopAlways);
 
   if (nrrdLoad(nin, argv[1], NULL)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
@@ -61,7 +61,7 @@ main(int argc, char *argv[]) {
   kparm[2] = 0.5; /* C */
 
   ctx = gageContextNew();
-  airMopAdd(mop, ctx, (airMopper)gageContextNix, airMopAlways);
+  airMopAdd(mop, ctx, gageContextNix_mop, airMopAlways);
   E = 0;
   if (!E) E |= !(pvl = gagePerVolumeNew(ctx, nin, gageKindScl));
   if (!E) E |= gagePerVolumeAttach(ctx, pvl);

@@ -116,9 +116,9 @@ gageStructureTensor(Nrrd *nout, const Nrrd *nin, int dScale, int iScale, int dsm
   gk0 = nrrdKernelSpecNew();
   gk1 = nrrdKernelSpecNew();
   ik0 = nrrdKernelSpecNew();
-  airMopAdd(mop, gk0, (airMopper)nrrdKernelSpecNix, airMopAlways);
-  airMopAdd(mop, gk1, (airMopper)nrrdKernelSpecNix, airMopAlways);
-  airMopAdd(mop, ik0, (airMopper)nrrdKernelSpecNix, airMopAlways);
+  airMopAdd(mop, gk0, nrrdKernelSpecNix_mop, airMopAlways);
+  airMopAdd(mop, gk1, nrrdKernelSpecNix_mop, airMopAlways);
+  airMopAdd(mop, ik0, nrrdKernelSpecNix_mop, airMopAlways);
   if (nrrdKernelSpecParse(gk0, "cubic:1,0") || nrrdKernelSpecParse(gk1, "cubicd:1,0")
       || nrrdKernelSpecParse(ik0, "cubic:1,0")) {
     biffMovef(GAGE, NRRD, "%s: couldn't set up kernels", me);
@@ -130,7 +130,7 @@ gageStructureTensor(Nrrd *nout, const Nrrd *nin, int dScale, int iScale, int dsm
   gk1->parm[0] = dScale;
   ik0->parm[0] = 1.0; /* this is more complicated . . . */
   ctx = gageContextNew();
-  airMopAdd(mop, ctx, (airMopper)gageContextNix, airMopAlways);
+  airMopAdd(mop, ctx, gageContextNix_mop, airMopAlways);
   gageParmSet(ctx, gageParmRenormalize, AIR_TRUE);
   E = 0;
   if (!E) E |= !(pvl = gagePerVolumeNew(ctx, nin, gageKindScl));
@@ -220,7 +220,7 @@ gageStructureTensor(Nrrd *nout, const Nrrd *nin, int dScale, int iScale, int dsm
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, nout, (airMopper)nrrdEmpty, airMopOnError);
+  airMopAdd(mop, nout, nrrdEmpty_mop, airMopOnError);
 
   out = AIR_CAST(double *, nout->data);
   for (ozi = 0; ozi < osz; ozi++) {

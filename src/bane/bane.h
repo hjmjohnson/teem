@@ -337,6 +337,7 @@ BANE_EXPORT void baneHVolParmAxisSet(baneHVolParm *hvp, unsigned int axisIdx,
                                      unsigned int res, baneMeasr *measr, baneInc *inc);
 BANE_EXPORT void baneHVolParmClipSet(baneHVolParm *hvp, baneClip *clip);
 BANE_EXPORT baneHVolParm *baneHVolParmNix(baneHVolParm *hvp);
+BANE_EXPORT void *baneHVolParmNix_mop(void *);
 
 /* valid.c */
 BANE_EXPORT int baneInputCheck(Nrrd *nin, baneHVolParm *hvp);

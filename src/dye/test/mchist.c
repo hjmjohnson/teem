@@ -75,7 +75,7 @@ main(int argc, const char *argv[]) {
   const char *me = argv[0];
   airArray *mop = airMopNew();
   hestParm *hparm = hestParmMopNew();
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hparm->responseFileEnable = AIR_TRUE;
   hestOpt *hopt = NULL;
   char **ninStr;
@@ -104,8 +104,8 @@ main(int argc, const char *argv[]) {
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output filename");
 
   hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, mchistInfo);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   if (0 == overSampleNum) {
     fprintf(stderr, "%s: overSampleNum must be > 0\n", me);
@@ -114,7 +114,7 @@ main(int argc, const char *argv[]) {
   }
   Nrrd *nin0 = nrrdNew();
   char *err;
-  airMopAdd(mop, nin0, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nin0, nrrdNuke_mop, airMopAlways);
   if (nrrdLoad(nin0, ninStr[0], NULL)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: couldn't load first image:\n%s", me, err);
@@ -132,12 +132,12 @@ main(int argc, const char *argv[]) {
     return 1;
   }
   NrrdResampleContext *rsmc = nrrdResampleContextNew();
-  airMopAdd(mop, rsmc, (airMopper)nrrdResampleContextNix, airMopAlways);
+  airMopAdd(mop, rsmc, nrrdResampleContextNix_mop, airMopAlways);
   unsigned int size0 = AIR_UINT(nin0->axis[0].size);
   unsigned int sX = AIR_UINT(upSample * nin0->axis[1].size);
   unsigned int sY = AIR_UINT(upSample * nin0->axis[2].size);
   Nrrd *nrgb = nrrdNew();
-  airMopAdd(mop, nrgb, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nrgb, nrrdNuke_mop, airMopAlways);
   if (nrrdResampleDefaultCenterSet(rsmc, nrrdCenterCell)
       || nrrdResampleInputSet(rsmc, nin0)
       || nrrdResampleKernelSet(rsmc, 1, ksp->kernel, ksp->parm)
@@ -157,9 +157,9 @@ main(int argc, const char *argv[]) {
 
   Nrrd *nhist[2];
   nhist[0] = nrrdNew();
-  airMopAdd(mop, nhist[0], (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nhist[0], nrrdNuke_mop, airMopAlways);
   nhist[1] = nrrdNew();
-  airMopAdd(mop, nhist[1], (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nhist[1], nrrdNuke_mop, airMopAlways);
   if (nrrdMaybeAlloc_va(nhist[0], nrrdTypeFloat, 2, AIR_SIZE_T(sH), AIR_SIZE_T(sH))
       || nrrdMaybeAlloc_va(nhist[1], nrrdTypeFloat, 2, AIR_SIZE_T(sH), AIR_SIZE_T(sH))) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
@@ -173,17 +173,17 @@ main(int argc, const char *argv[]) {
   nhist[1]->axis[0].max = nhist[1]->axis[1].max = 1.0;
   Nrrd *nhproj[3];
   nhproj[0] = nrrdNew();
-  airMopAdd(mop, nhproj[0], (airMopper)nrrdNix, airMopAlways);
+  airMopAdd(mop, nhproj[0], nrrdNix_mop, airMopAlways);
   nhproj[1] = nrrdNew();
-  airMopAdd(mop, nhproj[1], (airMopper)nrrdNix, airMopAlways);
+  airMopAdd(mop, nhproj[1], nrrdNix_mop, airMopAlways);
   nhproj[2] = nrrdNew();
-  airMopAdd(mop, nhproj[2], (airMopper)nrrdNix, airMopAlways);
+  airMopAdd(mop, nhproj[2], nrrdNix_mop, airMopAlways);
 
   printf("working ...       ");
   Nrrd *nin = nrrdNew();
-  airMopAdd(mop, nin, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nin, nrrdNuke_mop, airMopAlways);
   Nrrd *npreout = nrrdNew();
-  airMopAdd(mop, npreout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, npreout, nrrdNuke_mop, airMopAlways);
   if (nrrdMaybeAlloc_va(npreout, nrrdTypeFloat, 3, AIR_SIZE_T(3), AIR_SIZE_T(sH),
                         AIR_SIZE_T(ninLen))) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
@@ -231,7 +231,7 @@ main(int argc, const char *argv[]) {
   fflush(stdout);
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdMaybeAlloc_va(nout, nrrdTypeFloat, 3, AIR_SIZE_T(3), AIR_SIZE_T(sH),
                         AIR_SIZE_T(ninLen))) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);

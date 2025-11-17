@@ -52,6 +52,7 @@ extern int dyeColorGetAs(float *v0P, float *v1P, float *v2P, dyeColor *col,
 extern dyeColor *dyeColorNew(void);
 extern dyeColor *dyeColorCopy(dyeColor *c1, dyeColor *c0);
 extern dyeColor *dyeColorNix(dyeColor *col);
+extern void *dyeColorNix_mop(void *);
 extern int dyeColorParse(dyeColor *col, char *str);
 extern char *dyeColorSprintf(char *str, dyeColor *col);
 /* convertDye.c */

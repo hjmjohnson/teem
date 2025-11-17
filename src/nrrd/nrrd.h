@@ -949,6 +949,7 @@ NRRD_EXPORT Nrrd *nrrdNew(void);
 NRRD_EXPORT Nrrd *nrrdNix(Nrrd *nrrd);
 NRRD_EXPORT void *nrrdNix_mop(void *nrr);
 NRRD_EXPORT Nrrd *nrrdEmpty(Nrrd *nrrd);
+NRRD_EXPORT void *nrrdEmpty_mop(void *);
 NRRD_EXPORT Nrrd *nrrdNuke(Nrrd *nrrd);
 NRRD_EXPORT void *nrrdNuke_mop(void *);
 NRRD_EXPORT int nrrdWrap_nva(Nrrd *nrrd, void *data, int type, unsigned int dim,
