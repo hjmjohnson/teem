@@ -342,7 +342,7 @@ unrrdu_uncmtMain(int argc, const char **argv, const char *me, const hestParm *_h
     &hopt, "cs", "cmtsub", &cmtSubst, "",
     /* the \t character is turned by hest into non-breaking space */
     "Given a non-empty string, those characters are looped through to replace the "
-    "non-white space characters is contents; EXCEPT if a length-2 string of a "
+    "non-white space characters in its contents; EXCEPT if a length-2 string of a "
     "repeating character is given, (e.g. \"-cs\txx\") in which case the string contents "
     "are preserved (contrary to the intended purpose of this command). To preserve "
     "comment delimiters but turn comments entirely into whitespace, use "
