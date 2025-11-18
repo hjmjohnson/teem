@@ -36,7 +36,6 @@ UBSAN=
 
 # CC = scan-build clang # to run static analyzer https://clang.llvm.org/docs/ClangStaticAnalyzer.html
 CC ?= cc
-LD := ld $(UBSAN)
 ifeq ($(shell uname -s),Darwin)
   # on mac
   AR := libtool

@@ -91,7 +91,7 @@ TeemSrc ?= .
 ## the chosen architecture
 ##
 ## We assume that arch.mk will finish with these all being set:
-## CC, LD, AR, ARFLAGS, RANLIB, RM, CP, CHMOD, CFLAGS, BIN_CFLAGS
+## CC, AR, ARFLAGS, RANLIB, RM, CP, CHMOD, CFLAGS, BIN_CFLAGS
 ##
 include $(TeemSrc)/make/arch.mk
 
