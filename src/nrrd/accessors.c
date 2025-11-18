@@ -17,7 +17,6 @@
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 
-/* clang-format off */
 #include "nrrd.h"
 #include "privateNrrd.h"
 #include "float.h"
@@ -35,7 +34,7 @@ typedef signed int JN;
 typedef unsigned int UI;
 typedef airLLong LL;
 /* ui64 to double conversion is not implemented, sorry */
-#if defined(_MSC_VER) && _MSC_VER  < 1300
+#if defined(_MSC_VER) && _MSC_VER < 1300
 typedef airLLong UL;
 #else
 typedef airULLong UL;
@@ -43,53 +42,40 @@ typedef airULLong UL;
 typedef float FL;
 typedef double DB;
 
-#define MAP(F, A) \
-F(A, CH) \
-F(A, UC) \
-F(A, SH) \
-F(A, US) \
-F(A, JN) \
-F(A, UI) \
-F(A, LL) \
-F(A, UL) \
-F(A, FL) \
-F(A, DB)
+#define MAP(F, A)                                                                       \
+  F(A, CH)                                                                              \
+  F(A, UC)                                                                              \
+  F(A, SH)                                                                              \
+  F(A, US)                                                                              \
+  F(A, JN)                                                                              \
+  F(A, UI)                                                                              \
+  F(A, LL)                                                                              \
+  F(A, UL)                                                                              \
+  F(A, FL)                                                                              \
+  F(A, DB)
 
 /*
 ** _nrrdLoad<TA><TB>(<TB> *v)
 **
 ** Dereferences v as TB*, casts it to TA, returns it.
 */
-#define LOAD_DEF(TA, TB)                    \
-static TA                                   \
-_nrrdLoad##TA##TB(TB *v) {                  \
-  return (TA)(*v);                          \
-}
-#define LOAD_LIST(TA, TB)                   \
-  (TA (*)(const void *))_nrrdLoad##TA##TB,
+#define LOAD_DEF(TA, TB)                                                                \
+  static TA _nrrdLoad##TA##TB(TB *v) { return (TA)(*v); }
+#define LOAD_LIST(TA, TB) (TA (*)(const void *)) _nrrdLoad##TA##TB,
 
 MAP(LOAD_DEF, UI)
 MAP(LOAD_DEF, JN)
 MAP(LOAD_DEF, FL)
 MAP(LOAD_DEF, DB)
 
-unsigned int (* const
-nrrdUILoad[NRRD_TYPE_MAX+1])(const void*) = {
-  NULL, MAP(LOAD_LIST, UI) NULL
-};
-int (* const
-nrrdILoad[NRRD_TYPE_MAX+1])(const void*) = {
-  NULL, MAP(LOAD_LIST, JN) NULL
-};
-float (* const
-nrrdFLoad[NRRD_TYPE_MAX+1])(const void*) = {
-  NULL, MAP(LOAD_LIST, FL) NULL
-};
-double (* const
-nrrdDLoad[NRRD_TYPE_MAX+1])(const void*) = {
-  NULL, MAP(LOAD_LIST, DB) NULL
-};
-
+unsigned int (*const nrrdUILoad[NRRD_TYPE_MAX + 1])(const void *) = {NULL, MAP(LOAD_LIST,
+                                                                               UI) NULL};
+int (*const nrrdILoad[NRRD_TYPE_MAX + 1])(const void *) = {NULL,
+                                                           MAP(LOAD_LIST, JN) NULL};
+float (*const nrrdFLoad[NRRD_TYPE_MAX + 1])(const void *) = {NULL,
+                                                             MAP(LOAD_LIST, FL) NULL};
+double (*const nrrdDLoad[NRRD_TYPE_MAX + 1])(const void *) = {NULL,
+                                                              MAP(LOAD_LIST, DB) NULL};
 
 /*
 ** _nrrdStore<TA><TB>(<TB> *v, <TA> j)
@@ -98,72 +84,46 @@ nrrdDLoad[NRRD_TYPE_MAX+1])(const void*) = {
 ** Returns the result of the assignment, which may not be the same as
 ** the value that was passed in.
 */
-#define STORE_DEF(TA, TB)                   \
-static TA                                   \
-_nrrdStore##TA##TB(TB *v, TA j) {           \
-  return (TA)(*v = (TB)j);                  \
-}
-#define STORE_LIST(TA, TB)                  \
-  (TA (*)(void *, TA))_nrrdStore##TA##TB,
+#define STORE_DEF(TA, TB)                                                               \
+  static TA _nrrdStore##TA##TB(TB *v, TA j) { return (TA)(*v = (TB)j); }
+#define STORE_LIST(TA, TB) (TA (*)(void *, TA)) _nrrdStore##TA##TB,
 
 MAP(STORE_DEF, UI)
 MAP(STORE_DEF, JN)
 MAP(STORE_DEF, FL)
 MAP(STORE_DEF, DB)
 
-unsigned int (* const
-nrrdUIStore[NRRD_TYPE_MAX+1])(void *, unsigned int) = {
-  NULL, MAP(STORE_LIST, UI) NULL
-};
-int (* const
-nrrdIStore[NRRD_TYPE_MAX+1])(void *, int) = {
-  NULL, MAP(STORE_LIST, JN) NULL
-};
-float (* const
-nrrdFStore[NRRD_TYPE_MAX+1])(void *, float) = {
-  NULL, MAP(STORE_LIST, FL) NULL
-};
-double (* const
-nrrdDStore[NRRD_TYPE_MAX+1])(void *, double) = {
-  NULL, MAP(STORE_LIST, DB) NULL
-};
-
+unsigned int (*const nrrdUIStore[NRRD_TYPE_MAX + 1])(void *, unsigned int)
+  = {NULL, MAP(STORE_LIST, UI) NULL};
+int (*const nrrdIStore[NRRD_TYPE_MAX + 1])(void *, int) = {NULL,
+                                                           MAP(STORE_LIST, JN) NULL};
+float (*const nrrdFStore[NRRD_TYPE_MAX + 1])(void *, float) = {NULL,
+                                                               MAP(STORE_LIST, FL) NULL};
+double (*const nrrdDStore[NRRD_TYPE_MAX + 1])(void *, double) = {NULL, MAP(STORE_LIST,
+                                                                           DB) NULL};
 
 /*
 ** _nrrdLookup<TA><TB>(<TB> *v, size_t I)
 **
 ** Looks up element I of TB array v, and returns it cast to a TA.
 */
-#define LOOKUP_DEF(TA, TB)                    \
-static TA                                     \
-_nrrdLookup##TA##TB(TB *v, size_t I) {        \
-  return (TA)v[I];                            \
-}
-#define LOOKUP_LIST(TA, TB)                   \
-  (TA (*)(const void*, size_t))_nrrdLookup##TA##TB,
+#define LOOKUP_DEF(TA, TB)                                                              \
+  static TA _nrrdLookup##TA##TB(TB *v, size_t I) { return (TA)v[I]; }
+#define LOOKUP_LIST(TA, TB) (TA (*)(const void *, size_t)) _nrrdLookup##TA##TB,
 
 MAP(LOOKUP_DEF, UI)
 MAP(LOOKUP_DEF, JN)
 MAP(LOOKUP_DEF, FL)
 MAP(LOOKUP_DEF, DB)
 
-unsigned int (* const
-nrrdUILookup[NRRD_TYPE_MAX+1])(const void *, size_t) = {
-  NULL, MAP(LOOKUP_LIST, UI) NULL
-};
-int (* const
-nrrdILookup[NRRD_TYPE_MAX+1])(const void *, size_t) = {
-  NULL, MAP(LOOKUP_LIST, JN) NULL
-};
-float (* const
-nrrdFLookup[NRRD_TYPE_MAX+1])(const void *, size_t) = {
-  NULL, MAP(LOOKUP_LIST, FL) NULL
-};
-double (* const
-nrrdDLookup[NRRD_TYPE_MAX+1])(const void *, size_t) = {
-  NULL, MAP(LOOKUP_LIST, DB) NULL
-};
-
+unsigned int (*const nrrdUILookup[NRRD_TYPE_MAX + 1])(const void *, size_t)
+  = {NULL, MAP(LOOKUP_LIST, UI) NULL};
+int (*const nrrdILookup[NRRD_TYPE_MAX + 1])(const void *, size_t)
+  = {NULL, MAP(LOOKUP_LIST, JN) NULL};
+float (*const nrrdFLookup[NRRD_TYPE_MAX + 1])(const void *, size_t)
+  = {NULL, MAP(LOOKUP_LIST, FL) NULL};
+double (*const nrrdDLookup[NRRD_TYPE_MAX + 1])(const void *, size_t)
+  = {NULL, MAP(LOOKUP_LIST, DB) NULL};
 
 /*
 ** _nrrdInsert<TA><TB>(<TB> *v, size_t I, <TA> j)
@@ -172,35 +132,23 @@ nrrdDLookup[NRRD_TYPE_MAX+1])(const void *, size_t) = {
 ** Returns the result of the assignment, which may not be the same as
 ** the value that was passed in.
 */
-#define INSERT_DEF(TA, TB)                         \
-static TA                                          \
-_nrrdInsert##TA##TB(TB *v, size_t I, TA j) {       \
-  return (TA)(v[I] = (TB)j);                       \
-}
-#define INSERT_LIST(TA, TB)                        \
-  (TA (*)(void*, size_t, TA))_nrrdInsert##TA##TB,
+#define INSERT_DEF(TA, TB)                                                              \
+  static TA _nrrdInsert##TA##TB(TB *v, size_t I, TA j) { return (TA)(v[I] = (TB)j); }
+#define INSERT_LIST(TA, TB) (TA (*)(void *, size_t, TA)) _nrrdInsert##TA##TB,
 
 MAP(INSERT_DEF, UI)
 MAP(INSERT_DEF, JN)
 MAP(INSERT_DEF, FL)
 MAP(INSERT_DEF, DB)
 
-unsigned int (* const
-nrrdUIInsert[NRRD_TYPE_MAX+1])(void *, size_t, unsigned int) = {
-  NULL, MAP(INSERT_LIST, UI) NULL
-};
-int (* const
-nrrdIInsert[NRRD_TYPE_MAX+1])(void *, size_t, int) = {
-  NULL, MAP(INSERT_LIST, JN) NULL
-};
-float (* const
-nrrdFInsert[NRRD_TYPE_MAX+1])(void *, size_t, float) = {
-  NULL, MAP(INSERT_LIST, FL) NULL
-};
-double (* const
-nrrdDInsert[NRRD_TYPE_MAX+1])(void *, size_t, double) = {
-  NULL, MAP(INSERT_LIST, DB) NULL
-};
+unsigned int (*const nrrdUIInsert[NRRD_TYPE_MAX + 1])(void *, size_t, unsigned int)
+  = {NULL, MAP(INSERT_LIST, UI) NULL};
+int (*const nrrdIInsert[NRRD_TYPE_MAX + 1])(void *, size_t, int)
+  = {NULL, MAP(INSERT_LIST, JN) NULL};
+float (*const nrrdFInsert[NRRD_TYPE_MAX + 1])(void *, size_t, float)
+  = {NULL, MAP(INSERT_LIST, FL) NULL};
+double (*const nrrdDInsert[NRRD_TYPE_MAX + 1])(void *, size_t, double)
+  = {NULL, MAP(INSERT_LIST, DB) NULL};
 
 /*
 ******** nrrdSprint
@@ -211,39 +159,62 @@ nrrdDInsert[NRRD_TYPE_MAX+1])(void *, size_t, double) = {
 ** There is obviously no provision for ensuring that the sprint'ing
 ** doesn't overflow the buffer, which is unfortunate...
 */
-static int _nrrdSprintCH(char *s, size_t sz, const CH *v) { return snprintf(s, sz, "%d", *v); }
-static int _nrrdSprintUC(char *s, size_t sz, const UC *v) { return snprintf(s, sz, "%u", *v); }
-static int _nrrdSprintSH(char *s, size_t sz, const SH *v) { return snprintf(s, sz, "%d", *v); }
-static int _nrrdSprintUS(char *s, size_t sz, const US *v) { return snprintf(s, sz, "%u", *v); }
-static int _nrrdSprintIN(char *s, size_t sz, const JN *v) { return snprintf(s, sz, "%d", *v); }
-static int _nrrdSprintUI(char *s, size_t sz, const UI *v) { return snprintf(s, sz, "%u", *v); }
-static int _nrrdSprintLL(char *s, size_t sz, const LL *v) {
+static int
+_nrrdSprintCH(char *s, size_t sz, const CH *v) {
+  return snprintf(s, sz, "%d", *v);
+}
+static int
+_nrrdSprintUC(char *s, size_t sz, const UC *v) {
+  return snprintf(s, sz, "%u", *v);
+}
+static int
+_nrrdSprintSH(char *s, size_t sz, const SH *v) {
+  return snprintf(s, sz, "%d", *v);
+}
+static int
+_nrrdSprintUS(char *s, size_t sz, const US *v) {
+  return snprintf(s, sz, "%u", *v);
+}
+static int
+_nrrdSprintIN(char *s, size_t sz, const JN *v) {
+  return snprintf(s, sz, "%d", *v);
+}
+static int
+_nrrdSprintUI(char *s, size_t sz, const UI *v) {
+  return snprintf(s, sz, "%u", *v);
+}
+static int
+_nrrdSprintLL(char *s, size_t sz, const LL *v) {
   return snprintf(s, sz, AIR_LLONG_FMT, *v);
 }
-static int _nrrdSprintUL(char *s, size_t sz, const UL *v) {
+static int
+_nrrdSprintUL(char *s, size_t sz, const UL *v) {
   return snprintf(s, sz, AIR_ULLONG_FMT, *v);
 }
-static int _nrrdSprintFL(char *s, size_t sz, const FL *v) {
+static int
+_nrrdSprintFL(char *s, size_t sz, const FL *v) {
   /* having %.8g instead of %.9g was a roughly 20-year old bug,
      but now using %g with TeemV2 airSinglePrintf */
-  return airSinglePrintf(NULL, s, sz, "%g", *v); }
-static int _nrrdSprintDB(char *s, size_t sz, const DB *v) {
+  return airSinglePrintf(NULL, s, sz, "%g", *v);
+}
+static int
+_nrrdSprintDB(char *s, size_t sz, const DB *v) {
   /* not with %.17g thanks to TeemV2 airSinglePrintf */
-  return airSinglePrintf(NULL, s, sz, "%lg", *v); }
-int (* const
-nrrdSprint[NRRD_TYPE_MAX+1])(char *, size_t, const void *) = {
-  NULL,
-  (int (*)(char *, size_t, const void *))_nrrdSprintCH,
-  (int (*)(char *, size_t, const void *))_nrrdSprintUC,
-  (int (*)(char *, size_t, const void *))_nrrdSprintSH,
-  (int (*)(char *, size_t, const void *))_nrrdSprintUS,
-  (int (*)(char *, size_t, const void *))_nrrdSprintIN,
-  (int (*)(char *, size_t, const void *))_nrrdSprintUI,
-  (int (*)(char *, size_t, const void *))_nrrdSprintLL,
-  (int (*)(char *, size_t, const void *))_nrrdSprintUL,
-  (int (*)(char *, size_t, const void *))_nrrdSprintFL,
-  (int (*)(char *, size_t, const void *))_nrrdSprintDB,
-  NULL};
+  return airSinglePrintf(NULL, s, sz, "%lg", *v);
+}
+int (*const nrrdSprint[NRRD_TYPE_MAX + 1])(char *, size_t, const void *)
+  = {NULL,
+     (int (*)(char *, size_t, const void *))_nrrdSprintCH,
+     (int (*)(char *, size_t, const void *))_nrrdSprintUC,
+     (int (*)(char *, size_t, const void *))_nrrdSprintSH,
+     (int (*)(char *, size_t, const void *))_nrrdSprintUS,
+     (int (*)(char *, size_t, const void *))_nrrdSprintIN,
+     (int (*)(char *, size_t, const void *))_nrrdSprintUI,
+     (int (*)(char *, size_t, const void *))_nrrdSprintLL,
+     (int (*)(char *, size_t, const void *))_nrrdSprintUL,
+     (int (*)(char *, size_t, const void *))_nrrdSprintFL,
+     (int (*)(char *, size_t, const void *))_nrrdSprintDB,
+     NULL};
 
 /* ---- BEGIN non-NrrdIO */
 
@@ -253,149 +224,200 @@ nrrdSprint[NRRD_TYPE_MAX+1])(char *, size_t, const void *) = {
 ** Dereferences pointer v and fprintf()s that value into given file f;
 ** returns the result of fprintf()
 */
-static int _nrrdFprintCH(FILE *f, const CH *v) { return fprintf(f, "%d", *v); }
-static int _nrrdFprintUC(FILE *f, const UC *v) { return fprintf(f, "%u", *v); }
-static int _nrrdFprintSH(FILE *f, const SH *v) { return fprintf(f, "%d", *v); }
-static int _nrrdFprintUS(FILE *f, const US *v) { return fprintf(f, "%u", *v); }
-static int _nrrdFprintIN(FILE *f, const JN *v) { return fprintf(f, "%d", *v); }
-static int _nrrdFprintUI(FILE *f, const UI *v) { return fprintf(f, "%u", *v); }
-static int _nrrdFprintLL(FILE *f, const LL *v) {
+static int
+_nrrdFprintCH(FILE *f, const CH *v) {
+  return fprintf(f, "%d", *v);
+}
+static int
+_nrrdFprintUC(FILE *f, const UC *v) {
+  return fprintf(f, "%u", *v);
+}
+static int
+_nrrdFprintSH(FILE *f, const SH *v) {
+  return fprintf(f, "%d", *v);
+}
+static int
+_nrrdFprintUS(FILE *f, const US *v) {
+  return fprintf(f, "%u", *v);
+}
+static int
+_nrrdFprintIN(FILE *f, const JN *v) {
+  return fprintf(f, "%d", *v);
+}
+static int
+_nrrdFprintUI(FILE *f, const UI *v) {
+  return fprintf(f, "%u", *v);
+}
+static int
+_nrrdFprintLL(FILE *f, const LL *v) {
   return fprintf(f, AIR_LLONG_FMT, *v);
 }
-static int _nrrdFprintUL(FILE *f, const UL *v) {
+static int
+_nrrdFprintUL(FILE *f, const UL *v) {
   return fprintf(f, AIR_ULLONG_FMT, *v);
 }
-static int _nrrdFprintFL(FILE *f, const FL *v) {
+static int
+_nrrdFprintFL(FILE *f, const FL *v) {
   /* had %.8g here since r427 2002-04-29 (23-year old bug)
      now using %g with TeemV2 airSinglePrintf instead of %.9g */
-  return airSinglePrintf(f, NULL, 0, "%g", (double)(*v)); }
-static int _nrrdFprintDB(FILE *f, const DB *v) {
+  return airSinglePrintf(f, NULL, 0, "%g", (double)(*v));
+}
+static int
+_nrrdFprintDB(FILE *f, const DB *v) {
   /* not with %.17g thanks to TeemV2 airSinglePrintf */
-  return airSinglePrintf(f, NULL, 0, "%lg", *v); }
-int (* const
-nrrdFprint[NRRD_TYPE_MAX+1])(FILE *, const void *) = {
-  NULL,
-  (int (*)(FILE *, const void *))_nrrdFprintCH,
-  (int (*)(FILE *, const void *))_nrrdFprintUC,
-  (int (*)(FILE *, const void *))_nrrdFprintSH,
-  (int (*)(FILE *, const void *))_nrrdFprintUS,
-  (int (*)(FILE *, const void *))_nrrdFprintIN,
-  (int (*)(FILE *, const void *))_nrrdFprintUI,
-  (int (*)(FILE *, const void *))_nrrdFprintLL,
-  (int (*)(FILE *, const void *))_nrrdFprintUL,
-  (int (*)(FILE *, const void *))_nrrdFprintFL,
-  (int (*)(FILE *, const void *))_nrrdFprintDB,
-  NULL};
+  return airSinglePrintf(f, NULL, 0, "%lg", *v);
+}
+int (*const nrrdFprint[NRRD_TYPE_MAX + 1])(FILE *, const void *)
+  = {NULL,
+     (int (*)(FILE *, const void *))_nrrdFprintCH,
+     (int (*)(FILE *, const void *))_nrrdFprintUC,
+     (int (*)(FILE *, const void *))_nrrdFprintSH,
+     (int (*)(FILE *, const void *))_nrrdFprintUS,
+     (int (*)(FILE *, const void *))_nrrdFprintIN,
+     (int (*)(FILE *, const void *))_nrrdFprintUI,
+     (int (*)(FILE *, const void *))_nrrdFprintLL,
+     (int (*)(FILE *, const void *))_nrrdFprintUL,
+     (int (*)(FILE *, const void *))_nrrdFprintFL,
+     (int (*)(FILE *, const void *))_nrrdFprintDB,
+     NULL};
 
 /* about here is where Gordon admits he might have some use for C++ */
 
 #define _MMEF_ARGS(type) type *minP, type *maxP, int *hneP, const Nrrd *nrrd
 
-#define _MMEF_FIXED(type)                                                \
-  size_t I, N;                                                           \
-  type a, b, min, max, *v;                                               \
-                                                                         \
-  if (!(minP && maxP))                                                   \
-    return;                                                              \
-                                                                         \
-  /* all integral values exist */                                        \
-  *hneP = nrrdHasNonExistFalse;                                          \
-                                                                         \
-  /* set the local data pointer */                                       \
-  v = (type*)(nrrd->data);                                               \
-                                                                         \
-  /* get initial values */                                               \
-  N = nrrdElementNumber(nrrd);                                           \
-  min = max = v[0];                                                      \
-                                                                         \
-  /* run through array in pairs; by doing a compare on successive        \
-     elements, we can do three compares per pair instead of the naive    \
-     four.  In one very unexhaustive test on irix6.64, this resulted     \
-     in a 20% decrease in running time.  I learned this trick from       \
-     Numerical Recipes in C, long time ago, but I can't find it          \
-     anywhere in the book now ... */                                     \
-  if (N>1) /* size_t is unsigned, so N-2 may overflow */                 \
-  for (I=0; I<=N-2; I+=2) {                                              \
-    a = v[0 + I];                                                        \
-    b = v[1 + I];                                                        \
-    if (a < b) {                                                         \
-      min = AIR_MIN(a, min);                                             \
-      max = AIR_MAX(b, max);                                             \
-    } else {                                                             \
-      max = AIR_MAX(a, max);                                             \
-      min = AIR_MIN(b, min);                                             \
-    }                                                                    \
-  }                                                                      \
-                                                                         \
-  /* get the very last one (may be redundant) */                         \
-  a = v[N-1];                                                            \
-  min = AIR_MIN(a, min);                                                 \
-  max = AIR_MAX(a, max);                                                 \
-                                                                         \
-  /* record results */                                                   \
-  *minP = min;                                                           \
+#define _MMEF_FIXED(type)                                                               \
+  size_t I, N;                                                                          \
+  type a, b, min, max, *v;                                                              \
+                                                                                        \
+  if (!(minP && maxP)) return;                                                          \
+                                                                                        \
+  /* all integral values exist */                                                       \
+  *hneP = nrrdHasNonExistFalse;                                                         \
+                                                                                        \
+  /* set the local data pointer */                                                      \
+  v = (type *)(nrrd->data);                                                             \
+                                                                                        \
+  /* get initial values */                                                              \
+  N = nrrdElementNumber(nrrd);                                                          \
+  min = max = v[0];                                                                     \
+                                                                                        \
+  /* run through array in pairs; by doing a compare on successive                       \
+     elements, we can do three compares per pair instead of the naive                   \
+     four.  In one very unexhaustive test on irix6.64, this resulted                    \
+     in a 20% decrease in running time.  I learned this trick from                      \
+     Numerical Recipes in C, long time ago, but I can't find it                         \
+     anywhere in the book now ... */                                                    \
+  if (N > 1) /* size_t is unsigned, so N-2 may overflow */                              \
+    for (I = 0; I <= N - 2; I += 2) {                                                   \
+      a = v[0 + I];                                                                     \
+      b = v[1 + I];                                                                     \
+      if (a < b) {                                                                      \
+        min = AIR_MIN(a, min);                                                          \
+        max = AIR_MAX(b, max);                                                          \
+      } else {                                                                          \
+        max = AIR_MAX(a, max);                                                          \
+        min = AIR_MIN(b, min);                                                          \
+      }                                                                                 \
+    }                                                                                   \
+                                                                                        \
+  /* get the very last one (may be redundant) */                                        \
+  a = v[N - 1];                                                                         \
+  min = AIR_MIN(a, min);                                                                \
+  max = AIR_MAX(a, max);                                                                \
+                                                                                        \
+  /* record results */                                                                  \
+  *minP = min;                                                                          \
   *maxP = max;
 
-#define _MMEF_FLOAT(type)                                                \
-  size_t I, N;                                                           \
-  type a, min, max, *v;                                                  \
-                                                                         \
-  if (!(minP && maxP))                                                   \
-    return;                                                              \
-                                                                         \
-  /* this may be over-written below */                                   \
-  *hneP = nrrdHasNonExistFalse;                                          \
-                                                                         \
-  /* set the local data pointer */                                       \
-  N = nrrdElementNumber(nrrd);                                           \
-  v = (type*)(nrrd->data);                                               \
-                                                                         \
-  /* we have to explicitly search for the first non-NaN value */         \
-  max = min = AIR_NAN;                                                   \
-  for (I=0; I<N; I++) {                                                  \
-    a = v[I];                                                            \
-    if (AIR_EXISTS(a)) {                                                 \
-      min = max = a;                                                     \
-      break;                                                             \
-    } else {                                                             \
-      *hneP = nrrdHasNonExistTrue;                                       \
-    }                                                                    \
-  }                                                                      \
-  if (I == N) {                                                          \
-    /* oh dear, there were NO existent values */                         \
-    min = max = AIR_NAN;                                                 \
-    *hneP = nrrdHasNonExistOnly;                                         \
-  } else {                                                               \
-    /* there was at least one existent value; we continue searching,     \
-       still checking AIR_EXISTS at each value */                        \
-    for (I=I+1; I<N; I++) {                                              \
-      a = v[I];                                                          \
-      if (AIR_EXISTS(a)) {                                               \
-        if (a < min) {                                                   \
-          min = a;                                                       \
-        } else {                                                         \
-          if (a > max) {                                                 \
-            max = a;                                                     \
-          }                                                              \
-        }                                                                \
-      } else {                                                           \
-        *hneP = nrrdHasNonExistTrue;                                     \
-      }                                                                  \
-    }                                                                    \
-  }                                                                      \
-  *minP = min;                                                           \
+#define _MMEF_FLOAT(type)                                                               \
+  size_t I, N;                                                                          \
+  type a, min, max, *v;                                                                 \
+                                                                                        \
+  if (!(minP && maxP)) return;                                                          \
+                                                                                        \
+  /* this may be over-written below */                                                  \
+  *hneP = nrrdHasNonExistFalse;                                                         \
+                                                                                        \
+  /* set the local data pointer */                                                      \
+  N = nrrdElementNumber(nrrd);                                                          \
+  v = (type *)(nrrd->data);                                                             \
+                                                                                        \
+  /* we have to explicitly search for the first non-NaN value */                        \
+  max = min = AIR_NAN;                                                                  \
+  for (I = 0; I < N; I++) {                                                             \
+    a = v[I];                                                                           \
+    if (AIR_EXISTS(a)) {                                                                \
+      min = max = a;                                                                    \
+      break;                                                                            \
+    } else {                                                                            \
+      *hneP = nrrdHasNonExistTrue;                                                      \
+    }                                                                                   \
+  }                                                                                     \
+  if (I == N) {                                                                         \
+    /* oh dear, there were NO existent values */                                        \
+    min = max = AIR_NAN;                                                                \
+    *hneP = nrrdHasNonExistOnly;                                                        \
+  } else {                                                                              \
+    /* there was at least one existent value; we continue searching,                    \
+       still checking AIR_EXISTS at each value */                                       \
+    for (I = I + 1; I < N; I++) {                                                       \
+      a = v[I];                                                                         \
+      if (AIR_EXISTS(a)) {                                                              \
+        if (a < min) {                                                                  \
+          min = a;                                                                      \
+        } else {                                                                        \
+          if (a > max) {                                                                \
+            max = a;                                                                    \
+          }                                                                             \
+        }                                                                               \
+      } else {                                                                          \
+        *hneP = nrrdHasNonExistTrue;                                                    \
+      }                                                                                 \
+    }                                                                                   \
+  }                                                                                     \
+  *minP = min;                                                                          \
   *maxP = max;
 
-static void _nrrdMinMaxExactFindCH (_MMEF_ARGS(CH)) {_MMEF_FIXED(CH)}
-static void _nrrdMinMaxExactFindUC (_MMEF_ARGS(UC)) {_MMEF_FIXED(UC)}
-static void _nrrdMinMaxExactFindSH (_MMEF_ARGS(SH)) {_MMEF_FIXED(SH)}
-static void _nrrdMinMaxExactFindUS (_MMEF_ARGS(US)) {_MMEF_FIXED(US)}
-static void _nrrdMinMaxExactFindIN (_MMEF_ARGS(JN)) {_MMEF_FIXED(JN)}
-static void _nrrdMinMaxExactFindUI (_MMEF_ARGS(UI)) {_MMEF_FIXED(UI)}
-static void _nrrdMinMaxExactFindLL (_MMEF_ARGS(LL)) {_MMEF_FIXED(LL)}
-static void _nrrdMinMaxExactFindUL (_MMEF_ARGS(UL)) {_MMEF_FIXED(UL)}
-static void _nrrdMinMaxExactFindFL (_MMEF_ARGS(FL)) {_MMEF_FLOAT(FL)}
-static void _nrrdMinMaxExactFindDB (_MMEF_ARGS(DB)) {_MMEF_FLOAT(DB)}
+static void
+_nrrdMinMaxExactFindCH(_MMEF_ARGS(CH)) {
+  _MMEF_FIXED(CH)
+}
+static void
+_nrrdMinMaxExactFindUC(_MMEF_ARGS(UC)) {
+  _MMEF_FIXED(UC)
+}
+static void
+_nrrdMinMaxExactFindSH(_MMEF_ARGS(SH)) {
+  _MMEF_FIXED(SH)
+}
+static void
+_nrrdMinMaxExactFindUS(_MMEF_ARGS(US)) {
+  _MMEF_FIXED(US)
+}
+static void
+_nrrdMinMaxExactFindIN(_MMEF_ARGS(JN)) {
+  _MMEF_FIXED(JN)
+}
+static void
+_nrrdMinMaxExactFindUI(_MMEF_ARGS(UI)) {
+  _MMEF_FIXED(UI)
+}
+static void
+_nrrdMinMaxExactFindLL(_MMEF_ARGS(LL)) {
+  _MMEF_FIXED(LL)
+}
+static void
+_nrrdMinMaxExactFindUL(_MMEF_ARGS(UL)) {
+  _MMEF_FIXED(UL)
+}
+static void
+_nrrdMinMaxExactFindFL(_MMEF_ARGS(FL)) {
+  _MMEF_FLOAT(FL)
+}
+static void
+_nrrdMinMaxExactFindDB(_MMEF_ARGS(DB)) {
+  _MMEF_FLOAT(DB)
+}
 
 /*
 ******** nrrdMinMaxExactFind[]
@@ -406,22 +428,20 @@ static void _nrrdMinMaxExactFindDB (_MMEF_ARGS(DB)) {_MMEF_FLOAT(DB)}
 **
 ** These also sets *hneP, using a value from the nrrdHasNonExist* enum
 */
-void (* const
-nrrdMinMaxExactFind[NRRD_TYPE_MAX+1])(void *minP, void *maxP,
-                                      int *hneP, const Nrrd *) = {
-  NULL,
-  (void (*)(void *, void *, int *, const Nrrd *))_nrrdMinMaxExactFindCH,
-  (void (*)(void *, void *, int *, const Nrrd *))_nrrdMinMaxExactFindUC,
-  (void (*)(void *, void *, int *, const Nrrd *))_nrrdMinMaxExactFindSH,
-  (void (*)(void *, void *, int *, const Nrrd *))_nrrdMinMaxExactFindUS,
-  (void (*)(void *, void *, int *, const Nrrd *))_nrrdMinMaxExactFindIN,
-  (void (*)(void *, void *, int *, const Nrrd *))_nrrdMinMaxExactFindUI,
-  (void (*)(void *, void *, int *, const Nrrd *))_nrrdMinMaxExactFindLL,
-  (void (*)(void *, void *, int *, const Nrrd *))_nrrdMinMaxExactFindUL,
-  (void (*)(void *, void *, int *, const Nrrd *))_nrrdMinMaxExactFindFL,
-  (void (*)(void *, void *, int *, const Nrrd *))_nrrdMinMaxExactFindDB,
-  NULL
-};
+void (*const nrrdMinMaxExactFind[NRRD_TYPE_MAX + 1])(void *minP, void *maxP, int *hneP,
+                                                     const Nrrd *)
+  = {NULL,
+     (void (*)(void *, void *, int *, const Nrrd *))_nrrdMinMaxExactFindCH,
+     (void (*)(void *, void *, int *, const Nrrd *))_nrrdMinMaxExactFindUC,
+     (void (*)(void *, void *, int *, const Nrrd *))_nrrdMinMaxExactFindSH,
+     (void (*)(void *, void *, int *, const Nrrd *))_nrrdMinMaxExactFindUS,
+     (void (*)(void *, void *, int *, const Nrrd *))_nrrdMinMaxExactFindIN,
+     (void (*)(void *, void *, int *, const Nrrd *))_nrrdMinMaxExactFindUI,
+     (void (*)(void *, void *, int *, const Nrrd *))_nrrdMinMaxExactFindLL,
+     (void (*)(void *, void *, int *, const Nrrd *))_nrrdMinMaxExactFindUL,
+     (void (*)(void *, void *, int *, const Nrrd *))_nrrdMinMaxExactFindFL,
+     (void (*)(void *, void *, int *, const Nrrd *))_nrrdMinMaxExactFindDB,
+     NULL};
 
 /*
 ******** nrrdValCompare[]
@@ -438,71 +458,137 @@ nrrdMinMaxExactFind[NRRD_TYPE_MAX+1])(void *minP, void *maxP,
 ** existent from non-existent values.
 */
 #define _VC_ARGS(type) const type *A, const type *B
-#define _VC_FIXED (*A < *B ? -1 : (*A > *B ? 1 : 0))
-#define _VC_FLOAT                                                        \
-  int ex, ret;                                                           \
-                                                                         \
-  ex = AIR_EXISTS(*A) + AIR_EXISTS(*B);                                  \
-  switch (ex) {                                                          \
-  case 2: ret = _VC_FIXED; break;                                        \
-  case 1: ret = AIR_EXISTS(*A) ? 1 : -1; break;                          \
-  case 0: default: ret = 0;                                              \
+#define _VC_FIXED      (*A < *B ? -1 : (*A > *B ? 1 : 0))
+#define _VC_FLOAT                                                                       \
+  int ex, ret;                                                                          \
+                                                                                        \
+  ex = AIR_EXISTS(*A) + AIR_EXISTS(*B);                                                 \
+  switch (ex) {                                                                         \
+  case 2:                                                                               \
+    ret = _VC_FIXED;                                                                    \
+    break;                                                                              \
+  case 1:                                                                               \
+    ret = AIR_EXISTS(*A) ? 1 : -1;                                                      \
+    break;                                                                              \
+  case 0:                                                                               \
+  default:                                                                              \
+    ret = 0;                                                                            \
   }
 
-static int _nrrdValCompareCH (_VC_ARGS(CH)) {return _VC_FIXED;}
-static int _nrrdValCompareUC (_VC_ARGS(UC)) {return _VC_FIXED;}
-static int _nrrdValCompareSH (_VC_ARGS(SH)) {return _VC_FIXED;}
-static int _nrrdValCompareUS (_VC_ARGS(US)) {return _VC_FIXED;}
-static int _nrrdValCompareIN (_VC_ARGS(JN)) {return _VC_FIXED;}
-static int _nrrdValCompareUI (_VC_ARGS(UI)) {return _VC_FIXED;}
-static int _nrrdValCompareLL (_VC_ARGS(LL)) {return _VC_FIXED;}
-static int _nrrdValCompareUL (_VC_ARGS(UL)) {return _VC_FIXED;}
-static int _nrrdValCompareFL (_VC_ARGS(FL)) {_VC_FLOAT; return ret;}
-static int _nrrdValCompareDB (_VC_ARGS(DB)) {_VC_FLOAT; return ret;}
-int (* const
-nrrdValCompare[NRRD_TYPE_MAX+1])(const void *, const void *) = {
-  NULL,
-  (int (*)(const void *, const void *))_nrrdValCompareCH,
-  (int (*)(const void *, const void *))_nrrdValCompareUC,
-  (int (*)(const void *, const void *))_nrrdValCompareSH,
-  (int (*)(const void *, const void *))_nrrdValCompareUS,
-  (int (*)(const void *, const void *))_nrrdValCompareIN,
-  (int (*)(const void *, const void *))_nrrdValCompareUI,
-  (int (*)(const void *, const void *))_nrrdValCompareLL,
-  (int (*)(const void *, const void *))_nrrdValCompareUL,
-  (int (*)(const void *, const void *))_nrrdValCompareFL,
-  (int (*)(const void *, const void *))_nrrdValCompareDB,
-  NULL
-};
+static int
+_nrrdValCompareCH(_VC_ARGS(CH)) {
+  return _VC_FIXED;
+}
+static int
+_nrrdValCompareUC(_VC_ARGS(UC)) {
+  return _VC_FIXED;
+}
+static int
+_nrrdValCompareSH(_VC_ARGS(SH)) {
+  return _VC_FIXED;
+}
+static int
+_nrrdValCompareUS(_VC_ARGS(US)) {
+  return _VC_FIXED;
+}
+static int
+_nrrdValCompareIN(_VC_ARGS(JN)) {
+  return _VC_FIXED;
+}
+static int
+_nrrdValCompareUI(_VC_ARGS(UI)) {
+  return _VC_FIXED;
+}
+static int
+_nrrdValCompareLL(_VC_ARGS(LL)) {
+  return _VC_FIXED;
+}
+static int
+_nrrdValCompareUL(_VC_ARGS(UL)) {
+  return _VC_FIXED;
+}
+static int
+_nrrdValCompareFL(_VC_ARGS(FL)) {
+  _VC_FLOAT;
+  return ret;
+}
+static int
+_nrrdValCompareDB(_VC_ARGS(DB)) {
+  _VC_FLOAT;
+  return ret;
+}
+int (*const nrrdValCompare[NRRD_TYPE_MAX + 1])(const void *, const void *)
+  = {NULL,
+     (int (*)(const void *, const void *))_nrrdValCompareCH,
+     (int (*)(const void *, const void *))_nrrdValCompareUC,
+     (int (*)(const void *, const void *))_nrrdValCompareSH,
+     (int (*)(const void *, const void *))_nrrdValCompareUS,
+     (int (*)(const void *, const void *))_nrrdValCompareIN,
+     (int (*)(const void *, const void *))_nrrdValCompareUI,
+     (int (*)(const void *, const void *))_nrrdValCompareLL,
+     (int (*)(const void *, const void *))_nrrdValCompareUL,
+     (int (*)(const void *, const void *))_nrrdValCompareFL,
+     (int (*)(const void *, const void *))_nrrdValCompareDB,
+     NULL};
 
 /*
 ** ...Inv: for descending order
 */
-static int _nrrdValCompareInvCH (_VC_ARGS(CH)) {return -_VC_FIXED;}
-static int _nrrdValCompareInvUC (_VC_ARGS(UC)) {return -_VC_FIXED;}
-static int _nrrdValCompareInvSH (_VC_ARGS(SH)) {return -_VC_FIXED;}
-static int _nrrdValCompareInvUS (_VC_ARGS(US)) {return -_VC_FIXED;}
-static int _nrrdValCompareInvIN (_VC_ARGS(JN)) {return -_VC_FIXED;}
-static int _nrrdValCompareInvUI (_VC_ARGS(UI)) {return -_VC_FIXED;}
-static int _nrrdValCompareInvLL (_VC_ARGS(LL)) {return -_VC_FIXED;}
-static int _nrrdValCompareInvUL (_VC_ARGS(UL)) {return -_VC_FIXED;}
-static int _nrrdValCompareInvFL (_VC_ARGS(FL)) {_VC_FLOAT; return -ret;}
-static int _nrrdValCompareInvDB (_VC_ARGS(DB)) {_VC_FLOAT; return -ret;}
-int (* const
-nrrdValCompareInv[NRRD_TYPE_MAX+1])(const void *, const void *) = {
-  NULL,
-  (int (*)(const void *, const void *))_nrrdValCompareInvCH,
-  (int (*)(const void *, const void *))_nrrdValCompareInvUC,
-  (int (*)(const void *, const void *))_nrrdValCompareInvSH,
-  (int (*)(const void *, const void *))_nrrdValCompareInvUS,
-  (int (*)(const void *, const void *))_nrrdValCompareInvIN,
-  (int (*)(const void *, const void *))_nrrdValCompareInvUI,
-  (int (*)(const void *, const void *))_nrrdValCompareInvLL,
-  (int (*)(const void *, const void *))_nrrdValCompareInvUL,
-  (int (*)(const void *, const void *))_nrrdValCompareInvFL,
-  (int (*)(const void *, const void *))_nrrdValCompareInvDB,
-  NULL
-};
+static int
+_nrrdValCompareInvCH(_VC_ARGS(CH)) {
+  return -_VC_FIXED;
+}
+static int
+_nrrdValCompareInvUC(_VC_ARGS(UC)) {
+  return -_VC_FIXED;
+}
+static int
+_nrrdValCompareInvSH(_VC_ARGS(SH)) {
+  return -_VC_FIXED;
+}
+static int
+_nrrdValCompareInvUS(_VC_ARGS(US)) {
+  return -_VC_FIXED;
+}
+static int
+_nrrdValCompareInvIN(_VC_ARGS(JN)) {
+  return -_VC_FIXED;
+}
+static int
+_nrrdValCompareInvUI(_VC_ARGS(UI)) {
+  return -_VC_FIXED;
+}
+static int
+_nrrdValCompareInvLL(_VC_ARGS(LL)) {
+  return -_VC_FIXED;
+}
+static int
+_nrrdValCompareInvUL(_VC_ARGS(UL)) {
+  return -_VC_FIXED;
+}
+static int
+_nrrdValCompareInvFL(_VC_ARGS(FL)) {
+  _VC_FLOAT;
+  return -ret;
+}
+static int
+_nrrdValCompareInvDB(_VC_ARGS(DB)) {
+  _VC_FLOAT;
+  return -ret;
+}
+int (*const nrrdValCompareInv[NRRD_TYPE_MAX + 1])(const void *, const void *)
+  = {NULL,
+     (int (*)(const void *, const void *))_nrrdValCompareInvCH,
+     (int (*)(const void *, const void *))_nrrdValCompareInvUC,
+     (int (*)(const void *, const void *))_nrrdValCompareInvSH,
+     (int (*)(const void *, const void *))_nrrdValCompareInvUS,
+     (int (*)(const void *, const void *))_nrrdValCompareInvIN,
+     (int (*)(const void *, const void *))_nrrdValCompareInvUI,
+     (int (*)(const void *, const void *))_nrrdValCompareInvLL,
+     (int (*)(const void *, const void *))_nrrdValCompareInvUL,
+     (int (*)(const void *, const void *))_nrrdValCompareInvFL,
+     (int (*)(const void *, const void *))_nrrdValCompareInvDB,
+     NULL};
 
 /*
 ** nrrdArrayCompare
@@ -517,18 +603,17 @@ nrrdValCompareInv[NRRD_TYPE_MAX+1])(const void *, const void *) = {
 ** a bare array and not a Nrrd itself
 */
 int /* Biff: 1 */
-nrrdArrayCompare(int type, const void *_valA, const void *_valB,
-                 size_t valNum, double epsilon, int *differ,
-                 char explain[AIR_STRLEN_LARGE+1]) {
+nrrdArrayCompare(int type, const void *_valA, const void *_valB, size_t valNum,
+                 double epsilon, int *differ, char explain[AIR_STRLEN_LARGE + 1]) {
   static const char me[] = "nrrdArrayCompare";
   const unsigned char *valA, *valB;
   int (*compare)(const void *, const void *);
   size_t ii, sze;
-  char stmp[AIR_STRLEN_SMALL+1];
+  char stmp[AIR_STRLEN_SMALL + 1];
 
   if (!(_valA && _valB && differ)) {
-    biffAddf(NRRD, "%s: got NULL pointer (%p, %p, or %p)", me,
-             _valA, _valB, AIR_VOIDP(differ));
+    biffAddf(NRRD, "%s: got NULL pointer (%p, %p, or %p)", me, _valA, _valB,
+             AIR_VOIDP(differ));
     return 1;
   }
   if (!valNum) {
@@ -552,36 +637,36 @@ nrrdArrayCompare(int type, const void *_valA, const void *_valB,
     explain[0] = '\0';
   }
   if (type == nrrdTypeLLong || type == nrrdTypeULLong) {
-    fprintf(stderr, "%s: WARNING: possible erroneous comparison of "
-            "%s values with %s-based comparison\n", me,
-            airEnumStr(nrrdType, type),
-            airEnumStr(nrrdType, nrrdTypeDouble));
+    fprintf(stderr,
+            "%s: WARNING: possible erroneous comparison of "
+            "%s values with %s-based comparison\n",
+            me, airEnumStr(nrrdType, type), airEnumStr(nrrdType, nrrdTypeDouble));
   }
   sze = nrrdTypeSize[type];
   compare = nrrdValCompare[type];
   valA = AIR_CAST(const unsigned char *, _valA);
   valB = AIR_CAST(const unsigned char *, _valB);
-  for (ii=0; ii<valNum; ii++) {
-    *differ = compare(valA + ii*sze, valB + ii*sze);
+  for (ii = 0; ii < valNum; ii++) {
+    *differ = compare(valA + ii * sze, valB + ii * sze);
     if (*differ) {
       double aa, bb;
       /* same loss of precision as warned about above */
       aa = nrrdDLookup[type](valA, ii);
       bb = nrrdDLookup[type](valB, ii);
-      if (0 == epsilon
-          || fabs(aa - bb) > epsilon) {
+      if (0 == epsilon || fabs(aa - bb) > epsilon) {
         if (explain) {
           airSprintSize_t(stmp, ii);
           if (0 == epsilon) {
-            snprintf(explain, AIR_STRLEN_LARGE+1, "valA[%s]=%.17g %s valB[%s]=%.17g "
-                    "by %g",
-                    stmp, aa, *differ < 0 ? "<" : ">", stmp, bb,
-                    fabs(aa - bb));
+            snprintf(explain, AIR_STRLEN_LARGE + 1,
+                     "valA[%s]=%.17g %s valB[%s]=%.17g "
+                     "by %g",
+                     stmp, aa, *differ < 0 ? "<" : ">", stmp, bb, fabs(aa - bb));
           } else {
-            snprintf(explain, AIR_STRLEN_LARGE+1, "valA[%s]=%.17g %s valB[%s]=%.17g "
-                    "by %g, more than eps %g",
-                    stmp, aa, *differ < 0 ? "<" : ">", stmp, bb,
-                    fabs(aa - bb), epsilon);
+            snprintf(explain, AIR_STRLEN_LARGE + 1,
+                     "valA[%s]=%.17g %s valB[%s]=%.17g "
+                     "by %g, more than eps %g",
+                     stmp, aa, *differ < 0 ? "<" : ">", stmp, bb, fabs(aa - bb),
+                     epsilon);
           }
         }
         break;
@@ -595,5 +680,4 @@ nrrdArrayCompare(int type, const void *_valA, const void *_valB,
 
   return 0;
 }
-/* clang-format on */
 /* ---- END non-NrrdIO */
