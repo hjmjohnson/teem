@@ -257,7 +257,7 @@ def _equals_null(val):   # likely used in _BIFF_DICT, below
 
 
 _BIFF_DICT = {  # contents here are filled in by teem/python/cffi/exult.py Tffi.wrap()
-    'nrrdArrayCompare': (_equals_one, 0, b'nrrd', 'nrrd/accessors.c:520'),
+    'nrrdArrayCompare': (_equals_one, 0, b'nrrd', 'nrrd/accessors.c:556'),
     'nrrdApply1DLut': (_equals_one, 0, b'nrrd', 'nrrd/apply1D.c:435'),
     'nrrdApplyMulti1DLut': (_equals_one, 0, b'nrrd', 'nrrd/apply1D.c:466'),
     'nrrdApply1DRegMap': (_equals_one, 0, b'nrrd', 'nrrd/apply1D.c:514'),
