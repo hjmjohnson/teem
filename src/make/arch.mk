@@ -30,6 +30,7 @@
 # annoying. If you want different values for these variables, then change them.
 
 ## https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
+## compile with: make CC=clang
 #UBSAN=-fsanitize=undefined
 UBSAN=
 
