@@ -2,7 +2,7 @@
 Teem 2.0.0 aka "TeemV2"  (2025-?-?)
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-tl;dr list of breaking-est API changes for TeemV2 relative to previous release v1.11:
+tl;dr list of breaking-est changes for TeemV2 relative to previous release v1.11:
 - The options for configuring a CMake build have changed, and how Teem can also
   be built via GNUmake has also changed, see "use of CMake and GNUmake" below
 - Renamed hestParseOrDie() --> hestParseOrExit()
@@ -472,8 +472,8 @@ We are essentially pushing the casting from the function level down to the
 level of its argument and return.
 
 NOTE! There are some real drawback with using AIR_MOPPER:
-- You can no longer simply grep or ack to find where a function is defined;
-  but this is the only way Teem violates this basic principle.
+- You can no longer simply grep or ack to find where a libFoo_mop function
+  is defined; but this is the only way Teem violates this basic principle.
   You have to know to look for `AIR_MOPPER(libFoo)`
 - Adding the `libFoo_mop` declaration to the header is a manual process
 - The _mop function cannot have Biff: annotation (should not be a big loss)
