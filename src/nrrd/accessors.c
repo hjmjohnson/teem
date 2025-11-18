@@ -60,7 +60,7 @@ typedef double DB;
  * Load value from TB*, convert to TA:
  * assign `*_v` to `const TB*`, dereference, cast value to TA, return it.
  *
- * calling a cast function pointer is UB, so TeemV2 avoids this:
+ * calling a cast function pointer is undefined behavior (UB), so TeemV2 avoids this:
  * #define LOAD_DEFN(TA, TB) static TA _nrrdLoad##TA##TB(TB *v) { return (TA)(*v); }
  * #define LOAD_LIST(TA, TB) (TA (*)(const void *)) _nrrdLoad##TA##TB,
  *                           ^^^^^^^^^^^^^^^^^^^^^^ casting function pointer

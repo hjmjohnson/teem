@@ -78,19 +78,21 @@ typedef size_t IT;
 /* F(A, LD) */
 
 /*
-** _nrrdConv<Ta><Tb>()
-**
-** given two arrays, a and b, of different types (Ta and Tb) but equal
-** size N, _nrrdConvTaTb(a, b, N) will copy all the values from b into
-** a, thereby effecting the same type-conversion as one gets with a
-** cast.  See K+R Appendix A6 (pg. 197) for the details of what that
-** entails.  There are plenty of situations where the results are
-** "undefined" (assigning -23 to an unsigned char); the point here is
-** simply to make available on arrays all the same behavior you can
-** get from scalars.
-*/
+ * _nrrdConv<Ta><Tb>()
+ *
+ * given two arrays, a and b, of different types (Ta and Tb) but equal size N,
+ * _nrrdConvTaTb(a, b, N) will copy all the values from b into a, thereby effecting the
+ * same type-conversion as one gets with a cast.  See K+R Appendix A6 (pg. 197) for the
+ * details of what that entails.  There are plenty of situations where the results are
+ * "undefined" (assigning -23 to an unsigned char); the point here is simply to make
+ * available on arrays all the same behavior you can get from scalars.
+ * For TeemV2: used void* in interface to avoid function pointer casting, which
+ * leads to undefined behavior (UB) as soon as the function is called.
+ */
 #define CONV_DEF(TA, TB)                                                                \
-  static void _nrrdConv##TA##TB(TA *a, const TB *b, IT N) {                             \
+  static void _nrrdConv##TA##TB(void *_a, const void *_b, IT N) {                       \
+    TA *a = _a;                                                                         \
+    const TB *b = _b;                                                                   \
     size_t ii;                                                                          \
     for (ii = 0; ii < N; ii++) {                                                        \
       a[ii] = AIR_CAST(TA, b[ii]);                                                      \
@@ -106,7 +108,9 @@ typedef size_t IT;
 ** may suffer loss of data!!!
 */
 #define CLCV_DEF(TA, TB)                                                                \
-  static void _nrrdClCv##TA##TB(TA *a, const TB *b, IT N) {                             \
+  static void _nrrdClCv##TA##TB(void *_a, const void *_b, IT N) {                       \
+    TA *a = _a;                                                                         \
+    const TB *b = _b;                                                                   \
     size_t ii;                                                                          \
     for (ii = 0; ii < N; ii++) {                                                        \
       a[ii] = AIR_CAST(TA, _nrrdDClamp##TA(AIR_CAST(double, b[ii])));                   \
@@ -121,7 +125,10 @@ typedef size_t IT;
 ** there may be loss of precision with long long input.
 */
 #define CCRD_DEF(TA, TB)                                                                \
-  static void _nrrdCcrd##TA##TB(TA *a, const TB *b, IT N, int doClamp, int roundd) {    \
+  static void _nrrdCcrd##TA##TB(void *_a, const void *_b, IT N, int doClamp,            \
+                                int roundd) {                                           \
+    TA *a = _a;                                                                         \
+    const TB *b = _b;                                                                   \
     size_t ii;                                                                          \
     for (ii = 0; ii < N; ii++) {                                                        \
       double ccrdTmp = AIR_CAST(double, b[ii]);                                         \
@@ -133,18 +140,12 @@ typedef size_t IT;
   }
 
 /*
-** These makes the definition of later arrays shorter
-*/
-typedef void (*CF)(void *, const void *, IT);
-typedef void (*CN)(void *, const void *, IT, int, int);
-
-/*
 ** the individual converter's appearance in the array initialization,
 ** using the cast to the typedefs above
 */
-#define CONV_LIST(TA, TB) (CF) _nrrdConv##TA##TB,
-#define CLCV_LIST(TA, TB) (CF) _nrrdClCv##TA##TB,
-#define CCRD_LIST(TA, TB) (CN) _nrrdCcrd##TA##TB,
+#define CONV_LIST(TA, TB) _nrrdConv##TA##TB,
+#define CLCV_LIST(TA, TB) _nrrdClCv##TA##TB,
+#define CCRD_LIST(TA, TB) _nrrdCcrd##TA##TB,
 
 /*
 ** the brace-delimited list of all converters _to_ type TA
@@ -158,46 +159,36 @@ typedef void (*CN)(void *, const void *, IT, int, int);
 */
 
 /*
-** the clamping functions were moved here from accessors.c in order
+** the clamping functions were moved to here from accessors.c in order
 ** to create the combined clamp-and-convert functions
 */
 
 /*
-******** nrrdFClamp
-**
-** The rationale for this has been: "for integral types, clamps a given float to the
-** range representable by that type; for floating point types, just return the given
-** number, since every float must fit in a double".  However, thinking for the v1.13
-** release (which became the v2 release) finally recognized the fact that INT_MAX is
-** not representable as a float, so you could have: int 2147483584, passed through
-** nrrdFClamp[nrrdTypeInt] to get float 2.14748365e+09 > INT_MAX==2147483647, which
-** when cast back to int gives you -2147483648, which completely violates the intent
-** of these functions! So, now the rationale is just "clamps given float to a range
-** that won't create big surprises due to integer overflow upon casting to that type".
-** There could still be small surprises, as in from negative input generating output
-** that is less than the input (but still negative). The solution adopted here is
-** possibly too slow, but we'll let profiling tell us that, rather than trying to
-** cleverly use bounds known at compile-time when valid.
-**
-** Btw, this is a good example of where warnings about implicit floating-point
-** conversion warnings highlighted actual bugs in code.
-*/
-static float
-_nrrdFClampCH(FL v) {
-  return AIR_CLAMP(SCHAR_MIN, v, SCHAR_MAX);
-}
-static float
-_nrrdFClampUC(FL v) {
-  return AIR_CLAMP(0, v, UCHAR_MAX);
-}
-static float
-_nrrdFClampSH(FL v) {
-  return AIR_CLAMP(SHRT_MIN, v, SHRT_MAX);
-}
-static float
-_nrrdFClampUS(FL v) {
-  return AIR_CLAMP(0, v, USHRT_MAX);
-}
+ ******** nrrdFClamp
+ *
+ * The rationale for this has been: "for integral types, clamps a given float to the
+ * range representable by that type; for floating point types, just return the given
+ * number, since every float must fit in a double".  However, thinking for the v1.13
+ * release (which became the v2 release) finally recognized the fact that INT_MAX is
+ * not representable as a float, so you could have: int 2147483584, passed through
+ * nrrdFClamp[nrrdTypeInt] to get float 2.14748365e+09 > INT_MAX==2147483647, which
+ * when cast back to int gives you -2147483648, which completely violates the intent
+ * of these functions! So, now the rationale is just "clamps given float to a range
+ * that won't create big surprises due to integer overflow upon casting to that type".
+ * There could still be small surprises, as in from negative input generating output
+ * that is less than the input (but still negative). The solution adopted here is
+ * possibly too slow, but we'll let profiling tell us that, rather than trying to
+ * cleverly use bounds known at compile-time when valid.
+ *
+ * Btw, this is a good example of where warnings about implicit floating-point
+ * conversion warnings highlighted actual bugs in code.
+ */
+/* clang-format off */
+static float _nrrdFClampCH(FL v) { return AIR_CLAMP(SCHAR_MIN, v, SCHAR_MAX); }
+static float _nrrdFClampUC(FL v) { return AIR_CLAMP(     0,    v, UCHAR_MAX); }
+static float _nrrdFClampSH(FL v) { return AIR_CLAMP( SHRT_MIN, v, SHRT_MAX);  }
+static float _nrrdFClampUS(FL v) { return AIR_CLAMP(     0,    v, USHRT_MAX); }
+/* clang-format on */
 static float
 _nrrdFClampJN(FL v) {
   airFloat umax, umin; /* float, uint union */
@@ -244,36 +235,20 @@ float (*const nrrdFClamp[NRRD_TYPE_MAX + 1])(FL)
      _nrrdFClampUL, _nrrdFClampFL, _nrrdFClampDB, NULL};
 
 /*
-******** nrrdDClamp
-**
-** same as nrrdDClamp, but for doubles; here the long long int extrema
-** have to be cast to double to avoid implicit conversion warnings.
-** One change: for floats, doubles are clamped to [-FLT_MAX, FLT_MAX].
-*/
-static double
-_nrrdDClampCH(DB v) {
-  return AIR_CLAMP(SCHAR_MIN, v, SCHAR_MAX);
-}
-static double
-_nrrdDClampUC(DB v) {
-  return AIR_CLAMP(0, v, UCHAR_MAX);
-}
-static double
-_nrrdDClampSH(DB v) {
-  return AIR_CLAMP(SHRT_MIN, v, SHRT_MAX);
-}
-static double
-_nrrdDClampUS(DB v) {
-  return AIR_CLAMP(0, v, USHRT_MAX);
-}
-static double
-_nrrdDClampJN(DB v) {
-  return AIR_CLAMP(INT_MIN, v, INT_MAX);
-}
-static double
-_nrrdDClampUI(DB v) {
-  return AIR_CLAMP(0, v, UINT_MAX);
-}
+ ******** nrrdDClamp
+ *
+ * same as nrrdDClamp, but for doubles; here the long long int extrema
+ * have to be cast to double to avoid implicit conversion warnings.
+ * One change: for floats, doubles are clamped to [-FLT_MAX, FLT_MAX].
+ */
+/* clang-format off */
+static double _nrrdDClampCH(DB v) { return AIR_CLAMP(SCHAR_MIN, v, SCHAR_MAX); }
+static double _nrrdDClampUC(DB v) { return AIR_CLAMP(     0,    v, UCHAR_MAX); }
+static double _nrrdDClampSH(DB v) { return AIR_CLAMP( SHRT_MIN, v, SHRT_MAX);  }
+static double _nrrdDClampUS(DB v) { return AIR_CLAMP(     0,    v, USHRT_MAX); }
+static double _nrrdDClampJN(DB v) { return AIR_CLAMP(  INT_MIN, v, INT_MAX);   }
+static double _nrrdDClampUI(DB v) { return AIR_CLAMP(     0,    v, UINT_MAX);  }
+/* clang-format on */
 static double
 _nrrdDClampLL(DB v) { /* HEY copy-pasta from above */
   airDouble umax, umin;
@@ -311,17 +286,16 @@ MAP1(MAP2, CLCV_DEF)
 MAP1(MAP2, CCRD_DEF)
 
 /*
-** Initialize the converter arrays.
-**
-** Each definition generates one incredibly long line of text, which
-** hopefully will not break a poor compiler with limitations on
-** line-length...
-*/
+ * Initialize the converter arrays.
+ *
+ * Each definition generates one incredibly long line of text, which hopefully will not
+ * break a poor compiler with limitations on line-length...
+ */
+typedef void (*CF)(void *, const void *, IT);
+typedef void (*CN)(void *, const void *, IT, int, int);
 CF const _nrrdConv[NRRD_TYPE_MAX + 1][NRRD_TYPE_MAX + 1]
   = {{NULL}, MAP1(CONVTO_LIST, _dummy_){NULL}};
-
 CF const _nrrdClampConv[NRRD_TYPE_MAX + 1][NRRD_TYPE_MAX + 1]
   = {{NULL}, MAP1(CLCVTO_LIST, _dummy_){NULL}};
-
 CN const _nrrdCastClampRound[NRRD_TYPE_MAX + 1][NRRD_TYPE_MAX + 1]
   = {{NULL}, MAP1(CCRDTO_LIST, _dummy_){NULL}};
