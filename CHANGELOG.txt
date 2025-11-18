@@ -2,12 +2,15 @@
 Teem 2.0.0 aka "TeemV2"  (2025-?-?)
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-tl;dr summary of breaking API changes for TeemV2 relative to previous release v1.11:
-- rename hestParseOrDie() --> hestParseOrExit()
+tl;dr list of breaking-est API changes for TeemV2 relative to previous release v1.11:
+- renamed hestParseOrDie() --> hestParseOrExit()
   and it no longer takes last 3 args `doInfo`, `doUsage`, `doGlossary`
-- rename nrrdSanityOrDie() --> nrrdSanityOrExit()
-  (now all Teem functions that might call exit() have name ending with `Exit`)
+  and the hestParm->dieLessVerbose is removed
 - hestUsage() has new additional final argument `oneline`
+- renamed nrrdSanityOrDie() --> nrrdSanityOrExit()
+  (now, all Teem functions that might call exit() have name ending with `Exit`)
+- The global variable nrrdStateVerboseIO is gone,
+  replaced by NrrdIoState->verbose (usually nio->verbose in code)
 
 NOTE : This file is still in progress as work on TeemV2 continues ...
 
@@ -444,6 +447,37 @@ miteDefOpacNear1 --> miteDefaultOpacNear1
 miteDefOpacMatters --> miteDefaultOpacMatters
 
 ========= air =========
+
+• Mon Nov 17 09:40:32 2025 -0600 git short hash eace12d3
+  and more commits up to Mon Nov 17 17:56:01 2025 -0600 3199ccfd
+API NEW: AIR_MOPPER macro for airMopper function definition,
+and start of removing a common kind of undefined behavior from Teem.
+
+For a function named `FUNC` that takes and returns some kind of pointer,
+AIR_MOPPER(FUNC) defines a wrapper function FUNC_mop taking and returning a void*.
+The value of function pointers is preserved across casts, but calling a cast function
+pointer, as with `(airMopper)foo`, is unfortunately undefined behavior:
+  https://stackoverflow.com/a/559671
+
+Routinely following the definition of some free-er/nix-er function `libFoo` with
+`AIR_MOPPER(libFoo);` defines the `libFoo_mop` function that should be passed to
+airMopAdd. This should replace in TeemV2 code the `(airMopper)` casting that was
+ubiquitous in pre-TeemV2 code. So this line:
+  airMopAdd(mop, ntmp, (airMopper)nrrdNuke, airMopAlways)
+is changed to:
+  airMopAdd(mop, ntmp, nrrdNuke_mop, airMopAlways)
+We are essentially pushing the casting from the function level down to the
+level of its argument and return.
+
+NOTE! There are some real drawback with using AIR_MOPPER:
+- You can no longer simply grep or ack to find where a function is defined;
+  but this is the only way Teem violates this basic principle.
+  You have to know to look for `AIR_MOPPER(libFoo)`
+- Adding the `libFoo_mop` declaration to the header is a manual process
+- The _mop function cannot have Biff: annotation (should not be a big loss)
+
+So far the _mop functions have been added to air, biff, hest, and nrrd,
+and `(airMopper)` casts have been removed.
 
 • Sun Nov 16 22:22:23 2025 -0600 git short hash d1472dcf
 API NEW: added airMultiLinify() which is mostly like airOneLinify, except that isolated
@@ -898,7 +932,7 @@ uniformly created.
 * ... priority modifiers .....
 
 • Sun Nov 16 22:22:23 2025 -0600 git short hash d1472dcf
-API CHANGEs:
+ABI CHANGEs/API NEWs/API CHANGEs:
 - Added to hestParm `airArray *_selfMop` which underlies the new "self-mopping" ability
   in hestParms: this is what allows someone who receives a `const hestParm *hparm`to
   clean in up: you can't pass a `const hestParm*` to hestParmFree, but you can pass it to
@@ -914,7 +948,7 @@ API CHANGEs:
   default (which might look better with very long defaults in narrow terminals, at the
   expense of showing a string that is not so easily copy-and-pasted into another
   invocation of the command
-- rename `hestParseOrDie` --> `hestParseOrExit`, with behavioral changes (a previous
+- rename `hestParseOrDie()` --> `hestParseOrExit()`, with behavioral changes (a previous
   commit did away with the final three `doInfo`, `doUsage`, `doGlossary` arguments).  The
   changes increase the ability of hestParseOrExit to be the one-stop place for all
   parsing-or-else-usage-generating-or-exit needs
@@ -1031,6 +1065,8 @@ What changed about how hest appears to users as a result of this work:
   because you no longer need the `(airMopper)` cast, but this was a dumb idea: adding
   these _vp variants is work, so hundreds of other functions in Teem do not have such a
   _vp variant, plus the `(airMopper)` cast idiom is well-established.
+  [ha ha: this was reversed, but in a more consistent and uniform way,
+   with AIR_MOPPER macro and the many _mop functions, see above]
 * hestParse still returns non-zero in case of error, but now it returns -1 (instead of 1)
   if the problem is with the given hestOpt array, rather than anything to do with
   processing the given command-line.  This more serious error may warrant different
@@ -1085,7 +1121,7 @@ API CHANGE:
  rename hestParm->respFileEnable --> hestParm->responseFileEnable
  rename hestDefaultRespFileEnable --> hestDefaultResponseFileEnable
 because it was inconsistent to have that "response" abbreviated,
-when the pattern in hest has long bin to write out long things with whole words.
+when the pattern in hest has long been to write out long things with whole words.
 ALSO API CHANGE:
 removing fields from hestParm in hest.h:
   char respFileFlag,        /* the character at the beginning of an argument
