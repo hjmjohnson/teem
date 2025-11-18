@@ -312,28 +312,28 @@ _nrrdFormatVTK_write(FILE *file, const Nrrd *_nrrd, NrrdIoState *nio) {
 
   switch (nrrd->type) {
   case nrrdTypeUChar:
-    strcpy(type, "unsigned_char");
+    airStrcpy(type, sizeof(type), "unsigned_char");
     break;
   case nrrdTypeChar:
-    strcpy(type, "char");
+    airStrcpy(type, sizeof(type), "char");
     break;
   case nrrdTypeUShort:
-    strcpy(type, "unsigned_short");
+    airStrcpy(type, sizeof(type), "unsigned_short");
     break;
   case nrrdTypeShort:
-    strcpy(type, "short");
+    airStrcpy(type, sizeof(type), "short");
     break;
   case nrrdTypeUInt:
-    strcpy(type, "unsigned_int");
+    airStrcpy(type, sizeof(type), "unsigned_int");
     break;
   case nrrdTypeInt:
-    strcpy(type, "int");
+    airStrcpy(type, sizeof(type), "int");
     break;
   case nrrdTypeFloat:
-    strcpy(type, "float");
+    airStrcpy(type, sizeof(type), "float");
     break;
   case nrrdTypeDouble:
-    strcpy(type, "double");
+    airStrcpy(type, sizeof(type), "double");
     break;
   default:
     biffAddf(NRRD, "%s: can't put %s-type nrrd into VTK", me,
