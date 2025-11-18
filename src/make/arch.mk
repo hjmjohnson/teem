@@ -28,30 +28,30 @@
 #    https://clang.llvm.org/docs/ClangStaticAnalyzer.html
 # which is run differently, via:
 #    CC='scan-build clang' make
-
+#
+# For UBSan: https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html compile with:
+#    ubsan= make
+# For ASan: https://clang.llvm.org/docs/AddressSanitizer.html compile with:
+#    asan= make
+# For LSan: https://clang.llvm.org/docs/LeakSanitizer.html compile with:
+#    lsan= make
+# For MSan: https://clang.llvm.org/docs/MemorySanitizer.html compile with:
+#    msan= make
+# Sanitizers may be combined, e.g.:
+#    ubsan= asan= make
+# Note however that not all sanitizers are available on all platforms,
+# and not all sanitizers play well with each other.
 SAN_LIST :=
 ifneq ($(origin ubsan),undefined)
-  # For UBSan: https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
-  # compile with:
-  #    ubsan= make
   SAN_LIST += undefined
 endif
 ifneq ($(origin asan),undefined)
-  # For ASan: https://clang.llvm.org/docs/AddressSanitizer.html
-  # compile with:
-  #    asan= make
   SAN_LIST += address
 endif
 ifneq ($(origin lsan),undefined)
-  # for LSan: https://clang.llvm.org/docs/LeakSanitizer.html
-  # compile with:
-  #    lsan= make
   SAN_LIST += leak
 endif
 ifneq ($(origin msan),undefined)
-  # for MSan: https://clang.llvm.org/docs/MemorySanitizer.html
-  # compile with:
-  #    msan= make
   SAN_LIST += memory
 endif
 ifneq ($(SAN_LIST),)
