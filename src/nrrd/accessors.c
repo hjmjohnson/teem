@@ -151,14 +151,11 @@ double (*const nrrdDInsert[NRRD_TYPE_MAX + 1])(void *, size_t, double)
   = {NULL, MAP(INSERT_LIST, DB) NULL};
 
 /*
-******** nrrdSprint
-**
-** Dereferences pointer v and sprintf()s that value into given string s,
-** returns the result of sprintf()
-**
-** There is obviously no provision for ensuring that the sprint'ing
-** doesn't overflow the buffer, which is unfortunate...
-*/
+ ******** nrrdSprint
+ *
+ * Dereferences pointer v and snprintf()s that value into given string s,
+ * returns the result of snprintf()
+ */
 static int
 _nrrdSprintCH(char *s, size_t sz, const CH *v) {
   return snprintf(s, sz, "%d", *v);
