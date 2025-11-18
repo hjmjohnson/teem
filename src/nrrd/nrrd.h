@@ -1661,7 +1661,7 @@ NRRD_EXPORT int nrrdKernelParse(const NrrdKernel **kernelP,
                                 double *parm,
                                 const char *str);
 NRRD_EXPORT int nrrdKernelSpecParse(NrrdKernelSpec *ksp, const char *str);
-NRRD_EXPORT int nrrdKernelSpecSprint(char str[AIR_STRLEN_LARGE + 1],
+NRRD_EXPORT int nrrdKernelSpecSprint(char str[AIR_STRLEN_SMALL + 1],
                                      const NrrdKernelSpec *ksp);
 NRRD_EXPORT int nrrdKernelSprint(char str[AIR_STRLEN_LARGE + 1],
                                  const NrrdKernel *kernel,

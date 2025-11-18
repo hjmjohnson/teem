@@ -32,6 +32,7 @@ void
 usage(char *me) {
   /*                      0     1       2      3     4        5      (6)   (7)*/
   fprintf(stderr, "usage: %s <kernel> <min> <step> <max> <txtOut> [dkern]\n", me);
+  fprintf(stderr, "can give min step max txtOut as 0 0 0 0 to not do any sampling\n");
   exit(1);
 }
 
@@ -40,7 +41,7 @@ usage(char *me) {
 int
 main(int argc, char *argv[]) {
   char *me, *kernS[2], *minS, *stepS, *maxS, *outS, *err, kstr[AIR_STRLEN_LARGE + 1];
-  const NrrdKernel *kern[2];
+  const NrrdKernel *kern[2] = {NULL, NULL};
   NrrdKernelSpec *ksp[2];
   double parm[NRRD_KERNEL_PARM_MAXNUM], min, step, max, integral, *dom_d, *ran_d;
   float *dom_f, *ran_f, val, r_f, r_d;
@@ -67,8 +68,10 @@ main(int argc, char *argv[]) {
   if (3
       != (sscanf(minS, "%lf", &min) + sscanf(stepS, "%lf", &step)
           + sscanf(maxS, "%lf", &max))) {
-    fprintf(stderr, "%s: couldn't parse \"%s\", \"%s\", \"%s\" as 3 doubles\n", me, minS,
-            stepS, maxS);
+    fprintf(stderr,
+            "%s: couldn't parse min \"%s\", step \"%s\", "
+            "or max \"%s\" as doubles\n",
+            me, minS, stepS, maxS);
     exit(1);
   }
 
@@ -89,15 +92,25 @@ main(int argc, char *argv[]) {
       airMopError(mop);
       exit(1);
     }
-    fprintf(stderr, "%s: printed kernel as \"%s\"\n", me, kstr);
-    if (!(min <= -kern[kii]->support(parm) && max >= kern[kii]->support(parm))) {
-      fprintf(stderr, "%s: WARNING: support=%g => lower min (%g) or raise max (%g)\n",
-              me, kern[kii]->support(parm), min, max);
-    }
+    fprintf(stderr, "%s: sprinted kernel as \"%s\"\n", me, kstr);
     fprintf(stderr, "%s: support(%s) = %g\n", me, kstr, kern[kii]->support(parm));
   }
 
   /* see how many values are in the interval */
+  if (min >= max) {
+    printf("%s: min %g >= max %g so not doing any samping or eval checking; bye\n", me,
+           min, max);
+    airMopOkay(mop);
+    exit(0);
+  }
+  for (kii = 0; kii <= (kernS[1] ? 1 : 0); kii++) {
+    if (!(min <= -kern[kii]->support(parm) && max >= kern[kii]->support(parm))) {
+      fprintf(stderr,
+              "%s: WARNING: must lower min (%g) or raise max (%g) "
+              "in order to full sample support [-%g,%g] => \n",
+              me, min, max, kern[kii]->support(parm), kern[kii]->support(parm));
+    }
+  }
   len = 0;
   for (val = min; val <= max; val += step) {
     len++;
