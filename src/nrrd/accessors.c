@@ -22,7 +22,7 @@
 #include "float.h"
 
 /*
-** making these typedefs here allows us to used one token for both
+** making these typedefs here allows us to use one token for both
 ** constructing function names, and for specifying argument types
 */
 typedef signed char CH;
@@ -280,19 +280,22 @@ int (*const nrrdFprint[NRRD_TYPE_MAX + 1])(FILE *, const void *)
 
 /* about here is where Gordon admits he might have some use for C++ */
 
-#define _MMEF_ARGS(type) type *minP, type *maxP, int *hneP, const Nrrd *nrrd
+#define _MMEF_ARGS(type) void *_minP, void *_maxP, int *hneP, const Nrrd *nrrd
 
 #define _MMEF_FIXED(type)                                                               \
   size_t I, N;                                                                          \
-  type a, b, min, max, *v;                                                              \
+  type *minP, *maxP, a, b, min, max, *v;                                                \
                                                                                         \
-  if (!(minP && maxP)) return;                                                          \
+  if (!(_minP && _maxP)) return;                                                        \
+  /* get properly typed pointers from the void*s */                                     \
+  minP = _minP;                                                                         \
+  maxP = _maxP;                                                                         \
                                                                                         \
   /* all integral values exist */                                                       \
   *hneP = nrrdHasNonExistFalse;                                                         \
                                                                                         \
   /* set the local data pointer */                                                      \
-  v = (type *)(nrrd->data);                                                             \
+  v = nrrd->data;                                                                       \
                                                                                         \
   /* get initial values */                                                              \
   N = nrrdElementNumber(nrrd);                                                          \
@@ -328,16 +331,19 @@ int (*const nrrdFprint[NRRD_TYPE_MAX + 1])(FILE *, const void *)
 
 #define _MMEF_FLOAT(type)                                                               \
   size_t I, N;                                                                          \
-  type a, min, max, *v;                                                                 \
+  type *minP, *maxP, a, min, max, *v;                                                   \
                                                                                         \
-  if (!(minP && maxP)) return;                                                          \
+  if (!(_minP && _maxP)) return;                                                        \
+  /* get properly typed pointers from the void*s */                                     \
+  minP = _minP;                                                                         \
+  maxP = _maxP;                                                                         \
                                                                                         \
   /* this may be over-written below */                                                  \
   *hneP = nrrdHasNonExistFalse;                                                         \
                                                                                         \
   /* set the local data pointer */                                                      \
   N = nrrdElementNumber(nrrd);                                                          \
-  v = (type *)(nrrd->data);                                                             \
+  v = nrrd->data;                                                                       \
                                                                                         \
   /* we have to explicitly search for the first non-NaN value */                        \
   max = min = AIR_NAN;                                                                  \
@@ -428,16 +434,16 @@ _nrrdMinMaxExactFindDB(_MMEF_ARGS(DB)) {
 void (*const nrrdMinMaxExactFind[NRRD_TYPE_MAX + 1])(void *minP, void *maxP, int *hneP,
                                                      const Nrrd *)
   = {NULL,
-     (void (*)(void *, void *, int *, const Nrrd *))_nrrdMinMaxExactFindCH,
-     (void (*)(void *, void *, int *, const Nrrd *))_nrrdMinMaxExactFindUC,
-     (void (*)(void *, void *, int *, const Nrrd *))_nrrdMinMaxExactFindSH,
-     (void (*)(void *, void *, int *, const Nrrd *))_nrrdMinMaxExactFindUS,
-     (void (*)(void *, void *, int *, const Nrrd *))_nrrdMinMaxExactFindIN,
-     (void (*)(void *, void *, int *, const Nrrd *))_nrrdMinMaxExactFindUI,
-     (void (*)(void *, void *, int *, const Nrrd *))_nrrdMinMaxExactFindLL,
-     (void (*)(void *, void *, int *, const Nrrd *))_nrrdMinMaxExactFindUL,
-     (void (*)(void *, void *, int *, const Nrrd *))_nrrdMinMaxExactFindFL,
-     (void (*)(void *, void *, int *, const Nrrd *))_nrrdMinMaxExactFindDB,
+     _nrrdMinMaxExactFindCH,
+     _nrrdMinMaxExactFindUC,
+     _nrrdMinMaxExactFindSH,
+     _nrrdMinMaxExactFindUS,
+     _nrrdMinMaxExactFindIN,
+     _nrrdMinMaxExactFindUI,
+     _nrrdMinMaxExactFindLL,
+     _nrrdMinMaxExactFindUL,
+     _nrrdMinMaxExactFindFL,
+     _nrrdMinMaxExactFindDB,
      NULL};
 
 /*
