@@ -77,7 +77,7 @@ main(int argc, const char **argv) {
     /* yes, we have that command */
     /* initialize variables used by the various commands */
     size_t meSize = strlen(TEND) + strlen(argv[1]) + 2;
-    char *me = (char *)calloc(meSize, sizeof(char));
+    char *me = AIR_CALLOC(meSize, char);
     // hijack hparm->_selfMop to clean this dynamic allocation
     airMopAdd(hparm->_selfMop, me, airFree, airMopAlways);
     snprintf(me, meSize, "%s %s", TEND, argv[1]);
