@@ -43,7 +43,7 @@ simulate(double *dwiSim, const double *parm, const tenExperSpec *espec) {
 
 static char *
 parmSprint(char str[AIR_STRLEN_MED+1], const double *parm) {
-  snprintf(str, sizeof(str), "(%g) %g", parm[0], parm[1]);
+  snprintf(str, ASP1_M, "(%g) %g", parm[0], parm[1]);
   return str;
 }
 
