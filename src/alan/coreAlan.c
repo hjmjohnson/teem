@@ -179,7 +179,7 @@ _alanPerIteration(alanContext *actx, int iter) {
     }
   }
   if (actx->saveInterval && !(iter % actx->saveInterval)) {
-    sprintf(fname, "%06d.nrrd", actx->constFilename ? 0 : iter);
+    snprintf(fname, sizeof(fname), "%06d.nrrd", actx->constFilename ? 0 : iter);
     nrrdSave(fname, actx->_nlev[(iter + 1) % 2], NULL);
     fprintf(stderr, "%s: iter = %d, averageChange = %g, saved %s\n", me, iter,
             actx->averageChange, fname);
@@ -187,8 +187,8 @@ _alanPerIteration(alanContext *actx, int iter) {
   if (actx->frameInterval && !(iter % actx->frameInterval)) {
     nrrdSlice(nslc = nrrdNew(), actx->_nlev[(iter + 1) % 2], 0, 0);
     nrrdQuantize(nimg = nrrdNew(), nslc, NULL, 8);
-    sprintf(fname, (2 == actx->dim ? "%06d.png" : "%06d.nrrd"),
-            actx->constFilename ? 0 : iter);
+    snprintf(fname, sizeof(fname), (2 == actx->dim ? "%06d.png" : "%06d.nrrd"),
+             actx->constFilename ? 0 : iter);
     nrrdSave(fname, nimg, NULL);
     fprintf(stderr, "%s: iter = %d, averageChange = %g, saved %s\n", me, iter,
             actx->averageChange, fname);

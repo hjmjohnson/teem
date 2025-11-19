@@ -101,19 +101,19 @@ baneRangeNew(int type) {
   range->center = AIR_NAN;
   switch (type) {
   case baneRangePositive:
-    sprintf(range->name, "positive");
+    snprintf(range->name, sizeof(range->name), "positive");
     range->answer = _rangePositive_Answer;
     break;
   case baneRangeNegative:
-    sprintf(range->name, "negative");
+    snprintf(range->name, sizeof(range->name), "negative");
     range->answer = _rangeNegative_Answer;
     break;
   case baneRangeZeroCentered:
-    sprintf(range->name, "zero-centered");
+    snprintf(range->name, sizeof(range->name), "zero-centered");
     range->answer = _rangeZeroCentered_Answer;
     break;
   case baneRangeAnywhere:
-    sprintf(range->name, "anywhere");
+    snprintf(range->name, sizeof(range->name), "anywhere");
     range->answer = _rangeAnywhere_Answer;
     break;
   default:

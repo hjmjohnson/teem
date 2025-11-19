@@ -275,7 +275,7 @@ baneIncNew(int type, baneRange *range, double *parm) {
   switch (type) {
     /* --------------------------------------------------------- */
   case baneIncAbsolute:
-    sprintf(inc->name, "absolute");
+    snprintf(inc->name, sizeof(inc->name), "absolute");
     inc->nhist = NULL;
     if (!(AIR_EXISTS(parm[0]) && AIR_EXISTS(parm[1]))) {
       biffAddf(BANE, "%s: parm[0] and parm[1] don't both exist", me);
@@ -290,7 +290,7 @@ baneIncNew(int type, baneRange *range, double *parm) {
     break;
     /* --------------------------------------------------------- */
   case baneIncRangeRatio:
-    sprintf(inc->name, "range ratio");
+    snprintf(inc->name, sizeof(inc->name), "range ratio");
     inc->nhist = nrrdNew();
     if (!AIR_EXISTS(parm[0])) {
       biffAddf(BANE, "%s: parm[0] doesn't exist", me);
@@ -304,7 +304,7 @@ baneIncNew(int type, baneRange *range, double *parm) {
     break;
     /* --------------------------------------------------------- */
   case baneIncPercentile:
-    sprintf(inc->name, "percentile");
+    snprintf(inc->name, sizeof(inc->name), "percentile");
     inc->nhist = nrrdNew();
     if (!(AIR_EXISTS(parm[0]) && AIR_EXISTS(parm[1]))) {
       biffAddf(BANE, "%s: parm[0] and parm[1] don't both exist", me);
@@ -324,7 +324,7 @@ baneIncNew(int type, baneRange *range, double *parm) {
     break;
     /* --------------------------------------------------------- */
   case baneIncStdv:
-    sprintf(inc->name, "stdv");
+    snprintf(inc->name, sizeof(inc->name), "stdv");
     inc->nhist = NULL;
     if (!AIR_EXISTS(parm[0])) {
       biffAddf(BANE, "%s: parm[0] doesn't exist", me);

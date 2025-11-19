@@ -122,19 +122,19 @@ baneClipNew(int type, double *parm) {
   clip->type = type;
   switch (type) {
   case baneClipAbsolute:
-    sprintf(clip->name, "absolute");
+    snprintf(clip->name, sizeof(clip->name), "absolute");
     clip->answer = _clipAnswer_Absolute;
     break;
   case baneClipPeakRatio:
-    sprintf(clip->name, "peak ratio");
+    snprintf(clip->name, sizeof(clip->name), "peak ratio");
     clip->answer = _clipAnswer_PeakRatio;
     break;
   case baneClipPercentile:
-    sprintf(clip->name, "percentile");
+    snprintf(clip->name, sizeof(clip->name), "percentile");
     clip->answer = _clipAnswer_Percentile;
     break;
   case baneClipTopN:
-    sprintf(clip->name, "top N");
+    snprintf(clip->name, sizeof(clip->name), "top N");
     clip->answer = _clipAnswer_TopN;
     break;
   default:
