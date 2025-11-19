@@ -21,41 +21,37 @@
 #include "privateBane.h"
 
 #define SCAT_INFO "Make V-G and V-H scatterplots"
-static const char *_baneGkms_scatInfoL
+static const char *scatInfoL
   = (SCAT_INFO ". These provide a quick way to inspect a histogram volume, in order to "
                "verify that the derivative inclusion ranges were appropriate, and to "
                "get an initial sense of what sorts of boundaries were present in the "
                "original volume.");
 static int /* Biff: 1 */
-baneGkms_scatMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out[2], *perr;
-  Nrrd *hvol, *nvgRaw, *nvhRaw, *nvgQuant, *nvhQuant;
-  NrrdRange *vgRange, *vhRange;
-  airArray *mop;
-  int pret, E;
+scatMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
   double _gamma;
-
-  hestOptAdd_1_Double(&opt, "g", "gamma", &_gamma, "1.0",
+  hestOptAdd_1_Double(&hopt, "g", "gamma", &_gamma, "1.0",
                       "gamma used to brighten/darken scatterplots. "
                       "gamma > 1.0 brightens; gamma < 1.0 darkens. "
                       "Negative gammas invert values (like in xv). ");
-  hestOptAdd_1_Other(&opt, "i", "hvolIn", &hvol, NULL,
+  Nrrd *hvol;
+  hestOptAdd_1_Other(&hopt, "i", "hvolIn", &hvol, NULL,
                      "input histogram volume (from \"gkms hvol\")", nrrdHestNrrd);
-  hestOptAdd_2_String(&opt, "o", "vgOut vhOut", out, NULL,
+  char *out[2];
+  hestOptAdd_2_String(&hopt, "o", "vgOut vhOut", out, NULL,
                       "Filenames to use for two output scatterplots, (gradient "
                       "magnitude versus value, and 2nd derivative versus value); "
                       "can use PGM or PNG format");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_baneGkms_scatInfoL);
-  airMopAdd(mop, opt, hestParseFree_mop, airMopAlways);
+  hestParseOrExit(hopt, argc, argv, hparm, me, scatInfoL);
+  airArray *mop = airMopNew();
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
-  nvgRaw = nrrdNew();
-  nvhRaw = nrrdNew();
-  nvgQuant = nrrdNew();
-  nvhQuant = nrrdNew();
+  Nrrd *nvgRaw = nrrdNew();
+  Nrrd *nvhRaw = nrrdNew();
+  Nrrd *nvgQuant = nrrdNew();
+  Nrrd *nvhQuant = nrrdNew();
   airMopAdd(mop, nvgRaw, nrrdNuke_mop, airMopAlways);
   airMopAdd(mop, nvhRaw, nrrdNuke_mop, airMopAlways);
   airMopAdd(mop, nvgQuant, nrrdNuke_mop, airMopAlways);
@@ -65,11 +61,11 @@ baneGkms_scatMain(int argc, const char **argv, const char *me, const hestParm *h
     airMopError(mop);
     return 1;
   }
-  vgRange = nrrdRangeNewSet(nvgRaw, nrrdBlind8BitRangeFalse);
-  vhRange = nrrdRangeNewSet(nvhRaw, nrrdBlind8BitRangeFalse);
+  NrrdRange *vgRange = nrrdRangeNewSet(nvgRaw, nrrdBlind8BitRangeFalse);
+  NrrdRange *vhRange = nrrdRangeNewSet(nvhRaw, nrrdBlind8BitRangeFalse);
   airMopAdd(mop, vgRange, nrrdRangeNix_mop, airMopAlways);
   airMopAdd(mop, vhRange, nrrdRangeNix_mop, airMopAlways);
-  E = 0;
+  int E = 0;
   if (!E) E |= nrrdArithGamma(nvgRaw, nvgRaw, vgRange, _gamma);
   if (!E) E |= nrrdArithGamma(nvhRaw, nvhRaw, vhRange, _gamma);
   if (!E) E |= nrrdQuantize(nvgQuant, nvgRaw, vgRange, 8);
@@ -91,4 +87,4 @@ baneGkms_scatMain(int argc, const char **argv, const char *me, const hestParm *h
   airMopOkay(mop);
   return 0;
 }
-BANE_GKMS_CMD(scat, SCAT_INFO);
+const unrrduCmd baneGkms_scatCmd = {"scat", SCAT_INFO, scatMain, AIR_FALSE};

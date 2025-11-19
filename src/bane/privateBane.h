@@ -52,45 +52,6 @@ typedef unsigned int uint; /* uint is just more concise */
 /* hvol.c */
 extern int _baneAxisCheck(baneAxis *axis);
 
-#define BANE_GKMS_CMD(name, info)                                                       \
-  const unrrduCmd baneGkms_##name##Cmd = {#name, info, baneGkms_##name##Main, AIR_FALSE}
-
-/* USAGE, PARSE
-   all copied from unrrdu/privateUnrrdu.h */
-#define USAGE(INFO)                                                                     \
-  if (!argc && !hparm->noArgsIsNoProblem) {                                             \
-    hestInfo(stderr, me, (INFO), hparm);                                                \
-    hestUsage(stderr, opt, me, hparm, AIR_FALSE);                                       \
-    hestGlossary(stderr, opt, hparm);                                                   \
-    airMopError(mop);                                                                   \
-    return 2;                                                                           \
-  }
-
-#define PARSE(INFO)                                                                     \
-  if ((pret = hestParse(opt, argc, argv, &perr, hparm))) {                              \
-    if (1 == pret) {                                                                    \
-      fprintf(stderr, "%s: %s\n", me, perr);                                            \
-      free(perr);                                                                       \
-      hestUsage(stderr, opt, me, hparm, AIR_FALSE);                                     \
-      if (hparm && hparm->noArgsIsNoProblem) {                                          \
-        fprintf(stderr, "\nFor more info: \"%s --help\"\n", me);                        \
-      } else {                                                                          \
-        fprintf(stderr, "\nFor more info: \"%s\" or \"%s --help\"\n", me, me);          \
-      }                                                                                 \
-      airMopError(mop);                                                                 \
-      return 2;                                                                         \
-    } else {                                                                            \
-      exit(1);                                                                          \
-    }                                                                                   \
-  } else if (opt->helpWanted) {                                                         \
-    hestInfo(stdout, me, (INFO), hparm);                                                \
-    hestUsage(stdout, opt, me, hparm, AIR_FALSE);                                       \
-    hestGlossary(stdout, opt, hparm);                                                   \
-    return 0;                                                                           \
-  }
-
-#define USAGE_PARSE(INFO) USAGE(INFO) PARSE(INFO)
-
 #ifdef __cplusplus
 }
 #endif

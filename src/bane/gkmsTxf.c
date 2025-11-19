@@ -19,61 +19,61 @@
 
 #include "bane.h"
 #include "privateBane.h"
+#include <assert.h>
 
 #define TXF_INFO "Create Levoy-style triangular 2D opacity functions"
-static const char *_baneGkms_txfInfoL
+static const char *txfInfoL
   = (TXF_INFO ". The triangles are in the 2D space of data value and gradient "
               "magnitude.  They can be tilted sideways and clipped at the bottom. "
               "This doesn't strictly speaking belong in \"gkms\" but there's no "
               "other good place in Teem.");
 static int /* Biff: 1 */
-baneGkms_txfMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *perr;
-  Nrrd *nout;
-  airArray *mop;
-  int pret, E, res[2], vi, gi, step;
-  float min[2], max[2], top[2], v0, g0, *data, v, g, gwidth, width, mwidth, tvl, tvr, vl,
-    vr, tmp, maxa;
-
-  /* HEY many of these ints should be unsigned, but bane never got the signed->unsigned
-   * treatment */
-  hestOptAdd_2_Int(&opt, "r", "Vres Gres", res, "256 256",
-                   "resolution of the transfer function in value and gradient "
-                   "magnitude");
-  hestOptAdd_2_Float(&opt, "min", "Vmin Gmin", min, "0.0 0.0",
+txfMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  uint res[2];
+  hestOptAdd_2_UInt(&hopt, "r", "Vres Gres", res, "256 256",
+                    "resolution of the transfer function in value and gradient "
+                    "magnitude");
+  float min[2], max[2];
+  hestOptAdd_2_Float(&hopt, "min", "Vmin Gmin", min, "0.0 0.0",
                      "minimum value and grad mag in txf");
-  hestOptAdd_2_Float(&opt, "max", "Vmax Gmax", max, NULL,
+  hestOptAdd_2_Float(&hopt, "max", "Vmax Gmax", max, NULL,
                      "maximum value and grad mag in txf");
-  hestOptAdd_1_Float(&opt, "v", "base value", &v0, NULL,
+  float v0, g0, gwidth;
+  hestOptAdd_1_Float(&hopt, "v", "base value", &v0, NULL,
                      "data value at which to position bottom of triangle");
-  hestOptAdd_1_Float(&opt, "g", "gthresh", &g0, "0.0",
+  hestOptAdd_1_Float(&hopt, "g", "gthresh", &g0, "0.0",
                      "lowest grad mag to receive opacity");
-  hestOptAdd_1_Float(&opt, "gw", "gwidth", &gwidth, "0.0",
+  hestOptAdd_1_Float(&hopt, "gw", "gwidth", &gwidth, "0.0",
                      "range of grad mag values over which to apply threshold "
                      "at low gradient magnitudes");
-  hestOptAdd_2_Float(&opt, "top", "Vtop Gtop", top, NULL,
+  float top[2];
+  hestOptAdd_2_Float(&hopt, "top", "Vtop Gtop", top, NULL,
                      "data value and grad mag at center of top of triangle");
-  hestOptAdd_1_Float(&opt, "w", "value width", &width, NULL,
+  float width, mwidth;
+  hestOptAdd_1_Float(&hopt, "w", "value width", &width, NULL,
                      "range of values to be spanned at top of triangle");
-  hestOptAdd_1_Float(&opt, "mw", "value width", &mwidth, "0",
+  hestOptAdd_1_Float(&hopt, "mw", "value width", &mwidth, "0",
                      "range of values to be spanned at BOTTOM of triangle");
-  hestOptAdd_Flag(&opt, "step", &step,
+  int step;
+  hestOptAdd_Flag(&hopt, "step", &step,
                   "instead of assigning opacity inside a triangular region, "
                   "make it more like a step function, in which opacity never "
                   "decreases in increasing data value");
-  hestOptAdd_1_Float(&opt, "a", "max opac", &maxa, "1.0", "highest opacity to assign");
-  hestOptAdd_1_String(&opt, "o", "opacOut", &out, NULL,
+  float maxa;
+  hestOptAdd_1_Float(&hopt, "a", "max opac", &maxa, "1.0", "highest opacity to assign");
+  char *out;
+  hestOptAdd_1_String(&hopt, "o", "opacOut", &out, NULL,
                       "output opacity function filename");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_baneGkms_txfInfoL);
-  airMopAdd(mop, opt, hestParseFree_mop, airMopAlways);
+  hestParseOrExit(hopt, argc, argv, hparm, me, txfInfoL);
+  airArray *mop = airMopNew();
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
-  E = 0;
+  int E = 0;
   if (!E)
     E |= nrrdMaybeAlloc_va(nout, nrrdTypeFloat, 3, AIR_SIZE_T(1), AIR_SIZE_T(res[0]),
                            AIR_SIZE_T(res[1]));
@@ -89,21 +89,22 @@ baneGkms_txfMain(int argc, const char **argv, const char *me, const hestParm *hp
     airMopError(mop);
     return 1;
   }
-  data = (float *)nout->data;
-  tvl = top[0] - width / 2;
-  tvr = top[0] + width / 2;
+  assert(nout->type == nrrdTypeFloat);
+  float *data = nout->data;
+  float tvl = top[0] - width / 2;
+  float tvr = top[0] + width / 2;
   mwidth /= 2;
-  for (gi = 0; gi < res[1]; gi++) {
-    g = AIR_FLOAT(NRRD_CELL_POS(min[1], max[1], res[1], gi));
-    for (vi = 0; vi < res[0]; vi++) {
-      v = AIR_FLOAT(NRRD_CELL_POS(min[0], max[0], res[0], vi));
-      vl = AIR_FLOAT(AIR_AFFINE(0, g, top[1], v0 - mwidth, tvl));
-      vr = AIR_FLOAT(AIR_AFFINE(0, g, top[1], v0 + mwidth, tvr));
+  for (uint gi = 0; gi < res[1]; gi++) {
+    float g = AIR_FLOAT(NRRD_CELL_POS(min[1], max[1], res[1], gi));
+    for (uint vi = 0; vi < res[0]; vi++) {
+      float v = AIR_FLOAT(NRRD_CELL_POS(min[0], max[0], res[0], vi));
+      float vl = AIR_FLOAT(AIR_AFFINE(0, g, top[1], v0 - mwidth, tvl));
+      float vr = AIR_FLOAT(AIR_AFFINE(0, g, top[1], v0 + mwidth, tvr));
       if (g > top[1]) {
         data[vi + res[0] * gi] = 0;
         continue;
       }
-      tmp = AIR_FLOAT((v - vl) / (0.00001 + vr - vl));
+      float tmp = AIR_FLOAT((v - vl) / (0.00001 + vr - vl));
       tmp = 1 - AIR_ABS(2 * tmp - 1);
       if (step && v > (vr + vl) / 2) {
         tmp = 1;
@@ -115,6 +116,7 @@ baneGkms_txfMain(int argc, const char **argv, const char *me, const hestParm *hp
       data[vi + res[0] * gi] *= tmp;
     }
   }
+
   if (nrrdSave(out, nout, NULL)) {
     biffMovef(BANE, NRRD, "%s: trouble saving opacity function", me);
     airMopError(mop);
@@ -124,4 +126,4 @@ baneGkms_txfMain(int argc, const char **argv, const char *me, const hestParm *hp
   airMopOkay(mop);
   return 0;
 }
-BANE_GKMS_CMD(txf, TXF_INFO);
+const unrrduCmd baneGkms_txfCmd = {"txf", TXF_INFO, txfMain, AIR_FALSE};

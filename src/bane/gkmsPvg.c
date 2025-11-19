@@ -19,6 +19,7 @@
 
 #include "bane.h"
 #include "privateBane.h"
+#include <assert.h>
 
 /* clang-format off */
 static const float _baneGkmsDonData[] = {
@@ -80,39 +81,39 @@ _baneGkmsDonNew(int invert) {
 }
 
 #define PVG_INFO "Create color-mapped pictures of p(v,g)"
-static const char *_baneGkms_pvgInfoL
+static const char *pvgInfoL
   = (PVG_INFO ".  This produces a qualitative visualization of the boundary information "
               "that was captured in the histogram volume.  The quantity shown is called "
               "the \"position function\" in GK's published work, but a better term "
               "would be \"distance map\", as a function of value (v) and gradient "
               "magnitude (g).");
 static int /* Biff: 1 */
-baneGkms_pvgMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *outS, *perr, *mapS;
-  Nrrd *ninfo, *nposA, *nposB, *ndon, *npvg;
-  NrrdIoState *nio;
-  airArray *mop;
-  int i, pret, invert, sv, sg, smlI;
-  float *pos, p, min, max, sml, newsml, newmin, newmax;
-  NrrdRange *range;
-
-  hestOptAdd_Flag(&opt, "inv", &invert, "Draw on white background, instead of black");
-  hestOptAdd_1_String(&opt, "m", "mapOut", &mapS, "",
+pvgMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  int invert;
+  hestOptAdd_Flag(&hopt, "inv", &invert, "Draw on white background, instead of black");
+  char *mapS;
+  hestOptAdd_1_String(&hopt, "m", "mapOut", &mapS, "",
                       "save out the colormap used here, so that it can be applied "
                       "to other nrrds with \"unu imap -r\"");
-  hestOptAdd_1_Other(&opt, "i", "infoIn", &ninfo, NULL,
+  Nrrd *ninfo;
+  hestOptAdd_1_Other(&hopt, "i", "infoIn", &ninfo, NULL,
                      "input info file (from \"gkms info\")", nrrdHestNrrd);
-  hestOptAdd_1_String(&opt, "o", "imageOut", &outS, NULL, "output image, in PPM format");
+  char *outS;
+  hestOptAdd_1_String(&hopt, "o", "imageOut", &outS, NULL,
+                      "output image, in PPM format");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_baneGkms_pvgInfoL);
-  airMopAdd(mop, opt, hestParseFree_mop, airMopAlways);
+  hestParseOrExit(hopt, argc, argv, hparm, me, pvgInfoL);
+  airArray *mop = airMopNew();
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
+
+  Nrrd *ndon, *nposA, *nposB, *npvg;
   airMopAdd(mop, ndon = _baneGkmsDonNew(invert), nrrdNuke_mop, airMopAlways);
   airMopAdd(mop, nposA = nrrdNew(), nrrdNuke_mop, airMopAlways);
   airMopAdd(mop, nposB = nrrdNew(), nrrdNuke_mop, airMopAlways);
   airMopAdd(mop, npvg = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  NrrdIoState *nio;
   airMopAdd(mop, nio = nrrdIoStateNew(), nrrdIoStateNix_mop, airMopAlways);
 
   if (airStrlen(mapS)) {
@@ -124,27 +125,27 @@ baneGkms_pvgMain(int argc, const char **argv, const char *me, const hestParm *hp
   }
 
   /* we use sigma = 1.0: different sigmas will scale the position,
-     which will not change the coloring
-     gthresh = 0.0: we want to see everything, and Simian has taught
-     us that there can be boundaries at extremely low gradients */
+   which will not change the coloring
+   gthresh = 0.0: we want to see everything, and Simian has taught
+   us that there can be boundaries at extremely low gradients */
   if (banePosCalc(nposA, 1.0, 0.0, ninfo)) {
     biffAddf(BANE, "%s: trouble calculating position", me);
     airMopError(mop);
     return 1;
   }
-  sv = AIR_INT(nposA->axis[0].size); /* HEY should be unsigned */
-  sg = AIR_INT(nposA->axis[1].size); /* HEY should be unsigned */
-  pos = (float *)nposA->data;
+  uint sv = AIR_UINT(nposA->axis[0].size);
+  uint sg = AIR_UINT(nposA->axis[1].size);
+  assert(nposA->type == nrrdTypeFloat);
+  float *pos = (float *)nposA->data;
 
   /* find min, max, sml, smlI: histo-eq will warp values around such
      that min-->min and max-->max, but 0-->??.  So, find smallest
-     magnitide position (sml) as a stand-in for 0.0 and its index
-     (smlI) */
-  sml = 0;
-  smlI = 0;
-  min = max = AIR_NAN;
-  for (i = 0; i < sv * sg; i++) {
-    p = pos[i];
+     magnitude position (sml) as a stand-in for 0.0 and its index (smlI) */
+  float sml = 0;
+  int smlI = 0;
+  float min = AIR_NAN, max = AIR_NAN;
+  for (uint i = 0; i < sv * sg; i++) {
+    float p = pos[i];
     if (!AIR_EXISTS(p)) continue;
     if (!AIR_EXISTS(min)) {
       min = max = p;
@@ -172,8 +173,9 @@ baneGkms_pvgMain(int argc, const char **argv, const char *me, const hestParm *hp
 
   /* warp position values that pos[smlI] gets mapped back to zero,
      and so that [newmin,newmax] is centered on zero */
-  pos = (float *)nposB->data;
-  newsml = pos[smlI];
+  assert(nposB->type == nrrdTypeFloat);
+  pos = nposB->data;
+  float newmin, newmax, newsml = pos[smlI];
   if (min < -max) {
     newmin = min;
     newmax = -min;
@@ -181,7 +183,7 @@ baneGkms_pvgMain(int argc, const char **argv, const char *me, const hestParm *hp
     newmin = -max;
     newmax = max;
   }
-  for (i = 0; i < sv * sg; i++) {
+  for (uint i = 0; i < sv * sg; i++) {
     if (!AIR_EXISTS(pos[i])) {
       continue;
     }
@@ -191,9 +193,8 @@ baneGkms_pvgMain(int argc, const char **argv, const char *me, const hestParm *hp
       pos[i] = AIR_FLOAT(AIR_AFFINE(newsml, pos[i], max, 0.0, newmax));
     }
   }
-  range = nrrdRangeNew(newmin, newmax);
+  NrrdRange *range = nrrdRangeNew(newmin, newmax);
   airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
-
   if (nrrdFlip(nposA, nposB, 1)
       || nrrdApply1DIrregMap(npvg, nposA, range, ndon, NULL, nrrdTypeUChar, AIR_TRUE)) {
     biffMovef(BANE, NRRD, "%s: trouble applying colormap", me);
@@ -210,4 +211,4 @@ baneGkms_pvgMain(int argc, const char **argv, const char *me, const hestParm *hp
   airMopOkay(mop);
   return 0;
 }
-BANE_GKMS_CMD(pvg, PVG_INFO);
+const unrrduCmd baneGkms_pvgCmd = {"pvg", PVG_INFO, pvgMain, AIR_FALSE};

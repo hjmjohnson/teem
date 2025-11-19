@@ -21,20 +21,15 @@
 #include "privateBane.h"
 
 #define OPAC_INFO "Generate opacity functions"
-static const char *_baneGkms_opacInfoL
+static const char *opacInfoL
   = (OPAC_INFO ". Takes information from an \"info\" file and from a \"boundary "
                "emphasis function\" to generate 1D or 2D (depending on info file) "
                "opacity functions. ");
 static int /* Biff: 1 */
-baneGkms_opacMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *outS, *perr, *befS;
-  Nrrd *ninfo, *nbef, *nout, *nmax, *npos, *nopac;
-  airArray *mop;
-  int pret, radius, idim;
-  float sigma, gthrInfo[2], gthresh;
-
-  hestOptAdd_1_Other(&opt, "b", "bef", &nbef, "1,1,0,1",
+opacMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  Nrrd *nbef;
+  hestOptAdd_1_Other(&hopt, "b", "bef", &nbef, "1,1,0,1",
                      "boundary emphasis function mapping from \"position\" to "
                      "opacity. Can be either:\n "
                      "\b\bo filename of nrrd suitable for \"unu imap\", or:\n "
@@ -47,35 +42,43 @@ baneGkms_opacMain(int argc, const char **argv, const char *me, const hestParm *h
                      "a = maximum opacity\n "
                      "If all goes well, the units for \"w\" and \"c\" are voxels.",
                      baneGkmsHestBEF);
-  hestOptAdd_1_Float(&opt, "s", "sigma", &sigma, "nan",
+  float sigma;
+  hestOptAdd_1_Float(&hopt, "s", "sigma", &sigma, "nan",
                      "scaling in position calculation, accounts for thickness "
                      "of transition region between materials. Lower sigmas lead to "
                      "wider peaks in opacity function. "
                      "Calculated automatically by default.");
-  hestOptAdd_1_Other(&opt, "g", "gthresh", gthrInfo, "x0.04",
+  float gthrInfo[2];
+  hestOptAdd_1_Other(&hopt, "g", "gthresh", gthrInfo, "x0.04",
                      "minimum significant gradient magnitude.  Can be given "
                      "in two different ways:\n "
                      "\b\bo \"<float>\": specify gthresh as <float> exactly.\n "
                      "\b\bo \"x<float>\": gthresh is a scaling, by <float>, of "
                      "the maximum gradient magnitude in the info file.",
                      baneGkmsHestGthresh);
-  hestOptAdd_1_Int(&opt, "r", "radius", &radius, "0",
-                   "radius of median filtering to apply to opacity function, "
-                   "use \"0\" to signify no median filtering");
-  hestOptAdd_1_String(&opt, "m", "befOut", &befS, "",
+  uint radius;
+  hestOptAdd_1_UInt(&hopt, "r", "radius", &radius, "0",
+                    "radius of median filtering to apply to opacity function, "
+                    "use \"0\" to signify no median filtering");
+  char *befS;
+  hestOptAdd_1_String(&hopt, "m", "befOut", &befS, "",
                       "if boundary emphasis function given via \"-b\" "
                       "is in the \"s,w,c,a\" form, then save out the "
                       "corresponding nrrd to <befOut>, suitable for use in this "
                       "command or \"unu imap\"");
-  hestOptAdd_1_Other(&opt, "i", "infoIn", &ninfo, NULL,
+  Nrrd *ninfo;
+  hestOptAdd_1_Other(&hopt, "i", "infoIn", &ninfo, NULL,
                      "input info file (from \"gkms info\")", nrrdHestNrrd);
-  hestOptAdd_1_String(&opt, "o", "opacOut", &outS, NULL,
+  char *outS;
+  hestOptAdd_1_String(&hopt, "o", "opacOut", &outS, NULL,
                       "output 1D or 2D opacity function");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_baneGkms_opacInfoL);
-  airMopAdd(mop, opt, hestParseFree_mop, airMopAlways);
+  hestParseOrExit(hopt, argc, argv, hparm, me, opacInfoL);
+  airArray *mop = airMopNew();
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
+
+  Nrrd *nmax, *npos, *nopac, *nout;
   airMopAdd(mop, nmax = nrrdNew(), nrrdNuke_mop, airMopAlways);
   airMopAdd(mop, npos = nrrdNew(), nrrdNuke_mop, airMopAlways);
   airMopAdd(mop, nopac = nrrdNew(), nrrdNuke_mop, airMopAlways);
@@ -86,7 +89,7 @@ baneGkms_opacMain(int argc, const char **argv, const char *me, const hestParm *h
     airMopError(mop);
     return 1;
   }
-  idim = ninfo->dim - 1;
+  uint idim = ninfo->dim - 1;
   if (nbef->ptr && airStrlen(befS)) {
     if (nrrdSave(befS, nbef, NULL)) {
       biffMovef(BANE, NRRD, "%s: trouble saving boundary emphasis", me);
@@ -102,6 +105,7 @@ baneGkms_opacMain(int argc, const char **argv, const char *me, const hestParm *h
     }
     fprintf(stderr, "%s: calculated sigma = %g\n", me, sigma);
   }
+  float gthresh;
   if (0 == gthrInfo[0]) {
     gthresh = gthrInfo[1];
   } else {
@@ -144,4 +148,4 @@ baneGkms_opacMain(int argc, const char **argv, const char *me, const hestParm *h
   airMopOkay(mop);
   return 0;
 }
-BANE_GKMS_CMD(opac, OPAC_INFO);
+const unrrduCmd baneGkms_opacCmd = {"opac", OPAC_INFO, opacMain, AIR_FALSE};

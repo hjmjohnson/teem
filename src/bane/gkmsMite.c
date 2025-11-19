@@ -21,38 +21,36 @@
 #include "privateBane.h"
 
 #define MITE_INFO "Modify opacity function to work with \"mite\""
-static const char *_baneGkms_miteInfoL
+static const char *miteInfoL
   = (MITE_INFO ". Useful when using the \"mite\" Teem library, or the \"miter\" "
                "command-line renderer.  This adds a \"stub\" axis 0, and setting the "
                "axis labels to identify the domain and range of the opacity function. "
                "The underlying opacity function is not modified.");
 static int /* Biff: 1 */
-baneGkms_miteMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *perr;
-  Nrrd *nin, *nout;
-  airArray *mop;
-  int pret, E;
-
-  hestOptAdd_1_Other(&opt, "i", "opacIn", &nin, NULL,
+miteMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  Nrrd *nin;
+  hestOptAdd_1_Other(&hopt, "i", "opacIn", &nin, NULL,
                      "input opacity function (1 or 2 dimensional), from "
                      "\"gkms opac\"",
                      nrrdHestNrrd);
-  hestOptAdd_1_String(&opt, "o", "opacOut", &out, NULL,
+  char *out;
+  hestOptAdd_1_String(&hopt, "o", "opacOut", &out, NULL,
                       "output opacity function filename");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_baneGkms_miteInfoL);
-  airMopAdd(mop, opt, hestParseFree_mop, airMopAlways);
+  hestParseOrExit(hopt, argc, argv, hparm, me, miteInfoL);
+  airArray *mop = airMopNew();
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
+  Nrrd *nout;
   if (1 == nin->axis[0].size && nin->axis[0].label && !strcmp("A", nin->axis[0].label)) {
     fprintf(stderr, "%s: already\n", me);
     nout = nin;
   } else {
     nout = nrrdNew();
     airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
-    E = 0;
+    int E = 0;
     if (!E) E |= nrrdAxesInsert(nout, nin, 0);
     if (!E) E |= !(nout->axis[0].label = airStrdup("A"));
     if (!E) E |= !(nout->axis[1].label = airStrdup("gage(v)"));
@@ -74,4 +72,4 @@ baneGkms_miteMain(int argc, const char **argv, const char *me, const hestParm *h
   airMopOkay(mop);
   return 0;
 }
-BANE_GKMS_CMD(mite, MITE_INFO);
+const unrrduCmd baneGkms_miteCmd = {"mite", MITE_INFO, miteMain, AIR_FALSE};

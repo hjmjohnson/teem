@@ -208,43 +208,6 @@ const hestCB *const baneGkmsHestGthresh = &_baneGkmsHestGthresh;
 */
 const unrrduCmd *const baneGkmsCmdList[] = {BANE_GKMS_MAP(BANE_GKMS_LIST) NULL};
 
-/*
-******** baneGkmsUsage
-**
-** prints out a little banner, and a listing of all available commands
-** with their one-line descriptions
-*/
-void
-baneGkmsUsage(const char *me, hestParm *hparm) {
-  char buff[AIR_STRLEN_LARGE + 1], fmt[AIR_STRLEN_LARGE + 1];
-  unsigned int ci, si, len, maxlen;
-
-  maxlen = 0;
-  for (ci = 0; baneGkmsCmdList[ci]; ci++) {
-    maxlen = AIR_MAX(maxlen, AIR_UINT(strlen(baneGkmsCmdList[ci]->name)));
-  }
-
-  snprintf(buff, sizeof(buff),
-           "--- Semi-Automatic Generation of Transfer Functions ---");
-  snprintf(fmt, sizeof(fmt), "%%%ds\n",
-           (int)((hparm->columns - strlen(buff)) / 2 + strlen(buff) - 1));
-  fprintf(stderr, fmt, buff);
-
-  for (ci = 0; baneGkmsCmdList[ci]; ci++) {
-    len = AIR_UINT(strlen(baneGkmsCmdList[ci]->name));
-    strcpy(buff, "");
-    for (si = len; si < maxlen; si++)
-      strcat(buff, " ");
-    strcat(buff, me);
-    strcat(buff, " ");
-    strcat(buff, baneGkmsCmdList[ci]->name);
-    strcat(buff, " ... ");
-    len = AIR_UINT(strlen(buff));
-    fprintf(stderr, "%s", buff);
-    hestPrintStr(stderr, len, len, hparm->columns, baneGkmsCmdList[ci]->info, AIR_FALSE);
-  }
-}
-
 /* clang-format off */
 static const char *
 _baneGkmsMeasrStr[] = {

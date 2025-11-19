@@ -21,19 +21,15 @@
 #include "privateBane.h"
 
 #define INFO_INFO "Project histogram volume for opacity function generation"
-static const char *_baneGkms_infoInfoL
+static const char *infoInfoL
   = (INFO_INFO ". This distills the histogram volume down to the information required "
                "to create either 1-D or 2-D opacity functions.");
 
 static int /* Biff: 1 */
-baneGkms_infoMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *outS, *perr;
-  Nrrd *hvol, *nout;
-  airArray *mop;
-  int pret, one, measr;
-
-  hestOptAdd_1_Enum(&opt, "m", "measr", &measr, "mean",
+infoMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  int measr;
+  hestOptAdd_1_Enum(&hopt, "m", "measr", &measr, "mean",
                     "How to project along the 2nd derivative axis.  Possibilities "
                     "include:\n "
                     "\b\bo \"mean\": average value\n "
@@ -41,20 +37,23 @@ baneGkms_infoMain(int argc, const char **argv, const char *me, const hestParm *h
                     "\b\bo \"mode\": most common value\n "
                     "\b\bo \"min\", \"max\": probably not useful",
                     baneGkmsMeasr);
-  hestOptAdd_Flag(&opt, "one", &one,
+  int one;
+  hestOptAdd_Flag(&hopt, "one", &one,
                   "Create 1-dimensional info file; default is 2-dimensional");
-  hestOptAdd_1_Other(&opt, "i", "hvolIn", &hvol, NULL,
+  Nrrd *hvol;
+  hestOptAdd_1_Other(&hopt, "i", "hvolIn", &hvol, NULL,
                      "input histogram volume (from \"gkms hvol\")", nrrdHestNrrd);
-  hestOptAdd_1_String(&opt, "o", "infoOut", &outS, NULL,
+  char *outS;
+  hestOptAdd_1_String(&hopt, "o", "infoOut", &outS, NULL,
                       "output info file, used by \"gkms pvg\" and \"gkms opac\"");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_baneGkms_infoInfoL);
-  airMopAdd(mop, opt, hestParseFree_mop, airMopAlways);
-  nout = nrrdNew();
-  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
+  hestParseOrExit(hopt, argc, argv, hparm, me, infoInfoL);
+  airArray *mop = airMopNew();
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
+  Nrrd *nout = nrrdNew();
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (baneOpacInfo(nout, hvol, one ? 1 : 2, measr)) {
     biffAddf(BANE, "%s: trouble distilling histogram info", me);
     airMopError(mop);
@@ -70,4 +69,4 @@ baneGkms_infoMain(int argc, const char **argv, const char *me, const hestParm *h
   airMopOkay(mop);
   return 0;
 }
-BANE_GKMS_CMD(info, INFO_INFO);
+const unrrduCmd baneGkms_infoCmd = {"info", INFO_INFO, infoMain, AIR_FALSE};

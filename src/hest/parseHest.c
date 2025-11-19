@@ -226,8 +226,10 @@ hestParseOrExit(hestOpt *hopt,          // what to parse from command-line
   int status;
   if (parseErr) {
     if (!quietQuit) {
-      // the err string created by hestParse already ends with \n
-      fprintf(stderr, "%s error: %s", me,
+      /* yes, the err string created by hestParse already ends with \n
+         but we add a blank line to have better separation of final diagnostic
+         error message line, and usage line */
+      fprintf(stderr, "%s: error:\n%s\n", me,
               parseErrStr ? parseErrStr : "(sorry no error message known)");
       hestUsage(stderr, hopt, me, hparm, AIR_TRUE);
       fprintf(stderr, "For more info: %s --help\n", me);

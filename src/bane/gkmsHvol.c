@@ -21,25 +21,17 @@
 #include "privateBane.h"
 
 #define HVOL_INFO "Make histogram volume"
-static const char *_baneGkms_hvolInfoL
+static const char *hvolInfoL
   = (HVOL_INFO ".  The histogram volume is a three-dimensional histogram recording "
                "the relationship between data value, gradient magnitude, and the "
                "second directional derivative along the gradient direction.  Creating "
                "it is the first step in semi-automatic transfer function generation.  ");
 
 static int /* Biff: 1 */
-baneGkms_hvolMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *perr;
-  Nrrd *nin, *nout;
-  airArray *mop;
-  int pret, dim[3], lapl, slow, gz = AIR_FALSE;
+hvolMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
   double inc[3 * (1 + BANE_PARM_NUM)];
-  baneHVolParm *hvp;
-  NrrdIoState *nio;
-  NrrdKernelSpec *ksp00, *ksp11, *ksp22;
-
-  hestOptAdd_3_Other(&opt, "s", "incV incG incH", inc, "f:1.0 p:0.005 p:0.015",
+  hestOptAdd_3_Other(&hopt, "s", "incV incG incH", inc, "f:1.0 p:0.005 p:0.015",
                      "Strategies for determining how much of the range "
                      "of a quantity should be included and quantized in its axis "
                      "of the histogram volume.  Possibilities include:\n "
@@ -51,48 +43,56 @@ baneGkms_hvolMain(int argc, const char **argv, const char *me, const hestParm *h
                      "deviation of the values\n "
                      "\b\bo \"a:<min>,<max>\": range is from <min> to <max>",
                      baneGkmsHestIncStrategy);
-  hestOptAdd_3_Int(&opt, "d", "dimV dimG dimH", dim, "256 256 256",
-                   "Dimensions of histogram volume; number of samples along "
-                   "each axis");
-  hestOptAdd_1_Other(&opt, "k00", "kernel", &ksp00, "tent",
+  uint dim[3];
+  hestOptAdd_3_UInt(&hopt, "d", "dimV dimG dimH", dim, "256 256 256",
+                    "Dimensions of histogram volume; number of samples along "
+                    "each axis");
+  NrrdKernelSpec *ksp00, *ksp11, *ksp22;
+  hestOptAdd_1_Other(&hopt, "k00", "kernel", &ksp00, "tent",
                      "value reconstruction kernel", nrrdHestKernelSpec);
-  hestOptAdd_1_Other(&opt, "k11", "kernel", &ksp11, "cubicd:1,0",
+  hestOptAdd_1_Other(&hopt, "k11", "kernel", &ksp11, "cubicd:1,0",
                      "first derivative kernel", nrrdHestKernelSpec);
-  hestOptAdd_1_Other(&opt, "k22", "kernel", &ksp22, "cubicdd:1,0",
+  hestOptAdd_1_Other(&hopt, "k22", "kernel", &ksp22, "cubicdd:1,0",
                      "second derivative kernel", nrrdHestKernelSpec);
-  hestOptAdd_Flag(&opt, "l", &lapl,
+  int lapl;
+  hestOptAdd_Flag(&hopt, "l", &lapl,
                   "Use Laplacian instead of Hessian to approximate second "
                   "directional derivative.  No faster, less accurate.");
-  hestOptAdd_Flag(&opt, "slow", &slow,
+  int slow;
+  hestOptAdd_Flag(&hopt, "slow", &slow,
                   "Instead of allocating a floating point VGH volume and measuring "
                   "V,G,H once, measure V,G,H multiple times on separate passes "
                   "(slower, but needs less memory)");
+  int gz = AIR_FALSE;
   if (nrrdEncodingGzip->available()) {
-    hestOptAdd_Flag(&opt, "gz", &gz,
+    hestOptAdd_Flag(&hopt, "gz", &gz,
                     "Use gzip compression for output histo-volume; "
                     "much less disk space, slightly slower to read/write");
   }
-  hestOptAdd_1_Other(&opt, "i", "volumeIn", &nin, NULL,
+  Nrrd *nin;
+  hestOptAdd_1_Other(&hopt, "i", "volumeIn", &nin, NULL,
                      "input scalar volume for which a transfer function is needed",
                      nrrdHestNrrd);
-  hestOptAdd_1_String(&opt, "o", "hvolOut", &out, NULL,
+  char *out;
+  hestOptAdd_1_String(&hopt, "o", "hvolOut", &out, NULL,
                       "output histogram volume, used by \"gkms scat\" and "
                       "\"gkms info\"");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_baneGkms_hvolInfoL);
-  airMopAdd(mop, opt, hestParseFree_mop, airMopAlways);
-  nout = nrrdNew();
+  hestParseOrExit(hopt, argc, argv, hparm, me, hvolInfoL);
+  airArray *mop = airMopNew();
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
+
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
-  nio = nrrdIoStateNew();
+  NrrdIoState *nio = nrrdIoStateNew();
   airMopAdd(mop, nio, nrrdIoStateNix_mop, airMopAlways);
-  hvp = baneHVolParmNew();
+  baneHVolParm *hvp = baneHVolParmNew();
   airMopAdd(mop, hvp, baneHVolParmNix_mop, airMopAlways);
   baneHVolParmGKMSInit(hvp);
   hvp->makeMeasrVol = !slow;
 
-  fprintf(stderr, "!%s: need to be using baneHVolParmAxisSet\n", me);
+  // fprintf(stderr, "!%s: need to be using baneHVolParmAxisSet\n", me);
   /*
   hvp->axis[0].res = dim[perm[0]];
   hvp->axis[1].res = dim[perm[1]];
@@ -124,4 +124,4 @@ baneGkms_hvolMain(int argc, const char **argv, const char *me, const hestParm *h
   airMopOkay(mop);
   return 0;
 }
-BANE_GKMS_CMD(hvol, HVOL_INFO);
+const unrrduCmd baneGkms_hvolCmd = {"hvol", HVOL_INFO, hvolMain, AIR_FALSE};
