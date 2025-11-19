@@ -10,9 +10,11 @@ tl;dr list of breaking-est changes for TeemV2 relative to previous release v1.11
   and the hestParm->dieLessVerbose field is removed
 - hestUsage() has new additional final argument `oneline`
 - Renamed nrrdSanityOrDie() --> nrrdSanityOrExit()
-  (now, all Teem functions that might call exit() have name ending with `Exit`)
 - The global variable nrrdStateVerboseIO is gone,
   replaced by NrrdIoState->verbose (usually nio->verbose in code)
+- Renamed unrrduCmdMain() --> unrrduMainOrExit()
+  and removed the final `FILE *fusage` argument
+  (now, all Teem functions that might call exit() have name ending with `Exit`)
 
 NOTE : This file is still in progress as work on TeemV2 continues ...
 
@@ -1675,6 +1677,15 @@ input histogram was all zeros, the output value is nan
 
 ========= unrrdu / unu =========
 
+• Wed Nov 19 13:53:21 2025 -0600 git commit: 99fbe0c5
+API NEW: unrrduMainBiffOrExit() is the biff-using sibling of unrrduMainOrExit(): if
+torun->mainFunc() returned, and returned a non-zero value, then collect and show the
+error message. So, all the unrrduCmds in a program that uses unrrduMainBiffOrExit()
+should not themselves directly exit() after hestParse is done (they may indirectly exit
+via hestParseOrExit()). Once the command is running, whether or not they finish
+successfully, it just `return`s.  (The "gkms" program modeled this behavior, so for
+TeemV2 urrdu gained a way to support it directly).
+
 • Sun Nov 16 22:22:23 2025 -0600 git commit: d1472dcf
 API CHANGE:
 - In the unrrduCmd that is the container of a "command" in the sense that unu and tend
@@ -1697,8 +1708,9 @@ API CHANGE:
 little renamings to make the unu-specific parts of unrrdu more obvious:
 - renamed unrrduUsageUnu --> unrrduUnuUsage
   (unu-specific things should have uniform naming) and made hestParm *hparm const
-- renamed unrrduCmdMain --> unrrduMainOrExit
-  (it is not unu-specific)
+- renamed unrrduCmdMain --> unrrduMainOrExit  (it is not unu-specific)
+  and removed the final `FILE *fusage` argument (whether to use stdout or stderr
+  depends on what is being printed and why; its not something for the caller to control)
 
 API NEW in unrrdu:
 - new little `airArray *unrrduMopNew(hestOpt *hopt, hestParm *hparm)` function that does
