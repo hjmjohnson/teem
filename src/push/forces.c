@@ -409,7 +409,7 @@ _pushHestEnergyParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) 
   char *perr;
 
   if (!(ptr && str)) {
-    sprintf(err, "%s: got NULL pointer", me);
+    snprintf(err, ASP1_H, "%s: got NULL pointer", me);
     return 1;
   }
   enspP = (pushEnergySpec **)ptr;

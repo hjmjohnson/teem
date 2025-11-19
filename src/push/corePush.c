@@ -325,8 +325,8 @@ pushRun(pushContext *pctx) {
     if (pctx->snap && !(pctx->iter % pctx->snap)) {
       nten = nrrdNew();
       npos = nrrdNew();
-      sprintf(poutS, "snap.%6u.pos.nrrd", pctx->iter);
-      sprintf(toutS, "snap.%6u.ten.nrrd", pctx->iter);
+      snprintf(poutS, sizeof(poutS), "snap.%6u.pos.nrrd", pctx->iter);
+      snprintf(toutS, sizeof(toutS), "snap.%6u.ten.nrrd", pctx->iter);
       if (pushOutputGet(npos, nten, NULL, pctx)) {
         biffAddf(PUSH, "%s: couldn't get snapshot for iter %u", me, pctx->iter);
         return 1;
