@@ -265,13 +265,13 @@ _gageLocationSet(gageContext *ctx, double xif, double yif, double zif, double si
   if (!(AIR_IN_CL(min, xif, max[0]) && AIR_IN_CL(min, yif, max[1])
         && AIR_IN_CL(min, zif, max[2]))) {
     if (ctx->parm.generateErrStr) {
-      snprintf(ctx->errStr, AIR_STRLEN_LARGE + 1,
-              "%s: position (%g,%g,%g) outside (%s-centered) "
-              "bounds [%g,%g]x[%g,%g]x[%g,%g]",
-              me, xif, yif, zif, airEnumStr(nrrdCenter, ctx->shape->center), min, max[0],
-              min, max[1], min, max[2]);
+      snprintf(ctx->errStr, sizeof(ctx->errStr),
+               "%s: position (%g,%g,%g) outside (%s-centered) "
+               "bounds [%g,%g]x[%g,%g]x[%g,%g]",
+               me, xif, yif, zif, airEnumStr(nrrdCenter, ctx->shape->center), min,
+               max[0], min, max[1], min, max[2]);
     } else {
-      strcpy(ctx->errStr, _GAGE_NON_ERR_STR);
+      airStrcpy(ctx->errStr, sizeof(ctx->errStr), _GAGE_NON_ERR_STR);
     }
     ctx->errNum = gageErrBoundsSpace;
     return 1;
@@ -279,12 +279,12 @@ _gageLocationSet(gageContext *ctx, double xif, double yif, double zif, double si
   if (ctx->parm.stackUse) {
     if (!(AIR_IN_CL(0, sif, ctx->pvlNum - 2))) {
       if (ctx->parm.generateErrStr) {
-        snprintf(ctx->errStr, AIR_STRLEN_LARGE + 1,
-                "%s: stack position %g outside (%s-centered) "
-                "bounds [0,%u]",
-                me, sif, airEnumStr(nrrdCenter, nrrdCenterNode), ctx->pvlNum - 2);
+        snprintf(ctx->errStr, sizeof(ctx->errStr),
+                 "%s: stack position %g outside (%s-centered) "
+                 "bounds [0,%u]",
+                 me, sif, airEnumStr(nrrdCenter, nrrdCenterNode), ctx->pvlNum - 2);
       } else {
-        strcpy(ctx->errStr, _GAGE_NON_ERR_STR);
+        airStrcpy(ctx->errStr, sizeof(ctx->errStr), _GAGE_NON_ERR_STR);
       }
       ctx->errNum = gageErrBoundsStack;
       return 1;
@@ -408,12 +408,12 @@ _gageLocationSet(gageContext *ctx, double xif, double yif, double zif, double si
       }
       if (!sum) {
         if (ctx->parm.generateErrStr) {
-          snprintf(ctx->errStr, AIR_STRLEN_LARGE + 1,
-                  "%s: integral of stackFw[] is zero; "
-                  "can't do stack reconstruction",
-                  me);
+          snprintf(ctx->errStr, sizeof(ctx->errStr),
+                   "%s: integral of stackFw[] is zero; "
+                   "can't do stack reconstruction",
+                   me);
         } else {
-          strcpy(ctx->errStr, _GAGE_NON_ERR_STR);
+          airStrcpy(ctx->errStr, sizeof(ctx->errStr), _GAGE_NON_ERR_STR);
         }
         ctx->errNum = gageErrStackIntegral;
         return 1;
@@ -432,12 +432,12 @@ _gageLocationSet(gageContext *ctx, double xif, double yif, double zif, double si
       }
       if (!nnz) {
         if (ctx->parm.generateErrStr) {
-          sprintf(ctx->errStr,
-                  "%s: all stackFw[] weights are zero; "
-                  "can't do stack reconstruction",
-                  me);
+          snprintf(ctx->errStr, sizeof(ctx->errStr),
+                   "%s: all stackFw[] weights are zero; "
+                   "can't do stack reconstruction",
+                   me);
         } else {
-          strcpy(ctx->errStr, _GAGE_NON_ERR_STR);
+          airStrcpy(ctx->errStr, sizeof(ctx->errStr), _GAGE_NON_ERR_STR);
         }
         ctx->errNum = gageErrStackIntegral;
         return 1;

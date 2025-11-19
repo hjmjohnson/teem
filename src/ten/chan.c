@@ -124,13 +124,13 @@ tenDWMRIKeyValueParse(Nrrd **ngradP, Nrrd **nbmatP, double *bP, unsigned int **s
   dwiNum = AIR_UINT(ndwi->axis[dwiAxis].size);
 
   /* figure out if we're parsing gradients or b-matrices */
-  snprintf(tmpKey, AIR_STRLEN_MED + 1, tenDWMRIGradKeyFmt, 0u);
+  snprintf(tmpKey, sizeof(tmpKey), tenDWMRIGradKeyFmt, 0u);
   val = nrrdKeyValueGet(ndwi, tmpKey);
   if (val) {
     valNum = 3;
   } else {
     valNum = 6;
-    snprintf(key, AIR_STRLEN_MED + 1, tenDWMRIBmatKeyFmt, 0u);
+    snprintf(key, sizeof(key), tenDWMRIBmatKeyFmt, 0u);
     val = nrrdKeyValueGet(ndwi, key);
     if (!val) {
       biffAddf(TEN, "%s: saw neither \"%s\" nor \"%s\" key", me, tmpKey, key);
@@ -170,7 +170,7 @@ tenDWMRIKeyValueParse(Nrrd **ngradP, Nrrd **nbmatP, double *bP, unsigned int **s
 
   /* parse values in ninfo */
   for (dwiIdx = 0; dwiIdx < dwiNum; dwiIdx++) {
-    snprintf(key, AIR_STRLEN_MED + 1, keyFmt, dwiIdx);
+    snprintf(key, sizeof(key), keyFmt, dwiIdx);
     val = nrrdKeyValueGet(ndwi, key);
     if (!val) {
       biffAddf(TEN, "%s: didn't see \"%s\" key", me, key);
@@ -189,7 +189,7 @@ tenDWMRIKeyValueParse(Nrrd **ngradP, Nrrd **nbmatP, double *bP, unsigned int **s
       skipLut[dwiIdx] = AIR_TRUE;
       /* can't have NEX on a skipped gradient or B-matrix */
       val = (char *)airFree(val);
-      snprintf(key, AIR_STRLEN_MED + 1, tenDWMRINexKeyFmt, dwiIdx);
+      snprintf(key, sizeof(key), tenDWMRINexKeyFmt, dwiIdx);
       val = nrrdKeyValueGet(ndwi, key);
       if (val) {
         biffAddf(TEN, "%s: can't have NEX of skipped DWI %u", me, skipIdx);
@@ -209,7 +209,7 @@ tenDWMRIKeyValueParse(Nrrd **ngradP, Nrrd **nbmatP, double *bP, unsigned int **s
         return 1;
       }
       val = (char *)airFree(val);
-      snprintf(key, AIR_STRLEN_MED + 1, tenDWMRINexKeyFmt, dwiIdx);
+      snprintf(key, sizeof(key), tenDWMRINexKeyFmt, dwiIdx);
       val = nrrdKeyValueGet(ndwi, key);
       if (!val) {
         /* there is no NEX indicated */
@@ -236,7 +236,7 @@ tenDWMRIKeyValueParse(Nrrd **ngradP, Nrrd **nbmatP, double *bP, unsigned int **s
           return 1;
         }
         for (nexIdx = 1; nexIdx < nexNum; nexIdx++) {
-          snprintf(key, AIR_STRLEN_MED + 1, keyFmt, dwiIdx + nexIdx);
+          snprintf(key, sizeof(key), keyFmt, dwiIdx + nexIdx);
           val = nrrdKeyValueGet(ndwi, key);
           if (val) {
             val = (char *)airFree(val);
@@ -260,7 +260,7 @@ tenDWMRIKeyValueParse(Nrrd **ngradP, Nrrd **nbmatP, double *bP, unsigned int **s
   /* perhaps too paranoid: see if there are extra keys,
      which probably implies confusion/mismatch between number of
      gradients and number of values */
-  snprintf(key, AIR_STRLEN_MED + 1, keyFmt, dwiIdx);
+  snprintf(key, sizeof(key), keyFmt, dwiIdx);
   val = nrrdKeyValueGet(ndwi, key);
   if (val) {
     biffAddf(TEN,
@@ -274,7 +274,7 @@ tenDWMRIKeyValueParse(Nrrd **ngradP, Nrrd **nbmatP, double *bP, unsigned int **s
   /* second pass: see which ones are skipped, even though gradient/B-matrix
      information has been specified */
   for (dwiIdx = 0; dwiIdx < dwiNum; dwiIdx++) {
-    snprintf(key, AIR_STRLEN_MED + 1, tenDWMRISkipKeyFmt, dwiIdx);
+    snprintf(key, sizeof(key), tenDWMRISkipKeyFmt, dwiIdx);
     val = nrrdKeyValueGet(ndwi, key);
     if (val) {
       airToLower(val);
@@ -1002,8 +1002,7 @@ tenCalcOneTensor2(float tens[7], float chan[7], float thresh, float slope, float
 int
 tenCalcTensor(Nrrd *nout, Nrrd *nin, int version, float thresh, float slope, float b) {
   static const char me[] = "tenCalcTensor";
-  const size_t CMT_MAX_SIZE = 128;
-  char cmt[CMT_MAX_SIZE];
+  char cmt[AIR_STRLEN_SMALL + 1];
   float *out, tens[7], chan[7];
   size_t I, sx, sy, sz;
   void (*calcten)(float tens[7], float chan[7], float thresh, float slope, float b);
@@ -1054,7 +1053,7 @@ tenCalcTensor(Nrrd *nout, Nrrd *nin, int version, float thresh, float slope, flo
     nout->axis[2].spacing = 1.0;
     nout->axis[3].spacing = 1.0;
   }
-  snprintf(cmt, CMT_MAX_SIZE, "%s: using thresh = %g, slope = %g, b = %g\n", me, thresh, slope, b);
+  snprintf(cmt, sizeof(cmt), "%s: using thresh = %g, slope = %g, b = %g\n", me, thresh, slope, b);
   nrrdCommentAdd(nout, cmt);
   out = (float *)nout->data;
   for (I = 0; I < (size_t)(sx * sy * sz); I++) {

@@ -18,6 +18,7 @@
 */
 
 #include "limn.h"
+#include "privateLimn.h"
 
 /* clang-format off */
 static const char *
@@ -369,15 +370,14 @@ _limnHestSplineTypeSpecParse(void *ptr, const char *str, char err[AIR_STRLEN_HUG
   limnSplineTypeSpec **specP;
 
   if (!(ptr && str && airStrlen(str))) {
-    snprintf(err, AIR_STRLEN_HUGE + 1, "%s: got NULL pointer", me);
+    snprintf(err, ASP1_H, "%s: got NULL pointer", me);
     return 1;
   }
   specP = (limnSplineTypeSpec **)ptr;
 
   if (!(*specP = limnSplineTypeSpecParse(str))) {
     err2 = biffGetDone(LIMN);
-    sprintf(err, "%s: couldn't parse \"%s\":\n", me, str);
-    strncat(err, err2, AIR_STRLEN_HUGE - strlen(err));
+    snprintf(err, ASP1_H, "%s: couldn't parse \"%s\":\n%s", me, str, err2);
     free(err2);
     return 1;
   }
@@ -403,7 +403,7 @@ _limnHestSplineParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) 
   limnSpline **splineP;
 
   if (!(ptr && str)) {
-    sprintf(err, "%s: got NULL pointer", me);
+    snprintf(err, ASP1_H, "%s: got NULL pointer", me);
     return 1;
   }
   splineP = (limnSpline **)ptr;
@@ -416,8 +416,7 @@ _limnHestSplineParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) 
 
   if (!(*splineP = limnSplineParse(str))) {
     err2 = biffGetDone(LIMN);
-    sprintf(err, "%s: couldn't parse \"%s\":\n", me, str);
-    strncat(err, err2, AIR_STRLEN_HUGE - strlen(err));
+    snprintf(err, ASP1_H, "%s: couldn't parse \"%s\":\n%s", me, str, err2);
     free(err2);
     return 1;
   }

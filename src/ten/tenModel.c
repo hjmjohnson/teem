@@ -415,7 +415,7 @@ tenModelSqeFit(Nrrd *nparm, Nrrd **nsqeP, Nrrd **nconvP, Nrrd **niterP,
   double *ddwi, *dwibuff, sqe, sqeBest, *dparm, *dparmBest,
     (*ins)(void *v, size_t I, double d), (*lup)(const void *v, size_t I);
   airArray *mop;
-  unsigned int saveParmNum, dwiNum, ii, lablen, itersTaken;
+  unsigned int saveParmNum, dwiNum, ii, itersTaken;
   size_t szOut[NRRD_DIM_MAX], II, numSamp;
   int axmap[NRRD_DIM_MAX], erraxmap[NRRD_DIM_MAX], fitVerbose;
   const char *dwi;
@@ -648,11 +648,11 @@ tenModelSqeFit(Nrrd *nparm, Nrrd **nsqeP, Nrrd **nconvP, Nrrd **niterP,
       return 1;
     }
   }
-  lablen = AIR_UINT((strlen(tenModelPrefixStr) + (saveB0 ? strlen("B0+") : 0)
-                     + strlen(model->name) + 1));
-  nparm->axis[0].label = AIR_CALLOC(lablen, char);
-  snprintf(nparm->axis[0].label, lablen, "%s%s%s", tenModelPrefixStr, saveB0 ? "B0+" : "",
-          model->name);
+  size_t labSize = (strlen(tenModelPrefixStr) + (saveB0 ? strlen("B0+") : 0)
+                    + strlen(model->name) + 1);
+  nparm->axis[0].label = AIR_CALLOC(labSize, char);
+  snprintf(nparm->axis[0].label, labSize, "%s%s%s", tenModelPrefixStr,
+           saveB0 ? "B0+" : "", model->name);
 
   airMopOkay(mop);
   return 0;
@@ -689,7 +689,7 @@ tenModelConvert(Nrrd *nparmDst, int *convRetP, const tenModel *modelDst,
   size_t szOut[NRRD_DIM_MAX], II, NN, tsize;
   airArray *mop;
   int withB0, axmap[NRRD_DIM_MAX], convRet = 0;
-  unsigned int parmNumDst, parmNumSrc, ii, lablen;
+  unsigned int parmNumDst, parmNumSrc, ii;
   const char *parmSrc;
   char *parmDst;
 
@@ -778,11 +778,11 @@ tenModelConvert(Nrrd *nparmDst, int *convRetP, const tenModel *modelDst,
     return 1;
   }
   /* HEY: COPY AND PASTE! from above. perhaps make helper functions? */
-  lablen = AIR_UINT((strlen(tenModelPrefixStr) + (withB0 ? strlen("B0+") : 0)
-                     + strlen(modelDst->name) + 1));
-  nparmDst->axis[0].label = AIR_CALLOC(lablen, char);
-  sprintf(nparmDst->axis[0].label, "%s%s%s", tenModelPrefixStr, withB0 ? "B0+" : "",
-          modelDst->name);
+  size_t labSize = (strlen(tenModelPrefixStr) + (withB0 ? strlen("B0+") : 0)
+                    + strlen(modelDst->name) + 1);
+  nparmDst->axis[0].label = AIR_CALLOC(labSize, char);
+  snprintf(nparmDst->axis[0].label, labSize, "%s%s%s", tenModelPrefixStr,
+           withB0 ? "B0+" : "", modelDst->name);
 
   airMopOkay(mop);
   return 0;

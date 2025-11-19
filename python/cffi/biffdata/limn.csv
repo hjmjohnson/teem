@@ -66,8 +66,8 @@ limnSplineNew,limnSpline *,NULL,0,limn,limn/splineMethods.c:123
 limnSplineNrrdCleverFix,int,1,0,limn,limn/splineMethods.c:249
 limnSplineCleverNew,limnSpline *,NULL,0,limn,limn/splineMethods.c:394
 limnSplineUpdate,int,1,0,limn,limn/splineMethods.c:422
-limnSplineTypeSpecParse,limnSplineTypeSpec *,NULL,0,limn,limn/splineMisc.c:220
-limnSplineParse,limnSpline *,NULL,0,limn,limn/splineMisc.c:276
+limnSplineTypeSpecParse,limnSplineTypeSpec *,NULL,0,limn,limn/splineMisc.c:221
+limnSplineParse,limnSpline *,NULL,0,limn,limn/splineMisc.c:277
 limnObjectWorldHomog,int,1,0,limn,limn/transform.c:23
 limnObjectFaceNormals,int,1,0,limn,limn/transform.c:45
 limnObjectSpaceTransform,int,1,0,limn,limn/transform.c:208

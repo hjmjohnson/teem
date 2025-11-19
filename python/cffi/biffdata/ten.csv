@@ -26,9 +26,9 @@ tenEstimateUpdate,int,1,0,ten,ten/estimate.c:801
 tenEstimate1TensorSimulateSingle_f,int,1,0,ten,ten/estimate.c:975
 tenEstimate1TensorSimulateSingle_d,int,1,0,ten,ten/estimate.c:1003
 tenEstimate1TensorSimulateVolume,int,1,0,ten,ten/estimate.c:1034
-tenEstimate1TensorSingle_f,int,1,0,ten,ten/estimate.c:1739
-tenEstimate1TensorSingle_d,int,1,0,ten,ten/estimate.c:1767
-tenEstimate1TensorVolume4D,int,1,0,ten,ten/estimate.c:1804
+tenEstimate1TensorSingle_f,int,1,0,ten,ten/estimate.c:1741
+tenEstimate1TensorSingle_d,int,1,0,ten,ten/estimate.c:1769
+tenEstimate1TensorVolume4D,int,1,0,ten,ten/estimate.c:1806
 tenExperSpecGradSingleBValSet,int,1,0,ten,ten/experSpec.c:61
 tenExperSpecGradBValSet,int,1,0,ten,ten/experSpec.c:102
 tenExperSpecFromKeyValueSet,int,1,0,ten,ten/experSpec.c:171

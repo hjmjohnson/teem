@@ -1128,27 +1128,29 @@ tenEstimate1TensorSimulateVolume(tenEstimateContext *tec, Nrrd *ndwi, double sig
     char keystr[AIR_STRLEN_MED + 1], valstr[AIR_STRLEN_MED + 1];
 
     nrrdKeyValueAdd(ndwi, tenDWMRIModalityKey, tenDWMRIModalityVal);
-    snprintf(valstr, AIR_STRLEN_MED + 1, "%g", bValue);
+    snprintf(valstr, sizeof(valstr), "%g", bValue);
     nrrdKeyValueAdd(ndwi, tenDWMRIBValueKey, valstr);
     if (tec->_ngrad) {
       lup = nrrdDLookup[tec->_ngrad->type];
       for (allIdx = 0; allIdx < tec->allNum; allIdx++) {
-        snprintf(keystr, AIR_STRLEN_MED + 1, tenDWMRIGradKeyFmt, allIdx);
-        snprintf(valstr, AIR_STRLEN_MED + 1, "%g %g %g", lup(tec->_ngrad->data, 0 + 3 * allIdx),
-                lup(tec->_ngrad->data, 1 + 3 * allIdx),
-                lup(tec->_ngrad->data, 2 + 3 * allIdx));
+        snprintf(keystr, sizeof(keystr), tenDWMRIGradKeyFmt, allIdx);
+        snprintf(valstr, sizeof(valstr), "%g %g %g",
+                 lup(tec->_ngrad->data, 0 + 3 * allIdx),
+                 lup(tec->_ngrad->data, 1 + 3 * allIdx),
+                 lup(tec->_ngrad->data, 2 + 3 * allIdx));
         nrrdKeyValueAdd(ndwi, keystr, valstr);
       }
     } else {
       lup = nrrdDLookup[tec->_nbmat->type];
       for (allIdx = 0; allIdx < tec->allNum; allIdx++) {
-        snprintf(keystr, AIR_STRLEN_MED + 1, tenDWMRIBmatKeyFmt, allIdx);
-        snprintf(valstr, AIR_STRLEN_MED + 1, "%g %g %g %g %g %g", lup(tec->_nbmat->data, 0 + 6 * allIdx),
-                lup(tec->_nbmat->data, 1 + 6 * allIdx),
-                lup(tec->_nbmat->data, 2 + 6 * allIdx),
-                lup(tec->_nbmat->data, 3 + 6 * allIdx),
-                lup(tec->_nbmat->data, 4 + 6 * allIdx),
-                lup(tec->_nbmat->data, 5 + 6 * allIdx));
+        snprintf(keystr, sizeof(keystr), tenDWMRIBmatKeyFmt, allIdx);
+        snprintf(valstr, sizeof(valstr), "%g %g %g %g %g %g",
+                 lup(tec->_nbmat->data, 0 + 6 * allIdx),
+                 lup(tec->_nbmat->data, 1 + 6 * allIdx),
+                 lup(tec->_nbmat->data, 2 + 6 * allIdx),
+                 lup(tec->_nbmat->data, 3 + 6 * allIdx),
+                 lup(tec->_nbmat->data, 4 + 6 * allIdx),
+                 lup(tec->_nbmat->data, 5 + 6 * allIdx));
         nrrdKeyValueAdd(ndwi, keystr, valstr);
       }
     }

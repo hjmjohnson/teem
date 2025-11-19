@@ -51,7 +51,8 @@ baneMeasrNew(int type, double *parm) {
     /* --------------------------------------------------------------- */
   case baneMeasrValuePositive:
     item = gageSclValue;
-    snprintf(measr->name, AIR_STRLEN_SMALL + 1, "%s, positive", airEnumStr(gageScl, item));
+    snprintf(measr->name, sizeof(measr->name), "%s, positive",
+             airEnumStr(gageScl, item));
     GAGE_QUERY_ITEM_ON(measr->query, item);
     measr->range = baneRangeNew(baneRangePositive);
     measr->offset0 = gageKindAnswerOffset(gageKindScl, item);
@@ -60,7 +61,8 @@ baneMeasrNew(int type, double *parm) {
     /* --------------------------------------------------------------- */
   case baneMeasrValueZeroCentered:
     item = gageSclValue;
-    snprintf(measr->name, AIR_STRLEN_SMALL + 1, "%s, zero-centered", airEnumStr(gageScl, item));
+    snprintf(measr->name, sizeof(measr->name), "%s, zero-centered",
+             airEnumStr(gageScl, item));
     GAGE_QUERY_ITEM_ON(measr->query, item);
     measr->range = baneRangeNew(baneRangeZeroCentered);
     measr->offset0 = gageKindAnswerOffset(gageKindScl, item);
@@ -69,7 +71,8 @@ baneMeasrNew(int type, double *parm) {
     /* --------------------------------------------------------------- */
   case baneMeasrValueAnywhere:
     item = gageSclValue;
-    snprintf(measr->name, AIR_STRLEN_SMALL + 1, "%s, anywhere", airEnumStr(gageScl, item));
+    snprintf(measr->name, sizeof(measr->name), "%s, anywhere",
+             airEnumStr(gageScl, item));
     GAGE_QUERY_ITEM_ON(measr->query, item);
     measr->range = baneRangeNew(baneRangeAnywhere);
     measr->offset0 = gageKindAnswerOffset(gageKindScl, item);
@@ -78,7 +81,7 @@ baneMeasrNew(int type, double *parm) {
     /* --------------------------------------------------------------- */
   case baneMeasrGradMag:
     item = gageSclGradMag;
-    snprintf(measr->name, AIR_STRLEN_SMALL + 1, "%s", airEnumStr(gageScl, item));
+    snprintf(measr->name, sizeof(measr->name), "%s", airEnumStr(gageScl, item));
     GAGE_QUERY_ITEM_ON(measr->query, item);
     measr->range = baneRangeNew(baneRangePositive);
     measr->offset0 = gageKindAnswerOffset(gageKindScl, item);
@@ -87,7 +90,7 @@ baneMeasrNew(int type, double *parm) {
     /* --------------------------------------------------------------- */
   case baneMeasrLaplacian:
     item = gageSclLaplacian;
-    snprintf(measr->name, AIR_STRLEN_SMALL + 1, "%s", airEnumStr(gageScl, item));
+    snprintf(measr->name, sizeof(measr->name), "%s", airEnumStr(gageScl, item));
     GAGE_QUERY_ITEM_ON(measr->query, item);
     measr->range = baneRangeNew(baneRangeZeroCentered);
     measr->offset0 = gageKindAnswerOffset(gageKindScl, item);
@@ -96,7 +99,7 @@ baneMeasrNew(int type, double *parm) {
     /* --------------------------------------------------------------- */
   case baneMeasr2ndDD:
     item = gageScl2ndDD;
-    snprintf(measr->name, AIR_STRLEN_SMALL + 1, "%s", airEnumStr(gageScl, item));
+    snprintf(measr->name, sizeof(measr->name), "%s", airEnumStr(gageScl, item));
     GAGE_QUERY_ITEM_ON(measr->query, item);
     measr->range = baneRangeNew(baneRangeZeroCentered);
     measr->offset0 = gageKindAnswerOffset(gageKindScl, item);
@@ -105,7 +108,7 @@ baneMeasrNew(int type, double *parm) {
     /* --------------------------------------------------------------- */
   case baneMeasrTotalCurv:
     item = gageSclTotalCurv;
-    sprintf(measr->name, "%s", airEnumStr(gageScl, item));
+    snprintf(measr->name, sizeof(measr->name), "%s", airEnumStr(gageScl, item));
     GAGE_QUERY_ITEM_ON(measr->query, item);
     measr->range = baneRangeNew(baneRangePositive);
     measr->offset0 = gageKindAnswerOffset(gageKindScl, item);
@@ -114,7 +117,7 @@ baneMeasrNew(int type, double *parm) {
     /* --------------------------------------------------------------- */
   case baneMeasrFlowlineCurv:
     item = gageSclFlowlineCurv;
-    sprintf(measr->name, "%s", airEnumStr(gageScl, item));
+    snprintf(measr->name, sizeof(measr->name), "%s", airEnumStr(gageScl, item));
     GAGE_QUERY_ITEM_ON(measr->query, item);
     measr->range = baneRangeNew(baneRangePositive);
     measr->offset0 = gageKindAnswerOffset(gageKindScl, item);

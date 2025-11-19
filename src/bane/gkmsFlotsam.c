@@ -37,7 +37,7 @@ baneGkmsParseIncStrategy(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 
   int i, bins;
 
   if (!(ptr && str)) {
-    snprintf(err, AIR_STRLEN_HUGE + 1, "%s: got NULL pointer", me);
+    snprintf(err, ASP1_H, "%s: got NULL pointer", me);
     return 1;
   }
   inc = (double *)ptr;
@@ -73,7 +73,7 @@ baneGkmsParseIncStrategy(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 
 
   /* else its no good */
 
-  snprintf(err, AIR_STRLEN_HUGE + 1, "%s: \"%s\" not recognized", me, str);
+  snprintf(err, ASP1_H, "%s: \"%s\" not recognized", me, str);
   return 1;
 }
 
@@ -96,7 +96,7 @@ baneGkmsParseBEF(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
   airArray *mop;
 
   if (!(ptr && str)) {
-    snprintf(err, AIR_STRLEN_HUGE + 1, "%s: got NULL pointer", me);
+    snprintf(err, ASP1_H, "%s: got NULL pointer", me);
     return 1;
   }
   mop = airMopNew();
@@ -134,10 +134,10 @@ baneGkmsParseBEF(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
   } else {
     if (nrrdLoad(*nrrdP, str, NULL)) {
       airMopAdd(mop, nerr = biffGetDone(NRRD), airFree, airMopOnError);
-      snprintf(mesg, AIR_STRLEN_MED + 1,
-              "%s: couldn't parse \"%s\" as four-parameter BEF or "
-              "as a nrrd filename\n",
-              me, str);
+      snprintf(mesg, sizeof(mesg),
+               "%s: couldn't parse \"%s\" as four-parameter BEF or "
+               "as a nrrd filename\n",
+               me, str);
       strcpy(err, mesg);
       strncat(err, nerr, AIR_STRLEN_HUGE - strlen(mesg) - 1);
       airMopError(mop);
@@ -170,20 +170,20 @@ baneGkmsParseGthresh(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) 
   float *gthr;
 
   if (!(ptr && str)) {
-    sprintf(err, "%s: got NULL pointer", me);
+    snprintf(err, ASP1_H, "%s: got NULL pointer", me);
     return 1;
   }
   gthr = (float *)ptr;
 
   if ('x' == str[0]) {
     if (1 != sscanf(str + 1, "%f", gthr + 1)) {
-      sprintf(err, "%s: can't parse \"%s\" as x<float>", me, str);
+      snprintf(err, ASP1_H, "%s: can't parse \"%s\" as x<float>", me, str);
       return 1;
     }
     gthr[0] = 1;
   } else {
     if (1 != sscanf(str, "%f", gthr + 1)) {
-      sprintf(err, "%s: can't parse \"%s\" as float", me, str);
+      snprintf(err, ASP1_H, "%s: can't parse \"%s\" as float", me, str);
       return 1;
     }
     gthr[0] = 0;
@@ -224,8 +224,10 @@ baneGkmsUsage(const char *me, hestParm *hparm) {
     maxlen = AIR_MAX(maxlen, AIR_UINT(strlen(baneGkmsCmdList[ci]->name)));
   }
 
-  sprintf(buff, "--- Semi-Automatic Generation of Transfer Functions ---");
-  sprintf(fmt, "%%%ds\n", (int)((hparm->columns - strlen(buff)) / 2 + strlen(buff) - 1));
+  snprintf(buff, sizeof(buff),
+           "--- Semi-Automatic Generation of Transfer Functions ---");
+  snprintf(fmt, sizeof(fmt), "%%%ds\n",
+           (int)((hparm->columns - strlen(buff)) / 2 + strlen(buff) - 1));
   fprintf(stderr, fmt, buff);
 
   for (ci = 0; baneGkmsCmdList[ci]; ci++) {

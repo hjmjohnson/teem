@@ -656,7 +656,7 @@ _tenDwiGageAnswer(gageContext *ctx, gagePerVolume *pvl) {
                              NULL, NULL, pvlData);
       if (-1 == lmret) {
         ctx->errNum = 1;
-        snprintf(ctx->errStr, AIR_STRLEN_LARGE + 1, "%s: dlevmar_bc_dif() failed!", me);
+        snprintf(ctx->errStr, sizeof(ctx->errStr), "%s: dlevmar_bc_dif() failed!", me);
       } else {
         /* Get the AIC for the two tensor fit, use the levmarinfo
            to get the residual */

@@ -49,7 +49,7 @@ fiberStopParse(void *ptr, const char *_str, char err[AIR_STRLEN_HUGE + 1]) {
   int integer;
 
   if (!(ptr && _str)) {
-    snprintf(err, AIR_STRLEN_HUGE + 1, "%s: got NULL pointer", me);
+    snprintf(err, ASP1_H, "%s: got NULL pointer", me);
     return 1;
   }
   info = (double *)ptr;
@@ -60,7 +60,7 @@ fiberStopParse(void *ptr, const char *_str, char err[AIR_STRLEN_HUGE + 1]) {
   opt = strchr(str, ':');
   if (!opt) {
     /* couldn't parse string as nrrdEncoding, but there wasn't a colon */
-    snprintf(err, AIR_STRLEN_HUGE + 1, "%s: didn't see a colon in \"%s\"", me, str);
+    snprintf(err, ASP1_H, "%s: didn't see a colon in \"%s\"", me, str);
     airMopError(mop);
     return 1;
   }
@@ -68,7 +68,8 @@ fiberStopParse(void *ptr, const char *_str, char err[AIR_STRLEN_HUGE + 1]) {
   opt++;
   info[0] = AIR_INT(airEnumVal(tenFiberStop, str));
   if (tenFiberStopUnknown == AIR_INT(info[0])) {
-    snprintf(err, AIR_STRLEN_HUGE + 1, "%s: didn't recognize \"%s\" as %s", me, str, tenFiberStop->name);
+    snprintf(err, ASP1_H, "%s: didn't recognize \"%s\" as %s", me, str,
+             tenFiberStop->name);
     airMopError(mop);
     return 1;
   }
@@ -77,7 +78,8 @@ fiberStopParse(void *ptr, const char *_str, char err[AIR_STRLEN_HUGE + 1]) {
     /* <aniso>,<level> : tenAniso,double */
     opt2 = strchr(opt, ',');
     if (!opt2) {
-      snprintf(err, AIR_STRLEN_HUGE + 1, "%s: didn't see comma between aniso and level in \"%s\"", me, opt);
+      snprintf(err, ASP1_H, "%s: didn't see comma between aniso and level in \"%s\"", me,
+               opt);
       airMopError(mop);
       return 1;
     }
@@ -85,12 +87,13 @@ fiberStopParse(void *ptr, const char *_str, char err[AIR_STRLEN_HUGE + 1]) {
     opt2++;
     info[1] = AIR_INT(airEnumVal(tenAniso, opt));
     if (tenAnisoUnknown == AIR_INT(info[1])) {
-      snprintf(err, AIR_STRLEN_HUGE + 1, "%s: didn't recognize \"%s\" as %s", me, opt, tenAniso->name);
+      snprintf(err, ASP1_H, "%s: didn't recognize \"%s\" as %s", me, opt,
+               tenAniso->name);
       airMopError(mop);
       return 1;
     }
     if (1 != sscanf(opt2, "%lg", info + 2)) {
-      snprintf(err, AIR_STRLEN_HUGE + 1, "%s: couldn't parse aniso level \"%s\" as double", me, opt2);
+      snprintf(err, ASP1_H, "%s: couldn't parse aniso level \"%s\" as double", me, opt2);
       airMopError(mop);
       return 1;
     }
@@ -106,8 +109,8 @@ fiberStopParse(void *ptr, const char *_str, char err[AIR_STRLEN_HUGE + 1]) {
   case tenFiberStopMinLength:
     /* all of these take a single double */
     if (1 != sscanf(opt, "%lg", info + 1)) {
-      snprintf(err, AIR_STRLEN_HUGE + 1, "%s: couldn't parse %s \"%s\" as double", me,
-              airEnumStr(tenFiberStop, AIR_INT(info[0])), opt);
+      snprintf(err, ASP1_H, "%s: couldn't parse %s \"%s\" as double", me,
+               airEnumStr(tenFiberStop, AIR_INT(info[0])), opt);
       airMopError(mop);
       return 1;
     }
@@ -121,7 +124,7 @@ fiberStopParse(void *ptr, const char *_str, char err[AIR_STRLEN_HUGE + 1]) {
   case tenFiberStopMinNumSteps:
     /* <#steps> : int */
     if (1 != sscanf(opt, "%d", &integer)) {
-      snprintf(err, AIR_STRLEN_HUGE + 1, "%s: couldn't parse \"%s\" as int", me, opt);
+      snprintf(err, ASP1_H, "%s: couldn't parse \"%s\" as int", me, opt);
       airMopError(mop);
       return 1;
     }
@@ -132,7 +135,7 @@ fiberStopParse(void *ptr, const char *_str, char err[AIR_STRLEN_HUGE + 1]) {
     /* moron */
     break;
   default:
-    snprintf(err, AIR_STRLEN_HUGE + 1, "%s: stop method %d not supported", me, AIR_INT(info[0]));
+    snprintf(err, ASP1_H, "%s: stop method %d not supported", me, AIR_INT(info[0]));
     airMopError(mop);
     return 1;
     break;

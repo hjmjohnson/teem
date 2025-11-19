@@ -64,7 +64,7 @@ gageContextNew(void) {
     ctx->fsl = ctx->fw = NULL;
     ctx->off = NULL;
     gagePointReset(&ctx->point);
-    strcpy(ctx->errStr, "");
+    ctx->errStr[0] = '\0';
     ctx->errNum = gageErrNone;
     ctx->edgeFrac = 0;
   }
@@ -866,9 +866,10 @@ _gageProbeSpace(gageContext *ctx, double xx, double yy, double zz, double ss,
         }
         if (sidx == ctx->pvlNum - 2) {
           if (ctx->parm.generateErrStr) {
-            snprintf(ctx->errStr, AIR_STRLEN_LARGE + 1, "%s: search failure for ss = %g", me, ss);
+            snprintf(ctx->errStr, sizeof(ctx->errStr), "%s: search failure for ss = %g",
+                     me, ss);
           } else {
-            strcpy(ctx->errStr, _GAGE_NON_ERR_STR);
+            airStrcpy(ctx->errStr, sizeof(ctx->errStr), _GAGE_NON_ERR_STR);
           }
           ctx->errNum = gageErrStackSearch;
           return 1;
