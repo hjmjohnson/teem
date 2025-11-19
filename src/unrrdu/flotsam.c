@@ -229,8 +229,146 @@ unrrduUsage(const char *argv0, const char *prog, const char *title,
   return 0;
 }
 
+static int                      /* Biff: nope */
+_unrrduPrime(int argc,          /* as received by main() */
+             const char **argv, /* as received by main() */
+             const char *prog,  /* conventional name of command-line program */
+             const char *title, /* for top of listing sub-commands */
+             const unrrduCmd *const *cmdList, /* all the sub-commands */
+             const hestParm *_hparm,
+             const char *biffKey) {
+  if (!(argc >= 1 && argv && airStrlen(argv[0]) && airStrlen(prog) && airStrlen(title)
+        && cmdList)) { // bad args (_hparm, biffKey allowed to be NULL)
+    fprintf(stderr,
+            "%s: got weird argc (%d) NULL argv (%p) (or empty argv[0] (%p)), "
+            "prog (%p), title (%p), or cmdList (%p)",
+            __func__, argc, AIR_CVOIDP(argv), AIR_CVOIDP(argv[0]), AIR_CVOIDP(prog),
+            AIR_CVOIDP(title), AIR_CVOIDP(cmdList));
+    exit(1); // (in _unrrduPrime)
+  }
+  int ret;
+  if (1 == argc) {
+    ret = unrrduUsage(argv[0], prog, title, cmdList, _hparm);
+    /* if `ret`: already fprintf(stderr) what went wrong */
+    exit(ret); // (in _unrrduPrime)
+  }
+  // else argc >= 2
+  if (2 == argc && !strcmp("--version", argv[1])) {
+    char pfx[ASP1_L];
+    snprintf(pfx, ASP1_L, "%s built with", prog);
+    airTeemVersionPrintAndExit(pfx);
+  }
+  // handle "--usage" (but not yet "--help" or "about")
+  uint aboutCmdIdx;
+  if (cmdListCheckLen(prog, cmdList, NULL, &aboutCmdIdx)) {
+    /* already fprintf(stderr) what went wrong */
+    exit(1); // (in _unrrduPrime)
+  }
+  int aboutHave = (aboutCmdIdx != UINT_MAX);
+  if (2 == argc && !strcmp("--usage", argv[1])) {
+    printf("Usage: %s <command> [options ...]\n", prog);
+    if (aboutHave) {
+      printf("Run just \"%s\" for list of %s commands, or\n", argv[0], prog);
+      printf("\"%s --help\" or \"%s about\" to learn more about %s.\n", argv[0], argv[0],
+             prog);
+    } else {
+      printf("Run \"%s\" or \"%s --help\" for list of %s commands\n", argv[0], argv[0],
+             prog);
+    }
+    exit(0); // (in _unrrduPrime)
+  }
+  if (2 == argc && !strcmp("--help", argv[1]) && !aboutHave) {
+    // without an "about" command, --help is another way to ask for command list
+    exit(unrrduUsage(argv[0], prog, title, cmdList, _hparm)); // (in _unrrduPrime)
+  }
+  /* now:
+     either we're run with "--help" which effectively equals "about",
+     or, we're here to try running some other command */
+  const unrrduCmd *torun = NULL;
+  if (!strcmp("--help", argv[1]) && aboutHave) {
+    torun = cmdList[aboutCmdIdx];
+  } else {
+    for (uint ci = 0; cmdList[ci]; ci++) {
+      if (!strcmp(argv[1], cmdList[ci]->name)) {
+        torun = cmdList[ci];
+        break;
+      }
+    }
+  }
+  if (!torun) {
+    fprintf(stderr, "%s: unknown %s command \"%s\"; run \"%s\" for complete list\n",
+            argv[0], prog, argv[1], argv[0]);
+    exit(1); // (in _unrrduPrime)
+  }
+  // now: we actually know we're going to run `torun`
+  /* parse environment variables first, in case they break nrrdDefault*
+     or nrrdState* variables in a way that nrrdSanity() should see */
+  nrrdDefaultGetenv();
+  nrrdStateGetenv();
+  /* unu would do some unu-specific environment-variable handling here */
+  nrrdSanityOrExit(argv[0]);
+
+  hestParm *hparm = _hparm ? hestParmCopy(_hparm) : hestParmMopNew();
+  if (!_hparm) {
+    /* if nothing given, enstate some useful things */
+    hparm->elideSingleEnumType = AIR_TRUE;
+    hparm->elideSingleOtherType = AIR_TRUE;
+    hparm->elideSingleOtherDefault = AIR_FALSE;
+    hparm->elideSingleNonExistFloatDefault = AIR_TRUE;
+    hparm->elideMultipleNonExistFloatDefault = AIR_TRUE;
+    hparm->elideSingleEmptyStringDefault = AIR_TRUE;
+    hparm->elideMultipleEmptyStringDefault = AIR_TRUE;
+    hparm->cleverPluralizeOtherY = AIR_TRUE;
+    /* columns aren't set here:
+       either caller can to hestParmColumnsIoctl(), or it will
+       be tried later if mainFunc calls hestParseOrExit */
+  }
+  // NOTE: this is a STATIC allocation of the string!
+  char me[AIR_STRLEN_SMALL + 1]; // size sufficiency ensured by cmdListCheckLen
+  snprintf(me, sizeof(me), "%s %s", prog, torun->name);
+  // run the individual command, saving its exit status
+  ret = torun->mainFunc(argc - 2, argv + 2, me, hparm);
+  if (ret && biffKey) {
+    /* mainFunc returned but there was an error, and because we got a biffKey,
+       it's our job to get and display the error message before we return.
+       Our caller has no biff responsibility (hence the Biff: nope annotation),
+       but we were requested to use biff here. */
+    char *err = biffGetDone(biffKey);
+    if (err) {
+      /* we emulate the output of hestParseOrExit()
+         no final "\n" because biff included that in `err` */
+      fprintf(stderr, "%s: error:\n%s", me, err);
+      free(err);
+      /* Should not show hest usage info, right? The problem was in running the command,
+         not in collecting the info to start the command, so "usage" per se wasn't the
+         issue (perhaps this needs revisiting)?  Even if we wanted to show usage info
+         here, we can't actually call hestUsage(), because we don't have access to the
+         per-command hestOpt array; that is dynamically built inside its mainFunc(),
+         and isn't available out here. But we can point towards more help, in a
+         way that emulates the final output line of hestParseOrExit(). */
+      fprintf(stderr, "\nFor more info: %s --help\n", me);
+    }
+    // fall through to code below
+  }
+  /* if mainFunc returned, unhook any self-mopping that hestParmCopy may have created,
+     just like hestParseOrExit does after successful hestParse */
+  hestParmUnmop(hparm);
+  hestParmFree(hparm);
+  /* whether or not ret is non-zero, at this point we don't exit(): the fact that we
+     are returning means that we were able to run torun->mainFunc. It could have
+     called exit() on its own but for whatever chose not too, we just return
+     whatever torun->mainFunc returned. Applications of unrrduMainOrExit() or
+     unrrduMainBiffExit() may be a one-line main() simply returns whatever that
+     function returns, so the `ret` here may well become the program exit status.
+   */
+  return ret;
+}
+
 /*
  ******** unrrduMainOrExit
+ *
+ * (See _unrrduPrime above for the real function;
+ *  this and unrrduMainBiffOrExit are its wrappers)
  *
  * A "main" function for unu-like programs, which is very similar to
  * teem/src/bin/unu.c:main() and teem/src/bin/tend.c:main().
@@ -265,102 +403,31 @@ unrrduMainOrExit(int argc,          /* as received by main() */
                  const char *title, /* for top of listing sub-commands */
                  const unrrduCmd *const *cmdList, /* all the sub-commands */
                  const hestParm *_hparm) {
-  if (!(argc >= 1 && argv && airStrlen(argv[0]) && airStrlen(prog) && airStrlen(title)
-        && cmdList)) { // bad args (_hparm allowed to be NULL)
-    fprintf(stderr,
-            "%s: got weird argc (%d) NULL argv (%p) (or empty argv[0] (%p)), "
-            "prog (%p), title (%p), or cmdList (%p)",
-            __func__, argc, AIR_CVOIDP(argv), AIR_CVOIDP(argv[0]), AIR_CVOIDP(prog),
-            AIR_CVOIDP(title), AIR_CVOIDP(cmdList));
-    exit(1); // (in unrrduMainOrExit)
-  }
-  int ret;
-  if (1 == argc) {
-    ret = unrrduUsage(argv[0], prog, title, cmdList, _hparm);
-    /* if `ret`: already fprintf(stderr) what went wrong */
-    exit(ret); // (in unrrduMainOrExit)
-  }
-  // else argc >= 2
-  if (2 == argc && !strcmp("--version", argv[1])) {
-    char pfx[ASP1_L];
-    snprintf(pfx, ASP1_L, "%s built with", prog);
-    airTeemVersionPrintAndExit(pfx);
-  }
-  // handle "--usage" (but not yet "--help" or "about")
-  uint aboutCmdIdx;
-  if (cmdListCheckLen(prog, cmdList, NULL, &aboutCmdIdx)) {
-    /* already fprintf(stderr) what went wrong */
-    exit(1); // (in unrrduMainOrExit)
-  }
-  int aboutHave = (aboutCmdIdx != UINT_MAX);
-  if (2 == argc && !strcmp("--usage", argv[1])) {
-    printf("Usage: %s <command> [options ...]\n", prog);
-    if (aboutHave) {
-      printf("Run just \"%s\" for list of %s commands, or\n", argv[0], prog);
-      printf("\"%s --help\" or \"%s about\" to learn more about %s.\n", argv[0], argv[0],
-             prog);
-    } else {
-      printf("Run \"%s\" or \"%s --help\" for list of %s commands\n", argv[0], argv[0],
-             prog);
-    }
-    exit(0); // (in unrrduMainOrExit)
-  }
-  if (2 == argc && !strcmp("--help", argv[1]) && !aboutHave) {
-    // without an "about" command, --help is another way to ask for command list
-    exit(unrrduUsage(argv[0], prog, title, cmdList, _hparm)); // (in unrrduMainOrExit)
-  }
-  /* now:
-     either we're run with "--help" which effectively equals "about",
-     or, we're here to try running some other command */
-  const unrrduCmd *torun = NULL;
-  if (!strcmp("--help", argv[1]) && aboutHave) {
-    torun = cmdList[aboutCmdIdx];
-  } else {
-    for (uint ci = 0; cmdList[ci]; ci++) {
-      if (!strcmp(argv[1], cmdList[ci]->name)) {
-        torun = cmdList[ci];
-        break;
-      }
-    }
-  }
-  if (!torun) {
-    fprintf(stderr, "%s: unknown %s command \"%s\"; run \"%s\" for complete list\n",
-            argv[0], prog, argv[1], argv[0]);
-    exit(1); // (in unrrduMainOrExit)
-  }
-  // now: we actually know we're going to run `torun`
-  /* parse environment variables first, in case they break nrrdDefault*
-     or nrrdState* variables in a way that nrrdSanity() should see */
-  nrrdDefaultGetenv();
-  nrrdStateGetenv();
-  /* unu would do some unu-specific environment-variable handling here */
-  nrrdSanityOrExit(argv[0]);
+  return _unrrduPrime(argc, argv, prog, title, cmdList, _hparm, NULL);
+}
 
-  hestParm *hparm = _hparm ? hestParmCopy(_hparm) : hestParmMopNew();
-  if (!_hparm) {
-    /* if nothing given, enstate some useful things */
-    hparm->elideSingleEnumType = AIR_TRUE;
-    hparm->elideSingleOtherType = AIR_TRUE;
-    hparm->elideSingleOtherDefault = AIR_FALSE;
-    hparm->elideSingleNonExistFloatDefault = AIR_TRUE;
-    hparm->elideMultipleNonExistFloatDefault = AIR_TRUE;
-    hparm->elideSingleEmptyStringDefault = AIR_TRUE;
-    hparm->elideMultipleEmptyStringDefault = AIR_TRUE;
-    hparm->cleverPluralizeOtherY = AIR_TRUE;
-    /* columns aren't set here:
-       either caller can to hestParmColumnsIoctl(), or it will
-       be tried later if mainFunc calls hestParseOrExit */
+/*
+ ******** unrrduMainBiffOrExit
+ *
+ * (See _unrrduPrime for the real function;
+ *  this and unrrduMainOrExit are its wrappers)
+ *
+ * Like unrrduMainOrExit, but it's our job to do final collection and printing of a biff
+ * error message prior to returning.
+ */
+int                                     /* Biff: nope */
+unrrduMainBiffOrExit(int argc,          /* as received by main() */
+                     const char **argv, /* as received by main() */
+                     const char *prog,  /* conventional name of command-line program */
+                     const char *title, /* for top of listing sub-commands */
+                     const unrrduCmd *const *cmdList, /* all the sub-commands */
+                     const hestParm *_hparm,
+                     const char *biffKey) {
+  if (!biffKey) {
+    fprintf(stderr, "%s: got NULL biffKey\n", __func__);
+    exit(1); // (in unrrduMainBiffOrExit)
   }
-  // NOTE: this is a STATIC allocation of the string!
-  char me[AIR_STRLEN_SMALL + 1]; // size sufficiency ensured by cmdListCheckLen
-  snprintf(me, sizeof(me), "%s %s", prog, torun->name);
-  // run the individual command, saving its exit status
-  ret = torun->mainFunc(argc - 2, argv + 2, me, hparm);
-  /* if mainFunc returned, unhook any self-mopping that hestParmCopy may have created,
-     just like hestParseOrExit does after successful hestParse */
-  hestParmUnmop(hparm);
-  hestParmFree(hparm);
-  return ret;
+  return _unrrduPrime(argc, argv, prog, title, cmdList, _hparm, biffKey);
 }
 
 /* --------------------------------------------------------- */

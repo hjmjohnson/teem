@@ -100,14 +100,15 @@ unu-specific like like UNU_QUIET_QUIT_ENV or UNRRDU_UNU_QUIET_QUIT_ENV)
  * the single `main` function to call that which implements the command.
  */
 typedef struct {
-  const char *name, *info;
+  const char *name, // command name; e.g. "slice" for "unu slice"
+    *info;          // short (one-line) command description for command listing
   /* NOTE: argc,argv here are NOT the same as what real top-level `main()` got:
      these describe the command-line arguments AFTER the initial argument
      (i.e. original argv[0]) or arguments (e.g. "unu slice") that worked
      to select this particular unurrduCmd.  The `me` arg is one string
      to represent those args, such as "vprobe" or "unu slice". */
   int (*mainFunc)(int argc, const char **argv, const char *me, const hestParm *hparm);
-  int hidden;
+  int hidden; // whether to hide this from default command listing
 } unrrduCmd;
 
 /*
@@ -153,6 +154,10 @@ UNRRDU_EXPORT int unrrduUsage(const char *argv0, const char *prog, const char *t
 UNRRDU_EXPORT int unrrduMainOrExit(int argc, const char **argv, const char *cmd,
                                    const char *title, const unrrduCmd *const *cmdList,
                                    const hestParm *hparm);
+UNRRDU_EXPORT int unrrduMainBiffOrExit(int argc, const char **argv, const char *prog,
+                                       const char *title,
+                                       const unrrduCmd *const *cmdList,
+                                       const hestParm *_hparm, const char *biffKey);
 
 #ifdef __cplusplus
 }
