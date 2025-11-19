@@ -154,16 +154,6 @@ nrrdSplice(Nrrd *nout, const Nrrd *nin, const Nrrd *nslice, unsigned int axis,
 int /* Biff: 1 */
 nrrdInset(Nrrd *nout, const Nrrd *nin, const Nrrd *nsub, const size_t *min) {
   static const char me[] = "nrrdInset", func[] = "inset";
-  char buff1[NRRD_DIM_MAX * 30], buff2[AIR_STRLEN_SMALL + 1];
-  unsigned int ai;
-  size_t I, lineSize,   /* #bytes in one scanline to be copied */
-    typeSize,           /* size of data type */
-    cIn[NRRD_DIM_MAX],  /* coords for line start, in input */
-    cOut[NRRD_DIM_MAX], /* coords for line start, in output */
-    szIn[NRRD_DIM_MAX], szOut[NRRD_DIM_MAX], idxIn,
-    idxOut,   /* linear indices for input and output */
-    numLines; /* number of scanlines in output nrrd */
-  char *dataIn, *dataOut, *subCont, stmp[3][AIR_STRLEN_SMALL + 1];
 
   /* errors */
   if (!(nout && nin && nsub && min)) {
@@ -194,20 +184,18 @@ nrrdInset(Nrrd *nout, const Nrrd *nin, const Nrrd *nsub, const size_t *min) {
   }
   if (nrrdTypeBlock == nin->type) {
     if (!(nin->blockSize == nsub->blockSize)) {
-      biffAddf(NRRD, "%s: input's blockSize (%s) != subvolume's (%s)", me,
-               airSprintSize_t(stmp[0], nin->blockSize),
-               airSprintSize_t(stmp[1], nsub->blockSize));
+      biffAddf(NRRD, "%s: input's blockSize (%zu) != subvolume's (%zu)", me,
+               nin->blockSize, nsub->blockSize);
       return 1;
     }
   }
-  for (ai = 0; ai < nin->dim; ai++) {
+  for (uint ai = 0; ai < nin->dim; ai++) {
     if (!(min[ai] + nsub->axis[ai].size - 1 <= nin->axis[ai].size - 1)) {
       biffAddf(NRRD,
-               "%s: axis %u range of inset indices [%s,%s] not within "
-               "input indices [0,%s]",
-               me, ai, airSprintSize_t(stmp[0], min[ai]),
-               airSprintSize_t(stmp[1], min[ai] + nsub->axis[ai].size - 1),
-               airSprintSize_t(stmp[2], nin->axis[ai].size - 1));
+               "%s: axis %u range of inset indices [%zu,%zu] not within "
+               "input indices [0,%zu]",
+               me, ai, min[ai], min[ai] + nsub->axis[ai].size - 1,
+               nin->axis[ai].size - 1);
       return 1;
     }
   }
@@ -222,24 +210,27 @@ nrrdInset(Nrrd *nout, const Nrrd *nin, const Nrrd *nsub, const size_t *min) {
 
   /* WARNING: following code copied/modified from nrrdCrop(),
      so the meanings of "in"/"out", "src"/"dest" are all messed up */
-
+  size_t szIn[NRRD_DIM_MAX], szOut[NRRD_DIM_MAX];
   nrrdAxisInfoGet_nva(nin, nrrdAxisInfoSize, szIn);
   nrrdAxisInfoGet_nva(nsub, nrrdAxisInfoSize, szOut);
-  numLines = 1;
-  for (ai = 1; ai < nin->dim; ai++) {
+  size_t numLines = 1; /* number of scanlines in output nrrd */
+  for (uint ai = 1; ai < nin->dim; ai++) {
     numLines *= szOut[ai];
   }
-  lineSize = szOut[0] * nrrdElementSize(nin);
+  size_t lineSize = szOut[0] * nrrdElementSize(nin), // size of one scanline to copy
+    typeSize = nrrdElementSize(nin);                 // size of data type
 
   /* the skinny */
-  typeSize = nrrdElementSize(nin);
-  dataIn = (char *)nout->data;
-  dataOut = (char *)nsub->data;
-  for (ai = 0; ai < NRRD_DIM_MAX; ai++) {
+  size_t cIn[NRRD_DIM_MAX], /* coords for line start, in input */
+    cOut[NRRD_DIM_MAX],     /* coords for line start, in output */
+    idxIn, idxOut;          /* linear indices for input and output */
+  for (uint ai = 0; ai < NRRD_DIM_MAX; ai++) {
     cOut[ai] = 0;
   }
-  for (I = 0; I < numLines; I++) {
-    for (ai = 0; ai < nin->dim; ai++) {
+  char *dataIn = nout->data;
+  char *dataOut = nsub->data;
+  for (size_t I = 0; I < numLines; I++) {
+    for (uint ai = 0; ai < nin->dim; ai++) {
       cIn[ai] = cOut[ai] + min[ai];
     }
     NRRD_INDEX_GEN(idxOut, cOut, szOut, nin->dim);
@@ -250,13 +241,15 @@ nrrdInset(Nrrd *nout, const Nrrd *nin, const Nrrd *nsub, const size_t *min) {
     NRRD_COORD_INCR(cOut, szOut, nin->dim, 1);
   }
 
-  strcpy(buff1, "[");
-  for (ai = 0; ai < nin->dim; ai++) {
-    sprintf(buff2, "%s%s", (ai ? "," : ""), airSprintSize_t(stmp[0], min[ai]));
-    strcat(buff1, buff2);
+  char buff1[NRRD_DIM_MAX * AIR_STRLEN_SMALL + 1];
+  char *bb = buff1;
+  size_t bbSize = sizeof(buff1);
+  SN_COPY(bb, bbSize, "[");
+  for (uint ai = 0; ai < nin->dim; ai++) {
+    SN_PRINTF(bb, bbSize, "%s%zu", (ai ? "," : ""), min[ai]);
   }
-  strcat(buff1, "]");
-  subCont = _nrrdContentGet(nsub);
+  SN_COPY(bb, bbSize, "]");
+  char *subCont = _nrrdContentGet(nsub);
   if (nrrdContentSet_va(nout, func, nin, "%s,%s", subCont, buff1)) {
     biffAddf(NRRD, "%s:", me);
     free(subCont);
@@ -277,20 +270,6 @@ int /* Biff: 1 */
 nrrdPad_va(Nrrd *nout, const Nrrd *nin, const ptrdiff_t *min, const ptrdiff_t *max,
            int boundary, ...) {
   static const char me[] = "nrrdPad_va", func[] = "pad";
-  char buff1[NRRD_DIM_MAX * 30], buff2[AIR_STRLEN_MED + 1];
-  double padValue = AIR_NAN;
-  int outside; /* whether current sample in output has any coordinates
-                  that are outside the input volume (this is per-sample,
-                  not per-axis) */
-  unsigned int ai;
-  ptrdiff_t cIn[NRRD_DIM_MAX];    /* coords for line start, in input */
-  size_t typeSize, idxIn, idxOut, /* linear indices for input and output */
-    numOut,                       /* number of elements in output nrrd */
-    szIn[NRRD_DIM_MAX], szOut[NRRD_DIM_MAX],
-    cOut[NRRD_DIM_MAX]; /* coords for line start, in output */
-  va_list ap;
-  char *dataIn, *dataOut;
-  char stmp[2][AIR_STRLEN_SMALL + 1];
 
   if (!(nout && nin && min && max)) {
     biffAddf(NRRD, "%s: got NULL pointer", me);
@@ -315,6 +294,8 @@ nrrdPad_va(Nrrd *nout, const Nrrd *nin, const ptrdiff_t *min, const ptrdiff_t *m
              airEnumStr(nrrdBoundary, nrrdBoundaryPad));
     return 1;
   }
+  va_list ap;
+  double padValue = AIR_NAN;
   va_start(ap, boundary);
   if (nrrdBoundaryPad == boundary) {
     padValue = va_arg(ap, double);
@@ -334,9 +315,10 @@ nrrdPad_va(Nrrd *nout, const Nrrd *nin, const ptrdiff_t *min, const ptrdiff_t *m
   /*
   printf("!%s: boundary = %d, padValue = %g\n", me, boundary, padValue);
   */
-
+  char stmp[2][AIR_STRLEN_SMALL + 1];
+  size_t szIn[NRRD_DIM_MAX], szOut[NRRD_DIM_MAX];
   nrrdAxisInfoGet_nva(nin, nrrdAxisInfoSize, szIn);
-  for (ai = 0; ai < nin->dim; ai++) {
+  for (uint ai = 0; ai < nin->dim; ai++) {
     if (!(min[ai] <= 0)) {
       biffAddf(NRRD, "%s: axis %u min (%s) not <= 0", me, ai,
                airSprintPtrdiff_t(stmp[0], min[ai]));
@@ -356,8 +338,8 @@ nrrdPad_va(Nrrd *nout, const Nrrd *nin, const ptrdiff_t *min, const ptrdiff_t *m
   }
 
   /* allocate */
-  numOut = 1;
-  for (ai = 0; ai < nin->dim; ai++) {
+  size_t numOut = 1; /* number of elements in output nrrd */
+  for (uint ai = 0; ai < nin->dim; ai++) {
     numOut *= (szOut[ai] = -min[ai] + max[ai] + 1);
   }
   nout->blockSize = nin->blockSize;
@@ -365,17 +347,20 @@ nrrdPad_va(Nrrd *nout, const Nrrd *nin, const ptrdiff_t *min, const ptrdiff_t *m
     biffAddf(NRRD, "%s:", me);
     return 1;
   }
-
   /* the skinny */
-  typeSize = nrrdElementSize(nin);
-  dataIn = (char *)nin->data;
-  dataOut = (char *)nout->data;
-  for (ai = 0; ai < NRRD_DIM_MAX; ai++) {
+  size_t typeSize = nrrdElementSize(nin), /* linear indices for input and output */
+    cOut[NRRD_DIM_MAX];                   /* coords for line start, in output */
+  ptrdiff_t cIn[NRRD_DIM_MAX];            /* coords for line start, in input */
+  char *dataIn = (char *)nin->data;
+  char *dataOut = (char *)nout->data;
+  for (uint ai = 0; ai < NRRD_DIM_MAX; ai++) {
     cOut[ai] = 0;
   }
-  for (idxOut = 0; idxOut < numOut; idxOut++) {
-    outside = 0;
-    for (ai = 0; ai < nin->dim; ai++) {
+  for (size_t idxOut = 0; idxOut < numOut; idxOut++) {
+    int outside = 0; /* whether current sample in output has any coordinates
+                        that are outside the input volume (this is per-sample,
+                        not per-axis) */
+    for (uint ai = 0; ai < nin->dim; ai++) {
       cIn[ai] = cOut[ai] + min[ai];
       switch (boundary) {
       case nrrdBoundaryPad: /* HEY, this shouldn't result in any
@@ -401,6 +386,7 @@ nrrdPad_va(Nrrd *nout, const Nrrd *nin, const ptrdiff_t *min, const ptrdiff_t *m
         break;
       }
     }
+    size_t idxIn;
     NRRD_INDEX_GEN(idxIn, cIn, szIn, nin->dim);
     if (!outside) {
       /* the cIn coords are within the input nrrd: do memcpy() of whole
@@ -425,7 +411,7 @@ nrrdPad_va(Nrrd *nout, const Nrrd *nin, const ptrdiff_t *min, const ptrdiff_t *m
     biffAddf(NRRD, "%s:", me);
     return 1;
   }
-  for (ai = 0; ai < nin->dim; ai++) {
+  for (uint ai = 0; ai < nin->dim; ai++) {
     nrrdAxisInfoPosRange(&(nout->axis[ai].min), &(nout->axis[ai].max), nin, ai,
                          AIR_CAST(double, min[ai]), AIR_CAST(double, max[ai]));
     if (!nrrdStateKindNoop && nout->axis[ai].size == nin->axis[ai].size) {
@@ -435,19 +421,22 @@ nrrdPad_va(Nrrd *nout, const Nrrd *nin, const ptrdiff_t *min, const ptrdiff_t *m
       nout->axis[ai].kind = _nrrdKindAltered(nin->axis[ai].kind, AIR_FALSE);
     }
   }
-  strcpy(buff1, "");
-  for (ai = 0; ai < nin->dim; ai++) {
-    sprintf(buff2, "%s[%s,%s]", (ai ? "x" : ""), airSprintPtrdiff_t(stmp[0], min[ai]),
-            airSprintPtrdiff_t(stmp[1], max[ai]));
-    strcat(buff1, buff2);
+  char buff1[NRRD_DIM_MAX * AIR_STRLEN_SMALL + 1], buff2[AIR_STRLEN_MED + 1];
+  char *bb = buff1;
+  size_t bbSize = sizeof(buff1);
+  for (uint ai = 0; ai < nin->dim; ai++) {
+    SN_PRINTF(bb, bbSize, "%s[%s,%s]", (ai ? "x" : ""),
+              airSprintPtrdiff_t(stmp[0], min[ai]),
+              airSprintPtrdiff_t(stmp[1], max[ai]));
   }
   if (nrrdBoundaryPad == boundary) {
-    sprintf(buff2, "%s(%g)", airEnumStr(nrrdBoundary, nrrdBoundaryPad), padValue);
+    snprintf(buff2, sizeof(buff2), "%s(%g)", airEnumStr(nrrdBoundary, nrrdBoundaryPad),
+             padValue);
   } else {
-    strcpy(buff2, airEnumStr(nrrdBoundary, boundary));
+    airStrcpy(buff2, sizeof(buff2), airEnumStr(nrrdBoundary, boundary));
   }
   if (nrrdContentSet_va(nout, func, nin, "%s,%s", buff1, buff2)) {
-    biffAddf(NRRD, "%s:", me);
+    biffAddf(NRRD, "%s: trouble setting content", me);
     return 1;
   }
   if (nrrdBasicInfoCopy(nout, nin,
@@ -458,18 +447,17 @@ nrrdPad_va(Nrrd *nout, const Nrrd *nin, const ptrdiff_t *min, const ptrdiff_t *m
                           | (nrrdStateKeyValuePairsPropagate
                                ? 0
                                : NRRD_BASIC_INFO_KEYVALUEPAIRS_BIT))) {
-    biffAddf(NRRD, "%s:", me);
+    biffAddf(NRRD, "%s: trouble copying basic info", me);
     return 1;
   }
   /* copy origin, then shift it along the spatial axes */
   nrrdSpaceVecCopy(nout->spaceOrigin, nin->spaceOrigin);
-  for (ai = 0; ai < nin->dim; ai++) {
+  for (uint ai = 0; ai < nin->dim; ai++) {
     if (AIR_EXISTS(nin->axis[ai].spaceDirection[0])) {
       nrrdSpaceVecScaleAdd2(nout->spaceOrigin, 1.0, nout->spaceOrigin,
                             AIR_CAST(double, min[ai]), nin->axis[ai].spaceDirection);
     }
   }
-
   return 0;
 }
 

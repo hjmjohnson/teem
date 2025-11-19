@@ -1537,7 +1537,7 @@ extern int nrrdKernelParse(const NrrdKernel **kernelP,
                                 double *parm,
                                 const char *str);
 extern int nrrdKernelSpecParse(NrrdKernelSpec *ksp, const char *str);
-extern int nrrdKernelSpecSprint(char str[AIR_STRLEN_LARGE + 1],
+extern int nrrdKernelSpecSprint(char str[AIR_STRLEN_SMALL + 1],
                                      const NrrdKernelSpec *ksp);
 extern int nrrdKernelSprint(char str[AIR_STRLEN_LARGE + 1],
                                  const NrrdKernel *kernel,

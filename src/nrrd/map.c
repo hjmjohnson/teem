@@ -89,7 +89,7 @@ clampRoundConvert(Nrrd *nout, const Nrrd *nin, int type, int doClamp, int roundD
 
     /* copy peripheral information */
     nrrdAxisInfoCopy(nout, nin, NULL, NRRD_AXIS_INFO_NONE);
-    sprintf(typeS, "(%s)", airEnumStr(nrrdType, nout->type));
+    snprintf(typeS, sizeof(typeS), "(%s)", airEnumStr(nrrdType, nout->type));
     if (nrrdContentSet_va(nout, typeS, nin, "")) {
       biffAddf(NRRD, "%s:", me);
       return 1;
