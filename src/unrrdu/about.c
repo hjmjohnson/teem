@@ -109,11 +109,14 @@ unrrdu_aboutMain(int argc, const char **argv, const char *me, const hestParm *hp
   AIR_UNUSED(me);
 
   fprintf(stdout, "\n");
-  sprintf(buff, "--- unu: Utah Nrrd Utilities command-line interface ---");
-  sprintf(fmt, "%%%ds\n", (int)((hparm->columns - strlen(buff)) / 2 + strlen(buff) - 1));
+  snprintf(buff, sizeof(buff),
+           "--- unu: Utah Nrrd Utilities command-line interface ---");
+  snprintf(fmt, sizeof(fmt), "%%%ds\n",
+           (int)((hparm->columns - strlen(buff)) / 2 + strlen(buff) - 1));
   fprintf(stdout, fmt, buff);
   airTeemVersionSprint(buff);
-  sprintf(fmt, "%%%ds\n", (int)((hparm->columns - strlen(buff)) / 2 + strlen(buff) - 1));
+  snprintf(fmt, sizeof(fmt), "%%%ds\n",
+           (int)((hparm->columns - strlen(buff)) / 2 + strlen(buff) - 1));
   fprintf(stdout, fmt, buff);
   fprintf(stdout, "\n");
 

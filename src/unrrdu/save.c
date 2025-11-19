@@ -34,45 +34,49 @@ static int
 unrrdu_saveMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   char fmtInfo[AIR_STRLEN_HUGE + 1];
-  strcpy(fmtInfo,
-         "output file format. Possibilities include:\n "
-         "\b\bo \"nrrd\": standard nrrd format\n "
-         "\b\bo \"pnm\": PNM image; PPM for color, PGM for grayscale\n "
-         "\b\bo \"text\": ASCII text for 1-D and 2-D data\n "
-         "\b\bo \"ptext\": like \"text\" but enforcing real plain text,\n "
-         "        i.e., no NRRD header fields on lines (prior to data) \n "
-         "        starting with \"#\"\n "
-         "\b\bo \"vtk\": VTK \"STRUCTURED_POINTS\" dataset");
+  char *fmt = fmtInfo;
+  size_t fmtSize = sizeof(fmtInfo);
+  SN_COPY(fmt, fmtSize,
+          "output file format. Possibilities include:\n "
+          "\b\bo \"nrrd\": standard nrrd format\n "
+          "\b\bo \"pnm\": PNM image; PPM for color, PGM for grayscale\n "
+          "\b\bo \"text\": ASCII text for 1-D and 2-D data\n "
+          "\b\bo \"ptext\": like \"text\" but enforcing real plain text,\n "
+          "        i.e., no NRRD header fields on lines (prior to data) \n "
+          "        starting with \"#\"\n "
+          "\b\bo \"vtk\": VTK \"STRUCTURED_POINTS\" dataset");
   if (nrrdFormatPNG->available()) {
-    strcat(fmtInfo, "\n \b\bo \"png\": PNG image");
+    SN_COPY(fmt, fmtSize, "\n \b\bo \"png\": PNG image");
   }
-  strcat(fmtInfo, "\n \b\bo \"eps\": EPS file");
+  SN_COPY(fmt, fmtSize, "\n \b\bo \"eps\": EPS file");
   int frmt[2];
   hestOptAdd_1_Other(&hopt, "f,format", "form", frmt, NULL, fmtInfo,
                      &unrrduHestFormatCB);
   char encInfo[AIR_STRLEN_HUGE + 1];
-  strcpy(encInfo,
-         "encoding of data in file.  Not all encodings are supported in "
-         "a given format. Possibilities include:"
-         "\n \b\bo \"raw\": raw encoding"
-         "\n \b\bo \"ascii\": print data in ascii"
-         "\n \b\bo \"hex\": two hex digits per byte");
+  char *ens = encInfo;
+  size_t ensSize = sizeof(encInfo);
+  SN_COPY(ens, ensSize,
+          "encoding of data in file.  Not all encodings are supported in "
+          "a given format. Possibilities include:"
+          "\n \b\bo \"raw\": raw encoding"
+          "\n \b\bo \"ascii\": print data in ascii"
+          "\n \b\bo \"hex\": two hex digits per byte");
   if (nrrdEncodingGzip->available()) {
-    strcat(encInfo, "\n \b\bo \"gzip\", \"gz\": gzip compressed raw data");
+    SN_COPY(ens, ensSize, "\n \b\bo \"gzip\", \"gz\": gzip compressed raw data");
   }
   if (nrrdEncodingBzip2->available()) {
-    strcat(encInfo, "\n \b\bo \"bzip2\", \"bz2\": bzip2 compressed raw data");
+    SN_COPY(ens, ensSize, "\n \b\bo \"bzip2\", \"bz2\": bzip2 compressed raw data");
   }
   if (nrrdEncodingGzip->available() || nrrdEncodingBzip2->available()) {
-    strcat(encInfo,
-           "\n The specifiers for compressions may be followed by a colon "
-           "\":\", followed by an optional digit giving compression \"level\" "
-           "(for gzip) or \"block size\" (for bzip2).  For gzip, this can be "
-           "followed by an optional character for a compression strategy:\n "
-           "\b\bo \"d\": default, Huffman with string match\n "
-           "\b\bo \"h\": Huffman alone\n "
-           "\b\bo \"f\": specialized for filtered data\n "
-           "For example, \"gz\", \"gz:9\", \"gz:9f\" are all valid");
+    SN_COPY(ens, ensSize,
+            "\n The specifiers for compressions may be followed by a colon "
+            "\":\", followed by an optional digit giving compression \"level\" "
+            "(for gzip) or \"block size\" (for bzip2).  For gzip, this can be "
+            "followed by an optional character for a compression strategy:\n "
+            "\b\bo \"d\": default, Huffman with string match\n "
+            "\b\bo \"h\": Huffman alone\n "
+            "\b\bo \"f\": specialized for filtered data\n "
+            "For example, \"gz\", \"gz:9\", \"gz:9f\" are all valid");
   }
   int enc[3];
   hestOptAdd_1_Other(&hopt, "e,encoding", "enc", enc, "raw", encInfo,

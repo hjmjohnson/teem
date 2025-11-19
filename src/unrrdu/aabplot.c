@@ -117,9 +117,9 @@ unrrdu_aabplotMain(int argc, const char **argv, const char *me, const hestParm *
       for (pi = 0; pi < plen; pi++) {
         line[pi] = ' ';
       }
-      sprintf(rbuff, "|<-- %g", vrange[0]);
+      snprintf(rbuff, sizeof(rbuff), "|<-- %g", vrange[0]);
       memcpy(line, rbuff, strlen(rbuff));
-      sprintf(rbuff, "%g -->|", vrange[1]);
+      snprintf(rbuff, sizeof(rbuff), "%g -->|", vrange[1]);
       memcpy(line + plen - strlen(rbuff), rbuff, strlen(rbuff));
       printf("%s", line);
       if (medshow) {

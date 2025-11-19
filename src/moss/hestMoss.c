@@ -28,7 +28,7 @@ _mossHestTransformParse(void *ptr, const char *_str, char err[AIR_STRLEN_HUGE + 
   airArray *mop;
 
   if (!(ptr && _str)) {
-    sprintf(err, "%s: got NULL pointer", me);
+    snprintf(err, ASP1_H, "%s: got NULL pointer", me);
     return 1;
   }
   matP = (double **)ptr;
@@ -68,7 +68,7 @@ _mossHestTransformParse(void *ptr, const char *_str, char err[AIR_STRLEN_HUGE + 
     MOSS_MAT_COPY(*matP, mat);
 
   } else {
-    sprintf(err, "%s: couldn't parse \"%s\" as a transform", me, _str);
+    snprintf(err, ASP1_H, "%s: couldn't parse \"%s\" as a transform", me, _str);
     airMopError(mop);
     return 1;
   }
@@ -106,7 +106,7 @@ _mossHestOriginParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) 
   } else if (2 == sscanf(str, "u:%lf,%lf", *valP + 1, *valP + 2)) {
     (*valP)[0] = 1;
   } else {
-    sprintf(err, "%s: couldn't parse \"%s\" as origin", me, str);
+    snprintf(err, ASP1_H, "%s: couldn't parse \"%s\" as origin", me, str);
     airMopError(mop);
     return 1;
   }

@@ -159,17 +159,19 @@ unrrdu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hp
                     "before reading data.  Can use \"-bs -1\" to skip a binary "
                     "header of unknown length in raw-encoded data");
   char encInfo[AIR_STRLEN_LARGE + 1];
-  strcpy(encInfo,
-         "encoding of input data. Possibilities include:"
-         "\n \b\bo \"raw\": raw encoding"
-         "\n \b\bo \"ascii\": ascii values, one scanline per line of text, "
-         "values within line are delimited by space, tab, or comma"
-         "\n \b\bo \"hex\": two hex digits per byte");
+  char *enc = encInfo;
+  size_t encSize = sizeof(encInfo);
+  SN_COPY(enc, encSize,
+          "encoding of input data. Possibilities include:"
+          "\n \b\bo \"raw\": raw encoding"
+          "\n \b\bo \"ascii\": ascii values, one scanline per line of text, "
+          "values within line are delimited by space, tab, or comma"
+          "\n \b\bo \"hex\": two hex digits per byte");
   if (nrrdEncodingGzip->available()) {
-    strcat(encInfo, "\n \b\bo \"gzip\", \"gz\": gzip compressed raw data");
+    SN_COPY(enc, encSize, "\n \b\bo \"gzip\", \"gz\": gzip compressed raw data");
   }
   if (nrrdEncodingBzip2->available()) {
-    strcat(encInfo, "\n \b\bo \"bzip2\", \"bz2\": bzip2 compressed raw data");
+    SN_COPY(enc, encSize, "\n \b\bo \"bzip2\", \"bz2\": bzip2 compressed raw data");
   }
   int encodingType;
   hestOptAdd_1_Enum(&hopt, "e,encoding", "enc", &encodingType, "raw", encInfo,
@@ -346,8 +348,8 @@ unrrdu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hp
   airMopAdd(mop, nio, nrrdIoStateNix_mop, airMopAlways);
   Nrrd *nrrd = nrrdNew();
   airMopAdd(mop, nrrd, nrrdNuke_mop, airMopAlways);
-  char *parseBuf = NULL;
-  size_t bufLen;
+  char *pbuf; // parseBuf
+  size_t pbufSize;
   unsigned int spaceDim;
 
   nrrd->type = type;
@@ -366,18 +368,19 @@ unrrdu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hp
       airMopError(mop);
       return 1;
     }
-    bufLen = 0;
+    pbufSize = 0;
     for (uint ii = 0; ii < nameLen; ii++) {
-      bufLen += strlen(dataFileNames[ii]) + 1;
+      pbufSize += strlen(dataFileNames[ii]) + 1;
     }
-    parseBuf = AIR_CALLOC(bufLen + 1, char);
+    pbufSize += 1;
+    char *parseBuf = pbuf = AIR_CALLOC(pbufSize, char);
     airMopAdd(mop, parseBuf, airFree, airMopAlways);
-    strcpy(parseBuf, "");
+    pbuf[0] = '\0';
     for (uint ii = 0; ii < nameLen; ii++) {
       if (ii) {
-        strcat(parseBuf, " ");
+        SN_COPY(pbuf, pbufSize, " ");
       }
-      strcat(parseBuf, dataFileNames[ii]);
+      SN_COPY(pbuf, pbufSize, dataFileNames[ii]);
     }
     nio->line = parseBuf;
     nio->pos = 0;
@@ -424,7 +427,7 @@ unrrdu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hp
   if (airStrlen(label[0])) {
     for (uint ii = 0; ii < nrrd->dim; ii++) {
       if (!strcmp(NO_STRING, label[ii])) {
-        strcpy(label[ii], "");
+        label[ii][0] = '\0';
       }
     }
     nrrdAxisInfoSet_nva(nrrd, nrrdAxisInfoLabel, label);
@@ -432,7 +435,7 @@ unrrdu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hp
   if (airStrlen(units[0])) {
     for (uint ii = 0; ii < nrrd->dim; ii++) {
       if (!strcmp(NO_STRING, units[ii])) {
-        strcpy(units[ii], "");
+        units[ii][0] = '\0';
       }
     }
     nrrdAxisInfoSet_nva(nrrd, nrrdAxisInfoUnits, units);
@@ -462,18 +465,19 @@ unrrdu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hp
   }
   if (airStrlen(kinds[0])) {
     /* have to allocate line then pass it to parsing */
-    bufLen = 0;
+    pbufSize = 0;
     for (uint ii = 0; ii < sizeLen; ii++) {
-      bufLen += airStrlen(" ") + airStrlen(kinds[ii]);
+      pbufSize += airStrlen(" ") + airStrlen(kinds[ii]);
     }
-    parseBuf = AIR_CALLOC(bufLen + 1, char);
+    pbufSize += 1;
+    char *parseBuf = pbuf = AIR_CALLOC(pbufSize, char);
     airMopAdd(mop, parseBuf, airFree, airMopAlways);
-    strcpy(parseBuf, "");
+    pbuf[0] = '\0';
     for (uint ii = 0; ii < sizeLen; ii++) {
       if (ii) {
-        strcat(parseBuf, " ");
+        SN_COPY(pbuf, pbufSize, " ");
       }
-      strcat(parseBuf, kinds[ii]);
+      SN_COPY(pbuf, pbufSize, kinds[ii]);
     }
     nio->line = parseBuf;
     nio->pos = 0;
@@ -488,18 +492,19 @@ unrrdu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hp
   }
   if (airStrlen(centerings[0])) {
     /* have to allocate line then pass it to parsing */
-    bufLen = 0;
+    pbufSize = 0;
     for (uint ii = 0; ii < sizeLen; ii++) {
-      bufLen += airStrlen(" ") + airStrlen(centerings[ii]);
+      pbufSize += airStrlen(" ") + airStrlen(centerings[ii]);
     }
-    parseBuf = AIR_CALLOC(bufLen + 1, char);
+    pbufSize += 1;
+    char *parseBuf = pbuf = AIR_CALLOC(pbufSize, char);
     airMopAdd(mop, parseBuf, airFree, airMopAlways);
-    strcpy(parseBuf, "");
+    pbuf[0] = '\0';
     for (uint ii = 0; ii < sizeLen; ii++) {
       if (ii) {
-        strcat(parseBuf, " ");
+        SN_COPY(pbuf, pbufSize, " ");
       }
-      strcat(parseBuf, centerings[ii]);
+      SN_COPY(pbuf, pbufSize, centerings[ii]);
     }
     nio->line = parseBuf;
     nio->pos = 0;
@@ -620,24 +625,23 @@ unrrdu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hp
     }
     for (uint ii = 0; ii < nrrd->spaceDim; ii++) {
       if (!strcmp(NO_STRING, spunits[ii])) {
-        strcpy(spunits[ii], "");
+        spunits[ii][0] = '\0';
       }
     }
     /* have to allocate line then pass it to parsing */
-    bufLen = 0;
+    pbufSize = 0;
     for (uint ii = 0; ii < nrrd->spaceDim; ii++) {
-      bufLen += airStrlen(" ") + airStrlen("\"\"") + airStrlen(spunits[ii]);
+      pbufSize += airStrlen(" ") + airStrlen("\"\"") + airStrlen(spunits[ii]);
     }
-    parseBuf = AIR_CALLOC(bufLen + 1, char);
+    pbufSize += 1;
+    char *parseBuf = pbuf = AIR_CALLOC(pbufSize, char);
     airMopAdd(mop, parseBuf, airFree, airMopAlways);
-    strcpy(parseBuf, "");
+    pbuf[0] = '\0';
     for (uint ii = 0; ii < nrrd->spaceDim; ii++) {
       if (ii) {
-        strcat(parseBuf, " ");
+        SN_COPY(pbuf, pbufSize, " ");
       }
-      strcat(parseBuf, "\"");
-      strcat(parseBuf, spunits[ii]);
-      strcat(parseBuf, "\"");
+      SN_PRINTF(pbuf, pbufSize, "\"%s\"", spunits[ii]);
     }
     nio->line = parseBuf;
     nio->pos = 0;

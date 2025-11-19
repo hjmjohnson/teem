@@ -110,7 +110,7 @@ unrrdu_vidiconMain(int argc, const char **argv, const char *me, const hestParm *
 #define SAVE_TMP(name, nrrd)                                                            \
   if (airStrlen(stpfx)) {                                                               \
     char stname[AIR_STRLEN_SMALL + 1];                                                  \
-    sprintf(stname, "%s-" #name ".png", stpfx);                                         \
+    snprintf(stname, sizeof(stname), "%s-" #name ".png", stpfx);                        \
     if (nrrdQuantize(ntmp, nrrd, b8range, 8) || nrrdSave(stname, ntmp, 0)) {            \
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);                   \
       fprintf(stderr, "%s: problem saving %s:\n%s", me, stname, err);                   \

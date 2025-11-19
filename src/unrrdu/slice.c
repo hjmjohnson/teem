@@ -76,9 +76,9 @@ unrrdu_sliceMain(int argc, const char **argv, const char *me, const hestParm *hp
   for (uint axi = 0; axi < axisNum; axi++) {
     char stmp[AIR_STRLEN_SMALL + 1];
     if (axisNum > 1) {
-      sprintf(stmp, "[%u]", axi);
+      snprintf(stmp, sizeof(stmp), "[%u]", axi);
     } else {
-      strcpy(stmp, "");
+      stmp[0] = '\0';
     }
     if (!(axis[axi] < nin->dim)) {
       fprintf(stderr, "%s: axis%s %u not in range [0,%u]\n", me, stmp, axis[axi],

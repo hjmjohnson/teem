@@ -100,7 +100,7 @@ unrrdu_cropMain(int argc, const char **argv, const char *me, const hestParm *hpa
       if (_nbounds->dim >= 2) {
         airSprintSize_t(stmp[0], _nbounds->axis[1].size);
       } else {
-        strcpy(stmp[0], "");
+        stmp[0][0] = '\0';
       }
       fprintf(stderr,
               "%s: expected 2-D %u-by-2 array of cropping bounds, "
