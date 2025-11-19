@@ -64,7 +64,7 @@ extern "C" {
     SN_INCR(DST, DST_SIZE);                                                             \
   } while (0)
 #define ASP1_S (AIR_STRLEN_SMALL + 1)
-#define ASP1_M (AIR_STRLEN_MEDIUM + 1)
+#define ASP1_M (AIR_STRLEN_MED + 1)
 #define ASP1_L (AIR_STRLEN_LARGE + 1)
 #define ASP1_H (AIR_STRLEN_HUGE + 1)
 

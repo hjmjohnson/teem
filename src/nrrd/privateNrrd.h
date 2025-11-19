@@ -68,7 +68,7 @@ extern "C" {
   } while (0)
 /* ---- END non-NrrdIO */
 #define ASP1_S (AIR_STRLEN_SMALL + 1)
-#define ASP1_M (AIR_STRLEN_MEDIUM + 1)
+#define ASP1_M (AIR_STRLEN_MED + 1)
 #define ASP1_L (AIR_STRLEN_LARGE + 1)
 #define ASP1_H (AIR_STRLEN_HUGE + 1)
 
