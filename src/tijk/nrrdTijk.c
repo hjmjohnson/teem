@@ -47,7 +47,7 @@ int tijk_set_axis_tensor(Nrrd *nrrd, unsigned int axis,
   lablen = (unsigned int)(strlen("tijk__") + strlen(type->name) +
                           (masked?strlen("mask_"):0) + 1);
   axinfo->label = AIR_CALLOC(lablen, char);
-  sprintf(axinfo->label, "tijk_%s%s", masked?"mask_":"", type->name);
+  snprintf(axinfo->label, lablen, "tijk_%s%s", masked?"mask_":"", type->name);
   return 0;
 }
 
@@ -77,7 +77,7 @@ int tijk_set_axis_esh(Nrrd *nrrd, unsigned int axis, unsigned int order) {
   axinfo->label = (char*) airFree(axinfo->label);
   lablen = strlen("tijk_esh_") + (masked?strlen("mask_"):0) + 3;
   axinfo->label = AIR_CALLOC(lablen, char);
-  sprintf(axinfo->label, "tijk_%sesh_%02u", masked?"mask_":"", order);
+  snprintf(axinfo->label, lablen, "tijk_%sesh_%02u", masked?"mask_":"", order);
   return 0;
 }
 
@@ -107,7 +107,7 @@ int tijk_set_axis_efs(Nrrd *nrrd, unsigned int axis, unsigned int order) {
   axinfo->label = (char*) airFree(axinfo->label);
   lablen = strlen("tijk_efs_") + (masked?strlen("mask_"):0) + 3;
   axinfo->label = AIR_CALLOC(lablen, char);
-  sprintf(axinfo->label, "tijk_%sefs_%02u", masked?"mask_":"", order);
+  snprintf(axinfo->label, lablen, "tijk_%sefs_%02u", masked?"mask_":"", order);
   return 0;
 }
 
