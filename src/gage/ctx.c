@@ -866,7 +866,7 @@ _gageProbeSpace(gageContext *ctx, double xx, double yy, double zz, double ss,
         }
         if (sidx == ctx->pvlNum - 2) {
           if (ctx->parm.generateErrStr) {
-            sprintf(ctx->errStr, "%s: search failure for ss = %g", me, ss);
+            snprintf(ctx->errStr, AIR_STRLEN_LARGE + 1, "%s: search failure for ss = %g", me, ss);
           } else {
             strcpy(ctx->errStr, _GAGE_NON_ERR_STR);
           }

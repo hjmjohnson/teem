@@ -651,7 +651,7 @@ tenModelSqeFit(Nrrd *nparm, Nrrd **nsqeP, Nrrd **nconvP, Nrrd **niterP,
   lablen = AIR_UINT((strlen(tenModelPrefixStr) + (saveB0 ? strlen("B0+") : 0)
                      + strlen(model->name) + 1));
   nparm->axis[0].label = AIR_CALLOC(lablen, char);
-  sprintf(nparm->axis[0].label, "%s%s%s", tenModelPrefixStr, saveB0 ? "B0+" : "",
+  snprintf(nparm->axis[0].label, lablen, "%s%s%s", tenModelPrefixStr, saveB0 ? "B0+" : "",
           model->name);
 
   airMopOkay(mop);

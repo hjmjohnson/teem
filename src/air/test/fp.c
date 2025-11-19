@@ -27,7 +27,8 @@ main(int argc, char *argv[]) {
   unsigned int hibit;
   float f, g, parsed_f;
   double d, parsed_d;
-  char str[128];
+  const size_t STR_MAX_SIZE=128;
+  char str[STR_MAX_SIZE];
 
   AIR_UNUSED(argc);
   me = argv[0];
@@ -54,7 +55,7 @@ main(int argc, char *argv[]) {
 
   for (c = airFP_Unknown + 1; c < airFP_Last; c++) {
     f = airFPGen_f(c);
-    sprintf(str, "%.9g", f);
+    snprintf(str, 128,"%.9g", f);
     ret = airSingleSscanf(str, "%f", &parsed_f);
     printf("********** airFPGen_f(%d=%s) = %s (-> %.9g(%d)) "
            "(AIR_EXISTS %d; airExists %d)\n",
@@ -81,7 +82,7 @@ main(int argc, char *argv[]) {
 
   for (c = airFP_Unknown + 1; c < airFP_Last; c++) {
     d = airFPGen_d(c);
-    sprintf(str, "%0.17g", d);
+    snprintf(str, STR_MAX_SIZE, "%0.17g", d);
     ret = airSingleSscanf(str, "%lf", &parsed_d);
     printf("********** airFPGen_d(%d=%s) = %s (-> %f(%d)) "
            "(AIR_EXISTS %d; airExists %d)\n",

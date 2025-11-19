@@ -125,10 +125,6 @@ _unuUsage(const char *me, const hestParm *hparm, int alsoHidden) {
 int
 main(int argc, const char **argv) {
   int i, ret, listAll;
-  const char *me;
-  char *argv0 = NULL;
-
-  me = argv[0];
 
   /* parse environment variables first, in case they break nrrdDefault*
      or nrrdState* variables in a way that nrrdSanity() should see */
@@ -148,7 +144,7 @@ main(int argc, const char **argv) {
   }
 
   /* no harm done in making sure we're sane */
-  nrrdSanityOrExit(me);
+  nrrdSanityOrExit(argv[0]);
 
   hestParm *hparm = hestParmMopNew();
   hparm->elideSingleEnumType = AIR_TRUE;
@@ -183,7 +179,7 @@ main(int argc, const char **argv) {
   }
   /* else, we see if its unu --version */
   if (!strcmp("--version", argv[1])) {
-    char vbuff[ASP1_L];
+    char vbuff[AIR_STRLEN_SMALL + 1];
     airTeemVersionSprint(vbuff);
     printf("%s\n", vbuff);
     hestParmFree(hparm);
@@ -205,17 +201,18 @@ main(int argc, const char **argv) {
   if (unrrduUnuCmdList[i]) {
     // yes, we have that command
     // initialize variables used by the various commands
-    argv0 = AIR_CALLOC(strlen(UNU) + strlen(argv[1]) + 2, char);
+    size_t meSize = strlen(UNU) + strlen(argv[1]) + 2;
+    char *me = AIR_CALLOC(meSize, char);
     // hijack hparm->_selfMop to clean this dynamic allocation
-    airMopAdd(hparm->_selfMop, argv0, airFree, airMopAlways);
-    sprintf(argv0, "%s %s", UNU, argv[1]);
+    airMopAdd(hparm->_selfMop, me, airFree, airMopAlways);
+    snprintf(me, meSize, "%s %s", UNU, argv[1]);
     // run the individual unu program, saving its exit status
-    ret = unrrduUnuCmdList[i]->mainFunc(argc - 2, argv + 2, argv0, hparm);
+    ret = unrrduUnuCmdList[i]->mainFunc(argc - 2, argv + 2, me, hparm);
   } else {
     fprintf(stderr,
-            "%s: unrecognized command \"%s\"; type \"%s\" for "
+            "%s: unrecognized command \"%s\"; run \"%s\" for "
             "complete list\n",
-            me, argv[1], me);
+            UNU, argv[1], argv[0]);
     ret = 1;
   }
   // we didn't exit, it's on us to free what we created

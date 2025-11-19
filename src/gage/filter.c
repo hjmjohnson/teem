@@ -265,7 +265,7 @@ _gageLocationSet(gageContext *ctx, double xif, double yif, double zif, double si
   if (!(AIR_IN_CL(min, xif, max[0]) && AIR_IN_CL(min, yif, max[1])
         && AIR_IN_CL(min, zif, max[2]))) {
     if (ctx->parm.generateErrStr) {
-      sprintf(ctx->errStr,
+      snprintf(ctx->errStr, AIR_STRLEN_LARGE + 1,
               "%s: position (%g,%g,%g) outside (%s-centered) "
               "bounds [%g,%g]x[%g,%g]x[%g,%g]",
               me, xif, yif, zif, airEnumStr(nrrdCenter, ctx->shape->center), min, max[0],
@@ -279,7 +279,7 @@ _gageLocationSet(gageContext *ctx, double xif, double yif, double zif, double si
   if (ctx->parm.stackUse) {
     if (!(AIR_IN_CL(0, sif, ctx->pvlNum - 2))) {
       if (ctx->parm.generateErrStr) {
-        sprintf(ctx->errStr,
+        snprintf(ctx->errStr, AIR_STRLEN_LARGE + 1,
                 "%s: stack position %g outside (%s-centered) "
                 "bounds [0,%u]",
                 me, sif, airEnumStr(nrrdCenter, nrrdCenterNode), ctx->pvlNum - 2);
@@ -408,7 +408,7 @@ _gageLocationSet(gageContext *ctx, double xif, double yif, double zif, double si
       }
       if (!sum) {
         if (ctx->parm.generateErrStr) {
-          sprintf(ctx->errStr,
+          snprintf(ctx->errStr, AIR_STRLEN_LARGE + 1,
                   "%s: integral of stackFw[] is zero; "
                   "can't do stack reconstruction",
                   me);
