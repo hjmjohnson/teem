@@ -32,32 +32,27 @@ static const char *_unrrdu_tileInfoL
           "* Uses nrrdTile2D");
 
 static int
-unrrdu_tileMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *nout;
-  int pret;
-  size_t size[2];
-  unsigned int axes[3];
-  airArray *mop;
-
-  hestOptAdd_3_UInt(&opt, "a,axis", "axSplit ax0 ax1", axes, NULL,
+unrrdu_tileMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  uint axes[3];
+  hestOptAdd_3_UInt(&hopt, "a,axis", "axSplit ax0 ax1", axes, NULL,
                     "axSplit is divided and merged with ax0 and ax1");
-  hestOptAdd_2_Size_t(&opt, "s,size", "fast slow", size, NULL,
+  size_t size[2];
+  hestOptAdd_2_Size_t(&hopt, "s,size", "fast slow", size, NULL,
                       "fast and slow axis sizes to produce as result of splitting "
                       "the axSplit axis.");
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_tileInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_tileInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
-
+  Nrrd *nout = nrrdNew();
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdTile2D(nout, nin, axes[1], axes[2], axes[0], size[0], size[1])) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error tiling nrrd:\n%s", me, err);

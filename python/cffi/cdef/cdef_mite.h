@@ -390,9 +390,11 @@ extern void miteQueryAdd(gageQuery queryScl, gageQuery queryVec, gageQuery query
 /* user.c */
 extern miteUser *miteUserNew(void);
 extern miteUser *miteUserNix(miteUser *muu);
+extern void *miteUserNix_mop(void *);
 /* shade.c */
 extern miteShadeSpec *miteShadeSpecNew(void);
 extern miteShadeSpec *miteShadeSpecNix(miteShadeSpec *);
+extern void *miteShadeSpecNix_mop(void *);
 extern int miteShadeSpecParse(miteShadeSpec *shpec, char *shadeStr);
 extern void miteShadeSpecPrint(char *buff, const miteShadeSpec *shpec);
 extern void miteShadeSpecQueryAdd(gageQuery queryScl, gageQuery queryVec,
@@ -404,6 +406,7 @@ extern int miteRenderEnd(miteRender *mrr, miteUser *muu);
 /* thread.c */
 extern miteThread *miteThreadNew(void);
 extern miteThread *miteThreadNix(miteThread *mtt);
+extern void *miteThreadNix_mop(void *);
 extern int miteThreadBegin(miteThread **mttP, miteRender *mrr, miteUser *muu,
                                 int whichThread);
 extern int miteThreadEnd(miteThread *mtt, miteRender *mrr, miteUser *muu);

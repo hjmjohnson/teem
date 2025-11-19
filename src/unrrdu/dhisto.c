@@ -27,39 +27,37 @@ static const char *_unrrdu_dhistoInfoL
      "* Uses nrrdHistoDraw");
 
 static int
-unrrdu_dhistoMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *nout;
-  int pret, nolog, notick;
-  unsigned int size;
-  airArray *mop;
-  double max;
-
-  hestOptAdd_1_UInt(&opt, "h,height", "height", &size, NULL,
+unrrdu_dhistoMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  uint size;
+  hestOptAdd_1_UInt(&hopt, "h,height", "height", &size, NULL,
                     "height of output image (horizontal size is determined by "
                     "number of bins in input histogram).");
-  hestOptAdd_Flag(&opt, "nolog", &nolog,
+  int nolog;
+  hestOptAdd_Flag(&hopt, "nolog", &nolog,
                   "do not show the log-scaled histogram with decade tick-marks");
-  hestOptAdd_Flag(&opt, "notick", &notick, "do not draw the log decade tick marks");
-  hestOptAdd_1_Double(&opt, "max,maximum", "max # hits", &max, "nan",
+  int notick;
+  hestOptAdd_Flag(&hopt, "notick", &notick, "do not draw the log decade tick marks");
+  double max;
+  hestOptAdd_1_Double(&hopt, "max,maximum", "max # hits", &max, "nan",
                       "constrain the top of the drawn histogram to be at this "
                       "number of hits.  This will either scale the drawn histogram "
                       "downward or clip its top, depending on whether the given max "
                       "is higher or lower than the actual maximum bin count.  By "
                       "not using this option (the default), the actual maximum bin "
                       "count is used");
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_dhistoInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_dhistoInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  Nrrd *nout = nrrdNew();
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   if (nrrdHistoDraw(nout, nin, size, nolog ? AIR_FALSE : (notick ? 2 : AIR_TRUE), max)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);

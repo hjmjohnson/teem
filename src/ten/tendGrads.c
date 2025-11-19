@@ -35,7 +35,7 @@ static const char *_tend_gradsInfoL
           "restarting with a different \"-seed\".");
 
 static int
-tend_gradsMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_gradsMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -49,7 +49,7 @@ tend_gradsMain(int argc, const char **argv, const char *me, hestParm *hparm) {
 
   mop = airMopNew();
   tgparm = tenGradientParmNew();
-  airMopAdd(mop, tgparm, (airMopper)tenGradientParmNix, airMopAlways);
+  airMopAdd(mop, tgparm, tenGradientParmNix_mop, airMopAlways);
 
   hestOptAdd_1_Int(&hopt, "n", "# dir", &num, "6",
                    "desired number of diffusion gradient directions");
@@ -98,12 +98,12 @@ tend_gradsMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                     "adding zero vector at beginning of grads");
   hestOptAdd_1_String(&hopt, "o", "filename", &outS, "-",
                       "file to write output nrrd to");
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
   USAGE(_tend_gradsInfoL);
   JUSTPARSE(_tend_gradsInfoL);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
   nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   /* see if it was an integral exponent */
   tgparm->expo = AIR_UINT(tgparm->expo_d);

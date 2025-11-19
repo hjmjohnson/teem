@@ -25,30 +25,29 @@ static const char *_unrrdu_ccsettleInfoL = (INFO ".\n "
                                                  "* Uses nrrdCCSettle");
 
 static int
-unrrdu_ccsettleMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err, *valS;
-  Nrrd *nin, *nout, *nval = NULL;
-  airArray *mop;
-  int pret;
-
-  mop = airMopNew();
-  hparm->noArgsIsNoProblem = AIR_TRUE;
-  hestOptAdd_1_Other(&opt, "i,input", "nin", &nin, "-",
+unrrdu_ccsettleMain(int argc, const char **argv, const char *me,
+                    const hestParm *_hparm) {
+  hestOpt *hopt = NULL;
+  Nrrd *nin;
+  hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-",
                      "input nrrd. By default try to read from stdin", nrrdHestNrrdNoTTY);
-  hestOptAdd_1_String(&opt, "v,values", "filename", &valS, "",
+  char *valS;
+  hestOptAdd_1_String(&hopt, "v,values", "filename", &valS, "",
                       "Giving a filename here allows you to save out the mapping "
                       "from new (settled) values to old values, in the form of a "
                       "1-D lookup table");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
 
-  USAGE_OR_PARSE(_unrrdu_ccsettleInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
+  // (boilerplate for YES some hparm modification)
+  hestParm *hparm = hestParmCopy(_hparm);
+  hparm->noArgsIsNoProblem = AIR_TRUE; // thanks to nrrdHestNrrdNoTTY
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_ccsettleInfoL);
+  airArray *mop = unrrduMopNew(hopt, hparm);
+  char *err;
 
-  nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
-
+  Nrrd *nval = NULL, *nout = nrrdNew();
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdCCSettle(nout, airStrlen(valS) ? &nval : NULL, nin)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error settling connected components:\n%s", me, err);
@@ -56,7 +55,7 @@ unrrdu_ccsettleMain(int argc, const char **argv, const char *me, hestParm *hparm
     return 1;
   }
   if (nval) {
-    airMopAdd(mop, nval, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nval, nrrdNuke_mop, airMopAlways);
   }
 
   if (airStrlen(valS)) {

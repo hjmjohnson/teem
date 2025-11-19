@@ -229,14 +229,19 @@ airArrayLenSet(airArray *a, unsigned int newlen) {
     if (newsize) {
       /* array should be bigger or smaller, but not zero-length */
       if (newsize > a->size || (newsize < a->size && !(a->noReallocWhenSmaller))) {
+        size_t sztocpy;
         newdata = calloc(newsize * a->incr, a->unit);
         if (!newdata) {
           free(a->data);
           _airSetData(a, NULL);
           return;
         }
-        memcpy(newdata, a->data, AIR_MIN(a->len * a->unit, newsize * a->incr * a->unit));
-        free(a->data);
+        sztocpy = AIR_MIN(a->len * a->unit, newsize * a->incr * a->unit);
+        if (sztocpy) {
+          /* only copy old data when there's something to copy */
+          memcpy(newdata, a->data, sztocpy);
+          free(a->data);
+        }
         _airSetData(a, newdata);
         a->size = newsize;
       }
@@ -321,6 +326,7 @@ airArrayNuke(airArray *a) {
   }
   return NULL;
 }
+AIR_MOPPER(airArrayNuke)
 
 /*
 ******** airArrayNix()
@@ -335,3 +341,4 @@ airArrayNix(airArray *a) {
   }
   return NULL;
 }
+AIR_MOPPER(airArrayNix)

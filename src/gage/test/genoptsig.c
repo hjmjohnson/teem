@@ -42,9 +42,9 @@ main(int argc, const char *argv[]) {
 
   me = argv[0];
   mop = airMopNew();
-  hparm = hestParmNew();
+  hparm = hestParmMopNew();
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hopt = NULL;
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
   hestOptAdd(&hopt, "num", "# samp", airTypeUInt, 2, 2, sampleNum, NULL,
              "min and max number of samples to optimize");
   hestOptAdd(&hopt, "dim", "dimension", airTypeUInt, 1, 1, &dim, "3",
@@ -74,12 +74,12 @@ main(int argc, const char *argv[]) {
   hestOptAdd(&hopt, "tent", NULL, airTypeInt, 0, 0, &tentRecon, NULL,
              "same hack: plot error with tent recon, not hermite");
   hestOptAdd(&hopt, "o", "nout", airTypeString, 1, 1, &outS, NULL, "output array");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, optsigInfo);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, optsigInfo);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
-  airMopAdd(mop, nout, AIR_CAST(airMopper, nrrdNuke), airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   osctx = gageOptimSigContextNew(dim, sampleNum[1], measrSampleNum, sigma[0], sigma[1],
                                  cutoff);
@@ -89,7 +89,7 @@ main(int argc, const char *argv[]) {
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, osctx, AIR_CAST(airMopper, gageOptimSigContextNix), airMopAlways);
+  airMopAdd(mop, osctx, gageOptimSigContextNix_mop, airMopAlways);
 
   scalePos = AIR_CALLOC(sampleNum[1], double);
   airMopAdd(mop, scalePos, airFree, airMopAlways);

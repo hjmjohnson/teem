@@ -24,7 +24,7 @@
 static const char *_tend_mfitInfoL = (INFO ". More docs here.");
 
 static int
-tend_mfitMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_mfitMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -85,17 +85,17 @@ tend_mfitMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                       "By default, no such error is saved.");
 
   mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
   USAGE_JUSTPARSE(_tend_mfitInfoL);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nterr = NULL;
   nconv = NULL;
   niter = NULL;
   espec = tenExperSpecNew();
-  airMopAdd(mop, espec, (airMopper)tenExperSpecNix, airMopAlways);
+  airMopAdd(mop, espec, tenExperSpecNix_mop, airMopAlways);
   nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (tenModelParse(&model, &saveB0, AIR_FALSE, modS)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble parsing model \"%s\":\n%s\n", me, modS, err);

@@ -834,6 +834,7 @@ extern const int nrrdTypeIsUnsigned[NRRD_TYPE_MAX + 1];
 extern const int nrrdPresent;
 extern NrrdBoundarySpec *nrrdBoundarySpecNew(void);
 extern NrrdBoundarySpec *nrrdBoundarySpecNix(NrrdBoundarySpec *bspec);
+extern void *nrrdBoundarySpecNix_mop(void *);
 extern NrrdBoundarySpec *nrrdBoundarySpecCopy(const NrrdBoundarySpec *bsp);
 extern int nrrdBoundarySpecCheck(const NrrdBoundarySpec *bspec);
 extern int nrrdBoundarySpecParse(NrrdBoundarySpec *bspec, const char *str);
@@ -847,9 +848,11 @@ extern int nrrdBoundarySpecCompare(const NrrdBoundarySpec *bspecA,
 extern NrrdIoState *nrrdIoStateNew(void);
 extern void nrrdIoStateInit(NrrdIoState *nio);
 extern NrrdIoState *nrrdIoStateNix(NrrdIoState *nio);
+extern void *nrrdIoStateNix_mop(void *);
 /* ---- BEGIN non-NrrdIO */
 extern NrrdResampleInfo *nrrdResampleInfoNew(void);
 extern NrrdResampleInfo *nrrdResampleInfoNix(NrrdResampleInfo *info);
+extern void *nrrdResampleInfoNix_mop(void *);
 extern NrrdKernelSpec *nrrdKernelSpecNew(void);
 extern NrrdKernelSpec *nrrdKernelSpecCopy(const NrrdKernelSpec *ksp);
 extern void nrrdKernelSpecSet(NrrdKernelSpec *ksp, const NrrdKernel *k,
@@ -858,12 +861,16 @@ extern void nrrdKernelParmSet(const NrrdKernel **kP,
                                    double kparm[NRRD_KERNEL_PARM_MAXNUM],
                                    NrrdKernelSpec *ksp);
 extern NrrdKernelSpec *nrrdKernelSpecNix(NrrdKernelSpec *ksp);
+extern void *nrrdKernelSpecNix_mop(void *);
 /* ---- END non-NrrdIO */
 extern void nrrdInit(Nrrd *nrrd);
 extern Nrrd *nrrdNew(void);
 extern Nrrd *nrrdNix(Nrrd *nrrd);
+extern void *nrrdNix_mop(void *nrr);
 extern Nrrd *nrrdEmpty(Nrrd *nrrd);
+extern void *nrrdEmpty_mop(void *);
 extern Nrrd *nrrdNuke(Nrrd *nrrd);
+extern void *nrrdNuke_mop(void *);
 extern int nrrdWrap_nva(Nrrd *nrrd, void *data, int type, unsigned int dim,
                              const size_t *size);
 extern int nrrdWrap_va(Nrrd *nrrd, void *data, int type, unsigned int dim,
@@ -968,7 +975,7 @@ extern int nrrdSpaceVecExists(unsigned int sdim,
                                    const double vec[NRRD_SPACE_DIM_MAX]);
 extern void nrrdSpaceVecSetNaN(double vec[NRRD_SPACE_DIM_MAX]);
 /* ---- BEGIN non-NrrdIO */
-extern void nrrdSanityOrDie(const char *me);
+extern void nrrdSanityOrExit(const char *me);
 extern void nrrdSpaceVecSetZero(double vec[NRRD_SPACE_DIM_MAX]);
 extern void nrrdZeroSet(Nrrd *nout);
 extern void nrrdNaNSet(Nrrd *nout);
@@ -1135,11 +1142,13 @@ extern void nrrdIterSetOwnNrrd(NrrdIter *iter, Nrrd *nrrd);
 extern double nrrdIterValue(NrrdIter *iter);
 extern char *nrrdIterContent(NrrdIter *iter);
 extern NrrdIter *nrrdIterNix(NrrdIter *iter);
+extern void *nrrdIterNix_mop(void *);
 /******** expressing the range of values in a nrrd */
 /* range.c */
 extern NrrdRange *nrrdRangeNew(double min, double max);
 extern NrrdRange *nrrdRangeCopy(const NrrdRange *range);
 extern NrrdRange *nrrdRangeNix(NrrdRange *range);
+extern void *nrrdRangeNix_mop(void *);
 extern void nrrdRangeReset(NrrdRange *range);
 extern void nrrdRangeSet(NrrdRange *range, const Nrrd *nrrd, int blind8BitRange);
 extern int nrrdRangePercentileSet(NrrdRange *range, const Nrrd *nrrd,
@@ -1321,6 +1330,7 @@ typedef struct {
 } NrrdDeringContext;
 extern NrrdDeringContext *nrrdDeringContextNew(void);
 extern NrrdDeringContext *nrrdDeringContextNix(NrrdDeringContext *drc);
+extern void *nrrdDeringContextNix_mop(void *);
 extern int nrrdDeringVerboseSet(NrrdDeringContext *drc, int verbose);
 extern int nrrdDeringLinearInterpSet(NrrdDeringContext *drc, int linterp);
 extern int nrrdDeringVerticalSeamSet(NrrdDeringContext *drc, int vertSeam);
@@ -1354,6 +1364,7 @@ extern int nrrdDeringExecute(NrrdDeringContext *drc, Nrrd *nout);
 /* resampleContext.c */
 extern NrrdResampleContext *nrrdResampleContextNew(void);
 extern NrrdResampleContext *nrrdResampleContextNix(NrrdResampleContext *);
+extern void *nrrdResampleContextNix_mop(void *);
 extern int nrrdResampleDefaultCenterSet(NrrdResampleContext *rsmc, int center);
 extern int nrrdResampleNonExistentSet(NrrdResampleContext *rsmc, int nonExistent);
 extern int nrrdResampleInputSet(NrrdResampleContext *rsmc, const Nrrd *nin);
@@ -1526,7 +1537,7 @@ extern int nrrdKernelParse(const NrrdKernel **kernelP,
                                 double *parm,
                                 const char *str);
 extern int nrrdKernelSpecParse(NrrdKernelSpec *ksp, const char *str);
-extern int nrrdKernelSpecSprint(char str[AIR_STRLEN_LARGE + 1],
+extern int nrrdKernelSpecSprint(char str[AIR_STRLEN_SMALL + 1],
                                      const NrrdKernelSpec *ksp);
 extern int nrrdKernelSprint(char str[AIR_STRLEN_LARGE + 1],
                                  const NrrdKernel *kernel,

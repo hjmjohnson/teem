@@ -32,18 +32,20 @@ static const char *_tend_simInfoL
           "measurement frame. ");
 
 static int
-tend_simMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_simMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
   tenEstimateContext *tec;
-  airArray *mop;
 
   int E, oldstuff, seed, keyValueSet, outType, preOutType;
   Nrrd *nin, *nT2, *nbmat, *ngrad, *nout, *ntmp;
   char *outS;
   float b, sigma;
 
+  airArray *mop = airMopNew();
+  hestParm *hparm = hestParmCopy(_hparm);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   /* maybe this can go in tend.c, but for some reason its explicitly
      set to AIR_FALSE there */
   hparm->elideSingleOtherDefault = AIR_TRUE;
@@ -73,13 +75,12 @@ tend_simMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                     nrrdType);
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output image (floating point)");
 
-  mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
   USAGE_PARSE(_tend_simInfoL);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   if (!(nbmat || ngrad)) {
     fprintf(stderr,
@@ -92,7 +93,7 @@ tend_simMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   if (!oldstuff) {
     airSrandMT(seed);
     tec = tenEstimateContextNew();
-    airMopAdd(mop, tec, (airMopper)tenEstimateContextNix, airMopAlways);
+    airMopAdd(mop, tec, tenEstimateContextNix_mop, airMopAlways);
     preOutType = (nrrdTypeFloat == outType ? nrrdTypeFloat : nrrdTypeDouble);
     E = 0;
     if (!E) E |= tenEstimateMethodSet(tec, tenEstimate1MethodLLS);
@@ -115,7 +116,7 @@ tend_simMain(int argc, const char **argv, const char *me, hestParm *hparm) {
     }
     if (preOutType != outType) {
       ntmp = nrrdNew();
-      airMopAdd(mop, ntmp, (airMopper)nrrdNuke, airMopAlways);
+      airMopAdd(mop, ntmp, nrrdNuke_mop, airMopAlways);
       E = 0;
       if (!E) E |= nrrdCopy(ntmp, nout);
       if (!E) E |= nrrdConvert(nout, ntmp, outType);

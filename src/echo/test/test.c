@@ -36,7 +36,7 @@ main(int argc, char **argv) {
   me = argv[0];
   mop = airMopNew();
   scene = echoSceneNew();
-  airMopAdd(mop, scene, (airMopper)echoSceneNix, airMopAlways);
+  airMopAdd(mop, scene, echoSceneNix_mop, airMopAlways);
   list = echoObjectNew(scene, echoTypeList);
   for (I = 0; I < 70; I++) {
     sph = echoObjectNew(scene, echoTypeSphere);
@@ -99,10 +99,10 @@ main(int argc, char **argv) {
   cam = limnCameraNew();
   parm = echoRTParmNew();
   gstate = echoGlobalStateNew();
-  airMopAdd(mop, nraw, (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, cam, (airMopper)limnCameraNix, airMopAlways);
-  airMopAdd(mop, parm, (airMopper)echoRTParmNix, airMopAlways);
-  airMopAdd(mop, gstate, (airMopper)echoGlobalStateNix, airMopAlways);
+  airMopAdd(mop, nraw, nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, cam, limnCameraNix_mop, airMopAlways);
+  airMopAdd(mop, parm, echoRTParmNix_mop, airMopAlways);
+  airMopAdd(mop, gstate, echoGlobalStateNix_mop, airMopAlways);
 
   ELL_3V_SET(cam->from, 20, 20, 20);
   ELL_3V_SET(cam->at, 0, 0, 0);

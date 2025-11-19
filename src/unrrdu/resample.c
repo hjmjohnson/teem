@@ -38,29 +38,16 @@ static const char *_unrrdu_resampleInfoL
           "* Uses the many nrrdResample* functions operating on a nrrdResampleContext");
 
 static int
-unrrdu_resampleMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *nout;
-  int type, bb, pret, norenorm, neb, older, E, defaultCenter, verbose, overrideCenter,
-    minSet = AIR_FALSE, maxSet = AIR_FALSE, offSet = AIR_FALSE;
-  unsigned int scaleLen, ai, minLen, maxLen, offLen, aspRatNum, nonAspRatNum;
-  size_t samplesOut = 0; /* initializing to quiet a warning */
-  airArray *mop;
-  double *scale;
-  double padVal, *min, *max, *off, aspRatScl = AIR_NAN;
-  NrrdResampleInfo *info;
-  NrrdResampleContext *rsmc;
-  NrrdKernelSpec *unuk;
-
-  mop = airMopNew();
-  info = nrrdResampleInfoNew();
-  airMopAdd(mop, info, (airMopper)nrrdResampleInfoNix, airMopAlways);
-  hparm->elideSingleOtherDefault = AIR_FALSE;
-  hestOptAdd_Flag(&opt, "old", &older,
+unrrdu_resampleMain(int argc, const char **argv, const char *me,
+                    const hestParm *_hparm) {
+  hestOpt *hopt = NULL;
+  int older;
+  hestOptAdd_Flag(&hopt, "old", &older,
                   "instead of using the new nrrdResampleContext implementation, "
                   "use the old nrrdSpatialResample implementation");
-  hestOptAdd_Nv_Other(&opt, "s,size", "sz0", 1, -1, &scale, NULL,
+  double *scale;
+  uint scaleLen;
+  hestOptAdd_Nv_Other(&hopt, "s,size", "sz0", 1, -1, &scale, NULL,
                       "For each axis, information about how many samples in output:\n "
                       "\b\bo \"=\": leave this axis completely untouched: no "
                       "resampling whatsoever\n "
@@ -80,27 +67,32 @@ unrrdu_resampleMain(int argc, const char **argv, const char *me, hestParm *hparm
                       "needs to be used on all but one of the resampled axes, "
                       "if at all. ",
                       &scaleLen, &unrrduHestScaleCB);
-  hestOptAdd_Nv_Double(&opt, "off,offset", "off0", 0, -1, &off, "",
+  double *off;
+  uint offLen;
+  hestOptAdd_Nv_Double(&hopt, "off,offset", "off0", 0, -1, &off, "",
                        "For each axis, an offset or shift to the position (in index "
                        "space) of the lower end of the sampling domain. "
                        "Either -off can be used, or -min and -max "
                        "together, or none of these (so that, by default, the full "
                        "domain of the axis is resampled).",
                        &offLen);
-  hestOptAdd_Nv_Double(&opt, "min,minimum", "min0", 0, -1, &min, "",
+  double *min, *max;
+  uint minLen, maxLen;
+  hestOptAdd_Nv_Double(&hopt, "min,minimum", "min0", 0, -1, &min, "",
                        "For each axis, the lower end (in index space) of the domain "
                        "of the resampling. Either -off can be used, or -min and -max "
                        "together, or none of these (so that, by default, the full "
                        "domain of the axis is resampled).",
                        &minLen);
-  hestOptAdd_Nv_Double(&opt, "max,maximum", "max0", 0, -1, &max, "",
+  hestOptAdd_Nv_Double(&hopt, "max,maximum", "max0", 0, -1, &max, "",
                        "For each axis, the upper end (in index space) of the domain "
                        "of the resampling. Either -off can be used, or -min and -max "
                        "together, or none of these, so that (by default), the full "
                        "domain of the axis is resampled.",
                        &maxLen);
+  NrrdKernelSpec *unuk;
   hestOptAdd_1_Other(
-    &opt, "k,kernel", "kern", &unuk, "cubic:0,0.5",
+    &hopt, "k,kernel", "kern", &unuk, "cubic:0,0.5",
     "The kernel to use for resampling.  "
     "Kernels logically live in the input index space for upsampling, "
     "and in the output index space for downsampling.  "
@@ -127,14 +119,16 @@ unrrdu_resampleMain(int argc, const char **argv, const char *me, hestParm *hparm
     "S and cut-off at C standard deviations\n "
     "\b\bo \"dgauss:S,C\": Lindeberg's discrete Gaussian.",
     nrrdHestKernelSpec);
-  hestOptAdd_Flag(&opt, "nrn", &norenorm,
+  int norenorm;
+  hestOptAdd_Flag(&hopt, "nrn", &norenorm,
                   "do NOT do per-pass kernel weight renormalization. "
                   "Doing the renormalization is not a performance hit (hence is "
                   "enabled by default), and the renormalization is sometimes "
                   "needed to avoid \"grating\" on non-integral "
                   "down-sampling.  Disabling the renormalization is needed for "
                   "correct results with artificially narrow kernels. ");
-  hestOptAdd_1_Enum(&opt, "ne,nonexistent", "behavior", &neb, "noop",
+  int neb;
+  hestOptAdd_1_Enum(&hopt, "ne,nonexistent", "behavior", &neb, "noop",
                     "When resampling floating-point values, how to handle "
                     "non-existent values within kernel support:\n "
                     "\b\bo \"noop\": do nothing; let them pollute result\n "
@@ -143,20 +137,24 @@ unrrdu_resampleMain(int argc, const char **argv, const char *me, hestParm *hparm
                     "\b\bo \"wght\": ignore them and simply use weights of "
                     "existent values",
                     nrrdResampleNonExistent);
-  hestOptAdd_1_Enum(&opt, "b,boundary", "behavior", &bb, "bleed",
+  int bb;
+  hestOptAdd_1_Enum(&hopt, "b,boundary", "behavior", &bb, "bleed",
                     "How to handle samples beyond the input bounds:\n "
                     "\b\bo \"pad\": use some specified value\n "
                     "\b\bo \"bleed\": extend border values outward\n "
                     "\b\bo \"mirror\": repeated reflections\n "
                     "\b\bo \"wrap\": wrap-around to other side",
                     nrrdBoundary);
-  hestOptAdd_1_Double(&opt, "v,value", "value", &padVal, "0.0",
+  double padVal;
+  hestOptAdd_1_Double(&hopt, "v,value", "value", &padVal, "0.0",
                       "for \"pad\" boundary behavior, pad with this value");
-  hestOptAdd_1_Other(&opt, "t,type", "type", &type, "default",
+  int type;
+  hestOptAdd_1_Other(&hopt, "t,type", "type", &type, "default",
                      "type to save OUTPUT as. By default (not using this option), "
                      "the output type is the same as the input type",
                      &unrrduHestMaybeTypeCB);
-  hestOptAdd_Flag(&opt, "cheap", &(info->cheap),
+  int infoCheap;
+  hestOptAdd_Flag(&hopt, "cheap", &infoCheap,
                   "[DEPRECATED: the \"-k cheap\" option is the new (and more "
                   "reliable) way to access this functionality. \"-cheap\" is "
                   "only here for legacy use in combination with \"-old\".]\n "
@@ -165,29 +163,33 @@ unrrdu_resampleMain(int argc, const char **argv, const char *me, hestParm *hparm
                   "new (stretched) index space; keep it in old index space. "
                   "When used in conjunction with \"-k box\", this can implement "
                   "subsampling which chooses every Nth value. ");
-  hestOptAdd_1_Enum(&opt, "c,center", "center", &defaultCenter,
+  int defaultCenter;
+  hestOptAdd_1_Enum(&hopt, "c,center", "center", &defaultCenter,
                     (nrrdCenterCell == nrrdDefaultCenter ? "cell" : "node"),
                     "(not available with \"-old\") "
                     "default centering of axes when input nrrd "
                     "axes don't have a known centering: \"cell\" or \"node\" ",
                     nrrdCenter);
-  hestOptAdd_Flag(&opt, "co,center-override", &overrideCenter,
+  int overrideCenter;
+  hestOptAdd_Flag(&hopt, "co,center-override", &overrideCenter,
                   "(not available with \"-old\") "
                   "centering info specified via \"-c\" should *over-ride* "
                   "known centering, rather than simply be used when centering "
                   "is unknown.");
-  hestOptAdd_1_Int(&opt, "verbose", "v", &verbose, "0",
+  int verbose;
+  hestOptAdd_1_Int(&hopt, "verbose", "v", &verbose, "0",
                    "(not available with \"-old\") verbosity level");
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
-
-  USAGE_OR_PARSE(_unrrdu_resampleInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  // (boilerplate for YES some hparm modification)
+  hestParm *hparm = hestParmCopy(_hparm);
+  hparm->elideSingleOtherDefault = AIR_FALSE;
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_resampleInfoL);
+  airArray *mop = unrrduMopNew(hopt, hparm);
+  char *err;
 
   if (scaleLen != nin->dim) {
     fprintf(stderr, "%s: # sampling sizes %u != input nrrd dimension %u\n", me, scaleLen,
@@ -195,7 +197,11 @@ unrrdu_resampleMain(int argc, const char **argv, const char *me, hestParm *hparm
     airMopError(mop);
     return 1;
   }
+  size_t samplesOut = 0; /* initializing to quiet a warning */
+  Nrrd *nout = nrrdNew();
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (!older) {
+    int offSet = AIR_FALSE;
     if (offLen >= 1) {
       /* seems to want to set off[] */
       if (offLen != scaleLen) {
@@ -203,7 +209,7 @@ unrrdu_resampleMain(int argc, const char **argv, const char *me, hestParm *hparm
         airMopError(mop);
         return 1;
       }
-      for (ai = 0; ai < offLen; ai++) {
+      for (uint ai = 0; ai < offLen; ai++) {
         if (unrrduScaleNothing != (int)(scale[0 + 2 * ai]) && !AIR_EXISTS(off[ai])) {
           fprintf(stderr, "%s: off[%u] %g doesn't exist\n", me, ai, off[ai]);
           airMopError(mop);
@@ -214,6 +220,7 @@ unrrdu_resampleMain(int argc, const char **argv, const char *me, hestParm *hparm
     } else {
       offSet = AIR_FALSE;
     }
+    int minSet = AIR_FALSE, maxSet = AIR_FALSE;
     if (minLen >= 1 && AIR_EXISTS(min[0])) { /* HEY copy and paste */
       /* seems to want to set min[] */
       if (minLen != scaleLen) {
@@ -221,7 +228,7 @@ unrrdu_resampleMain(int argc, const char **argv, const char *me, hestParm *hparm
         airMopError(mop);
         return 1;
       }
-      for (ai = 0; ai < minLen; ai++) {
+      for (uint ai = 0; ai < minLen; ai++) {
         if (unrrduScaleNothing != (int)(scale[0 + 2 * ai]) && !AIR_EXISTS(min[ai])) {
           fprintf(stderr, "%s: min[%u] %g doesn't exist\n", me, ai, min[ai]);
           airMopError(mop);
@@ -239,7 +246,7 @@ unrrdu_resampleMain(int argc, const char **argv, const char *me, hestParm *hparm
         airMopError(mop);
         return 1;
       }
-      for (ai = 0; ai < maxLen; ai++) {
+      for (uint ai = 0; ai < maxLen; ai++) {
         if (unrrduScaleNothing != (int)(scale[0 + 2 * ai]) && !AIR_EXISTS(max[ai])) {
           fprintf(stderr, "%s: max[%u] %g doesn't exist\n", me, ai, max[ai]);
           airMopError(mop);
@@ -260,8 +267,8 @@ unrrdu_resampleMain(int argc, const char **argv, const char *me, hestParm *hparm
       airMopError(mop);
       return 1;
     }
-    aspRatNum = nonAspRatNum = 0;
-    for (ai = 0; ai < nin->dim; ai++) {
+    uint aspRatNum = 0, nonAspRatNum = 0;
+    for (uint ai = 0; ai < nin->dim; ai++) {
       int dowhat = AIR_INT(scale[0 + 2 * ai]);
       if (!(unrrduScaleNothing == dowhat)) {
         if (unrrduScaleAspectRatio == dowhat) {
@@ -282,14 +289,14 @@ unrrdu_resampleMain(int argc, const char **argv, const char *me, hestParm *hparm
         return 1;
       }
     }
-
-    rsmc = nrrdResampleContextNew();
+    NrrdResampleContext *rsmc = nrrdResampleContextNew();
     rsmc->verbose = verbose;
-    airMopAdd(mop, rsmc, (airMopper)nrrdResampleContextNix, airMopAlways);
-    E = AIR_FALSE;
+    airMopAdd(mop, rsmc, nrrdResampleContextNix_mop, airMopAlways);
+    double aspRatScl = AIR_NAN;
+    int E = AIR_FALSE;
     if (!E) E |= nrrdResampleDefaultCenterSet(rsmc, defaultCenter);
     if (!E) E |= nrrdResampleInputSet(rsmc, nin);
-    for (ai = 0; ai < nin->dim; ai++) {
+    for (uint ai = 0; ai < nin->dim; ai++) {
       double spin, spout, svec[NRRD_SPACE_DIM_MAX];
       int spstat;
       int dowhat = AIR_INT(scale[0 + 2 * ai]);
@@ -413,7 +420,7 @@ unrrdu_resampleMain(int argc, const char **argv, const char *me, hestParm *hparm
         airMopError(mop);
         return 1;
       }
-      for (ai = 0; ai < nin->dim; ai++) {
+      for (uint ai = 0; ai < nin->dim; ai++) {
         int dowhat = AIR_INT(scale[0 + 2 * ai]);
         if (unrrduScaleAspectRatio == dowhat) {
           samplesOut = AIR_ROUNDUP_UI(nin->axis[ai].size * aspRatScl);
@@ -434,43 +441,46 @@ unrrdu_resampleMain(int argc, const char **argv, const char *me, hestParm *hparm
       return 1;
     }
   } else {
-    for (ai = 0; ai < nin->dim; ai++) {
+    NrrdResampleInfo *rinfo = nrrdResampleInfoNew();
+    airMopAdd(mop, rinfo, nrrdResampleInfoNix_mop, airMopAlways);
+    rinfo->cheap = infoCheap;
+    for (uint ai = 0; ai < nin->dim; ai++) {
       int dowhat = AIR_INT(scale[0 + 2 * ai]);
       /* this may be over-written below */
-      info->kernel[ai] = unuk->kernel;
+      rinfo->kernel[ai] = unuk->kernel;
       switch (dowhat) {
       case unrrduScaleNothing:
         /* no resampling */
-        info->kernel[ai] = NULL;
+        rinfo->kernel[ai] = NULL;
         break;
       case unrrduScaleMultiply:
         /* scaling of input # samples */
-        info->samples[ai] = AIR_ROUNDUP_UI(scale[1 + 2 * ai] * nin->axis[ai].size);
+        rinfo->samples[ai] = AIR_ROUNDUP_UI(scale[1 + 2 * ai] * nin->axis[ai].size);
         break;
       case unrrduScaleExact:
         /* explicit # of samples */
-        info->samples[ai] = (size_t)scale[1 + 2 * ai];
+        rinfo->samples[ai] = (size_t)scale[1 + 2 * ai];
         break;
       default:
         fprintf(stderr, "%s: sorry, unrecognized unrrduScale value %d\n", me, dowhat);
         airMopError(mop);
         return 1;
       }
-      memcpy(info->parm[ai], unuk->parm, NRRD_KERNEL_PARM_MAXNUM * sizeof(*unuk->parm));
-      if (info->kernel[ai]
+      memcpy(rinfo->parm[ai], unuk->parm, NRRD_KERNEL_PARM_MAXNUM * sizeof(*unuk->parm));
+      if (rinfo->kernel[ai]
           && (!(AIR_EXISTS(nin->axis[ai].min) && AIR_EXISTS(nin->axis[ai].max)))) {
         nrrdAxisInfoMinMaxSet(nin, ai,
                               (nin->axis[ai].center ? nin->axis[ai].center
                                                     : nrrdDefaultCenter));
       }
-      info->min[ai] = nin->axis[ai].min;
-      info->max[ai] = nin->axis[ai].max;
+      rinfo->min[ai] = nin->axis[ai].min;
+      rinfo->max[ai] = nin->axis[ai].max;
     }
-    info->boundary = bb;
-    info->type = type;
-    info->padValue = padVal;
-    info->renormalize = !norenorm;
-    if (nrrdSpatialResample(nout, nin, info)) {
+    rinfo->boundary = bb;
+    rinfo->type = type;
+    rinfo->padValue = padVal;
+    rinfo->renormalize = !norenorm;
+    if (nrrdSpatialResample(nout, nin, rinfo)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
       fprintf(stderr, "%s: error resampling nrrd:\n%s", me, err);
       airMopError(mop);

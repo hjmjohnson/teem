@@ -35,9 +35,9 @@ int
 main(int argc, const char *argv[]) {
   const char *me = argv[0];
   airArray *mop = airMopNew();
-  hestParm *hparm = hestParmNew();
+  hestParm *hparm = hestParmMopNew(); /* Mop for hestParseOrExit */
   hestOpt *hopt = NULL;
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   uint size[3];
   hestOptAdd_3_UInt(&hopt, "s", "sx sy sz", size, "128 128 128",
                     "dimensions of output volume");
@@ -53,13 +53,13 @@ main(int argc, const char *argv[]) {
   hestOptAdd_1_Float(&hopt, "off", "z offset", &off, "0.0", "vertical offset");
   char *out;
   hestOptAdd_1_String(&hopt, "o", "filename", &out, "-", "file to write output nrrd to");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, quadInfo);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, quadInfo);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   char *err;
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdAlloc_va(nout, nrrdTypeFloat, 3, AIR_SIZE_T(size[0]), AIR_SIZE_T(size[1]),
                    AIR_SIZE_T(size[2]))) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);

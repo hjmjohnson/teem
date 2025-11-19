@@ -199,7 +199,7 @@ tend_ellipseDoit(FILE *file, Nrrd *nten, Nrrd *npos, Nrrd *nstn, float min[2],
 }
 
 static int
-tend_ellipseMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_ellipseMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr;
@@ -239,9 +239,9 @@ tend_ellipseMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                      "Locations given by \"-p\" have this connectivity", nrrdHestNrrd);
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output PostScript file");
 
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
   USAGE_JUSTPARSE(_tend_ellipseInfoL);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   if (npos) {
     if (!(2 == nten->dim && 4 == nten->axis[0].size && 2 == npos->dim
@@ -280,7 +280,7 @@ tend_ellipseMain(int argc, const char **argv, const char *me, hestParm *hparm) {
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, fout, (airMopper)airFclose, airMopAlways);
+  airMopAdd(mop, fout, airFclose_mop, airMopAlways);
 
   tend_ellipseDoit(fout, nten, npos, nstn, min, max, gscale, dotRad, lineWidth, cthresh,
                    invert);

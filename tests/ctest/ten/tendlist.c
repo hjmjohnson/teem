@@ -35,7 +35,7 @@ main(int argc, const char **argv) {
 
   AIR_UNUSED(argc);
   out = stdout;
-  me = argv[0];
+  me = argv[0]; // NOT how "me" is used within Teem (when not __func__)
   mop = airMopNew();
   hparm = hestParmNew();
   airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
@@ -43,7 +43,7 @@ main(int argc, const char **argv) {
   /* (same purpose as Testing/unrrdu/unulist.c) */
 
   fprintf(out, "%s: ################### BEGIN tend\n", me);
-  ret = unrrduUsage("tend", hparm, tendTitle, tendCmdList);
+  ret = unrrduUsage(me, "tend", tendTitle, tendCmdList, hparm);
   fprintf(out, "%s: ################### END tend (ret=%d)\n", me, ret);
 
   tci = 0;
@@ -51,7 +51,7 @@ main(int argc, const char **argv) {
   const char *hargv[2] = {"--help", NULL};
   do {
     fprintf(out, "%s: ################### BEGIN tend %s\n", me, tendCmdList[tci]->name);
-    ret = tendCmdList[tci]->main(1, hargv, tendCmdList[tci]->name, hparm);
+    ret = tendCmdList[tci]->mainFunc(1, hargv, tendCmdList[tci]->name, hparm);
     fprintf(out, "%s: ################### END tend %s (ret=%d)\n", me,
             tendCmdList[tci]->name, ret);
     tci++;

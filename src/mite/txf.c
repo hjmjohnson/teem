@@ -390,8 +390,7 @@ miteQueryAdd(gageQuery queryScl, gageQuery queryVec, gageQuery queryTen,
       break;
     }
   } else {
-    fprintf(stderr, "%s: PANIC: unrecognized non-NULL gageKind\n", me);
-    exit(1);
+    fprintf(stderr, "\n\n%s: PANIC: unrecognized non-NULL gageKind\n\n\n", me);
   }
   return;
 }
@@ -412,7 +411,7 @@ _miteNtxfCopy(miteRender *mrr, miteUser *muu) {
   E = 0;
   for (ni = 0; ni < mrr->ntxfNum; ni++) {
     mrr->ntxf[ni] = nrrdNew();
-    if (!E) airMopAdd(mrr->rmop, mrr->ntxf[ni], (airMopper)nrrdNuke, airMopAlways);
+    if (!E) airMopAdd(mrr->rmop, mrr->ntxf[ni], nrrdNuke_mop, airMopAlways);
     if (!(nrrdTypeUChar == muu->ntxf[ni]->type || nrrdTypeFloat == muu->ntxf[ni]->type
           || nrrdTypeDouble == muu->ntxf[ni]->type)) {
       biffAddf(MITE, "%s: sorry, can't handle txf of type %s (only %s, %s, %s)", me,
@@ -528,7 +527,7 @@ _miteAnswerPointer(miteThread *mtt, gageItemSpec *isp) {
     ret = mtt->ansMiteVal;
   } else {
     fprintf(stderr, "\nPANIC: %s: unknown gageKind!\n", me);
-    exit(1);
+    return NULL;
   }
   ret += gageKindAnswerOffset(isp->kind, isp->item);
   return ret;

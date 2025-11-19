@@ -212,7 +212,7 @@ tenModelSimulate(Nrrd *ndwi, int typeOut, tenExperSpec *espec, const tenModel *m
     ndparm = _nparm;
   } else {
     ntmp = nrrdNew();
-    airMopAdd(mop, ntmp, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, ntmp, nrrdNuke_mop, airMopAlways);
     if (nrrdConvert(ntmp, _nparm, nrrdTypeDouble)) {
       biffMovef(TEN, NRRD, "%s: couldn't convert parm to %s", me,
                 airEnumStr(nrrdType, nrrdTypeDouble));
@@ -229,7 +229,7 @@ tenModelSimulate(Nrrd *ndwi, int typeOut, tenExperSpec *espec, const tenModel *m
     unsigned int ax;
 
     ntmp = nrrdNew();
-    airMopAdd(mop, ntmp, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, ntmp, nrrdNuke_mop, airMopAlways);
     for (ax = 0; ax < ndparm->dim; ax++) {
       min[ax] = (!ax ? -1 : 0);
       max[ax] = ndparm->axis[ax].size - 1;
@@ -249,7 +249,7 @@ tenModelSimulate(Nrrd *ndwi, int typeOut, tenExperSpec *espec, const tenModel *m
       nB0 = _nB0;
     } else {
       ntmp = nrrdNew();
-      airMopAdd(mop, ntmp, (airMopper)nrrdNuke, airMopAlways);
+      airMopAdd(mop, ntmp, nrrdNuke_mop, airMopAlways);
       if (nrrdConvert(ntmp, _nB0, nrrdTypeDouble)) {
         biffMovef(TEN, NRRD, "%s: couldn't convert B0 to %s", me,
                   airEnumStr(nrrdType, nrrdTypeDouble));
@@ -261,7 +261,7 @@ tenModelSimulate(Nrrd *ndwi, int typeOut, tenExperSpec *espec, const tenModel *m
     /* HEY: this is mostly likely a waste of memory,
        but its all complicated by const-correctness */
     ntmp = nrrdNew();
-    airMopAdd(mop, ntmp, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, ntmp, nrrdNuke_mop, airMopAlways);
     if (nrrdSplice(ntmp, ndpparm, nB0, 0, 0)) {
       biffMovef(TEN, NRRD, "%s: couldn't splice in B0", me);
       airMopError(mop);

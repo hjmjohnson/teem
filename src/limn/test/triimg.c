@@ -47,9 +47,9 @@ main(int argc, const char *argv[]) {
              "put little labels on things; fix with psfrag in LaTeX");
   hestOptAdd(&hopt, "o", "output EPS", airTypeString, 1, 1, &outS, NULL,
              "output file to render postscript into");
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   if (!(2 == nin->dim || 3 == nin->dim)) {
     fprintf(stderr, "%s: input nrrd must be 2-D or 3-D (not %u-D)\n", me, nin->dim);
@@ -76,9 +76,9 @@ main(int argc, const char *argv[]) {
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, file, (airMopper)airFclose, airMopAlways);
+  airMopAdd(mop, file, airFclose_mop, airMopAlways);
   nio = nrrdIoStateNew();
-  airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
+  airMopAdd(mop, nio, nrrdIoStateNix_mop, airMopAlways);
 
   hack = sqrt(3) / 2;
   /* sorry, copied from nrrd/formatEPS.c */

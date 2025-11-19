@@ -31,55 +31,54 @@ static const char *_unrrdu_dnormInfoL
           "* Uses nrrdMetaDataNormalize");
 
 static int
-unrrdu_dnormMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  char *outS;
-  int pret;
-
-  Nrrd *nin, *nout;
-  NrrdIoState *nio;
-  int version, lostmf, headerOnly, trivialOrient, recenter;
-  double newSpacing;
-
-  hestOpt *opt = NULL;
-  char *err;
-  airArray *mop;
-  hparm->noArgsIsNoProblem = AIR_TRUE;
-  hestOptAdd_Flag(&opt, "h,header", &headerOnly,
+unrrdu_dnormMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+  hestOpt *hopt = NULL;
+  int headerOnly;
+  hestOptAdd_Flag(&hopt, "h,header", &headerOnly,
                   "output header of nrrd file only, not the data itself");
-  hestOptAdd_1_Enum(&opt, "v,version", "version", &version, "alpha",
+  int version;
+  hestOptAdd_1_Enum(&hopt, "v,version", "version", &version, "alpha",
                     "what version of canonical meta-data to convert to; "
                     "\"alpha\" is what has been used for Diderot until at least "
                     "2016",
                     nrrdMetaDataCanonicalVersion);
-  hestOptAdd_Flag(&opt, "to", &trivialOrient,
+  int trivialOrient, recenter;
+  hestOptAdd_Flag(&hopt, "to", &trivialOrient,
                   "(*t*rivial *o*rientation) "
                   "even if the input nrrd comes with full orientation or "
                   "per-axis min-max info, ignore it and instead assert the "
                   "identity mapping between index and world space");
-  hestOptAdd_Flag(&opt, "rc,recenter", &recenter,
+  hestOptAdd_Flag(&hopt, "rc,recenter", &recenter,
                   "re-locate output spaceOrigin so that field is centered "
                   "around origin of space coordinates");
-  hestOptAdd_1_Double(&opt, "sp,spacing", "scl", &newSpacing, "1.0",
+  double newSpacing;
+  hestOptAdd_1_Double(&hopt, "sp,spacing", "scl", &newSpacing, "1.0",
                       "when having to contrive orientation information and there's "
                       "no per-axis min/max or spacing, this is the sample spacing "
                       "to assert");
-  hestOptAdd_1_Other(&opt, "i,input", "nin", &nin, "-",
+  Nrrd *nin;
+  hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-",
                      "input image. By default reads from stdin", nrrdHestNrrdNoTTY);
+  char *outS;
   OPT_ADD_NOUT(outS, "output filename");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
-  USAGE_OR_PARSE(_unrrdu_dnormInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
+  // (boilerplate for YES some hparm modification)
+  hestParm *hparm = hestParmCopy(_hparm);
+  hparm->noArgsIsNoProblem = AIR_TRUE; // thanks to nrrdHestNrrdNoTTY
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_dnormInfoL);
+  airArray *mop = unrrduMopNew(hopt, hparm);
+  char *err;
 
+  Nrrd *nout = NULL;
   if (headerOnly) {
     /* no reason to duplicate data */
     nout = nin;
   } else {
     nout = nrrdNew();
-    airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   }
 
+  int lostmf;
   if (nrrdMetaDataNormalize(nout, nin, version, trivialOrient,
                             AIR_FALSE /* permuteComponentAxisFastest */, recenter,
                             newSpacing, &lostmf)) {
@@ -95,9 +94,8 @@ unrrdu_dnormMain(int argc, const char **argv, const char *me, hestParm *hparm) {
             "will be erased on output.\n",
             me);
   }
-
-  nio = nrrdIoStateNew();
-  airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
+  NrrdIoState *nio = nrrdIoStateNew();
+  airMopAdd(mop, nio, nrrdIoStateNix_mop, airMopAlways);
   /* disable printing comments about NRRD format URL */
   nio->skipFormatURL = AIR_TRUE;
   if (headerOnly) {

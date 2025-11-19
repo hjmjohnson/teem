@@ -271,6 +271,7 @@ HOOVER_EXPORT const airEnum *const hooverErr;
 HOOVER_EXPORT hooverContext *hooverContextNew(void);
 HOOVER_EXPORT int hooverContextCheck(hooverContext *ctx);
 HOOVER_EXPORT void *hooverContextNix(hooverContext *ctx);
+HOOVER_EXPORT void *hooverContextNix_mop(void *);
 
 /* rays.c */
 HOOVER_EXPORT int hooverRender(hooverContext *ctx, int *errCodeP, int *errThreadP);

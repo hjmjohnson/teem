@@ -37,9 +37,9 @@ main(int argc, const char *argv[]) {
   double pp[3];
   hestOptAdd_3_Double(&hopt, "p", "x y z", pp, "0 0 0",
                       "location in quaternion quotient space");
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   double ten[7];
   ELL_6V_COPY(ten + 1, _ten);

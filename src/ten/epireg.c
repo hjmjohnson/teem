@@ -31,7 +31,7 @@ _tenEpiRegSave(const char *fname, Nrrd *nsingle, Nrrd **nmulti, int len,
   if (nsingle) {
     nout = nsingle;
   } else {
-    airMopAdd(mop, nout = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nout = nrrdNew(), nrrdNuke_mop, airMopAlways);
     if (nrrdJoin(nout, (const Nrrd *const *)nmulti, len, 0, AIR_TRUE)) {
       biffMovef(TEN, NRRD, "%s: couldn't join %s for output", me, desc);
       airMopError(mop);
@@ -143,7 +143,7 @@ _tenEpiRegBlur(Nrrd **nblur, Nrrd **ndwi, unsigned int dwiLen, double bwX, doubl
   sz = ndwi[0]->axis[2].size;
   mop = airMopNew();
   rinfo = nrrdResampleInfoNew();
-  airMopAdd(mop, rinfo, (airMopper)nrrdResampleInfoNix, airMopAlways);
+  airMopAdd(mop, rinfo, nrrdResampleInfoNix_mop, airMopAlways);
   if (bwX) {
     rinfo->kernel[0] = nrrdKernelGaussian;
     rinfo->parm[0][0] = bwX;
@@ -210,8 +210,8 @@ _tenEpiRegThresholdFind(double *DWthrP, Nrrd **nin, int ninLen, int save, double
   NrrdRange *range;
 
   mop = airMopNew();
-  airMopAdd(mop, nhist = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, ntmp = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nhist = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, ntmp = nrrdNew(), nrrdNuke_mop, airMopAlways);
 
   for (ni = 0; ni < ninLen; ni++) {
     range = nrrdRangeNewSet(nin[ni], nrrdBlind8BitRangeFalse);
@@ -340,10 +340,10 @@ _tenEpiRegCC(Nrrd **nthr, unsigned int ninLen, int conny, int verb) {
   unsigned int ni, z, sz;
 
   mop = airMopNew();
-  airMopAdd(mop, nslc = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nval = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, ncc = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nsize = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nslc = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nval = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, ncc = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nsize = nrrdNew(), nrrdNuke_mop, airMopAlways);
   sz = AIR_UINT(nthr[0]->axis[2].size);
   if (verb) {
     fprintf(stderr, "%s:\n            ", me);
@@ -572,17 +572,17 @@ _tenEpiRegEstimHST(Nrrd *nhst, Nrrd *npxfr, int ninLen, Nrrd *ngrad) {
   airMopAdd(mop, nmat, airFree, airMopAlways);
   airMopAdd(mop, ninv, airFree, airMopAlways);
   for (z = 0; z < sz; z++) {
-    airMopAdd(mop, nmat[z] = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nmat[z] = nrrdNew(), nrrdNuke_mop, airMopAlways);
     if (nrrdMaybeAlloc_va(nmat[z], nrrdTypeDouble, 2, AIR_SIZE_T((1 == order ? 3 : 9)),
                           AIR_SIZE_T(npairs))) {
       biffMovef(TEN, NRRD, "%s: couldn't allocate fitting matrices", me);
       airMopError(mop);
       return 1;
     }
-    airMopAdd(mop, ninv[z] = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, ninv[z] = nrrdNew(), nrrdNuke_mop, airMopAlways);
   }
-  airMopAdd(mop, nvec = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nans = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nvec = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nans = nrrdNew(), nrrdNuke_mop, airMopAlways);
   if (nrrdMaybeAlloc_va(nhst, nrrdTypeDouble, 2, AIR_SIZE_T((1 == order ? 9 : 27)),
                         AIR_SIZE_T(sz))
       || nrrdMaybeAlloc_va(nvec, nrrdTypeDouble, 2, AIR_SIZE_T(1), AIR_SIZE_T(npairs))) {
@@ -754,11 +754,11 @@ _tenEpiRegFitHST(Nrrd *nhst, Nrrd **_ncc, int ninLen, double goodFrac, int prog,
   double *hst, x, y, xx, xy, mm, bb;
 
   mop = airMopNew();
-  airMopAdd(mop, ncc = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, ntA = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, ntB = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nsd = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nl2 = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ncc = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, ntA = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, ntB = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nsd = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nl2 = nrrdNew(), nrrdNuke_mop, airMopAlways);
   /* do SD and L2 projections of the CCs along the DWI axis,
      integrate these over the X and Y axes of the slices,
      and define per-slice "messiness" as the quotient of the
@@ -981,12 +981,12 @@ _tenEpiRegWarp(Nrrd **ndone, Nrrd *npxfr, Nrrd *nhst, Nrrd *ngrad, Nrrd **nin,
   double hh, ss, tt, cx, cy;
 
   mop = airMopNew();
-  airMopAdd(mop, ntmp = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nfin = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nslcA = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nslcB = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nwght = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nidx = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ntmp = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nfin = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nslcA = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nslcB = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nwght = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nidx = nrrdNew(), nrrdNuke_mop, airMopAlways);
 
   if (verb) {
     fprintf(stderr, "%s:\n            ", me);
@@ -1072,13 +1072,13 @@ tenEpiRegister3D(Nrrd **nout, Nrrd **nin, unsigned int ninLen, Nrrd *_ngrad,
   airMopAdd(mop, nbuffA, airFree, airMopAlways);
   airMopAdd(mop, nbuffB, airFree, airMopAlways);
   for (i = 0; i < ninLen; i++) {
-    airMopAdd(mop, nbuffA[i] = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-    airMopAdd(mop, nbuffB[i] = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nbuffA[i] = nrrdNew(), nrrdNuke_mop, airMopAlways);
+    airMopAdd(mop, nbuffB[i] = nrrdNew(), nrrdNuke_mop, airMopAlways);
     nrrdAxisInfoCopy(nout[i], nin[i], NULL, NRRD_AXIS_INFO_NONE);
   }
-  airMopAdd(mop, npxfr = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nhst = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, ngrad = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, npxfr = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nhst = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, ngrad = nrrdNew(), nrrdNuke_mop, airMopAlways);
   if (nrrdConvert(ngrad, _ngrad, nrrdTypeDouble)) {
     biffMovef(TEN, NRRD, "%s: trouble converting gradients to doubles", me);
     airMopError(mop);
@@ -1246,8 +1246,8 @@ tenEpiRegister4D(Nrrd *_nout, Nrrd *_nin, Nrrd *_ngrad, int reference, double bw
   mop = airMopNew();
   ngrad = nrrdNew();
   ndwigrad = nrrdNew();
-  airMopAdd(mop, ngrad, (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, ndwigrad, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ngrad, nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, ndwigrad, nrrdNuke_mop, airMopAlways);
   if (nrrdConvert(ngrad, _ngrad, nrrdTypeDouble)
       || nrrdConvert(ndwigrad, _ngrad, nrrdTypeDouble)) { /* HACK applies */
     biffMovef(TEN, NRRD, "%s: trouble converting gradients to doubles", me);
@@ -1280,8 +1280,8 @@ tenEpiRegister4D(Nrrd *_nout, Nrrd *_nin, Nrrd *_ngrad, int reference, double bw
       dwiIdx++;
       ndwi[dwiIdx] = nrrdNew();
       ndwiOut[dwiIdx] = nrrdNew();
-      airMopAdd(mop, ndwi[dwiIdx], (airMopper)nrrdNuke, airMopAlways);
-      airMopAdd(mop, ndwiOut[dwiIdx], (airMopper)nrrdNuke, airMopAlways);
+      airMopAdd(mop, ndwi[dwiIdx], nrrdNuke_mop, airMopAlways);
+      airMopAdd(mop, ndwiOut[dwiIdx], nrrdNuke_mop, airMopAlways);
       if (nrrdSlice(ndwi[dwiIdx], _nin, dwiAx, AIR_UINT(ninIdx))) {
         biffMovef(TEN, NRRD, "%s: trouble slicing at %u on axis %u", me, ninIdx, dwiAx);
         airMopError(mop);
@@ -1323,7 +1323,7 @@ tenEpiRegister4D(Nrrd *_nout, Nrrd *_nin, Nrrd *_ngrad, int reference, double bw
     } else {
       /* we are only looking at true DWIs, and this isn't one of them */
       nout[ninIdx] = nrrdNew();
-      airMopAdd(mop, nout[ninIdx], (airMopper)nrrdNuke, airMopAlways);
+      airMopAdd(mop, nout[ninIdx], nrrdNuke_mop, airMopAlways);
       if (nrrdSlice(nout[ninIdx], _nin, dwiAx, ninIdx)) {
         biffMovef(TEN, NRRD, "%s: trouble slicing at %d on axis %u", me, dwiIdx, dwiAx);
         airMopError(mop);

@@ -247,6 +247,7 @@ COIL_EXPORT int coilContextAllSet(coilContext *cctx, const Nrrd *nin,
                                   int verbose, double parm[COIL_PARMS_NUM]);
 COIL_EXPORT int coilOutputGet(Nrrd *nout, coilContext *cctx);
 COIL_EXPORT coilContext *coilContextNix(coilContext *cctx);
+COIL_EXPORT void *coilContextNix_mop(void *);
 
 /* coreCoil.c */
 COIL_EXPORT int coilStart(coilContext *cctx);

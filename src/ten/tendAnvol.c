@@ -26,7 +26,7 @@ static const char *_tend_anvolInfoL
           "don't meet the given confidence threshold.");
 
 static int
-tend_anvolMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_anvolMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -45,12 +45,12 @@ tend_anvolMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output image (floating point)");
 
   mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
   USAGE_PARSE(_tend_anvolInfoL);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (tenAnisoVolume(nout, nin, aniso, thresh)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble making aniso volume:\n%s\n", me, err);

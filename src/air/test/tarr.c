@@ -49,7 +49,7 @@ main(int argc, char *argv[]) {
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, file, (airMopper)airFclose, airMopAlways);
+  airMopAdd(mop, file, airFclose_mop, airMopAlways);
   if (1 != sscanf(incrS, "%ud", &incr)) {
     fprintf(stderr, "%s: couln't parse incr \"%s\" as unsigned int\n", me, incrS);
     airMopError(mop);

@@ -27,7 +27,7 @@ static const char *_baneGkms_txfInfoL
               "This doesn't strictly speaking belong in \"gkms\" but there's no "
               "other good place in Teem.");
 static int /* Biff: 1 */
-baneGkms_txfMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+baneGkms_txfMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *opt = NULL;
   char *out, *perr;
   Nrrd *nout;
@@ -67,12 +67,12 @@ baneGkms_txfMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                       "output opacity function filename");
 
   mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, opt, hestOptFree_mop, airMopAlways);
   USAGE_PARSE(_baneGkms_txfInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, opt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   E = 0;
   if (!E)
     E |= nrrdMaybeAlloc_va(nout, nrrdTypeFloat, 3, AIR_SIZE_T(1), AIR_SIZE_T(res[0]),

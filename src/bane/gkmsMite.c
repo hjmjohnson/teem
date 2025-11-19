@@ -27,7 +27,7 @@ static const char *_baneGkms_miteInfoL
                "axis labels to identify the domain and range of the opacity function. "
                "The underlying opacity function is not modified.");
 static int /* Biff: 1 */
-baneGkms_miteMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+baneGkms_miteMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *opt = NULL;
   char *out, *perr;
   Nrrd *nin, *nout;
@@ -42,16 +42,16 @@ baneGkms_miteMain(int argc, const char **argv, const char *me, hestParm *hparm) 
                       "output opacity function filename");
 
   mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, opt, hestOptFree_mop, airMopAlways);
   USAGE_PARSE(_baneGkms_miteInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, opt, hestParseFree_mop, airMopAlways);
 
   if (1 == nin->axis[0].size && nin->axis[0].label && !strcmp("A", nin->axis[0].label)) {
     fprintf(stderr, "%s: already\n", me);
     nout = nin;
   } else {
     nout = nrrdNew();
-    airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
     E = 0;
     if (!E) E |= nrrdAxesInsert(nout, nin, 0);
     if (!E) E |= !(nout->axis[0].label = airStrdup("A"));

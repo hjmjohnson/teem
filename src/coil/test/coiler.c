@@ -59,14 +59,14 @@ main(int argc, const char *argv[]) {
   char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-",
                       "output file to save filtering result into");
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   coilContext *cctx = coilContextNew();
-  airMopAdd(mop, cctx, (airMopper)coilContextNix, airMopAlways);
+  airMopAdd(mop, cctx, coilContextNix_mop, airMopAlways);
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   if (_parmLen != coilMethodArray[methodType]->parmNum) {
     fprintf(stderr, "%s: %s method wants %u parms, but got %u\n", me,

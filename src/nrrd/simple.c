@@ -65,7 +65,7 @@ nrrdSpaceDimension(int space) {
     break;
   default:
     fprintf(stderr, "%s: PANIC: nrrdSpace %d not implemented!\n", me, space);
-    ret = UINT_MAX; /* exit(1); */
+    ret = UINT_MAX; /* was exit(1); */
     break;
   }
   return ret;
@@ -1731,14 +1731,13 @@ nrrdSanity(void) {
 /* ---- BEGIN non-NrrdIO */
 
 void
-nrrdSanityOrDie(const char *me) {
-  char *err;
-
+nrrdSanityOrExit(const char *argv0) {
   if (!nrrdSanity()) {
+    char *err;
     fprintf(stderr, "******************************************\n");
     fprintf(stderr, "******************************************\n");
     fprintf(stderr, "\n");
-    fprintf(stderr, "  %s: Nrrd sanity check failed.\n", me);
+    fprintf(stderr, "  %s: Nrrd sanity check failed.\n", argv0);
     fprintf(stderr, "\n");
     fprintf(stderr, "  This probably means that there was an error\n");
     fprintf(stderr, "  in the configuration, compilation, or basic\n");
@@ -1749,8 +1748,9 @@ nrrdSanityOrDie(const char *me) {
     fprintf(stderr, "******************************************\n");
     fprintf(stderr, "******************************************\n");
     free(err);
-    exit(1);
+    exit(1); /* (in nrrdSanityOrExit) */
   }
+  return;
 }
 
 void

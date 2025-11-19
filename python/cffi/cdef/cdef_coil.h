@@ -196,6 +196,7 @@ extern int coilContextAllSet(coilContext *cctx, const Nrrd *nin,
                                   int verbose, double parm[COIL_PARMS_NUM]);
 extern int coilOutputGet(Nrrd *nout, coilContext *cctx);
 extern coilContext *coilContextNix(coilContext *cctx);
+extern void *coilContextNix_mop(void *);
 /* coreCoil.c */
 extern int coilStart(coilContext *cctx);
 extern int coilIterate(coilContext *cctx, int numIterations);

@@ -24,7 +24,7 @@
 static const char *_tend_sliceInfoL = (INFO ". ");
 
 static int
-tend_sliceMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_sliceMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -43,10 +43,10 @@ tend_sliceMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output tensor slice");
 
   mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
   USAGE_PARSE(_tend_sliceInfoL);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
-  airMopAdd(mop, nout = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
+  airMopAdd(mop, nout = nrrdNew(), nrrdNuke_mop, airMopAlways);
 
   if (tenSlice(nout, nin, axis, pos, dim)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);

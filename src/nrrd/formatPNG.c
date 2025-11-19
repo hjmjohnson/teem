@@ -429,7 +429,7 @@ static int /* Biff: 1 */
 _nrrdFormatPNG_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
   static const char me[] = "_nrrdFormatPNG_write";
 #if TEEM_PNG
-  int fi, depth, type, csize;
+  int fi, depth, type;
   unsigned int jj, numtxt, txtidx;
   png_structp png;
   png_infop info;
@@ -544,7 +544,6 @@ _nrrdFormatPNG_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
   } else {
     txt = AIR_CAST(png_text *, calloc(numtxt, sizeof(png_text)));
     /* add nrrd fields to the text chunk */
-    csize = 0;
     txtidx = 0;
     for (fi = nrrdField_unknown + 1; fi < nrrdField_last; fi++) {
       if (_nrrdFieldValidInImage[fi] && _nrrdFieldInteresting(nrrd, nio, fi)) {
@@ -565,18 +564,21 @@ _nrrdFormatPNG_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
         txtidx++;
       }
     }
-    /* add nrrd comments as a single text field */
+    /* add nrrd comments as a single text field
+       Can scrutinize results with command "pngcheck -tv" */
     if (nrrd->cmtArr->len > 0) {
+      size_t ttSize = 0;
+      png_charp tt; /* likely: typedef char *png_charp; */
       txt[txtidx].key = airStrdup(NRRD_PNG_COMMENT_KEY);
       txt[txtidx].compression = PNG_TEXT_COMPRESSION_NONE;
       for (jj = 0; jj < nrrd->cmtArr->len; jj++) {
-        csize += airStrlen(nrrd->cmt[jj]) + 1;
+        ttSize += airStrlen(nrrd->cmt[jj]) + 1; /* +1 for '\n' */
       }
-      txt[txtidx].text = (png_charp)malloc(csize + 1);
-      txt[txtidx].text[0] = 0;
+      ttSize += 1; /* +1 for '\0' */
+      tt = txt[txtidx].text = (png_charp)malloc(ttSize);
+      tt[0] = '\0';
       for (jj = 0; jj < nrrd->cmtArr->len; jj++) {
-        strcat(txt[txtidx].text, nrrd->cmt[jj]);
-        strcat(txt[txtidx].text, "\n");
+        SN_PRINTF(tt, ttSize, "%s\n", nrrd->cmt[jj]);
       }
       txtidx++;
     }

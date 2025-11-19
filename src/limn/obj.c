@@ -148,6 +148,7 @@ limnObjectNix(limnObject *obj) {
   }
   return NULL;
 }
+AIR_MOPPER(limnObjectNix)
 
 void
 limnObjectEmpty(limnObject *obj) {

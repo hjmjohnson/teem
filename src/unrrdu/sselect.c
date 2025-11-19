@@ -28,32 +28,29 @@ static const char *_unrrdu_sselectInfoL
           "* Uses nrrdSliceSelect");
 
 static int
-unrrdu_sselectMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *err;
-  Nrrd *nin, *noutAbove, *noutBelow, *nline;
-  unsigned int axis;
-  double thresh;
-  int pret;
-  airArray *mop;
-  char *outS[2];
-
+unrrdu_sselectMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
+  uint axis;
   OPT_ADD_AXIS(axis, "axis to slice along");
-  hestOptAdd_1_Other(&opt, "s,selector", "nline", &nline, NULL,
+  Nrrd *nline;
+  hestOptAdd_1_Other(&hopt, "s,selector", "nline", &nline, NULL,
                      "the 1-D nrrd of values to compare with threshold",
                      nrrdHestNrrdNoTTY);
-  hestOptAdd_1_Double(&opt, "th", "thresh", &thresh, NULL, "threshold on selector line");
-  hestOptAdd_2_String(&opt, "o,output", "above below", outS, "- x",
+  double thresh;
+  hestOptAdd_1_Double(&hopt, "th", "thresh", &thresh, NULL,
+                      "threshold on selector line");
+  char *outS[2];
+  hestOptAdd_2_String(&hopt, "o,output", "above below", outS, "- x",
                       "outputs for slices corresponding to values "
                       "above (first) and below (second) given threshold. "
                       "Use \"x\" to say that no output is desired.");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
-
-  USAGE_OR_PARSE(_unrrdu_sselectInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_sselectInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
   if (!strcmp(outS[0], "x") && !strcmp(outS[1], "x")) {
     fprintf(stderr,
@@ -63,15 +60,16 @@ unrrdu_sselectMain(int argc, const char **argv, const char *me, hestParm *hparm)
     airMopError(mop);
     return 1;
   }
+  Nrrd *noutAbove, *noutBelow;
   if (strcmp(outS[0], "x")) {
     noutAbove = nrrdNew();
-    airMopAdd(mop, noutAbove, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, noutAbove, nrrdNuke_mop, airMopAlways);
   } else {
     noutAbove = NULL;
   }
   if (strcmp(outS[1], "x")) {
     noutBelow = nrrdNew();
-    airMopAdd(mop, noutBelow, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, noutBelow, nrrdNuke_mop, airMopAlways);
   } else {
     noutBelow = NULL;
   }

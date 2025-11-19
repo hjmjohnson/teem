@@ -138,7 +138,7 @@ gageKindTotalAnswerLength(const gageKind *kind) {
     err = biffGetDone(GAGE);
     fprintf(stderr, "%s: PANIC:\n %s", me, err);
     free(err);
-    exit(1);
+    return UINT_MAX; /* was exit(1); */
   }
   alen = 0;
   for (ii = 1; ii <= kind->itemMax; ii++) {
@@ -188,7 +188,7 @@ gageKindAnswerLength(const gageKind *kind, int item) {
     err = biffGetDone(GAGE);
     fprintf(stderr, "%s: PANIC:\n %s", me, err);
     free(err);
-    exit(1);
+    return UINT_MAX; /* was exit(1); */
   }
 
   return (!airEnumValCheck(kind->enm, item) ? kind->table[item].answerLength : 0);
@@ -203,7 +203,7 @@ gageKindAnswerOffset(const gageKind *kind, int item) {
     err = biffGetDone(GAGE);
     fprintf(stderr, "%s: PANIC:\n %s", me, err);
     free(err);
-    exit(1);
+    return INT_MAX; /* was exit(1); */
   }
 
   return _gageKindAnswerOffset(kind, item);

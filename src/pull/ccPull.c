@@ -45,7 +45,7 @@ pullCCFind(pullContext *pctx) {
   mop = airMopNew();
   pointNum = pullPointNumber(pctx);
   eqvArr = airArrayNew(NULL, NULL, 2 * sizeof(unsigned int), pointNum);
-  airMopAdd(mop, eqvArr, (airMopper)airArrayNuke, airMopAlways);
+  airMopAdd(mop, eqvArr, airArrayNuke_mop, airMopAlways);
   idmap = AIR_CAST(unsigned int *, calloc(pointNum, sizeof(unsigned int)));
   airMopAdd(mop, idmap, airFree, airMopAlways);
 
@@ -226,7 +226,7 @@ pullCCSort(pullContext *pctx, int measrInfo, double rho) {
 
 #define CALLOC(T) (AIR_CAST(T *, calloc(pctx->CCNum, sizeof(T))))
   mop = airMopNew();
-  if (!(nmeasr = nrrdNew()) || airMopAdd(mop, nmeasr, (airMopper)nrrdNuke, airMopAlways)
+  if (!(nmeasr = nrrdNew()) || airMopAdd(mop, nmeasr, nrrdNuke_mop, airMopAlways)
       || !(pair = CALLOC(ccpair)) || airMopAdd(mop, pair, airFree, airMopAlways)
       || !(revm = CALLOC(unsigned int)) || airMopAdd(mop, revm, airFree, airMopAlways)) {
     biffAddf(PULL, "%s: couldn't allocate everything", me);

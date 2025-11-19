@@ -72,9 +72,9 @@ main(int argc, const char *argv[]) {
              "translation for drawing");
   hestOptAdd(&hopt, "s", "scale", airTypeDouble, 1, 1, &scale, "1.0",
              "scaling for drawing");
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   if (!(2 == ncptA->dim && 2 == ncptA->axis[0].size)) {
     fprintf(stderr, "%s: didn't get a 2-D 2xN nrrd)\n", me);
@@ -82,7 +82,7 @@ main(int argc, const char *argv[]) {
     return 1;
   }
   spec = limnSplineTypeSpecNew(limnSplineTypeBC, 0, 0);
-  airMopAdd(mop, ncptB = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ncptB = nrrdNew(), nrrdNuke_mop, airMopAlways);
   if (limnSplineNrrdCleverFix(ncptB, ncptA, limnSplineInfo2Vector, limnSplineTypeBC)
       || !(spline = limnSplineNew(ncptB, limnSplineInfo2Vector, spec))) {
     airMopAdd(mop, err = biffGetDone(LIMN), airFree, airMopAlways);
@@ -91,8 +91,8 @@ main(int argc, const char *argv[]) {
     return 1;
   }
   spline->loop = loop;
-  airMopAdd(mop, spline, (airMopper)limnSplineNix, airMopAlways);
-  airMopAdd(mop, nout = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, spline, limnSplineNix_mop, airMopAlways);
+  airMopAdd(mop, nout = nrrdNew(), nrrdNuke_mop, airMopAlways);
   minT = limnSplineMinT(spline);
   maxT = limnSplineMaxT(spline);
 

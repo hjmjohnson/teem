@@ -71,6 +71,7 @@ nrrdBoundarySpecNix(NrrdBoundarySpec *bspec) {
 
   return (NrrdBoundarySpec *)airFree(bspec);
 }
+AIR_MOPPER(nrrdBoundarySpecNix)
 
 /* NOTE: this doesn't do a validity check! */
 NrrdBoundarySpec * /* Biff: nope */
@@ -344,6 +345,7 @@ nrrdIoStateNix(NrrdIoState *nio) {
   airFree(nio); /* no NULL assignment, else compile warnings */
   return NULL;
 }
+AIR_MOPPER(nrrdIoStateNix)
 
 /* ---- BEGIN non-NrrdIO */
 
@@ -388,6 +390,7 @@ nrrdResampleInfoNix(NrrdResampleInfo *info) {
   info = (NrrdResampleInfo *)airFree(info);
   return NULL;
 }
+AIR_MOPPER(nrrdResampleInfoNix)
 
 /* ------------------------------------------------------------ */
 
@@ -425,6 +428,7 @@ nrrdKernelSpecNix(NrrdKernelSpec *ksp) {
   ksp = (NrrdKernelSpec *)airFree(ksp);
   return NULL;
 }
+AIR_MOPPER(nrrdKernelSpecNix)
 
 void
 nrrdKernelSpecSet(NrrdKernelSpec *ksp, const NrrdKernel *k,
@@ -745,6 +749,7 @@ nrrdNix(Nrrd *nrrd) {
   }
   return NULL;
 }
+AIR_MOPPER(nrrdNix)
 
 /*
 ******** nrrdEmpty()
@@ -762,6 +767,7 @@ nrrdEmpty(Nrrd *nrrd) {
   }
   return nrrd;
 }
+AIR_MOPPER(nrrdEmpty)
 
 /*
 ******** nrrdNuke()
@@ -779,6 +785,7 @@ nrrdNuke(Nrrd *nrrd) {
   }
   return NULL;
 }
+AIR_MOPPER(nrrdNuke)
 
 /* ------------------------------------------------------------ */
 

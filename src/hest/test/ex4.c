@@ -63,8 +63,8 @@ main(int argc, const char **argv) {
   int N;
   hestOptAdd_1_Int(&opt, "int", "N", &N, NULL, "an integer");
 
-  hestParseOrDie(opt, argc - 1, argv + 1, NULL /* hparm */, argv[0],
-                 "info about hest/text/ex4");
+  hestParseOrExit(opt, argc - 1, argv + 1, NULL /* hparm */, argv[0],
+                  "info about hest/text/ex4");
 
   printf("single: (%g,%g)\n", single[0], single[1]);
   printf("triple: (%g,%g) (%g,%g) (%g,%g)\n", triple[0], triple[1], triple[2], triple[3],

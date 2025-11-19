@@ -179,6 +179,7 @@ dyeColorNix(dyeColor *col) {
   }
   return NULL;
 }
+AIR_MOPPER(dyeColorNix)
 
 int /* Biff: 1 */
 dyeColorParse(dyeColor *col, char *_str) {

@@ -73,16 +73,17 @@ _hestSetBuff(char *_buff, size_t _buffSize, const hestOpt *hopt, /* */
   return;
 }
 
-/* early version of _hestSetBuff() function preserved for nostalgia */
-#define SETBUFF(B, O)                                                                   \
-  strcat(B, O.flag ? "-" : ""), strcat(B, O.flag ? O.flag : ""),                        \
-    strcat(B, O.flag && (O.min || _hestMax(O.max)) ? "\t" : ""),                        \
-    strcat(B, !O.min && _hestMax(O.max) ? "[" : ""),                                    \
-    strcat(B, O.min || _hestMax(O.max) ? "<" : ""),                                     \
-    strcat(B, O.min || _hestMax(O.max) ? O.name : ""),                                  \
-    strcat(B, (O.min < _hestMax(O.max) && (_hestMax(O.max) > 1)) ? " ..." : ""),        \
-    strcat(B, O.min || _hestMax(O.max) ? ">" : ""),                                     \
-    strcat(B, !O.min && _hestMax(O.max) ? "]" : "");
+/* early version of _hestSetBuff() function preserved for nostalgia
+ * #define SETBUFF(B, O)                                                              \
+ *   strcat(B, O.flag ? "-" : ""), strcat(B, O.flag ? O.flag : ""),                   \
+ *     strcat(B, O.flag && (O.min || _hestMax(O.max)) ? "\t" : ""),                   \
+ *     strcat(B, !O.min && _hestMax(O.max) ? "[" : ""),                               \
+ *     strcat(B, O.min || _hestMax(O.max) ? "<" : ""),                                \
+ *     strcat(B, O.min || _hestMax(O.max) ? O.name : ""),                             \
+ *     strcat(B, (O.min < _hestMax(O.max) && (_hestMax(O.max) > 1)) ? " ..." : ""),   \
+ *     strcat(B, O.min || _hestMax(O.max) ? ">" : ""),                                \
+ *     strcat(B, !O.min && _hestMax(O.max) ? "]" : "");
+ */
 
 /*
  ******** hestPrintStr()
@@ -105,31 +106,32 @@ hestPrintStr(FILE *file, size_t indent, size_t already, size_t width, const char
   char *last;
 
   for (uint wrdIdx = 0; wrdIdx < wrdNum; wrdIdx++) {
-    size_t ii;
     /* we used airStrtok() to delimit words on spaces ... */
     char *ws = airStrtok(!wrdIdx ? str : NULL, " ", &last);
     /* ... but then convert tabs to spaces */
     airStrtrans(ws, '\t', ' ');
-    if (pos + 1 + strlen(ws) <= width - !!bslash) {
+    // fprintf(stderr, "!%s:\nws[%u]=|%s|\n\n", __func__, wrdIdx, ws);
+    size_t slws = strlen(ws);
+    if (pos + 1 + slws <= width - !!bslash) {
       /* if this word would still fit on the current line */
-      if (wrdIdx && pos > indent) fputc(' ', file);
+      if (wrdIdx) fputc(' ', file);
       fprintf(file, "%s", ws);
-      pos += 1 + strlen(ws);
+      pos += 1 + slws;
     } else {
       /* else we start a new line and print the indent */
       if (bslash) {
         fprintf(file, " \\");
       }
       fputc('\n', file);
-      for (ii = 0; ii < indent; ii++) {
+      for (size_t ii = 0; ii < indent; ii++) {
         fputc(' ', file);
       }
       fprintf(file, "%s", ws);
-      pos = indent + strlen(ws);
+      pos = indent + slws;
     }
     /* if the last character of the word was a newline, then indent */
-    if ('\n' == ws[strlen(ws) - 1]) {
-      for (ii = 0; ii < indent; ii++) {
+    if ('\n' == ws[slws - 1]) {
+      for (size_t ii = 0; ii < indent; ii++) {
         fputc(' ', file);
       }
       pos = indent;
@@ -144,24 +146,19 @@ hestPrintStr(FILE *file, size_t indent, size_t already, size_t width, const char
 
 void
 hestInfo(FILE *file, const char *argv0, const char *info, const hestParm *_hparm) {
-  hestParm *hparm;
-
-  hparm = _hparm ? NULL : hestParmNew();
   if (info) {
-    if (argv0) {
-      fprintf(file, "\n%s: ", argv0);
-      hestPrintStr(file, 0, strlen(argv0) + 2, HPARM->columns, info, AIR_FALSE);
-      if (HPARM->noBlankLineBeforeUsage) {
-        /* we still want a blank line to separate info and usage */
-        fprintf(file, "\n");
-      }
-    } else {
-      fprintf(file, "ERROR: hestInfo got NULL argv0\n");
+    if (!argv0) {
+      fprintf(file, "%s: ERROR: hestInfo got NULL argv0\n", __func__);
+      return;
     }
+    hestParm *hparm = _hparm ? NULL : hestParmNew();
+    fprintf(file, "\n%s: ", argv0);
+    hestPrintStr(file, HPARM->indent, strlen(argv0) + 2, HPARM->columns, info,
+                 AIR_FALSE);
+    fprintf(file, "\n");
+    hestParmFree(hparm); // NULL hparm ok
   }
-  if (hparm) {
-    hestParmFree(hparm);
-  }
+  return;
 }
 
 // error string song and dance
@@ -170,19 +167,24 @@ hestInfo(FILE *file, const char *argv0, const char *info, const hestParm *_hparm
   fprintf(stderr, "%s: problem with given hestOpt array\n%s", __func__, err);           \
   free(err)
 
+/*
+ ******** hestUsage
+ *
+ * Prints just the usage line to `file`
+ * New for TeemV2: `oneline` prevents printing "Usage:" on one line and the usage line on
+ * the next
+ */
 void
-hestUsage(FILE *file, const hestOpt *hopt, const char *argv0, const hestParm *_hparm) {
-  unsigned int opi, numOpts;
+hestUsage(FILE *file, const hestOpt *hopt, const char *argv0, const hestParm *_hparm,
+          int oneline) {
   /* with a very large number of options, it is possible to overflow buff[].
   Previous to the 2023 revisit, it was for max lenth 2*AIR_STRLEN_HUGE, but
   test/ex6.c blew past that.  May have to increment again in the future :)
   OR, just do the right thing and dynamically allocate it.
-  In any case we are safe about string usage; the problem would be that
-  usage info is truncated. */
+  In any case we are safe about string usage; the only problem would be that
+  usage info is truncated, this function avoids any buffer overflow. */
 #define LIKE_SO_SO_HUGE (64 * AIR_STRLEN_HUGE + 1)
   char _buff[LIKE_SO_SO_HUGE];
-  char *buff;
-  size_t buffSize;
   hestParm *hparm = _hparm ? NULL : hestParmNew();
 
   if (_hestOPCheck(hopt, HPARM)) {
@@ -194,18 +196,23 @@ hestUsage(FILE *file, const hestOpt *hopt, const char *argv0, const hestParm *_h
     return;
   }
 
-  numOpts = hestOptNum(hopt);
-  if (!(HPARM->noBlankLineBeforeUsage)) {
-    fprintf(file, "\n");
+  uint numOpts = hestOptNum(hopt);
+  char *buff = _buff;
+  size_t buffSize = LIKE_SO_SO_HUGE, already, indent;
+  if (oneline) {
+    SN_COPY(buff, buffSize, "Usage: ");
+    already = 7; // = strlen("Usage: ")
+    indent = 7;
+  } else {
+    SN_COPY(buff, buffSize, "Usage:\n ");
+    already = 0;
+    indent = HPARM->indent;
   }
-  buff = _buff;
-  buffSize = LIKE_SO_SO_HUGE;
-  SN_COPY(buff, buffSize, "Usage: ");
   SN_COPY(buff, buffSize, argv0 ? argv0 : "");
   if (HPARM->responseFileEnable) {
     SN_PRINTF(buff, buffSize, " [%cfile\t...]", RESPONSE_FILE_FLAG);
   }
-  for (opi = 0; opi < numOpts; opi++) {
+  for (uint opi = 0; opi < numOpts; opi++) {
     SN_COPY(buff, buffSize, " ");
     if (1 == hopt[opi].kind || (hopt[opi].flag && hopt[opi].dflt)) {
       SN_COPY(buff, buffSize, "[");
@@ -218,7 +225,7 @@ hestUsage(FILE *file, const hestOpt *hopt, const char *argv0, const hestParm *_h
     }
   }
 
-  hestPrintStr(file, strlen("Usage: "), 0, HPARM->columns, _buff, AIR_TRUE);
+  hestPrintStr(file, indent, already, HPARM->columns, _buff, AIR_TRUE);
   if (hparm) {
     hestParmFree(hparm);
   }
@@ -247,10 +254,9 @@ hestGlossary(FILE *file, const hestOpt *hopt, const hestParm *_hparm) {
   }
 
   unsigned int optNum = hestOptNum(hopt);
-  // fprintf(stderr, "!%s: optNum = %u\n", __func__, optNum);
   size_t maxlen = 0;
   if (optNum) {
-    fprintf(file, "\n");
+    fprintf(file, "\nOptions:\n");
   }
   for (uint opi = 0; opi < optNum; opi++) {
     _hestSetBuff(_buff, _buffSize, hopt + opi, /* */
@@ -276,7 +282,7 @@ hestGlossary(FILE *file, const hestOpt *hopt, const hestParm *_hparm) {
                  AIR_TRUE /* showshort */, AIR_FALSE /* showlong */);
     airOneLinify(_buff);
     len = strlen(_buff);
-    for (uint jj = len; jj < maxlen; jj++) {
+    for (uint jj = len; jj < maxlen + HPARM->indent; jj++) {
       fputc(' ', file);
     }
     fprintf(file, "%s", _buff);
@@ -370,11 +376,14 @@ hestGlossary(FILE *file, const hestOpt *hopt, const hestParm *_hparm) {
       } else {
         SN_COPY(buff, buffSize, "; ");
       }
-      snprintf(tmpS, sizeof(tmpS), "default:\t%s", hopt[opi].dflt);
-      airStrtrans(tmpS, ' ', '\t');
-      SN_PRINTF(buff, buffSize, "\"%s\"", tmpS);
+      snprintf(tmpS, sizeof(tmpS), "default:\t\"%s\"", hopt[opi].dflt);
+      if (HPARM->usageDefaultDisplayAvoidsWrapping) {
+        airStrtrans(tmpS, ' ', '\t');
+      }
+      SN_COPY(buff, buffSize, tmpS);
     }
-    hestPrintStr(file, maxlen + 3, maxlen + 3, HPARM->columns, _buff, AIR_FALSE);
+    hestPrintStr(file, maxlen + 3 + HPARM->indent, maxlen + 3, HPARM->columns, _buff,
+                 AIR_FALSE);
   }
   if (hparm) {
     hestParmFree(hparm);

@@ -33,7 +33,7 @@ main(int argc, const char *argv[]) {
   me = argv[0];
 
   biparm = tenEMBimodalParmNew();
-  airMopAdd(mop, biparm, (airMopper)tenEMBimodalParmNix, airMopAlways);
+  airMopAdd(mop, biparm, tenEMBimodalParmNix_mop, airMopAlways);
 
   Nrrd *nhisto;
   hestOptAdd_1_Other(&hopt, NULL, "histogram", &nhisto, NULL,
@@ -44,9 +44,9 @@ main(int argc, const char *argv[]) {
   hestOptAdd_2_Double(&hopt, "mp", "minprob 1,2", minprob, "0 0",
                       "minimum significant posterior probabilies, for first and "
                       "second stages");
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   biparm->minProb = minprob[0];
   biparm->minProb2 = minprob[1];

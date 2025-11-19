@@ -316,7 +316,7 @@ pullTraceSet(pullContext *pctx, pullTrace *pts, int recordStrength, double scale
 
   mop = airMopNew();
   point = pullPointNew(pctx); /* we'll want to decrement idtagNext later */
-  airMopAdd(mop, point, (airMopper)pullPointNix, airMopAlways);
+  airMopAdd(mop, point, pullPointNix_mop, airMopAlways);
 
   ELL_4V_COPY(point->pos, seedPos);
   /*
@@ -403,11 +403,11 @@ pullTraceSet(pullContext *pctx, pullTrace *pts, int recordStrength, double scale
   for (dirIdx = 0; dirIdx < 2; dirIdx++) {
     trceArr[dirIdx] = airArrayNew((void **)(trce + dirIdx), NULL, 4 * sizeof(double),
                                   arrIncr);
-    airMopAdd(mop, trceArr[dirIdx], (airMopper)airArrayNuke, airMopAlways);
+    airMopAdd(mop, trceArr[dirIdx], airArrayNuke_mop, airMopAlways);
     if (recordStrength) {
       hstrnArr[dirIdx] = airArrayNew((void **)(hstrn + dirIdx), NULL, sizeof(double),
                                      arrIncr);
-      airMopAdd(mop, hstrnArr[dirIdx], (airMopper)airArrayNuke, airMopAlways);
+      airMopAdd(mop, hstrnArr[dirIdx], airArrayNuke_mop, airMopAlways);
     } else {
       hstrnArr[dirIdx] = NULL;
       hstrn[dirIdx] = NULL;
@@ -415,7 +415,7 @@ pullTraceSet(pullContext *pctx, pullTrace *pts, int recordStrength, double scale
     if (pts->fdim && orientTestLen) {
       horinArr[dirIdx] = airArrayNew((void **)(horin + dirIdx), NULL, 3 * sizeof(double),
                                      arrIncr);
-      airMopAdd(mop, horinArr[dirIdx], (airMopper)airArrayNuke, airMopAlways);
+      airMopAdd(mop, horinArr[dirIdx], airArrayNuke_mop, airMopAlways);
     } else {
       horinArr[dirIdx] = NULL;
       horin[dirIdx] = NULL;
@@ -802,7 +802,7 @@ pullTraceMultiPlotAdd(Nrrd *nplot, const pullTraceMulti *mtrc, const Nrrd *nfilt
   }
 
   nsmst = nrrdNew();
-  airMopAdd(mop, nsmst, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nsmst, nrrdNuke_mop, airMopAlways);
   plot = AIR_CAST(double *, nplot->data);
   filt = (nfilt ? AIR_CAST(int *, nfilt->data) : NULL);
   sizeS = AIR_UINT(nplot->axis[0].size);
@@ -967,6 +967,7 @@ pullTraceMultiNix(pullTraceMulti *mtrc) {
   }
   return NULL;
 }
+AIR_MOPPER(pullTraceMultiNix)
 
 #define PULL_MTRC_MAGIC "PULLMTRC0001"
 #define DEMARK_STR      "======"

@@ -39,15 +39,15 @@ main(int argc, const char *argv[]) {
 
   mop = airMopNew();
   tgparm = tenGradientParmNew();
-  airMopAdd(mop, tgparm, (airMopper)tenGradientParmNix, airMopAlways);
+  airMopAdd(mop, tgparm, tenGradientParmNix_mop, airMopAlways);
   tgparm->single = AIR_FALSE;
   tgparm->snap = 0;
   tgparm->minMeanImprovement = 0.0;
 
   nlog = nrrdNew();
-  airMopAdd(mop, nlog, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nlog, nrrdNuke_mop, airMopAlways);
   ngrad = nrrdNew();
-  airMopAdd(mop, ngrad, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ngrad, nrrdNuke_mop, airMopAlways);
 
   me = argv[0];
   hestOptAdd(&hopt, "num", "min max", airTypeUInt, 2, 2, numRange, "6 129",
@@ -89,9 +89,9 @@ main(int argc, const char *argv[]) {
   hestOptAdd(&hopt, "odir", "out", airTypeString, 1, 1, &outStr, ".",
              "output directory for all grad files and logs, you should "
              "leave off the trailing /");
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   if (0 == seedRange[0]) {
     fprintf(stderr, "%s: sorry, initial seed must be non-zero\n", me);

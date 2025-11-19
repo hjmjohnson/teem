@@ -915,6 +915,7 @@ NRRD_EXPORT const int nrrdTypeIsUnsigned[NRRD_TYPE_MAX + 1];
 NRRD_EXPORT const int nrrdPresent;
 NRRD_EXPORT NrrdBoundarySpec *nrrdBoundarySpecNew(void);
 NRRD_EXPORT NrrdBoundarySpec *nrrdBoundarySpecNix(NrrdBoundarySpec *bspec);
+NRRD_EXPORT void *nrrdBoundarySpecNix_mop(void *);
 NRRD_EXPORT NrrdBoundarySpec *nrrdBoundarySpecCopy(const NrrdBoundarySpec *bsp);
 NRRD_EXPORT int nrrdBoundarySpecCheck(const NrrdBoundarySpec *bspec);
 NRRD_EXPORT int nrrdBoundarySpecParse(NrrdBoundarySpec *bspec, const char *str);
@@ -928,9 +929,11 @@ NRRD_EXPORT int nrrdBoundarySpecCompare(const NrrdBoundarySpec *bspecA,
 NRRD_EXPORT NrrdIoState *nrrdIoStateNew(void);
 NRRD_EXPORT void nrrdIoStateInit(NrrdIoState *nio);
 NRRD_EXPORT NrrdIoState *nrrdIoStateNix(NrrdIoState *nio);
+NRRD_EXPORT void *nrrdIoStateNix_mop(void *);
 /* ---- BEGIN non-NrrdIO */
 NRRD_EXPORT NrrdResampleInfo *nrrdResampleInfoNew(void);
 NRRD_EXPORT NrrdResampleInfo *nrrdResampleInfoNix(NrrdResampleInfo *info);
+NRRD_EXPORT void *nrrdResampleInfoNix_mop(void *);
 NRRD_EXPORT NrrdKernelSpec *nrrdKernelSpecNew(void);
 NRRD_EXPORT NrrdKernelSpec *nrrdKernelSpecCopy(const NrrdKernelSpec *ksp);
 NRRD_EXPORT void nrrdKernelSpecSet(NrrdKernelSpec *ksp, const NrrdKernel *k,
@@ -939,12 +942,16 @@ NRRD_EXPORT void nrrdKernelParmSet(const NrrdKernel **kP,
                                    double kparm[NRRD_KERNEL_PARM_MAXNUM],
                                    NrrdKernelSpec *ksp);
 NRRD_EXPORT NrrdKernelSpec *nrrdKernelSpecNix(NrrdKernelSpec *ksp);
+NRRD_EXPORT void *nrrdKernelSpecNix_mop(void *);
 /* ---- END non-NrrdIO */
 NRRD_EXPORT void nrrdInit(Nrrd *nrrd);
 NRRD_EXPORT Nrrd *nrrdNew(void);
 NRRD_EXPORT Nrrd *nrrdNix(Nrrd *nrrd);
+NRRD_EXPORT void *nrrdNix_mop(void *nrr);
 NRRD_EXPORT Nrrd *nrrdEmpty(Nrrd *nrrd);
+NRRD_EXPORT void *nrrdEmpty_mop(void *);
 NRRD_EXPORT Nrrd *nrrdNuke(Nrrd *nrrd);
+NRRD_EXPORT void *nrrdNuke_mop(void *);
 NRRD_EXPORT int nrrdWrap_nva(Nrrd *nrrd, void *data, int type, unsigned int dim,
                              const size_t *size);
 NRRD_EXPORT int nrrdWrap_va(Nrrd *nrrd, void *data, int type, unsigned int dim,
@@ -1051,7 +1058,7 @@ NRRD_EXPORT int nrrdSpaceVecExists(unsigned int sdim,
                                    const double vec[NRRD_SPACE_DIM_MAX]);
 NRRD_EXPORT void nrrdSpaceVecSetNaN(double vec[NRRD_SPACE_DIM_MAX]);
 /* ---- BEGIN non-NrrdIO */
-NRRD_EXPORT void nrrdSanityOrDie(const char *me);
+NRRD_EXPORT void nrrdSanityOrExit(const char *me);
 NRRD_EXPORT void nrrdSpaceVecSetZero(double vec[NRRD_SPACE_DIM_MAX]);
 NRRD_EXPORT void nrrdZeroSet(Nrrd *nout);
 NRRD_EXPORT void nrrdNaNSet(Nrrd *nout);
@@ -1230,12 +1237,14 @@ NRRD_EXPORT void nrrdIterSetOwnNrrd(NrrdIter *iter, Nrrd *nrrd);
 NRRD_EXPORT double nrrdIterValue(NrrdIter *iter);
 NRRD_EXPORT char *nrrdIterContent(NrrdIter *iter);
 NRRD_EXPORT NrrdIter *nrrdIterNix(NrrdIter *iter);
+NRRD_EXPORT void *nrrdIterNix_mop(void *);
 
 /******** expressing the range of values in a nrrd */
 /* range.c */
 NRRD_EXPORT NrrdRange *nrrdRangeNew(double min, double max);
 NRRD_EXPORT NrrdRange *nrrdRangeCopy(const NrrdRange *range);
 NRRD_EXPORT NrrdRange *nrrdRangeNix(NrrdRange *range);
+NRRD_EXPORT void *nrrdRangeNix_mop(void *);
 NRRD_EXPORT void nrrdRangeReset(NrrdRange *range);
 NRRD_EXPORT void nrrdRangeSet(NrrdRange *range, const Nrrd *nrrd, int blind8BitRange);
 NRRD_EXPORT int nrrdRangePercentileSet(NrrdRange *range, const Nrrd *nrrd,
@@ -1429,6 +1438,7 @@ typedef struct {
 } NrrdDeringContext;
 NRRD_EXPORT NrrdDeringContext *nrrdDeringContextNew(void);
 NRRD_EXPORT NrrdDeringContext *nrrdDeringContextNix(NrrdDeringContext *drc);
+NRRD_EXPORT void *nrrdDeringContextNix_mop(void *);
 NRRD_EXPORT int nrrdDeringVerboseSet(NrrdDeringContext *drc, int verbose);
 NRRD_EXPORT int nrrdDeringLinearInterpSet(NrrdDeringContext *drc, int linterp);
 NRRD_EXPORT int nrrdDeringVerticalSeamSet(NrrdDeringContext *drc, int vertSeam);
@@ -1473,6 +1483,7 @@ typedef double nrrdResample_t;
 /* resampleContext.c */
 NRRD_EXPORT NrrdResampleContext *nrrdResampleContextNew(void);
 NRRD_EXPORT NrrdResampleContext *nrrdResampleContextNix(NrrdResampleContext *);
+NRRD_EXPORT void *nrrdResampleContextNix_mop(void *);
 NRRD_EXPORT int nrrdResampleDefaultCenterSet(NrrdResampleContext *rsmc, int center);
 NRRD_EXPORT int nrrdResampleNonExistentSet(NrrdResampleContext *rsmc, int nonExistent);
 NRRD_EXPORT int nrrdResampleInputSet(NrrdResampleContext *rsmc, const Nrrd *nin);
@@ -1650,7 +1661,7 @@ NRRD_EXPORT int nrrdKernelParse(const NrrdKernel **kernelP,
                                 double *parm,
                                 const char *str);
 NRRD_EXPORT int nrrdKernelSpecParse(NrrdKernelSpec *ksp, const char *str);
-NRRD_EXPORT int nrrdKernelSpecSprint(char str[AIR_STRLEN_LARGE + 1],
+NRRD_EXPORT int nrrdKernelSpecSprint(char str[AIR_STRLEN_SMALL + 1],
                                      const NrrdKernelSpec *ksp);
 NRRD_EXPORT int nrrdKernelSprint(char str[AIR_STRLEN_LARGE + 1],
                                  const NrrdKernel *kernel,

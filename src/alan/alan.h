@@ -161,6 +161,7 @@ ALAN_EXPORT const char *const alanBiffKey;
 ALAN_EXPORT void alanContextInit(alanContext *actx);
 ALAN_EXPORT alanContext *alanContextNew(void);
 ALAN_EXPORT alanContext *alanContextNix(alanContext *actx);
+ALAN_EXPORT void *alanContextNix_mop(void *);
 ALAN_EXPORT int alanDimensionSet(alanContext *actx, unsigned int dim);
 ALAN_EXPORT int alan2DSizeSet(alanContext *actx, unsigned int sizeX, unsigned int sizeY);
 ALAN_EXPORT int alan3DSizeSet(alanContext *actx, unsigned int sizeX, unsigned int sizeY,

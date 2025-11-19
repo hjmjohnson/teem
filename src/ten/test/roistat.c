@@ -45,9 +45,9 @@ main(int argc, const char *argv[]) {
              "which anisotropy measures to measure", &anisoTypeNum, tenAniso);
   hestOptAdd(&hopt, "m,measr", "measr", airTypeEnum, 1, -1, &measr, NULL,
              "which measures/statistics to calculate", &statNum, nrrdMeasure);
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   if (tenTensorCheck(nten, nrrdTypeFloat, AIR_TRUE, AIR_TRUE)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);
@@ -57,7 +57,7 @@ main(int argc, const char *argv[]) {
   }
 
   nroi = nrrdNew();
-  airMopAdd(mop, nroi, AIR_CAST(airMopper, nrrdNuke), airMopAlways);
+  airMopAdd(mop, nroi, nrrdNuke_mop, airMopAlways);
   if (nrrdConvert(nroi, _nroi, nrrdTypeFloat)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: couldn't convert ROI to float:\n%s\n", me, err);
@@ -91,7 +91,7 @@ main(int argc, const char *argv[]) {
 
   /* allocate anisotropy buffers */
   naniso = nrrdNew();
-  airMopAdd(mop, naniso, AIR_CAST(airMopper, nrrdNuke), airMopAlways);
+  airMopAdd(mop, naniso, nrrdNuke_mop, airMopAlways);
   anisoSize[0] = roiVoxNum;
   anisoSize[1] = anisoTypeNum;
   if (nrrdMaybeAlloc_nva(naniso, nrrdTypeFloat, 2, anisoSize)) {
@@ -123,7 +123,7 @@ main(int argc, const char *argv[]) {
 
   /* do per-anisotropy statistics */
   nstat = nrrdNew();
-  airMopAdd(mop, nstat, AIR_CAST(airMopper, nrrdNuke), airMopAlways);
+  airMopAdd(mop, nstat, nrrdNuke_mop, airMopAlways);
   for (statIdx = 0; statIdx < statNum; statIdx++) {
     printf("%s:", airEnumStr(nrrdMeasure, measr[statIdx]));
 

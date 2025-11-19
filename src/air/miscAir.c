@@ -49,12 +49,26 @@ const char *const airTeemReleaseDate = "hopefully 2025";
 ** uniform way of printing information about the Teem version
 */
 void
-airTeemVersionSprint(char buff[AIR_STRLEN_LARGE + 1]) {
-  snprintf(buff, AIR_STRLEN_LARGE + 1, "Teem version %s, %s%s%s", airTeemVersion,
+airTeemVersionSprint(char buff[AIR_STRLEN_SMALL + 1]) {
+  snprintf(buff, AIR_STRLEN_SMALL + 1, "Teem version %s, %s%s%s", airTeemVersion,
            airTeemReleaseDone ? "released on " : "", airTeemReleaseDate,
            airTeemReleaseDone ? "" : " (not yet released)");
   return;
 }
+
+/* ---- BEGIN non-NrrdIO */
+/* airTeemVersionPrintAndExit: how to respond to --version on command-line */
+void
+airTeemVersionPrintAndExit(const char *pfx) {
+  char vbuff[AIR_STRLEN_SMALL + 1];
+  airTeemVersionSprint(vbuff);
+  if (pfx) {
+    printf("%s ", pfx);
+  }
+  printf("%s\n", vbuff);
+  exit(0); /* (in airTeemVersionPrintAndExit) */
+}
+/* ---- END non-NrrdIO */
 
 double
 _airSanityHelper(double val) {
@@ -85,6 +99,7 @@ airSetNull(void **ptrP) {
   }
   return NULL;
 }
+AIR_MOPPER(airSetNull)
 
 /*
 ******** airFree()
@@ -152,6 +167,7 @@ airFclose(FILE *file) {
   }
   return NULL;
 }
+AIR_MOPPER(airFclose)
 
 /* helper function for airSinglePrintf:
    shift characters between clo and chi (inclusive) up by 2 */

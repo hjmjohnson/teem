@@ -21,6 +21,34 @@
 extern "C" {
 #endif
 
+/* NOTE: these SN_,ASP1_ string macros copy-pasta'd to other private<Lib>.h files:
+   SN_INCR: safely increments STR arg to point '\0'-termination of STR
+   SN_COPY: safely copies SRC to DST, then increments DST
+   SN_PRINTF: snprintf's into DST then increments DST
+   ASP1_X: short version of AIR_STRLEN_X + 1 */
+#define SN_INCR(STR, SIZE)                                                              \
+  do {                                                                                  \
+    size_t tmp_str_len_##STR = strlen(STR);                                             \
+    STR += tmp_str_len_##STR;                                                           \
+    SIZE -= tmp_str_len_##STR;                                                          \
+  } while (0)
+#define SN_COPY(DST, DST_SIZE, SRC)                                                     \
+  do {                                                                                  \
+    airStrcpy((DST), (DST_SIZE), (SRC));                                                \
+    SN_INCR(DST, DST_SIZE);                                                             \
+  } while (0)
+#define SN_PRINTF(DST, DST_SIZE, FMT, ...)                                              \
+  do {                                                                                  \
+    snprintf((DST), (DST_SIZE), (FMT), __VA_ARGS__);                                    \
+    SN_INCR(DST, DST_SIZE);                                                             \
+  } while (0)
+#define ASP1_S (AIR_STRLEN_SMALL + 1)
+#define ASP1_M (AIR_STRLEN_MEDIUM + 1)
+#define ASP1_L (AIR_STRLEN_LARGE + 1)
+#define ASP1_H (AIR_STRLEN_HUGE + 1)
+
+typedef unsigned int uint; /* uint is just more concise */
+
 /* hvol.c */
 extern int _baneAxisCheck(baneAxis *axis);
 
@@ -32,7 +60,7 @@ extern int _baneAxisCheck(baneAxis *axis);
 #define USAGE(INFO)                                                                     \
   if (!argc && !hparm->noArgsIsNoProblem) {                                             \
     hestInfo(stderr, me, (INFO), hparm);                                                \
-    hestUsage(stderr, opt, me, hparm);                                                  \
+    hestUsage(stderr, opt, me, hparm, AIR_FALSE);                                       \
     hestGlossary(stderr, opt, hparm);                                                   \
     airMopError(mop);                                                                   \
     return 2;                                                                           \
@@ -43,7 +71,7 @@ extern int _baneAxisCheck(baneAxis *axis);
     if (1 == pret) {                                                                    \
       fprintf(stderr, "%s: %s\n", me, perr);                                            \
       free(perr);                                                                       \
-      hestUsage(stderr, opt, me, hparm);                                                \
+      hestUsage(stderr, opt, me, hparm, AIR_FALSE);                                     \
       if (hparm && hparm->noArgsIsNoProblem) {                                          \
         fprintf(stderr, "\nFor more info: \"%s --help\"\n", me);                        \
       } else {                                                                          \
@@ -56,7 +84,7 @@ extern int _baneAxisCheck(baneAxis *axis);
     }                                                                                   \
   } else if (opt->helpWanted) {                                                         \
     hestInfo(stdout, me, (INFO), hparm);                                                \
-    hestUsage(stdout, opt, me, hparm);                                                  \
+    hestUsage(stdout, opt, me, hparm, AIR_FALSE);                                       \
     hestGlossary(stdout, opt, hparm);                                                   \
     return 0;                                                                           \
   }

@@ -25,29 +25,22 @@ static const char *myinfo = (INFO
                              ". Actually all it can measure is area at this point...");
 
 static int
-limnPu_measMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+limnPu_measMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
-  char *err, *perr;
-  airArray *mop;
-  int pret;
-
   limnPolyData *pld;
-  Nrrd *nout;
-  char *out;
-
   hestOptAdd_1_Other(&hopt, NULL, "input", &pld, NULL, "input polydata filename",
                      limnHestPolyDataLMPD);
+  char *out;
   hestOptAdd_1_String(&hopt, NULL, "output", &out, NULL, "output nrrd filename");
 
-  mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
+  hestParseOrExit(hopt, argc, argv, hparm, me, myinfo);
+  airArray *mop = airMopNew();
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
+  char *err;
 
-  USAGE(myinfo);
-  PARSE(myinfo);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
-
-  nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  Nrrd *nout = nrrdNew();
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   if (limnPolyDataPrimitiveArea(nout, pld)) {
     airMopAdd(mop, err = biffGetDone(LIMN), airFree, airMopAlways);

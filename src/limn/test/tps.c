@@ -38,7 +38,7 @@ main(int argc, const char *argv[]) {
 
   mop = airMopNew();
   cam = limnCameraNew();
-  airMopAdd(mop, cam, (airMopper)limnCameraNix, airMopAlways);
+  airMopAdd(mop, cam, limnCameraNix_mop, airMopAlways);
 
   me = argv[0];
   hestOptAdd(&hopt, "fr", "from point", airTypeDouble, 3, 3, cam->from, "4 4 4",
@@ -71,9 +71,9 @@ main(int argc, const char *argv[]) {
              "silohuette, front crease, front non-crease");
   hestOptAdd(&hopt, "o", "output PS", airTypeString, 1, 1, &outS, "out.ps",
              "output file to render postscript into");
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   cam->neer = -0.000000001;
   cam->dist = 0;
@@ -86,7 +86,7 @@ main(int argc, const char *argv[]) {
     return 1;
   }
   obj = limnObjectNew(10, AIR_TRUE);
-  airMopAdd(mop, obj, (airMopper)limnObjectNix, airMopAlways);
+  airMopAdd(mop, obj, limnObjectNix_mop, airMopAlways);
 
   /* create limnLooks for diffuse (#0) and flat (#1) shading */
   lookIdx = airArrayLenIncr(obj->lookArr, 2);
@@ -160,7 +160,7 @@ main(int argc, const char *argv[]) {
   win->ps.lineWidth[limnEdgeTypeFrontFacet] = edgeWidth[4];
 
   win->file = fopen(outS, "w");
-  airMopAdd(mop, win, (airMopper)limnWindowNix, airMopAlways);
+  airMopAdd(mop, win, limnWindowNix_mop, airMopAlways);
 
   if (limnObjectRender(obj, cam, win)
       || (concave ? limnObjectPSDrawConcave(obj, cam, nmap, win)

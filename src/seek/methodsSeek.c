@@ -161,3 +161,4 @@ seekContextNix(seekContext *sctx) {
   }
   return NULL;
 }
+AIR_MOPPER(seekContextNix)

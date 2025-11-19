@@ -60,6 +60,7 @@ tenGradientParmNix(tenGradientParm *tgparm) {
   airFree(tgparm);
   return NULL;
 }
+AIR_MOPPER(tenGradientParmNix)
 
 int /* Biff: 1 */
 tenGradientCheck(const Nrrd *ngrad, int type, unsigned int minnum) {
@@ -389,9 +390,9 @@ tenGradientBalance(Nrrd *nout, const Nrrd *nin, tenGradientParm *tgparm) {
 
   mop = airMopNew();
   ncopy = nrrdNew();
-  airMopAdd(mop, ncopy, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ncopy, nrrdNuke_mop, airMopAlways);
   rstate = airRandMTStateNew(tgparm->seed);
-  airMopAdd(mop, rstate, (airMopper)airRandMTStateNix, airMopAlways);
+  airMopAdd(mop, rstate, airRandMTStateNix_mop, airMopAlways);
   /* HEY: factor of 100 is an approximate hack */
   maxIter = 100 * tgparm->maxIteration;
 
@@ -471,8 +472,8 @@ tenGradientDistribute(Nrrd *nout, const Nrrd *nin, tenGradientParm *tgparm) {
   mop = airMopNew();
   npos[0] = nrrdNew();
   npos[1] = nrrdNew();
-  airMopAdd(mop, npos[0], (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, npos[1], (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, npos[0], nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, npos[1], nrrdNuke_mop, airMopAlways);
   if (nrrdConvert(npos[0], nin, nrrdTypeDouble)
       || nrrdConvert(npos[1], nin, nrrdTypeDouble)) {
     biffMovef(TEN, NRRD, "%s: trouble allocating temp buffers", me);
@@ -664,7 +665,7 @@ tenGradientGenerate(Nrrd *nout, unsigned int num, tenGradientParm *tgparm) {
   }
   mop = airMopNew();
   nin = nrrdNew();
-  airMopAdd(mop, nin, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nin, nrrdNuke_mop, airMopAlways);
 
   if (tenGradientRandom(nin, num, tgparm->seed)
       || tenGradientDistribute(nout, nin, tgparm)) {
@@ -681,7 +682,7 @@ tenGradientGenerate(Nrrd *nout, unsigned int num, tenGradientParm *tgparm) {
     padMax[0] = AIR_CAST(ptrdiff_t, nout->axis[0].size - 1);
     padMax[1] = AIR_CAST(ptrdiff_t, num - 1);
     ntmp = nrrdNew();
-    airMopAdd(mop, ntmp, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, ntmp, nrrdNuke_mop, airMopAlways);
     if (nrrdPad_nva(ntmp, nout, padMin, padMax, nrrdBoundaryPad, 0.0)
         || nrrdCopy(nout, ntmp)) {
       biffMovef(TEN, NRRD, "%s: trouble adding zero vector", me);

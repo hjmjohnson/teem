@@ -255,8 +255,8 @@ pullEnergyPlot(pullContext *pctx, Nrrd *nplot, double xx, double yy, double zz,
   mop = airMopNew();
   mee = pullPointNew(pctx);
   she = pullPointNew(pctx);
-  airMopAdd(mop, mee, (airMopper)pullPointNix, airMopAlways);
-  airMopAdd(mop, she, (airMopper)pullPointNix, airMopAlways);
+  airMopAdd(mop, mee, pullPointNix_mop, airMopAlways);
+  airMopAdd(mop, she, pullPointNix_mop, airMopAlways);
   ELL_4V_SET(mee->pos, 0, 0, 0, 0);
   plot = AIR_CAST(double *, nplot->data);
   for (si = 0; si < res; si++) {

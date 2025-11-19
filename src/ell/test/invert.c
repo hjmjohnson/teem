@@ -35,23 +35,23 @@ main(int argc, const char *argv[]) {
   double m3[9], m4[16];
   me = argv[0];
   mop = airMopNew();
-  hparm = hestParmNew();
+  hparm = hestParmMopNew();
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hopt = NULL;
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
   hestOptAdd(&hopt, NULL, "matrix", airTypeOther, 1, 1, &nin, NULL,
              "transform(s) to apply to image", NULL, NULL, nrrdHestNrrd);
   hestOptAdd(&hopt, "o", "filename", airTypeString, 1, 1, &outS, "-",
              "file to write output nrrd to");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, invInfo);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, invInfo);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   ninv = nrrdNew();
-  airMopAdd(mop, ninv, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ninv, nrrdNuke_mop, airMopAlways);
   nidn = nrrdNew();
-  airMopAdd(mop, nidn, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nidn, nrrdNuke_mop, airMopAlways);
   nmat = nrrdNew();
-  airMopAdd(mop, nmat, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nmat, nrrdNuke_mop, airMopAlways);
 
   nrrdConvert(nmat, nin, nrrdTypeDouble);
   if (3 == nmat->axis[0].size && 3 == nmat->axis[1].size) {

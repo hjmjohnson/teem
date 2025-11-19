@@ -61,7 +61,7 @@ _tendGlyphReadCams(int imgSize[2], limnCamera **camP, unsigned int *numCamsP,
 
   mop = airMopNew();
   camA = airArrayNew((void **)camP, numCamsP, sizeof(limnCamera), 1);
-  airMopAdd(mop, camA, (airMopper)airArrayNix, airMopAlways);
+  airMopAdd(mop, camA, airArrayNix_mop, airMopAlways);
 
   while (0 < airOneLine(fin, line, AIR_STRLEN_HUGE + 1)) {
     airStrtrans(airStrtrans(line, '{', ' '), '}', ' ');
@@ -95,11 +95,10 @@ _tendGlyphReadCams(int imgSize[2], limnCamera **camP, unsigned int *numCamsP,
 }
 
 static int
-tend_glyphMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_glyphMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   int pret, doRT = AIR_FALSE;
   hestOpt *hopt = NULL;
   char *perr, *err;
-  airArray *mop;
 
   Nrrd *nin, *emap, *nraw, *npos, *nslc;
   char *outS;
@@ -122,23 +121,25 @@ tend_glyphMain(int argc, const char **argv, const char *me, hestParm *hparm) {
 
   double v2w[9], ldir[3], edir[3], fdir[3], corn[3], len;
 
+  airArray *mop = airMopNew();
+  hestParm *hparm = hestParmCopy(_hparm);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   /* so that command-line options can be read from file */
   hparm->responseFileEnable = AIR_TRUE;
   hparm->elideSingleEmptyStringDefault = AIR_TRUE;
 
-  mop = airMopNew();
   cam = limnCameraNew();
-  airMopAdd(mop, cam, (airMopper)limnCameraNix, airMopAlways);
+  airMopAdd(mop, cam, limnCameraNix_mop, airMopAlways);
   glyph = limnObjectNew(1000, AIR_TRUE);
-  airMopAdd(mop, glyph, (airMopper)limnObjectNix, airMopAlways);
+  airMopAdd(mop, glyph, limnObjectNix_mop, airMopAlways);
   scene = echoSceneNew();
-  airMopAdd(mop, scene, (airMopper)echoSceneNix, airMopAlways);
+  airMopAdd(mop, scene, echoSceneNix_mop, airMopAlways);
   win = limnWindowNew(limnDevicePS);
-  airMopAdd(mop, win, (airMopper)limnWindowNix, airMopAlways);
+  airMopAdd(mop, win, limnWindowNix_mop, airMopAlways);
   gparm = tenGlyphParmNew();
-  airMopAdd(mop, gparm, (airMopper)tenGlyphParmNix, airMopAlways);
+  airMopAdd(mop, gparm, tenGlyphParmNix_mop, airMopAlways);
   eparm = echoRTParmNew();
-  airMopAdd(mop, eparm, (airMopper)echoRTParmNix, airMopAlways);
+  airMopAdd(mop, eparm, echoRTParmNix_mop, airMopAlways);
 
   /* do postscript or ray-traced? */
   /* Do you see the problem here?
@@ -302,9 +303,9 @@ tend_glyphMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                      nrrdHestNrrd);
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output file");
 
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
   USAGE_PARSE(_tend_glyphInfoL);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   /* set up slicing stuff */
   if (!(-1 == slice[0] && -1 == slice[1])) {
@@ -352,9 +353,9 @@ tend_glyphMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   }
   if (doRT) {
     nraw = nrrdNew();
-    airMopAdd(mop, nraw, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nraw, nrrdNuke_mop, airMopAlways);
     gstate = echoGlobalStateNew();
-    airMopAdd(mop, gstate, (airMopper)echoGlobalStateNix, airMopAlways);
+    airMopAdd(mop, gstate, echoGlobalStateNix_mop, airMopAlways);
     eparm->shadow = shadow;
     if (buvne[0] > 0) {
       ELL_34M_EXTRACT(v2w, cam->V2W);
@@ -460,10 +461,10 @@ tend_glyphMain(int argc, const char **argv, const char *me, hestParm *hparm) {
       hackmax[2] = ires[1] - 1;
       hacknrgb = nrrdNew();
       hacknpng = nrrdNew();
-      airMopAdd(mop, hacknrgb, (airMopper)nrrdNuke, airMopAlways);
-      airMopAdd(mop, hacknpng, (airMopper)nrrdNuke, airMopAlways);
+      airMopAdd(mop, hacknrgb, nrrdNuke_mop, airMopAlways);
+      airMopAdd(mop, hacknpng, nrrdNuke_mop, airMopAlways);
       hackrange = nrrdRangeNew(0.0, 1.0);
-      airMopAdd(mop, hackrange, (airMopper)nrrdRangeNix, airMopAlways);
+      airMopAdd(mop, hackrange, nrrdRangeNix_mop, airMopAlways);
       for (hackci = 0; hackci < hacknumcam; hackci++) {
         memcpy(cam, hackcams + hackci, sizeof(limnCamera));
         /* rightHanded and orthographic not handled nicely */
@@ -512,7 +513,7 @@ tend_glyphMain(int argc, const char **argv, const char *me, hestParm *hparm) {
       airMopError(mop);
       return 1;
     }
-    airMopAdd(mop, win->file, (airMopper)airFclose, airMopAlways);
+    airMopAdd(mop, win->file, airFclose_mop, airMopAlways);
     cam->neer = -0.000000001;
     cam->faar = 0.0000000001;
     win->ps.lineWidth[limnEdgeTypeBackFacet] = 0;

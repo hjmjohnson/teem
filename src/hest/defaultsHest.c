@@ -22,7 +22,6 @@
 
 int hestDefaultVerbose = 0;
 int hestDefaultResponseFileEnable = AIR_FALSE;
-unsigned int hestDefaultColumns = 79;
 int hestDefaultElideSingleEnumType = AIR_FALSE;
 int hestDefaultElideSingleOtherType = AIR_FALSE;
 int hestDefaultElideSingleOtherDefault = AIR_FALSE;
@@ -32,3 +31,5 @@ int hestDefaultElideSingleEmptyStringDefault = AIR_FALSE;
 int hestDefaultElideMultipleEmptyStringDefault = AIR_FALSE;
 int hestDefaultNoArgsIsNoProblem = AIR_FALSE;
 int hestDefaultCleverPluralizeOtherY = AIR_FALSE;
+unsigned int hestDefaultColumns = 79u;
+unsigned int hestDefaultIndent = 3u;

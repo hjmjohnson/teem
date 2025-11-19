@@ -43,7 +43,7 @@ qbertSizeUp(Nrrd *nout, Nrrd *nin, unsigned int *sz, NrrdKernelSpec *uk) {
 
   mop = airMopNew();
   rsi = nrrdResampleInfoNew();
-  airMopAdd(mop, rsi, (airMopper)nrrdResampleInfoNix, airMopAlways);
+  airMopAdd(mop, rsi, nrrdResampleInfoNix_mop, airMopAlways);
   anyneed = 0;
   if (uk) {
     for (i = 0; i <= 2; i++) {
@@ -134,7 +134,7 @@ qbertSizeDown(Nrrd *nout, Nrrd *nin, unsigned int *sz, NrrdKernelSpec *dk) {
 
   mop = airMopNew();
   rsi = nrrdResampleInfoNew();
-  airMopAdd(mop, rsi, (airMopper)nrrdResampleInfoNix, airMopAlways);
+  airMopAdd(mop, rsi, nrrdResampleInfoNix_mop, airMopAlways);
   rsi->boundary = nrrdBoundaryBleed;
   rsi->type = nrrdTypeFloat;
   rsi->renormalize = AIR_TRUE;
@@ -206,7 +206,7 @@ qbertProbe(Nrrd *nout, Nrrd *nin, NrrdKernelSpec *k00, NrrdKernelSpec *k11,
   doH = !!doH;
   mop = airMopNew();
   ctx = gageContextNew();
-  airMopAdd(mop, ctx, (airMopper)gageContextNix, airMopAlways);
+  airMopAdd(mop, ctx, gageContextNix_mop, airMopAlways);
 
   nin->axis[0].center = nrrdCenterNode;
   nin->axis[1].center = nrrdCenterNode;
@@ -510,10 +510,10 @@ qbertScat(Nrrd *nvgh, int pos, unsigned int size, const char *name) {
   bins[0] = bins[1] = size;
   clamp[0] = clamp[1] = AIR_FALSE;
   mop = airMopNew();
-  airMopAdd(mop, nv = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nx = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nscA = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nscB = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nv = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nx = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nscA = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nscB = nrrdNew(), nrrdNuke_mop, airMopAlways);
   /* HEY: this used to be nin[2], but its passing to nrrdJoin caused
      "dereferencing type-punned pointer might break strict-aliasing rules"
      warning; GLK not sure how else to fix it */
@@ -531,7 +531,7 @@ qbertScat(Nrrd *nvgh, int pos, unsigned int size, const char *name) {
   if (!E) E |= nrrdHistoEq(nscA, nscB, NULL, 2048, 2, 0.45f);
   if (!E) {
     range = nrrdRangeNewSet(nscA, nrrdBlind8BitRangeTrue);
-    airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
+    airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
     range->max *= 0.8;
   }
   if (!E) E |= nrrdQuantize(nscB, nscA, range, 8);
@@ -576,8 +576,8 @@ main(int argc, const char *argv[]) {
 
   mop = airMopNew();
   me = argv[0];
-  hparm = hestParmNew();
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  hparm = hestParmMopNew();
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
 
   hparm->elideSingleOtherType = AIR_TRUE;
   hparm->elideSingleNonExistFloatDefault = AIR_TRUE;
@@ -633,9 +633,9 @@ main(int argc, const char *argv[]) {
                     "histogram equalized, quantized, and saved out as PGM images "
                     "named \"vg.pgm\" (and \"vh.pgm\").");
   hestOptAdd_1_String(&hopt, "o", "output", &outS, NULL, "output volume in nrrd format");
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, qbertInfo);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, qbertInfo);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   if (3 != nin->dim) {
     fprintf(stderr, "%s: input nrrd is %u-dimensional, not 3\n", me, nin->dim);
@@ -653,7 +653,7 @@ main(int argc, const char *argv[]) {
   }
 
   npad = nrrdNew();
-  airMopAdd(mop, npad, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, npad, nrrdNuke_mop, airMopAlways);
   if (qbertSizeUp(npad, nin, sz, ups ? uk : NULL)) {
     airMopAdd(mop, errS = biffGetDone(QBERT), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble:\n%s\n", me, errS);
@@ -662,14 +662,14 @@ main(int argc, const char *argv[]) {
   }
 
   nrsmp = nrrdNew();
-  airMopAdd(mop, nrsmp, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nrsmp, nrrdNuke_mop, airMopAlways);
   if (qbertSizeDown(nrsmp, npad, sz, dk)) {
     airMopAdd(mop, errS = biffGetDone(QBERT), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble:\n%s\n", me, errS);
     airMopError(mop);
     exit(1);
   }
-  airMopSub(mop, npad, (airMopper)nrrdNuke);
+  airMopSub(mop, npad, nrrdNuke_mop);
   npad = nrrdNuke(npad);
 
   /* this axis info is being saved so that it can be re-enstated at the end */
@@ -689,14 +689,14 @@ main(int argc, const char *argv[]) {
   }
 
   nvghF = nrrdNew();
-  airMopAdd(mop, nvghF, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nvghF, nrrdNuke_mop, airMopAlways);
   if (qbertProbe(nvghF, nrsmp, k00, k11, k22, !notdoH, sz)) {
     airMopAdd(mop, errS = biffGetDone(QBERT), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble:\n%s\n", me, errS);
     airMopError(mop);
     exit(1);
   }
-  airMopSub(mop, nrsmp, (airMopper)nrrdNuke);
+  airMopSub(mop, nrsmp, nrrdNuke_mop);
   nrsmp = nrrdNuke(nrsmp);
 
   if (useFloat) {
@@ -714,9 +714,9 @@ main(int argc, const char *argv[]) {
     nvhist = nrrdNew();
     nghist = nrrdNew();
     nhhist = nrrdNew();
-    airMopAdd(mop, nvhist, (airMopper)nrrdNuke, airMopAlways);
-    airMopAdd(mop, nghist, (airMopper)nrrdNuke, airMopAlways);
-    airMopAdd(mop, nhhist, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nvhist, nrrdNuke_mop, airMopAlways);
+    airMopAdd(mop, nghist, nrrdNuke_mop, airMopAlways);
+    airMopAdd(mop, nhhist, nrrdNuke_mop, airMopAlways);
     if (qbertMakeVghHists(nvhist, nghist, nhhist, sz, QBERT_HIST_BINS, nvghF, nin)) {
       fprintf(stderr, "%s: trouble:\n%s\n", me, errS = biffGetDone(QBERT));
       free(errS);
@@ -724,7 +724,7 @@ main(int argc, const char *argv[]) {
     }
 
     nvgh = nrrdNew();
-    airMopAdd(mop, nvgh, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nvgh, nrrdNuke_mop, airMopAlways);
     ELL_3V_SET(perc, vperc, gperc, hperc);
     if (qbertMakeVgh(nvgh, nvhist, nghist, nhhist, sz, perc, nvghF)) {
       airMopAdd(mop, errS = biffGetDone(QBERT), airFree, airMopAlways);
@@ -732,7 +732,7 @@ main(int argc, const char *argv[]) {
       airMopError(mop);
       exit(1);
     }
-    airMopSub(mop, nvghF, (airMopper)nrrdNuke);
+    airMopSub(mop, nvghF, nrrdNuke_mop);
     nvghF = nrrdNuke(nvghF);
 
     if (scat

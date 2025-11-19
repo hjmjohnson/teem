@@ -26,7 +26,7 @@ static const char *_tend_tripleInfoL
           "and lots of other things.");
 
 static int
-tend_tripleMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_tripleMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -42,12 +42,12 @@ tend_tripleMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output triple volume");
 
   mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
   USAGE_PARSE(_tend_tripleInfoL);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (tenTripleCalc(nout, ttype, nin)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble:\n%s\n", me, err);

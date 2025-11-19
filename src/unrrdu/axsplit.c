@@ -28,30 +28,26 @@ static const char *_unrrdu_axsplitInfoL
           "* Uses nrrdAxesSplit");
 
 static int
-unrrdu_axsplitMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *nout;
-  int pret;
-  size_t size[2];
-  unsigned int axis;
-  airArray *mop;
-
+unrrdu_axsplitMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  uint axis;
   OPT_ADD_AXIS(axis, "dimension (axis index) to split at");
-  hestOptAdd_2_Size_t(&opt, "s,size", "fast, slow sizes", size, NULL,
+  size_t size[2];
+  hestOptAdd_2_Size_t(&hopt, "s,size", "fast, slow sizes", size, NULL,
                       "fast and slow axis sizes to produce as result of splitting "
                       "given axis.");
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_axsplitInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_axsplitInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  Nrrd *nout = nrrdNew();
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   if (nrrdAxesSplit(nout, nin, axis, size[0], size[1])) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);

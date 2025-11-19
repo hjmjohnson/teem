@@ -29,9 +29,9 @@ main(int argc, const char *argv[]) {
   pullEnergySpec *ensp;
   hestOptAdd_1_Other(&hopt, "energy", "spec", &ensp, NULL,
                      "specification of force function to use", pullHestEnergySpec);
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   fprintf(stderr, "%s: parsed energy \"%s\", with %u parms.\n", me, ensp->energy->name,
           ensp->energy->parmNum);

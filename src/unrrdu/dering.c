@@ -25,45 +25,39 @@ static const char *_unrrdu_deringInfoL = (INFO
                                           ". Should be considered a work-in-progress. ");
 
 static int
-unrrdu_deringMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *nout;
-  airArray *mop;
-  int pret;
-
-  Nrrd *nmask;
-  NrrdDeringContext *drc;
-  double center[2], radScale, clampPerc[2], backval;
-  int verbose, linterp, vertSeam;
-  unsigned int thetaNum;
-  NrrdKernelSpec *rkspec, *tkspec;
-
-  /* HEY is this needed? (to display -rk and -tk kernels) */
-  hparm->elideSingleOtherDefault = AIR_FALSE;
-
-  hestOptAdd_2_Double(&opt, "c,center", "x y", center, NULL,
+unrrdu_deringMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+  hestOpt *hopt = NULL;
+  double center[2];
+  hestOptAdd_2_Double(&hopt, "c,center", "x y", center, NULL,
                       "center of rings, in index space of fastest two axes");
-  hestOptAdd_1_Int(&opt, "v,verbose", "v", &verbose, "0", "verbosity level");
-  hestOptAdd_1_Bool(&opt, "li,linterp", "bool", &linterp, "false",
+  int verbose;
+  hestOptAdd_1_Int(&hopt, "v,verbose", "v", &verbose, "0", "verbosity level");
+  int linterp;
+  hestOptAdd_1_Bool(&hopt, "li,linterp", "bool", &linterp, "false",
                     "whether to use linear interpolation during polar transform");
-  hestOptAdd_1_Bool(&opt, "vs,vertseam", "bool", &vertSeam, "false",
+  int vertSeam;
+  hestOptAdd_1_Bool(&hopt, "vs,vertseam", "bool", &vertSeam, "false",
                     "whether to dering left and right sides separately "
                     "(requires an even value for -tn thetanum)");
-  hestOptAdd_1_UInt(&opt, "tn,thetanum", "# smpls", &thetaNum, "20",
+  uint thetaNum;
+  hestOptAdd_1_UInt(&hopt, "tn,thetanum", "# smpls", &thetaNum, "20",
                     "# of theta samples");
-  hestOptAdd_1_Double(&opt, "rs,radscale", "scale", &radScale, "1.0",
+  double radScale;
+  hestOptAdd_1_Double(&hopt, "rs,radscale", "scale", &radScale, "1.0",
                       "scaling on radius in polar transform");
-  hestOptAdd_1_Other(&opt, "rk,radiuskernel", "kern", &rkspec, "gauss:3,4",
+  NrrdKernelSpec *rkspec, *tkspec;
+  hestOptAdd_1_Other(&hopt, "rk,radiuskernel", "kern", &rkspec, "gauss:3,4",
                      "kernel for high-pass filtering along radial direction",
                      nrrdHestKernelSpec);
-  hestOptAdd_1_Other(&opt, "tk,thetakernel", "kern", &tkspec, "box",
+  hestOptAdd_1_Other(&hopt, "tk,thetakernel", "kern", &tkspec, "box",
                      "kernel for blurring along theta direction.", nrrdHestKernelSpec);
-  hestOptAdd_2_Double(&opt, "cp,clampperc", "lo hi", clampPerc, "0.0 0.0",
+  double clampPerc[2];
+  hestOptAdd_2_Double(&hopt, "cp,clampperc", "lo hi", clampPerc, "0.0 0.0",
                       "when clamping values as part of ring estimation, the "
                       "clamping range is set to exclude this percent of values "
                       "from the low and high end of the data range");
-  hestOptAdd_1_Other(&opt, "m,mask", "mask", &nmask, "",
+  Nrrd *nmask;
+  hestOptAdd_1_Other(&hopt, "m,mask", "mask", &nmask, "",
                      "optional: after deringing, output undergoes a lerp, "
                      "parameterized by this array, from the background value "
                      "(via \"-b\") where mask=0 to the original deringing "
@@ -71,20 +65,21 @@ unrrdu_deringMain(int argc, const char **argv, const char *me, hestParm *hparm) 
                      "as a \"unu 3op lerp\", so this should either be match the "
                      "input in size, or match its slices along the slowest axis.",
                      nrrdHestNrrdNoTTY);
-  hestOptAdd_1_Double(&opt, "b,back", "val", &backval, "0.0",
+  double backval;
+  hestOptAdd_1_Double(&hopt, "b,back", "val", &backval, "0.0",
                       "when using a mask (\"-m\"), the background value to "
                       "lerp with.");
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
-
-  USAGE_OR_PARSE(_unrrdu_deringInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  // (boilerplate for YES some hparm modification)
+  hestParm *hparm = hestParmCopy(_hparm);
+  hparm->elideSingleOtherDefault = AIR_FALSE;
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_deringInfoL);
+  airArray *mop = unrrduMopNew(hopt, hparm);
+  char *err;
 
   if (nmask) {
     if (!(2 == nmask->dim && nrrdTypeBlock != nmask->type
@@ -97,8 +92,10 @@ unrrdu_deringMain(int argc, const char **argv, const char *me, hestParm *hparm) 
     }
   }
 
-  drc = nrrdDeringContextNew();
-  airMopAdd(mop, drc, (airMopper)nrrdDeringContextNix, airMopAlways);
+  Nrrd *nout = nrrdNew();
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
+  NrrdDeringContext *drc = nrrdDeringContextNew();
+  airMopAdd(mop, drc, nrrdDeringContextNix_mop, airMopAlways);
   if (nrrdDeringVerboseSet(drc, verbose) || nrrdDeringLinearInterpSet(drc, linterp)
       || nrrdDeringVerticalSeamSet(drc, vertSeam) || nrrdDeringInputSet(drc, nin)
       || nrrdDeringCenterSet(drc, center[0], center[1])
@@ -117,15 +114,15 @@ unrrdu_deringMain(int argc, const char **argv, const char *me, hestParm *hparm) 
     NrrdIter *nitout, *nitmask, *nitback;
     Nrrd *ntmp;
     nitout = nrrdIterNew();
-    airMopAdd(mop, nitout, (airMopper)nrrdIterNix, airMopAlways);
+    airMopAdd(mop, nitout, nrrdIterNix_mop, airMopAlways);
     nitmask = nrrdIterNew();
-    airMopAdd(mop, nitmask, (airMopper)nrrdIterNix, airMopAlways);
+    airMopAdd(mop, nitmask, nrrdIterNix_mop, airMopAlways);
     nitback = nrrdIterNew();
-    airMopAdd(mop, nitback, (airMopper)nrrdIterNix, airMopAlways);
+    airMopAdd(mop, nitback, nrrdIterNix_mop, airMopAlways);
     nrrdIterSetValue(nitback, backval);
 
     ntmp = nrrdNew();
-    airMopAdd(mop, ntmp, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, ntmp, nrrdNuke_mop, airMopAlways);
 
     nrrdIterSetNrrd(nitout, nout);
     nrrdIterSetNrrd(nitmask, nmask);

@@ -209,10 +209,10 @@ tenExperSpecFromKeyValueSet(tenExperSpec *espec, const Nrrd *ndwi) {
   }
   mop = airMopNew();
   if (ngrad) {
-    airMopAdd(mop, ngrad, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, ngrad, nrrdNuke_mop, airMopAlways);
   }
   if (nbmat) {
-    airMopAdd(mop, nbmat, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nbmat, nrrdNuke_mop, airMopAlways);
   }
   if (skip) {
     airMopAdd(mop, skip, airFree, airMopAlways);
@@ -262,6 +262,7 @@ tenExperSpecNix(tenExperSpec *espec) {
   }
   return NULL;
 }
+AIR_MOPPER(tenExperSpecNix)
 
 double /* Biff: (private) nope */
 _tenExperSpec_sqe(const double *dwiMeas, const double *dwiSim, const tenExperSpec *espec,

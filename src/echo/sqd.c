@@ -176,19 +176,19 @@ _echo_SuperquadZ_lvg(echoPos_t grad[3], echoPos_t x, echoPos_t y, echoPos_t z,
 
   ret = larg > 0 ? log(larg) : ECHO_POS_MIN;
   /*
-  if (!AIR_EXISTS(ret)) {
-    fprintf(stderr, "_echo_SuperquadZ_lvg: PANIC\n");
-    fprintf(stderr, "x = %g, y = %g, z = %g, A = %g, B = %g\n",
-            x, y, z, A, B);
-    fprintf(stderr, "pow(%g*%g = %g, %g) = %g\n",
-            x, x, x*x, 1/A, xxa);
-    fprintf(stderr, "pow(%g*%g = %g, %g) = %g\n",
-            y, y, y*y, 1/A, yya);
-    fprintf(stderr, "log(pow(%g, %g) = %g + %g) = %g\n",
-            xxa + yya, A/B, pow(xxa + yya, A/B), zzb, ret);
-    exit(0);
-  }
-  */
+   * if (!AIR_EXISTS(ret)) {
+   *   fprintf(stderr, "_echo_SuperquadZ_lvg: PANIC\n");
+   *   fprintf(stderr, "x = %g, y = %g, z = %g, A = %g, B = %g\n",
+   *           x, y, z, A, B);
+   *   fprintf(stderr, "pow(%g*%g = %g, %g) = %g\n",
+   *           x, x, x*x, 1/A, xxa);
+   *   fprintf(stderr, "pow(%g*%g = %g, %g) = %g\n",
+   *           y, y, y*y, 1/A, yya);
+   *   fprintf(stderr, "log(pow(%g, %g) = %g + %g) = %g\n",
+   *           xxa + yya, A/B, pow(xxa + yya, A/B), zzb, ret);
+   *   exit(0);
+   * }
+   */
   return ret;
 }
 

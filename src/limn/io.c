@@ -283,7 +283,7 @@ limnObjectReadOFF(limnObject *obj, FILE *file) {
   appu.i = &vertBase;
   vertBaseArr = airArrayNew(appu.v, NULL, sizeof(int), 128);
   mop = airMopNew();
-  airMopAdd(mop, vertBaseArr, (airMopper)airArrayNuke, airMopAlways);
+  airMopAdd(mop, vertBaseArr, airArrayNuke_mop, airMopAlways);
   got = 0;
   lineCount = 0;
   do {
@@ -500,7 +500,7 @@ limnPolyDataWriteLMPD(FILE *file, const limnPolyData *pld) {
     fprintf(file, "%u\n", pld->icnt[primIdx]);
   }
   nrrd = nrrdNew();
-  airMopAdd(mop, nrrd, (airMopper)nrrdNix, airMopAlways); /* nix, not nuke */
+  airMopAdd(mop, nrrd, nrrdNix_mop, airMopAlways); /* nix, not nuke */
 
   fprintf(file, "%s%s\n", DEMARK_STR, INDX_STR);
   if (nrrdWrap_va(nrrd, pld->indx, nrrdTypeUInt, 1, pld->indxNum)
@@ -721,7 +721,7 @@ limnPolyDataReadLMPD(limnPolyData *pld, FILE *file) {
   /* NOW its finally time to create the mop */
   mop = airMopNew();
   nrrd = nrrdNew();
-  airMopAdd(mop, nrrd, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nrrd, nrrdNuke_mop, airMopAlways);
   hackhack = nrrdDefaultIoVerbose;
   // to stop notices of file position not being at end, post-fread
   nrrdDefaultIoVerbose = 0;
@@ -892,9 +892,9 @@ _limnHestPolyDataLMPDParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE 
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, file, (airMopper)airFclose, airMopAlways);
+  airMopAdd(mop, file, airFclose_mop, airMopAlways);
   *lpldP = limnPolyDataNew();
-  airMopAdd(mop, *lpldP, (airMopper)limnPolyDataNix, airMopOnError);
+  airMopAdd(mop, *lpldP, limnPolyDataNix_mop, airMopOnError);
   if (limnPolyDataReadLMPD(*lpldP, file)) {
     airMopAdd(mop, nerr = biffGetDone(LIMN), airFree, airMopOnError);
     airStrcpy(err, AIR_STRLEN_HUGE + 1, nerr);
@@ -907,7 +907,7 @@ _limnHestPolyDataLMPDParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE 
 
 static const hestCB _limnHestPolyDataLMPD = {sizeof(limnPolyData *), "polydata",
                                              _limnHestPolyDataLMPDParse,
-                                             (airMopper)limnPolyDataNix};
+                                             limnPolyDataNix_mop};
 
 const hestCB *const limnHestPolyDataLMPD = &_limnHestPolyDataLMPD;
 
@@ -937,9 +937,9 @@ _limnHestPolyDataOFFParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE +
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, file, (airMopper)airFclose, airMopAlways);
+  airMopAdd(mop, file, airFclose_mop, airMopAlways);
   *lpldP = limnPolyDataNew();
-  airMopAdd(mop, *lpldP, (airMopper)limnPolyDataNix, airMopOnError);
+  airMopAdd(mop, *lpldP, limnPolyDataNix_mop, airMopOnError);
   if (limnPolyDataReadOFF(*lpldP, file)) {
     airMopAdd(mop, nerr = biffGetDone(LIMN), airFree, airMopOnError);
     airStrcpy(err, AIR_STRLEN_HUGE + 1, nerr);
@@ -950,9 +950,8 @@ _limnHestPolyDataOFFParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE +
   return 0;
 }
 
-static const hestCB _limnHestPolyDataOFF = {sizeof(limnPolyData *), "polydata",
-                                            _limnHestPolyDataOFFParse,
-                                            (airMopper)limnPolyDataNix};
+static const hestCB _limnHestPolyDataOFF
+  = {sizeof(limnPolyData *), "polydata", _limnHestPolyDataOFFParse, limnPolyDataNix_mop};
 
 const hestCB *const limnHestPolyDataOFF = &_limnHestPolyDataOFF;
 
@@ -1170,10 +1169,10 @@ limnPolyDataSave(const char *_fname, const limnPolyData *lpld) {
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, file, (airMopper)airFclose, airMopAlways);
+  airMopAdd(mop, file, airFclose_mop, airMopAlways);
 
   fname = airToLower(airStrdup(_fname));
-  airMopAdd(mop, fname, (airMopper)airFree, airMopAlways);
+  airMopAdd(mop, fname, airFree, airMopAlways);
   if (airEndsWith(fname, ".vtk")) {
     ret = limnPolyDataWriteVTK(file, lpld);
   } else if (airEndsWith(fname, ".iv")) {

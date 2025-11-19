@@ -34,7 +34,7 @@ morph(Nrrd *nout, Nrrd *_nin, Nrrd *_nkern, float scl) {
     nin = _nin;
   } else {
     nin = nrrdNew();
-    airMopAdd(mop, nin, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nin, nrrdNuke_mop, airMopAlways);
     if (nrrdConvert(nin, _nin, nrrdTypeFloat)) {
       biffAddf(NRRD, "%s: trouble 1", me);
       airMopError(mop);
@@ -45,7 +45,7 @@ morph(Nrrd *nout, Nrrd *_nin, Nrrd *_nkern, float scl) {
     nkern = _nkern;
   } else {
     nkern = nrrdNew();
-    airMopAdd(mop, nkern, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nkern, nrrdNuke_mop, airMopAlways);
     if (nrrdConvert(nkern, _nkern, nrrdTypeFloat)) {
       biffAddf(NRRD, "%s: trouble 2", me);
       airMopError(mop);
@@ -101,9 +101,9 @@ int
 main(int argc, const char **argv) {
   const char *me = argv[0];
   airArray *mop = airMopNew();
-  hestParm *hparm = hestParmNew();
+  hestParm *hparm = hestParmMopNew();
   hestOpt *hopt = NULL;
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   Nrrd *nin;
   hestOptAdd_1_Other(&hopt, "i", "nin", &nin, NULL, "input image", nrrdHestNrrd);
   Nrrd *nkern;
@@ -113,9 +113,9 @@ main(int argc, const char **argv) {
   char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output filename");
 
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, morphInfo);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, morphInfo);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   if (!(3 == nkern->dim && nkern->axis[0].size == nkern->axis[1].size
         && nkern->axis[0].size == nkern->axis[2].size && 1 == nkern->axis[0].size % 2)) {
@@ -131,7 +131,7 @@ main(int argc, const char **argv) {
 
   char *err;
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (morph(nout, nin, nkern, scl)) {
     airMopAdd(mop, err = biffGet(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble:\n%s", me, err);

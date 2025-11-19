@@ -132,10 +132,10 @@ main(int argc, const char *argv[]) {
 
   me = argv[0];
   mop = airMopNew();
-  hparm = hestParmNew();
+  hparm = hestParmMopNew();
   hparm->elideMultipleNonExistFloatDefault = AIR_TRUE;
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hopt = NULL;
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
   hestOptAdd(&hopt, "w", "arrowWidth lineWidth", airTypeDouble, 2, 2, width, "1.0 0.2",
              "widths");
   hestOptAdd(&hopt, "n", "number", airTypeInt, 1, 1, &num, "10", "number of arrows");
@@ -144,9 +144,9 @@ main(int argc, const char *argv[]) {
              "scaling from world space to PostScript points");
   hestOptAdd(&hopt, "o", "prefix", airTypeString, 1, 1, &outS, NULL,
              "prefix of file names");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, interInfo);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, interInfo);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   for (fidx = 0; fidx < frames; fidx++) {
     sprintf(filename, "%s%03d.eps", outS, fidx);

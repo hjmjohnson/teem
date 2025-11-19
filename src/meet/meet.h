@@ -158,6 +158,7 @@ MEET_EXPORT int meetPullVolLeechable(const meetPullVol *lchr,
                                      int *can,
                                      char explain[AIR_STRLEN_HUGE + 1]);
 MEET_EXPORT meetPullVol *meetPullVolNix(meetPullVol *pvol);
+MEET_EXPORT void *meetPullVolNix_mop(void *);
 MEET_EXPORT const hestCB *const meetHestPullVol;
 MEET_EXPORT int meetPullVolStackBlurParmFinishMulti(meetPullVol **mpv,
                                                     unsigned int mpvNum,
@@ -173,6 +174,7 @@ MEET_EXPORT int meetPullVolAddMulti(pullContext *pctx, meetPullVol **mpv,
                                     const NrrdKernelSpec *kSSrecon);
 MEET_EXPORT meetPullInfo *meetPullInfoNew(void);
 MEET_EXPORT meetPullInfo *meetPullInfoNix(meetPullInfo *minf);
+MEET_EXPORT void *meetPullInfoNix_mop(void *);
 MEET_EXPORT int meetPullInfoParse(meetPullInfo *minf, const char *str);
 MEET_EXPORT const hestCB *const meetHestPullInfo;
 MEET_EXPORT int meetPullInfoAddMulti(pullContext *pctx,

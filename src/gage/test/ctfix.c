@@ -45,9 +45,9 @@ main(int argc, const char *argv[]) {
 
   me = argv[0];
   mop = airMopNew();
-  hparm = hestParmNew();
+  hparm = hestParmMopNew();
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hopt = NULL;
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
   hestOptAdd(&hopt, "i", "nin", airTypeOther, 1, 1, &nin, NULL, "input volume", NULL,
              NULL, nrrdHestNrrd);
   hestOptAdd(&hopt, "si", "streak info", airTypeOther, 1, 1, &_nsinfo, NULL,
@@ -67,9 +67,9 @@ main(int argc, const char *argv[]) {
              "radius");
   hestOptAdd(&hopt, "o", "filename", airTypeString, 1, 1, &outS, "-",
              "fixed volume output");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, ctfixInfo);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, ctfixInfo);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   if (!(3 == nin->dim)) {
     fprintf(stderr, "%s: need 3-D input (not %u-D)\n", me, nin->dim);
@@ -82,7 +82,7 @@ main(int argc, const char *argv[]) {
     return 1;
   }
   nsinfo = nrrdNew();
-  airMopAdd(mop, nsinfo, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nsinfo, nrrdNuke_mop, airMopAlways);
   if (nrrdConvert(nsinfo, _nsinfo, nrrdTypeDouble)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: couldn't convert streak info to doubles:\n%s", me, err);
@@ -92,7 +92,7 @@ main(int argc, const char *argv[]) {
   sinfo = (double *)(nsinfo->data);
 
   nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdCopy(nout, nin)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: couldn't allocate output:\n%s", me, err);
@@ -107,7 +107,7 @@ main(int argc, const char *argv[]) {
   sz = nin->axis[2].size;
 
   ctx = gageContextNew();
-  airMopAdd(mop, ctx, (airMopper)gageContextNix, airMopAlways);
+  airMopAdd(mop, ctx, gageContextNix_mop, airMopAlways);
   gageParmSet(ctx, gageParmRenormalize, AIR_TRUE);
   gageParmSet(ctx, gageParmCheckIntegrals, AIR_TRUE);
   E = 0;

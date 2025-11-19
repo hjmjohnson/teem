@@ -29,6 +29,10 @@ const char *const _nrrdFieldSep = " \t";
 static const char *const _nrrdLineSep = "\r\n";
 const char *const _nrrdTextSep = " ,\t";
 const char *const _nrrdNoSpaceVector = "none";
+/* special string that signals that _nrrdRead() failed because it hit EOF,
+   which is used in hestNrrd.c to give a different parse (error) return value,
+   which in turn enables unu's quiet quitting */
+const char *const _nrrdReadHitEOF = ": immediately hit EOF";
 
 /* returns non-zero if given char `cc` is in _nrrdFieldSep */
 int /* Biff: (private) nope */
@@ -72,14 +76,14 @@ _nrrdHeaderStringOneLine(NrrdIoState *nio) {
 /*
  ******** nrrdOneLine
  *
- * wrapper around airOneLine when reading from `file`, else ; does re-allocation of line
- * buffer
- * ("line") in the NrrdIoState if needed.  The return value semantics
+ * wrapper around airOneLine when reading from `file`, though does re-allocation of line
+ * buffer `line` in the NrrdIoState when needed.  The return value semantics
  * are similar, except that what airOneLine would return, we put
- * in *lenP.  If there is an error (airOneLine returned 0,
- * something couldn't be allocated), *lenP is set to 0, and
- * we return 1.  HITTING EOF IS NOT ACTUALLY AN ERROR, see code
- * below.  Otherwise we return 0.
+ * in `*lenP`.
+ * If there is an error (airOneLine returned 0, something couldn't be allocated),
+ * *lenP is set to 0, and we return 1.
+ * HITTING EOF IS NOT ACTUALLY AN ERROR, see code below.
+ * Otherwise we return 0.
  */
 int /* Biff: 1 */
 nrrdOneLine(size_t *lenP, NrrdIoState *nio, FILE *file) {
@@ -150,7 +154,7 @@ nrrdOneLine(size_t *lenP, NrrdIoState *nio, FILE *file) {
     }
     airArrayPointerCB(lineArr, airNull, airFree);
     mop = airMopNew();
-    airMopAdd(mop, lineArr, (airMopper)airArrayNuke, airMopAlways);
+    airMopAdd(mop, lineArr, airArrayNuke_mop, airMopAlways);
     while (len == nio->lineSize + 1) { /* means airOneLine maxed out buffer */
       lineIdx = airArrayLenIncr(lineArr, 1);
       if (!lineArr->data) {
@@ -414,7 +418,7 @@ _nrrdRead(Nrrd *nrrd, FILE *file, const char *string, NrrdIoState *_nio) {
       biffAddf(NRRD, "%s: couldn't alloc I/O struct", me);
       return 1;
     }
-    airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
+    airMopAdd(mop, nio, nrrdIoStateNix_mop, airMopAlways);
   }
 
   /* remember old data pointer and allocated size.  Whether or not to
@@ -440,7 +444,7 @@ _nrrdRead(Nrrd *nrrd, FILE *file, const char *string, NrrdIoState *_nio) {
     return 1;
   }
   if (!llen) {
-    biffAddf(NRRD, "%s: immediately hit EOF", me);
+    biffAddf(NRRD, "%s%s", me, _nrrdReadHitEOF);
     airMopError(mop);
     return 1;
   }
@@ -629,7 +633,9 @@ _nrrdSplitName(char **dirP, char **baseP, const char *name) {
 ** (more documentation here)
 **
 ** sneakiness: returns 2 if the reason for problem was a failed fopen().
-**
+** BUT: this return 2 is NOT the same as the 2 returned from
+** nrrdHestNrrd->parse() or nrrdHestNrrdNoTTY->parse() or nrrdHestIter->parse()
+** as a way to initiate quiet quitting for hestParseOrExit
 */
 int /* Biff: 1|2 */
 nrrdLoad(Nrrd *nrrd, const char *filename, NrrdIoState *nio) {
@@ -648,7 +654,7 @@ nrrdLoad(Nrrd *nrrd, const char *filename, NrrdIoState *nio) {
       biffAddf(NRRD, "%s: couldn't alloc I/O struct", me);
       return 1;
     }
-    airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
+    airMopAdd(mop, nio, nrrdIoStateNix_mop, airMopAlways);
   }
 
   /* we save the directory of the filename given to us so that if it turns
@@ -675,7 +681,7 @@ nrrdLoad(Nrrd *nrrd, const char *filename, NrrdIoState *nio) {
     return 1;
   }
   /* ---- END non-NrrdIO */
-  airMopAdd(mop, file, (airMopper)airFclose, airMopOnError);
+  airMopAdd(mop, file, airFclose_mop, airMopOnError);
   /* non-error exiting is handled below */
 
   if (nrrdRead(nrrd, file, nio)) {
@@ -714,7 +720,7 @@ nrrdLoadMulti(Nrrd *const *nin, unsigned int ninLen, const char *fnameFormat,
   if (!(nrrdContainsPercentThisAndMore(fnameFormat, 'u'))) {
     biffAddf(NRRD,
              "%s: given format \"%s\" doesn't seem to "
-             "have the \"%%u\" conversion specification to sprintf "
+             "have the \"%%u\" conversion specification to s(n)printf "
              "an unsigned int\n",
              me, fnameFormat);
     return 1;

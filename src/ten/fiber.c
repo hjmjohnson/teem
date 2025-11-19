@@ -574,7 +574,7 @@ _fiberTraceSet(tenFiberContext *tfx, Nrrd *nval, Nrrd *nfiber, double *buff,
       appu.d = &(pans[tfx->halfIdx]);
       pansArr[tfx->halfIdx] = airArrayNew(appu.v, NULL, pansLen * sizeof(double),
                                           TEN_FIBER_INCR);
-      airMopAdd(mop, pansArr[tfx->halfIdx], (airMopper)airArrayNuke, airMopAlways);
+      airMopAdd(mop, pansArr[tfx->halfIdx], airArrayNuke_mop, airMopAlways);
     } else {
       pansArr[tfx->halfIdx] = NULL;
     }
@@ -583,7 +583,7 @@ _fiberTraceSet(tenFiberContext *tfx, Nrrd *nval, Nrrd *nfiber, double *buff,
       appu.d = &(fpts[tfx->halfIdx]);
       fptsArr[tfx->halfIdx] = airArrayNew(appu.v, NULL, 3 * sizeof(double),
                                           TEN_FIBER_INCR);
-      airMopAdd(mop, fptsArr[tfx->halfIdx], (airMopper)airArrayNuke, airMopAlways);
+      airMopAdd(mop, fptsArr[tfx->halfIdx], airArrayNuke_mop, airMopAlways);
       buffIdx = -1;
     } else {
       fptsArr[tfx->halfIdx] = NULL;
@@ -1011,6 +1011,7 @@ tenFiberMultiNix(tenFiberMulti *tfm) {
   }
   return NULL;
 }
+AIR_MOPPER(tenFiberMultiNix)
 
 /*
 ******** tenFiberMultiTrace
@@ -1051,7 +1052,7 @@ tenFiberMultiTrace(tenFiberContext *tfx, tenFiberMulti *tfml, const Nrrd *_nseed
     seedData = AIR_CAST(const double *, _nseed->data);
   } else {
     nseed = nrrdNew();
-    airMopAdd(mop, nseed, AIR_CAST(airMopper, nrrdNuke), airMopAlways);
+    airMopAdd(mop, nseed, nrrdNuke_mop, airMopAlways);
     if (nrrdConvert(nseed, _nseed, nrrdTypeDouble)) {
       biffMovef(TEN, NRRD, "%s: couldn't convert seed list", me);
       return 1;

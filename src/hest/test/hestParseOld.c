@@ -21,6 +21,28 @@
 #include "privateHest.h"
 
 #include <string.h>
+// ----------------------------- lopped from methodsHest.c
+// HEY these are sticking around just for the old implementation of hestParse
+unsigned int (*const _hestParseStr[_HEST_TYPE_MAX + 1])(void *, const char *,
+                                                        const char *, unsigned int)
+  = {NULL,
+     (unsigned int (*)(void *, const char *, const char *, unsigned int))airParseStrB,
+     (unsigned int (*)(void *, const char *, const char *, unsigned int))airParseStrH,
+     (unsigned int (*)(void *, const char *, const char *, unsigned int))airParseStrUH,
+     (unsigned int (*)(void *, const char *, const char *, unsigned int))airParseStrI,
+     (unsigned int (*)(void *, const char *, const char *, unsigned int))airParseStrUI,
+     (unsigned int (*)(void *, const char *, const char *, unsigned int))airParseStrL,
+     (unsigned int (*)(void *, const char *, const char *, unsigned int))airParseStrUL,
+     (unsigned int (*)(void *, const char *, const char *, unsigned int))airParseStrZ,
+     (unsigned int (*)(void *, const char *, const char *, unsigned int))airParseStrF,
+     (unsigned int (*)(void *, const char *, const char *, unsigned int))airParseStrD,
+     (unsigned int (*)(void *, const char *, const char *, unsigned int))airParseStrC,
+     (unsigned int (*)(void *, const char *, const char *, unsigned int))airParseStrS,
+     // airParseStrE needs final airEnum* arg, no longer enforceing fake uniformity
+     NULL,
+     // no uniform of parsing type "other"; handled via hestCB in hest
+     NULL};
+// -----------------------------
 
 /* A little trickery for error reporting.  For many of the functions here, if they hit an
 error and hparm->verbose is set, then we should reveal the current function name (set

@@ -73,8 +73,8 @@ main(int argc, const char *argv[]) {
 
   me = argv[0];
   mop = airMopNew();
-  hparm = hestParmNew();
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  hparm = hestParmMopNew();
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hparm->respectDashDashHelp = AIR_TRUE;
   hestOptAdd_1_Other(&hopt, "i", "nin", &nin, NULL, "input nrrd to composite",
                      nrrdHestNrrd);
@@ -106,9 +106,9 @@ main(int argc, const char *argv[]) {
                      "8-bit RGB background image to composite against", nrrdHestNrrd);
   hestOptAdd_1_String(&hopt, "o", "filename", &outS, NULL,
                       "file to write output PPM image to");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, overInfo);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, overInfo);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   if (!(3 == nin->dim && 4 <= nin->axis[0].size)) {
     fprintf(stderr, "%s: doesn't look like an RGBA nrrd\n", me);
@@ -150,7 +150,7 @@ main(int argc, const char *argv[]) {
       return 1;
     }
     nbg = nrrdNew();
-    airMopAdd(mop, nbg, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nbg, nrrdNuke_mop, airMopAlways);
     if (sx == _nbg->axis[1].size && sy == _nbg->axis[2].size) {
       /* no resampling needed, just copy */
       E = nrrdCopy(nbg, _nbg);
@@ -161,7 +161,7 @@ main(int argc, const char *argv[]) {
          setting per-axis min and max, as is required by the old resampler */
       nrrdOrientationReduce(_nbg, _nbg, AIR_FALSE);
       rinfo = nrrdResampleInfoNew();
-      airMopAdd(mop, rinfo, (airMopper)nrrdResampleInfoNix, airMopAlways);
+      airMopAdd(mop, rinfo, nrrdResampleInfoNix_mop, airMopAlways);
       rinfo->kernel[0] = NULL;
       nrrdKernelParse(&(rinfo->kernel[1]), rinfo->parm[1], "tent");
       rinfo->min[1] = _nbg->axis[1].min = 0;
@@ -186,11 +186,11 @@ main(int argc, const char *argv[]) {
   }
 
   ninD = nrrdNew();
-  airMopAdd(mop, ninD, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ninD, nrrdNuke_mop, airMopAlways);
   nrgbaD = nrrdNew();
-  airMopAdd(mop, nrgbaD, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nrgbaD, nrrdNuke_mop, airMopAlways);
   nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   E = 0;
   if (nrrdTypeIsIntegral[nin->type]) {
@@ -256,7 +256,7 @@ main(int argc, const char *argv[]) {
   if (hestSourceUser(hopt[srgbIdx].source)) {
     /* HEY copied to unrrdu/quantize.c */
     nio = nrrdIoStateNew();
-    airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
+    airMopAdd(mop, nio, nrrdIoStateNix_mop, airMopAlways);
     nio->PNGsRGBIntentKnown = AIR_TRUE;
     nio->PNGsRGBIntent = srgb; /* even if it is nrrdFormatPNGsRGBIntentNone;
                                   that's handled by the writer */

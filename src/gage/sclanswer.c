@@ -336,7 +336,7 @@ _gageSclAnswer(gageContext *ctx, gagePerVolume *pvl) {
               "%s: PANIC: current filter diameter = %d "
               "> FD_MEDIAN_MAX = %d\n",
               me, fd, FD_MEDIAN_MAX);
-      exit(1);
+      ctx->fw = NULL; /* was exit(1); */
     }
     fw = ctx->fw + fd * 3 * gageKernel00;
     /* HEY: this needs some optimization help */

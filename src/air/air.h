@@ -255,7 +255,9 @@ AIR_EXPORT void airArrayLenPreSet(airArray *a, unsigned int newlen);
 /* ---- END non-NrrdIO */
 AIR_EXPORT unsigned int airArrayLenIncr(airArray *a, int delta);
 AIR_EXPORT airArray *airArrayNix(airArray *a);
+AIR_EXPORT void *airArrayNix_mop(void *);
 AIR_EXPORT airArray *airArrayNuke(airArray *a);
+AIR_EXPORT void *airArrayNuke_mop(void *);
 
 /* ---- BEGIN non-NrrdIO */
 
@@ -329,6 +331,7 @@ AIR_EXPORT airThreadMutex *airThreadMutexNew(void);
 AIR_EXPORT int airThreadMutexLock(airThreadMutex *mutex);
 AIR_EXPORT int airThreadMutexUnlock(airThreadMutex *mutex);
 AIR_EXPORT airThreadMutex *airThreadMutexNix(airThreadMutex *mutex);
+AIR_EXPORT void *airThreadMutexNix_mop(void *);
 
 AIR_EXPORT airThreadCond *airThreadCondNew(void);
 AIR_EXPORT int airThreadCondWait(airThreadCond *cond, airThreadMutex *mutex);
@@ -425,6 +428,7 @@ AIR_EXPORT airRandMTState *airRandMTStateGlobal;
 AIR_EXPORT void airRandMTStateGlobalInit(void);
 AIR_EXPORT airRandMTState *airRandMTStateNew(unsigned int seed);
 AIR_EXPORT airRandMTState *airRandMTStateNix(airRandMTState *state);
+AIR_EXPORT void *airRandMTStateNix_mop(void *);
 AIR_EXPORT void airSrandMT_r(airRandMTState *state, unsigned int seed);
 AIR_EXPORT double airDrandMT_r(airRandMTState *state); /* [0,1] */
 AIR_EXPORT unsigned int airUIrandMT_r(airRandMTState *state);
@@ -442,6 +446,7 @@ typedef struct {
 /* randJSF.c */
 AIR_EXPORT airJSFRand *airJSFRandNew(unsigned int seed);
 AIR_EXPORT airJSFRand *airJSFRandNix(airJSFRand *jsf);
+AIR_EXPORT void *airJSFRandNix_mop(void *);
 AIR_EXPORT void airJSFRandSeed(airJSFRand *jsf, unsigned int seed);
 AIR_EXPORT unsigned int airJSFRandVal(airJSFRand *jsf);
 AIR_EXPORT unsigned int airJSFRandValMod(airJSFRand *jsf, unsigned int N);
@@ -529,6 +534,7 @@ AIR_EXPORT char *airStrcpy(char *dst, size_t dstSize, const char *src);
 AIR_EXPORT int airEndsWith(const char *s, const char *suff);
 AIR_EXPORT char *airUnescape(char *s);
 AIR_EXPORT char *airOneLinify(char *s);
+AIR_EXPORT char *airMultiLinify(char *str);
 AIR_EXPORT char *airToLower(char *str);
 AIR_EXPORT char *airToUpper(char *str);
 AIR_EXPORT size_t airOneLine(FILE *file, char *line, size_t size);
@@ -563,14 +569,23 @@ AIR_EXPORT int airSanity(void);
 AIR_EXPORT const char *const airTeemVersion;
 AIR_EXPORT const int airTeemReleaseDone;
 AIR_EXPORT const char *const airTeemReleaseDate;
-AIR_EXPORT void airTeemVersionSprint(char buff[AIR_STRLEN_LARGE + 1]);
+AIR_EXPORT void airTeemVersionSprint(char buff[AIR_STRLEN_SMALL + 1]);
+/* ---- BEGIN non-NrrdIO */
+AIR_EXPORT void airTeemVersionPrintAndExit(const char *pfx);
+/* ---- END non-NrrdIO */
 AIR_EXPORT void *airNull(void);
 AIR_EXPORT void *airSetNull(void **ptrP);
+AIR_EXPORT void *airSetNull_mop(void *);
 AIR_EXPORT void *airFree(void *ptr);
 AIR_EXPORT FILE *airFopen(const char *name, FILE *std, const char *mode);
 AIR_EXPORT FILE *airFclose(FILE *file);
+AIR_EXPORT void *airFclose_mop(void *);
 AIR_EXPORT int airSinglePrintf(FILE *file, char *str, size_t strSize, /* */
-                               const char *fmt, ...);
+                               const char *fmt, ...)
+#ifdef __GNUC__
+  __attribute__((format(printf, 4, 5)))
+#endif
+  ;
 AIR_EXPORT char *airSprintSize_t(char str[AIR_STRLEN_SMALL + 1], size_t val);
 /* ---- BEGIN non-NrrdIO */
 AIR_EXPORT char *airSprintVecSize_t(char *dst, size_t dstSize, const size_t *vec,
@@ -638,6 +653,23 @@ AIR_EXPORT unsigned int airCRC32(const unsigned char *data, size_t len, size_t u
 /* ---- END non-NrrdIO */
 
 /* mop.c: clean-up utilities */
+/* for a function named `FUNC` that takes and returns some kind of pointer,
+   AIR_MOPPER(FUNC) defines a wrapper function FUNC_mop taking and returning a void*.
+   The value of function pointers is preserved across casts, but calling a cast function
+   pointer, as with `(airMopper)foo`, is unfortunately undefined behavior. Routinely
+   following the definition of some free-er/nix-er function `libFoo` with
+   `AIR_MOPPER(libFoo);` defines the `libFoo_mop` function that should be passed to
+   airMopAdd. This should replace in TeemV2 code the `(airMopper)` casting that was
+   ubiquitous in pre-TeemV2 code. We are essentially pushing the casting from the
+   function level down to the level of its argument and return.
+   NOTE! There are some real drawback with using AIR_MOPPER:
+   - You can no longer simply grep or ack to find where a function is defined;
+     but this is the only way Teem violates this basic principle.
+     You have to know to look for `AIR_MOPPER(libFoo)`
+   - Adding the `libFoo_mop` declaration to the header is a manual process
+   - The _mop function cannot have Biff: annotation (should not be a big loss) */
+#define AIR_MOPPER(FUNC)                                                                \
+  void *FUNC##_mop(void *ptr) { return FUNC(ptr); }
 enum {
   airMopNever,
   airMopOnError,

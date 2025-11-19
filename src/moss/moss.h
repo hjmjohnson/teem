@@ -100,6 +100,7 @@ MOSS_EXPORT int mossDefaultCenter;
 MOSS_EXPORT const int mossPresent;
 MOSS_EXPORT mossSampler *mossSamplerNew(void);
 MOSS_EXPORT mossSampler *mossSamplerNix(mossSampler *smplr);
+MOSS_EXPORT void *mossSamplerNix_mop(void *);
 MOSS_EXPORT int mossImageCheck(const Nrrd *image);
 MOSS_EXPORT int mossImageAlloc(Nrrd *image, int type, unsigned int sx, unsigned int sy,
                                unsigned int chanNum);

@@ -28,22 +28,21 @@ main(int argc, const char *argv[]) {
   airArray *mop;
 
   int *itype, itypeNum, ii;
-  double src[3], last[3], dst[3];
+  double src[3], dst[3];
   char space[] = "             ";
 
   me = argv[0];
   hestOptAdd(&hopt, NULL, "v1 v2 v3", airTypeDouble, 3, 3, src, NULL, "source triple");
   hestOptAdd(&hopt, "t", "type", airTypeEnum, 2, -1, &itype, NULL,
              "sequence of triple types to convert through", &itypeNum, tenTripleType);
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
+  hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
   mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   printf("%s", space + strlen(airEnumStr(tenTripleType, itype[0])));
   printf("%s", airEnumStr(tenTripleType, itype[0]));
   ell_3v_print_d(stdout, src);
-  ELL_3V_COPY(last, src);
   for (ii = 1; ii < itypeNum; ii++) {
     tenTripleConvertSingle_d(dst, itype[ii], src, itype[ii - 1]);
     printf("%s", space + strlen(airEnumStr(tenTripleType, itype[ii])));

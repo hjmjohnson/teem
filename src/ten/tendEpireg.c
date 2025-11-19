@@ -33,7 +33,7 @@ static const char *_tend_epiregInfoL
           "chosen kernel, with the separate DWIs stacked along axis 0.");
 
 static int
-tend_epiregMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_epiregMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret, rret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -108,9 +108,9 @@ tend_epiregMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                       "**OR**: For single 4D DWI input: output file name. ");
 
   mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
   USAGE_JUSTPARSE(_tend_epiregInfoL);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   if (strcmp("kvp", gradS)) {
     /* they're NOT coming from key/value pairs */
@@ -140,12 +140,12 @@ tend_epiregMain(int argc, const char **argv, const char *me, hestParm *hparm) {
     }
     ngrad = ngradKVP;
   }
-  airMopAdd(mop, ngrad, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ngrad, nrrdNuke_mop, airMopAlways);
 
   nout3D = AIR_CALLOC(ninLen, Nrrd *);
   airMopAdd(mop, nout3D, airFree, airMopAlways);
   nout4D = nrrdNew();
-  airMopAdd(mop, nout4D, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout4D, nrrdNuke_mop, airMopAlways);
   buff = AIR_CALLOC(airStrlen(outS) + 10, char);
   airMopAdd(mop, buff, airFree, airMopAlways);
   if (!(nout3D && nout4D && buff)) {
@@ -155,7 +155,7 @@ tend_epiregMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   }
   for (ni = 0; ni < ninLen; ni++) {
     nout3D[ni] = nrrdNew();
-    airMopAdd(mop, nout3D[ni], (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nout3D[ni], nrrdNuke_mop, airMopAlways);
   }
   if (1 == ninLen) {
     rret = tenEpiRegister4D(nout4D, nin[0], ngrad, ref, bw[0], bw[1], fitFrac, thr,

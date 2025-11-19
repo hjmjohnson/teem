@@ -89,7 +89,7 @@ clampRoundConvert(Nrrd *nout, const Nrrd *nin, int type, int doClamp, int roundD
 
     /* copy peripheral information */
     nrrdAxisInfoCopy(nout, nin, NULL, NRRD_AXIS_INFO_NONE);
-    sprintf(typeS, "(%s)", airEnumStr(nrrdType, nout->type));
+    snprintf(typeS, sizeof(typeS), "(%s)", airEnumStr(nrrdType, nout->type));
     if (nrrdContentSet_va(nout, typeS, nin, "")) {
       biffAddf(NRRD, "%s:", me);
       return 1;
@@ -235,7 +235,7 @@ nrrdQuantize(Nrrd *nout, const Nrrd *nin, const NrrdRange *_range, unsigned int 
   } else {
     range = nrrdRangeNewSet(nin, nrrdBlind8BitRangeState);
   }
-  airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
+  airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
   if (nrrdStateDisallowIntegerNonExist && range->hasNonExist) {
     biffAddf(NRRD,
              "%s: can't quantize non-existent values "
@@ -534,7 +534,7 @@ nrrdHistoEq(Nrrd *nout, const Nrrd *nin, Nrrd **nmapP, unsigned int bins,
 
   mop = airMopNew();
   if (nmapP) {
-    airMopAdd(mop, nmapP, (airMopper)airSetNull, airMopOnError);
+    airMopAdd(mop, nmapP, airSetNull_mop, airMopOnError);
   }
   num = nrrdElementNumber(nin);
   if (smart <= 0) {
@@ -544,7 +544,7 @@ nrrdHistoEq(Nrrd *nout, const Nrrd *nin, Nrrd **nmapP, unsigned int bins,
       airMopError(mop);
       return 1;
     }
-    airMopAdd(mop, nhist, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nhist, nrrdNuke_mop, airMopAlways);
     hist = (unsigned int *)nhist->data;
     min = nhist->axis[0].min;
     max = nhist->axis[0].max;
@@ -557,7 +557,7 @@ nrrdHistoEq(Nrrd *nout, const Nrrd *nin, Nrrd **nmapP, unsigned int bins,
       airMopError(mop);
       return 1;
     }
-    airMopAdd(mop, nhist, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nhist, nrrdNuke_mop, airMopAlways);
     hist = (unsigned int *)nhist->data;
     nhist->axis[0].size = bins;
     /* allocate the respect, steady, and last arrays */
@@ -581,7 +581,7 @@ nrrdHistoEq(Nrrd *nout, const Nrrd *nin, Nrrd **nmapP, unsigned int bins,
     }
     /* now create the histogram */
     range = nrrdRangeNewSet(nin, nrrdBlind8BitRangeState);
-    airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
+    airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
     if (range->min == range->max) {
       biffAddf(NRRD,
                "%s: invalid min and max in nrrd.  "
@@ -616,7 +616,7 @@ nrrdHistoEq(Nrrd *nout, const Nrrd *nin, Nrrd **nmapP, unsigned int bins,
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, nmap, (airMopper)nrrdNuke, nmapP ? airMopOnError : airMopAlways);
+  airMopAdd(mop, nmap, nrrdNuke_mop, nmapP ? airMopOnError : airMopAlways);
   ycoord = AIR_CAST(double *, nmap->data);
   nmap->axis[0].min = min;
   nmap->axis[0].max = max;

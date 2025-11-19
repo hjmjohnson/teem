@@ -31,10 +31,11 @@ It is still the case, however, the hest users do not need to call into biff */
 #include <assert.h>
 #include <errno.h>
 
-/* NOTE: these SN_ string,size macros copy-pasta's to other private<Lib>.h files:
+/* NOTE: these SN_,ASP1_ string macros copy-pasta'd to other private<Lib>.h files:
    SN_INCR: safely increments STR arg to point '\0'-termination of STR
    SN_COPY: safely copies SRC to DST, then increments DST
-   SN_PRINTF: snprintf's into DST then increments DST */
+   SN_PRINTF: snprintf's into DST then increments DST
+   ASP1_X: short version of AIR_STRLEN_X + 1 */
 #define SN_INCR(STR, SIZE)                                                              \
   do {                                                                                  \
     size_t tmp_str_len_##STR = strlen(STR);                                             \
@@ -51,8 +52,12 @@ It is still the case, however, the hest users do not need to call into biff */
     snprintf((DST), (DST_SIZE), (FMT), __VA_ARGS__);                                    \
     SN_INCR(DST, DST_SIZE);                                                             \
   } while (0)
+#define ASP1_S (AIR_STRLEN_SMALL + 1)
+#define ASP1_M (AIR_STRLEN_MEDIUM + 1)
+#define ASP1_L (AIR_STRLEN_LARGE + 1)
+#define ASP1_H (AIR_STRLEN_HUGE + 1)
 
-typedef unsigned int uint;
+typedef unsigned int uint; /* uint is just more concise */
 
 // pre-TeemV2, these used to be change-able defaults in defaultsHest.c:
 //   char hestDefaultRespFileFlag = '@';
@@ -109,10 +114,6 @@ typedef struct {
 } _hestPPair;
 extern int (*const _hestParseSingle[_HEST_TYPE_MAX + 1])(void *, const char *,
                                                          _hestPPair *);
-// HEY these are sticking around just for the old implementation of hestParse
-extern unsigned int (*const _hestParseStr[_HEST_TYPE_MAX + 1])(void *, const char *,
-                                                               const char *,
-                                                               unsigned int);
 extern const char *const _hestBiffKey;
 extern int _hestMax(int max);
 extern int _hestOPCheck(const hestOpt *hopt, const hestParm *parm);

@@ -134,7 +134,7 @@ tenEvqSingle_f(float vec[3], float scl) {
     /* clang-format on */
     default:
       fprintf(stderr, "%s: PANIC: mi = %d\n", me, mi);
-      exit(0);
+      return 1 << 14; /* was exit(0); */
     }
     vi = airIndex(-1, vec[0] + vec[1], 1, bins);
     ui = airIndex(-1, vec[0] - vec[1], 1, bins);
@@ -268,10 +268,10 @@ _tenFindValley(double *valP, const Nrrd *nhist, double tweak, int save) {
   */
 
   mop = airMopNew();
-  airMopAdd(mop, ntmpA = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, ntmpB = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nhistD = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nhistDD = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ntmpA = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, ntmpB = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nhistD = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nhistDD = nrrdNew(), nrrdNuke_mop, airMopAlways);
 
   bins = nhist->axis[0].size;
   gparm[0] = bins / 128; /* wacky heuristic for gaussian stdev */
@@ -295,7 +295,7 @@ _tenFindValley(double *valP, const Nrrd *nhist, double tweak, int save) {
   histD = (float *)(nhistD->data);
   histDD = (float *)(nhistDD->data);
   range = nrrdRangeNewSet(ntmpB, nrrdBlind8BitRangeState);
-  airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
+  airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
   for (bb = 0; bb < bins - 1; bb++) {
     if (hist[bb] == range->max) {
       /* first seek to max in histogram */

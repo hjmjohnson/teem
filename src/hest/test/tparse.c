@@ -33,7 +33,7 @@ main(int argc, const char **argv) {
 
   int ret = 0;
   hestOpt *opt = NULL;
-  hestParm *hparm = hestParmNew();
+  hestParm *hparm = hestParmMopNew();
   hparm->respectDashDashHelp = AIR_TRUE;
   hparm->responseFileEnable = AIR_TRUE;
   hparm->verbose = 10;
@@ -82,7 +82,7 @@ main(int argc, const char **argv) {
   hestOptAdd_Nv_Int(&opt, NULL, "C0 C1", 1, 2, &unpC, NULL, "unflagged C", &sawC);
 #endif
 
-  hestParseOrDie(opt, argc - 1, argv + 1, hparm, argv[0], "info about tparse");
+  hestParseOrExit(opt, argc - 1, argv + 1, hparm, argv[0], "info about tparse");
   printf("funny = %d\n", funny);
   printf("kvpLen = %u\n", kvpLen);
   for (uint ki = 0; ki < kvpLen; ki++) {

@@ -1028,6 +1028,7 @@ tenDwiGageKindNix(gageKind *kind) {
   }
   return NULL;
 }
+AIR_MOPPER(tenDwiGageKindNix)
 
 /*
 ** NOTE: this sets information in both the kind and kindData

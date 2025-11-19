@@ -244,7 +244,7 @@ airParseStrUL(_PARSE_STR_ARGS(unsigned long int)) {
 
 unsigned int
 airParseStrZ(_PARSE_STR_ARGS(size_t)) {
-  _PARSE_STR_BODY("%z")
+  _PARSE_STR_BODY("%zu")
 }
 
 unsigned int

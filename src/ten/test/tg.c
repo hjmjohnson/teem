@@ -71,12 +71,12 @@ main(int argc, const char *argv[]) {
   char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-",
                       "output file to save tensors into");
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   Nrrd *nten = nrrdNew();
-  airMopAdd(mop, nten, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nten, nrrdNuke_mop, airMopAlways);
 
   float *tdata;
   double xyz[3], q[4], len;

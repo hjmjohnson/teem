@@ -59,13 +59,13 @@ main(int argc, const char *argv[]) {
              "tesselation resolution for both glyph and axis cylinders");
   hestOptAdd(&hopt, "o", "output OFF", airTypeString, 1, 1, &outS, "out.off",
              "output file to save OFF into");
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
+  hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
   mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   obj = limnObjectNew(100, AIR_FALSE);
-  airMopAdd(mop, obj, (airMopper)limnObjectNix, airMopAlways);
+  airMopAdd(mop, obj, limnObjectNix_mop, airMopAlways);
 
   /* create limnLooks for ellipsoid and for rods */
   lookSoid = limnObjectLookAdd(obj);
@@ -171,7 +171,7 @@ main(int argc, const char *argv[]) {
   }
 
   file = airFopen(outS, stdout, "w");
-  airMopAdd(mop, file, (airMopper)airFclose, airMopAlways);
+  airMopAdd(mop, file, airFclose_mop, airMopAlways);
 
   if (limnObjectWriteOFF(file, obj)) {
     airMopAdd(mop, err = biffGetDone(LIMN), airFree, airMopAlways);

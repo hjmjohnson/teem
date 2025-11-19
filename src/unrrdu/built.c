@@ -30,37 +30,35 @@ static const char *_unrrdu_builtInfoL
           "This command only documents things visible to \"unu\".");
 
 static int
-unrrdu_builtMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  airArray *mop;
-  char *err;
-  int pret, all, enc, form;
-  hestOpt *opt = NULL;
-
+unrrdu_builtMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   AIR_UNUSED(argc);
   AIR_UNUSED(argv);
   AIR_UNUSED(me);
-  hestOptAdd_Flag(&opt, "a", &all,
+  hestOpt *hopt = NULL;
+  int all;
+  hestOptAdd_Flag(&hopt, "a,all", &all,
                   "list all known info, not just the encoding "
-                  "and formats supported by nrrd");
-  hparm->noArgsIsNoProblem = AIR_TRUE;
+                  "and formats supported by this nrrd library");
 
-  mop = airMopNew();
-  USAGE_OR_PARSE(_unrrdu_builtInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
+  hestParm *hparm = hestParmCopy(_hparm);
+  hparm->noArgsIsNoProblem = AIR_TRUE;
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_builtInfoL);
+  airArray *mop = unrrduMopNew(hopt, hparm);
+  // char *err;
 
   /*
   Much of the below is based on teem/src/bin/nrrdSanity.c
   That program starts by running nrrdSanity, but there's no reason to do that here,
-  because teem/src/bin/unu.c itself runs nrrdSanityOrDie()
+  because teem/src/bin/unu.c itself runs nrrdSanityOrExit()
   */
   printf("# nrrd file data encodings:\n");
-  for (enc = nrrdEncodingTypeUnknown + 1; enc < nrrdEncodingTypeLast; enc++) {
+  for (int enc = nrrdEncodingTypeUnknown + 1; enc < nrrdEncodingTypeLast; enc++) {
     int avail = nrrdEncodingArray[enc]->available();
     printf("%c encoding %s %s available\n", avail ? '+' : '-',
            airEnumStr(nrrdEncodingType, enc), avail ? "YES is" : "NO not");
   }
   printf("# file formats handled by nrrd library:\n");
-  for (form = nrrdFormatTypeUnknown + 1; form < nrrdFormatTypeLast; form++) {
+  for (int form = nrrdFormatTypeUnknown + 1; form < nrrdFormatTypeLast; form++) {
     int avail = nrrdFormatArray[form]->available();
     printf("%c format %s %s available\n", avail ? '+' : '-',
            airEnumStr(nrrdFormatType, form), avail ? "YES is" : "NO not");

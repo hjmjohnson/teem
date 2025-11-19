@@ -68,11 +68,11 @@ main(int argc, const char **argv) {
     fracNeighNixedMax;
 
   mop = airMopNew();
-  hparm = hestParmNew();
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  hparm = hestParmMopNew();
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
 
   nPosOut = nrrdNew();
-  airMopAdd(mop, nPosOut, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nPosOut, nrrdNuke_mop, airMopAlways);
 
   hparm->responseFileEnable = AIR_TRUE;
   hparm->respectDashDashHelp = AIR_TRUE;
@@ -255,9 +255,9 @@ main(int argc, const char **argv) {
                       "the base of the filenames.  Not using this means the extra "
                       "info is not saved.");
 
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, info);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, info);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   /*
   airEnumPrint(stderr, gageScl);
@@ -269,13 +269,13 @@ main(int argc, const char **argv) {
       airMopError(mop);
       return 1;
     }
-    airMopAdd(mop, addLog, (airMopper)airFclose, airMopAlways);
+    airMopAdd(mop, addLog, airFclose_mop, airMopAlways);
   } else {
     addLog = NULL;
   }
 
   pctx = pullContextNew();
-  airMopAdd(mop, pctx, (airMopper)pullContextNix, airMopAlways);
+  airMopAdd(mop, pctx, pullContextNix_mop, airMopAlways);
   if (pullVerboseSet(pctx, verbose) || pullFlagSet(pctx, pullFlagZeroZ, zeroZ)
       || pullFlagSet(pctx, pullFlagEnergyFromStrength, energyFromStrength)
       || pullFlagSet(pctx, pullFlagNixAtVolumeEdgeSpace, nixAtVolumeEdgeSpace)

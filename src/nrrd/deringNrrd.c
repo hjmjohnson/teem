@@ -94,6 +94,7 @@ nrrdDeringContextNix(NrrdDeringContext *drc) {
   }
   return NULL;
 }
+AIR_MOPPER(nrrdDeringContextNix)
 
 int /* Biff: 1 */
 nrrdDeringVerboseSet(NrrdDeringContext *drc, int verbose) {
@@ -342,20 +343,20 @@ deringBagNew(NrrdDeringContext *drc, double radMax) {
 
   dbg->mop = airMopNew();
   dbg->nsliceOrig = nrrdNew();
-  airMopAdd(dbg->mop, dbg->nsliceOrig, (airMopper)nrrdNix /* not Nuke! */, airMopAlways);
+  airMopAdd(dbg->mop, dbg->nsliceOrig, nrrdNix_mop /* not Nuke! */, airMopAlways);
   dbg->nslice = nrrdNew();
-  airMopAdd(dbg->mop, dbg->nslice, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(dbg->mop, dbg->nslice, nrrdNuke_mop, airMopAlways);
   dbg->nsliceOut = nrrdNew();
-  airMopAdd(dbg->mop, dbg->nsliceOut, (airMopper)nrrdNix /* not Nuke! */, airMopAlways);
+  airMopAdd(dbg->mop, dbg->nsliceOut, nrrdNix_mop /* not Nuke! */, airMopAlways);
   for (pi = 0; pi < PTXF_NUM; pi++) {
     dbg->nptxf[pi] = nrrdNew();
-    airMopAdd(dbg->mop, dbg->nptxf[pi], (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(dbg->mop, dbg->nptxf[pi], nrrdNuke_mop, airMopAlways);
   }
 
   dbg->rsmc[0] = nrrdResampleContextNew();
-  airMopAdd(dbg->mop, dbg->rsmc[0], (airMopper)nrrdResampleContextNix, airMopAlways);
+  airMopAdd(dbg->mop, dbg->rsmc[0], nrrdResampleContextNix_mop, airMopAlways);
   dbg->rsmc[1] = nrrdResampleContextNew();
-  airMopAdd(dbg->mop, dbg->rsmc[1], (airMopper)nrrdResampleContextNix, airMopAlways);
+  airMopAdd(dbg->mop, dbg->rsmc[1], nrrdResampleContextNix_mop, airMopAlways);
   dbg->ringMag = 0.0;
 
   return dbg;
@@ -368,6 +369,7 @@ deringBagNix(deringBag *dbg) {
   airFree(dbg);
   return NULL;
 }
+static AIR_MOPPER(deringBagNix); /* semicolon just for clang-format */
 
 static int /* Biff: 1 */
 deringPtxfAlloc(NrrdDeringContext *drc, deringBag *dbg) {
@@ -568,7 +570,7 @@ deringPtxfDo(NrrdDeringContext *drc, deringBag *dbg) {
   }
   if (DEBUG) {
     char fname[AIR_STRLEN_SMALL + 1];
-    sprintf(fname, "wght-%02u.nrrd", dbg->zi);
+    snprintf(fname, sizeof(fname), "wght-%02u.nrrd", dbg->zi);
     nrrdSave(fname, dbg->nptxf[WGHT], NULL);
   }
 
@@ -618,21 +620,21 @@ deringPtxfFilter(NrrdDeringContext *drc, deringBag *dbg, unsigned int zi) {
     }
     if (DEBUG) {
       char fn[AIR_STRLEN_SMALL + 1];
-      sprintf(fn, "rshp-%02u.nrrd", dbg->zi);
+      snprintf(fn, sizeof(fn), "rshp-%02u.nrrd", dbg->zi);
       nrrdSave(fn, dbg->nptxf[RSHP], NULL);
-      sprintf(fn, "crop-%02u.nrrd", dbg->zi);
+      snprintf(fn, sizeof(fn), "crop-%02u.nrrd", dbg->zi);
       nrrdSave(fn, dbg->nptxf[CROP], NULL);
     }
   }
   if (DEBUG) {
     char fn[AIR_STRLEN_SMALL + 1];
-    sprintf(fn, "orig-%02u.nrrd", dbg->zi);
+    snprintf(fn, sizeof(fn), "orig-%02u.nrrd", dbg->zi);
     nrrdSave(fn, dbg->nptxf[ORIG], NULL);
-    sprintf(fn, "blrr-%02u.nrrd", dbg->zi);
+    snprintf(fn, sizeof(fn), "blrr-%02u.nrrd", dbg->zi);
     nrrdSave(fn, dbg->nptxf[BLRR], NULL);
-    sprintf(fn, "diff-%02u.nrrd", dbg->zi);
+    snprintf(fn, sizeof(fn), "diff-%02u.nrrd", dbg->zi);
     nrrdSave(fn, dbg->nptxf[DIFF], NULL);
-    sprintf(fn, "ring-%02u.nrrd", dbg->zi);
+    snprintf(fn, sizeof(fn), "ring-%02u.nrrd", dbg->zi);
     nrrdSave(fn, dbg->nptxf[RING], NULL);
   }
 
@@ -648,9 +650,9 @@ deringRingMagMeasure(NrrdDeringContext *drc, deringBag *dbg) {
   AIR_UNUSED(drc);
   mop = airMopNew();
   ntmp[0] = nrrdNew();
-  airMopAdd(mop, ntmp[0], (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ntmp[0], nrrdNuke_mop, airMopAlways);
   ntmp[1] = nrrdNew();
-  airMopAdd(mop, ntmp[1], (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ntmp[1], nrrdNuke_mop, airMopAlways);
   if (nrrdReshape_va(ntmp[0], dbg->nptxf[RING], 2,
                      (dbg->nptxf[RING]->axis[0].size * dbg->nptxf[RING]->axis[1].size),
                      AIR_SIZE_T(1))
@@ -694,9 +696,9 @@ deringSubtract(NrrdDeringContext *drc, deringBag *dbg) {
   }
   if (DEBUG) {
     char fname[AIR_STRLEN_SMALL + 1];
-    sprintf(fname, "ring2-%02u.nrrd", dbg->zi);
+    snprintf(fname, sizeof(fname), "ring2-%02u.nrrd", dbg->zi);
     nrrdSave(fname, dbg->nptxf[RING], NULL);
-    sprintf(fname, "drng-%02u.nrrd", dbg->zi);
+    snprintf(fname, sizeof(fname), "drng-%02u.nrrd", dbg->zi);
     nrrdSave(fname, dbg->nslice, NULL);
   }
   return 0;
@@ -801,7 +803,7 @@ nrrdDeringExecute(NrrdDeringContext *drc, Nrrd *nout) {
     double *hist, total, sum;
     unsigned int hi;
     nhist = nrrdNew();
-    airMopAdd(mop, nhist, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nhist, nrrdNuke_mop, airMopAlways);
     if (nrrdHisto(nhist, drc->nin, NULL, NULL, drc->clampHistoBins, nrrdTypeDouble)) {
       biffAddf(NRRD, "%s: trouble making histogram", me);
       return 1;
@@ -849,7 +851,7 @@ nrrdDeringExecute(NrrdDeringContext *drc, Nrrd *nout) {
 
   /* create deringBag(s) */
   dbg = deringBagNew(drc, radLen);
-  airMopAdd(mop, dbg, (airMopper)deringBagNix, airMopAlways);
+  airMopAdd(mop, dbg, deringBagNix_mop, airMopAlways);
 
   if (deringPtxfAlloc(drc, dbg)) {
     biffAddf(NRRD, "%s: trouble on setup", me);

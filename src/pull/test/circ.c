@@ -227,15 +227,15 @@ main(int argc, const char *argv[]) {
   hestOptAdd(&hopt, "seed", "seed", airTypeUInt, 1, 1, &rngSeed, "42",
              "random number generator seed");
   hestOptAdd(&hopt, "o", "out", airTypeString, 1, 1, &outS, "-", "output filename");
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   airSrandMT(rngSeed);
   posNum = 0;
   posArr = airArrayNew(AIR_CAST(void **, &pos), &posNum, pntNum * sizeof(double),
                        iterMax / 10);
-  airMopAdd(mop, posArr, (airMopper)airArrayNuke, airMopAlways);
+  airMopAdd(mop, posArr, airArrayNuke_mop, airMopAlways);
   step = AIR_CALLOC(pntNum, double);
   airMopAdd(mop, step, airFree, airMopAlways);
   for (pntIdx = 0; pntIdx < pntNum; pntIdx++) {
@@ -243,7 +243,7 @@ main(int argc, const char *argv[]) {
   }
 
   enspCharge = pullEnergySpecNew();
-  airMopAdd(mop, enspCharge, (airMopper)pullEnergySpecNix, airMopAlways);
+  airMopAdd(mop, enspCharge, pullEnergySpecNix_mop, airMopAlways);
   if (pullEnergySpecParse(enspCharge, "qwell:1")) {
     char *err;
     airMopAdd(mop, err = biffGetDone(PULL), airFree, airMopAlways);
@@ -277,7 +277,7 @@ main(int argc, const char *argv[]) {
   }
 
   npos = nrrdNew();
-  airMopAdd(mop, npos, (airMopper)nrrdNix, airMopAlways);
+  airMopAdd(mop, npos, nrrdNix_mop, airMopAlways);
   if (nrrdWrap_va(npos, pos, nrrdTypeDouble, 2, AIR_SIZE_T(pntNum), AIR_SIZE_T(posNum))
       || nrrdSave(outS, npos, NULL)) {
     char *err;

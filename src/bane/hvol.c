@@ -274,7 +274,7 @@ baneMakeHVol(Nrrd *hvol, Nrrd *nin, baneHVolParm *hvp) {
 
   mop = airMopNew();
   ctx = gageContextNew();
-  airMopAdd(mop, ctx, (airMopper)gageContextNix, airMopAlways);
+  airMopAdd(mop, ctx, gageContextNix_mop, airMopAlways);
   pvl = gagePerVolumeNew(ctx, nin, gageKindScl);
   gageParmSet(ctx, gageParmVerbose, 0);
   gageParmSet(ctx, gageParmRenormalize, hvp->renormalize);
@@ -350,7 +350,7 @@ baneMakeHVol(Nrrd *hvol, Nrrd *nin, baneHVolParm *hvp) {
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, rawhvol, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, rawhvol, nrrdNuke_mop, airMopAlways);
   rhvdata = (int *)rawhvol->data;
   included = 0;
 
@@ -409,7 +409,7 @@ baneMakeHVol(Nrrd *hvol, Nrrd *nin, baneHVolParm *hvp) {
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, hvol, (airMopper)nrrdEmpty, airMopOnError);
+  airMopAdd(mop, hvol, nrrdEmpty_mop, airMopOnError);
   hvol->axis[0].min = min[0];
   hvol->axis[1].min = min[1];
   hvol->axis[2].min = min[2];

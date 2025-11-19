@@ -27,7 +27,7 @@ static const char *_baneGkms_scatInfoL
                "get an initial sense of what sorts of boundaries were present in the "
                "original volume.");
 static int /* Biff: 1 */
-baneGkms_scatMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+baneGkms_scatMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *opt = NULL;
   char *out[2], *perr;
   Nrrd *hvol, *nvgRaw, *nvhRaw, *nvgQuant, *nvhQuant;
@@ -48,18 +48,18 @@ baneGkms_scatMain(int argc, const char **argv, const char *me, hestParm *hparm) 
                       "can use PGM or PNG format");
 
   mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, opt, hestOptFree_mop, airMopAlways);
   USAGE_PARSE(_baneGkms_scatInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, opt, hestParseFree_mop, airMopAlways);
 
   nvgRaw = nrrdNew();
   nvhRaw = nrrdNew();
   nvgQuant = nrrdNew();
   nvhQuant = nrrdNew();
-  airMopAdd(mop, nvgRaw, (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nvhRaw, (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nvgQuant, (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nvhQuant, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nvgRaw, nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nvhRaw, nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nvgQuant, nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nvhQuant, nrrdNuke_mop, airMopAlways);
   if (baneRawScatterplots(nvgRaw, nvhRaw, hvol, AIR_TRUE)) {
     biffAddf(BANE, "%s: trouble creating raw scatterplots", me);
     airMopError(mop);
@@ -67,8 +67,8 @@ baneGkms_scatMain(int argc, const char **argv, const char *me, hestParm *hparm) 
   }
   vgRange = nrrdRangeNewSet(nvgRaw, nrrdBlind8BitRangeFalse);
   vhRange = nrrdRangeNewSet(nvhRaw, nrrdBlind8BitRangeFalse);
-  airMopAdd(mop, vgRange, (airMopper)nrrdRangeNix, airMopAlways);
-  airMopAdd(mop, vhRange, (airMopper)nrrdRangeNix, airMopAlways);
+  airMopAdd(mop, vgRange, nrrdRangeNix_mop, airMopAlways);
+  airMopAdd(mop, vhRange, nrrdRangeNix_mop, airMopAlways);
   E = 0;
   if (!E) E |= nrrdArithGamma(nvgRaw, nvgRaw, vgRange, _gamma);
   if (!E) E |= nrrdArithGamma(nvhRaw, nvhRaw, vhRange, _gamma);

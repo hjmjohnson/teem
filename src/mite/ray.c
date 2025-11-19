@@ -49,7 +49,7 @@ miteRayBegin(miteThread *mtt, miteRender *mrr, miteUser *muu, int uIndex, int vI
     /* we really do want to associate ndebug with the miteUser's mop,
        because the information stored in it has to persist for as long as
        the user wants: mite itself doesn't call miteUserNix */
-    airMopAdd(muu->umop, muu->ndebug, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(muu->umop, muu->ndebug, nrrdNuke_mop, airMopAlways);
     /* but the scope of the debug array allocation is within this ray */
     muu->debugArr = airArrayNew((appu.d = &(muu->debug), appu.v), NULL, sizeof(double),
                                 128);
@@ -118,11 +118,12 @@ _miteRGBACalc(mite_t *R, mite_t *G, mite_t *B, mite_t *A, miteThread *mtt,
     break;
   case miteShadeMethodLitTen:
     fprintf(stderr, "!%s: lit-tensor not yet implemented\n", me);
+    ELL_3V_SET(s, AIR_NAN, AIR_NAN, AIR_NAN);
     break;
   default:
-    fprintf(stderr, "!%s: PANIC, shadeMethod %d unimplemented\n", me,
+    fprintf(stderr, "!%s: sorry, shadeMethod %d unimplemented\n", me,
             mrr->shadeSpec->method);
-    exit(1);
+    ELL_3V_SET(s, AIR_NAN, AIR_NAN, AIR_NAN);
     break;
   }
   *R = (E - 1 + ad[0]) * col[0] + s[0];

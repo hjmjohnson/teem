@@ -1124,7 +1124,7 @@ _nrrdMeasureType(const Nrrd *nin, int measr) {
     break;
   default:
     fprintf(stderr, "%s: PANIC: measr %d not handled\n", me, measr);
-    exit(1);
+    type = nrrdMeasureUnknown; /* was exit(1); */
   }
 
   return type;
@@ -1186,7 +1186,7 @@ nrrdProject(Nrrd *nout, const Nrrd *cnin, unsigned int axis, int measr, int type
        cnin), even if pointlessly so; this expression that can't be assigned
        to a new variable because of the difference in const. */
     nin = nrrdNew();
-    airMopAdd(mop, nin, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nin, nrrdNuke_mop, airMopAlways);
     if (nrrdAxesInsert(nin, cnin, 1)) {
       biffAddf(NRRD, "%s: trouble inserting axis on 1-D array", me);
       airMopError(mop);

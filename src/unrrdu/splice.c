@@ -26,35 +26,32 @@ static const char *_unrrdu_spliceInfoL
           "* Uses nrrdSplice");
 
 static int
-unrrdu_spliceMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *nout, *nslice;
-  unsigned int axis;
-  int pret;
-  long int _pos[2];
-  size_t pos;
-  airArray *mop;
-
+unrrdu_spliceMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  uint axis;
   OPT_ADD_AXIS(axis, "axis to splice along");
-  hestOptAdd_1_Other(&opt, "p,position", "pos", _pos, NULL,
+  long int _pos[2];
+  hestOptAdd_1_Other(&hopt, "p,position", "pos", _pos, NULL,
                      "position to splice at:\n "
                      "\b\bo <int> gives 0-based index\n "
                      "\b\bo M-<int> give index relative "
                      "to the last sample on the axis (M == #samples-1).",
                      &unrrduHestPosCB);
-  hestOptAdd_1_Other(&opt, "s,slice", "nslice", &(nslice), NULL,
+  Nrrd *nslice;
+  hestOptAdd_1_Other(&hopt, "s,slice", "nslice", &nslice, NULL,
                      "slice nrrd.  This is the slice to insert into \"nin\"",
                      nrrdHestNrrdNoTTY);
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd.  This is the nrrd into which the slice is "
                    "inserted");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_spliceInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_spliceInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
   if (!(axis < nin->dim)) {
     fprintf(stderr, "%s: axis %u not in range [0,%u]\n", me, axis, nin->dim - 1);
     return 1;
@@ -63,11 +60,10 @@ unrrdu_spliceMain(int argc, const char **argv, const char *me, hestParm *hparm) 
     fprintf(stderr, "%s: m+<int> specification format meaningless here\n", me);
     return 1;
   }
-  pos = _pos[0] * (nin->axis[axis].size - 1) + _pos[1];
+  size_t pos = _pos[0] * (nin->axis[axis].size - 1) + _pos[1];
 
-  nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
-
+  Nrrd *nout = nrrdNew();
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdSplice(nout, nin, nslice, axis, pos)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error splicing nrrd:\n%s", me, err);

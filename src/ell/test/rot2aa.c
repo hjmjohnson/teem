@@ -34,19 +34,19 @@ main(int argc, const char *argv[]) {
 
   me = argv[0];
   mop = airMopNew();
-  hparm = hestParmNew();
+  hparm = hestParmMopNew();
   hparm->elideMultipleNonExistFloatDefault = AIR_TRUE;
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hopt = NULL;
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
   hestOptAdd(&hopt, NULL, "input matrices", airTypeOther, 1, 1, &_nmat, NULL,
              "list of rotation matrices, 2-D array with one matrix "
              "(in ROW-major order) per scanline",
              NULL, NULL, nrrdHestNrrd);
   hestOptAdd(&hopt, NULL, "output filename", airTypeString, 1, 1, &outS, "-",
              "file to write EPS output to");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, rot2aaInfo);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, rot2aaInfo);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   if (!(2 == _nmat->dim && 9 == _nmat->axis[0].size)) {
     fprintf(stderr, "%s: need a 2-D 9-by-N nrrd\n", me);
@@ -54,7 +54,7 @@ main(int argc, const char *argv[]) {
     return 1;
   }
   nmat = nrrdNew();
-  airMopAdd(mop, nmat, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nmat, nrrdNuke_mop, airMopAlways);
   if (nrrdConvert(nmat, _nmat, nrrdTypeDouble)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: couldn't convert to double:\n%s", me, err);

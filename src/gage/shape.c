@@ -78,6 +78,7 @@ gageShapeNix(gageShape *shape) {
   airFree(shape);
   return NULL;
 }
+AIR_MOPPER(gageShapeNix)
 
 static void
 shapeUnitItoW(const gageShape *shape, double world[3], const double indx[3],

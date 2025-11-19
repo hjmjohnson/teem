@@ -22,37 +22,31 @@
 
 #define INFO "Condense axis-0 scanlines into \"blocks\""
 static const char *_unrrdu_blockInfoL
-  = (INFO ". Output nrrd will be of type \"block\": the type "
-          "for an opaque chunk of "
-          "memory.  Block samples can be sliced, cropped, shuffled, "
-          "permuted, etc., but there is no scalar value associated "
-          "with them, so they can not be histogrammed, quantized, "
-          "resampled, converted, etc.  The output nrrd will have "
-          "one less dimension than input; axis N information will "
-          "be shifted down to axis N-1.  Underlying data "
-          "is unchanged.");
+  = (INFO
+     ". Output nrrd will be of type \"block\": the type for an opaque chunk of "
+     "memory.  Block samples can be sliced, cropped, shuffled, permuted, etc., but "
+     "there is no scalar value associated with them, so they can not be histogrammed, "
+     "quantized, resampled, converted, etc.  The output nrrd will have one less "
+     "dimension than input; axis N information will be shifted down to axis N-1.  "
+     "Underlying data is unchanged.");
 
 static int
-unrrdu_blockMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *nout;
-  airArray *mop;
-  int pret;
-
-  /* nrrdHestNrrdNoTTY simplifies this, just like unquantize and unorient */
-  hparm->noArgsIsNoProblem = AIR_TRUE;
-  hestOptAdd_1_Other(&opt, "i", "nin", &nin, "-", "input nrrd", nrrdHestNrrdNoTTY);
+unrrdu_blockMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+  hestOpt *hopt = NULL;
+  Nrrd *nin;
+  hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-", "input nrrd", nrrdHestNrrdNoTTY);
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for YES some hparm modification)
+  hestParm *hparm = hestParmCopy(_hparm);
+  hparm->noArgsIsNoProblem = AIR_TRUE; // thanks to nrrdHestNrrdNoTTY
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_blockInfoL);
+  airArray *mop = unrrduMopNew(hopt, hparm);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_blockInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  Nrrd *nout = nrrdNew();
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   if (nrrdBlock(nout, nin)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);

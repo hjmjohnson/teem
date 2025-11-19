@@ -73,7 +73,7 @@ main(int argc, const char **argv) {
              "debug problems");
   hestOptAdd(&hopt, "o", "out.data out.nhdr", airTypeString, 2, 2, outSbase, NULL,
              "output filenames of data and header");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, tskipInfo);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, tskipInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

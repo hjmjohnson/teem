@@ -19,6 +19,7 @@
 
 #include "nrrd.h"
 #include "privateNrrd.h"
+#include <assert.h>
 
 static int
 _nrrdFormatText_available(void) {
@@ -285,10 +286,7 @@ _nrrdFormatText_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
           me, nrrd->dim, sx, sy);
   */
 
-  if (!(1 == nrrd->dim || 2 == nrrd->dim)) {
-    fprintf(stderr, "%s: PANIC about to save, but dim = %u\n", me, nrrd->dim);
-    exit(1);
-  }
+  assert(1 == nrrd->dim || 2 == nrrd->dim);
   if (1 == nrrd->dim) {
     size[0] = sy;
   } else {

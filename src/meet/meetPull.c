@@ -18,6 +18,7 @@
 */
 
 #include "meet.h"
+#include "privateMeet.h"
 
 meetPullVol * /* Biff: nope */
 meetPullVolNew(void) {
@@ -47,7 +48,7 @@ meetPullVolCopy(const meetPullVol *mpv) {
 
   mop = airMopNew();
   ret = meetPullVolNew();
-  airMopAdd(mop, ret, (airMopper)meetPullVolNix, airMopOnError);
+  airMopAdd(mop, ret, meetPullVolNix_mop, airMopOnError);
   /* HEY: hope this is okay for dynamic kinds */
   ret->kind = mpv->kind;
   ret->fileName = airStrdup(mpv->fileName);
@@ -141,7 +142,7 @@ meetPullVolParse(meetPullVol *mpv, const char *_str) {
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, &(mpv->fileName), (airMopper)airSetNull, airMopOnError);
+  airMopAdd(mop, &(mpv->fileName), airSetNull_mop, airMopOnError);
   airMopAdd(mop, mpv->fileName, airFree, airMopOnError);
   ctok = airStrtok(NULL, ":", &clast);
   if (!(mpv->kind = meetConstGageKindParse(ctok))) {
@@ -216,7 +217,7 @@ meetPullVolParse(meetPullVol *mpv, const char *_str) {
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, &(mpv->volName), (airMopper)airSetNull, airMopOnError);
+  airMopAdd(mop, &(mpv->volName), airSetNull_mop, airMopOnError);
   airMopAdd(mop, mpv->volName, airFree, airMopOnError);
 
   if (strchr(ctok, '-')) {
@@ -239,18 +240,18 @@ meetHestPullVolParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) 
   airArray *mop;
 
   if (!(ptr && str)) {
-    sprintf(err, "%s: got NULL pointer", me);
+    snprintf(err, ASP1_H, "%s: got NULL pointer", me);
     return 1;
   }
   mop = airMopNew();
   mpvP = AIR_CAST(meetPullVol **, ptr);
   *mpvP = mpv = meetPullVolNew();
-  airMopAdd(mop, mpvP, (airMopper)airSetNull, airMopOnError);
-  airMopAdd(mop, mpv, (airMopper)meetPullVolNix, airMopOnError);
+  airMopAdd(mop, mpvP, airSetNull_mop, airMopOnError);
+  airMopAdd(mop, mpv, meetPullVolNix_mop, airMopOnError);
   if (meetPullVolParse(mpv, str)) {
     char *ler;
     airMopAdd(mop, ler = biffGetDone(MEET), airFree, airMopOnError);
-    airStrcpy(err, AIR_STRLEN_HUGE + 1, ler);
+    airStrcpy(err, ASP1_L, ler);
     airMopError(mop);
     return 1;
   }
@@ -290,12 +291,13 @@ meetPullVolNix(meetPullVol *mpv) {
   }
   return NULL;
 }
+AIR_MOPPER(meetPullVolNix)
 
 static const hestCB _meetHestPullVol = {
   sizeof(meetPullVol *),
   "meetPullVol",
   meetHestPullVolParse,
-  (airMopper)meetPullVolNix,
+  meetPullVolNix_mop,
 };
 
 const hestCB *const meetHestPullVol = &_meetHestPullVol;
@@ -323,7 +325,7 @@ meetPullVolLeechable(const meetPullVol *lchr, const meetPullVol *orig, int *can,
   *can = !!strcmp(orig->fileName, "-");
   if (!*can) {
     if (explain) {
-      sprintf(explain, "original loaded from stdin");
+      snprintf(explain, ASP1_H, "original loaded from stdin");
     }
     return 0;
   }
@@ -331,8 +333,8 @@ meetPullVolLeechable(const meetPullVol *lchr, const meetPullVol *orig, int *can,
   *can = !strcmp(orig->fileName, lchr->fileName);
   if (!*can) {
     if (explain) {
-      sprintf(explain, "not from same file (\"%s\" vs \"%s\")\n", lchr->fileName,
-              orig->fileName);
+      snprintf(explain, ASP1_H, "not from same file (\"%s\" vs \"%s\")\n",
+               lchr->fileName, orig->fileName);
     }
     return 0;
   }
@@ -340,7 +342,8 @@ meetPullVolLeechable(const meetPullVol *lchr, const meetPullVol *orig, int *can,
   *can = (orig->kind == lchr->kind);
   if (!*can) {
     if (explain) {
-      sprintf(explain, "not same kind (%s vs %s)\n", lchr->kind->name, orig->kind->name);
+      snprintf(explain, ASP1_H, "not same kind (%s vs %s)\n", lchr->kind->name,
+               orig->kind->name);
     }
     return 0;
   }
@@ -348,8 +351,8 @@ meetPullVolLeechable(const meetPullVol *lchr, const meetPullVol *orig, int *can,
   *can = (!!lchr->sbp == !!orig->sbp);
   if (!*can) {
     if (explain) {
-      sprintf(explain, "not agreeing on use of scale-space (%s vs %s)\n",
-              lchr->sbp ? "yes" : "no", orig->sbp ? "yes" : "no");
+      snprintf(explain, ASP1_H, "not agreeing on use of scale-space (%s vs %s)\n",
+               lchr->sbp ? "yes" : "no", orig->sbp ? "yes" : "no");
     }
     return 0;
   }
@@ -362,7 +365,7 @@ meetPullVolLeechable(const meetPullVol *lchr, const meetPullVol *orig, int *can,
     }
     if (differ) {
       if (explain) {
-        sprintf(explain, "different uses of scale-space: %s", subexplain);
+        snprintf(explain, ASP1_H, "different uses of scale-space: %s", subexplain);
       }
       *can = AIR_FALSE;
       return 0;
@@ -510,8 +513,8 @@ meetPullVolLoadMulti(meetPullVol **mpv, unsigned int mpvNum, char *cachePath,
     /* else we're not leeching */
     vol->leeching = AIR_FALSE;
     vol->nin = nrrdNew();
-    airMopAdd(mop, &(vol->nin), (airMopper)airSetNull, airMopOnError);
-    airMopAdd(mop, vol->nin, (airMopper)nrrdNuke, airMopOnError);
+    airMopAdd(mop, &(vol->nin), airSetNull_mop, airMopOnError);
+    airMopAdd(mop, vol->nin, nrrdNuke_mop, airMopOnError);
     if (nrrdLoad(vol->nin, vol->fileName, NULL)) {
       biffMovef(MEET, NRRD, "%s: trouble loading mpv[%u]->nin (\"%s\")", me, mpvIdx,
                 vol->volName);
@@ -520,7 +523,8 @@ meetPullVolLoadMulti(meetPullVol **mpv, unsigned int mpvNum, char *cachePath,
     }
     if (vol->sbp) {
       char formatSS[AIR_STRLEN_LARGE + 1];
-      sprintf(formatSS, "%s/%s-%%03u-%03u.nrrd", cachePath, vol->volName, vol->sbp->num);
+      snprintf(formatSS, sizeof(formatSS), "%s/%s-%%03u-%03u.nrrd", cachePath,
+               vol->volName, vol->sbp->num);
       if (verbose) {
         fprintf(stderr, "%s: managing %s ... \n", me, formatSS);
       }
@@ -605,6 +609,7 @@ meetPullInfoNix(meetPullInfo *minf) {
   }
   return NULL;
 }
+AIR_MOPPER(meetPullInfoNix)
 
 static int /* Biff: 1 */
 zeroScaleSet(meetPullInfo *minf, int haveZS, char **lastP) {
@@ -734,14 +739,14 @@ meetHestPullInfoParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1])
   meetPullInfo **minfP, *minf;
 
   if (!(ptr && str)) {
-    sprintf(err, "%s: got NULL pointer", me);
+    snprintf(err, ASP1_H, "%s: got NULL pointer", me);
     return 1;
   }
   mop = airMopNew();
   minfP = AIR_CAST(meetPullInfo **, ptr);
   *minfP = minf = meetPullInfoNew();
-  airMopAdd(mop, minfP, (airMopper)airSetNull, airMopOnError);
-  airMopAdd(mop, minf, (airMopper)meetPullInfoNix, airMopOnError);
+  airMopAdd(mop, minfP, airSetNull_mop, airMopOnError);
+  airMopAdd(mop, minf, meetPullInfoNix_mop, airMopOnError);
   if (meetPullInfoParse(minf, str)) {
     char *ler;
     airMopAdd(mop, ler = biffGetDone(MEET), airFree, airMopOnError);
@@ -754,8 +759,7 @@ meetHestPullInfoParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1])
 }
 
 static const hestCB _meetHestPullInfo = {sizeof(meetPullInfo *), "meetPullInfo",
-                                         meetHestPullInfoParse,
-                                         (airMopper)meetPullInfoNix};
+                                         meetHestPullInfoParse, meetPullInfoNix_mop};
 
 const hestCB *const meetHestPullInfo = &_meetHestPullInfo;
 
@@ -775,7 +779,7 @@ meetPullInfoAddMulti(pullContext *pctx, meetPullInfo **minf, unsigned int minfNu
   for (ii = 0; ii < minfNum; ii++) {
     pullInfoSpec *ispec;
     ispec = pullInfoSpecNew();
-    airMopAdd(mop, ispec, (airMopper)pullInfoSpecNix, airMopOnError);
+    airMopAdd(mop, ispec, pullInfoSpecNix_mop, airMopOnError);
     ispec->volName = airStrdup(minf[ii]->volName);
     ispec->source = minf[ii]->source;
     ispec->info = minf[ii]->info;
@@ -810,7 +814,7 @@ meetPullInfoAddMulti(pullContext *pctx, meetPullInfo **minf, unsigned int minfNu
        is done by pullContextNix. So we now extricate ourself from the
        business of freeing this ispec in case of error; one of the few
        times that airMopSub is really needed */
-    airMopSub(mop, ispec, (airMopper)pullInfoSpecNix);
+    airMopSub(mop, ispec, pullInfoSpecNix_mop);
   }
 
   airMopOkay(mop);

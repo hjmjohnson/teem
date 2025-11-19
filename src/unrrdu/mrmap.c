@@ -30,67 +30,67 @@ static const char *_unrrdu_mrmapInfoL
      "* Uses nrrdApplyMulti1DRegMap");
 
 static int
-unrrdu_mrmapMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, **_nmmap, *nmmap, *nout;
-  airArray *mop;
-  NrrdRange *range = NULL;
-  unsigned int mapAxis;
-  int typeOut, rescale, pret, blind8BitRange;
-  unsigned int _nmmapLen;
-  double min, max;
-
-  hestOptAdd_Nv_Other(&opt, "m,map", "mmap", 1, -1, &_nmmap, NULL,
+unrrdu_mrmapMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  Nrrd **_nmmap;
+  uint _nmmapLen;
+  hestOptAdd_Nv_Other(&hopt, "m,map", "mmap", 1, -1, &_nmmap, NULL,
                       "one nrrd of regular maps to map input nrrd through, or, "
                       "list of nrrds which contain the individual entries of the map "
                       "at each voxel, which will be joined together.",
                       &_nmmapLen, nrrdHestNrrdNoTTY);
-  int rsclOptIdx
-    = hestOptAdd_1v_Bool(&opt, "r,rescale", "bool", &rescale, "false",
+  int rescale;
+  uint rsclOptIdx
+    = hestOptAdd_1v_Bool(&hopt, "r,rescale", "bool", &rescale, "false",
                          "rescale the input values from the input range to the "
                          "map domain.  The map domain is either explicitly "
                          "defined by the axis min,max along axis 0 or 1, or, it "
                          "is implicitly defined as zero to one minus the length of "
                          "that axis.");
-  hestOptAdd_1_Double(&opt, "min,minimum", "value", &min, "nan",
+  double min, max;
+  hestOptAdd_1_Double(&hopt, "min,minimum", "value", &min, "nan",
                       "Low end of input range. Defaults to lowest value "
                       "found in input nrrd.  Explicitly setting this is useful "
                       "only with rescaling (\"-r\") or if the map domain is only "
                       "implicitly defined");
-  hestOptAdd_1_Double(&opt, "max,maximum", "value", &max, "nan",
+  hestOptAdd_1_Double(&hopt, "max,maximum", "value", &max, "nan",
                       "High end of input range. Defaults to highest value "
                       "found in input nrrd.  Explicitly setting this is useful "
                       "only with rescaling (\"-r\") or if the map domain is only "
                       "implicitly defined");
-  hestOptAdd_1_Bool(&opt, "blind8", "bool", &blind8BitRange,
+  int blind8BitRange;
+  hestOptAdd_1_Bool(&hopt, "blind8", "bool", &blind8BitRange,
                     nrrdStateBlind8BitRange ? "true" : "false",
                     "Whether to know the range of 8-bit data blindly "
                     "(uchar is always [0,255], signed char is [-128,127]). "
                     "Explicitly setting this is useful "
                     "only with rescaling (\"-r\") or if the map domain is only "
                     "implicitly defined");
-  hestOptAdd_1_Other(&opt, "t,type", "type", &typeOut, "default",
+  int typeOut;
+  hestOptAdd_1_Other(&hopt, "t,type", "type", &typeOut, "default",
                      "specify the type (\"int\", \"float\", etc.) of the "
                      "output nrrd. "
                      "By default (not using this option), the output type "
                      "is the map's type",
                      &unrrduHestMaybeTypeCB);
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_mrmapInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_mrmapInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  Nrrd *nout = nrrdNew();
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   /* see comment rmap.c */
 
   /* by the end of this block we need to have nmmap and mapAxis */
+  uint mapAxis;
+  Nrrd *nmmap;
   if (1 == _nmmapLen) {
     /* we got the mmap as a single nrrd */
     nmmap = _nmmap[0];
@@ -100,7 +100,7 @@ unrrdu_mrmapMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   } else {
     /* we have to join together multiple nrrds to get the mmap */
     nmmap = nrrdNew();
-    airMopAdd(mop, nmmap, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nmmap, nrrdNuke_mop, airMopAlways);
     /* assume that mmap component nrrds are all compatible sizes,
        nrrdJoin will fail if they aren't */
     mapAxis = _nmmap[0]->dim - nin->dim;
@@ -117,15 +117,16 @@ unrrdu_mrmapMain(int argc, const char **argv, const char *me, hestParm *hparm) {
 
   unrrduGetenvDefaultImplicitLutRmapRescale();
   /* NOTE: comment in lut.c describes logic for how rescale is set */
-  if (!hestSourceUser(opt[rsclOptIdx].source)) {
+  if (!hestSourceUser(hopt[rsclOptIdx].source)) {
     if (!(AIR_EXISTS(nmmap->axis[mapAxis].min)
           && AIR_EXISTS(nmmap->axis[mapAxis].max))) {
       rescale = unrrduDefaultImplicitLutRmapRescale;
     }
   }
+  NrrdRange *range = NULL;
   if (rescale) {
     range = nrrdRangeNew(min, max);
-    airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
+    airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
     nrrdRangeSafeSet(range, nin, blind8BitRange);
   }
 

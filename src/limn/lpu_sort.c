@@ -24,28 +24,22 @@
 static const char *myinfo = (INFO ". ");
 
 static int
-limnPu_sortMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+limnPu_sortMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
-  char *err, *perr;
-  airArray *mop;
-  int pret;
-
   limnPolyData *pld;
-  Nrrd *nin;
-  char *out;
-
   hestOptAdd_1_Other(&hopt, NULL, "input lpld", &pld, NULL, "input polydata filename",
                      limnHestPolyDataLMPD);
+  Nrrd *nin;
   hestOptAdd_1_Other(&hopt, NULL, "input nrrd", &nin, NULL, "input nrrd filename",
                      nrrdHestNrrd);
+  char *out;
   hestOptAdd_1_String(&hopt, NULL, "output", &out, NULL, "output lpld filename");
 
-  mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-
-  USAGE(myinfo);
-  PARSE(myinfo);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc, argv, hparm, me, myinfo);
+  airArray *mop = airMopNew();
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
+  char *err;
 
   if (limnPolyDataPrimitiveSort(pld, nin)) {
     airMopAdd(mop, err = biffGetDone(LIMN), airFree, airMopAlways);

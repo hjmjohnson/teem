@@ -108,7 +108,9 @@ _biffMsgAdd(biffMsg *msg, const char *err) {
     fprintf(stderr, "%s: PANIC: couldn't add message to %s\n", me, msg->key);
     return; /* exit(1); */
   }
-  if (!(msg->err[idx] = airOneLinify(airStrdup(err)))) {
+  /* new for TeemV2: run string through airMultiLinify instead of airOneLinify */
+  if (!(msg->err[idx] = airMultiLinify(airStrdup(err)))) {
+    /* if (!(msg->err[idx] = airStrdup(err))) { */
     fprintf(stderr, "%s: PANIC: couldn't alloc message to %s\n", me, msg->key);
     return; /* exit(1); */
   }

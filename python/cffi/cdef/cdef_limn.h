@@ -613,10 +613,13 @@ extern int limnEnvMapCheck(Nrrd *envMap);
 extern limnLight *limnLightNew(void);
 extern void limnCameraInit(limnCamera *cam);
 extern limnLight *limnLightNix(limnLight *);
+extern void *limnLightNix_mop(void *);
 extern limnCamera *limnCameraNew(void);
 extern limnCamera *limnCameraNix(limnCamera *cam);
+extern void *limnCameraNix_mop(void *);
 extern limnWindow *limnWindowNew(int device);
 extern limnWindow *limnWindowNix(limnWindow *win);
+extern void *limnWindowNix_mop(void *);
 /* hestLimn.c */
 extern void limnHestCameraOptAdd(hestOpt **hoptP, limnCamera *cam,
                                       const char *frDef, const char *atDef,
@@ -638,6 +641,7 @@ extern int limnCameraPathMake(limnCamera *cam, int numFrames, limnCamera *keycam
 extern int limnObjectLookAdd(limnObject *obj);
 extern limnObject *limnObjectNew(int incr, int doEdges);
 extern limnObject *limnObjectNix(limnObject *obj);
+extern void *limnObjectNix_mop(void *);
 extern void limnObjectEmpty(limnObject *obj);
 extern int limnObjectPreSet(limnObject *obj,
                                  unsigned int partNum,
@@ -668,6 +672,7 @@ extern int limnObjectFaceAdd(limnObject *obj,
 /* polydata.c */
 extern limnPolyData *limnPolyDataNew(void);
 extern limnPolyData *limnPolyDataNix(limnPolyData *pld);
+extern void *limnPolyDataNix_mop(void *);
 extern unsigned int limnPolyDataInfoBitFlag(const limnPolyData *pld);
 extern int limnPolyDataAlloc(limnPolyData *pld,
                                   unsigned int infoBitFlag,
@@ -811,8 +816,10 @@ extern int limnObjectPSDrawConcave(limnObject *obj, limnCamera *cam, Nrrd *envMa
 /* splineMethods.c */
 extern limnSplineTypeSpec *limnSplineTypeSpecNew(int type, ...);
 extern limnSplineTypeSpec *limnSplineTypeSpecNix(limnSplineTypeSpec *spec);
+extern void *limnSplineTypeSpecNix_mop(void *);
 extern limnSpline *limnSplineNew(Nrrd *ncpt, int info, limnSplineTypeSpec *spec);
 extern limnSpline *limnSplineNix(limnSpline *spline);
+extern void *limnSplineNix_mop(void *);
 extern int limnSplineNrrdCleverFix(Nrrd *nout, Nrrd *nin, int info, int type);
 extern limnSpline *limnSplineCleverNew(Nrrd *ncpt, int info,
                                             limnSplineTypeSpec *spec);
@@ -840,12 +847,15 @@ extern limnCbfPoints *limnCbfPointsNew(const void *pdata, int ptype,
                                             unsigned int dim, unsigned int pnum,
                                             int isLoop);
 extern limnCbfPoints *limnCbfPointsNix(limnCbfPoints *lpnt);
+extern void *limnCbfPointsNix_mop(void *);
 extern int limnCbfPointsCheck(const limnCbfPoints *lpnt);
 extern limnCbfPath *limnCbfPathNew(unsigned segNum);
 extern limnCbfPath *limnCbfPathNix(limnCbfPath *path);
+extern void *limnCbfPathNix_mop(void *);
 extern void limnCbfPathJoin(limnCbfPath *dst, const limnCbfPath *src);
 extern limnCbfCtx *limnCbfCtxNew(void);
 extern limnCbfCtx *limnCbfCtxNix(limnCbfCtx *fctx);
+extern void *limnCbfCtxNix_mop(void *);
 extern int limnCbfCtxPrep(limnCbfCtx *fctx, const limnCbfPoints *lpnt);
 extern void limnCbfSegEval(double *xy, const limnCbfSeg *seg, double tt);
 extern void limnCbfPathSample(double *xy, unsigned int pointNum,

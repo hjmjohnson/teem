@@ -27,24 +27,19 @@ static const char *_unrrdu_histoInfoL
           "* Uses nrrdHisto");
 
 static int
-unrrdu_histoMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *nout, *nwght;
-  char *minStr, *maxStr;
-  int type, pret, zeroCenter, blind8BitRange;
-  unsigned int bins;
-  NrrdRange *range;
-  airArray *mop;
-
-  hestOptAdd_1_UInt(&opt, "b,bins", "num", &bins, NULL, "# of bins in histogram");
-  hestOptAdd_1_Other(&opt, "w,weight", "nweight", &nwght, "",
+unrrdu_histoMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  uint bins;
+  hestOptAdd_1_UInt(&hopt, "b,bins", "num", &bins, NULL, "# of bins in histogram");
+  Nrrd *nwght;
+  hestOptAdd_1_Other(&hopt, "w,weight", "nweight", &nwght, "",
                      "how to weigh contributions to histogram.  By default "
                      "(not using this option), the increment is one bin count per "
                      "sample, but by giving a nrrd, the value in the nrrd at the "
                      "corresponding location will be the bin count increment ",
                      nrrdHestNrrdNoTTY);
-  hestOptAdd_1_String(&opt, "min,minimum", "value", &minStr, "nan",
+  char *minStr, *maxStr;
+  hestOptAdd_1_String(&hopt, "min,minimum", "value", &minStr, "nan",
                       "Value at low end of histogram, given explicitly as a "
                       "regular number, "
                       "*or*, if the number is given with a \"" NRRD_MINMAX_PERC_SUFF
@@ -53,7 +48,7 @@ unrrdu_histoMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                       "input that are lower. "
                       "By default (not using this option), the lowest value "
                       "found in input nrrd.");
-  hestOptAdd_1_String(&opt, "max,maximum", "value", &maxStr, "nan",
+  hestOptAdd_1_String(&hopt, "max,maximum", "value", &maxStr, "nan",
                       "Value at high end of histogram, given "
                       "explicitly as a regular number, "
                       "*or*, if the number is given with "
@@ -62,28 +57,31 @@ unrrdu_histoMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                       "in terms of the percentage of samples in input that are higher. "
                       "Defaults to highest value found in input nrrd.");
   /* NOTE -zc shared with unrrdu histax, histo, quantize */
-  hestOptAdd_Flag(&opt, "zc,zero-center", &zeroCenter,
+  int zeroCenter, blind8BitRange;
+  hestOptAdd_Flag(&hopt, "zc,zero-center", &zeroCenter,
                   "if used, percentile-based min,max determine a zero-centered "
                   "range (rather than treating min and max independently), which "
                   "may help process signed values in an expected way.");
-  hestOptAdd_1_Bool(&opt, "blind8", "bool", &blind8BitRange,
+  hestOptAdd_1_Bool(&hopt, "blind8", "bool", &blind8BitRange,
                     nrrdStateBlind8BitRange ? "true" : "false",
                     "Whether to know the range of 8-bit data blindly "
                     "(uchar is always [0,255], signed char is [-128,127]).");
+  int type;
   OPT_ADD_TYPE(type, "type to use for bins in output histogram", "uint");
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_histoInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_histoInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  range = nrrdRangeNew(AIR_NAN, AIR_NAN);
-  airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
-  nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  NrrdRange *range = nrrdRangeNew(AIR_NAN, AIR_NAN);
+  airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
+  Nrrd *nout = nrrdNew();
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdRangePercentileFromStringSet(range, nin, minStr, maxStr, zeroCenter,
                                        10 * bins /* HEY magic */, blind8BitRange)
       || nrrdHisto(nout, nin, range, nwght, bins, type)) {

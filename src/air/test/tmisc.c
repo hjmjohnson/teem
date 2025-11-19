@@ -24,12 +24,18 @@ main(int argc, char *argv[]) {
   char *me, *ns;
   unsigned int cc, nn;
 
-  char str[] = "this is a line";
+  char str[] = "one two  three   four    \n    line\n  \nbingo   \n\n\n\n   END   ";
   char *dup = airStrdup(str);
-  str[5] = (char)130;
-  printf("str\n|%s| == |%s|\n", str, dup);
+  dup[5] = (char)130;
+  printf("str\n|%s| --> |%s|\n", str, dup);
   airOneLinify(dup);
-  printf("|%s|\n", dup);
+  printf("airOneLinify: |%s|\n", dup);
+  free(dup);
+  dup = airStrdup(str);
+  dup[5] = (char)130;
+  printf("str\n|%s| --> |%s|\n", str, dup);
+  airMultiLinify(dup);
+  printf("airMultiLinify: |%s|\n", dup);
 
   me = argv[0];
   if (2 != argc) {
@@ -45,6 +51,16 @@ main(int argc, char *argv[]) {
 
   cc = airBitsSet(nn);
   printf("%u bits set in %u\n", cc, nn);
+
+  unsigned int tmpu = AIR_UINT((1llu << 32) - 1);
+  printf("tmpu = %u --> ", tmpu);
+  tmpu = tmpu / 2 - 5;
+  printf("%u\n", tmpu);
+  int tmpi = AIR_INT(tmpu);
+  for (unsigned int ii = 0; ii < 12; ii++) {
+    printf("%u: %d\n", ii, tmpi);
+    tmpi++;
+  }
 
   exit(0);
 }

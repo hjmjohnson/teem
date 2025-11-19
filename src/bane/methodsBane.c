@@ -101,6 +101,7 @@ baneHVolParmNix(baneHVolParm *hvp) {
   }
   return NULL;
 }
+AIR_MOPPER(baneHVolParmNix)
 
 /*
 ******** baneHVolParmGKMSInit()

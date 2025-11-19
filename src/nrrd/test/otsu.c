@@ -25,17 +25,17 @@ int
 main(int argc, const char *argv[]) {
   const char *me = argv[0];
   airArray *mop = airMopNew();
-  hestParm *hparm = hestParmNew();
+  hestParm *hparm = hestParmMopNew();
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hestOpt *hopt = NULL;
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
   Nrrd *nhist;
   hestOptAdd_1_Other(&hopt, "i", "nhist", &nhist, NULL, "input histogram", nrrdHestNrrd);
   double expo;
   hestOptAdd_1_Double(&hopt, "e", "expo", &expo, "2.0",
                       "exponent to use for variance calculation");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, otsuInfo);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, otsuInfo);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   double thresh;
   if (nrrdHistoThresholdOtsu(&thresh, nhist, expo)) {

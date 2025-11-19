@@ -2,8 +2,8 @@ func_name,return_type,error_val(s),mubi,biff_key,cfile:linenumber
 alanUpdate,int,1,0,alan,alan/coreAlan.c:58
 alanInit,int,1,0,alan,alan/coreAlan.c:97
 alanRun,int,1,0,alan,alan/coreAlan.c:451
-alanDimensionSet,int,1,0,alan,alan/methodsAlan.c:102
-alan2DSizeSet,int,1,0,alan,alan/methodsAlan.c:117
-alan3DSizeSet,int,1,0,alan,alan/methodsAlan.c:137
-alanTensorSet,int,1,0,alan,alan/methodsAlan.c:159
-alanParmSet,int,1,0,alan,alan/methodsAlan.c:206
+alanDimensionSet,int,1,0,alan,alan/methodsAlan.c:103
+alan2DSizeSet,int,1,0,alan,alan/methodsAlan.c:118
+alan3DSizeSet,int,1,0,alan,alan/methodsAlan.c:138
+alanTensorSet,int,1,0,alan,alan/methodsAlan.c:160
+alanParmSet,int,1,0,alan,alan/methodsAlan.c:207

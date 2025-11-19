@@ -25,21 +25,17 @@ static const char *_unrrdu_histaxInfoL = (INFO ".\n "
                                                "* Uses nrrdHistoAxis");
 
 static int
-unrrdu_histaxMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *nout;
-  char *minStr, *maxStr;
-  int type, pret, zeroCenter, blind8BitRange;
-  unsigned int axis, bins;
-  airArray *mop;
-  NrrdRange *range;
-
+unrrdu_histaxMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  uint axis;
   OPT_ADD_AXIS(axis, "axis to histogram along");
-  hestOptAdd_1_UInt(&opt, "b,bin", "bins", &bins, NULL, "# of bins in histogram");
+  uint bins;
+  hestOptAdd_1_UInt(&hopt, "b,bin", "bins", &bins, NULL, "# of bins in histogram");
+  int type;
   OPT_ADD_TYPE(type, "output type", "uchar");
   /* HEY copy and paste from unrrdu/quantize.c */
-  hestOptAdd_1_String(&opt, "min,minimum", "value", &minStr, "nan",
+  char *minStr, *maxStr;
+  hestOptAdd_1_String(&hopt, "min,minimum", "value", &minStr, "nan",
                       "The value to map to zero, given explicitly as a regular number, "
                       "*or*, if the number is given with a \"" NRRD_MINMAX_PERC_SUFF
                       "\" suffix, this "
@@ -51,7 +47,7 @@ unrrdu_histaxMain(int argc, const char **argv, const char *me, hestParm *hparm) 
                       "1% of the lowest values are all mapped to zero. "
                       "By default (not using this option), the lowest input value is "
                       "used.");
-  hestOptAdd_1_String(&opt, "max,maximum", "value", &maxStr, "nan",
+  hestOptAdd_1_String(&hopt, "max,maximum", "value", &maxStr, "nan",
                       "The value to map to the highest unsigned integral value, given "
                       "explicitly as a regular number, "
                       "*or*, if the number is given with "
@@ -62,27 +58,29 @@ unrrdu_histaxMain(int argc, const char **argv, const char *me, hestParm *hparm) 
                       "used, which is also the default "
                       "behavior (same as not using this option).");
   /* NOTE -zc shared with unrrdu histax, histo, quantize */
-  hestOptAdd_Flag(&opt, "zc,zero-center", &zeroCenter,
+  int zeroCenter, blind8BitRange;
+  hestOptAdd_Flag(&hopt, "zc,zero-center", &zeroCenter,
                   "if used, percentile-based min,max determine a zero-centered "
                   "range (rather than treating min and max independently), which "
                   "may help process signed values in an expected way.");
-  hestOptAdd_1_Bool(&opt, "blind8", "bool", &blind8BitRange,
+  hestOptAdd_1_Bool(&hopt, "blind8", "bool", &blind8BitRange,
                     nrrdStateBlind8BitRange ? "true" : "false",
                     "Whether to know the range of 8-bit data blindly "
                     "(uchar is always [0,255], signed char is [-128,127]).");
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_histaxInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_histaxInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  range = nrrdRangeNew(AIR_NAN, AIR_NAN);
-  airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
-  nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  NrrdRange *range = nrrdRangeNew(AIR_NAN, AIR_NAN);
+  airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
+  Nrrd *nout = nrrdNew();
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdRangePercentileFromStringSet(range, nin, minStr, maxStr, zeroCenter,
                                        10 * bins /* HEY magic */, blind8BitRange)
       || nrrdHistoAxis(nout, nin, range, axis, bins, type)) {

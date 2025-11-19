@@ -85,6 +85,7 @@ alanContextNix(alanContext *actx) {
   }
   return NULL;
 }
+AIR_MOPPER(alanContextNix)
 
 #define GOT_NULL                                                                        \
   if (!actx) {                                                                          \

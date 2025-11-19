@@ -30,7 +30,7 @@ static const char *_tend_estimInfoL
           "according to the threshold and softness parameters. ");
 
 static int
-tend_estimMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_estimMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -121,14 +121,14 @@ tend_estimMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output tensor volume");
 
   mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
   USAGE_JUSTPARSE(_tend_estimInfoL);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   nbmat = nrrdNew();
-  airMopAdd(mop, nbmat, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nbmat, nrrdNuke_mop, airMopAlways);
 
   /* figure out B-matrix */
   if (strcmp("kvp", airToLower(bmatS))) {
@@ -181,7 +181,7 @@ tend_estimMain(int argc, const char **argv, const char *me, hestParm *hparm) {
     }
     bval = bKVP;
     if (ngradKVP) {
-      airMopAdd(mop, ngradKVP, (airMopper)nrrdNuke, airMopAlways);
+      airMopAdd(mop, ngradKVP, nrrdNuke_mop, airMopAlways);
       if (tenBMatrixCalc(nbmat, ngradKVP)) {
         airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);
         fprintf(stderr, "%s: trouble finding B-matrix:\n%s\n", me, err);
@@ -189,7 +189,7 @@ tend_estimMain(int argc, const char **argv, const char *me, hestParm *hparm) {
         return 1;
       }
     } else {
-      airMopAdd(mop, nbmatKVP, (airMopper)nrrdNuke, airMopAlways);
+      airMopAdd(mop, nbmatKVP, nrrdNuke_mop, airMopAlways);
       if (nrrdConvert(nbmat, nbmatKVP, nrrdTypeDouble)) {
         airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
         fprintf(stderr, "%s: trouble converting B-matrix:\n%s\n", me, err);
@@ -216,7 +216,7 @@ tend_estimMain(int argc, const char **argv, const char *me, hestParm *hparm) {
       axmap[2] = 2 > dwiax ? 2 : 1;
       axmap[3] = 3 > dwiax ? 3 : 2;
       nin4d = nrrdNew();
-      airMopAdd(mop, nin4d, (airMopper)nrrdNuke, airMopAlways);
+      airMopAdd(mop, nin4d, nrrdNuke_mop, airMopAlways);
       if (nrrdAxesPermute(nin4d, nin[0], axmap)) {
         airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
         fprintf(stderr, "%s: trouble creating DWI volume:\n%s\n", me, err);
@@ -269,7 +269,7 @@ tend_estimMain(int argc, const char **argv, const char *me, hestParm *hparm) {
     }
     tec = tenEstimateContextNew();
     tec->progress = AIR_TRUE;
-    airMopAdd(mop, tec, (airMopper)tenEstimateContextNix, airMopAlways);
+    airMopAdd(mop, tec, tenEstimateContextNix_mop, airMopAlways);
     EE = 0;
     if (!EE) tenEstimateVerboseSet(tec, verbose);
     if (!EE) tenEstimateNegEvalShiftSet(tec, fixneg);
@@ -327,7 +327,7 @@ tend_estimMain(int argc, const char **argv, const char *me, hestParm *hparm) {
       return 1;
     }
     if (airStrlen(terrS)) {
-      airMopAdd(mop, nterr, (airMopper)nrrdNuke, airMopAlways);
+      airMopAdd(mop, nterr, nrrdNuke_mop, airMopAlways);
     }
   } else {
     EE = 0;
@@ -348,11 +348,11 @@ tend_estimMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   }
   if (nterr) {
     /* it was allocated by tenEstimate*, we have to clean it up */
-    airMopAdd(mop, nterr, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nterr, nrrdNuke_mop, airMopAlways);
   }
   if (nB0) {
     /* it was allocated by tenEstimate*, we have to clean it up */
-    airMopAdd(mop, nB0, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nB0, nrrdNuke_mop, airMopAlways);
   }
   if (1 != scale) {
     if (tenSizeScale(nout, nout, scale)) {

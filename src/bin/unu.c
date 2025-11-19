@@ -21,16 +21,110 @@
 
 #define UNU "unu"
 
+/* copied from a privateLib.h */
+/* NOTE: these SN_,ASP1_ string macros copy-pasta'd to other private<Lib>.h files:
+   SN_INCR: safely increments STR arg to point '\0'-termination of STR
+   SN_COPY: safely copies SRC to DST, then increments DST
+   SN_PRINTF: snprintf's into DST then increments DST
+   ASP1_X: short version of AIR_STRLEN_X + 1 */
+#define SN_INCR(STR, SIZE)                                                              \
+  do {                                                                                  \
+    size_t tmp_str_len_##STR = strlen(STR);                                             \
+    STR += tmp_str_len_##STR;                                                           \
+    SIZE -= tmp_str_len_##STR;                                                          \
+  } while (0)
+#define SN_COPY(DST, DST_SIZE, SRC)                                                     \
+  do {                                                                                  \
+    airStrcpy((DST), (DST_SIZE), (SRC));                                                \
+    SN_INCR(DST, DST_SIZE);                                                             \
+  } while (0)
+#define SN_PRINTF(DST, DST_SIZE, FMT, ...)                                              \
+  do {                                                                                  \
+    snprintf((DST), (DST_SIZE), (FMT), __VA_ARGS__);                                    \
+    SN_INCR(DST, DST_SIZE);                                                             \
+  } while (0)
+#define ASP1_S (AIR_STRLEN_SMALL + 1)
+#define ASP1_M (AIR_STRLEN_MEDIUM + 1)
+#define ASP1_L (AIR_STRLEN_LARGE + 1)
+#define ASP1_H (AIR_STRLEN_HUGE + 1)
+
+typedef unsigned int uint; /* uint is just more concise */
+
+/*
+ * unu-specific usage printer: prints out a little banner, and a listing of all
+ * available unu commands with their one-line descriptions Would use unrrduUsage but
+ * have to handle hidden commands and the possible non-availability of "fft"
+ */
+static void
+_unuUsage(const char *me, const hestParm *hparm, int alsoHidden) {
+  size_t maxlen = 0;
+  for (uint cmdi = 0; unrrduUnuCmdList[cmdi]; cmdi++) {
+    size_t cnsize = strlen(unrrduUnuCmdList[cmdi]->name);
+    maxlen = AIR_MAX(maxlen, cnsize);
+  }
+  char _buff[ASP1_L], _fmt[ASP1_L];
+  size_t _buffSize = ASP1_L, _fmtSize = ASP1_L;
+  airStrcpy(_buff, _buffSize, "--- unu: Utah Nrrd Utilities command-line interface ---");
+  size_t len = strlen(_buff);
+  uint half = (hparm->columns > len ? hparm->columns - len : 0) / 2 + len - 1;
+  snprintf(_fmt, _fmtSize, "%%%us\n", half);
+  printf(_fmt, _buff);
+  if (alsoHidden) {
+    airStrcpy(_buff, _buffSize, "(hidden commands have \" : \" in listing)");
+    len = strlen(_buff);
+    half = (hparm->columns > len ? hparm->columns - len : 0) / 2 + len - 1;
+    snprintf(_fmt, _fmtSize, "%%%us\n", half);
+    printf(_fmt, _buff);
+  }
+  for (uint cmdi = 0; unrrduUnuCmdList[cmdi]; cmdi++) {
+    int hidden;
+    if (unrrduUnuCmdList[cmdi]->hidden) {
+      if (!alsoHidden) {
+        /* nothing to see here! */
+        continue;
+      }
+      hidden = AIR_TRUE;
+    } else {
+      hidden = AIR_FALSE;
+    }
+    int nofft = !strcmp(unrrduUnuCmdList[cmdi]->name, "fft") && !nrrdFFTWEnabled;
+    len = strlen(unrrduUnuCmdList[cmdi]->name);
+    len += !!nofft;
+    char *buff = _buff;
+    size_t buffSize = _buffSize;
+    buff[0] = '\0';
+    for (size_t chi = len; chi < maxlen + hparm->indent; chi++)
+      SN_COPY(buff, buffSize, " ");
+    if (nofft) {
+      SN_COPY(buff, buffSize, "(");
+    }
+    SN_PRINTF(buff, buffSize, "%s %s", me, unrrduUnuCmdList[cmdi]->name);
+    if (!hidden) {
+      SN_COPY(buff, buffSize, " ... ");
+    } else {
+      SN_COPY(buff, buffSize, "  :  ");
+    }
+    len = strlen(_buff);
+    fprintf(stdout, "%s", _buff);
+    if (nofft) {
+      /* luckily, still fits within 80 columns */
+      fprintf(stdout, "Not Enabled: ");
+      size_t infoSize = strlen(unrrduUnuCmdList[cmdi]->info) + 2;
+      char *infop = AIR_CALLOC(infoSize, char);
+      snprintf(infop, infoSize, "%s)", unrrduUnuCmdList[cmdi]->info);
+      hestPrintStr(stdout, len, len, hparm->columns, infop, AIR_FALSE);
+      free(infop);
+    } else {
+      hestPrintStr(stdout, len, len, hparm->columns, unrrduUnuCmdList[cmdi]->info,
+                   AIR_FALSE);
+    }
+  }
+  return;
+}
+
 int
 main(int argc, const char **argv) {
   int i, ret, listAll;
-  const char *me;
-  char *argv0 = NULL;
-  size_t argv0_SIZE=0;
-  hestParm *hparm;
-  airArray *mop;
-
-  me = argv[0];
 
   /* parse environment variables first, in case they break nrrdDefault*
      or nrrdState* variables in a way that nrrdSanity() should see */
@@ -50,11 +144,9 @@ main(int argc, const char **argv) {
   }
 
   /* no harm done in making sure we're sane */
-  nrrdSanityOrDie(me);
+  nrrdSanityOrExit(argv[0]);
 
-  mop = airMopNew();
-  hparm = hestParmNew();
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  hestParm *hparm = hestParmMopNew();
   hparm->elideSingleEnumType = AIR_TRUE;
   hparm->elideSingleOtherType = AIR_TRUE;
   /*
@@ -69,57 +161,61 @@ main(int argc, const char **argv) {
   hparm->elideMultipleEmptyStringDefault = AIR_TRUE;
   /* say that we look for, and know how to handle, seeing "--help" */
   hparm->respectDashDashHelp = AIR_TRUE;
-  /* set hparm->columns from ioctl if possible, else use unrrduDefaultNumColumns */
-  hestParmColumnsIoctl(hparm, unrrduDefaultNumColumns);
+  /* set hparm->columns from ioctl if possible,
+     else use 78, which was value of (one in TeemV2) unrrduDefaultNumColumns */
+  hestParmColumnsIoctl(hparm, 78);
   // Gone in TeemV2: hparm->greedySingleString = AIR_TRUE;
+  /* New for TeemV2: a more explicit way to support quiet quitting,
+     instead of hacky macros hiding in unrrdu/privateUnrrdu.h */
+  hparm->quietQuit = unrrdQuietQuitTest;
 
   /* if there are no arguments, or "unu list" (or "unu all" shhh), then we give general
   usage information */
   listAll = (2 == argc && !strcmp("all", argv[1]));
   if (1 >= argc || listAll || (2 == argc && !strcmp("list", argv[1]))) {
-    unrrduUsageUnu("unu", hparm, listAll /* alsoHidden */);
-    airMopError(mop);
+    _unuUsage("unu", hparm, listAll /* alsoHidden */);
+    hestParmFree(hparm);
     exit(1);
   }
   /* else, we see if its unu --version */
   if (!strcmp("--version", argv[1])) {
-    char vbuff[AIR_STRLEN_LARGE + 1];
+    char vbuff[AIR_STRLEN_SMALL + 1];
     airTeemVersionSprint(vbuff);
     printf("%s\n", vbuff);
-    airMopOkay(mop);
+    hestParmFree(hparm);
     exit(0);
   }
   /* else, we should see if they're asking for a command we know about */
-  for (i = 0; unrrduCmdList[i]; i++) {
-    if (!strcmp(argv[1], unrrduCmdList[i]->name)) {
+  for (i = 0; unrrduUnuCmdList[i]; i++) {
+    if (!strcmp(argv[1], unrrduUnuCmdList[i]->name)) {
       break;
     }
-    if (!strcmp("about", unrrduCmdList[i]->name)) {
+    if (!strcmp("about", unrrduUnuCmdList[i]->name)) {
       /* we interpret "unu help" and "unu --help" as asking for "unu about" */
       if (!strcmp("--help", argv[1]) || !strcmp("help", argv[1])) {
         break;
       }
     }
   }
-  /* unrrduCmdList[] is NULL-terminated */
-  if (unrrduCmdList[i]) {
-    /* yes, we have that command */
-    /* initialize variables used by the various commands */
-    argv0_SIZE = strlen(UNU) + strlen(argv[1]) + 2;
-    argv0 = AIR_CALLOC(argv0_SIZE, char);
-    airMopMem(mop, &argv0, airMopAlways);
-    snprintf(argv0,argv0_SIZE, "%s %s", UNU, argv[1]);
-
-    /* run the individual unu program, saving its exit status */
-    ret = unrrduCmdList[i]->main(argc - 2, argv + 2, argv0, hparm);
+  // unrrduUnuCmdList[] is NULL-terminated
+  if (unrrduUnuCmdList[i]) {
+    // yes, we have that command
+    // initialize variables used by the various commands
+    size_t meSize = strlen(UNU) + strlen(argv[1]) + 2;
+    char *me = AIR_CALLOC(meSize, char);
+    // hijack hparm->_selfMop to clean this dynamic allocation
+    airMopAdd(hparm->_selfMop, me, airFree, airMopAlways);
+    snprintf(me, meSize, "%s %s", UNU, argv[1]);
+    // run the individual unu program, saving its exit status
+    ret = unrrduUnuCmdList[i]->mainFunc(argc - 2, argv + 2, me, hparm);
   } else {
     fprintf(stderr,
-            "%s: unrecognized command \"%s\"; type \"%s\" for "
+            "%s: unrecognized command \"%s\"; run \"%s\" for "
             "complete list\n",
-            me, argv[1], me);
+            UNU, argv[1], argv[0]);
     ret = 1;
   }
-
-  airMopDone(mop, ret);
-  return ret;
+  // we didn't exit, it's on us to free what we created
+  hestParmFree(hparm);
+  exit(ret);
 }

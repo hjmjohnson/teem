@@ -67,9 +67,9 @@ convoFunc(Nrrd *nout, Nrrd *_nimg, Nrrd *_nmask, int renorm, int crop) {
   */
 
   mop = airMopNew();
-  airMopAdd(mop, nimg = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nmask = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, npad = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nimg = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nmask = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, npad = nrrdNew(), nrrdNuke_mop, airMopAlways);
   E = 0;
   if (!E) E |= nrrdConvert(nimg, _nimg, nrrdTypeFloat);
   if (!E) E |= nrrdConvert(nmask, _nmask, nrrdTypeFloat);
@@ -159,9 +159,9 @@ int
 main(int argc, const char *argv[]) {
   const char *me = argv[0];
   airArray *mop = airMopNew();
-  hestParm *hparm = hestParmNew();
+  hestParm *hparm = hestParmMopNew(); /* Mop for hestParseOrExit */
   hestOpt *hopt = NULL;
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   int uncrop;
   hestOptAdd_Flag(&hopt, "c", &uncrop,
                   "Don't crop the output image to the "
@@ -178,12 +178,12 @@ main(int argc, const char *argv[]) {
   char *out;
   hestOptAdd_1_String(&hopt, NULL, "filename", &out, NULL,
                       "file to write output nrrd to");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, convoInfo);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, convoInfo);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   Nrrd *nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   if (!(2 == nimg->dim && 2 == nmask->dim)) {
     fprintf(stderr, "%s: dimension of image (%u) and mask (%u) not both 2\n", me,

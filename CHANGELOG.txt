@@ -1,6 +1,18 @@
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-Teem 2.0.0  (2025-?-?)
+Teem 2.0.0 aka "TeemV2"  (2025-?-?)
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+tl;dr list of breaking-est changes for TeemV2 relative to previous release v1.11:
+- The options for configuring a CMake build have changed, and how Teem can also
+  be built via GNUmake has also changed, see "use of CMake and GNUmake" below
+- Renamed hestParseOrDie() --> hestParseOrExit()
+  and it no longer takes last 3 args `doInfo`, `doUsage`, `doGlossary`,
+  and the hestParm->dieLessVerbose field is removed
+- hestUsage() has new additional final argument `oneline`
+- Renamed nrrdSanityOrDie() --> nrrdSanityOrExit()
+  (now, all Teem functions that might call exit() have name ending with `Exit`)
+- The global variable nrrdStateVerboseIO is gone,
+  replaced by NrrdIoState->verbose (usually nio->verbose in code)
 
 NOTE : This file is still in progress as work on TeemV2 continues ...
 
@@ -16,22 +28,22 @@ main developer of Teem (me, Gordon Kindlmann, GLK), and I have no plans to do so
 Unlike what might be assumed with a major version increment, the API changes with this
 version 2.0 are modest. Teem basically works the same as before: there are no huge
 disruptive changes in how the most useful functions of Teem behave, or how they use the
-various structs defined in the Teem headers.  There are, however, multiple breaking ABI
-changes. The first consequential ABI changes were in hest (svn r6085 on 2013-09-02 to add
-hestOpt->source field and change the return type of hestOptAdd from void to unsigned int,
-and r6994 on 2023-06-24 to add hestOpt->helpWanted field to finally support "--help").
-This taught/humbled me about the baffling errors from ABI mismatches, even though the
+various structs defined in the Teem headers. Work on this release started with multiple
+breaking ABI changes, first in hest (svn r6085 on 2013-09-02 to add hestOpt->source field
+and change the return type of hestOptAdd from void to unsigned int, and r6994 on
+2023-06-24 to add hestOpt->helpWanted field to finally support "--help").  This
+taught/humbled me about the baffling errors from ABI mismatches, even though the
 API-using code needed no modifications.  To play well with the expectations around the
 semantic versioning https://semver.org/ that Teem bought into in 2005 with version 1.9.0,
 and to clearly distinguish this new version from the decade of "1.12" versions floating
-around, the version number is now incremented to 2.0.0.
+around, the version number had to be incremented to 2.0.0.
 
 Upon realizing that this would be a major version change, I took the opportunity to tweak
-and fix other things that were long annoying. With the exception of hestParseOrDie() no
-longer taking its final three arguments, these changes are unlikely to break Teem-using
-code, but all are lovingly documented below, as tagged with "API CHANGE". The major items
-are delineatd with •s. Some of these identify the moment of the change in terms of an svn
-revision number, the more recent in terms of git commit short hash. If your point of
+and fix other things that were long annoying. With the exception of breaking API changes
+summarized above, the changes for TeemV2 are unlikely to break Teem-using code, but all
+are lovingly documented below, as tagged with "API CHANGE". The major items are delineatd
+with •s. Some of these identify the moment of the change in terms of an svn revision
+number, the more recent in terms of git commit 8-character short hash. If your point of
 comparison is the last Teem release (2012's v1.11), then some of the API CHANGES noted
 below may be false positives: the change noted is relative to the previous commit, not
 the previous release.  One example of this is change from hestSourceUser (enum value) to
@@ -48,11 +60,11 @@ updated. Please let me (glk@uchicago.edu) know if you know how to facilitate thi
 All the changes and bug fixes, from version 2012's 1.11.0 to today's version 2.0.0, are
 described below. The log suffers from some inconsistency of format due to being written
 over 13 years; hopefully you find it informative.  The ordering of items within sections
-is some combination of reverse chronological (later changes described earlier) and
-ordering changes from most interesting or important to least so.  Search for "BUG" to see
-info about bugs fixed. Search for "API CHANGE" to see changes to the APIs of the
-libraries (in particular: biff, hest, unrrdu, bane, gage, seek, moss, and meet). Also noted
-are "ABI CHANGE"s (e.g. where a struct has changed size).
+is some combination of reverse chronological (later changes described earlier in file)
+and ordering changes from most interesting/important to least so.  Search for "BUG" to
+see info about bugs fixed. Search for "API CHANGE" to see changes to the APIs of the
+libraries (in particular: biff, hest, unrrdu, bane, gage, seek, moss, and meet). Also
+noted are "ABI CHANGE"s (e.g. where a struct has changed size).
 
 Since March 2001, Teem code version control has been hosted on Sourceforge, which has
 been more or less reliable over more than *two decades*.  Version control on Sourceforge
@@ -346,7 +358,7 @@ defined.  This is all in the new teem/src/_util/scan-symbols.py .  An analogous
 teem/src/_util/scan-defines.py makes sure that things #defined really start with an
 upper-case library name.
 
-• Wed Oct 29 11:44:47 2025 -0500 git short hash: 116c6cbd
+• Wed Oct 29 11:44:47 2025 -0500 git commit: 116c6cbd
 API CHANGE: Finishing the `Default` global variable naming that should have been done
 with r6964 and r6965 that was focused on hest.
 libDefFoo is now libDefaultFao, as itemized below.
@@ -438,7 +450,45 @@ miteDefOpacMatters --> miteDefaultOpacMatters
 
 ========= air =========
 
-• Sat Oct 25 07:07:14 2025 -0500 git short hash 9b821d47
+• Mon Nov 17 09:40:32 2025 -0600 git commit: eace12d3
+  and more commits up to Mon Nov 17 17:56:01 2025 -0600 3199ccfd
+API NEW: AIR_MOPPER macro for airMopper function definition,
+and start of removing a common kind of undefined behavior from Teem.
+
+For a function named `FUNC` that takes and returns some kind of pointer,
+AIR_MOPPER(FUNC) defines a wrapper function FUNC_mop taking and returning a void*.
+The value of function pointers is preserved across casts, but calling a cast function
+pointer, as with `(airMopper)foo`, is unfortunately undefined behavior:
+  https://stackoverflow.com/a/559671
+
+Routinely following the definition of some free-er/nix-er function `libFoo` with
+`AIR_MOPPER(libFoo);` defines the `libFoo_mop` function that should be passed to
+airMopAdd. This should replace in TeemV2 code the `(airMopper)` casting that was
+ubiquitous in pre-TeemV2 code. So this line:
+  airMopAdd(mop, ntmp, (airMopper)nrrdNuke, airMopAlways)
+is changed to:
+  airMopAdd(mop, ntmp, nrrdNuke_mop, airMopAlways)
+We are essentially pushing the casting from the function level down to the
+level of its argument and return.
+
+NOTE! There are some real drawback with using AIR_MOPPER:
+- You can no longer simply grep or ack to find where a libFoo_mop function
+  is defined; but this is the only way Teem violates this basic principle.
+  You have to know to look for `AIR_MOPPER(libFoo)`
+- Adding the `libFoo_mop` declaration to the header is a manual process
+- The _mop function cannot have Biff: annotation (should not be a big loss)
+
+So far the _mop functions have been added to air, biff, hest, and nrrd,
+and `(airMopper)` casts have been removed.
+
+• Sun Nov 16 22:22:23 2025 -0600 git commit: d1472dcf
+API NEW: added airMultiLinify() which is mostly like airOneLinify, except that isolated
+newlines in the interior of the string are preserved. Like in airOneLinify, all trailing
+whitespace (including newlines) is removed from the end of the string, and whitespace
+before or after i nterior newlines are dropped (and repeated contiguous newlines are
+collapsed to one newline).
+
+• Sat Oct 25 07:07:14 2025 -0500 git commit: 9b821d47
 BUG FIXES / behavior change in airSinglePrintf: The purpose of the function is to be like
 printf (either fprintf to FILE* or sprintf to char*, depending on which given pointer is
 non-NULL), with the harsh limit that there can only be a Single "%" conversion sequence
@@ -488,7 +538,7 @@ This means possible changes in the string or printed output of the following:
   pre-TeemV2 was equivalent to NrrdIoState->headerDoubleExcessPrecision = AIR_TRUE
   Also noted below in "== nrrd =="
 
-• Tue Oct 21 13:51:58 2025 -0500 git short hash: 232c896b
+• Tue Oct 21 13:51:58 2025 -0500 git commit: 232c896b
 API CHANGE: Ever since GLK learned about IEEE754 there have been these macros in air.h:
    AIR_EXISTS_F, AIR_EXISTS_D, AIR_ISNAN_F
 which were completely sensitive to the argument being _F float or _D double because
@@ -819,6 +869,25 @@ for -b mirror with unu resample and unu pad
 
 ========= biff =========
 
+• Sun Nov 16 22:22:23 2025 -0600 git commit: d1472dcf
+BEHAVIOR CHANGE: internally, biff used to call airOneLinify on the string you passed to
+it, which collapsed it to a single line, converting all whites pace including newlines
+into ' ' space characters, and then compacting contiguous spaces into one.  Now for
+TeemV2, biff uses the new airMultiLinify, so that if it was important to you to have a
+multi-line error message, then that is now respected.  When eventually displayed, the
+result may be superficially similar to the results from biffMove(), which preserves
+multiple messages as they're moved from one biff key to another
+
+• Thu Nov 6 01:47:15 2025 -0600 git commit: 14b6cd15
+API CHANGE: pruned biff to what is actually used elsewhere in Teem:
+- removed definition of biffMsg struct from biff.h and moved it to privateBiff.h
+  since it is only used internally in biff implementation, never in the API
+- removed these functions: biffGetStrlen(), biffSetStr(), biffSetStrDone()
+  Also removed many "private" functions from biffmsg.c (declared in privateBiff.h),
+  some of the remaining ones could be essentially inlined into their single usage
+  in biffibiff.c
+There may be yet more pruning possible!
+
 • 2025-10-02 04:46:15 +0000 (Thu, 02 Oct 2025) svn Revision: 7560
 Fixed BUG (discovered by Jorik Blaas and communicated on the new Discord server
 https://discord.gg/xBBqZGXkF7 where you should be too if you're reading this): biff's
@@ -864,12 +933,50 @@ uniformly created.
 * ... option section dividers ? ....
 * ... priority modifiers .....
 
-• Thu Oct 16 13:31:03 2025 -0500 git short hash: f081c284
+• Sun Nov 16 22:22:23 2025 -0600 git commit: d1472dcf
+ABI CHANGEs/API NEWs/API CHANGEs:
+- Added to hestParm `airArray *_selfMop` which underlies the new "self-mopping" ability
+  in hestParms: this is what allows someone who receives a `const hestParm *hparm`to
+  clean in up: you can't pass a `const hestParm*` to hestParmFree, but you can pass it to
+  the new function `hestParmMopDone`.  This allows hestParseOrExit to be const-correct
+  while also avoiding any memory-in-use-at-exit warnings from valgrind.
+- Also added to hestParm: `orExitWithoutNewerFeatures` (rename of
+  `dieWithoutNewerFeatures`) and `quietQuit` function pointer, which is helps implement
+  having a hestParseOrExit user quietly quit with verbose error messages in particular
+  circumstances, which have to-date been available in unu alone through very
+  hacky/fragile means.
+- Also added to hestParm: `usageDefaultDisplayAvoidsWrapping` (on by default, to emulate
+  pre-TeemV2): turn this off to allow hestGlossary to wrap the display of a multi-word
+  default (which might look better with very long defaults in narrow terminals, at the
+  expense of showing a string that is not so easily copy-and-pasted into another
+  invocation of the command
+- rename `hestParseOrDie()` --> `hestParseOrExit()`, with behavioral changes (a previous
+  commit did away with the final three `doInfo`, `doUsage`, `doGlossary` arguments).  The
+  changes increase the ability of hestParseOrExit to be the one-stop place for all
+  parsing-or-else-usage-generating-or-exit needs
+- hestUsage() has new additional final argument `oneline`; when non-zero it turns off the
+  new behavior of printing "Usage:" and then on the next line printing the usage synopsis
+- removed from hestParm the field noBlankLineBeforeUsage : this was part of some unused
+  (within Teem) efforts to permit more flexible generation of usage info.  Recent work
+  for TeemV2 has tended to removed unused flexibility.
+- removed hestParseOld() (the pre-2025 implementation of hestParse) and moved it for
+  posterity to hest/test/hestParseOld.c
+
+API NEW in hest:
+- hestParm *hestParmCopy(const hestParm *hparm) which allocates a new hestParm and copies
+  into it the given hparm's values
+- hestParmMopNew(), hestParmUnmop(), and hestParmMopDone() which are how to work with
+  hestParm's new self-mopping abilities
+- new global default hestDefaultIndent (currently 3) to control the new uniform
+  indentation in the "info", Usage, and Options glossary portions of hest-generated usage
+  info.
+
+• Thu Oct 16 13:31:03 2025 -0500 git commit: f081c284
 API CHANGE: hestParm->verbosity is now hestParm->verbose. Long ago all the other Teem
 libraries stopped using "verbosity" for their verbosity variables and instead used "verbose",
 hest for some reason was never updated. Time to fix it.
 
-• Wed Oct 15 15:22:09 2025 -0500 git short hash: eb02fd9b
+• Wed Oct 15 15:22:09 2025 -0500 git commit: eb02fd9b
 Having revisited hestParse (below), attention turned next to hestParseOrDie, which
 over the years had accumulated some weirdly complicated logic. Time to clean it up.
 * API CHANGE! hestParseOrDie had 3 final args doInfo, doUsage, doGlossary.
@@ -882,7 +989,7 @@ over the years had accumulated some weirdly complicated logic. Time to clean it 
   but now we just do the expected thing: in case of parse error (or empty argv
   implicit ask for help) show the usage (but not info or glossary), and also print
   a message about using --help for more info.
-* API NEW: hestParm->dieWithoutNewerFeatures control was added, to contol whether
+* API NEW: hestParm->dieWithoutNewerFeatures control was added, to control whether
   the new hestParseOrDie would opportunistically turn on new features:
   - set hparm->columns via hestParmColumnsIoctl(hparm, hestDefaultColumns)
   - set hparm->respectDashDashHelp = AIR_TRUE
@@ -894,7 +1001,7 @@ over the years had accumulated some weirdly complicated logic. Time to clean it 
   "don't turn on any new features" (the future may include more newer features)
 
 • 2025-09-29 08:13:39 +0000 (Mon, 29 Sep 2025) svn Revision: 7520 ...
-  2025-10-08 13:14:45 -0500 git short hash: ba1022631
+  2025-10-08 13:14:45 -0500 git commit: ba1022631
 The new implementation of hestParse seems to finally be working, but there is much
 testing still to be done.  The old hestParse remains for now as hestParseOld, although
 with some of the changes below it may leak memory in ways it previously didn't.
@@ -960,6 +1067,8 @@ What changed about how hest appears to users as a result of this work:
   because you no longer need the `(airMopper)` cast, but this was a dumb idea: adding
   these _vp variants is work, so hundreds of other functions in Teem do not have such a
   _vp variant, plus the `(airMopper)` cast idiom is well-established.
+  [ha ha: this was reversed, but in a more consistent and uniform way,
+   with AIR_MOPPER macro and the many _mop functions, see above]
 * hestParse still returns non-zero in case of error, but now it returns -1 (instead of 1)
   if the problem is with the given hestOpt array, rather than anything to do with
   processing the given command-line.  This more serious error may warrant different
@@ -1014,7 +1123,7 @@ API CHANGE:
  rename hestParm->respFileEnable --> hestParm->responseFileEnable
  rename hestDefaultRespFileEnable --> hestDefaultResponseFileEnable
 because it was inconsistent to have that "response" abbreviated,
-when the pattern in hest has long bin to write out long things with whole words.
+when the pattern in hest has long been to write out long things with whole words.
 ALSO API CHANGE:
 removing fields from hestParm in hest.h:
   char respFileFlag,        /* the character at the beginning of an argument
@@ -1184,7 +1293,10 @@ updated to conform).
 
 ========= nrrd =========
 
-These first six • are opportunistic fixes now that the major version is getting bumped:
+• Sun Nov 16 22:22:23 2025 -0600 git commit: d1472dcf
+API CHANGE: rename nrrdSanityOrDie() --> nrrdSanityOrExit()
+
+These next six • are opportunistic fixes now that the major version is getting bumped:
 
 • 2025-09-09 15:18:04 +0000 (Tue, 09 Sep 2025) svn Revision: 7377
 API CHANGE: NrrdKernel->numParm (# parms to kernel) is now renamed NrrdKernel->parmNum
@@ -1196,19 +1308,19 @@ API CHANGE: In nrrd.h's NrrdFormat struct, removed the third integer field:
    usesDIO;   /* this format can use Direct IO */
 since it is moot now.
 
-• Sun Oct 19 10:20:14 2025 -0500 git short hash: c99116ec
+• Sun Oct 19 10:20:14 2025 -0500 git commit: c99116ec
 API CHANGE for an over-due change: removing these globals naming environment variables:
 nrrdEnvVarDefaultWriteBareTextOld = "NRRD_DEF_WRITE_BARE_TEXT"
 nrrdEnvVarDefaultCenterOld = "NRRD_DEF_CENTER"
 Instead use nrrdEnvVarDefaultWriteBareText and nrrdEnvVarDefaultCenter, respectively.
 
-• Tue Oct 21 18:06:15 2025 -0500 git short hash: 5ce3a0d1
+• Tue Oct 21 18:06:15 2025 -0500 git commit: 5ce3a0d1
 API CHANGE: nrrdResampleNrrdSet(NrrdResampleContext *rsmc, const Nrrd *nin) is gone,
 instead use nrrdResampleInputSet(NrrdResampleContext *rsmc, const Nrrd *nin) which
 has been here already, and all Teem code already used it. nrrdResampleNrrdSet
 was a poor choice of function name when the new brains of "unu resample" was written.
 
-• Tue Oct 21 17:42:08 2025 -0500 git short hash: a07d436c
+• Tue Oct 21 17:42:08 2025 -0500 git commit: a07d436c
 API CHANGE: The max number of parameters that a NrrdKernel could use is renamed:
   NRRD_KERNEL_PARMS_NUM --> NRRD_KERNEL_PARM_MAXNUM
 This is for consistency with GAGE_ITEM_PREREQ_MAXNUM, PULL_THREAD_MAXNUM,
@@ -1239,7 +1351,7 @@ that magic constants must be avoided, or at least localized to one place
 is basically zero, at least zero compared to the total confusion created
 by these defaults getting accidentally set to something besides 1.
 
-• Sun Oct 19 09:51:15 2025 -0500 git short hash: 45f1ae4b
+• Sun Oct 19 09:51:15 2025 -0500 git commit: 45f1ae4b
  (and variable naming fixed by week-later commit d5a2fc5c)
 A big over-due API CHANGE, plus other things related or done concurrently:
 ** The global variable nrrdStateVerboseIO is gone,
@@ -1290,7 +1402,7 @@ change nrrdGetenvString(char **envStr, const char *envVar)
 --> nrrdGetenvString(const char **envStr, const char *envVar)
 because you shouldn't be modifying the value of the environment variable so learned
 
-• Sat Oct 25 07:07:14 2025 -0500 git short hash 9b821d47  (also in air above)
+• Sat Oct 25 07:07:14 2025 -0500 git commit: 9b821d47  (also in air above)
 API NEW (ABI CHANGE) and NRRD format output change
 Added new field to NrrdIoState: headerDoubleExcessPrecision
 initialized via new default nrrdDefaultIoHeaderDoubleExcessPrecision
@@ -1563,7 +1675,86 @@ input histogram was all zeros, the output value is nan
 
 ========= unrrdu / unu =========
 
-• Wed Oct 29 13:34:27 2025 -0500 git short hash: fac4bdf5
+• Sun Nov 16 22:22:23 2025 -0600 git commit: d1472dcf
+API CHANGE:
+- In the unrrduCmd that is the container of a "command" in the sense that unu and tend
+  have:
+  1. the `main` function is renamed --> `mainFunc`
+  2. THIS WAS THE MOST OVERDUE, and doing this triggered all the other changes in this
+     commit: that function has always taken a final `hestParm *hparm` argument.
+     Now it is finally `const hestParm *hparm`.
+     When commands need to tweak the the given const hparm, they can use the new
+     hestParmCopy first
+- unrrduUsage arguments have changed order to be more consistent with other functions:
+  from: unrrduUsage(const char *me, hestParm *hparm,
+                    const char *title, const unrrduCmd *const *cmdList);
+    to: unrrduUsage(const char *me, const char *title,
+                    const unrrduCmd *const *cmdList, const hestParm *hparm)
+  and note that hestParm is now const
+- rename global unrrduCmdList[] --> unrrduUnuCmdList[]
+- removed unrrduDefaultNumColumns global variable
+  Not set-able via env-var, and was only used in src/bin/unu.c which now directly uses 78
+little renamings to make the unu-specific parts of unrrdu more obvious:
+- renamed unrrduUsageUnu --> unrrduUnuUsage
+  (unu-specific things should have uniform naming) and made hestParm *hparm const
+- renamed unrrduCmdMain --> unrrduMainOrExit
+  (it is not unu-specific)
+
+API NEW in unrrdu:
+- new little `airArray *unrrduMopNew(hestOpt *hopt, hestParm *hparm)` function that does
+  some of the most repeated needs for managing dynamically allocated things *after*
+  hestParseOrExit succeeds and returns.
+- new `int unrrdQuietQuitTest(const char *parseErrStr, const hestOpt *errOpt)` function
+  which can be used as hestParm->quietQuit to be the new implementation of unu's quiet
+  quitting. Btw, unu had "quiet quitting" long prior to early 2020s America. It tests for
+  environment variable "UNRRDU_QUIET_QUIT", and see new account of quiet qutting in
+  unrrdu/unrrdu.h's comment above UNRRDU_QUIET_QUIT_ENV.
+
+Behavior change in unu:
+- Quiet quitting for unu works not just for hest options trying to load a Nrrd via
+  nrrdHestNrrd or nrrdHestNrrdNoTTY, but NOW, also nrrdHestIter (as in "unu affine" or
+  "unu 2op").  This is thanks to the new clean implementation of quiet quitting internal
+  to hestParseOrExit via hestParm->quietQuit
+
+No behavior change, but for all "unu cmd": re-organized all of these to use C99
+declare-as-you-go, and use of all the hew memory-cleanliness in how hestParseOrExit is
+used.  Some more careful script-based testing is urgently needed.
+
+• Thu Oct 30 01:01:10 2025 -0500 git commit: 1334dba9
+SLIGHT BEHAVIOR CHANGE in unu lut, unu lut2, unu rmap, unu mlut, unu mrmap The issue of
+"rescaling" is subtle but fundamental to how these commands work.  The lut or rmap or
+imap embodies a function with a domain (an interval of the reals) and a range (grayscales
+or colors).  The domain of an imap is always explicit, but luts and rmaps can have either
+implicit or explicit domains (adequately explained in the "unu lut" and "unu rmap"
+documentation).  The data being sent through the lut, rmap, imap is itself a function
+over some domain (probably spatial), and with some range of data values. The question is:
+how should we reconcile the data range with the map domain?  "Rescaling" is using the
+equivalent of AIR_AFFINE (a 5-argument lerp) to map values from the data range to the map
+domain, so the map domain covers the range.  The combination of domains being implicit or
+explicit, and ranges also being discovered by traversing data values or by explicit
+-min,-max specification, is what makes these operations so subtle.
+
+Until TeemV2, unu lut, unu lut2, unu rmap, unu mlut, unu mrmap had a "-r,--rescale" hest
+*flag*, which could turn on rescaling, but rescaling was always turned on if the map
+domain was implicit.  Recent changes meant that implicit map domains set rescaling not to
+on, but to unrrduDefaultImplicitLutRmapRescale.  How that is initialized (to AIR_TRUE)
+means that using or not using "-r" has not changed effect.
+
+However, now (finally), everything clever about implicit map domains is avoided if you do
+use the "-r" option, which instead of being a flag, is the unusual "single variadic
+parameter" kind of option, with these possibilities: no "-r": rescale=true or false,
+depending on implicit map domain cleverness "-r": rescale=true (no implicit map domain
+cleverness) "-r false": rescale=false (no implicit map domain cleverness) "-r true":
+rescale=true (no implicit map domain cleverness) It's a hest bool, so "-r yes" or "-r 1"
+work too.
+
+In 2014 src/HELP.txt started noting the need to revisit the code in nrrd/apply1D.c, to
+bring it up to date with then-and-now-current Teem conventions for using unsigned int for
+variables that can't logically be negative. That is now finally done.  Many functions
+here have different types of variables inside (mainly changing from `int` to `unsigned
+int`), but they all work the same.
+
+• Wed Oct 29 13:34:27 2025 -0500 git commit: fac4bdf5
 API NEW: "unu lut", "unu lut2", "unu rmap", "unu mlut", and "unu mrmap" all have a "-r"
 rescale option which controls something important about how they work: whether to
 transform (via something akin to AIR_AFFINE or a 5-argument lerp) values FROM the data
@@ -1600,7 +1791,7 @@ the time to start.  The implicit rescaling in these unu commands has (to GLK) al
 one of the most sneaky and confusing things about how unu works, so this is seen as
 exceptional handling of an exceptional problem.
 
-• Sun Oct 19 09:51:15 2025 -0500 git short hash: 45f1ae4b
+• Sun Oct 19 09:51:15 2025 -0500 git commit: 45f1ae4b
 (as described above)
 Added "unu describe" to scrutinize Nrrd* struct after being nrrdRead in
 
@@ -1792,7 +1983,7 @@ ELL_43M_INSET_TT, ELL_2M_INV and ELL_4V_ADD3
 
 ========= gage =========
 
-• Wed Oct 22 06:05:31 2025 -0500 git short hash: 17230dd4
+• Wed Oct 22 06:05:31 2025 -0500 git commit: 17230dd4
 API CHANGE: The gageScl item rename: gageSclGeomTensTen --> gageSclGeomTens7Ten
 (this had been flagged as needing attention for TeemV2).
 In the gageScl airEnum, "gtenten" and "geometry tensor tensor" still refer to this item, as

@@ -184,6 +184,7 @@ gageContextNix(gageContext *ctx) {
   airFree(ctx);
   return NULL;
 }
+AIR_MOPPER(gageContextNix)
 
 /*
 ******** gageKernelSet()

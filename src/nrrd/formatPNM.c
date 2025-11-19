@@ -277,7 +277,7 @@ _nrrdFormatPNM_write(FILE *file, const Nrrd *_nrrd, NrrdIoState *nio) {
   airArray *mop;
 
   mop = airMopNew();
-  airMopAdd(mop, nrrd = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nrrd = nrrdNew(), nrrdNuke_mop, airMopAlways);
   if (nrrdCopy(nrrd, _nrrd)) {
     biffAddf(NRRD, "%s: couldn't make private copy", me);
     airMopError(mop);

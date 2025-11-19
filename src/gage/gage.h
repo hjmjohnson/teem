@@ -1064,6 +1064,7 @@ GAGE_EXPORT void gagePointReset(gagePoint *point);
 GAGE_EXPORT gageItemSpec *gageItemSpecNew(void);
 GAGE_EXPORT void gageItemSpecInit(gageItemSpec *isp);
 GAGE_EXPORT gageItemSpec *gageItemSpecNix(gageItemSpec *isp);
+GAGE_EXPORT void *gageItemSpecNix_mop(void *);
 
 /* kind.c */
 GAGE_EXPORT int gageKindCheck(const gageKind *kind);
@@ -1112,6 +1113,7 @@ GAGE_EXPORT void gageShapeReset(gageShape *shp);
 GAGE_EXPORT gageShape *gageShapeNew(void);
 GAGE_EXPORT gageShape *gageShapeCopy(const gageShape *shp);
 GAGE_EXPORT gageShape *gageShapeNix(gageShape *shape);
+GAGE_EXPORT void *gageShapeNix_mop(void *);
 GAGE_EXPORT int gageShapeSet(gageShape *shp, const Nrrd *nin, int baseDim);
 GAGE_EXPORT void gageShapeWtoI(const gageShape *shape, double index[3],
                                const double world[3]);
@@ -1132,6 +1134,7 @@ GAGE_EXPORT gagePerVolume *gagePerVolumeNew(gageContext *ctx,
                                             const Nrrd *nin,
                                             const gageKind *kind);
 GAGE_EXPORT gagePerVolume *gagePerVolumeNix(gagePerVolume *pvl);
+GAGE_EXPORT void *gagePerVolumeNix_mop(void *);
 GAGE_EXPORT const double *gageAnswerPointer(const gageContext *ctx,
                                             const gagePerVolume *pvl,
                                             int item);
@@ -1151,6 +1154,7 @@ GAGE_EXPORT gageOptimSigContext *gageOptimSigContextNew(unsigned int dim,
                                                         double sigmaMin, double sigmaMax,
                                                         double cutoff);
 GAGE_EXPORT gageOptimSigContext *gageOptimSigContextNix(gageOptimSigContext *oscx);
+GAGE_EXPORT void *gageOptimSigContextNix_mop(void *);
 GAGE_EXPORT int gageOptimSigCalculate(gageOptimSigContext *oscx,
                                       /* output */ double *sigma, unsigned int sigmaNum,
                                       const NrrdKernelSpec *kssSpec, int imgMeasr,
@@ -1200,6 +1204,7 @@ GAGE_EXPORT int gageStackBlurParmCopy(gageStackBlurParm *sbpDst,
                                       const gageStackBlurParm *sbpSrc);
 GAGE_EXPORT void gageStackBlurParmInit(gageStackBlurParm *parm);
 GAGE_EXPORT gageStackBlurParm *gageStackBlurParmNix(gageStackBlurParm *sbp);
+GAGE_EXPORT void *gageStackBlurParmNix_mop(void *);
 GAGE_EXPORT int gageStackBlurParmCompare(const gageStackBlurParm *sbpA,
                                          const char *nameA,
                                          const gageStackBlurParm *sbpB,
@@ -1252,6 +1257,7 @@ GAGE_EXPORT int gageStackBlurManage(Nrrd ***nblurP, int *recomputedP,
 GAGE_EXPORT gageContext *gageContextNew(void);
 GAGE_EXPORT gageContext *gageContextCopy(gageContext *ctx);
 GAGE_EXPORT gageContext *gageContextNix(gageContext *ctx);
+GAGE_EXPORT void *gageContextNix_mop(void *);
 GAGE_EXPORT void gageParmSet(gageContext *ctx, int which, double val);
 GAGE_EXPORT int gagePerVolumeIsAttached(const gageContext *ctx,
                                         const gagePerVolume *pvl);

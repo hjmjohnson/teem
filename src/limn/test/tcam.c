@@ -34,7 +34,7 @@ main(int argc, const char *argv[]) {
 
   mop = airMopNew();
   cam = limnCameraNew();
-  airMopAdd(mop, cam, (airMopper)limnCameraNix, airMopAlways);
+  airMopAdd(mop, cam, limnCameraNix_mop, airMopAlways);
 
   me = argv[0];
   hestOptAdd(&hopt, "fr", "eye pos", airTypeDouble, 3, 3, cam->from, NULL,
@@ -45,9 +45,9 @@ main(int argc, const char *argv[]) {
              "camera pseudo up vector");
   hestOptAdd(&hopt, "rh", NULL, airTypeInt, 0, 0, &(cam->rightHanded), NULL,
              "use a right-handed UVN frame (V points down)");
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   cam->neer = -1;
   cam->dist = 0;

@@ -50,6 +50,7 @@ miteShadeSpecNix(miteShadeSpec *shpec) {
   }
   return NULL;
 }
+AIR_MOPPER(miteShadeSpecNix)
 
 /*
 ******** miteShadeSpecParse

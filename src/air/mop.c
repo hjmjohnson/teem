@@ -137,7 +137,7 @@ airMopMem(airArray *arr, void *_ptrP, int when) {
   }
 
   ptrP = (void **)_ptrP;
-  airMopAdd(arr, ptrP, (airMopper)airSetNull, when);
+  airMopAdd(arr, ptrP, airSetNull_mop, when);
   airMopAdd(arr, *ptrP, airFree, when);
   /*
   printf("airMopMem(0x%p): will free() 0x%p\n",
@@ -157,7 +157,7 @@ airMopUnMem(airArray *arr, void *_ptrP) {
   }
 
   ptrP = (void **)_ptrP;
-  airMopSub(arr, ptrP, (airMopper)airSetNull);
+  airMopSub(arr, ptrP, airSetNull_mop);
   airMopSub(arr, *ptrP, airFree);
   return;
 }
@@ -227,7 +227,7 @@ airMopDebug(airArray *arr) {
         printf("airFree(0x%p)\n", AIR_VOIDP(mops[ii].ptr));
         continue;
       }
-      if ((airMopper)airSetNull == mops[ii].mop) {
+      if ((airMopper)airSetNull == mops[ii].mop || airSetNull_mop == mops[ii].mop) {
         printf("airSetNull(0x%p)\n", AIR_VOIDP(mops[ii].ptr));
         continue;
       }
@@ -236,7 +236,7 @@ airMopDebug(airArray *arr) {
                AIR_VOIDP(mops[ii].ptr));
         continue;
       }
-      if ((airMopper)airFclose == mops[ii].mop) {
+      if ((airMopper)airFclose == mops[ii].mop || airFclose_mop == mops[ii].mop) {
         printf("airFclose(0x%p)\n", AIR_VOIDP(mops[ii].ptr));
         continue;
       }

@@ -68,7 +68,7 @@ main(int argc, const char *argv[]) {
   me = argv[0];
   airArray *mop = airMopNew();
   tenInterpParm *tip = tenInterpParmNew();
-  airMopAdd(mop, tip, (airMopper)tenInterpParmNix, airMopAlways);
+  airMopAdd(mop, tip, tenInterpParmNix_mop, airMopAlways);
 
   double tripA[3];
   hestOptAdd_3_Double(&hopt, "a", "start", tripA, NULL, "start triple of values");
@@ -99,9 +99,9 @@ main(int argc, const char *argv[]) {
   hestOptAdd(&hopt, "c", "conv", airTypeDouble, 1, 1, &(tip->convEps), "0.0001",
              "convergence threshold of length fraction");
 
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   if (!(tenInterpTypeQuatGeoLoxK == ptype || tenInterpTypeQuatGeoLoxR == ptype)) {
     fprintf(stderr, "%s: need type %s or %s, not %s\n", me,

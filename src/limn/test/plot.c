@@ -346,9 +346,9 @@ main(int argc, const char *argv[]) {
 
   hestOptAdd(&hopt, "o", "output PS", airTypeString, 1, 1, &outS, "out.ps",
              "output file to render postscript into");
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   if (!(numGrth == numDtdi && numDtdi == numGrgr && numGrgr == numDtgr)) {
     fprintf(stderr,
@@ -378,7 +378,7 @@ main(int argc, const char *argv[]) {
   airMopAdd(mop, ndata, airFree, airMopAlways);
   for (ni = 0; ni < numNrrd; ni++) {
     ndata[ni] = nrrdNew();
-    airMopAdd(mop, ndata[ni], (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, ndata[ni], nrrdNuke_mop, airMopAlways);
     if (nrrdConvert(ndata[ni], _ndata[ni], nrrdTypeDouble)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
       fprintf(stderr, "%s: couldn't convert input %d to %s:\n%s\n", me, ni,
@@ -408,7 +408,7 @@ main(int argc, const char *argv[]) {
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, pps.file, (airMopper)airFclose, airMopAlways);
+  airMopAdd(mop, pps.file, airFclose_mop, airMopAlways);
 
   plotPreamble(&pps, &pparm);
   plotAxes(&pps, &pparm, ndata[0]);

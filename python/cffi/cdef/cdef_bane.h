@@ -284,6 +284,7 @@ extern void baneHVolParmAxisSet(baneHVolParm *hvp, unsigned int axisIdx,
                                      unsigned int res, baneMeasr *measr, baneInc *inc);
 extern void baneHVolParmClipSet(baneHVolParm *hvp, baneClip *clip);
 extern baneHVolParm *baneHVolParmNix(baneHVolParm *hvp);
+extern void *baneHVolParmNix_mop(void *);
 /* valid.c */
 extern int baneInputCheck(Nrrd *nin, baneHVolParm *hvp);
 extern int baneHVolCheck(Nrrd *hvol);

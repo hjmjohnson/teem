@@ -18,6 +18,7 @@
 */
 
 #include "meet.h"
+#include "privateMeet.h"
 
 static gageKind *
 _meetGageKindParse(const char *_str, int constOnly) {
@@ -70,7 +71,7 @@ _meetHestConstGageKindParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE
   const gageKind **kindP;
 
   if (!(ptr && str)) {
-    snprintf(err, AIR_STRLEN_HUGE + 1, "%s: got NULL pointer", me);
+    snprintf(err, ASP1_H, "%s: got NULL pointer", me);
     return 1;
   }
   /* of course, the const correctness goes out the window with all
@@ -78,8 +79,9 @@ _meetHestConstGageKindParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE
   kindP = (const gageKind **)ptr;
   *kindP = meetConstGageKindParse(str);
   if (!*kindP) {
-    snprintf(err, AIR_STRLEN_HUGE + 1, "%s: \"%s\" not \"%s\", \"%s\", \"%s\", or \"%s\"", me, str,
-            gageKindScl->name, gageKind2Vec->name, gageKindVec->name, tenGageKind->name);
+    snprintf(err, ASP1_H, "%s: \"%s\" not \"%s\", \"%s\", \"%s\", or \"%s\"", me, str,
+             gageKindScl->name, gageKind2Vec->name, gageKindVec->name,
+             tenGageKind->name);
     return 1;
   }
 
@@ -92,15 +94,15 @@ _meetHestGageKindParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]
   gageKind **kindP;
 
   if (!(ptr && str)) {
-    snprintf(err, AIR_STRLEN_HUGE + 1, "%s: got NULL pointer", me);
+    snprintf(err, ASP1_H, "%s: got NULL pointer", me);
     return 1;
   }
   kindP = (gageKind **)ptr;
   *kindP = meetGageKindParse(str);
   if (!*kindP) {
-    snprintf(err, AIR_STRLEN_HUGE + 1, "%s: \"%s\" not \"%s\", \"%s\", \"%s\", \"%s\", or \"%s\"", me, str,
-            gageKindScl->name, gageKind2Vec->name, gageKindVec->name, tenGageKind->name,
-            TEN_DWI_GAGE_KIND_NAME);
+    snprintf(err, ASP1_H, "%s: \"%s\" not \"%s\", \"%s\", \"%s\", \"%s\", or \"%s\"", me,
+             str, gageKindScl->name, gageKind2Vec->name, gageKindVec->name,
+             tenGageKind->name, TEN_DWI_GAGE_KIND_NAME);
     return 1;
   }
 

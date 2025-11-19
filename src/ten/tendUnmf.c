@@ -28,27 +28,29 @@ static const char *_tend_unmfInfoL
           "frame from the nrrd.");
 
 static int
-tend_unmfMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_unmfMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
-  airArray *mop;
 
   Nrrd *nin, *nout;
   char *outS;
 
+  airArray *mop = airMopNew();
+  hestParm *hparm = hestParmCopy(_hparm);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hparm->noArgsIsNoProblem = AIR_TRUE;
+
   hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-", "input diffusion tensor volume ",
                      nrrdHestNrrdNoTTY);
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output tensor volume");
 
-  mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
   USAGE_PARSE(_tend_unmfInfoL);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (tenMeasurementFrameReduce(nout, nin)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble:\n%s\n", me, err);

@@ -166,3 +166,4 @@ pushContextNix(pushContext *pctx) {
   }
   return NULL;
 }
+AIR_MOPPER(pushContextNix)

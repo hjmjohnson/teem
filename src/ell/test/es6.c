@@ -34,17 +34,17 @@ main(int argc, const char *argv[]) {
 
   me = argv[0];
   mop = airMopNew();
-  hparm = hestParmNew();
+  hparm = hestParmMopNew();
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hopt = NULL;
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
   hestOptAdd(&hopt, NULL, "matrix", airTypeOther, 1, 1, &_nin, NULL, "6x6 matrix", NULL,
              NULL, nrrdHestNrrd);
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, es6Info);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, es6Info);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nin = nrrdNew();
-  airMopAdd(mop, nin, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nin, nrrdNuke_mop, airMopAlways);
 
   if (!(2 == _nin->dim && 6 == _nin->axis[0].size && 6 == _nin->axis[1].size)) {
     fprintf(stderr, "%s: didn't get 2-D 6x6 matrix (got %u-D %ux%u)\n", me, _nin->dim,

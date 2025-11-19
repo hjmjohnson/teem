@@ -166,6 +166,7 @@ tenInterpParmNix(tenInterpParm *tip) {
   }
   return NULL;
 }
+AIR_MOPPER(tenInterpParmNix)
 
 /*
 ******** tenInterpTwo_d
@@ -688,13 +689,13 @@ _tenInterpGeoLoxPolyLine(Nrrd *ngeod, unsigned int *numIter, const double tenA[7
 
   mop = airMopNew();
   ntt = nrrdNew();
-  airMopAdd(mop, ntt, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ntt, nrrdNuke_mop, airMopAlways);
   nss = nrrdNew();
-  airMopAdd(mop, nss, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nss, nrrdNuke_mop, airMopAlways);
   nigrt = nrrdNew();
-  airMopAdd(mop, nigrt, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nigrt, nrrdNuke_mop, airMopAlways);
   nsub = nrrdNew();
-  airMopAdd(mop, nsub, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nsub, nrrdNuke_mop, airMopAlways);
   if (nrrdMaybeAlloc_va(ngeod, nrrdTypeDouble, 2, AIR_SIZE_T(7), AIR_SIZE_T(NN + 1))
       || nrrdMaybeAlloc_va(ntt, nrrdTypeDouble, 2, AIR_SIZE_T(7), AIR_SIZE_T(2 * NN + 1))
       || nrrdMaybeAlloc_va(nigrt, nrrdTypeDouble, 3, AIR_SIZE_T(7), AIR_SIZE_T(6),
@@ -722,7 +723,7 @@ _tenInterpGeoLoxPolyLine(Nrrd *ngeod, unsigned int *numIter, const double tenA[7
     }
     /* upsample coarse geodesic to higher resolution */
     rsmc = nrrdResampleContextNew();
-    airMopAdd(mop, rsmc, (airMopper)nrrdResampleContextNix, airMopAlways);
+    airMopAdd(mop, rsmc, nrrdResampleContextNix_mop, airMopAlways);
     E = AIR_FALSE;
     if (!E) E |= nrrdResampleDefaultCenterSet(rsmc, nrrdCenterNode);
     if (!E) E |= nrrdResampleInputSet(rsmc, nsub);
@@ -821,7 +822,7 @@ tenInterpTwoDiscrete_d(Nrrd *nout, const double tenA[7], const double tenB[7], i
     tip = _tip;
   } else {
     tip = tenInterpParmNew();
-    airMopAdd(mop, tip, (airMopper)tenInterpParmNix, airMopAlways);
+    airMopAdd(mop, tip, tenInterpParmNix_mop, airMopAlways);
   }
   if (!(num >= 2)) {
     biffAddf(TEN, "%s: need num >= 2 (not %u)", me, num);
@@ -915,12 +916,12 @@ tenInterpDistanceTwo_d(const double tenA[7], const double tenB[7], int ptype,
   case tenInterpTypeQuatGeoLoxK:
   case tenInterpTypeQuatGeoLoxR:
     npath = nrrdNew();
-    airMopAdd(mop, npath, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, npath, nrrdNuke_mop, airMopAlways);
     if (_tip) {
       tip = _tip;
     } else {
       tip = tenInterpParmNew();
-      airMopAdd(mop, tip, (airMopper)tenInterpParmNix, airMopAlways);
+      airMopAdd(mop, tip, tenInterpParmNix_mop, airMopAlways);
     }
     if (tenInterpTwoDiscrete_d(npath, tenA, tenB, ptype, tip->numSteps, tip)) {
       airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);
@@ -1009,7 +1010,7 @@ tenInterpMulti3D(Nrrd *nout, const Nrrd *const *nin, const double *wght,
     tip = _tip;
   } else {
     tip = tenInterpParmNew();
-    airMopAdd(mop, tip, (airMopper)tenInterpParmNix, airMopAlways);
+    airMopAdd(mop, tip, tenInterpParmNix_mop, airMopAlways);
   }
   tbuff = AIR_CAST(double *, calloc(7 * ninLen, sizeof(double)));
   if (!tbuff) {

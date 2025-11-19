@@ -112,7 +112,7 @@ engageGenTensor(gageContext *gctx, Nrrd *ncten,
   sprintf(tmpStr[3], "tmp-ten.nrrd");
   helixArgv[9] = tmpStr[3];
   helixArgc = AIR_CAST(int, sizeof(helixArgv) / sizeof(char *)) - 1;
-  if (tend_helixCmd.main(helixArgc, helixArgv, me, hparm)) {
+  if (tend_helixCmd.mainFunc(helixArgc, helixArgv, me, hparm)) {
     /* error already went to stderr, not to any biff container */
     biffAddf(BKEY, "%s: problem running tend %s", me, tend_helixCmd.name);
     airMopError(smop);
@@ -922,7 +922,7 @@ main(int argc, const char **argv) {
   hestOptAdd(&hopt, "pnum", "N", airTypeUInt, 1, 1, &probeNum, "100", "# of probes");
   hestOptAdd(&hopt, "k", "kern", airTypeString, 1, 1, &kernS, NULL,
              "kernel to use; can be: box, cos, or ctmr");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, testInfo);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, testInfo);
   airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
   airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
 

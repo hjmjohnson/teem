@@ -64,6 +64,7 @@ extern int mossDefaultCenter;
 extern const int mossPresent;
 extern mossSampler *mossSamplerNew(void);
 extern mossSampler *mossSamplerNix(mossSampler *smplr);
+extern void *mossSamplerNix_mop(void *);
 extern int mossImageCheck(const Nrrd *image);
 extern int mossImageAlloc(Nrrd *image, int type, unsigned int sx, unsigned int sy,
                                unsigned int chanNum);

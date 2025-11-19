@@ -101,7 +101,7 @@ baneGkmsParseBEF(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
   }
   mop = airMopNew();
   nrrdP = (Nrrd **)ptr;
-  airMopAdd(mop, *nrrdP = nrrdNew(), (airMopper)nrrdNuke, airMopOnError);
+  airMopAdd(mop, *nrrdP = nrrdNew(), nrrdNuke_mop, airMopOnError);
   if (4 == sscanf(str, "%g,%g,%g,%g", &shape, &width, &cent, &alpha)) {
     /* its a valid BEF specification, we make the nrrd ourselves */
     if (nrrdMaybeAlloc_va(*nrrdP, nrrdTypeFloat, 2, AIR_SIZE_T(2), AIR_SIZE_T(6))) {
@@ -151,7 +151,7 @@ baneGkmsParseBEF(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
 }
 
 static const hestCB _baneGkmsHestBEF = {sizeof(Nrrd *), "boundary emphasis function",
-                                        baneGkmsParseBEF, (airMopper)nrrdNuke};
+                                        baneGkmsParseBEF, nrrdNuke_mop};
 
 const hestCB *const baneGkmsHestBEF = &_baneGkmsHestBEF;
 

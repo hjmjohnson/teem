@@ -168,6 +168,7 @@ extern const int seekContour3DTopoHackTriangle[256][16];
 extern const int seekPresent;
 extern seekContext *seekContextNew(void);
 extern seekContext *seekContextNix(seekContext *sctx);
+extern void *seekContextNix_mop(void *);
 /* setSeek.c */
 extern void seekVerboseSet(seekContext *sctx, int verbose);
 extern int seekDataSet(seekContext *sctx, const Nrrd *ninscl, gageContext *gctx,

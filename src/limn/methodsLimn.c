@@ -35,6 +35,7 @@ limnLightNix(limnLight *lit) {
   }
   return NULL;
 }
+AIR_MOPPER(limnLightNix)
 
 void
 limnCameraInit(limnCamera *cam) {
@@ -70,6 +71,7 @@ limnCameraNix(limnCamera *cam) {
   }
   return NULL;
 }
+AIR_MOPPER(limnCameraNix)
 
 static void
 _limnOptsPSDefaults(limnOptsPS *ps) {
@@ -117,3 +119,4 @@ limnWindowNix(limnWindow *win) {
   }
   return NULL;
 }
+AIR_MOPPER(limnWindowNix)

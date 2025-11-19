@@ -146,7 +146,7 @@ tend_helixDoit(Nrrd *nout, double bnd, double orig[3], double i2w[9], double mf[
 }
 
 static int
-tend_helixMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_helixMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -196,12 +196,12 @@ tend_helixMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output file");
 
   mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
   USAGE_JUSTPARSE(_tend_helixInfoL);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdMaybeAlloc_va(nout, nrrdTypeFloat, 4, AIR_SIZE_T(7), AIR_SIZE_T(size[0]),
                         AIR_SIZE_T(size[1]), AIR_SIZE_T(size[2]))) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);

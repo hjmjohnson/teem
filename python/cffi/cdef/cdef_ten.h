@@ -1125,6 +1125,7 @@ extern int tenTripleConvert(Nrrd *nout, int dstType, const Nrrd *nin, int srcTyp
 /* grads.c */
 extern tenGradientParm *tenGradientParmNew(void);
 extern tenGradientParm *tenGradientParmNix(tenGradientParm *tgparm);
+extern void *tenGradientParmNix_mop(void *);
 extern int tenGradientCheck(const Nrrd *ngrad, int type, unsigned int minnum);
 extern int tenGradientRandom(Nrrd *ngrad, unsigned int num, unsigned int seed);
 extern double tenGradientIdealEdge(unsigned int N, int single);
@@ -1154,6 +1155,7 @@ extern tenInterpParm *tenInterpParmNew(void);
 extern tenInterpParm *tenInterpParmCopy(tenInterpParm *tip);
 extern int tenInterpParmBufferAlloc(tenInterpParm *tip, unsigned int num);
 extern tenInterpParm *tenInterpParmNix(tenInterpParm *tip);
+extern void *tenInterpParmNix_mop(void *);
 extern void tenInterpTwo_d(double oten[7], const double tenA[7],
                                const double tenB[7], int ptype, double aa,
                                tenInterpParm *tip);
@@ -1171,6 +1173,7 @@ extern int tenInterpMulti3D(Nrrd *nout, const Nrrd *const *nin, const double *wg
 /* glyph.c */
 extern tenGlyphParm *tenGlyphParmNew(void);
 extern tenGlyphParm *tenGlyphParmNix(tenGlyphParm *parm);
+extern void *tenGlyphParmNix_mop(void *);
 extern int tenGlyphParmCheck(tenGlyphParm *parm, const Nrrd *nten, const Nrrd *npos,
                                  const Nrrd *nslc);
 extern int tenGlyphGen(limnObject *glyphs, echoScene *scene, tenGlyphParm *parm,
@@ -1298,6 +1301,7 @@ extern int tenEstimate1TensorVolume4D(tenEstimateContext *tec, Nrrd *nten,
                                           Nrrd **nB0P, Nrrd **nterrP, const Nrrd *ndwi,
                                           int outType);
 extern tenEstimateContext *tenEstimateContextNix(tenEstimateContext *tec);
+extern void *tenEstimateContextNix_mop(void *);
 /* aniso.c */
 extern float (*const _tenAnisoEval_f[TEN_ANISO_MAX + 1])(const float eval[3]);
 extern float tenAnisoEval_f(const float eval[3], int aniso);
@@ -1314,6 +1318,7 @@ extern int tenAnisoHistogram(Nrrd *nout, const Nrrd *nin, const Nrrd *nwght,
                                  int right, int version, unsigned int resolution);
 extern tenEvecRGBParm *tenEvecRGBParmNew(void);
 extern tenEvecRGBParm *tenEvecRGBParmNix(tenEvecRGBParm *rgbp);
+extern void *tenEvecRGBParmNix_mop(void *);
 extern int tenEvecRGBParmCheck(const tenEvecRGBParm *rgbp);
 extern void tenEvecRGBSingle_f(float RGB[3], float conf, const float eval[3],
                                    const float evec[3], const tenEvecRGBParm *rgbp);
@@ -1331,6 +1336,7 @@ extern void tenFiberSingleInit(tenFiberSingle *tfbs);
 extern void tenFiberSingleDone(tenFiberSingle *tfbs);
 extern tenFiberSingle *tenFiberSingleNew(void);
 extern tenFiberSingle *tenFiberSingleNix(tenFiberSingle *tfbs);
+extern void *tenFiberSingleNix_mop(void *);
 extern tenFiberContext *tenFiberContextNew(const Nrrd *dtvol);
 extern tenFiberContext *tenFiberContextDwiNew(const Nrrd *dwivol,
                                                   double thresh,
@@ -1360,6 +1366,7 @@ extern int tenFiberParmSet(tenFiberContext *tfx, int parm, double val);
 extern int tenFiberUpdate(tenFiberContext *tfx);
 extern tenFiberContext *tenFiberContextCopy(tenFiberContext *tfx);
 extern tenFiberContext *tenFiberContextNix(tenFiberContext *tfx);
+extern void *tenFiberContextNix_mop(void *);
 /* fiber.c */
 extern int tenFiberTraceSet(tenFiberContext *tfx, Nrrd *nfiber, double *buff,
                                 unsigned int halfBuffLen, unsigned int *startIdxP,
@@ -1370,6 +1377,7 @@ extern int tenFiberSingleTrace(tenFiberContext *tfx, tenFiberSingle *tfbs,
                                    double seed[3], unsigned int which);
 extern tenFiberMulti *tenFiberMultiNew(void);
 extern tenFiberMulti *tenFiberMultiNix(tenFiberMulti *tfm);
+extern void *tenFiberMultiNix_mop(void *);
 extern int tenFiberMultiTrace(tenFiberContext *tfx, tenFiberMulti *tfml,
                                   const Nrrd *nseed);
 extern int tenFiberMultiPolyData(tenFiberContext *tfx, limnPolyData *lpld,
@@ -1406,6 +1414,7 @@ extern int tenExperSpecGradBValSet(tenExperSpec *espec,
                                            unsigned int bgwNum); */
 extern int tenExperSpecFromKeyValueSet(tenExperSpec *espec, const Nrrd *ndwi);
 extern tenExperSpec *tenExperSpecNix(tenExperSpec *espec);
+extern void *tenExperSpecNix_mop(void *);
 extern double tenExperSpecKnownB0Get(const tenExperSpec *espec, const double *dwi);
 extern double tenExperSpecMaxBGet(const tenExperSpec *espec);
 extern int tenDWMRIKeyValueFromExperSpecSet(Nrrd *ndwi, const tenExperSpec *espec);
@@ -1489,6 +1498,7 @@ extern gageKind *const tenGageKind;
 extern const airEnum *const tenDwiGage;
 extern gageKind *tenDwiGageKindNew(void);
 extern gageKind *tenDwiGageKindNix(gageKind *dwiKind);
+extern void *tenDwiGageKindNix_mop(void *);
 /* warning: this function will likely change its arguments in the future */
 extern int tenDwiGageKindSet(gageKind *dwiKind, double thresh, double soft,
                                  double bval, double valueMin, const Nrrd *ngrad,
@@ -1498,6 +1508,7 @@ extern int tenDwiGageKindCheck(const gageKind *kind);
 /* bimod.c */
 extern tenEMBimodalParm *tenEMBimodalParmNew(void);
 extern tenEMBimodalParm *tenEMBimodalParmNix(tenEMBimodalParm *biparm);
+extern void *tenEMBimodalParmNix_mop(void *);
 extern int tenEMBimodal(tenEMBimodalParm *biparm, const Nrrd *nhisto);
 /* tend{Flotsam,Anplot,Anvol,Evec,Eval,. . .}.c */
 /* removed from below (superseded by estim): F(calc) \ */

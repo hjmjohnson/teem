@@ -24,13 +24,6 @@
 int
 main(int argc, const char **argv) {
   int i, ret;
-  const char *me;
-  size_t argv0_SIZE=0;
-  char *argv0 = NULL;
-  hestParm *hparm;
-  airArray *mop;
-
-  me = argv[0];
 
   /* parse environment variables first, in case they break nrrdDefault*
      or nrrdState* variables in a way that nrrdSanity() should see */
@@ -38,11 +31,9 @@ main(int argc, const char **argv) {
   nrrdStateGetenv();
 
   /* no harm done in making sure we're sane */
-  nrrdSanityOrDie(me);
+  nrrdSanityOrExit(argv[0]);
 
-  mop = airMopNew();
-  hparm = hestParmNew();
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  hestParm *hparm = hestParmMopNew();
   hparm->elideSingleEnumType = AIR_TRUE;
   hparm->elideSingleOtherType = AIR_TRUE;
   hparm->elideSingleOtherDefault = AIR_FALSE;
@@ -58,15 +49,16 @@ main(int argc, const char **argv) {
 
   /* if there are no arguments, then we give general usage information */
   if (1 >= argc) {
-    unrrduUsage(TEND, hparm, tendTitle, tendCmdList);
-    airMopError(mop);
+    unrrduUsage(argv[0], TEND, tendTitle, tendCmdList, hparm);
+    hestParmFree(hparm);
     exit(1);
   }
   /* else, we see if its --version */
   if (!strcmp("--version", argv[1])) {
-    char vbuff[AIR_STRLEN_LARGE + 1];
+    char vbuff[AIR_STRLEN_SMALL + 1];
     airTeemVersionSprint(vbuff);
     printf("%s\n", vbuff);
+    hestParmFree(hparm);
     exit(0);
   }
   /* else, we should see if they're asking for a command we know about */
@@ -84,21 +76,22 @@ main(int argc, const char **argv) {
   if (tendCmdList[i]) {
     /* yes, we have that command */
     /* initialize variables used by the various commands */
-    argv0_SIZE = strlen(TEND) + strlen(argv[1]) + 2;
-    argv0 = (char *)calloc(argv0_SIZE, sizeof(char));
-    airMopMem(mop, &argv0, airMopAlways);
-    snprintf(argv0, argv0_SIZE, "%s %s", TEND, argv[1]);
+    size_t meSize = strlen(TEND) + strlen(argv[1]) + 2;
+    char *me = (char *)calloc(meSize, sizeof(char));
+    // hijack hparm->_selfMop to clean this dynamic allocation
+    airMopAdd(hparm->_selfMop, me, airFree, airMopAlways);
+    snprintf(me, meSize, "%s %s", TEND, argv[1]);
 
     /* run the individual tend program, saving its exit status */
-    ret = tendCmdList[i]->main(argc - 2, argv + 2, argv0, hparm);
+    ret = tendCmdList[i]->mainFunc(argc - 2, argv + 2, me, hparm);
   } else {
     fprintf(stderr,
             "%s: unrecognized command: \"%s\"; type \"%s\" for "
             "complete list\n",
-            me, argv[1], me);
+            TEND, argv[1], argv[0]);
     ret = 1;
   }
-
-  airMopDone(mop, ret);
+  // we didn't exit, it's on us to free what we created
+  hestParmFree(hparm);
   return ret;
 }

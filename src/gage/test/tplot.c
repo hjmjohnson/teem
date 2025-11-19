@@ -40,21 +40,21 @@ main(int argc, const char *argv[]) {
 
   me = argv[0];
   mop = airMopNew();
-  hparm = hestParmNew();
+  hparm = hestParmMopNew();
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hopt = NULL;
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
   hestOptAdd(&hopt, "tee", NULL, airTypeInt, 0, 0, &tee, NULL,
              "domain of plot is t, not sigma");
   hestOptAdd(&hopt, "mm", "min max", airTypeDouble, 2, 2, dommm, NULL,
              "range of domain to plot");
   hestOptAdd(&hopt, "n", "# samp", airTypeUInt, 1, 1, &num, NULL, "number of samples");
   hestOptAdd(&hopt, "o", "filename", airTypeString, 1, 1, &outS, NULL, "output volume");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, tplotInfo);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, tplotInfo);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdMaybeAlloc_va(nout, nrrdTypeDouble, 1, AIR_SIZE_T(num))) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: couldn't allocate output:\n%s", me, err);

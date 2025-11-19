@@ -112,6 +112,7 @@ airThreadMutexNix(airThreadMutex *mutex) {
   }
   return mutex;
 }
+AIR_MOPPER(airThreadMutexNix)
 
 airThreadCond *
 airThreadCondNew(void) {
@@ -274,6 +275,7 @@ airThreadMutexNix(airThreadMutex *mutex) {
   mutex = airFree(mutex);
   return mutex;
 }
+AIR_MOPPER(airThreadMutexNix)
 
 airThreadCond *
 airThreadCondNew(void) {
@@ -489,6 +491,7 @@ airThreadMutexNix(airThreadMutex *mutex) {
   airFree(mutex);
   return NULL;
 }
+AIR_MOPPER(airThreadMutexNix)
 
 airThreadCond *
 airThreadCondNew(void) {

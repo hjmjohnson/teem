@@ -429,12 +429,16 @@ ECHO_EXPORT const int echoPresent;
 ECHO_EXPORT const char *const echoBiffKey;
 ECHO_EXPORT echoRTParm *echoRTParmNew(void);
 ECHO_EXPORT echoRTParm *echoRTParmNix(echoRTParm *parm);
+ECHO_EXPORT void *echoRTParmNix_mop(void *);
 ECHO_EXPORT echoGlobalState *echoGlobalStateNew(void);
 ECHO_EXPORT echoGlobalState *echoGlobalStateNix(echoGlobalState *state);
+ECHO_EXPORT void *echoGlobalStateNix_mop(void *);
 ECHO_EXPORT echoThreadState *echoThreadStateNew(void);
 ECHO_EXPORT echoThreadState *echoThreadStateNix(echoThreadState *state);
+ECHO_EXPORT void *echoThreadStateNix_mop(void *);
 ECHO_EXPORT echoScene *echoSceneNew(void);
 ECHO_EXPORT echoScene *echoSceneNix(echoScene *scene);
+ECHO_EXPORT void *echoSceneNix_mop(void *);
 
 /* objmethods.c --------------------------------------- */
 ECHO_EXPORT echoObject *echoObjectNew(echoScene *scene, signed char type);

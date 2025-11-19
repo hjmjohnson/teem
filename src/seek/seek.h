@@ -205,6 +205,7 @@ SEEK_EXPORT const int seekContour3DTopoHackTriangle[256][16];
 SEEK_EXPORT const int seekPresent;
 SEEK_EXPORT seekContext *seekContextNew(void);
 SEEK_EXPORT seekContext *seekContextNix(seekContext *sctx);
+SEEK_EXPORT void *seekContextNix_mop(void *);
 
 /* setSeek.c */
 SEEK_EXPORT void seekVerboseSet(seekContext *sctx, int verbose);

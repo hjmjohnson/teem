@@ -67,8 +67,9 @@ quat_free(void *_ptr) {
   }
   return NULL;
 }
+AIR_MOPPER(quat_free)
 
-hestCB quatCB = {sizeof(Quat *), "quatty", quat_parse, (airMopper)quat_free};
+hestCB quatCB = {sizeof(Quat *), "quatty", quat_parse, quat_free_mop};
 
 int
 main(int argc, const char **argv) {
@@ -76,10 +77,13 @@ main(int argc, const char **argv) {
   hestParm *hparm;
   char *err = NULL;
 
+  airArray *mop = airMopNew();
   hparm = hestParmNew();
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hparm->responseFileEnable = AIR_TRUE;
   hparm->respectDashDashHelp = AIR_TRUE;
   hparm->noArgsIsNoProblem = AIR_TRUE;
+  hparm->usageDefaultDisplayAvoidsWrapping = AIR_FALSE;
   hparm->verbose = 0;
   hestParmColumnsIoctl(hparm, 80);
 
@@ -393,26 +397,21 @@ main(int argc, const char **argv) {
   hestOptAdd_Nv_Other(&opt, "qv", "quat1", VMIN, -1, &qv, "12.34  43.21",
                       "test of hestOptAdd_Nv_Other B", &qvSaw, &quatCB);
 
-#if 0
-#endif
   int eret;
   if ((eret = hestParse(opt, argc - 1, argv + 1, NULL, hparm))) {
     // have already fprintf'd to stderr
-    if (2 != eret) hestUsage(stderr, opt, argv[0], hparm);
+    hestUsage(stderr, opt, argv[0], hparm, AIR_FALSE /* oneline */);
     hestParmFree(hparm);
     hestOptFree(opt);
     exit(0);
   }
   if (opt->helpWanted) {
-    hestGlossary(stdout, opt, hparm);
+    hestUsage(stdout, opt, argv[0], hparm, AIR_FALSE /* oneline */);
+    if (2 != opt->helpWanted) hestGlossary(stdout, opt, hparm);
     hestParmFree(hparm);
     hestOptFree(opt);
     exit(0);
   }
-  /*
-  hestParseOrDie(opt, argc - 1, argv + 1, hparm, argv[0], info, AIR_TRUE, AIR_TRUE,
-                 AIR_TRUE);
-  */
 
   if (1) {
     unsigned int opi, numO;

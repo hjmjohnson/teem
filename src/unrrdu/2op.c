@@ -29,16 +29,10 @@ static const char *_unrrdu_2opInfoL
           "* Uses nrrdArithIterBinaryOp or (with -w) nrrdArithIterBinaryOpSelect");
 
 static int
-unrrdu_2opMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  NrrdIter *in1, *in2;
-  Nrrd *nout, *ntmp = NULL;
-  int op, type, E, pret, which;
-  airArray *mop;
-  unsigned int seed, seedOI;
-
-  hestOptAdd_1_Enum(&opt, NULL, "operator", &op, NULL,
+unrrdu_2opMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  int op;
+  hestOptAdd_1_Enum(&hopt, NULL, "operator", &op, NULL,
                     "Binary operator. Possibilities include:\n "
                     "\b\bo \"+\", \"-\", \"x\", \"/\": "
                     "add, subtract, multiply, divide\n "
@@ -64,36 +58,40 @@ unrrdu_2opMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                     "\b\bo \"rrand\": sample Rician distribution with 1st value "
                     "for \"true\" mean, and 2nd value for sigma",
                     nrrdBinaryOp);
-  hestOptAdd_1_Other(&opt, NULL, "in1", &in1, NULL,
+  NrrdIter *in1, *in2;
+  hestOptAdd_1_Other(&hopt, NULL, "in1", &in1, NULL,
                      "First input.  Can be a single value or a nrrd.", nrrdHestIter);
-  hestOptAdd_1_Other(&opt, NULL, "in2", &in2, NULL,
+  hestOptAdd_1_Other(&hopt, NULL, "in2", &in2, NULL,
                      "Second input.  Can be a single value or a nrrd.", nrrdHestIter);
-  seedOI = hestOptAdd_1_UInt(&opt, "s,seed", "seed", &seed, "0",
-                             "seed value for random number generator (RNG), to "
-                             "enable repeatable results between runs, or, "
-                             "by not using this option, the RNG seeding will be "
-                             "based on the current time");
-  hestOptAdd_1_Other(&opt, "t,type", "type", &type, "default",
+  uint seed;
+  uint seedOI = hestOptAdd_1_UInt(&hopt, "s,seed", "seed", &seed, "0",
+                                  "seed value for random number generator (RNG), to "
+                                  "enable repeatable results between runs, or, "
+                                  "by not using this option, the RNG seeding will be "
+                                  "based on the current time");
+  int type;
+  hestOptAdd_1_Other(&hopt, "t,type", "type", &type, "default",
                      "type to convert all INPUT nrrds to, prior to "
                      "doing operation, useful for doing, for instance, the difference "
                      "between two unsigned char nrrds.  This will also determine "
                      "output type. By default (not using this option), the types of "
                      "the input nrrds are left unchanged.",
                      &unrrduHestMaybeTypeCB);
-  hestOptAdd_1_Int(&opt, "w,which", "arg", &which, "-1",
+  int which;
+  hestOptAdd_1_Int(&hopt, "w,which", "arg", &which, "-1",
                    "Which argument (0 or 1) should be used to determine the "
                    "shape of the output nrrd. By default (not using this option), "
                    "the first non-constant argument is used. ");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_2opInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_2opInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  Nrrd *nout = nrrdNew();
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   /*
   fprintf(stderr, "%s: op = %d\n", me, op);
@@ -102,7 +100,8 @@ unrrdu_2opMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   */
   if (nrrdTypeDefault != type) {
     /* they wanted to convert nrrds to some other type first */
-    E = 0;
+    Nrrd *ntmp;
+    int E = 0;
     if (in1->ownNrrd) {
       if (!E) E |= nrrdConvert(ntmp = nrrdNew(), in1->ownNrrd, type);
       if (!E) nrrdIterSetOwnNrrd(in1, ntmp);
@@ -130,7 +129,7 @@ unrrdu_2opMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   ** numbers.  Could also have a new array that indicates if an op involves
   ** the RNG, but this would add rarely-needed complexity
   */
-  if (hestSourceDefault != opt[seedOI].source) {
+  if (hestSourceDefault != hopt[seedOI].source) {
     airSrandMT(seed);
   } else {
     /* got no request for specific seed */

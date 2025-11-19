@@ -177,11 +177,11 @@ _nrrdKindAltered(int kindIn, int resampling) {
 }
 
 /*
-** _nrrdAxisInfoCopy
-**
-** HEY: we have a void return even though this function potentially
-** involves calling airStrdup!!
-*/
+ * _nrrdAxisInfoCopy
+ *
+ * HEY: we have a void return even though this function potentially
+ * involves calling airStrdup!!
+ */
 void
 _nrrdAxisInfoCopy(NrrdAxisInfo *dest, const NrrdAxisInfo *src, int bitflag) {
   unsigned int ii;
@@ -600,7 +600,12 @@ nrrdAxisInfoGet_va(const Nrrd *nrrd, int axInfo, ...) {
   if (nrrdAxisInfoSpaceDirection != axInfo) {
     info.P = buffer;
     nrrdAxisInfoGet_nva(nrrd, axInfo, info.P);
+    /* quiet clang-tidy */
+    for (ai = 0; ai < nrrd->dim; ai++)
+      for (si = 0; si < nrrd->spaceDim; si++)
+        svec[ai][si] = AIR_NAN;
   } else {
+    info.P = NULL; /* quiet clang-tidy */
     nrrdAxisInfoGet_nva(nrrd, axInfo, svec);
   }
 
@@ -800,7 +805,8 @@ nrrdAxisInfoIdxRange(double *loP, double *hiP, const Nrrd *nrrd, unsigned int ax
   double min, max, tmp;
 
   if (!(loP && hiP && nrrd && ax <= nrrd->dim - 1)) {
-    *loP = *hiP = AIR_NAN;
+    if (loP) *loP = AIR_NAN;
+    if (hiP) *hiP = AIR_NAN;
     return;
   }
   center = _nrrdCenter(nrrd->axis[ax].center);
@@ -967,7 +973,7 @@ nrrdAxisInfoCompare(const NrrdAxisInfo *axisA, const NrrdAxisInfo *axisB, int *d
   DOUBLE_COMPARE(max, "max");
   for (saxi = 0; saxi < NRRD_SPACE_DIM_MAX; saxi++) {
     char stmp[AIR_STRLEN_SMALL + 1];
-    sprintf(stmp, "spaceDirection[%u]", saxi);
+    snprintf(stmp, sizeof(stmp), "spaceDirection[%u]", saxi);
     DOUBLE_COMPARE(spaceDirection[saxi], stmp);
   }
 #undef DOUBLE_COMPARE
@@ -1394,7 +1400,7 @@ nrrdMetaDataNormalize(Nrrd *nout, const Nrrd *nin, int version, int trivialOrien
   /* initialize output by copying meta-data from nin to ntmp */
   mop = airMopNew();
   ntmp = nrrdNew();
-  airMopAdd(mop, ntmp, (airMopper)nrrdNix, airMopAlways);
+  airMopAdd(mop, ntmp, nrrdNix_mop, airMopAlways);
   /* HEY this is doing the work of a shallow copy, which isn't
      available in the API.  You can pass nrrdCopy() a nin with NULL
      nin->data, which implements a shallow copy, but we can't set

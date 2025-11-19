@@ -29,66 +29,61 @@ static const char *_unrrdu_cksumInfoL
 
 static int /* Biff: 1 */
 unrrdu_cksumDoit(const char *me, char *inS, int endian, int printendian, FILE *fout) {
-  Nrrd *nrrd;
-  airArray *mop;
-  unsigned int crc;
-  char stmp[AIR_STRLEN_SMALL + 1], ends[AIR_STRLEN_SMALL + 1];
-  size_t nn;
-
   if (!strcmp("-", inS) && isatty(STDIN_FILENO)) {
     biffAddf(me, "declining to try reading Nrrd from stdin as tty (terminal)");
     return 1;
   }
-
-  mop = airMopNew();
-  airMopAdd(mop, nrrd = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airArray *mop = airMopNew();
+  Nrrd *nrrd = nrrdNew();
+  airMopAdd(mop, nrrd, nrrdNuke_mop, airMopAlways);
   if (nrrdLoad(nrrd, inS, NULL)) {
     biffMovef(me, NRRD, "%s: trouble loading \"%s\"", me, inS);
     airMopError(mop);
     return 1;
   }
-  crc = nrrdCRC32(nrrd, endian);
-  nn = nrrdElementNumber(nrrd) * nrrdElementSize(nrrd);
-  sprintf(ends, "(%s)", airEnumStr(airEndian, endian));
-  fprintf(fout, "%u%s %s%s%s\n", crc, printendian ? ends : "", airSprintSize_t(stmp, nn),
-          strcmp("-", inS) ? " " : "", strcmp("-", inS) ? inS : "");
+  char ends[ASP1_S];
+  snprintf(ends, ASP1_S, "(%s)", airEnumStr(airEndian, endian));
+  uint crc = nrrdCRC32(nrrd, endian);
+  size_t nn = nrrdElementNumber(nrrd) * nrrdElementSize(nrrd);
+  fprintf(fout, "%u%s %zu%s%s\n", crc, printendian ? ends : "", /* */
+          nn, strcmp("-", inS) ? " " : "", strcmp("-", inS) ? inS : "");
 
   airMopOkay(mop);
   return 0;
 }
 
 static int
-unrrdu_cksumMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *err, **inS;
-  airArray *mop;
-  int pret, endian, printend, okay;
-  unsigned int ni, ninLen;
-
-  mop = airMopNew();
-  hparm->noArgsIsNoProblem = AIR_TRUE;
-  hestOptAdd_1_Enum(&opt, "en,endian", "end", &endian,
+unrrdu_cksumMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+  hestOpt *hopt = NULL;
+  int endian;
+  hestOptAdd_1_Enum(&hopt, "en,endian", "end", &endian,
                     airEnumStr(airEndian, airMyEndian()),
                     "Endianness in which to compute CRC; \"little\" for Intel and "
                     "friends; \"big\" for everyone else. "
                     "Defaults to endianness of this machine",
                     airEndian);
-  hestOptAdd_1_Bool(&opt, "pen,printendian", "bool", &printend, "false",
+  int printend;
+  hestOptAdd_1_Bool(&hopt, "pen,printendian", "bool", &printend, "false",
                     "whether or not to indicate after the CRC value the endianness "
                     "with which the CRC was computed; doing so clarifies "
                     "that the CRC result depends on endianness and may remove "
                     "confusion in comparing results on platforms of different "
                     "endianness");
-  hestOptAdd_Nv_String(&opt, NULL, "nin1", 1, -1, &inS, "-",
+  char **inS;
+  uint ninLen;
+  hestOptAdd_Nv_String(&hopt, NULL, "nin1", 1, -1, &inS, "-",
                        "input nrrd(s). By default tries to read from stdin", &ninLen);
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
 
-  USAGE_OR_PARSE(_unrrdu_cksumInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
+  // (boilerplate for YES some hparm modification)
+  hestParm *hparm = hestParmCopy(_hparm);
+  hparm->noArgsIsNoProblem = AIR_TRUE; // thanks to isatty() above
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_cksumInfoL);
+  airArray *mop = unrrduMopNew(hopt, hparm);
+  char *err;
 
   /* HEY "okay" logic copied from head.c */
-  okay = AIR_FALSE;
-  for (ni = 0; ni < ninLen; ni++) {
+  int okay = AIR_FALSE;
+  for (uint ni = 0; ni < ninLen; ni++) {
     if (unrrdu_cksumDoit(me, inS[ni], endian, printend, stdout)) {
       airMopAdd(mop, err = biffGetDone(me), airFree, airMopAlways);
       fprintf(stderr, "%s: trouble with \"%s\":\n%s", me, inS[ni], err);
@@ -102,7 +97,7 @@ unrrdu_cksumMain(int argc, const char **argv, const char *me, hestParm *hparm) {
     if (ninLen > 1) {
       fprintf(stderr, "\n%s: Unable to read any file\n", me);
     }
-    hestUsage(stderr, opt, me, hparm);
+    hestUsage(stderr, hopt, me, hparm, AIR_TRUE /* oneline */);
     fprintf(stderr, "\nFor more info: \"%s --help\"\n", me);
   }
 

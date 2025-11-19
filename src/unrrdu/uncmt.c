@@ -158,7 +158,7 @@ uncomment(const char *me, const char *nameOut, int nixcmt, const char *cmtSub, i
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, fin, (airMopper)airFclose, airMopAlways);
+  airMopAdd(mop, fin, airFclose_mop, airMopAlways);
   fout = airFopen(nameOut, stdout, "wb");
   if (!fout) {
     fprintf(stderr, "%s: couldn't open \"%s\" for writing: \"%s\"\n", me, nameOut,
@@ -166,7 +166,7 @@ uncomment(const char *me, const char *nameOut, int nixcmt, const char *cmtSub, i
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, fout, (airMopper)airFclose, airMopAlways);
+  airMopAdd(mop, fout, airFclose_mop, airMopAlways);
 
   /* -------------------------------------------------------- */
   /* do the conversion.  Some sources of inspiration:
@@ -335,29 +335,22 @@ uncomment(const char *me, const char *nameOut, int nixcmt, const char *cmtSub, i
 }
 
 static int
-unrrdu_uncmtMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  /* these are stock for unrrdu */
-  hestOpt *opt = NULL;
-  airArray *mop;
-  int pret;
-  char *err;
-  /* these are specific to this command */
-  char *cmtSubst, *nameIn, *nameOut;
-  int nfds, nosub;
-
-  hparm->elideSingleEmptyStringDefault = AIR_FALSE;
+unrrdu_uncmtMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+  hestOpt *hopt = NULL;
+  char *cmtSubst;
   hestOptAdd_1_String(
-    &opt, "cs", "cmtsub", &cmtSubst, "",
+    &hopt, "cs", "cmtsub", &cmtSubst, "",
     /* the \t character is turned by hest into non-breaking space */
     "Given a non-empty string, those characters are looped through to replace the "
-    "non-white space characters is contents; EXCEPT if a length-2 string of a "
+    "non-white space characters in its contents; EXCEPT if a length-2 string of a "
     "repeating character is given, (e.g. \"-cs\txx\") in which case the string contents "
     "are preserved (contrary to the intended purpose of this command). To preserve "
     "comment delimiters but turn comments entirely into whitespace, use "
     "-cs\t\"\t\". To remove the comment delimiters and turn comment contents into "
     "whitespace (the default), pass an empty string here.");
+  int nfds;
   hestOptAdd_Flag(
-    &opt, "nfds", &nfds,
+    &hopt, "nfds", &nfds,
     "prevent \"float\" or \"double\" from appearing in string literals. String "
     "literal contents (unlike comment contents) are typically preserved by this "
     "command (since doing naive per-character substitutions in the same way as done for "
@@ -366,17 +359,21 @@ unrrdu_uncmtMain(int argc, const char **argv, const char *me, hestParm *hparm) {
     "turning them into \"floaT\" and \"doublE\". This functionality is part of the "
     "motivation for this command to exist, but the behavior is weird enough to be off "
     "by default.");
-  hestOptAdd_1_String(&opt, NULL, "fileIn", &nameIn, NULL,
+  char *nameIn;
+  hestOptAdd_1_String(&hopt, NULL, "fileIn", &nameIn, NULL,
                       "Single input file to read; use \"-\" for stdin");
-  hestOptAdd_1_String(&opt, NULL, "fileOut", &nameOut, NULL,
+  char *nameOut;
+  hestOptAdd_1_String(&hopt, NULL, "fileOut", &nameOut, NULL,
                       "Single output filename; use \"-\" for stdout");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
-  USAGE_OR_PARSE(_unrrdu_uncmtInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
+  // (boilerplate for YES some hparm modification)
+  hestParm *hparm = hestParmCopy(_hparm);
+  hparm->elideSingleEmptyStringDefault = AIR_FALSE;
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_uncmtInfoL);
+  airArray *mop = unrrduMopNew(hopt, hparm);
+  // char *err;
 
-  nosub = (2 == strlen(cmtSubst) && cmtSubst[0] == cmtSubst[1]);
+  int nosub = (2 == strlen(cmtSubst) && cmtSubst[0] == cmtSubst[1]);
   if (uncomment(me, nameOut,             /* */
                 !strlen(cmtSubst),       /* nixcmt is true iff cmtSubst is empty */
                 nosub ? NULL : cmtSubst, /* */

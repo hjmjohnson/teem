@@ -80,6 +80,7 @@ miteThreadNix(miteThread *mtt) {
   airFree(mtt);
   return NULL;
 }
+AIR_MOPPER(miteThreadNix)
 
 /*
 ******** miteThreadBegin()

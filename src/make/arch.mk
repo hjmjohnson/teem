@@ -23,15 +23,55 @@
 #### most bare-bones platform-specific logic: some variables are set differently for
 #### Mac vs Linux
 
-# yes, we should probably be using ?= instead = for the assingments below, but
-# the intent here is to be clear and explicit.  The assignment "AR ?= libtool"
+### Maybe compile with some of the clang sanitizers
+# Entirely separately, there is the static analyzer:
+#    https://clang.llvm.org/docs/ClangStaticAnalyzer.html
+# which is run differently, via:
+#    CC='scan-build clang' make
+#
+# For UBSan: https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html compile with:
+#    ubsan= make
+# For ASan: https://clang.llvm.org/docs/AddressSanitizer.html compile with:
+#    asan= make
+# For LSan: https://clang.llvm.org/docs/LeakSanitizer.html compile with:
+#    lsan= make
+# For MSan: https://clang.llvm.org/docs/MemorySanitizer.html compile with:
+#    msan= make
+# Sanitizers may be combined, e.g.:
+#    ubsan= asan= make
+# Note however that not all sanitizers are available on all platforms,
+# and not all sanitizers play well with each other.
+SAN_LIST :=
+ifneq ($(origin ubsan),undefined)
+  SAN_LIST += undefined
+endif
+ifneq ($(origin asan),undefined)
+  SAN_LIST += address
+endif
+ifneq ($(origin lsan),undefined)
+  SAN_LIST += leak
+endif
+ifneq ($(origin msan),undefined)
+  SAN_LIST += memory
+endif
+ifneq ($(SAN_LIST),)
+  # if we have sanitizers to use, make the SAN_FLAG that lists them
+  comma := ,
+  # `$() $()` is a way to express space ` ` h/t https://stackoverflow.com/a/51874794
+  SAN_FLAG := -fsanitize=$(subst $() $(),$(comma),$(strip $(SAN_LIST)))
+  # The Clang sanitizer docs say to use clang as cc (and ld)
+  CC := clang
+else
+  SAN_FLAG :=
+endif
+
+# yes, we should probably be using more ?= instead = for the assignments below,
+# but the intent here is to be clear and explicit.  The assignment "AR ?= libtool"
 # may not do anything because "AR" may default to "ar" for the sake of
 # GNUmake's implicit rules, which is annoying because implicit rules are
 # annoying. If you want different values for these variables, then change them.
 
-# CC = scan-build clang # to run static analyzer https://clang.llvm.org/docs/ClangStaticAnalyzer.html
-CC := cc
-LD := ld
+CC ?= cc
 ifeq ($(shell uname -s),Darwin)
   # on mac
   AR := libtool
@@ -52,7 +92,7 @@ CHMOD := chmod
 
 # other $(CC) flags for .c compilation (e.g. optimization and warnings)
 # Any existing CFLAGS variable (e.g. from environment) is added at end
-CFLAGS := -O3 -g -W -Wall -Wextra $(CFLAGS)
+CFLAGS := -O3 -g -W -Wall -Wextra $(SAN_FLAG) $(CFLAGS)
 
 # further $(CC) flags for creating executables when linking with (static) library
 BIN_CFLAGS :=

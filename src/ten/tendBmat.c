@@ -34,7 +34,7 @@ static const char *_tend_bmatInfoL
           "elements NOT pre-multiplied by 2.");
 
 static int
-tend_bmatMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_bmatMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -48,11 +48,11 @@ tend_bmatMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output B matrix");
 
   mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
   USAGE_JUSTPARSE(_tend_bmatInfoL);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
   nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   if (tenBMatrixCalc(nout, ngrad)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);

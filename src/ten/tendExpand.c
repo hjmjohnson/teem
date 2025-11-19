@@ -32,7 +32,7 @@ static const char *_tend_expandInfoL
           "(conf, Dxx, Dxy, Dyy) to (Dxx, Dxy, Dxy, Dyy). ");
 
 static int
-tend_expandMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_expandMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -65,12 +65,12 @@ tend_expandMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                       "output tensor volume, with the 9 matrix components per sample");
 
   mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
   USAGE_PARSE(_tend_expandInfoL);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (mfRed && 3 == nin->spaceDim && AIR_EXISTS(nin->measurementFrame[0][0])) {
     if (tenMeasurementFrameReduce(nin, nin)) {
       airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);

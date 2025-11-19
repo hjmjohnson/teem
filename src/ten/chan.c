@@ -159,7 +159,7 @@ tenDWMRIKeyValueParse(Nrrd **ngradP, Nrrd **nbmatP, double *bP, unsigned int **s
   /* set up skip list recording */
   mop = airMopNew();
   skipArr = airArrayNew((void **)skipP, skipNumP, sizeof(unsigned int), 16);
-  airMopAdd(mop, skipArr, (airMopper)airArrayNix, airMopAlways);
+  airMopAdd(mop, skipArr, airArrayNix_mop, airMopAlways);
   skipLut = AIR_CALLOC(dwiNum, unsigned int);
   airMopAdd(mop, skipLut, airFree, airMopAlways);
   if (!skipLut) {
@@ -355,7 +355,7 @@ tenBMatrixCalc(Nrrd *nbmat, const Nrrd *_ngrad) {
     return 1;
   }
   mop = airMopNew();
-  airMopAdd(mop, ngrad = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ngrad = nrrdNew(), nrrdNuke_mop, airMopAlways);
   if (nrrdConvert(ngrad, _ngrad, nrrdTypeDouble)
       || nrrdMaybeAlloc_va(nbmat, nrrdTypeDouble, 2, AIR_SIZE_T(6),
                            ngrad->axis[1].size)) {
@@ -401,7 +401,7 @@ tenEMatrixCalc(Nrrd *nemat, const Nrrd *_nbmat, int knownB0) {
     return 1;
   }
   mop = airMopNew();
-  airMopAdd(mop, nbmat = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nbmat = nrrdNew(), nrrdNuke_mop, airMopAlways);
   if (knownB0) {
     if (nrrdConvert(nbmat, _nbmat, nrrdTypeDouble)) {
       biffMovef(TEN, NRRD, "%s: couldn't convert given bmat to doubles", me);
@@ -409,7 +409,7 @@ tenEMatrixCalc(Nrrd *nemat, const Nrrd *_nbmat, int knownB0) {
       return 1;
     }
   } else {
-    airMopAdd(mop, ntmp = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, ntmp = nrrdNew(), nrrdNuke_mop, airMopAlways);
     if (nrrdConvert(ntmp, _nbmat, nrrdTypeDouble)) {
       biffMovef(TEN, NRRD, "%s: couldn't convert given bmat to doubles", me);
       airMopError(mop);
@@ -554,7 +554,8 @@ tenEstimateLinearSingle_f(float *_ten, float *_B0P,              /* output */
   if (DD > DWI_NUM_MAX) {
     fprintf(stderr, "%s: PANIC: sorry, DD=%u > compile-time DWI_NUM_MAX=%u\n", me, DD,
             DWI_NUM_MAX);
-    exit(1);
+    TEN_T_SET(_ten, AIR_NAN, AIR_NAN, AIR_NAN, AIR_NAN, AIR_NAN, AIR_NAN, AIR_NAN);
+    return; /* was exit(1); */
   }
   for (dwiIdx = 0; dwiIdx < DD; dwiIdx++) {
     dwi[dwiIdx] = _dwi[dwiIdx];
@@ -591,7 +592,7 @@ tenEstimateLinear3D(Nrrd *nten, Nrrd **nterrP, Nrrd **nB0P, const Nrrd *const *_
   }
   mop = airMopNew();
   ndwi = nrrdNew();
-  airMopAdd(mop, ndwi, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ndwi, nrrdNuke_mop, airMopAlways);
   if (nrrdJoin(ndwi, (const Nrrd *const *)_ndwi, dwiLen, 0, AIR_TRUE)) {
     biffMovef(TEN, NRRD, "%s: trouble joining inputs", me);
     airMopError(mop);
@@ -676,13 +677,13 @@ tenEstimateLinear4D(Nrrd *nten, Nrrd **nterrP, Nrrd **nB0P, const Nrrd *ndwi,
   sy = ndwi->axis[2].size;
   sz = ndwi->axis[3].size;
   mop = airMopNew();
-  airMopAdd(mop, nbmat = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nbmat = nrrdNew(), nrrdNuke_mop, airMopAlways);
   if (nrrdConvert(nbmat, _nbmat, nrrdTypeDouble)) {
     biffMovef(TEN, NRRD, "%s: trouble converting to doubles", me);
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, nemat = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nemat = nrrdNew(), nrrdNuke_mop, airMopAlways);
   if (tenEMatrixCalc(nemat, nbmat, knownB0)) {
     biffAddf(TEN, "%s: trouble computing estimation matrix", me);
     airMopError(mop);
@@ -700,14 +701,14 @@ tenEstimateLinear4D(Nrrd *nten, Nrrd **nterrP, Nrrd **nB0P, const Nrrd *ndwi,
     return 1;
   }
   if (!AIR_EXISTS(thresh)) {
-    airMopAdd(mop, ncrop = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-    airMopAdd(mop, nhist = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, ncrop = nrrdNew(), nrrdNuke_mop, airMopAlways);
+    airMopAdd(mop, nhist = nrrdNew(), nrrdNuke_mop, airMopAlways);
     ELL_4V_SET(cmin, knownB0 ? 1 : 0, 0, 0, 0);
     ELL_4V_SET(cmax, DD - 1, sx - 1, sy - 1, sz - 1);
     E = 0;
     if (!E) E |= nrrdCrop(ncrop, ndwi, cmin, cmax);
     if (!E) range = nrrdRangeNewSet(ncrop, nrrdBlind8BitRangeState);
-    if (!E) airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
+    if (!E) airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
     if (!E)
       E |= nrrdHisto(nhist, ncrop, range, NULL,
                      (int)AIR_MIN(1024, range->max - range->min + 1), nrrdTypeFloat);
@@ -737,8 +738,8 @@ tenEstimateLinear4D(Nrrd *nten, Nrrd **nterrP, Nrrd **nB0P, const Nrrd *ndwi,
       airMopError(mop);
       return 1;
     }
-    airMopAdd(mop, nterrP, (airMopper)airSetNull, airMopOnError);
-    airMopAdd(mop, *nterrP, (airMopper)nrrdNuke, airMopOnError);
+    airMopAdd(mop, nterrP, airSetNull_mop, airMopOnError);
+    airMopAdd(mop, *nterrP, nrrdNuke_mop, airMopOnError);
     terr = (float *)((*nterrP)->data);
   } else {
     terr = NULL;
@@ -752,8 +753,8 @@ tenEstimateLinear4D(Nrrd *nten, Nrrd **nterrP, Nrrd **nB0P, const Nrrd *ndwi,
       airMopError(mop);
       return 1;
     }
-    airMopAdd(mop, nB0P, (airMopper)airSetNull, airMopOnError);
-    airMopAdd(mop, *nB0P, (airMopper)nrrdNuke, airMopOnError);
+    airMopAdd(mop, nB0P, airSetNull_mop, airMopOnError);
+    airMopAdd(mop, *nB0P, nrrdNuke_mop, airMopOnError);
     B0 = (float *)((*nB0P)->data);
   } else {
     B0 = NULL;
@@ -770,6 +771,7 @@ tenEstimateLinear4D(Nrrd *nten, Nrrd **nterrP, Nrrd **nB0P, const Nrrd *ndwi,
         fprintf(stderr, "%s: input dwi1[%d] = %g\n", me, d, dwi1[d]);
       } */
     }
+    _B0 = 0; // sssh warning
     tenEstimateLinearSingle_f(ten, &_B0, dwi1, emat, vbuf, AIR_UINT(DD), knownB0,
                               AIR_FLOAT(thresh), AIR_FLOAT(soft), AIR_FLOAT(b));
     if (nB0P) {
@@ -883,7 +885,7 @@ tenSimulate(Nrrd *ndwi, const Nrrd *nT2, const Nrrd *nten, const Nrrd *_nbmat,
     return 1;
   }
   mop = airMopNew();
-  airMopAdd(mop, nbmat = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nbmat = nrrdNew(), nrrdNuke_mop, airMopAlways);
   if (nrrdConvert(nbmat, _nbmat, nrrdTypeDouble)) {
     biffMovef(TEN, NRRD, "%s: couldn't convert B matrix", me);
     return 1;

@@ -43,10 +43,10 @@ main(int argc, const char *argv[]) {
              "threshold value");
   hestOptAdd(&hopt, "o", "output LMPD", airTypeString, 1, 1, &outS, "out.lmpd",
              "output file to save LMPD into");
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
+  hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
   mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   bitflag = limnPolyDataInfoBitFlag(pld);
   fprintf(stderr, "!%s: bitflag = %d\n", me, bitflag);
@@ -60,7 +60,7 @@ main(int argc, const char *argv[]) {
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, file, (airMopper)airFclose, airMopAlways);
+  airMopAdd(mop, file, airFclose_mop, airMopAlways);
 
   if (limnPolyDataClip(pld, nin, thresh) || limnPolyDataWriteLMPD(file, pld)) {
     airMopAdd(mop, err = biffGetDone(LIMN), airFree, airMopAlways);

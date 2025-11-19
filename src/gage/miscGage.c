@@ -166,6 +166,7 @@ gageItemSpecNix(gageItemSpec *isp) {
   }
   return NULL;
 }
+AIR_MOPPER(gageItemSpecNix)
 
 /* clang-format off */
 static const char *

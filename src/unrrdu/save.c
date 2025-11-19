@@ -31,18 +31,9 @@ static const char *_unrrdu_saveInfoL
           "* Uses various fields in the NrrdIOState passed to nrrdSave");
 
 static int
-unrrdu_saveMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err, *outData, encInfo[AIR_STRLEN_HUGE + 1], fmtInfo[AIR_STRLEN_HUGE + 1];
-  Nrrd *nin, *nout;
-  airArray *mop;
-  NrrdIoState *nio;
-  int pret, enc[3], frmt[2];
-
-  mop = airMopNew();
-  nio = nrrdIoStateNew();
-  airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
-
+unrrdu_saveMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  char fmtInfo[AIR_STRLEN_HUGE + 1];
   strcpy(fmtInfo,
          "output file format. Possibilities include:\n "
          "\b\bo \"nrrd\": standard nrrd format\n "
@@ -56,7 +47,10 @@ unrrdu_saveMain(int argc, const char **argv, const char *me, hestParm *hparm) {
     strcat(fmtInfo, "\n \b\bo \"png\": PNG image");
   }
   strcat(fmtInfo, "\n \b\bo \"eps\": EPS file");
-  hestOptAdd_1_Other(&opt, "f,format", "form", frmt, NULL, fmtInfo, &unrrduHestFormatCB);
+  int frmt[2];
+  hestOptAdd_1_Other(&hopt, "f,format", "form", frmt, NULL, fmtInfo,
+                     &unrrduHestFormatCB);
+  char encInfo[AIR_STRLEN_HUGE + 1];
   strcpy(encInfo,
          "encoding of data in file.  Not all encodings are supported in "
          "a given format. Possibilities include:"
@@ -80,32 +74,36 @@ unrrdu_saveMain(int argc, const char **argv, const char *me, hestParm *hparm) {
            "\b\bo \"f\": specialized for filtered data\n "
            "For example, \"gz\", \"gz:9\", \"gz:9f\" are all valid");
   }
-  hestOptAdd_1_Other(&opt, "e,encoding", "enc", enc, "raw", encInfo,
+  int enc[3];
+  hestOptAdd_1_Other(&hopt, "e,encoding", "enc", enc, "raw", encInfo,
                      &unrrduHestEncodingCB);
-  hestOptAdd_1_Enum(&opt, "en,endian", "end", &(nio->endian),
+  int nioEndian;
+  hestOptAdd_1_Enum(&hopt, "en,endian", "end", &nioEndian,
                     airEnumStr(airEndian, airMyEndian()),
                     "Endianness to save data out as; \"little\" for Intel and "
                     "friends; \"big\" for everyone else. "
                     "Defaults to endianness of this machine",
                     airEndian);
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
-  hestOptAdd_1_String(&opt, "od,ouputdata", "name", &outData, "",
+  char *outData;
+  hestOptAdd_1_String(&hopt, "od,ouputdata", "name", &outData, "",
                       "when saving to a \".nhdr\" file, "
                       "this option allows you to explicitly name the data file, "
                       "instead of (by default, not using this option) having it be "
                       "the same filename base as the header file.");
 
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_saveInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_saveInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-  nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
-
-  nrrdCopy(nout, nin);
-
+  NrrdIoState *nio = nrrdIoStateNew();
+  airMopAdd(mop, nio, nrrdIoStateNix_mop, airMopAlways);
   nio->format = nrrdFormatArray[frmt[0]];
+  nio->endian = nioEndian;
   if (nrrdFormatTypeText == frmt[0] && frmt[1]) {
     nio->bareText = AIR_TRUE;
   }
@@ -116,10 +114,13 @@ unrrdu_saveMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   } else if (nrrdEncodingTypeBzip2 == enc[0]) {
     nio->bzip2BlockSize = enc[1];
   }
+
+  Nrrd *nout = nrrdNew();
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
+  nrrdCopy(nout, nin);
   if (airMyEndian() != nio->endian) {
     nrrdSwapEndian(nout);
   }
-
   if (airEndsWith(out, NRRD_EXT_NHDR)) {
     if (nio->format != nrrdFormatNRRD) {
       fprintf(stderr, "%s: WARNING: will use %s format\n", me, nrrdFormatNRRD->name);

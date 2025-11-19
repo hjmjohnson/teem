@@ -168,3 +168,4 @@ hooverContextNix(hooverContext *ctx) {
   }
   return NULL;
 }
+AIR_MOPPER(hooverContextNix)

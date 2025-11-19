@@ -104,7 +104,7 @@ nrrdHisto(Nrrd *nout, const Nrrd *nin, const NrrdRange *_range, const Nrrd *nwgh
     } else {
       range = nrrdRangeNewSet(nin, nrrdBlind8BitRangeState);
     }
-    airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
+    airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
     min = range->min;
     max = range->max;
     nout->axis[0].min = min;
@@ -285,13 +285,13 @@ nrrdHistoDraw(Nrrd *nout, const Nrrd *nin, size_t sy, int showLog, double max) {
     }
   }
   E = 0;
-  sprintf(cmt, "min value: %g\n", nout->axis[0].min);
+  snprintf(cmt, sizeof(cmt), "min value: %g\n", nout->axis[0].min);
   if (!E) E |= nrrdCommentAdd(nout, cmt);
-  sprintf(cmt, "max value: %g\n", nout->axis[0].max);
+  snprintf(cmt, sizeof(cmt), "max value: %g\n", nout->axis[0].max);
   if (!E) E |= nrrdCommentAdd(nout, cmt);
-  sprintf(cmt, "max hits: %g, in bin %s, around value %g\n", maxhits,
-          airSprintSize_t(stmp, maxhitidx),
-          nrrdAxisInfoPos(nout, 0, AIR_DOUBLE(maxhitidx)));
+  snprintf(cmt, sizeof(cmt), "max hits: %g, in bin %s, around value %g\n", maxhits,
+           airSprintSize_t(stmp, maxhitidx),
+           nrrdAxisInfoPos(nout, 0, AIR_DOUBLE(maxhitidx)));
   if (!E) E |= nrrdCommentAdd(nout, cmt);
   if (!E) E |= nrrdContentSet_va(nout, func, nin, "%s", airSprintSize_t(stmp, sy));
   if (E) {
@@ -360,7 +360,7 @@ nrrdHistoAxis(Nrrd *nout, const Nrrd *nin, const NrrdRange *_range, unsigned int
   } else {
     range = nrrdRangeNewSet(nin, nrrdBlind8BitRangeState);
   }
-  airMopAdd(mop, range, (airMopper)nrrdRangeNix, airMopAlways);
+  airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
   nrrdAxisInfoGet_nva(nin, nrrdAxisInfoSize, size);
   size[hax] = bins;
   if (nrrdMaybeAlloc_nva(nout, type, nin->dim, size)) {
@@ -382,10 +382,10 @@ nrrdHistoAxis(Nrrd *nout, const Nrrd *nin, const NrrdRange *_range, unsigned int
   nout->axis[hax].max = range->max;
   nout->axis[hax].center = nrrdCenterCell;
   if (nin->axis[hax].label) {
-    nout->axis[hax].label
-      = AIR_CALLOC(strlen("histax()") + strlen(nin->axis[hax].label) + 1, char);
+    size_t lsize = strlen("histax()") + strlen(nin->axis[hax].label) + 1;
+    nout->axis[hax].label = AIR_CALLOC(lsize, char);
     if (nout->axis[hax].label) {
-      sprintf(nout->axis[hax].label, "histax(%s)", nin->axis[hax].label);
+      snprintf(nout->axis[hax].label, lsize, "histax(%s)", nin->axis[hax].label);
     } else {
       biffAddf(NRRD, "%s: couldn't allocate output label", me);
       airMopError(mop);
@@ -491,7 +491,7 @@ nrrdHistoJoint(Nrrd *nout, const Nrrd *const *nin, const NrrdRange *const *_rang
     } else {
       range[ai] = nrrdRangeNewSet(nin[ai], nrrdBlind8BitRangeState);
     }
-    airMopAdd(mop, range[ai], (airMopper)nrrdRangeNix, airMopAlways);
+    airMopAdd(mop, range[ai], nrrdRangeNix_mop, airMopAlways);
   }
   for (ai = 0; ai < numNin; ai++) {
     if (!nin[ai]) {
@@ -553,12 +553,12 @@ nrrdHistoJoint(Nrrd *nout, const Nrrd *const *nin, const NrrdRange *const *_rang
     if (nin[ai]->content) {
       hadContent = 1;
       totalContentStrlen += strlen(nin[ai]->content);
-      nout->axis[ai].label
-        = AIR_CALLOC(strlen("histo(,)") + strlen(nin[ai]->content) + 11 + 1, char);
+      size_t lsize = strlen("histo(,)") + strlen(nin[ai]->content) + 11 + 1;
+      nout->axis[ai].label = AIR_CALLOC(lsize, char);
       if (nout->axis[ai].label) {
         char stmp[AIR_STRLEN_SMALL + 1];
-        sprintf(nout->axis[ai].label, "histo(%s,%s)", nin[ai]->content,
-                airSprintSize_t(stmp, bins[ai]));
+        snprintf(nout->axis[ai].label, lsize, "histo(%s,%s)", nin[ai]->content,
+                 airSprintSize_t(stmp, bins[ai]));
       } else {
         biffAddf(NRRD, "%s: couldn't allocate output label #%u", me, ai);
         return 1;
@@ -611,21 +611,18 @@ nrrdHistoJoint(Nrrd *nout, const Nrrd *const *nin, const NrrdRange *const *_rang
     nrrdDInsert[nout->type](nout->data, Iout, count);
   }
 
-  /* HEY: switch to nrrdContentSet_va? */
   if (hadContent) {
-    nout->content = AIR_CALLOC(strlen(func) + strlen("()") + numNin * strlen(",")
-                                 + totalContentStrlen + 1,
-                               char);
+    size_t contSize = strlen(func) + strlen("()") + numNin * strlen(",")
+                    + totalContentStrlen + 1;
+    nout->content = AIR_CALLOC(contSize, char);
+    char *cont = nout->content;
+    cont[0] = '\0';
     if (nout->content) {
-      size_t len;
-      sprintf(nout->content, "%s(", func);
+      SN_PRINTF(cont, contSize, "%s(", func);
       for (ai = 0; ai < numNin; ai++) {
-        len = strlen(nout->content);
-        strcpy(nout->content + len, nin[ai]->content ? nin[ai]->content : "?");
-        len = strlen(nout->content);
-        nout->content[len] = ai < numNin - 1 ? ',' : ')';
+        SN_PRINTF(cont, contSize, "%s%c", nin[ai]->content ? nin[ai]->content : "?",
+                  ai < numNin - 1 ? ',' : ')');
       }
-      nout->content[len + 1] = '\0';
     } else {
       biffAddf(NRRD, "%s: couldn't allocate output content", me);
       return 1;
@@ -662,8 +659,8 @@ nrrdHistoThresholdOtsu(double *threshP, const Nrrd *_nhist, double expo) {
   }
 
   mop = airMopNew();
-  airMopAdd(mop, nhist = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nbvar = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nhist = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nbvar = nrrdNew(), nrrdNuke_mop, airMopAlways);
   if (nrrdConvert(nhist, _nhist, nrrdTypeDouble) || nrrdCopy(nbvar, nhist)) {
     biffAddf(NRRD, "%s: making local copies", me);
     airMopError(mop);

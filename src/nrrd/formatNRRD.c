@@ -178,7 +178,7 @@ nrrdIoStateDataFileIterNext(FILE **fileP, NrrdIoState *nio, int reading) {
   airArray *mop;
 
   mop = airMopNew();
-  airMopAdd(mop, (void *)fileP, (airMopper)airSetNull, airMopOnError);
+  airMopAdd(mop, (void *)fileP, airSetNull_mop, airMopOnError);
 
   if (!fileP) {
     biffAddf(NRRD, "%s: got NULL pointer", me);

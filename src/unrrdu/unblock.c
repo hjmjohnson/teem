@@ -28,30 +28,27 @@ static const char *_unrrdu_unblockInfoL
           "Underlying data is unchanged.");
 
 static int
-unrrdu_unblockMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *nout;
-  int type, pret;
-  size_t blockSize;
-  airArray *mop;
-
+unrrdu_unblockMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  int type;
   OPT_ADD_TYPE(type, "type to unblock to", NULL);
-  hestOptAdd_1_Size_t(&opt, "bs", "blocksize", &blockSize, "0",
+  size_t blockSize;
+  hestOptAdd_1_Size_t(&hopt, "bs", "blocksize", &blockSize, "0",
                       "Useful only if *output* type is also block: the size of "
                       "blocks in output nrrd");
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_unblockInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_unblockInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   nout->blockSize = blockSize;
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
 
   if (nrrdUnblock(nout, nin, type)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);

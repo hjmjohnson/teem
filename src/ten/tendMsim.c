@@ -32,11 +32,10 @@ static const char *_tend_msimInfoL
           "measurement frame. ");
 
 static int
-tend_msimMain(int argc, const char **argv, const char *me, hestParm *hparm) {
+tend_msimMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
-  airArray *mop;
 
   tenExperSpec *espec;
   const tenModel *model;
@@ -45,6 +44,9 @@ tend_msimMain(int argc, const char **argv, const char *me, hestParm *hparm) {
   char *outS, *modS;
   double bval, sigma;
 
+  airArray *mop = airMopNew();
+  hestParm *hparm = hestParmCopy(_hparm);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   /* maybe this can go in tend.c, but for some reason its explicitly
      set to AIR_FALSE there */
   hparm->elideSingleOtherDefault = AIR_TRUE;
@@ -78,22 +80,21 @@ tend_msimMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                     nrrdType);
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output dwis");
 
-  mop = airMopNew();
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
   USAGE_PARSE(_tend_msimInfoL);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   espec = tenExperSpecNew();
-  airMopAdd(mop, espec, (airMopper)tenExperSpecNix, airMopAlways);
+  airMopAdd(mop, espec, tenExperSpecNix_mop, airMopAlways);
 
   airSrandMT(seed);
   if (nrrdTypeDouble == _ngrad->type) {
     ngrad = _ngrad;
   } else {
     ngrad = nrrdNew();
-    airMopAdd(mop, ngrad, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, ngrad, nrrdNuke_mop, airMopAlways);
     if (nrrdConvert(ngrad, _ngrad, nrrdTypeDouble)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
       fprintf(stderr, "%s: trouble converting grads to %s:\n%s\n", me,

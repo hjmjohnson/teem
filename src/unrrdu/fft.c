@@ -63,25 +63,18 @@ static const airEnum _direction_enm = {"direction",      2,
 static const airEnum *const direction_enm = &_direction_enm;
 
 static int
-unrrdu_fftMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *_nin, *nout;
-  int pret;
-  airArray *mop;
-
-  int sign, rigor, rescale, realInput;
-  char *wispath;
-  FILE *fwise;
-  unsigned int *axes, axesLen;
-
-  hestOptAdd_1_Enum(&opt, NULL, "dir", &sign, NULL,
+unrrdu_fftMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  int sign;
+  hestOptAdd_1_Enum(&hopt, NULL, "dir", &sign, NULL,
                     "forward (\"forw\", \"f\") or backward/inverse "
                     "(\"back\", \"b\") transform ",
                     direction_enm);
-  hestOptAdd_Nv_UInt(&opt, "a,axes", "ax0", 1, -1, &axes, NULL,
+  uint *axes, axesLen;
+  hestOptAdd_Nv_UInt(&hopt, "a,axes", "ax0", 1, -1, &axes, NULL,
                      "the one or more axes that should be transformed", &axesLen);
-  hestOptAdd_1_Enum(&opt, "pr,planrigor", "pr", &rigor, "est",
+  int rigor;
+  hestOptAdd_1_Enum(&hopt, "pr,planrigor", "pr", &rigor, "est",
                     "rigor with which fftw plan is constructed. Options include:\n "
                     "\b\bo \"e\", \"est\", \"estimate\": only an estimate\n "
                     "\b\bo \"m\", \"meas\", \"measure\": standard amount of "
@@ -89,41 +82,37 @@ unrrdu_fftMain(int argc, const char **argv, const char *me, hestParm *hparm) {
                     "\b\bo \"p\", \"pat\", \"patient\": slower, more measurements\n "
                     "\b\bo \"x\", \"ex\", \"exhaustive\": slowest, most measurements",
                     nrrdFFTWPlanRigor);
-  hestOptAdd_1_Bool(&opt, "r,rescale", "bool", &rescale, "true",
+  int rescale;
+  hestOptAdd_1_Bool(&hopt, "r,rescale", "bool", &rescale, "true",
                     "scale fftw output (by sqrt(1/N)) so that forward and backward "
                     "transforms will get back to original values");
-  hestOptAdd_1_String(&opt, "w,wisdom", "filename", &wispath, "",
+  char *wispath;
+  hestOptAdd_1_String(&hopt, "w,wisdom", "filename", &wispath, "",
                       "A filename here is used to read in fftw wisdom (if the file "
                       "exists already), and is used to save out updated wisdom "
                       "after the transform.  By default (not using this option), "
                       "no wisdom is read or saved. Note: no wisdom is gained "
                       "(that is, learned by FFTW) with planning rigor \"estimate\".");
+  Nrrd *_nin;
   OPT_ADD_NIN(_nin, "input nrrd");
-  hestOptAdd_Flag(&opt, "ri,realinput", &realInput,
+  int realInput;
+  hestOptAdd_Flag(&hopt, "ri,realinput", &realInput,
                   "input is real-valued, so insert new length-2 axis 0 "
                   "and set complex component to 0.0.  Axes to transform "
                   "(indicated by \"-a\") will be incremented accordingly.");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me,
+                  (nrrdFFTWEnabled ? _unrrdu_fftInfoL_yes : _unrrdu_fftInfoL_no));
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
-  if (nrrdFFTWEnabled) {
-    USAGE_OR_PARSE(_unrrdu_fftInfoL_yes);
-  } else {
-    USAGE_OR_PARSE(_unrrdu_fftInfoL_no);
-  }
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
-
+  Nrrd *nin = NULL;
   if (realInput) {
-    ptrdiff_t minPad[NRRD_DIM_MAX], maxPad[NRRD_DIM_MAX];
-    unsigned int axi;
-    Nrrd *ntmp;
-    ntmp = nrrdNew();
-    airMopAdd(mop, ntmp, (airMopper)nrrdNuke, airMopAlways);
+    Nrrd *ntmp = nrrdNew();
+    airMopAdd(mop, ntmp, nrrdNuke_mop, airMopAlways);
     if (nrrdAxesInsert(ntmp, _nin, 0)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
       fprintf(stderr, "%s: error creating complex axis:\n%s", me, err);
@@ -131,10 +120,11 @@ unrrdu_fftMain(int argc, const char **argv, const char *me, hestParm *hparm) {
       return 1;
     }
     nin = nrrdNew();
-    airMopAdd(mop, nin, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nin, nrrdNuke_mop, airMopAlways);
+    ptrdiff_t minPad[NRRD_DIM_MAX], maxPad[NRRD_DIM_MAX];
     minPad[0] = 0;
     maxPad[0] = 1;
-    for (axi = 1; axi < ntmp->dim; axi++) {
+    for (uint axi = 1; axi < ntmp->dim; axi++) {
       minPad[axi] = 0;
       maxPad[axi] = AIR_CAST(ptrdiff_t, ntmp->axis[axi].size - 1);
     }
@@ -145,18 +135,19 @@ unrrdu_fftMain(int argc, const char **argv, const char *me, hestParm *hparm) {
       return 1;
     }
     /* increment specified axes to transform */
-    for (axi = 0; axi < axesLen; axi++) {
+    for (uint axi = 0; axi < axesLen; axi++) {
       axes[axi]++;
     }
     /* ntmp is really done with, we can free up the space now; this
        is one of the rare times we want airMopSub */
-    airMopSub(mop, ntmp, (airMopper)nrrdNuke);
+    airMopSub(mop, ntmp, nrrdNuke_mop);
     nrrdNuke(ntmp);
   } else {
     /* input is apparently already complex */
     nin = _nin;
   }
 
+  FILE *fwise;
   if (airStrlen(wispath) && nrrdFFTWEnabled) {
     fwise = fopen(wispath, "r");
     if (fwise) {
@@ -175,6 +166,8 @@ unrrdu_fftMain(int argc, const char **argv, const char *me, hestParm *hparm) {
     }
   }
 
+  Nrrd *nout = nrrdNew();
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdFFT(nout, nin, axes, axesLen, sign, rescale, rigor)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error with fft:\n%s", me, err);

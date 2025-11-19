@@ -61,6 +61,7 @@ limnPolyDataNix(limnPolyData *pld) {
   airFree(pld);
   return NULL;
 }
+AIR_MOPPER(limnPolyDataNix)
 
 /*
 ** doesn't set pld->xyzwNum, only the per-attribute xxxNum variables

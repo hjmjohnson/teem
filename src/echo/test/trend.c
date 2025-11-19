@@ -817,7 +817,7 @@ main(int argc, char **argv) {
   mop = airMopNew();
 
   cam = limnCameraNew();
-  airMopAdd(mop, cam, (airMopper)limnCameraNix, airMopAlways);
+  airMopAdd(mop, cam, limnCameraNix_mop, airMopAlways);
   cam->neer = 0;
   cam->dist = 0;
   cam->faar = 0;
@@ -826,16 +826,16 @@ main(int argc, char **argv) {
   cam->rightHanded = AIR_TRUE;
 
   parm = echoRTParmNew();
-  airMopAdd(mop, parm, (airMopper)echoRTParmNix, airMopAlways);
+  airMopAdd(mop, parm, echoRTParmNix_mop, airMopAlways);
 
   state = echoGlobalStateNew();
-  airMopAdd(mop, state, (airMopper)echoGlobalStateNix, airMopAlways);
+  airMopAdd(mop, state, echoGlobalStateNix_mop, airMopAlways);
 
   scene = echoSceneNew();
-  airMopAdd(mop, scene, (airMopper)echoSceneNix, airMopAlways);
+  airMopAdd(mop, scene, echoSceneNix_mop, airMopAlways);
 
   nraw = nrrdNew();
-  airMopAdd(mop, nraw, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nraw, nrrdNuke_mop, airMopAlways);
 
   /* makeSceneGlass(cam, parm, scene); */
   /* makeSceneGlass2(cam, parm, scene); */

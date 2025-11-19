@@ -19,12 +19,11 @@
 /* clang-format off */
 
 #include "nrrd.h"
+#include "privateNrrd.h"
+#include <assert.h>
 
 /*
-** summary of information about how the kernel parameter vector is set:
-** Note that, annoyingly, nrrdKernelUsesScale (at end of this file)
-** has to be updated to record which kernels (including their derivatives)
-** use parm[0] for scale.
+Summary of information about how the kernel parameter vector is set:
 
                                  parmNum  parm[0]   parm[1]   parm[2]
                   nrrdKernelZero    1     scale
@@ -61,11 +60,13 @@ nrrdKernelCatmullRomSupportDebug    1     support
  nrrdKernelBSpline7ApproxInverse    0
              nrrdKernelTMF[][][]    1       a
 
-** Note that when parm[0] is named "scale", that parameter is optional,
-** and the default is 1.0, when given in string form
-** E.g. "tent" is understood as "tent:1",
-** but "gauss:4" isn't complete and won't parse; while "gauss:1,4" is good
-** See note above about nrrdKernelUsesScale (at end of this file)
+Note that when parm[0] is named "scale", that parameter is optional,
+and the default is 1.0, when given in string form
+E.g. "tent" is understood as "tent:1",
+but "gauss:4" isn't complete and won't parse; while "gauss:1,4" is good
+There used to be a nrrdKernelUsesScale function, but now the new 3rd
+member of the NrrdKernel is parm0IsScale, which should agree with the
+appearance of "scale" above
 */
 
 /* these functions replace what had been a lot of
@@ -2572,7 +2573,11 @@ _nrrdGN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelG = {
-  "gauss", 2, AIR_TRUE,
+  "gauss", 2, AIR_FALSE /* (parm0IsScale) Nov 18 '25: this was AIR_TRUE,
+                           but the intent of parm0IsScale is to make the
+                           scaling parameter optional when it is 1.
+                           That is true of "tent" but a Gaussian always
+                           needs to say its sigma */,
   _nrrdGSup,  _nrrdGInt,
   _nrrdG1_f,   _nrrdGN_f,   _nrrdG1_d,   _nrrdGN_d
 };
@@ -2674,7 +2679,7 @@ _nrrdDiscGaussianN_f(float *f, const float *x, size_t len, const double *parm) {
 
 static const NrrdKernel
 _nrrdKernelDiscreteGaussian = {
-  "discretegauss", 2, AIR_TRUE,
+  "discretegauss", 2, AIR_FALSE /* (parm0IsScale) see note with nrrdKernelGaussian above */,
   _nrrdDiscGaussianSup,  _nrrdDiscGaussianInt,
   _nrrdDiscGaussian1_f, _nrrdDiscGaussianN_f,
   _nrrdDiscGaussian1_d, _nrrdDiscGaussianN_d
@@ -3029,12 +3034,6 @@ _nrrdKernelParseTMFInt(int *val, char *str) {
 int /* Biff: 1 */
 nrrdKernelParse(const NrrdKernel **kernelP, double *parm, const char *_str) {
   static const char me[] = "nrrdKernelParse";
-  char str[AIR_STRLEN_HUGE + 1], kstr[AIR_STRLEN_MED + 1],
-    *_pstr = NULL, *pstr, *tmfStr[4] = {NULL, NULL, NULL, NULL};
-  int tmfD, tmfC, tmfA;
-  unsigned int jj, haveParm, needParm;
-  airArray *mop;
-
   if (!(kernelP && parm && _str)) {
     biffAddf(NRRD, "%s: got NULL pointer", me);
     return 1;
@@ -3045,23 +3044,27 @@ nrrdKernelParse(const NrrdKernel **kernelP, double *parm, const char *_str) {
   ** nrrdKernelSet copies all arguments into its own array later, and
   ** copying uninitialised memory is bad (it traps my memory debugger).
   */
-  for (jj = 0; jj < NRRD_KERNEL_PARM_MAXNUM; jj++) {
+  for (uint jj = 0; jj < NRRD_KERNEL_PARM_MAXNUM; jj++) {
     parm[jj] = 0;
   }
 
-  airStrcpy(str, sizeof(str), _str);
-  strcpy(kstr, "");
-  pstr = NULL;
-  pstr = strchr(str, ':');
+  airArray *mop = airMopNew();
+  char *str = airStrdup(_str);
+  assert(str);
+  airMopAdd(mop, str, airFree, airMopAlways);
+  char *_pstr = NULL, *pstr = strchr(str, ':');
   if (pstr) {
     *pstr = '\0';
     _pstr = ++pstr;
   }
-  strcpy(kstr, str);
+  char *kstr = airStrdup(str); // just the kernel name since ':'->'\0'
+  assert(kstr);
+  airMopAdd(mop, kstr, airFree, airMopAlways);
   airToLower(kstr);
-  mop = airMopNew();
   /* first see if its a TMF, then try parsing it as the other stuff */
   if (kstr == strstr(kstr, "tmf")) {
+    int tmfD, tmfC, tmfA;
+    char *tmfStr[4] = {NULL, NULL, NULL, NULL};
     if (4 == airParseStrS(tmfStr, pstr, ",", 4)) {
       airMopAdd(mop, tmfStr[0], airFree, airMopAlways);
       airMopAdd(mop, tmfStr[1], airFree, airMopAlways);
@@ -3124,7 +3127,7 @@ nrrdKernelParse(const NrrdKernel **kernelP, double *parm, const char *_str) {
   } else {
     /* its not a TMF */
     if (!(*kernelP = _nrrdKernelStrToKern(kstr))) {
-      biffAddf(NRRD, "%s: kernel \"%s\" not recognized", me, kstr);
+      biffAddf(NRRD, "%s: kernel name \"%s\" not recognized", me, kstr);
       airMopError(mop);
       return 1;
     }
@@ -3134,34 +3137,32 @@ nrrdKernelParse(const NrrdKernel **kernelP, double *parm, const char *_str) {
       airMopError(mop);
       return 1;
     }
-    if (*kernelP == nrrdKernelGaussian || *kernelP == nrrdKernelGaussianD
-        || *kernelP == nrrdKernelGaussianDD || *kernelP == nrrdKernelDiscreteGaussian
-        || *kernelP == nrrdKernelBoxSupportDebug
-        || *kernelP == nrrdKernelCos4SupportDebug
-        || *kernelP == nrrdKernelCos4SupportDebugD
-        || *kernelP == nrrdKernelCos4SupportDebugDD
-        || *kernelP == nrrdKernelCos4SupportDebugDDD) {
-      /* for these kernels, we need all the parameters given explicitly */
-      needParm = (*kernelP)->parmNum;
-    } else {
-      /*  For everything else (note that TMF kernels are handled
-          separately), we can make do with one less than the required,
-          by using the default spacing  */
-      needParm = ((*kernelP)->parmNum > 0 ? (*kernelP)->parmNum - 1 : 0);
+    uint needParm = 0;
+    if ((*kernelP)->parmNum) {
+      if ((*kernelP)->parm0IsScale) {
+        /* we can make do with one less than the required,
+           by using the default spacing 1.0
+           (note that TMF kernels are handled separately) */
+        needParm = (*kernelP)->parmNum - 1;
+      } else {
+        /* for this kernel we need all the parameters given explicitly */
+        needParm = (*kernelP)->parmNum;
+      }
     }
-    if (needParm > 0 && !pstr) {
+    if (needParm && !pstr) {
       biffAddf(NRRD,
-               "%s: didn't get any of %u required doubles after "
-               "colon in \"%s\"",
-               me, needParm, kstr);
+               "%s: didn't get any of %u required parameters after "
+               "a (missing) colon in \"%s\"",
+               me, needParm, _str);
       airMopError(mop);
       return 1;
     }
+    uint haveParm;
     for (haveParm = 0; haveParm < (*kernelP)->parmNum; haveParm++) {
       if (!pstr) break;
       if (1 != airSingleSscanf(pstr, "%lg", parm + haveParm)) {
-        biffAddf(NRRD, "%s: trouble parsing \"%s\" as double (in \"%s\")", me, _pstr,
-                 _str);
+        biffAddf(NRRD, "%s: trouble parsing \"%s\" as parameter[%u] (in \"%s\")", me,
+                 pstr, haveParm, _str);
         airMopError(mop);
         return 1;
       }
@@ -3179,20 +3180,23 @@ nrrdKernelParse(const NrrdKernel **kernelP, double *parm, const char *_str) {
     if (haveParm < needParm) {
       biffAddf(NRRD,
                "%s: parsed only %u of %u required doubles "
-               "from \"%s\" (in \"%s\")",
+               "from \"%s\" (after ':' in \"%s\")",
                me, haveParm, needParm, _pstr, _str);
       airMopError(mop);
       return 1;
     } else if (haveParm == needParm && needParm == (*kernelP)->parmNum - 1) {
       /* shift up parsed values, and set parm[0] to default */
-      for (jj = haveParm; jj >= 1; jj--) {
+      for (uint jj = haveParm; jj >= 1; jj--) {
         parm[jj] = parm[jj - 1];
       }
       parm[0] = 1 /* Gone in TeemV2: nrrdDefaultKernelParm0 */;
     } else {
       if (pstr) {
-        biffAddf(NRRD, "%s: \"%s\" (in \"%s\") has more than %u doubles", me, _pstr,
-                 _str, (*kernelP)->parmNum);
+        biffAddf(NRRD,
+                 "%s: \"%s\" (after ':' in \"%s\") conveys "
+                 "more than %u needed parameter%s",
+                 me, _pstr, _str, (*kernelP)->parmNum,
+                 1 == (*kernelP)->parmNum ? "" : "s");
         airMopError(mop);
         return 1;
       }
@@ -3229,18 +3233,13 @@ nrrdKernelSpecParse(NrrdKernelSpec *ksp, const char *str) {
 ** which is plenty big
 */
 int /* Biff: 1 */
-nrrdKernelSpecSprint(char str[AIR_STRLEN_LARGE + 1], const NrrdKernelSpec *ksp) {
+nrrdKernelSpecSprint(char _str[AIR_STRLEN_SMALL + 1], const NrrdKernelSpec *ksp) {
   static const char me[] = "nrrdKernelSpecSprint";
-  unsigned int warnLen = AIR_STRLEN_LARGE / 3;
-  char stmp[AIR_STRLEN_LARGE + 1];
+  char *str = _str;
+  size_t strSize = ASP1_S;
 
-  if (!(str && ksp)) {
+  if (!(_str && ksp)) {
     biffAddf(NRRD, "%s: got NULL pointer", me);
-    return 1;
-  }
-  if (strlen(ksp->kernel->name) > warnLen) {
-    biffAddf(NRRD, "%s: kernel name (len %s) might lead to overflow", me,
-             airSprintSize_t(stmp, strlen(ksp->kernel->name)));
     return 1;
   }
   if (strstr(ksp->kernel->name, "TMF")) {
@@ -3259,26 +3258,35 @@ nrrdKernelSpecSprint(char str[AIR_STRLEN_LARGE + 1], const NrrdKernelSpec *ksp) 
                ksp->kernel->name);
       return 1;
     }
-    sprintf(str, "tmf:%c,%c,%c", ksp->kernel->name[5], ksp->kernel->name[8],
-            ksp->kernel->name[10]);
+    SN_PRINTF(str, strSize, "tmf:%c,%c,%c", ksp->kernel->name[5], ksp->kernel->name[8],
+              ksp->kernel->name[10]);
     /* see if the single parm should be added on */
     if (0.0 != ksp->parm[0]) {
-      sprintf(stmp, ",%.17g", ksp->parm[0]);
-      strcat(str, stmp);
+      airSinglePrintf(NULL, str, strSize, ",%lg", ksp->parm[0]);
+      SN_INCR(str, strSize);
     }
   } else {
-    strcpy(str, ksp->kernel->name);
-    if (ksp->kernel->parmNum) {
-      unsigned int pi;
-      for (pi = 0; pi < ksp->kernel->parmNum; pi++) {
-        sprintf(stmp, "%c%.17g", (!pi ? ':' : ','), ksp->parm[pi]);
-        if (strlen(str) + strlen(stmp) > warnLen) {
-          biffAddf(NRRD, "%s: kernel parm %u could overflow", me, pi);
-          return 1;
-        }
-        strcat(str, stmp);
+    SN_COPY(str, strSize, ksp->kernel->name);
+    uint parmNum = ksp->kernel->parmNum, p1st = 0;
+    if (parmNum && ksp->kernel->parm0IsScale && ksp->parm[0] == 1) {
+      // actually we'll skip printing the first scaling parameter since it is
+      // default==1
+      p1st++;
+    }
+    if (parmNum) {
+      for (uint pi = p1st; pi < parmNum; pi++) {
+        SN_COPY(str, strSize, pi == p1st ? ":" : ",");
+        airSinglePrintf(NULL, str, strSize, "%lg", ksp->parm[pi]);
+        SN_INCR(str, strSize);
       }
     }
+  }
+  if (strSize <= 1) { // actually the SN_ macros will never let strSize go below 1
+    biffAddf(NRRD,
+             "%s: kernel name (len %zu) or its %u parms "
+             "maxed out %u-size destination buffer",
+             me, strlen(ksp->kernel->name), ksp->kernel->parmNum, ASP1_L);
+    return 1;
   }
   return 0;
 }
@@ -3316,7 +3324,7 @@ nrrdKernelCompare(const NrrdKernel *kernA, const double parmA[NRRD_KERNEL_PARM_M
   if (kernA != kernB) {
     *differ = kernA < kernB ? -1 : 1;
     if (explain) {
-      sprintf(explain, "kernA %s kernB", *differ < 0 ? "<" : ">");
+      snprintf(explain, ASP1_L, "kernA %s kernB", *differ < 0 ? "<" : ">");
     }
     return 0;
   }
@@ -3335,8 +3343,8 @@ nrrdKernelCompare(const NrrdKernel *kernA, const double parmA[NRRD_KERNEL_PARM_M
     if (parmA[pidx] != parmB[pidx]) {
       *differ = parmA[pidx] < parmB[pidx] ? -1 : 1;
       if (explain) {
-        sprintf(explain, "parmA[%u]=%f %s parmB[%u]=%f", pidx, parmA[pidx],
-                *differ < 0 ? "<" : ">", pidx, parmB[pidx]);
+        snprintf(explain, ASP1_L, "parmA[%u]=%f %s parmB[%u]=%f", pidx, parmA[pidx],
+                 *differ < 0 ? "<" : ">", pidx, parmB[pidx]);
       }
       return 0;
     }
@@ -3467,9 +3475,9 @@ nrrdKernelCheck(const NrrdKernel *kern, const double parm[NRRD_KERNEL_PARM_MAXNU
     ERRR;
   }
   kspA = nrrdKernelSpecNew();
-  airMopAdd(mop, kspA, (airMopper)nrrdKernelSpecNix, airMopAlways);
+  airMopAdd(mop, kspA, nrrdKernelSpecNix_mop, airMopAlways);
   kspB = nrrdKernelSpecNew();
-  airMopAdd(mop, kspB, (airMopper)nrrdKernelSpecNix, airMopAlways);
+  airMopAdd(mop, kspB, nrrdKernelSpecNix_mop, airMopAlways);
   nrrdKernelSpecSet(kspA, kern, parm);
   if (nrrdKernelSprint(kstr, kern, parm) || nrrdKernelSpecSprint(kspstr, kspA)) {
     biffAddf(NRRD, "%s: trouble", me);

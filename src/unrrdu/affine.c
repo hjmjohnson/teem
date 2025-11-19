@@ -32,56 +32,49 @@ static const char *_unrrdu_affineInfoL
           "* Uses nrrdArithAffine or nrrdArithIterAffine");
 
 static int
-unrrdu_affineMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  NrrdIter *minIn, *in, *maxIn, *minOut, *maxOut, *args[5];
-  Nrrd *nout, *ntmp = NULL;
-  int type, E, pret, clamp;
-  airArray *mop;
-  unsigned int ai, nn;
-
-  hestOptAdd_1_Other(&opt, NULL, "minIn", &minIn, NULL,
+unrrdu_affineMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  NrrdIter *minIn, *in, *maxIn, *minOut, *maxOut;
+  hestOptAdd_1_Other(&hopt, NULL, "minIn", &minIn, NULL,
                      "Lower end of input value range.", nrrdHestIter);
-  hestOptAdd_1_Other(&opt, NULL, "in", &in, NULL, "Input value.", nrrdHestIter);
-  hestOptAdd_1_Other(&opt, NULL, "maxIn", &maxIn, NULL,
+  hestOptAdd_1_Other(&hopt, NULL, "in", &in, NULL, "Input value.", nrrdHestIter);
+  hestOptAdd_1_Other(&hopt, NULL, "maxIn", &maxIn, NULL,
                      "Upper end of input value range.", nrrdHestIter);
-  hestOptAdd_1_Other(&opt, NULL, "minOut", &minOut, NULL,
+  hestOptAdd_1_Other(&hopt, NULL, "minOut", &minOut, NULL,
                      "Lower end of output value range.", nrrdHestIter);
-  hestOptAdd_1_Other(&opt, NULL, "maxOut", &maxOut, NULL,
+  hestOptAdd_1_Other(&hopt, NULL, "maxOut", &maxOut, NULL,
                      "Upper end of output value range.", nrrdHestIter);
-  hestOptAdd_1_Other(&opt, "t,type", "type", &type, "default",
+  int type;
+  hestOptAdd_1_Other(&hopt, "t,type", "type", &type, "default",
                      "type to convert all nrrd inputs to, prior to "
                      "doing operation.  This also determines output type. "
                      "By default (not using this option), the types of the input "
                      "nrrds are left unchanged.",
                      &unrrduHestMaybeTypeCB);
-  hestOptAdd_1_Bool(&opt, "clamp", "bool", &clamp, "false",
+  int clamp;
+  hestOptAdd_1_Bool(&hopt, "clamp", "bool", &clamp, "false",
                     "clamp output values to specified output range");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_affineInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_affineInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
+  Nrrd *nout = nrrdNew();
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
-  nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
-
-  args[0] = minIn;
-  args[1] = in;
-  args[2] = maxIn;
-  args[3] = minOut;
-  args[4] = maxOut;
-  nn = 0;
-  for (ai = 0; ai < 5; ai++) {
+  NrrdIter *args[5] = {minIn, in, maxIn, minOut, maxOut};
+  uint nn = 0;
+  for (uint ai = 0; ai < 5; ai++) {
     nn += !!args[ai]->ownNrrd;
   }
   if (nrrdTypeDefault != type) {
     /* they wanted to convert nrrds to some other type first */
-    E = 0;
-    for (ai = 0; ai < 5; ai++) {
+    int E = 0;
+    Nrrd *ntmp;
+    for (uint ai = 0; ai < 5; ai++) {
       if (args[ai]->ownNrrd) {
         if (!E) E |= nrrdConvert(ntmp = nrrdNew(), args[ai]->ownNrrd, type);
         if (!E) nrrdIterSetOwnNrrd(args[ai], ntmp);
@@ -108,6 +101,7 @@ unrrdu_affineMain(int argc, const char **argv, const char *me, hestParm *hparm) 
     printf("%g\n", valOut);
   } else {
     /* we have a nrrd output */
+    int E;
     if (1 == nn && in->ownNrrd) {
       E = nrrdArithAffine(nout, minIn->val, in->ownNrrd, maxIn->val, minOut->val,
                           maxOut->val, clamp);

@@ -77,7 +77,7 @@ findAndTraceMorePoints(Nrrd *nplot, pullContext *pctx, pullVolume *scaleVol,
   }
 
   nPosOut = nrrdNew();
-  airMopAdd(mop, nPosOut, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nPosOut, nrrdNuke_mop, airMopAlways);
   if (pullOutputGetFilter(nPosOut, NULL, NULL, NULL, 0.0, pctx, idtagBase, 0)) {
     biffAddf(PULL, "%s: trouble A", me);
     airMopError(mop);
@@ -230,22 +230,22 @@ main(int argc, const char **argv) {
 
   mop = airMopNew();
   hparm = hestParmNew();
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
 
   nPosOut = nrrdNew();
-  airMopAdd(mop, nPosOut, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nPosOut, nrrdNuke_mop, airMopAlways);
 
   mtrc = pullTraceMultiNew();
-  airMopAdd(mop, mtrc, (airMopper)pullTraceMultiNix, airMopAlways);
+  airMopAdd(mop, mtrc, pullTraceMultiNix_mop, airMopAlways);
 
   nplot = nrrdNew();
-  airMopAdd(mop, nplot, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nplot, nrrdNuke_mop, airMopAlways);
   nplotA = nrrdNew();
-  airMopAdd(mop, nplotA, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nplotA, nrrdNuke_mop, airMopAlways);
   nplotB = nrrdNew();
-  airMopAdd(mop, nplotB, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nplotB, nrrdNuke_mop, airMopAlways);
   nfilt = nrrdNew();
-  airMopAdd(mop, nfilt, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nfilt, nrrdNuke_mop, airMopAlways);
 
   hparm->responseFileEnable = AIR_TRUE;
   me = argv[0];
@@ -253,13 +253,13 @@ main(int argc, const char **argv) {
   /* these don't need to be visible on the command-line */
   interType = pullInterTypeUnivariate;
   enspR = pullEnergySpecNew();
-  airMopAdd(mop, enspR, (airMopper)pullEnergySpecNix, airMopAlways);
+  airMopAdd(mop, enspR, pullEnergySpecNix_mop, airMopAlways);
   pullEnergySpecParse(enspR, "cotan");
   enspS = pullEnergySpecNew();
-  airMopAdd(mop, enspS, (airMopper)pullEnergySpecNix, airMopAlways);
+  airMopAdd(mop, enspS, pullEnergySpecNix_mop, airMopAlways);
   pullEnergySpecParse(enspS, "zero");
   enspWin = pullEnergySpecNew();
-  airMopAdd(mop, enspWin, (airMopper)pullEnergySpecNix, airMopAlways);
+  airMopAdd(mop, enspWin, pullEnergySpecNix_mop, airMopAlways);
   pullEnergySpecParse(enspWin, "butter:16,0.8");
 
   hestOptAdd(&hopt, "zz", "bool", airTypeBool, 1, 1, &zeroZ, "false",
@@ -429,9 +429,9 @@ main(int argc, const char **argv) {
   hestOptAdd(&hopt, "tvo", "fname", airTypeString, 1, 1, &trcVolOutS, "",
              "output filename for rasterized trace of scale-space volume");
 
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, info);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, info);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   /*
   airEnumPrint(stderr, gageScl);
@@ -443,20 +443,20 @@ main(int argc, const char **argv) {
       airMopError(mop);
       return 1;
     }
-    airMopAdd(mop, addLog, (airMopper)airFclose, airMopAlways);
+    airMopAdd(mop, addLog, airFclose_mop, airMopAlways);
   } else {
     addLog = NULL;
   }
 
   if (nTraceMaskIn && airStrlen(traceMaskPosOutS)) {
     nmaskedpos = nrrdNew();
-    airMopAdd(mop, nmaskedpos, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nmaskedpos, nrrdNuke_mop, airMopAlways);
   } else {
     nmaskedpos = NULL;
   }
 
   pctx = pullContextNew();
-  airMopAdd(mop, pctx, (airMopper)pullContextNix, airMopAlways);
+  airMopAdd(mop, pctx, pullContextNix_mop, airMopAlways);
   if (pullVerboseSet(pctx, verbose) || pullFlagSet(pctx, pullFlagZeroZ, zeroZ)
       || pullFlagSet(pctx, pullFlagNixAtVolumeEdgeSpace, nixAtVolumeEdgeSpace)
       || pullFlagSet(pctx, pullFlagConstraintBeforeSeedThresh,
@@ -619,13 +619,13 @@ main(int argc, const char **argv) {
 
     pos = AIR_CAST(double *, nPosOut->data);
     nlsplot = nrrdNew();
-    airMopAdd(mop, nlsplot, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nlsplot, nrrdNuke_mop, airMopAlways);
     nsplot = nrrdNew();
-    airMopAdd(mop, nsplot, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nsplot, nrrdNuke_mop, airMopAlways);
     nprogA = nrrdNew();
-    airMopAdd(mop, nprogA, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nprogA, nrrdNuke_mop, airMopAlways);
     nprogB = nrrdNew();
-    airMopAdd(mop, nprogB, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nprogB, nrrdNuke_mop, airMopAlways);
     if (nrrdCopy(nprogA, nplotA) || nrrdCopy(nprogB, nplotA)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
       fprintf(stderr, "%s: trouble creating nprogs:\n%s", me, err);
@@ -753,7 +753,7 @@ main(int argc, const char **argv) {
         airMopError(mop);
         return 1;
       }
-      airMopAdd(mop, ntlo, (airMopper)nrrdNuke, airMopAlways);
+      airMopAdd(mop, ntlo, nrrdNuke_mop, airMopAlways);
       tlo = AIR_CAST(double *, ntlo->data);
       for (ti = 0; ti < mtrc->traceNum; ti++) {
         unsigned int vi, vn;
@@ -805,14 +805,14 @@ main(int argc, const char **argv) {
         airMopError(mop);
         return 1;
       }
-      airMopAdd(mop, mpv, (airMopper)meetPullVolNix, airMopAlways);
+      airMopAdd(mop, mpv, meetPullVolNix_mop, airMopAlways);
       /* at this point we actually have to hijack the mpv in case its
          a non-scalar kind, because all we want is a scalar output */
       if (0 != mpv->kind->baseDim) {
         unsigned int ni;
         Nrrd *nslice;
         nslice = nrrdNew();
-        airMopAdd(mop, nslice, (airMopper)nrrdNuke, airMopAlways);
+        airMopAdd(mop, nslice, nrrdNuke_mop, airMopAlways);
         fprintf(stderr, "!%s: slicing %u %s vols to %s\n", me, mpv->sbp->num,
                 mpv->kind->name, gageKindScl->name);
         for (ni = 0; ni < mpv->sbp->num; ni++) {
@@ -833,7 +833,7 @@ main(int argc, const char **argv) {
       size[3] = mpv->sbp->num;
       printf("!%s: size = (%u,%u,%u,%u)\n", me, size[0], size[1], size[2], size[3]);
       lpnt = pullPointNew(pctx);
-      airMopAdd(mop, lpnt, (airMopper)pullPointNix, airMopAlways);
+      airMopAdd(mop, lpnt, pullPointNix_mop, airMopAlways);
       for (si = 0; si < size[3]; si++) {
         nrrdZeroSet(mpv->ninSS[si]);
       }
@@ -897,7 +897,7 @@ main(int argc, const char **argv) {
         }
       }
       nout = nrrdNew();
-      airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+      airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
       if (nrrdJoin(nout, AIR_CAST(const Nrrd *const *, mpv->ninSS), size[3], 3,
                    AIR_FALSE)
           || nrrdSave(trcVolOutS, nout, NULL)) {

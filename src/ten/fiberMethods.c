@@ -68,6 +68,7 @@ tenFiberSingleNix(tenFiberSingle *tfbs) {
   }
   return NULL;
 }
+AIR_MOPPER(tenFiberSingleNix)
 
 static tenFiberContext * /* Biff: NULL */
 _tenFiberContextCommonNew(const Nrrd *vol, int useDwi, double thresh, double soft,
@@ -98,8 +99,8 @@ _tenFiberContextCommonNew(const Nrrd *vol, int useDwi, double thresh, double sof
       airMopError(mop);
       return NULL;
     }
-    airMopAdd(mop, ngrad, (airMopper)nrrdNuke, airMopOnError);
-    airMopAdd(mop, nbmat, (airMopper)nrrdNuke, airMopOnError);
+    airMopAdd(mop, ngrad, nrrdNuke_mop, airMopOnError);
+    airMopAdd(mop, nbmat, nrrdNuke_mop, airMopOnError);
     airMopAdd(mop, skip, airFree, airMopOnError);
     if (skipNum) {
       biffAddf(TEN, "%s: sorry, can't do DWI skipping here", me);
@@ -107,7 +108,7 @@ _tenFiberContextCommonNew(const Nrrd *vol, int useDwi, double thresh, double sof
       return NULL;
     }
     kind = tenDwiGageKindNew();
-    airMopAdd(mop, kind, (airMopper)tenDwiGageKindNix, airMopOnError);
+    airMopAdd(mop, kind, tenDwiGageKindNix_mop, airMopOnError);
     if (tenDwiGageKindSet(kind, thresh, soft, bval, valueMin, ngrad, NULL, ten1method,
                           ten2method, 42)) {
       biffAddf(TEN, "%s: trouble setting DWI kind", me);
@@ -128,9 +129,9 @@ _tenFiberContextCommonNew(const Nrrd *vol, int useDwi, double thresh, double sof
   }
 
   tfx->gtx = gageContextNew();
-  airMopAdd(mop, tfx->gtx, (airMopper)gageContextNix, airMopOnError);
+  airMopAdd(mop, tfx->gtx, gageContextNix_mop, airMopOnError);
   tfx->pvl = gagePerVolumeNew(tfx->gtx, vol, kind);
-  airMopAdd(mop, tfx->pvl, (airMopper)gagePerVolumeNix, airMopOnError);
+  airMopAdd(mop, tfx->pvl, gagePerVolumeNix_mop, airMopOnError);
   if (!(tfx->gtx && tfx->pvl && !gagePerVolumeAttach(tfx->gtx, tfx->pvl))) {
     biffMovef(TEN, GAGE, "%s: gage trouble", me);
     airMopError(mop);
@@ -139,7 +140,7 @@ _tenFiberContextCommonNew(const Nrrd *vol, int useDwi, double thresh, double sof
 
   tfx->nin = vol;
   tfx->ksp = nrrdKernelSpecNew();
-  airMopAdd(mop, tfx->ksp, (airMopper)nrrdKernelSpecNix, airMopOnError);
+  airMopAdd(mop, tfx->ksp, nrrdKernelSpecNix_mop, airMopOnError);
   if (nrrdKernelSpecParse(tfx->ksp, tenDefaultFiberKernel)) {
     biffMovef(TEN, NRRD, "%s: couldn't parse tenDefaultFiberKernel \"%s\"", me,
               tenDefaultFiberKernel);
@@ -644,7 +645,7 @@ tenFiberAnisoSpeedSet(tenFiberContext *tfx, int aniso, double lerp, double thres
 
   if (tfx->useDwi) {
     fprintf(stderr, "!%s: sorry, can't yet work on DWIs; bye.\n", me);
-    exit(1);
+    return 1; /* was exit(1); */
   }
 
   if (airEnumValCheck(tenAniso, aniso)) {
@@ -842,7 +843,7 @@ tenFiberContextCopy(tenFiberContext *oldTfx) {
 
   if (oldTfx->useDwi) {
     fprintf(stderr, "!%s: sorry, can't copy DWI contexts; bye.\n", me);
-    exit(1);
+    return NULL; /* was exit(1); */
   }
   tfx = AIR_CALLOC(1, tenFiberContext);
   memcpy(tfx, oldTfx, sizeof(tenFiberContext));
@@ -875,3 +876,4 @@ tenFiberContextNix(tenFiberContext *tfx) {
   }
   return NULL;
 }
+AIR_MOPPER(tenFiberContextNix)

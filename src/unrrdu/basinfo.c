@@ -28,64 +28,58 @@ static const char *_unrrdu_basinfoInfoL
           "* Uses no particular function; just sets fields in the Nrrd");
 
 static int
-unrrdu_basinfoMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  /* these are stock for unrrdu */
-  hestOpt *opt = NULL;
-  airArray *mop;
-  int pret;
-  char *err;
-  /* these are stock for things using the usual -i and -o */
-  char *out;
-  Nrrd *nin, *nout;
-  /* these are specific to this command */
-  NrrdIoState *nio;
-  char *spcStr, *_origStr, *origStr, **kvp, **dkey, *content;
-  int space, nixkvp;
-  unsigned int spaceDim, kvpLen, dkeyLen, cIdx, ii;
-
+unrrdu_basinfoMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
   /* no point in invoking this if no options are used, so even though every option has a
      default, we refrain from setting hparm->noArgsIsNoProblem */
-  hestOptAdd_1_String(&opt, "spc,space", "space", &spcStr, "",
+  char *spcStr;
+  hestOptAdd_1_String(&hopt, "spc,space", "space", &spcStr, "",
                       "identify the space (e.g. \"RAS\", \"LPS\") in which the array "
                       "conceptually lives, from the nrrdSpace airEnum, which in turn "
                       "determines the dimension of the space.  Or, use an integer>0 to "
                       "give the dimension of a space that nrrdSpace doesn't know about. "
                       "By default (not using this option), the enclosing space is "
                       "set as unknown.");
-  hestOptAdd_1_String(&opt, "orig,origin", "origin", &_origStr, "",
+  char *_origStr;
+  hestOptAdd_1_String(&hopt, "orig,origin", "origin", &_origStr, "",
                       "(NOTE: must quote vector) the origin in space of the array: "
                       "the location of the center "
                       "of the first sample, of the form \"(x,y,z)\" (or however "
                       "many coefficients are needed for the chosen space). Quoting the "
                       "vector is needed to stop interpretation from the shell");
   /* HEY: copy and paste from unrrdu/make.c */
-  hestOptAdd_Nv_String(&opt, "kv,keyvalue", "key/val", 0, -1, &kvp, "",
+  char **kvp;
+  uint kvpLen;
+  hestOptAdd_Nv_String(&hopt, "kv,keyvalue", "key/val", 0, -1, &kvp, "",
                        "key/value string pairs to be stored in nrrd.  Each key/value "
                        "pair must be a single string (put it in \"\"s "
                        "if the key or the value contain spaces).  The format of each "
                        "pair is \"<key>:=<value>\", with no spaces before or after "
                        "\":=\".",
                        &kvpLen);
-  hestOptAdd_Nv_String(&opt, "dk,delkey", "key", 0, -1, &dkey, "",
+  char **dkey;
+  uint dkeyLen;
+  hestOptAdd_Nv_String(&hopt, "dk,delkey", "key", 0, -1, &dkey, "",
                        "keys to be deleted (erased) from key/value pairs", &dkeyLen);
-  hestOptAdd_Flag(&opt, "xkv,nixkeyvalue", &nixkvp, "nix (clear) all key/value pairs");
-  cIdx = hestOptAdd_1_String(
-    &opt, "c,content", "content", &content, "",
-    "Specifies the content string of the nrrd, which is built upon "
-    "by many nrrd function to record a history of operations");
+  int nixkvp;
+  hestOptAdd_Flag(&hopt, "xkv,nixkeyvalue", &nixkvp, "nix (clear) all key/value pairs");
+  char *content;
+  uint contOpi = hestOptAdd_1_String(&hopt, "c,content", "content", &content, "",
+                                     "Specifies the content string of the nrrd, which "
+                                     "is built upon by many nrrd function to record a "
+                                     "history of operations");
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
-  nio = nrrdIoStateNew();
-  airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_basinfoInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_basinfoInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
-
-  nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  Nrrd *nout = nrrdNew();
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdCopy(nout, nin)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error copying input:\n%s", me, err);
@@ -95,9 +89,10 @@ unrrdu_basinfoMain(int argc, const char **argv, const char *me, hestParm *hparm)
 
   /* HEY: copy and paste from unrrdu/make.c */
   if (airStrlen(spcStr)) {
-    space = airEnumVal(nrrdSpace, spcStr);
+    int space = airEnumVal(nrrdSpace, spcStr);
     if (!space) {
       /* couldn't parse it as space, perhaps its a uint */
+      uint spaceDim;
       if (1 != sscanf(spcStr, "%u", &spaceDim)) {
         fprintf(stderr,
                 "%s: couldn't parse \"%s\" as a nrrdSpace "
@@ -121,13 +116,16 @@ unrrdu_basinfoMain(int argc, const char **argv, const char *me, hestParm *hparm)
       free(nout->content);
     }
     nout->content = airStrdup(content);
-  } else if (hestSourceUser(opt[cIdx].source)) {
+  } else if (hestSourceUser(hopt[contOpi].source)) {
     /* else user actually said: -c "" */
     nout->content = (char *)airFree(nout->content);
   } /* else option not used */
 
   /* HEY: copy and paste from unrrdu/make.c */
+  NrrdIoState *nio = nrrdIoStateNew();
+  airMopAdd(mop, nio, nrrdIoStateNix_mop, airMopAlways);
   if (airStrlen(_origStr)) {
+    char *origStr;
     /* why this is necessary is a bit confusing to me, both the check for
        enclosing quotes, and the need to use to a separate variable (isn't
        hest doing memory management of addresses, not variables?) */
@@ -152,7 +150,7 @@ unrrdu_basinfoMain(int argc, const char **argv, const char *me, hestParm *hparm)
 
   /* HEY: copy and paste from unrrdu/make.c */
   if (kvpLen) {
-    for (ii = 0; ii < kvpLen; ii++) {
+    for (uint ii = 0; ii < kvpLen; ii++) {
       /* a hack: have to use NrrdIoState->line as the channel to communicate
          the key/value pair, since we have to emulate it having been
          read from a NRRD header.  But because nio doesn't own the
@@ -174,7 +172,7 @@ unrrdu_basinfoMain(int argc, const char **argv, const char *me, hestParm *hparm)
 
   /* now delete ("erase") the keys that aren't wanted */
   if (dkeyLen) {
-    for (ii = 0; ii < dkeyLen; ii++) {
+    for (uint ii = 0; ii < dkeyLen; ii++) {
       if (nrrdKeyValueErase(nout, dkey[ii])) {
         airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
         fprintf(stderr, "%s: trouble erasing key/value %u \"%s\":\n%s", me, ii, dkey[ii],

@@ -44,9 +44,9 @@ main(int argc, const char *argv[]) {
   char *outS;
   hestOptAdd_1_String(&hopt, "o", "filename", &outS, "-",
                       "file to write output nrrd to");
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   if (tenTensorCheck(_nten[0], nrrdTypeDefault, AIR_TRUE, AIR_TRUE)
       || tenTensorCheck(_nten[1], nrrdTypeDefault, AIR_TRUE, AIR_TRUE)) {
@@ -75,10 +75,10 @@ main(int argc, const char *argv[]) {
   nten[0] = nrrdNew();
   nten[1] = nrrdNew();
   nout = nrrdNew();
-  airMopAdd(mop, ncov, (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nten[0], (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nten[1], (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ncov, nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nten[0], nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nten[1], nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdConvert(ncov, _ncov, nrrdTypeDouble)
       || nrrdConvert(nten[0], _nten[0], nrrdTypeDouble)
       || nrrdConvert(nten[1], _nten[1], nrrdTypeDouble)) {

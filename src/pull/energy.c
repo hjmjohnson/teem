@@ -620,6 +620,7 @@ pullEnergySpecNix(pullEnergySpec *ensp) {
   airFree(ensp);
   return NULL;
 }
+AIR_MOPPER(pullEnergySpecNix)
 
 int /* Biff: 1 */
 pullEnergySpecParse(pullEnergySpec *ensp, const char *_str) {
@@ -656,7 +657,7 @@ pullEnergySpecParse(pullEnergySpec *ensp, const char *_str) {
   /* start parsing parms after ':' */
   mop = airMopNew();
   str = airStrdup(_str);
-  airMopAdd(mop, str, (airMopper)airFree, airMopAlways);
+  airMopAdd(mop, str, airFree, airMopAlways);
   col = strchr(str, ':');
   if (!col) {
     biffAddf(PULL,
@@ -749,6 +750,6 @@ _pullHestEnergyParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) 
 
 static const hestCB _pullHestEnergySpec = {sizeof(pullEnergySpec *),
                                            "energy specification", _pullHestEnergyParse,
-                                           (airMopper)pullEnergySpecNix};
+                                           pullEnergySpecNix_mop};
 
 const hestCB *const pullHestEnergySpec = &_pullHestEnergySpec;

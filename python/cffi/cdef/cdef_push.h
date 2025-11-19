@@ -227,6 +227,7 @@ extern pushPoint *pushPointNew(pushContext *pctx);
 extern pushPoint *pushPointNix(pushPoint *pnt);
 extern pushContext *pushContextNew(void);
 extern pushContext *pushContextNix(pushContext *pctx);
+extern void *pushContextNix_mop(void *);
 /* forces.c (legacy name for info about (derivatives of) energy functions) */
 extern const airEnum *const pushEnergyType;
 extern const pushEnergy *const pushEnergyUnknown;
@@ -241,6 +242,7 @@ extern void pushEnergySpecSet(pushEnergySpec *ensp,
                                    const pushEnergy *energy,
                                    const double parm[PUSH_ENERGY_PARM_NUM]);
 extern pushEnergySpec *pushEnergySpecNix(pushEnergySpec *ensp);
+extern void *pushEnergySpecNix_mop(void *);
 extern int pushEnergySpecParse(pushEnergySpec *ensp, const char *str);
 extern const hestCB *const pushHestEnergySpec;
 /* corePush.c */

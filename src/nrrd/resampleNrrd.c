@@ -648,7 +648,7 @@ nrrdSpatialResample(Nrrd *nout, const Nrrd *nin, const NrrdResampleInfo *info) {
       return 1;
     }
     array[0] = (nrrdResample_t *)floatNin->data;
-    airMopAdd(mop, floatNin, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, floatNin, nrrdNuke_mop, airMopAlways);
   } else {
     floatNin = NULL;
     array[0] = (nrrdResample_t *)nin->data;
@@ -695,7 +695,7 @@ nrrdSpatialResample(Nrrd *nout, const Nrrd *nin, const NrrdResampleInfo *info) {
     if (pi > 0) {
       if (pi == 1) {
         if (array[0] != nin->data) {
-          airMopSub(mop, floatNin, (airMopper)nrrdNuke);
+          airMopSub(mop, floatNin, nrrdNuke_mop);
           floatNin = nrrdNuke(floatNin);
           array[0] = NULL;
           /*
@@ -817,7 +817,7 @@ nrrdSpatialResample(Nrrd *nout, const Nrrd *nin, const NrrdResampleInfo *info) {
     printf("%s: now freeing array[%d]\n", me, passes-1);
     */
   } else if (array[passes - 1] != nin->data) {
-    airMopSub(mop, floatNin, (airMopper)nrrdNuke);
+    airMopSub(mop, floatNin, nrrdNuke_mop);
     floatNin = nrrdNuke(floatNin);
   }
   array[passes - 1] = NULL;
@@ -828,7 +828,7 @@ nrrdSpatialResample(Nrrd *nout, const Nrrd *nin, const NrrdResampleInfo *info) {
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopOnError);
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopOnError);
   nrrdAxisInfoCopy(nout, nin, NULL,
                    (NRRD_AXIS_INFO_SIZE_BIT | NRRD_AXIS_INFO_MIN_BIT
                     | NRRD_AXIS_INFO_MAX_BIT | NRRD_AXIS_INFO_SPACING_BIT

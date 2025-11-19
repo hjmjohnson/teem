@@ -49,8 +49,8 @@ _limnReadCamanim(int imgSize[2], limnCamera **keycamP, double **timeP,
   mop = airMopNew();
   camA = airArrayNew((void **)keycamP, numKeysP, sizeof(limnCamera), 1);
   dwellA = airArrayNew((void **)&dwell, NULL, sizeof(double), 1);
-  airMopAdd(mop, camA, (airMopper)airArrayNix, airMopAlways);
-  airMopAdd(mop, dwellA, (airMopper)airArrayNuke, airMopAlways);
+  airMopAdd(mop, camA, airArrayNix_mop, airMopAlways);
+  airMopAdd(mop, dwellA, airArrayNuke_mop, airMopAlways);
 
   while (0 < airOneLine(fin, line, AIR_STRLEN_HUGE + 1)) {
     airStrtrans(airStrtrans(line, '{', ' '), '}', ' ');
@@ -152,9 +152,9 @@ main(int argc, const char *argv[]) {
              "spline type for image fov and aspect", NULL, NULL, limnHestSplineTypeSpec);
   hestOptAdd(&hopt, "o", "output", airTypeString, 1, 1, &outS, NULL,
              "frame info for camanim.tcl");
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   if (!(fin = airFopen(inS, stdin, "r"))) {
     fprintf(stderr, "%s: couldn't open \"%s\" for reading\n", me, inS);
@@ -166,8 +166,8 @@ main(int argc, const char *argv[]) {
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, fin, (airMopper)airFclose, airMopAlways);
-  airMopAdd(mop, fout, (airMopper)airFclose, airMopAlways);
+  airMopAdd(mop, fin, airFclose_mop, airMopAlways);
+  airMopAdd(mop, fout, airFclose_mop, airMopAlways);
 
   if (_limnReadCamanim(imgSize, &keycam, &time, &numKeys, fin)) {
     airMopAdd(mop, err = biffGetDone(LIMN), airFree, airMopAlways);

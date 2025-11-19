@@ -18,6 +18,7 @@
 */
 
 #include "meet.h"
+#include "privateMeet.h"
 
 const int meetPresent = 42;
 

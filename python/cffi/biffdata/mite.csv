@@ -1,8 +1,8 @@
 func_name,return_type,error_val(s),mubi,biff_key,cfile:linenumber
-miteSample,double,AIR_NAN,0,mite,mite/ray.c:149
+miteSample,double,AIR_NAN,0,mite,mite/ray.c:150
 miteRenderBegin,int,1,0,mite,mite/renderMite.c:61
-miteShadeSpecParse,int,1,0,mite,mite/shade.c:67
+miteShadeSpecParse,int,1,0,mite,mite/shade.c:68
 miteThreadNew,miteThread *,NULL,0,mite,mite/thread.c:24
-miteThreadBegin,int,1,0,mite,mite/thread.c:90
+miteThreadBegin,int,1,0,mite,mite/thread.c:91
 miteVariableParse,int,1,0,mite,mite/txf.c:99
 miteNtxfCheck,int,1,0,mite,mite/txf.c:230

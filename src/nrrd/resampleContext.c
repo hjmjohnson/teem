@@ -163,6 +163,7 @@ nrrdResampleContextNix(NrrdResampleContext *rsmc) {
   }
   return NULL;
 }
+AIR_MOPPER(nrrdResampleContextNix)
 
 int /* Biff: 1 */
 nrrdResampleDefaultCenterSet(NrrdResampleContext *rsmc, int center) {
@@ -1144,7 +1145,7 @@ _nrrdResampleCore(NrrdResampleContext *rsmc, Nrrd *nout, int typeOut, int doRoun
     if (passIdx < rsmc->passNum - 1) {
       axisOut->nrsmp = nrrdNew();
       /* see NOTE above!
-         airMopAdd(mop, axisOut->nrsmp, (airMopper)nrrdNuke, airMopAlways); */
+         airMopAdd(mop, axisOut->nrsmp, nrrdNuke_mop, airMopAlways); */
       if (nrrdMaybeAlloc_nva(axisOut->nrsmp, nrrdResample_nt, rsmc->dim,
                              axisOut->sizePerm)) {
         biffAddf(NRRD, "%s: trouble allocating output of pass %u", me, passIdx);
@@ -1290,7 +1291,7 @@ _nrrdResampleCore(NrrdResampleContext *rsmc, Nrrd *nout, int typeOut, int doRoun
                 AIR_VOIDP(axisIn->nrsmp), axisIn->passIdx, axisIn->axIdx);
       }
       axisIn->nrsmp = nrrdNuke(axisIn->nrsmp);
-      /* airMopSub(mop, axisIn->nrsmp, (airMopper)nrrdNuke); */
+      /* airMopSub(mop, axisIn->nrsmp, nrrdNuke_mop); */
     }
   } /* for passIdx */
 

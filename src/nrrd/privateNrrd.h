@@ -44,6 +44,36 @@
 extern "C" {
 #endif
 
+/* NOTE: these SN_,ASP1_ string macros copy-pasta'd to other private<Lib>.h files:
+   SN_INCR: safely increments STR arg to point '\0'-termination of STR
+   SN_COPY: safely copies SRC to DST, then increments DST
+   SN_PRINTF: snprintf's into DST then increments DST
+   ASP1_X: short version of AIR_STRLEN_X + 1 */
+#define SN_INCR(STR, SIZE)                                                              \
+  do {                                                                                  \
+    size_t tmp_str_len_##STR = strlen(STR);                                             \
+    STR += tmp_str_len_##STR;                                                           \
+    SIZE -= tmp_str_len_##STR;                                                          \
+  } while (0)
+#define SN_COPY(DST, DST_SIZE, SRC)                                                     \
+  do {                                                                                  \
+    airStrcpy((DST), (DST_SIZE), (SRC));                                                \
+    SN_INCR(DST, DST_SIZE);                                                             \
+  } while (0)
+/* ---- BEGIN non-NrrdIO */
+#define SN_PRINTF(DST, DST_SIZE, FMT, ...)                                              \
+  do {                                                                                  \
+    snprintf((DST), (DST_SIZE), (FMT), __VA_ARGS__);                                    \
+    SN_INCR(DST, DST_SIZE);                                                             \
+  } while (0)
+/* ---- END non-NrrdIO */
+#define ASP1_S (AIR_STRLEN_SMALL + 1)
+#define ASP1_M (AIR_STRLEN_MEDIUM + 1)
+#define ASP1_L (AIR_STRLEN_LARGE + 1)
+#define ASP1_H (AIR_STRLEN_HUGE + 1)
+
+typedef unsigned int uint; /* uint is just more concise */
+
 #define _NRRD_TEXT_INCR      1024u
 #define _NRRD_LLONG_MAX_HELP AIR_LLONG(2305843009213693951)
 #define _NRRD_LLONG_MIN_HELP AIR_LLONG(-2305843009213693952)
@@ -65,7 +95,7 @@ extern "C" {
 
 /* ---- END non-NrrdIO */
 
-/* NOTE: these SN_ string,size macros copy-pasta's to other private<Lib>.h files:
+/* NOTE: these SN_ string,size macros copy-pasta'd to other private<Lib>.h files:
    SN_INCR: safely increments STR arg to point '\0'-termination of STR
    SN_COPY: safely copies SRC to DST, then increments DST
    SN_PRINTF: snprintf's into DST then increments DST */
@@ -174,6 +204,7 @@ extern void (*const _nrrdCastClampRound[][NRRD_TYPE_MAX + 1])(void *, const void
 /* ---- END non-NrrdIO */
 
 /* read.c */
+extern const char *const _nrrdReadHitEOF;
 extern const char *const _nrrdFieldSep;
 extern const char *const _nrrdTextSep;
 extern const char *const _nrrdNoSpaceVector;

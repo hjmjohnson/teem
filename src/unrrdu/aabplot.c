@@ -26,43 +26,38 @@ static const char *_unrrdu_aabplotInfoL
           "* (uses nrrd, but no Nrrd function has this functionality)");
 
 static int
-unrrdu_aabplotMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  /* these are stock for unrrdu */
-  hestOpt *opt = NULL;
-  airArray *mop;
-  int pret;
-  char *err;
-  /* these are specific to this command */
-  int medshow, rshow;
-  Nrrd *_nin, *nin, *_nsingle, *nsingle;
-  unsigned int plen;
-  double vrange[2], *single;
-
-  hestOptAdd_1_UInt(&opt, "l", "len", &plen, "78", "number of characters in box plot");
-  hestOptAdd_2_Double(&opt, "r", "min max", vrange, "0 100",
+unrrdu_aabplotMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
+  uint plen;
+  hestOptAdd_1_UInt(&hopt, "l", "len", &plen, "78", "number of characters in box plot");
+  double vrange[2];
+  hestOptAdd_2_Double(&hopt, "r", "min max", vrange, "0 100",
                       "values to use as absolute min and max (unfortunately "
                       "has to be same for all scanlines (rows).");
-  hestOptAdd_1_Bool(&opt, "rs", "show", &rshow, "false", "show range above plots");
-  hestOptAdd_1_Bool(&opt, "ms", "show", &medshow, "false", "print the median value");
+  int rshow, medshow;
+  hestOptAdd_1_Bool(&hopt, "rs", "show", &rshow, "false", "show range above plots");
+  hestOptAdd_1_Bool(&hopt, "ms", "show", &medshow, "false", "print the median value");
+  Nrrd *_nin;
   OPT_ADD_NIN(_nin, "input nrrd");
-  hestOptAdd_1_Other(&opt, "s", "single", &_nsingle, "",
+  Nrrd *_nsingle;
+  hestOptAdd_1_Other(&hopt, "s", "single", &_nsingle, "",
                      "if given a 1D nrrd here that matches the number of "
                      "rows in the \"-i\" input, interpret it as a list of values "
                      "that should be indicated with \"X\"s in the plots.",
                      nrrdHestNrrdNoTTY);
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
-  USAGE_OR_PARSE(_unrrdu_aabplotInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_aabplotInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
   if (!(2 == _nin->dim || 1 == _nin->dim)) {
     fprintf(stderr, "%s: need 1-D or 2-D array\n", me);
     airMopError(mop);
     return 1;
   }
-  nin = nrrdNew();
-  airMopAdd(mop, nin, (airMopper)nrrdNuke, airMopAlways);
+  Nrrd *nin = nrrdNew();
+  airMopAdd(mop, nin, nrrdNuke_mop, airMopAlways);
   if (nrrdConvert(nin, _nin, nrrdTypeDouble)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error converting \"-s\" input:\n%s", me, err);
@@ -77,14 +72,15 @@ unrrdu_aabplotMain(int argc, const char **argv, const char *me, hestParm *hparm)
       return 1;
     }
   }
+  double *single;
   if (_nsingle) {
     if (nrrdElementNumber(_nsingle) != nin->axis[1].size) {
       fprintf(stderr, "%s: \"-s\" input doesn't match size of \"-i\" input", me);
       airMopError(mop);
       return 1;
     }
-    nsingle = nrrdNew();
-    airMopAdd(mop, nsingle, (airMopper)nrrdNuke, airMopAlways);
+    Nrrd *nsingle = nrrdNew();
+    airMopAdd(mop, nsingle, nrrdNuke_mop, airMopAlways);
     if (nrrdConvert(nsingle, _nsingle, nrrdTypeDouble)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
       fprintf(stderr, "%s: error converting \"-s\" input:\n%s", me, err);
@@ -93,7 +89,6 @@ unrrdu_aabplotMain(int argc, const char **argv, const char *me, hestParm *hparm)
     }
     single = (double *)nsingle->data;
   } else {
-    nsingle = NULL;
     single = NULL;
   }
 
@@ -107,7 +102,7 @@ unrrdu_aabplotMain(int argc, const char **argv, const char *me, hestParm *hparm)
     sx = AIR_UINT(nin->axis[0].size);
     sy = AIR_UINT(nin->axis[1].size);
     nbuff = nrrdNew();
-    airMopAdd(mop, nbuff, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nbuff, nrrdNuke_mop, airMopAlways);
     if (nrrdSlice(nbuff, nin, 1, 0)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
       fprintf(stderr, "%s: error making buffer:\n%s", me, err);

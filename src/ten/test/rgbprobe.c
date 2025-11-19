@@ -39,7 +39,7 @@ main(int argc, char **argv) {
   mop = airMopNew();
   me = argv[0];
   hparm = hestParmNew();
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hestOptAdd(&hopt, "i", "nin", airTypeOther, 1, 1, &nin, NULL,
              "input diffusion tensor volume", NULL, NULL, nrrdHestNrrd);
   hestOptAdd(&hopt, "p", "nprobe", airTypeOther, 1, 1, &nprobe, NULL,
@@ -56,8 +56,8 @@ main(int argc, char **argv) {
 
   hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, "secret testing area", AIR_TRUE,
                  AIR_TRUE, AIR_TRUE);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   if (tenTensorCheck(nin, nrrdTypeFloat, AIR_TRUE)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);
@@ -75,7 +75,7 @@ main(int argc, char **argv) {
   ptsNum = nprobe->axis[1].size;
 
   ctx = gageContextNew();
-  airMopAdd(mop, ctx, (airMopper)gageContextNix, airMopAlways);
+  airMopAdd(mop, ctx, gageContextNix_mop, airMopAlways);
   gageSet(ctx, gageParmCheckIntegrals, AIR_TRUE);
   kparm[0] = 1.0;
   E = 0;

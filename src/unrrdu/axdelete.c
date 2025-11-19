@@ -29,41 +29,41 @@ static const char *_unrrdu_axdeleteInfoL
           "* Uses nrrdAxesDelete");
 
 static int
-unrrdu_axdeleteMain(int argc, const char **argv, const char *me, hestParm *hparm) {
-  hestOpt *opt = NULL;
-  char *out, *err;
-  Nrrd *nin, *nout, *ntmp;
-  int pret, _axis;
-  unsigned axis;
-  airArray *mop;
-
+unrrdu_axdeleteMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+  hestOpt *hopt = NULL;
   /* really needs to be signed int, because of hack */
-  hestOptAdd_1_Int(&opt, "a,axis", "axis", &_axis, NULL,
-                   "dimension (axis index) of the axis to remove. "
-                   "As a total hack, if you give -1 as the axis, "
-                   "this will do a matlab-style \"squeeze\", in which "
-                   "any and all singleton axes are removed.");
+  int _axis;
+  hestOptAdd_1_Int(&hopt, "a,axis", "axis", &_axis, NULL,
+                   "dimension (axis index) of the axis to remove. As a total hack, if "
+                   "you give -1 as the axis, this will do a matlab-style \"squeeze\", "
+                   "in which any and all singleton axes are removed.");
+  Nrrd *nin;
   OPT_ADD_NIN(nin, "input nrrd");
+  char *out;
   OPT_ADD_NOUT(out, "output nrrd");
 
-  mop = airMopNew();
-  airMopAdd(mop, opt, (airMopper)hestOptFree, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_axdeleteInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
-  USAGE_OR_PARSE(_unrrdu_axdeleteInfoL);
-  airMopAdd(mop, opt, (airMopper)hestParseFree, airMopAlways);
+  Nrrd *nout = nrrdNew();
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
-  nout = nrrdNew();
-  airMopAdd(mop, nout, (airMopper)nrrdNuke, airMopAlways);
-
-  if (-1 == _axis) {
-    ntmp = nrrdNew();
-    airMopAdd(mop, ntmp, (airMopper)nrrdNuke, airMopAlways);
+  if (_axis < -1) {
+    fprintf(stderr, "%s: given -a axis %d negative but not -1 for squeeze\n", me, _axis);
+    airMopError(mop);
+    return 1;
+  } else if (-1 == _axis) {
+    Nrrd *ntmp = nrrdNew();
+    airMopAdd(mop, ntmp, nrrdNuke_mop, airMopAlways);
     if (nrrdCopy(nout, nin)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
       fprintf(stderr, "%s: error copying axis:\n%s", me, err);
       airMopError(mop);
       return 1;
     }
+    uint axis;
     for (axis = 0; axis < nout->dim && nout->axis[axis].size > 1; axis++)
       ;
     while (axis < nout->dim) {
@@ -77,7 +77,7 @@ unrrdu_axdeleteMain(int argc, const char **argv, const char *me, hestParm *hparm
         ;
     }
   } else {
-    if (nrrdAxesDelete(nout, nin, _axis)) {
+    if (nrrdAxesDelete(nout, nin, AIR_UINT(_axis))) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
       fprintf(stderr, "%s: error deleting axis:\n%s", me, err);
       airMopError(mop);

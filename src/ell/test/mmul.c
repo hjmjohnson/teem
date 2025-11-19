@@ -32,25 +32,25 @@ main(int argc, const char *argv[]) {
 
   me = argv[0];
   mop = airMopNew();
-  hparm = hestParmNew();
+  hparm = hestParmMopNew();
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hopt = NULL;
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
   hestOptAdd(&hopt, NULL, "matrix", airTypeOther, 1, 1, &_ninA, NULL, "first matrix",
              NULL, NULL, nrrdHestNrrd);
   hestOptAdd(&hopt, NULL, "matrix", airTypeOther, 1, 1, &_ninB, NULL, "first matrix",
              NULL, NULL, nrrdHestNrrd);
   hestOptAdd(&hopt, "o", "filename", airTypeString, 1, 1, &outS, "-",
              "file to write output nrrd to");
-  hestParseOrDie(hopt, argc - 1, argv + 1, hparm, me, mulInfo);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, mulInfo);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   ninA = nrrdNew();
-  airMopAdd(mop, ninA, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ninA, nrrdNuke_mop, airMopAlways);
   ninB = nrrdNew();
-  airMopAdd(mop, ninB, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ninB, nrrdNuke_mop, airMopAlways);
   nmul = nrrdNew();
-  airMopAdd(mop, nmul, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nmul, nrrdNuke_mop, airMopAlways);
 
   nrrdConvert(ninA, _ninA, nrrdTypeDouble);
   nrrdConvert(ninB, _ninB, nrrdTypeDouble);

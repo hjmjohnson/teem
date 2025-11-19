@@ -344,12 +344,16 @@ extern const int echoPresent;
 extern const char *const echoBiffKey;
 extern echoRTParm *echoRTParmNew(void);
 extern echoRTParm *echoRTParmNix(echoRTParm *parm);
+extern void *echoRTParmNix_mop(void *);
 extern echoGlobalState *echoGlobalStateNew(void);
 extern echoGlobalState *echoGlobalStateNix(echoGlobalState *state);
+extern void *echoGlobalStateNix_mop(void *);
 extern echoThreadState *echoThreadStateNew(void);
 extern echoThreadState *echoThreadStateNix(echoThreadState *state);
+extern void *echoThreadStateNix_mop(void *);
 extern echoScene *echoSceneNew(void);
 extern echoScene *echoSceneNix(echoScene *scene);
+extern void *echoSceneNix_mop(void *);
 /* objmethods.c --------------------------------------- */
 extern echoObject *echoObjectNew(echoScene *scene, signed char type);
 extern int echoObjectAdd(echoScene *scene, echoObject *obj);

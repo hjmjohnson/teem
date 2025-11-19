@@ -259,6 +259,7 @@ tenEstimateContextNix(tenEstimateContext *tec) {
   }
   return NULL;
 }
+AIR_MOPPER(tenEstimateContextNix)
 
 void
 tenEstimateVerboseSet(tenEstimateContext *tec, int verbose) {
@@ -466,13 +467,13 @@ tenEstimateThresholdFind(double *threshP, unsigned char *isB0, Nrrd *nin4d) {
     return 1;
   }
   ndwi = AIR_CALLOC(dwiNum, Nrrd *);
-  airMopAdd(mop, ndwi, (airMopper)airFree, airMopAlways);
+  airMopAdd(mop, ndwi, airFree, airMopAlways);
   dwiIdx = -1;
   for (slIdx = 0; slIdx < slNum; slIdx++) {
     if (!isB0[slIdx]) {
       dwiIdx++;
       ndwi[dwiIdx] = nrrdNew();
-      airMopAdd(mop, ndwi[dwiIdx], (airMopper)nrrdNuke, airMopAlways);
+      airMopAdd(mop, ndwi[dwiIdx], nrrdNuke_mop, airMopAlways);
       if (nrrdSlice(ndwi[dwiIdx], nin4d, dwiAx, slIdx)) {
         biffMovef(TEN, NRRD, "%s: trouble slicing DWI at index %u", me, slIdx);
         airMopError(mop);
@@ -1906,8 +1907,8 @@ tenEstimate1TensorVolume4D(tenEstimateContext *tec, Nrrd *nten, Nrrd **nB0P,
       airMopError(mop);
       return 1;
     }
-    airMopAdd(mop, *nB0P, (airMopper)nrrdNuke, airMopOnError);
-    airMopAdd(mop, nB0P, (airMopper)airSetNull, airMopOnError);
+    airMopAdd(mop, *nB0P, nrrdNuke_mop, airMopOnError);
+    airMopAdd(mop, nB0P, airSetNull_mop, airMopOnError);
   }
   if (nterrP) {
     *nterrP = nrrdNew();
@@ -1928,8 +1929,8 @@ tenEstimate1TensorVolume4D(tenEstimateContext *tec, Nrrd *nten, Nrrd **nB0P,
     }
     ELL_3V_SET(axmap, 1, 2, 3);
     nrrdAxisInfoCopy(*nterrP, ndwi, axmap, NRRD_AXIS_INFO_NONE);
-    airMopAdd(mop, *nterrP, (airMopper)nrrdNuke, airMopOnError);
-    airMopAdd(mop, nterrP, (airMopper)airSetNull, airMopOnError);
+    airMopAdd(mop, *nterrP, nrrdNuke_mop, airMopOnError);
+    airMopAdd(mop, nterrP, airSetNull_mop, airMopOnError);
   }
   NN = sizeX * sizeY * sizeZ;
   lup = nrrdDLookup[ndwi->type];

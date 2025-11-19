@@ -220,6 +220,7 @@ extern const airEnum *const hooverErr;
 extern hooverContext *hooverContextNew(void);
 extern int hooverContextCheck(hooverContext *ctx);
 extern void *hooverContextNix(hooverContext *ctx);
+extern void *hooverContextNix_mop(void *);
 /* rays.c */
 extern int hooverRender(hooverContext *ctx, int *errCodeP, int *errThreadP);
 /* stub.c */

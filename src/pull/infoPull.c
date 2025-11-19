@@ -125,6 +125,7 @@ pullInfoSpecNix(pullInfoSpec *ispec) {
   }
   return NULL;
 }
+AIR_MOPPER(pullInfoSpecNix)
 
 int /* Biff: 1 */
 pullInfoSpecAdd(pullContext *pctx, pullInfoSpec *ispec) {

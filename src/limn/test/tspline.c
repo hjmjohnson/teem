@@ -72,9 +72,9 @@ main(int argc, const char *argv[]) {
              "translation for drawing");
   hestOptAdd(&hopt, "s", "scale", airTypeDouble, 1, 1, &scale, "1.0",
              "scaling for drawing");
-  hestParseOrDie(hopt, argc - 1, argv + 1, NULL, me, info);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, info);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   spline->loop = loop;
   if (!(limnSplineInfo2Vector == spline->info)) {
@@ -112,8 +112,8 @@ main(int argc, const char *argv[]) {
     }
   }
 
-  airMopAdd(mop, nout = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
-  airMopAdd(mop, ntmp = nrrdNew(), (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nout = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, ntmp = nrrdNew(), nrrdNuke_mop, airMopAlways);
   if (warp) {
     minT = limnSplineMinT(warp);
     maxT = limnSplineMaxT(warp);
