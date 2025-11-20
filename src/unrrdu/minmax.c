@@ -136,9 +136,11 @@ unrrdu_minmaxMain(int argc, const char **argv, const char *me, const hestParm *_
     /* none of the given files could be read; something is wrong */
     if (ninLen > 1) {
       fprintf(stderr, "\n%s: Unable to read data from any file\n", me);
+    } else {
+      fprintf(stderr, "\n");
     }
     hestUsage(stderr, hopt, me, hparm, AIR_TRUE /* oneline */);
-    fprintf(stderr, "\nFor more info: \"%s --help\"\n", me);
+    fprintf(stderr, "For more info: \"%s --help\"\n", me);
   }
 
   airMopOkay(mop);
