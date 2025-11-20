@@ -110,8 +110,8 @@ extern int _echoRayIntx_CubeSolid(echoPos_t *tminP, echoPos_t *tmaxP, echoPos_t 
 extern int _echoRayIntx_Superquad(RAYINTX_ARGS(Superquad));
 
 /* color.c */
-extern char _echoBuff[];
-extern char *_echoDot(int depth);
+extern char _echoBuff[AIR_STRLEN_SMALL + 1];
+extern char *_echoDot(uint depth);
 #define INTXCOLOR_ARGS                                                                  \
   echoCol_t rgba[4], echoIntx *intx, echoScene *scene, echoRTParm *parm,                \
     echoThreadState *tstate

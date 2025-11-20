@@ -20,15 +20,15 @@
 #include "echo.h"
 #include "privateEcho.h"
 
-char _echoBuff[128] = "";
+char _echoBuff[AIR_STRLEN_SMALL + 1] = "";
 
 char * /* Biff: (private) nope */
-_echoDot(int depth) {
-  int i;
-
-  _echoBuff[0] = '\0';
-  for (i = 1; i <= depth; i++) {
-    strcat(_echoBuff, ".  ");
+_echoDot(uint depth) {
+  char *bb = _echoBuff;
+  size_t bbSize = sizeof(_echoBuff);
+  bb[0] = '\0';
+  for (uint i = 1; i <= depth; i++) {
+    SN_COPY(bb, bbSize, ".  ");
   }
   return _echoBuff;
 }
