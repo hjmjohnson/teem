@@ -98,11 +98,6 @@ meetPullVolCopy(const meetPullVol *mpv) {
 int /* Biff: 1 */
 meetPullVolParse(meetPullVol *mpv, const char *_str) {
   static const char me[] = "meetPullVolParse";
-#define VFMT_SHRT "<fileName>:<kind>:<volName>"
-  /* there are other flags and parms but these are the main ones */
-#define SFMT      "<minScl>-<#smp>-<maxScl>[-n][/k=kss][/b=bspec][/s=smpling]"
-#define VFMT_LONG "<fileName>:<kind>:" SFMT ":<volName>"
-
   if (!(mpv && _str)) {
     biffAddf(MEET, "%s: got NULL pointer", me);
     return 1;
@@ -120,9 +115,18 @@ meetPullVolParse(meetPullVol *mpv, const char *_str) {
      boundary specification inside the string representation of the
      gageStackBlurParm, is that the colon in dg:1,6" or "pad:10" is now
      confused as a delimiter in the (e.g.) "vol.nrrd:scalar:0-8-5.5:V" string
-     representation of meetPullVol, as in
-     "vol.nrrd:scalar:0-8-5.5/k=dg:1,6/b=pad:1:V". So we have to be more
-     permissive in the number of tokens (hacky) */
+     representation of meetPullVol, as in:
+     vol.nrrd:scalar:0-8-5.5/k=dg:1,6/b=pad:1:V
+                                 :         : <---- ':' internal to blur parms
+       fname : kind :<----- blur parms ----->: volname
+          1  :   2  :      3     :    4    :5:6== # of ':'-separated tokens==`ctokn`
+  So (hack!) we be more permissive about the number of tokens */
+#define VFMT_SHRT "<fileName>:<kind>:<volName>"
+  // At minimum, need    1   :   2  :    3 ':'-separated tokens
+#define SFMT      "<minScl>-<#smp>-<maxScl>[-n][/k=kss][/b=bspec][/s=sampling]"
+  /* there are other flags besides `-n`,
+     and parms besides `/k=`, `/b=`, `/s=`, but these are the main ones */
+#define VFMT_LONG "<fileName>:<kind>:" SFMT ":<volName>"
   if (!(ctokn >= 3)) {
     biffAddf(MEET,
              "%s: didn't get at least 3 \":\"-separated tokens in "
@@ -150,19 +154,32 @@ meetPullVolParse(meetPullVol *mpv, const char *_str) {
   if (wantSS) {
     int extraFlag[256];
     char *extraParm = NULL;
-    /* the hack to make the ":" inside a blurring kernel specification or
-       boundary specification be unlike the ":" that delimits the real
-       meetPullVol fields */
-    char *sbps = airStrdup(_str); /* to have a buffer big enough */
+    /* We have to treat the ":" inside a blurring kernel specification or boundary
+       specification be unlike the ":" that delimit the real meetPullVol fields
+       (fileName:kind:volName).  Remembering this example:
+       vol.nrrd:scalar:0-8-5.5/k=dg:1,6/b=pad:1:V
+                                   :         : <---- ':' internal to blur parms
+         fname : kind :<----- blur parms ----->: volname
+            1  :   2  :      3     :    4    :5:6== # of ':'-separated tokens==`ctokn`
+       If we assume that the whole thing is formatted corretly, then the
+       # of tokens in the blur parms is ctokn-3 (because without any SS blur parms
+       ctokn will always be 3). So we parse ctokn-3 tokens here within `if (wantSS)` */
+    //    sbps = stack blur parm string
+    char *sbps = airStrdup(_str); // that is plenty big
     airMopAdd(mop, sbps, airFree, airMopAlways);
-    strcpy(sbps, "");
+    char *ss = sbps; // some "sub string"
+    size_t ssSize = strlen(sbps) + 1;
+    ss[0] = '\0';
+    //  NOTE: with `wantSS = (ctokn > 3)`, `if (wantSS)` means `ctokn-3 > 0`
     for (uint cti = 0; cti < ctokn - 3; cti++) {
-      if (cti) {
-        strcat(sbps, ":");
+      if (cti) { // not our first token
+        SN_COPY(ss, ssSize, ":");
       }
+      // This is *continuing* the token processing of `str` started above
       ctok = airStrtok(NULL, ":", &clast);
-      strcat(sbps, ctok);
+      SN_COPY(ss, ssSize, ctok);
     }
+    // now `sbps` is the ':'-separated stack blur spec
     mpv->sbp = gageStackBlurParmNix(mpv->sbp);
     mpv->sbp = gageStackBlurParmNew();
     if (gageStackBlurParmParse(mpv->sbp, extraFlag, &extraParm, sbps)) {
@@ -184,8 +201,8 @@ meetPullVolParse(meetPullVol *mpv, const char *_str) {
       static const char dnbiase[] = "dnbias=";
       airMopAdd(mop, extraParm, airFree, airMopAlways);
       uint pmn = airStrntok(extraParm, "/");
+      char *plast = NULL;
       for (uint pmi = 0; pmi < pmn; pmi++) {
-        char *plast;
         char *ptok = airStrtok(!pmi ? extraParm : NULL, "/", &plast);
         if (strstr(ptok, dnbiase) == ptok) {
           if (1 != sscanf(ptok + strlen(dnbiase), "%lg", &(mpv->derivNormBiasSS))) {
@@ -218,7 +235,7 @@ meetPullVolParse(meetPullVol *mpv, const char *_str) {
   if (strchr(ctok, '-')) {
     biffAddf(MEET,
              "%s: you probably don't want \"-\" in volume name \"%s\"; "
-             "forgot last \":\" in scale sampling specification?",
+             "did you forget last \":\" in scale sampling specification?",
              me, ctok);
     airMopError(mop);
     return 1;
