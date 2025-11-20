@@ -262,7 +262,7 @@ main(int argc, const char *argv[]) {
   fprintf(stderr, "%s: sampling rate = %g Khz\n", me, muu->sampRate);
   if (muu->ndebug) {
     /* if its been generated, we should save it */
-    sprintf(debugStr, "%04d-%04d-debug.nrrd", verbPix[0], verbPix[1]);
+    snprintf(debugStr, sizeof(debugStr), "%04d-%04d-debug.nrrd", verbPix[0], verbPix[1]);
     if (nrrdSave(debugStr, muu->ndebug, NULL)) {
       airMopAdd(mop, errS = biffGetDone(NRRD), airFree, airMopAlways);
       fprintf(stderr, "%s: trouble saving ray debug:\n%s\n", me, errS);

@@ -227,7 +227,7 @@ main(int argc, const char *argv[]) {
     }
     if (airStrlen(stackSavePath)) {
       char fnform[AIR_STRLEN_LARGE + 1];
-      sprintf(fnform, "%s/blur-%%02u.nrrd", stackSavePath);
+      snprintf(fnform, sizeof(fnform), "%s/blur-%%02u.nrrd", stackSavePath);
       fprintf(stderr, "%s: |%s|\n", me, fnform);
       if (nrrdSaveMulti(fnform, AIR_CAST(const Nrrd *const *, ninSS), numSS, 0, NULL)) {
         airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);

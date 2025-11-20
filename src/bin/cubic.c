@@ -41,7 +41,7 @@ main(int argc, char **argv) {
     usage();
   }
 
-  sprintf(buf, "%s %s %s", argv[1], argv[2], argv[3]);
+  snprintf(buf, sizeof(buf), "%s %s %s", argv[1], argv[2], argv[3]);
   if (3 != sscanf(buf, "%lf %lf %lf", &A, &B, &C)) {
     fprintf(stderr, "%s: couldn't parse 3 floats from command line\n", me);
     exit(1);

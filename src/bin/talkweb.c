@@ -37,6 +37,32 @@
 
 #define TKWB_TAG_MAX 7
 
+// HEY: copied from a private<Lib>.h
+/* NOTE: these SN_,ASP1_ string macros copy-pasta'd to other private<Lib>.h files:
+   SN_INCR: safely increments STR arg to point '\0'-termination of STR
+   SN_COPY: safely copies SRC to DST, then increments DST
+   SN_PRINTF: snprintf's into DST then increments DST
+   ASP1_X: short version of AIR_STRLEN_X + 1 */
+#define SN_INCR(STR, SIZE)                                                              \
+  do {                                                                                  \
+    size_t tmp_str_len_##STR = strlen(STR);                                             \
+    STR += tmp_str_len_##STR;                                                           \
+    SIZE -= tmp_str_len_##STR;                                                          \
+  } while (0)
+#define SN_COPY(DST, DST_SIZE, SRC)                                                     \
+  do {                                                                                  \
+    airStrcpy((DST), (DST_SIZE), (SRC));                                                \
+    SN_INCR(DST, DST_SIZE);                                                             \
+  } while (0)
+/* ---- BEGIN non-NrrdIO */
+#define SN_PRINTF(DST, DST_SIZE, FMT, ...)                                              \
+  do {                                                                                  \
+    snprintf((DST), (DST_SIZE), (FMT), __VA_ARGS__);                                    \
+    SN_INCR(DST, DST_SIZE);                                                             \
+  } while (0)
+/* ---- END non-NrrdIO */
+typedef unsigned int uint; /* uint is just more concise */
+
 static const char *tkwbInfo
   = ("Generates HTML pages from slide images and text. "
      "This program takes multiple inputs: a template for the table of contents "
@@ -101,23 +127,25 @@ tkwbReadFileToString(char **strP, int *hitEOF, FILE *file, char *stop) {
   uu.pc = &all;
   allArr = airArrayNew(uu.v, &allLen, sizeof(char *), tkwbArrayIncr);
   airArrayPointerCB(allArr, airNull, airFree);
-  lineLen = airOneLine(file, line, AIR_STRLEN_HUGE + 1);
+  lineLen = airOneLine(file, line, sizeof(line));
   totalLen = 0;
   while (lineLen && (!(airStrlen(stop) && !strcmp(line, stop)))) {
     lineIdx = airArrayLenIncr(allArr, 1); /* HEY error checking */
-    all[lineIdx] = (char *)calloc(strlen(line) + strlen("\n") + 1, sizeof(char));
-    sprintf(all[lineIdx], "%s\n", line);
+    size_t aliSize = strlen(line) + strlen("\n") + 1;
+    all[lineIdx] = AIR_CALLOC(aliSize, char);
+    airStrcpy(all[lineIdx], aliSize, line);
     totalLen += strlen(line) + 1;
-    lineLen = airOneLine(file, line, AIR_STRLEN_HUGE + 1);
+    lineLen = airOneLine(file, line, sizeof(line));
   }
   if (hitEOF) {
     *hitEOF = !lineLen;
   }
 
-  *strP = (char *)calloc(totalLen + 1, sizeof(char));
-  strcpy(*strP, "");
+  size_t strSize = totalLen + 1;
+  char *str = *strP = AIR_CALLOC(strSize, char);
+  str[0] = '\0';
   for (lineIdx = 0; lineIdx < allLen; lineIdx++) {
-    strcat(*strP, all[lineIdx]);
+    SN_COPY(str, strSize, all[lineIdx]);
   }
 
   airArrayNuke(allArr);
@@ -243,8 +271,9 @@ tkwbExpandImageInfo(tkwbSlide **slide) {
     sy = nimg->axis[nimg->dim - 1].size;
     len = (strlen("<img width=xxxx height=xxxx src=\"\">") + strlen(slide[si]->image)
            + 1);
-    image = (char *)calloc(len, sizeof(char));
-    sprintf(image, "<img width=%d height=%d src=\"%s\">", sx, sy, slide[si]->image);
+    image = AIR_CALLOC(len, char);
+    snprintf(image, len, "<img width=%d height=%d src=\"%s\">", sx, sy,
+             slide[si]->image);
     free(slide[si]->image);
     slide[si]->image = image;
   }
@@ -268,85 +297,89 @@ tkwbWriteStringToFile(const char *filename, const char *content) {
   return 0;
 }
 
-/* a strlen replacement, but don't tell that to the compiler warnings;
-   see usage below (not enough to wrap call to strlen() in a new function) */
-static unsigned int
-notStrlen(const char *str) {
-  unsigned int ii = 0;
-  while (str[ii]) {
-    ii++;
+/* totally brain-dead solution:
+   make the first substitution, and then recurse for any later substitution.
+   like tkwbStringSubst, may reallocate given *strP */
+static void
+_substAgain(char **strP,       // string to search in
+            size_t skip,       // how much of *strP to skip over (already processed)
+            const char *fnd,   // find
+            const char *rep) { // replace
+  char *pos = strstr(*strP + skip, fnd);
+  if (!pos) {
+    // `fnd` not found, so nothing to do
+    return;
   }
-  return ii;
-}
-
-int
-_tkwbStringSubst(char **sP,       /* string to search in */
-                 const char *f,   /* find */
-                 const char *r) { /* replace */
-  char *p,                        /* place where find was found */
-    *n;                           /* new string */
-  unsigned int rslen;
-
-  p = strstr(*sP, f);
-  if (!p) {
-    /* nothing to do */
-    return 0;
-  }
-  rslen = notStrlen(r);
-  n = (char *)calloc(strlen(*sP) - strlen(f) + rslen + 1, sizeof(char));
-  strncpy(n, *sP, p - *sP);
-  /* warnings in the next line about:
-  - specified bound depends on the length of the source argument
-  - output truncated before terminating nul copying as many bytes from a string as its
-  length were silenced by using a strlen() replacement, above */
-  strncpy(n + (p - *sP), r, rslen);
-  strcpy(n + (p - *sP) + rslen, p + strlen(f));
-  free(*sP);
-  *sP = n;
-  return _tkwbStringSubst(sP, f, r);
+  /* else `pos` points to first (AFTER skip) occurance of `fnd` within `*strP`
+     thus: strlen(fnd) <= strlen(*strP)
+           pfxLen = pos - *strP == strlen of pre-`fnd` prefix < strlen(*strP)
+           and pfxLen >= skip */
+  size_t fndLen = strlen(fnd);
+  size_t repLen = strlen(rep);
+  size_t nstSize = strlen(*strP) - fndLen + repLen + 1; // nst = new string
+  char *_nst = AIR_CALLOC(nstSize, char);
+  char *nst = _nst;
+  size_t pfxLen = pos - *strP;
+  /* with reference to what "man strncpy" says about strncpy(dst, src, len)
+     src=*strP is longer than len=pfxLen ==> dst=nst is NOT \0-terminated */
+  strncpy(nst, *strP, pfxLen);
+  nst[pfxLen] = '\0'; // so we add \0-termination
+  SN_INCR(nst, nstSize);
+  SN_COPY(nst, nstSize, rep);
+  SN_COPY(nst, nstSize, pos + fndLen);
+  fprintf(stderr, "%s: |%s| --> |%s|\n", __func__, *strP, _nst);
+  free(*strP);
+  *strP = _nst;
+  /* next iteration should start looking just after end of what we replaced
+     skip = pfxLen + repLen */
+  return _substAgain(strP, pfxLen + repLen, fnd, rep);
 }
 
 /*
 ** NOTE: this will re-allocate *stringP if a substitution is done
 */
 void
-tkwbStringSubst(char **sP, /* string to search in */
-                char *f,   /* find */
-                char *r) { /* replace */
+tkwbStringSubst(char **strP,       /* string to search in */
+                const char *fnd,   /* find */
+                const char *rep) { /* replace */
 
-  _tkwbStringSubst(sP, f, r);
+  fprintf(stderr, "%s: STARTING |%s|\n", __func__, *strP);
+  _substAgain(strP, 0, fnd, rep);
+  fprintf(stderr, "%s:   ENDING |%s|\n", __func__, *strP);
   return;
 }
 
 int
 tkwbWriteIndex(char *_indx, tkwbSlide **slide, char *tag[TKWB_TAG_MAX + 1]) {
   static const char me[] = "tkwbWriteIndex";
-  char *repl, *indx, tmp[AIR_STRLEN_MED + 1];
-  int replLen, si;
+  char *repl, *indx;
+  int si;
+  size_t rpSize;
   airArray *mop;
 
   mop = airMopNew();
-  replLen = 0;
-  replLen += strlen("<ol>\n");
+  rpSize = strlen("<ol>\n");
   for (si = 0; slide[si]; si++) {
-    replLen += (strlen("<li> <a href=\"slideXXX.html\"></a>\n")
-                + strlen(slide[si]->title));
+    rpSize += (strlen("<li> <a href=\"slideXXX.html\"></a>\n")
+               + strlen(slide[si]->title));
   }
-  replLen += strlen("</ol>\n");
+  rpSize += strlen("</ol>\n");
+  rpSize += 1;
 
-  if (!(repl = (char *)calloc(replLen + 1, sizeof(char)))) {
+  if (!(repl = AIR_CALLOC(rpSize, char))) {
     biffAddf(TKWB, "%s: couldn't allocate link buffer!", me);
     airMopError(mop);
     return 1;
   }
   airMopAdd(mop, repl, airFree, airMopAlways);
 
-  strcpy(repl, "<ol>\n");
+  char *rp = repl;
+  SN_COPY(rp, rpSize, "<ol>\n");
   for (si = 0; slide[si]; si++) {
-    sprintf(tmp, "<li> <a href=\"slide%03d.html\">%s</a>\n", si + 1, slide[si]->title);
-    strcat(repl, tmp);
+    SN_PRINTF(rp, rpSize, "<li> <a href=\"slide%03d.html\">%s</a>\n", si + 1,
+              slide[si]->title);
   }
-  strcat(repl, "</ol>");
+  SN_COPY(rp, rpSize, "</ol>");
 
   indx = airStrdup(_indx);
   tkwbStringSubst(&indx, tag[TKWB_TAG_TOC], repl);
@@ -371,8 +404,8 @@ tkwbWriteSlides(tkwbSlide **slide, int numSlides, char *tmpl,
   airArray *mop;
 
   mop = airMopNew();
-  sprintf(frst, "<a href=\"slide001.html\">%s</a>", link[0]);
-  sprintf(last, "<a href=\"slide%03d.html\">%s</a>", numSlides, link[3]);
+  snprintf(frst, sizeof(frst), "<a href=\"slide001.html\">%s</a>", link[0]);
+  snprintf(last, sizeof(last), "<a href=\"slide%03d.html\">%s</a>", numSlides, link[3]);
   for (si = 0; si < numSlides; si++) {
     text = airStrdup(tmpl);
     tkwbStringSubst(&text, tag[TKWB_TAG_TITLE], slide[si]->title);
@@ -380,16 +413,16 @@ tkwbWriteSlides(tkwbSlide **slide, int numSlides, char *tmpl,
     tkwbStringSubst(&text, tag[TKWB_TAG_TEXT], slide[si]->text);
     if (si) {
       tkwbStringSubst(&text, tag[TKWB_TAG_FIRST], frst);
-      sprintf(prev, "<a href=\"slide%03d.html\">%s</a>", si, link[1]);
+      snprintf(prev, sizeof(prev), "<a href=\"slide%03d.html\">%s</a>", si, link[1]);
       tkwbStringSubst(&text, tag[TKWB_TAG_PREV], prev);
     }
     if (si < numSlides - 1) {
       tkwbStringSubst(&text, tag[TKWB_TAG_LAST], last);
-      sprintf(next, "<a href=\"slide%03d.html\">%s</a>", si + 2, link[2]);
+      snprintf(next, sizeof(next), "<a href=\"slide%03d.html\">%s</a>", si + 2, link[2]);
       tkwbStringSubst(&text, tag[TKWB_TAG_NEXT], next);
     }
     airMopAdd(mop, text, airFree, airMopAlways);
-    sprintf(name, "slide%03d.html", si + 1);
+    snprintf(name, sizeof(name), "slide%03d.html", si + 1);
     if (tkwbWriteStringToFile(name, text)) {
       biffAddf(TKWB, "%s: couldn't write \"%s\"", me, name);
       airMopError(mop);
@@ -458,27 +491,34 @@ tkwbDoit(char *indxS, char *tmplS, char *scriptS, char *tag[TKWB_TAG_MAX + 1],
 
 int
 main(int argc, const char *argv[]) {
-  const char *me;
-  char *err, *indxS, *tmplS, *scriptS, *pretag[TKWB_TAG_MAX + 1],
-    *tag[AIR_STRLEN_MED + 1], *frstLink, *prevLink, *nextLink, *lastLink, *link[4];
+  const char *me = argv[0];
   hestOpt *hopt = NULL;
-  airArray *mop;
-  int ti;
 
-  me = argv[0];
+  /*
+  char *str = airStrdup("sThis is those crisis strings");
+  char *fnd = "is";
+  char *rep = "_X_";
+  tkwbStringSubst(&str, fnd, rep);
+  exit(0);
+  */
+
+  char *indxS;
   hestOptAdd_1_String(&hopt, "i", "index", &indxS, NULL,
                       "*index* template HTML filename.  This will be turned into "
                       "the \"index.html\" index file, after the links to all the "
                       "slides have been substituted in.");
+  char *tmplS;
   hestOptAdd_1_String(&hopt, "t", "slide", &tmplS, NULL,
                       "*slide* template HTML filename.  "
                       "The text of this includes the tags "
                       "that are replaced with their per-slide values, to produce the "
                       "HTML file for each slide's page. ");
+  char *scriptS;
   hestOptAdd_1_String(&hopt, "s", "script", &scriptS, NULL,
                       "script filename.  This file contains information about each "
                       "slide: the slide title, the slide image filename, and the "
                       "HTML text to accompany the slide image.");
+  char *pretag[TKWB_TAG_MAX + 1];
   hestOptAdd_N_String(&hopt, "r", "tags", TKWB_TAG_MAX + 1, pretag,
                       "TOC TITLE IMAGE FIRST PREV NEXT LAST TEXT",
                       "replacement tags that will be converted into links. "
@@ -496,31 +536,39 @@ main(int argc, const char *argv[]) {
                       "\b\bo The link to the next slide\n "
                       "\b\bo The link to the last slide\n "
                       "\b\bo The text accompanying each slide");
+  char *frstLink;
   hestOptAdd_1_String(&hopt, "first", "text", &frstLink, "<b>|&lt;&lt;</b>",
                       "Snippet of HTML text to be converted into "
                       "link to first slide.  Some image could be used here. "
                       "Following three arguments are similar. ");
+  char *prevLink;
   hestOptAdd_1_String(&hopt, "prev", "text", &prevLink, "<b>&lt;--</b>",
                       "HTML for link to previous slide");
+  char *nextLink;
   hestOptAdd_1_String(&hopt, "next", "text", &nextLink, "<b>--&gt;</b>",
                       "HTML for link to next slide");
+  char *lastLink;
   hestOptAdd_1_String(&hopt, "last", "text", &lastLink, "<b>&gt;&gt;|</b>",
                       "HTML for link to last slide");
+
   hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, tkwbInfo);
-  mop = airMopNew();
+  airArray *mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
-
+  char *link[4];
   link[0] = frstLink;
   link[1] = prevLink;
   link[2] = nextLink;
   link[3] = lastLink;
-  for (ti = 0; ti <= TKWB_TAG_MAX; ti++) {
-    tag[ti] = (char *)calloc(strlen(pretag[ti]) + strlen("<!---->") + 1, sizeof(char));
+  char *tag[AIR_STRLEN_MED + 1];
+  for (uint ti = 0; ti <= TKWB_TAG_MAX; ti++) {
+    size_t tagSize = strlen(pretag[ti]) + strlen("<!---->") + 1;
+    tag[ti] = AIR_CALLOC(tagSize, char);
     airMopAdd(mop, tag[ti], airFree, airMopAlways);
-    sprintf(tag[ti], "<!--%s-->", pretag[ti]);
+    snprintf(tag[ti], tagSize, "<!--%s-->", pretag[ti]);
   }
   if (tkwbDoit(indxS, tmplS, scriptS, tag, link)) {
+    char *err;
     airMopAdd(mop, err = biffGetDone(TKWB), airFree, airMopAlways);
     fprintf(stderr, "%s: error:\n%s", me, err);
     airMopError(mop);

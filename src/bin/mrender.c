@@ -392,52 +392,6 @@ mrendSample(mrendThread *tt, mrendRender *rr, mrendUser *uu, int num, double ray
 
 /* -------------------------------------------------------------- */
 
-#if 0
-
-this was nixed once mrender learned to handle volume of general
-kind, instead of being restricted to scalars
-
-
-/*
-** learned: if you're playing games with strings with two passes, where
-** you first generate the set of strings in order to calculate their
-** cumulative length, and then (2nd pass) concatenate the strings
-** together, be very sure that the generation of the strings on the
-** two passes is identical.  Had a very troublesome memory error because
-** I was using short version of the description string to determine
-** allocation, and then the long version in the second pass
-*/
-char *
-mrendGage(char *prefix) {
-  char *line, *ret;
-  int i, len;
-
-  /* 1st pass through- determine needed buffer size */
-  len = 0;
-  for (i=airEnumUnknown(gageScl)+1; !airEnumValCheck(gageScl, i); i++) {
-    if (1 == gageKindScl->table[i].answerLength) {
-      line = airEnumFmtDesc(gageScl, i, AIR_FALSE, "\n \b\bo \"%s\": %s");
-      len += strlen(line);
-      free(line);
-    }
-  }
-  ret = AIR_CALLOC(strlen(prefix) + len + 1, char);
-  if (ret) {
-    strcpy(ret, prefix);
-    /* 2nd pass through: create output */
-    for (i=airEnumUnknown(gageScl)+1; !airEnumValCheck(gageScl, i); i++) {
-      if (1 == gageKindScl->table[i].answerLength) {
-        line = airEnumFmtDesc(gageScl, i, AIR_FALSE, "\n \b\bo \"%s\": %s");
-        strcat(ret, line);
-        free(line);
-      }
-    }
-  }
-  return ret;
-}
-
-#endif
-
 int
 main(int argc, const char *argv[]) {
   hestOpt *hopt = NULL;

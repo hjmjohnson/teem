@@ -473,23 +473,24 @@ qbertMakeVgh(Nrrd *nvgh, Nrrd *nvhist, Nrrd *nghist, Nrrd *nhhist, unsigned int 
     vghF += nval;
   }
   if (doH) {
-    sprintf(cmt, "exclusions (v g h): %g %g %g", perc[0], perc[1], perc[2]);
+    snprintf(cmt, sizeof(cmt), "exclusions (v g h): %g %g %g", perc[0], perc[1],
+             perc[2]);
   } else {
-    sprintf(cmt, "exclusions (v g): %g %g", perc[0], perc[1]);
+    snprintf(cmt, sizeof(cmt), "exclusions (v g): %g %g", perc[0], perc[1]);
   }
   nrrdCommentAdd(nvgh, cmt);
-  sprintf(cmt, "minv: %g", minv);
+  snprintf(cmt, sizeof(cmt), "minv: %g", minv);
   nrrdCommentAdd(nvgh, cmt);
-  sprintf(cmt, "maxv: %g", maxv);
+  snprintf(cmt, sizeof(cmt), "maxv: %g", maxv);
   nrrdCommentAdd(nvgh, cmt);
-  sprintf(cmt, "ming: %g", ming);
+  snprintf(cmt, sizeof(cmt), "ming: %g", ming);
   nrrdCommentAdd(nvgh, cmt);
-  sprintf(cmt, "maxg: %g", maxg);
+  snprintf(cmt, sizeof(cmt), "maxg: %g", maxg);
   nrrdCommentAdd(nvgh, cmt);
   if (doH) {
-    sprintf(cmt, "minh: %g", minh);
+    snprintf(cmt, sizeof(cmt), "minh: %g", minh);
     nrrdCommentAdd(nvgh, cmt);
-    sprintf(cmt, "maxh: %g", maxh);
+    snprintf(cmt, sizeof(cmt), "maxh: %g", maxh);
     nrrdCommentAdd(nvgh, cmt);
   }
   nrrdAxisInfoSet_va(nvgh, nrrdAxisInfoCenter, nrrdCenterUnknown, nrrdCenterNode,
