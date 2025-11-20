@@ -516,12 +516,12 @@ _volInterp(Nrrd *ninterp, double rho, gageOptimSigContext *oscx) {
   gageParmSet(oscx->gctx, gageParmVerbose, 0);
   */
   /*
-  if (debugging) {
-    char fname[AIR_STRLEN_SMALL+1];
-    sprintf(fname, "interp-%04u.nrrd", debugii);
-    nrrdSave(fname, ninterp, NULL);
-  }
-  */
+   * if (debugging) {
+   *   char fname[AIR_STRLEN_SMALL+1];
+   *   snprintf(fname, sizeof(fname), "interp-%04u.nrrd", debugii);
+   *   nrrdSave(fname, ninterp, NULL);
+   * }
+   */
   return 0;
 }
 
@@ -621,12 +621,12 @@ _errSingle(double *retP, gageOptimSigContext *oscx, double rho) {
     return 1;
   }
   /*
-  if (debugging) {
-    char fname[AIR_STRLEN_SMALL+1];
-    sprintf(fname, "interp-%04u.nrrd", debugii);
-    nrrdSave(fname, oscx->ninterp, NULL);
-  }
-  */
+   * if (debugging) {
+   *   char fname[AIR_STRLEN_SMALL+1];
+   *   snprintf(fname, sizeof(fname), "interp-%04u.nrrd", debugii);
+   *   nrrdSave(fname, oscx->ninterp, NULL);
+   * }
+   */
   interp = AIR_CAST(const double *, oscx->ninterp->data);
   diff = AIR_CAST(double *, oscx->ndiff->data);
   _kernset(&kz, &ky, &kx, oscx, rho);
@@ -670,19 +670,19 @@ _errTotal(double *retP, gageOptimSigContext *oscx) {
   nrrdMeasureLine[oscx->allMeasr](retP, nrrdTypeDouble, err, nrrdTypeDouble,
                                   oscx->trueImgNum, AIR_NAN, AIR_NAN);
   /*
-  if (debugging) {
-    char fname[AIR_STRLEN_SMALL+1];
-    unsigned int ni;
-    for (ni=0; ni<oscx->sampleNum; ni++) {
-      sprintf(fname, "sample-%04u.nrrd", ni);
-      nrrdSave(fname, oscx->nsampleImg[ni], NULL);
-    }
-  }
-  */
+   * if (debugging) {
+   *   char fname[AIR_STRLEN_SMALL+1];
+   *   unsigned int ni;
+   *   for (ni=0; ni<oscx->sampleNum; ni++) {
+   *     snprintf(fname, sizeof(fname), "sample-%04u.nrrd", ni);
+   *     nrrdSave(fname, oscx->nsampleImg[ni], NULL);
+   *   }
+   * }
+   */
   if (0) {
     static unsigned int call = 0;
     char fname[AIR_STRLEN_SMALL + 1];
-    sprintf(fname, "err-%04u.nrrd", call);
+    snprintf(fname, sizeof(fname), "err-%04u.nrrd", call);
     nrrdSave(fname, oscx->nerr, NULL);
     call++;
   }
@@ -740,7 +740,7 @@ _errTotalLinf(double *retP, gageOptimSigContext *oscx, unsigned int mmIdx[2],
   if (0) {
     static unsigned int call = 0;
     char fname[AIR_STRLEN_SMALL + 1];
-    sprintf(fname, "err-%04u.nrrd", call);
+    snprintf(fname, sizeof(fname), "err-%04u.nrrd", call);
     nrrdSave(fname, oscx->nerr, NULL);
     call++;
   }
@@ -794,26 +794,26 @@ static char *
 _timefmt(char tstr[AIR_STRLEN_MED + 1], double deltim) {
 
   if (deltim < 60) {
-    sprintf(tstr, "%g secs", deltim);
+    snprintf(tstr, ASP1_M, "%g secs", deltim);
     return tstr;
   }
   deltim /= 60;
   if (deltim < 60) {
-    sprintf(tstr, "%g mins", deltim);
+    snprintf(tstr, ASP1_M, "%g mins", deltim);
     return tstr;
   }
   deltim /= 60;
   if (deltim < 24) {
-    sprintf(tstr, "%g hours", deltim);
+    snprintf(tstr, ASP1_M, "%g hours", deltim);
     return tstr;
   }
   deltim /= 24;
   if (deltim < 7) {
-    sprintf(tstr, "%g days", deltim);
+    snprintf(tstr, ASP1_M, "%g days", deltim);
     return tstr;
   }
   deltim /= 7;
-  sprintf(tstr, "%g weeks", deltim);
+  snprintf(tstr, ASP1_M, "%g weeks", deltim);
   return tstr;
 }
 
@@ -1226,24 +1226,24 @@ gageOptimSigErrorPlot(gageOptimSigContext *oscx, Nrrd *nout, const double *sigma
   fprintf(stderr, "%s\n", airDoneStr(0, ii, oscx->trueImgNum, doneStr));
 
   /*
-  if (0) {
-    static unsigned int call=0;
-    char fname[AIR_STRLEN_SMALL+1];
-    unsigned int ni;
-    if (0) {
-      sprintf(fname, "err-%04u.nrrd", call);
-      nrrdSave(fname, oscx->nerr, NULL);
-    }
-    if (debugging) {
-      for (ni=0; ni<oscx->sampleNum; ni++) {
-        sprintf(fname, "sample-%04u.nrrd", ni);
-        nrrdSave(fname, oscx->nsampleImg[ni], NULL);
-      }
-    }
-    call++;
-    debugging = (2 == call);
-  }
-  */
+   * if (0) {
+   *   static unsigned int call=0;
+   *   char fname[AIR_STRLEN_SMALL+1];
+   *   unsigned int ni;
+   *   if (0) {
+   *     snprintf(fname, sizeof(fname), "err-%04u.nrrd", call);
+   *     nrrdSave(fname, oscx->nerr, NULL);
+   *   }
+   *   if (debugging) {
+   *     for (ni=0; ni<oscx->sampleNum; ni++) {
+   *       snprintf(fname, sizeof(fname), "sample-%04u.nrrd", ni);
+   *       nrrdSave(fname, oscx->nsampleImg[ni], NULL);
+   *     }
+   *   }
+   *   call++;
+   *   debugging = (2 == call);
+   * }
+   */
 
   return 0;
 }

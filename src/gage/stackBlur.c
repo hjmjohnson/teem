@@ -126,9 +126,8 @@ gageStackBlurParmCompare(const gageStackBlurParm *aa, const char *_nameA,
                          char explain[AIR_STRLEN_LARGE + 1]) {
   static const char me[] = "gageStackBlurParmCompare", baseA[] = "A", baseB[] = "B";
   const char *nameA, *nameB;
-#define ASL AIR_STRLEN_LARGE
-  unsigned int si, warnLen = ASL / 4;
-  char stmp[2][ASL + 1], subexplain[ASL + 1];
+  uint si;
+  char subexplain[ASP1_L];
 
   if (!(aa && bb && differ)) {
     biffAddf(GAGE, "%s: got NULL pointer (%p %p %p)", me, AIR_CVOIDP(aa), AIR_CVOIDP(bb),
@@ -137,10 +136,9 @@ gageStackBlurParmCompare(const gageStackBlurParm *aa, const char *_nameA,
   }
   nameA = _nameA ? _nameA : baseA;
   nameB = _nameB ? _nameB : baseB;
-  if (strlen(nameA) + strlen(nameB) > warnLen) {
-    biffAddf(GAGE, "%s: names (len %s, %s) might cause string buffer overflow", me,
-             airSprintSize_t(stmp[0], strlen(nameA)),
-             airSprintSize_t(stmp[1], strlen(nameB)));
+  if (strlen(nameA) + strlen(nameB) > ASP1_L / 3) {
+    biffAddf(GAGE, "%s: aa,bb names (len %zu,%zu) may be truncated in explain[] buffer",
+             me, strlen(nameA), strlen(nameB));
     return 1;
   }
   /*
@@ -150,19 +148,19 @@ gageStackBlurParmCompare(const gageStackBlurParm *aa, const char *_nameA,
   ** circumstances of when this will be called, and if that includes
   ** some interaction with hest, there may not yet have been the chance
   ** to complete the sbp.
-  if (gageStackBlurParmCheck(aa)) {
-    biffAddf(GAGE, "%s: problem with sbp %s", me, nameA);
-    return 1;
-  }
-  if (gageStackBlurParmCheck(bb)) {
-    biffAddf(GAGE, "%s: problem with sbp %s", me, nameB);
-    return 1;
-  }
+  * if (gageStackBlurParmCheck(aa)) {
+  *   biffAddf(GAGE, "%s: problem with sbp %s", me, nameA);
+  *   return 1;
+  * }
+  * if (gageStackBlurParmCheck(bb)) {
+  *   biffAddf(GAGE, "%s: problem with sbp %s", me, nameB);
+  *   return 1;
+  * }
   */
 #define CHECK(VAR, FMT)                                                                 \
   if (aa->VAR != bb->VAR) {                                                             \
     if (explain) {                                                                      \
-      snprintf(explain, ASL + 1, "%s->" #VAR "=" FMT " != %s->" #VAR "=" FMT, nameA,    \
+      snprintf(explain, ASP1_L, "%s->" #VAR "=" FMT " != %s->" #VAR "=" FMT, nameA,     \
                aa->VAR, nameB, bb->VAR);                                                \
     }                                                                                   \
     *differ = 1;                                                                        \
@@ -182,7 +180,7 @@ gageStackBlurParmCompare(const gageStackBlurParm *aa, const char *_nameA,
 #undef CHECK
   if (aa->sigmaSampling != bb->sigmaSampling) {
     if (explain) {
-      snprintf(explain, ASL + 1, "%s->sigmaSampling=%s != %s->sigmaSampling=%s", nameA,
+      snprintf(explain, ASP1_L, "%s->sigmaSampling=%s != %s->sigmaSampling=%s", nameA,
                airEnumStr(gageSigmaSampling, aa->sigmaSampling), nameB,
                airEnumStr(gageSigmaSampling, bb->sigmaSampling));
     }
@@ -192,7 +190,7 @@ gageStackBlurParmCompare(const gageStackBlurParm *aa, const char *_nameA,
   for (si = 0; si < aa->num; si++) {
     if (aa->sigma[si] != bb->sigma[si]) {
       if (explain) {
-        snprintf(explain, ASL + 1, "%s->sigma[%u]=%.17g != %s->sigma[%u]=%.17g", nameA,
+        snprintf(explain, ASP1_L, "%s->sigma[%u]=%.17g != %s->sigma[%u]=%.17g", nameA,
                  si, aa->sigma[si], nameB, si, bb->sigma[si]);
       }
       *differ = 1;
@@ -205,8 +203,7 @@ gageStackBlurParmCompare(const gageStackBlurParm *aa, const char *_nameA,
   }
   if (*differ) {
     if (explain) {
-      snprintf(explain, ASL + 1, "kernel specs different: %s",
-               airStrunc(subexplain, ASL + 1, 30));
+      snprintf(explain, ASP1_L, "kernel specs different: %s", subexplain);
     }
     *differ = 1;
     return 0;
@@ -217,15 +214,13 @@ gageStackBlurParmCompare(const gageStackBlurParm *aa, const char *_nameA,
   }
   if (*differ) {
     if (explain) {
-      snprintf(explain, ASL + 1, "boundary specs different: %s",
-               airStrunc(subexplain, ASL + 1, 30));
+      snprintf(explain, ASP1_L, "boundary specs different: %s", subexplain);
     }
     *differ = 1;
     return 0;
   }
   /* no differences so far */
   *differ = 0;
-#undef ASL
   return 0;
 }
 
@@ -550,26 +545,19 @@ gageStackBlurParmParse(gageStackBlurParm *sbp,
                        char **extraParmsP,
                        const char *_str) {
   static const char me[] = "gageStackBlurParmParse";
-  char *str, *mnmfS, *stok, *slast = NULL, *parmS, *eps;
-  int flagSeen[256];
-  double sigmaMin, sigmaMax, dggsm;
-  unsigned int sigmaNum, parmNum;
-  int haveFlags, verbose, verboseGot = AIR_FALSE, dggsmGot = AIR_FALSE,
-                          sampling = AIR_FALSE, samplingGot = AIR_FALSE, E;
-  airArray *mop, *epsArr;
-  NrrdKernelSpec *kspec = NULL;
-  NrrdBoundarySpec *bspec = NULL;
-
   if (!(sbp && _str)) {
     biffAddf(GAGE, "%s: got NULL pointer", me);
     return 1;
   }
+  char *str;
   if (!(str = airStrdup(_str))) {
     biffAddf(GAGE, "%s: couldn't copy input", me);
     return 1;
   }
-  mop = airMopNew();
+  airArray *mop = airMopNew();
   airMopAdd(mop, str, airFree, airMopAlways);
+  char *eps;
+  airArray *epsArr;
   if (extraParmsP) {
     /* start with empty string */
     epsArr = airArrayNew(AIR_CAST(void **, &eps), NULL, sizeof(char), 42);
@@ -579,7 +567,7 @@ gageStackBlurParmParse(gageStackBlurParm *sbp,
   } else {
     epsArr = NULL;
   }
-
+  char *parmS;
   /* working with assumption that '/' does not appear
      in mnmfS <minScl>-<#smp>-<maxScl>[-<flags>] */
   if ((parmS = strchr(str, '/'))) {
@@ -589,31 +577,36 @@ gageStackBlurParmParse(gageStackBlurParm *sbp,
   } else {
     parmS = NULL;
   }
-  mnmfS = str;
+  char *mnmfS = str;
   if (!(3 == airStrntok(mnmfS, "-") || 4 == airStrntok(mnmfS, "-"))) {
     biffAddf(GAGE, "%s: didn't get 3 or 4 \"-\"-separated tokens in \"%s\"", me, mnmfS);
     airMopError(mop);
     return 1;
   }
-  haveFlags = (4 == airStrntok(mnmfS, "-"));
-  stok = airStrtok(mnmfS, "-", &slast);
+  int haveFlags = (4 == airStrntok(mnmfS, "-"));
+  char *slast = NULL;
+  char *stok = airStrtok(mnmfS, "-", &slast);
+  double sigmaMin;
   if (1 != sscanf(stok, "%lg", &sigmaMin)) {
     biffAddf(GAGE, "%s: couldn't parse \"%s\" as max sigma", me, stok);
     airMopError(mop);
     return 1;
   }
   stok = airStrtok(NULL, "-", &slast);
+  uint sigmaNum;
   if (1 != sscanf(stok, "%u", &sigmaNum)) {
     biffAddf(GAGE, "%s: couldn't parse \"%s\" as # scale samples", me, stok);
     airMopError(mop);
     return 1;
   }
   stok = airStrtok(NULL, "-", &slast);
+  double sigmaMax;
   if (1 != sscanf(stok, "%lg", &sigmaMax)) {
     biffAddf(GAGE, "%s: couldn't parse \"%s\" as max scale", me, stok);
     airMopError(mop);
     return 1;
   }
+  int flagSeen[256];
   memset(flagSeen, 0, sizeof(flagSeen));
   if (extraFlags) {
     /* not sizeof(extraFlags) == sizeof(int*) */
@@ -663,17 +656,22 @@ gageStackBlurParmParse(gageStackBlurParm *sbp,
       return 1;
     }
   }
+  int verbose, verboseGot = AIR_FALSE;
+  NrrdKernelSpec *kspec = NULL;
+  NrrdBoundarySpec *bspec = NULL;
+  double dggsm;
+  int dggsmGot = AIR_FALSE;
+  int sampling = AIR_FALSE, samplingGot = AIR_FALSE;
   if (parmS) {
-    unsigned int parmIdx;
     char *pval, xeq[AIR_STRLEN_SMALL + 1];
-    parmNum = airStrntok(parmS, "/");
-    for (parmIdx = 0; parmIdx < parmNum; parmIdx++) {
+    uint parmNum = airStrntok(parmS, "/");
+    for (uint parmIdx = 0; parmIdx < parmNum; parmIdx++) {
       if (!parmIdx) {
         stok = airStrtok(parmS, "/", &slast);
       } else {
         stok = airStrtok(NULL, "/", &slast);
       }
-      if (strcpy(xeq, "k=") && stok == strstr(stok, xeq)) {
+      if (airStrcpy(xeq, ASP1_S, "k=") && stok == strstr(stok, xeq)) {
         pval = stok + strlen(xeq);
         kspec = nrrdKernelSpecNew();
         airMopAdd(mop, kspec, nrrdKernelSpecNix_mop, airMopAlways);
@@ -683,7 +681,7 @@ gageStackBlurParmParse(gageStackBlurParm *sbp,
           airMopError(mop);
           return 1;
         }
-      } else if (strcpy(xeq, "b=") && strstr(stok, xeq) == stok) {
+      } else if (airStrcpy(xeq, ASP1_S, "b=") && strstr(stok, xeq) == stok) {
         pval = stok + strlen(xeq);
         bspec = nrrdBoundarySpecNew();
         airMopAdd(mop, bspec, nrrdBoundarySpecNix_mop, airMopAlways);
@@ -692,7 +690,7 @@ gageStackBlurParmParse(gageStackBlurParm *sbp,
           airMopError(mop);
           return 1;
         }
-      } else if (strcpy(xeq, "v=") && strstr(stok, xeq) == stok) {
+      } else if (airStrcpy(xeq, ASP1_S, "v=") && strstr(stok, xeq) == stok) {
         pval = stok + strlen(xeq);
         if (1 != sscanf(pval, "%d", &verbose)) {
           biffAddf(GAGE, "%s: couldn't parse \"%s\" as verbose int", me, pval);
@@ -700,7 +698,7 @@ gageStackBlurParmParse(gageStackBlurParm *sbp,
           return 1;
         }
         verboseGot = AIR_TRUE;
-      } else if (strcpy(xeq, "s=") && strstr(stok, xeq) == stok) {
+      } else if (airStrcpy(xeq, ASP1_S, "s=") && strstr(stok, xeq) == stok) {
         pval = stok + strlen(xeq);
         sampling = airEnumVal(gageSigmaSampling, pval);
         if (gageSigmaSamplingUnknown == sampling) {
@@ -710,7 +708,7 @@ gageStackBlurParmParse(gageStackBlurParm *sbp,
           return 1;
         }
         samplingGot = AIR_TRUE;
-      } else if (strcpy(xeq, "dggsm=") && strstr(stok, xeq) == stok) {
+      } else if (airStrcpy(xeq, ASP1_S, "dggsm=") && strstr(stok, xeq) == stok) {
         pval = stok + strlen(xeq);
         if (1 != sscanf(pval, "%lg", &dggsm)) {
           biffAddf(GAGE, "%s: couldn't parse \"%s\" as dgGoodSigmaMax double", me, pval);
@@ -722,10 +720,13 @@ gageStackBlurParmParse(gageStackBlurParm *sbp,
         /* doesn't match any of the parms we know how to parse */
         if (extraParmsP) {
           airArrayLenIncr(epsArr, AIR_INT(2 + strlen(stok)));
+          size_t eqsSize = epsArr->len;
+          char *eqs = eps;
           if (strlen(eps)) {
-            strcat(eps, "/");
+            SN_INCR(eqs, eqsSize);
+            SN_COPY(eqs, eqsSize, "/");
           }
-          strcat(eps, stok);
+          SN_COPY(eqs, eqsSize, stok);
         } else {
           biffAddf(GAGE, "%s: got extra parm \"%s\" but NULL extraParmsP", me, stok);
           airMopError(mop);
@@ -759,7 +760,7 @@ gageStackBlurParmParse(gageStackBlurParm *sbp,
     }
   }
   /* setting sbp fields */
-  E = 0;
+  int E = 0;
   if (!E) E |= gageStackBlurParmSigmaSet(sbp, sigmaNum, sigmaMin, sigmaMax, sampling);
   if (kspec) {
     if (!E) E |= gageStackBlurParmKernelSet(sbp, kspec);
@@ -809,7 +810,6 @@ gageStackBlurParmSprint(char str[AIR_STRLEN_LARGE + 1],
                         int extraFlag[256],
                         char *extraParm) {
   static const char me[] = "gageStackBlurParmSprint";
-  char *out, stmp[AIR_STRLEN_LARGE + 1];
   int needFlags, hef;
   unsigned int fi;
 
@@ -818,9 +818,13 @@ gageStackBlurParmSprint(char str[AIR_STRLEN_LARGE + 1],
     return 1;
   }
 
-  out = str;
-  sprintf(out, "%.17g-%u-%.17g", sbp->sigmaRange[0], sbp->num, sbp->sigmaRange[1]);
-  out += strlen(out);
+  char *out = str;
+  size_t outSize = ASP1_L;
+  airSinglePrintf(NULL, out, outSize, "%lg", sbp->sigmaRange[0]);
+  SN_INCR(out, outSize);
+  SN_PRINTF(out, outSize, "-%u-", sbp->num);
+  airSinglePrintf(NULL, out, outSize, "%lg", sbp->sigmaRange[1]);
+  SN_INCR(out, outSize);
   hef = AIR_FALSE;
   if (extraFlag) {
     for (fi = 0; fi < 256; fi++) {
@@ -829,65 +833,60 @@ gageStackBlurParmSprint(char str[AIR_STRLEN_LARGE + 1],
   }
   needFlags = (sbp->oneDim || sbp->renormalize || sbp->needSpatialBlur || hef);
   if (needFlags) {
-    strcat(out, "-");
+    SN_COPY(out, outSize, "-");
     if (sbp->oneDim) {
-      strcat(out, "1");
+      SN_COPY(out, outSize, "1");
     }
     if (sbp->renormalize) {
-      strcat(out, "r");
+      SN_COPY(out, outSize, "r");
     }
     if (sbp->needSpatialBlur) {
-      strcat(out, "p");
+      SN_COPY(out, outSize, "p");
     }
     if (hef) {
       for (fi = 0; fi < 256; fi++) {
         if (extraFlag[fi]) {
-          sprintf(stmp, "%c", AIR_CAST(char, fi));
-          strcat(out, stmp);
+          SN_PRINTF(out, outSize, "%c", AIR_CAST(char, fi));
         }
       }
     }
   }
 
+  char stmp[AIR_STRLEN_SMALL + 1];
   if (sbp->kspec) {
-    strcat(out, "/");
+    SN_COPY(out, outSize, "/");
     if (nrrdKernelSpecSprint(stmp, sbp->kspec)) {
       biffMovef(GAGE, NRRD, "%s: problem with kernel", me);
       return 1;
     }
-    strcat(out, "k=");
-    strcat(out, stmp);
+    SN_PRINTF(out, outSize, "k=%s", stmp);
   }
 
   if (sbp->bspec) {
-    strcat(out, "/");
+    SN_COPY(out, outSize, "/");
     if (nrrdBoundarySpecSprint(stmp, sbp->bspec)) {
       biffMovef(GAGE, NRRD, "%s: problem with boundary", me);
       return 1;
     }
-    strcat(out, "b=");
-    strcat(out, stmp);
+    SN_PRINTF(out, outSize, "b=%s", stmp);
   }
 
   if (!airEnumValCheck(gageSigmaSampling, sbp->sigmaSampling)) {
-    strcat(out, "/s=");
-    strcat(out, airEnumStr(gageSigmaSampling, sbp->sigmaSampling));
+    SN_PRINTF(out, outSize, "/s=%s", airEnumStr(gageSigmaSampling, sbp->sigmaSampling));
   }
 
   if (sbp->verbose) {
-    sprintf(stmp, "/v=%d", sbp->verbose);
-    strcat(out, stmp);
+    SN_PRINTF(out, outSize, "/v=%d", sbp->verbose);
   }
 
   if (sbp->kspec && nrrdKernelDiscreteGaussian == sbp->kspec->kernel
       && nrrdKernelDiscreteGaussianGoodSigmaMax != sbp->dgGoodSigmaMax) {
-    sprintf(stmp, "/dggsm=%.17g", sbp->dgGoodSigmaMax);
-    strcat(out, stmp);
+    airSinglePrintf(NULL, stmp, ASP1_S, "/dggsm=%lg", sbp->dgGoodSigmaMax);
+    SN_COPY(out, outSize, stmp);
   }
 
   if (extraParm) {
-    strcat(out, "/");
-    strcat(out, extraParm);
+    SN_PRINTF(out, outSize, "/%s", extraParm);
   }
 
   return 0;
@@ -900,7 +899,7 @@ _gageHestStackBlurParmParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE
   char *nerr;
 
   if (!(ptr && str)) {
-    sprintf(err, "%s: got NULL pointer", me);
+    snprintf(err, ASP1_H, "%s: got NULL pointer", me);
     return 1;
   }
   sbp = (gageStackBlurParm **)ptr;
@@ -915,7 +914,7 @@ _gageHestStackBlurParmParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE
     /* NOTE: no way to retrieve extraFlags or extraParms from hest */
     if (gageStackBlurParmParse(*sbp, NULL, NULL, str)) {
       nerr = biffGetDone(GAGE);
-      airStrcpy(err, AIR_STRLEN_HUGE + 1, nerr);
+      airStrcpy(err, ASP1_H, nerr);
       gageStackBlurParmNix(*sbp);
       free(nerr);
       return 1;
@@ -977,7 +976,7 @@ _blurKey[KVP_NUM][AIR_STRLEN_LARGE+1] = {/*  0  */ "gageStackBlur",
 /* clang-format on */
 
 typedef struct {
-  char val[KVP_NUM][AIR_STRLEN_LARGE + 1];
+  char val[KVP_NUM][AIR_STRLEN_SMALL + 1];
 } blurVal_t;
 
 static blurVal_t * /* Biff: NULL */
@@ -996,15 +995,15 @@ _blurValAlloc(airArray *mop, gageStackBlurParm *sbp, NrrdKernelSpec *kssb,
 
   for (blIdx = 0; blIdx < sbp->num; blIdx++) {
     kssb->parm[0] = sbp->sigma[blIdx];
-    sprintf(blurVal[blIdx].val[0], "true");
-    sprintf(blurVal[blIdx].val[1], "%u", cksum);
-    sprintf(blurVal[blIdx].val[2], "%.17g", sbp->sigma[blIdx]);
+    snprintf(blurVal[blIdx].val[0], ASP1_S, "true");
+    snprintf(blurVal[blIdx].val[1], ASP1_S, "%u", cksum);
+    airSinglePrintf(NULL, blurVal[blIdx].val[2], ASP1_S, "%lg", sbp->sigma[blIdx]);
     nrrdKernelSpecSprint(blurVal[blIdx].val[3], kssb);
-    sprintf(blurVal[blIdx].val[4], "%s", sbp->renormalize ? "true" : "false");
+    airStrcpy(blurVal[blIdx].val[4], ASP1_S, sbp->renormalize ? "true" : "false");
     nrrdBoundarySpecSprint(blurVal[blIdx].val[5], sbp->bspec);
-    sprintf(blurVal[blIdx].val[6], "%s", sbp->oneDim ? "true" : "false");
-    sprintf(blurVal[blIdx].val[7], "%s", spatialBlurred ? "true" : "false");
-    sprintf(blurVal[blIdx].val[8], "%.17g", sbp->dgGoodSigmaMax);
+    airStrcpy(blurVal[blIdx].val[6], ASP1_S, sbp->oneDim ? "true" : "false");
+    airStrcpy(blurVal[blIdx].val[7], ASP1_S, spatialBlurred ? "true" : "false");
+    airSinglePrintf(NULL, blurVal[blIdx].val[8], ASP1_S, "%lg", sbp->dgGoodSigmaMax);
   }
   airMopAdd(mop, blurVal, airFree, airMopAlways);
   return blurVal;
@@ -1178,18 +1177,18 @@ _stackBlurDiscreteGaussFFT(Nrrd *const nblur[], gageStackBlurParm *sbp, const Nr
       fprintf(stderr, "done\n");
     }
     /*
-    if (0) {
-      char fname[AIR_STRLEN_SMALL+1];
-      sprintf(fname, "noutFT-%03u.nrrd", blIdx);
-      nrrdSave(fname, noutFT, NULL);
-      sprintf(fname, "noutCd-%03u.nrrd", blIdx);
-      nrrdSave(fname, noutCd, NULL);
-      sprintf(fname, "noutC-%03u.nrrd", blIdx);
-      nrrdSave(fname, noutC, NULL);
-      sprintf(fname, "nblur-%03u.nrrd", blIdx);
-      nrrdSave(fname, nblur[blIdx], NULL);
-    }
-    */
+     * if (0) {
+     *   char fname[AIR_STRLEN_SMALL+1];
+     *   snprintf(fname, ASP1_S, "noutFT-%03u.nrrd", blIdx);
+     *   nrrdSave(fname, noutFT, NULL);
+     *   snprintf(fname, ASP1_S, "noutCd-%03u.nrrd", blIdx);
+     *   nrrdSave(fname, noutCd, NULL);
+     *   snprintf(fname, ASP1_S, "noutC-%03u.nrrd", blIdx);
+     *   nrrdSave(fname, noutC, NULL);
+     *   snprintf(fname, ASP1_S, "nblur-%03u.nrrd", blIdx);
+     *   nrrdSave(fname, nblur[blIdx], NULL);
+     * }
+     */
   }
 
   airMopOkay(mop);
@@ -1432,7 +1431,7 @@ gageStackBlur(Nrrd *const nblur[], gageStackBlurParm *sbp, const Nrrd *nin,
       }
     } else {
       if (sbp->verbose) {
-        char kstr[AIR_STRLEN_LARGE + 1], bstr[AIR_STRLEN_LARGE + 1];
+        char kstr[AIR_STRLEN_SMALL + 1], bstr[AIR_STRLEN_SMALL + 1];
         nrrdKernelSpecSprint(kstr, kssb);
         nrrdBoundarySpecSprint(bstr, sbp->bspec);
         fprintf(stderr,
@@ -1632,7 +1631,8 @@ gageStackBlurGet(Nrrd *const nblur[], int *recomputedP, gageStackBlurParm *sbp,
     int firstExists;
     FILE *file;
     /* do have info about files to load, but may fail in many ways */
-    fname = AIR_CALLOC(strlen(format) + AIR_STRLEN_SMALL + 1, char);
+    size_t fnameSize = strlen(format) + AIR_STRLEN_SMALL + 1;
+    fname = AIR_CALLOC(fnameSize, char);
     if (!fname) {
       biffAddf(GAGE, "%s: couldn't allocate fname", me);
       airMopError(mop);
@@ -1640,7 +1640,7 @@ gageStackBlurGet(Nrrd *const nblur[], int *recomputedP, gageStackBlurParm *sbp,
     }
     airMopAdd(mop, fname, airFree, airMopAlways);
     /* see if we can get the first file (number 0) */
-    sprintf(fname, format, 0);
+    snprintf(fname, fnameSize, format, 0);
     firstExists = !!(file = fopen(fname, "r"));
     airFclose(file);
     if (!firstExists) {
