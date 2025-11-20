@@ -45,7 +45,7 @@ $(L).Included := yes
 # (needs ell for macros)
 $(L).Depends = ell biff air
 $(L).PublicHdr = dye.h
-$(L).PrivateHdr =
+$(L).PrivateHdr = privateDye.h
 $(L).Obj = $(patsubst %.c,%.o, \
     convertDye.c methodsDye.c \
   )

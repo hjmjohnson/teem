@@ -67,8 +67,8 @@ enum {
 typedef struct {
   float val[2][3];      /* room for two colors: two triples of floats */
   float xWhite, yWhite; /* chromaticity for white point */
-  int spc[2],           /* the spaces the two colors belong to */
-    ii;                 /* which (0 or 1) of the two values is current */
+  int spc[2];           /* the spaces the two colors belong to */
+  unsigned int ii;      /* which (0 or 1) of the two values is current */
 } dyeColor;
 
 /* methodsDye.c */
@@ -87,7 +87,7 @@ DYE_EXPORT dyeColor *dyeColorCopy(dyeColor *c1, dyeColor *c0);
 DYE_EXPORT dyeColor *dyeColorNix(dyeColor *col);
 DYE_EXPORT void *dyeColorNix_mop(void *);
 DYE_EXPORT int dyeColorParse(dyeColor *col, char *str);
-DYE_EXPORT char *dyeColorSprintf(char *str, dyeColor *col);
+DYE_EXPORT char *dyeColorSprint(char str[AIR_STRLEN_SMALL + 1], const dyeColor *col);
 
 /* convertDye.c */
 typedef void (*dyeConverter)(float *, float *, float *, float, float, float);

@@ -30,7 +30,7 @@ usage(void) {
 
 int
 main(int argc, char *argv[]) {
-  char *inS, *spcS, buff[512];
+  char *inS, *spcS, buff[AIR_STRLEN_SMALL + 1];
   dyeColor *col;
   int spc;
 
@@ -52,7 +52,7 @@ main(int argc, char *argv[]) {
     fprintf(stderr, "%s: trouble converting to %s:\n%s", me, spcS, biffGet(DYE));
     exit(1);
   }
-  printf("%s\n", dyeColorSprintf(buff, col));
+  printf("%s\n", dyeColorSprint(buff, col));
 
   col = dyeColorNix(col);
   exit(0);

@@ -18,6 +18,7 @@
 */
 
 #include "dye.h"
+#include "privateDye.h"
 
 const int dyePresent = 42;
 
@@ -113,7 +114,7 @@ dyeColor * /* Biff: nope */
 dyeColorSet(dyeColor *col, int space, float v0, float v1, float v2) {
 
   if (col && DYE_VALID_SPACE(space)) {
-    col->ii = AIR_CLAMP(0, col->ii, 1);
+    col->ii = col->ii % 2;
 
     /* We switch to the other one if the current one seems to be used,
        but we don't switch if new and current colorspaces are the same.
@@ -135,7 +136,7 @@ dyeColorGet(float *v0P, float *v1P, float *v2P, dyeColor *col) {
 
   spc = dyeSpaceUnknown;
   if (v0P && v1P && v2P && col) {
-    col->ii = AIR_CLAMP(0, col->ii, 1);
+    col->ii = col->ii % 2;
     spc = col->spc[col->ii];
     ELL_3V_GET(*v0P, *v1P, *v2P, col->val[col->ii]);
   }
@@ -219,12 +220,18 @@ dyeColorParse(dyeColor *col, char *_str) {
 }
 
 char * /* Biff: nope */
-dyeColorSprintf(char *str, dyeColor *col) {
+dyeColorSprint(char _str[AIR_STRLEN_SMALL + 1], const dyeColor *col) {
 
-  if (str && col) {
-    col->ii = AIR_CLAMP(0, col->ii, 1);
-    sprintf(str, "%s:%g,%g,%g", dyeSpaceToStr[col->spc[col->ii]], col->val[col->ii][0],
-            col->val[col->ii][1], col->val[col->ii][2]);
+  if (_str && col) {
+    uint ii = col->ii % 2;
+    char *str = _str;
+    size_t strSize = ASP1_S;
+    SN_COPY(str, strSize, dyeSpaceToStr[col->spc[ii]]);
+    airSinglePrintf(NULL, str, strSize, ":%lg", col->val[ii][0]);
+    SN_INCR(str, strSize);
+    airSinglePrintf(NULL, str, strSize, ",%lg", col->val[ii][1]);
+    SN_INCR(str, strSize);
+    airSinglePrintf(NULL, str, strSize, ",%lg", col->val[ii][2]);
   }
-  return str;
+  return _str;
 }
