@@ -88,15 +88,15 @@ const hestCB *const baneGkmsHestIncStrategy = &_baneGkmsHestIncStrategy;
 /* ----------------------------------------------------------- */
 
 static int
-baneGkmsParseBEF(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
+baneGkmsParseBEF(void *ptr, const char *str, char _err[AIR_STRLEN_HUGE + 1]) {
   static const char me[] = "baneGkmsParseBEF";
-  char mesg[AIR_STRLEN_MED + 1], *nerr;
+  char *nerr;
   float cent, width, shape, alpha, off, *bef;
   Nrrd **nrrdP;
   airArray *mop;
 
   if (!(ptr && str)) {
-    snprintf(err, ASP1_H, "%s: got NULL pointer", me);
+    snprintf(_err, ASP1_H, "%s: got NULL pointer", me);
     return 1;
   }
   mop = airMopNew();
@@ -106,7 +106,7 @@ baneGkmsParseBEF(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
     /* its a valid BEF specification, we make the nrrd ourselves */
     if (nrrdMaybeAlloc_va(*nrrdP, nrrdTypeFloat, 2, AIR_SIZE_T(2), AIR_SIZE_T(6))) {
       airMopAdd(mop, nerr = biffGetDone(NRRD), airFree, airMopOnError);
-      airStrcpy(err, AIR_STRLEN_HUGE + 1, nerr);
+      airStrcpy(_err, AIR_STRLEN_HUGE + 1, nerr);
       airMopError(mop);
       return 1;
     }
@@ -133,13 +133,14 @@ baneGkmsParseBEF(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
     (*nrrdP)->ptr = *nrrdP;
   } else {
     if (nrrdLoad(*nrrdP, str, NULL)) {
+      char *err = _err;
+      size_t errSize = ASP1_H;
       airMopAdd(mop, nerr = biffGetDone(NRRD), airFree, airMopOnError);
-      snprintf(mesg, sizeof(mesg),
-               "%s: couldn't parse \"%s\" as four-parameter BEF or "
-               "as a nrrd filename\n",
-               me, str);
-      strcpy(err, mesg);
-      strncat(err, nerr, AIR_STRLEN_HUGE - strlen(mesg) - 1);
+      SN_PRINTF(err, errSize,
+                "%s: couldn't parse \"%s\" as four-parameter BEF or "
+                "as a nrrd filename\n",
+                me, str);
+      SN_COPY(err, errSize, nerr);
       airMopError(mop);
       return 1;
     }
