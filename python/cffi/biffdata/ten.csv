@@ -3,7 +3,7 @@ tenAnisoPlot,int,1,0,ten,ten/aniso.c:1066
 tenAnisoVolume,int,1,0,ten,ten/aniso.c:1125
 tenAnisoHistogram,int,1,0,ten,ten/aniso.c:1197
 tenEvecRGBParmCheck,int,1,0,ten,ten/aniso.c:1312
-tenEMBimodal,int,1,0,ten,ten/bimod.c:411
+tenEMBimodal,int,1,0,ten,ten/bimod.c:406
 tenBVecNonLinearFit,int,1,0,ten,ten/bvec.c:97
 tenDWMRIKeyValueParse,int,1,0,ten,ten/chan.c:58
 tenBMatrixCalc,int,1,0,ten,ten/chan.c:346
@@ -60,8 +60,8 @@ tenGradientCheck,int,1,0,ten,ten/grads.c:66
 tenGradientRandom,int,1,0,ten,ten/grads.c:105
 tenGradientJitter,int,1,0,ten,ten/grads.c:150
 tenGradientBalance,int,1,0,ten,ten/grads.c:372
-tenGradientDistribute,int,1,0,ten,ten/grads.c:457
-tenGradientGenerate,int,1,0,ten,ten/grads.c:650
+tenGradientDistribute,int,1,0,ten,ten/grads.c:455
+tenGradientGenerate,int,1,0,ten,ten/grads.c:647
 tenEvecRGB,int,1,0,ten,ten/miscTen.c:24
 tenEvqVolume,int,1,0,ten,ten/miscTen.c:149
 tenBMatrixCheck,int,1,0,ten,ten/miscTen.c:210

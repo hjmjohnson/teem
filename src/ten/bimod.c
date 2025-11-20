@@ -248,33 +248,28 @@ _tenEMBimodalNewSigma(double *s1P, double *s2P, double m1, double m2,
 
 static void
 _tenEMBimodalSaveImage(tenEMBimodalParm *biparm) {
-  char name[AIR_STRLEN_MED + 1];
-  Nrrd *nh, *nm, *nhi, *nmi, *ni;
-  NrrdRange *range;
-  const Nrrd *nhmhi[3];
-  double *m, max;
-  unsigned int i;
-
-  nh = nrrdNew();
-  nm = nrrdNew();
-  nhi = nrrdNew();
-  nmi = nrrdNew();
-  ni = nrrdNew();
+  Nrrd *nh = nrrdNew();
+  Nrrd *nm = nrrdNew();
+  Nrrd *nhi = nrrdNew();
+  Nrrd *nmi = nrrdNew();
   nrrdWrap_va(nh, biparm->histo, nrrdTypeDouble, 1, AIR_SIZE_T(biparm->N));
-  range = nrrdRangeNewSet(nh, nrrdBlind8BitRangeFalse);
-  max = range->max * 1.1;
+  NrrdRange *range = nrrdRangeNewSet(nh, nrrdBlind8BitRangeFalse);
+  double max = range->max * 1.1;
   nrrdRangeNix(range);
   nrrdCopy(nm, nh);
-  m = (double *)(nm->data);
-  for (i = 0; i < biparm->N; i++) {
+  double *m = nm->data;
+  for (uint i = 0; i < biparm->N; i++) {
     m[i] = biparm->fraction1 * airGaussian(i, biparm->mean1, biparm->stdv1);
     m[i] += (1 - biparm->fraction1) * airGaussian(i, biparm->mean2, biparm->stdv2);
   }
   nrrdHistoDraw(nmi, nm, 400, AIR_FALSE, max);
   nrrdHistoDraw(nhi, nh, 400, AIR_FALSE, max);
+  const Nrrd *nhmhi[3];
   ELL_3V_SET(nhmhi, nhi, nmi, nhi);
+  Nrrd *ni = nrrdNew();
   nrrdJoin(ni, nhmhi, 3, 0, AIR_TRUE);
-  sprintf(name, "%4u-%u.png", biparm->iteration, biparm->stage);
+  char name[AIR_STRLEN_MED + 1];
+  snprintf(name, sizeof(name), "%4u-%u.png", biparm->iteration, biparm->stage);
   nrrdSave(name, ni, NULL);
   nh = nrrdNix(nh);
   nm = nrrdNuke(nm);

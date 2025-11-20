@@ -24,7 +24,6 @@
 
 static int
 tend_aboutMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  char buff[AIR_STRLEN_LARGE + 1], fmt[AIR_STRLEN_MED + 1];
   char par1[] = "\t\t\t\t"
                 "\"tend\" is a command-line interface to much of the functionality "
                 "in \"ten\", a C library for diffusion image processing. Ten is one "
@@ -79,11 +78,14 @@ tend_aboutMain(int argc, const char **argv, const char *me, const hestParm *hpar
   AIR_UNUSED(me);
 
   fprintf(stdout, "\n");
-  sprintf(buff, "--- %s ---", tendTitle);
-  sprintf(fmt, "%%%ds\n", (int)((hparm->columns - strlen(buff)) / 2 + strlen(buff) - 1));
+  char buff[AIR_STRLEN_LARGE + 1], fmt[AIR_STRLEN_MED + 1];
+  snprintf(buff, sizeof(buff), "--- %s ---", tendTitle);
+  snprintf(fmt, sizeof(fmt), "%%%ds\n",
+           (int)((hparm->columns - strlen(buff)) / 2 + strlen(buff) - 1));
   fprintf(stdout, fmt, buff);
   airTeemVersionSprint(buff);
-  sprintf(fmt, "%%%ds\n", (int)((hparm->columns - strlen(buff)) / 2 + strlen(buff) - 1));
+  snprintf(fmt, sizeof(fmt), "%%%ds\n",
+           (int)((hparm->columns - strlen(buff)) / 2 + strlen(buff) - 1));
   fprintf(stdout, fmt, buff);
   fprintf(stdout, "\n");
 

@@ -31,8 +31,7 @@ main(int argc, const char *argv[]) {
   int E, optimizeEdge, workToDo;
   unsigned int ii, numRange[2], seedRange[2], seed, seedDone;
   double *log, minAngle, minEdge, pot, potNorm, time0, time1;
-  char *outStr, logFilename[AIR_STRLEN_MED + 1], gradFilename[AIR_STRLEN_MED + 1],
-    keyStr[AIR_STRLEN_MED + 1], valStr[AIR_STRLEN_MED + 1];
+  char *outStr, logFilename[AIR_STRLEN_MED + 1];
   tenGradientParm *tgparm;
   Nrrd *nlog, *ngrad;
   size_t size[2];
@@ -117,7 +116,8 @@ main(int argc, const char *argv[]) {
   */
 
   /* see if we can open the log */
-  sprintf(logFilename, "%s/000-%04u-log.nrrd", outStr, tgparm->expo);
+  snprintf(logFilename, sizeof(logFilename), "%s/000-%04u-log.nrrd", outStr,
+           tgparm->expo);
   if (nrrdLoad(nlog, logFilename, NULL)) {
     /* no, we couldn't load it, and we don't care why */
     free(biffGetDone(NRRD));
@@ -150,21 +150,23 @@ main(int argc, const char *argv[]) {
   for (ii = numRange[0]; ii <= numRange[1]; ii++) {
     log[0 + 9 * ii] = ii;
   }
+  char keyStr[AIR_STRLEN_MED + 1], valStr[AIR_STRLEN_MED + 1];
   E = 0;
-  if (!E) strcpy(keyStr, "maxiter");
-  if (!E) sprintf(valStr, "%u", tgparm->maxIteration);
+  if (!E) airStrcpy(keyStr, sizeof(keyStr), "maxiter");
+  if (!E) snprintf(valStr, sizeof(valStr), "%u", tgparm->maxIteration);
   if (!E) E |= nrrdKeyValueAdd(nlog, keyStr, valStr);
-  if (!E) strcpy(keyStr, "step");
-  if (!E) sprintf(valStr, "%g", tgparm->initStep);
+  if (!E) airStrcpy(keyStr, sizeof(keyStr), "step");
+  if (!E) airSinglePrintf(NULL, valStr, sizeof(valStr), "%lg", tgparm->initStep);
   if (!E) E |= nrrdKeyValueAdd(nlog, keyStr, valStr);
-  if (!E) strcpy(keyStr, "dp");
-  if (!E) sprintf(valStr, "%g", tgparm->minPotentialChange);
+  if (!E) airStrcpy(keyStr, sizeof(keyStr), "dp");
+  if (!E)
+    airSinglePrintf(NULL, valStr, sizeof(valStr), "%lg", tgparm->minPotentialChange);
   if (!E) E |= nrrdKeyValueAdd(nlog, keyStr, valStr);
-  if (!E) strcpy(keyStr, "minvelo");
-  if (!E) sprintf(valStr, "%g", tgparm->minVelocity);
+  if (!E) airStrcpy(keyStr, sizeof(keyStr), "minvelo");
+  if (!E) airSinglePrintf(NULL, valStr, sizeof(valStr), "%lg", tgparm->minVelocity);
   if (!E) E |= nrrdKeyValueAdd(nlog, keyStr, valStr);
-  if (!E) strcpy(keyStr, "minmean");
-  if (!E) sprintf(valStr, "%g", tgparm->minMean);
+  if (!E) airStrcpy(keyStr, sizeof(keyStr), "minmean");
+  if (!E) airSinglePrintf(NULL, valStr, sizeof(valStr), "%lg", tgparm->minMean);
   if (!E) E |= nrrdKeyValueAdd(nlog, keyStr, valStr);
   if (!E) E |= nrrdSave(logFilename, nlog, NULL);
   if (E) {
@@ -220,7 +222,9 @@ main(int argc, const char *argv[]) {
         log[6 + 9 * ii] = tenGradientIdealEdge(ii, AIR_FALSE);
         log[7 + 9 * ii] = tgparm->itersUsed;
         log[8 + 9 * ii] = time1 - time0;
-        sprintf(gradFilename, "%s/%03u-%04u.nrrd", outStr, ii, tgparm->expo);
+        char gradFilename[AIR_STRLEN_MED + 1];
+        snprintf(gradFilename, sizeof(gradFilename), "%s/%03u-%04u.nrrd", outStr, ii,
+                 tgparm->expo);
         if (nrrdSave(gradFilename, ngrad, NULL)) {
           airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
           fprintf(stderr, "%s: trouble writing:\n%s\n", me, err);

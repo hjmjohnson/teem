@@ -108,7 +108,6 @@ tend_satinGen(Nrrd *nout, float parm, float mina, float maxa, unsigned int wsize
               float thick, float scaling, float bnd, float bndRm, float evsc,
               int torus) {
   static const char me[] = "tend_satinGen";
-  char buff[AIR_STRLEN_SMALL + 1];
   Nrrd *nconf, *neval, *nevec;
   float *conf, *eval, *evec;
   size_t xi, yi, zi, size[3];
@@ -172,7 +171,8 @@ tend_satinGen(Nrrd *nout, float parm, float mina, float maxa, unsigned int wsize
   nrrdNuke(neval);
   nrrdNuke(nevec);
   nrrdAxisInfoSet_va(nout, nrrdAxisInfoLabel, "tensor", "x", "y", "z");
-  sprintf(buff, "satin(%g,%g,%g)", parm, mina, maxa);
+  char buff[AIR_STRLEN_SMALL + 1];
+  snprintf(buff, sizeof(buff), "satin(%g,%g,%g)", parm, mina, maxa);
   nout->content = airStrdup(buff);
   return 0;
 }

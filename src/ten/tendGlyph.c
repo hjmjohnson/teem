@@ -495,7 +495,7 @@ tend_glyphMain(int argc, const char **argv, const char *me, const hestParm *_hpa
           airMopError(mop);
           return 1;
         }
-        sprintf(hackoutFN, "%4u.png", hackci);
+        snprintf(hackoutFN, sizeof(hackoutFN), "%4u.png", hackci);
         if (nrrdCrop(hacknrgb, nraw, hackmin, hackmax)
             || nrrdQuantize(hacknpng, hacknrgb, hackrange, 8)
             || nrrdSave(hackoutFN, hacknpng, NULL)) {

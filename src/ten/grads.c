@@ -435,41 +435,32 @@ tenGradientBalance(Nrrd *nout, const Nrrd *nin, tenGradientParm *tgparm) {
 }
 
 /*
-******** tenGradientDistribute
-**
-** Takes the given list of gradients, normalizes their lengths,
-** optionally jitters their positions, does point repulsion, and then
-** (optionally) selects a combination of directions with minimum vector sum.
-**
-** The complicated part of this is the point repulsion, which uses a
-** gradient descent with variable set size. The progress of the system
-** is measured by decrease in potential (when its measurement doesn't
-** overflow to infinity) or an increase in the minimum angle.  When a
-** step results in negative progress, the step size is halved, and the
-** iteration is attempted again.  Based on the observation that at
-** some points the step size must be made very small to get progress,
-** the step size is cautiously increased ("nudged") at every
-** iteration, to try to avoid using an overly small step.  The amount
-** by which the step is nudged is halved everytime the step is halved,
-** to avoid endless cycling through step sizes.
-*/
+ ******** tenGradientDistribute
+ *
+ * Takes the given list of gradients, normalizes their lengths, optionally jitters their
+ * positions, does point repulsion, and then (optionally) selects a combination of
+ * directions with minimum vector sum.
+ *
+ * The complicated part of this is the point repulsion, which uses a gradient descent
+ * with variable set size. The progress of the system is measured by decrease in
+ * potential (when its measurement doesn't overflow to infinity) or an increase in the
+ * minimum angle.  When a step results in negative progress, the step size is halved, and
+ * the iteration is attempted again.  Based on the observation that at some points the
+ * step size must be made very small to get progress, the step size is cautiously
+ * increased ("nudged") at every iteration, to try to avoid using an overly small step.
+ * The amount by which the step is nudged is halved everytime the step is halved, to
+ * avoid endless cycling through step sizes.
+ */
 int /* Biff: 1 */
 tenGradientDistribute(Nrrd *nout, const Nrrd *nin, tenGradientParm *tgparm) {
   static const char me[] = "tenGradientDistribute";
-  char filename[AIR_STRLEN_SMALL + 1];
-  unsigned int ii, num, iter, oldIdx, newIdx, edgeShrink;
-  airArray *mop;
-  Nrrd *npos[2];
-  double *pos, len, meanVelocity, pot, potNew, potD, edge, edgeMin, angle, angleNew;
-  int E;
-
   if (!nout || tenGradientCheck(nin, nrrdTypeUnknown, 2) || !tgparm) {
     biffAddf(TEN, "%s: got NULL pointer or invalid input", me);
     return 1;
   }
-
-  num = AIR_UINT(nin->axis[1].size);
-  mop = airMopNew();
+  uint num = AIR_UINT(nin->axis[1].size);
+  airArray *mop = airMopNew();
+  Nrrd *npos[2];
   npos[0] = nrrdNew();
   npos[1] = nrrdNew();
   airMopAdd(mop, npos[0], nrrdNuke_mop, airMopAlways);
@@ -480,9 +471,9 @@ tenGradientDistribute(Nrrd *nout, const Nrrd *nin, tenGradientParm *tgparm) {
     airMopError(mop);
     return 1;
   }
-
-  pos = (double *)(npos[0]->data);
-  for (ii = 0; ii < num; ii++) {
+  double *pos = npos[0]->data;
+  for (uint ii = 0; ii < num; ii++) {
+    double len;
     ELL_3V_NORM(pos, pos, len);
     pos += 3;
   }
@@ -493,16 +484,17 @@ tenGradientDistribute(Nrrd *nout, const Nrrd *nin, tenGradientParm *tgparm) {
       return 1;
     }
   }
-
   /* initialize things prior to first iteration; have to
      make sure that loop body tests pass 1st time around */
-  meanVelocity = 2 * tgparm->minVelocity;
-  potD = -2 * tgparm->minPotentialChange;
-  oldIdx = 0;
-  newIdx = 1;
+  double meanVelocity = 2 * tgparm->minVelocity;
+  double potD = -2 * tgparm->minPotentialChange;
+  uint oldIdx = 0;
+  uint newIdx = 1;
   tgparm->step = tgparm->initStep;
   tgparm->nudge = 0.1;
+  double pot, angle;
   tenGradientMeasure(&pot, &angle, NULL, npos[oldIdx], tgparm, AIR_TRUE);
+  uint iter;
   for (iter = 0; ((!!tgparm->minIteration && iter < tgparm->minIteration)
                   || (iter < tgparm->maxIteration
                       && (!tgparm->minPotentialChange || !AIR_EXISTS(potD)
@@ -512,12 +504,14 @@ tenGradientDistribute(Nrrd *nout, const Nrrd *nin, tenGradientParm *tgparm) {
        iter++) {
     /* copy positions from old to new */
     memcpy(npos[newIdx]->data, npos[oldIdx]->data, 3 * num * sizeof(double));
-    edge = tenGradientIdealEdge(num, tgparm->single);
-    edgeShrink = 0;
+    double edge = tenGradientIdealEdge(num, tgparm->single);
+    uint edgeShrink = 0;
     /* try to do a position update, which will fail if repulsion values
        explode, from having an insufficiently small edge normalization,
        so retry with smaller edge next time */
+    int E;
     do {
+      double edgeMin;
       E = _tenGradientUpdate(&meanVelocity, &edgeMin, npos[newIdx], edge, tgparm);
       if (E) {
         if (edgeShrink > tgparm->maxEdgeShrink) {
@@ -532,6 +526,7 @@ tenGradientDistribute(Nrrd *nout, const Nrrd *nin, tenGradientParm *tgparm) {
         edge = edgeMin;
       }
     } while (E);
+    double potNew, angleNew;
     tenGradientMeasure(&potNew, &angleNew, NULL, npos[newIdx], tgparm, AIR_TRUE);
     if ((AIR_EXISTS(pot) && AIR_EXISTS(potNew) && potNew <= pot) || angleNew >= angle) {
       /* there was progress of some kind, either through potential
@@ -545,7 +540,8 @@ tenGradientDistribute(Nrrd *nout, const Nrrd *nin, tenGradientParm *tgparm) {
                 pot, potD, tgparm->minPotentialChange, angle, angleNew - angle);
       }
       if (tgparm->snap && !(iter % tgparm->snap)) {
-        sprintf(filename, "%5u.nrrd", iter / tgparm->snap);
+        char filename[AIR_STRLEN_SMALL + 1];
+        snprintf(filename, sizeof(filename), "%5u.nrrd", iter / tgparm->snap);
         if (tgparm->verbose) {
           fprintf(stderr, "%s(%u): . . . . . . saving %s\n", me, iter, filename);
         }
@@ -609,6 +605,7 @@ tenGradientDistribute(Nrrd *nout, const Nrrd *nin, tenGradientParm *tgparm) {
 
   tenGradientMeasure(&pot, NULL, NULL, npos[oldIdx], tgparm, AIR_FALSE);
   tgparm->potential = pot;
+  double edge;
   tenGradientMeasure(&pot, &angle, &edge, npos[oldIdx], tgparm, AIR_TRUE);
   tgparm->potentialNorm = pot;
   tgparm->angle = angle;

@@ -44,7 +44,7 @@ static char *
 parmSprint(char str[AIR_STRLEN_MED+1], const double *parm) {
 
   AIR_UNUSED(parm);
-  sprintf(str, "constant 0");
+  snprintf(str, ASP1_M, "constant 0");
   return str;
 }
 

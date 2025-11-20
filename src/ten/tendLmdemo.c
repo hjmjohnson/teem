@@ -229,7 +229,7 @@ levmarCall(Nrrd *ndata, int ajac, int itmax,
   char lmfname[AIR_STRLEN_SMALL + 1];
   if (ajac) {               // analytic Jacobian
     if (!bndLo && !bndHi) { // no lower bounds nor upper bounds
-      strcpy(lmfname, "dlevmar_der");
+      airStrcpy(lmfname, sizeof(lmfname), "dlevmar_der");
       /* extern int dlevmar_der(
          void (*func)(double *p, double *hx, int m, int n, void *adata),
          void (*jacf)(double *p, double *j, int m, int n, void *adata),
@@ -242,7 +242,7 @@ levmarCall(Nrrd *ndata, int ajac, int itmax,
                        info, NULL, NULL, AIR_VOIDP(bag));
 #endif
     } else { // bndLo and bndHi form _b_ox _c_constraints -> bc
-      strcpy(lmfname, "dlevmar_bc_der");
+      airStrcpy(lmfname, sizeof(lmfname), "dlevmar_bc_der");
       /* Why do the bc functions need dscl?  GLK not sure. Quoting from lmbc_core.c:
       "The algorithm implemented by this function employs projected gradient steps. Since
       steepest descent is very sensitive to poor scaling, diagonal scaling has been
@@ -270,7 +270,7 @@ levmarCall(Nrrd *ndata, int ajac, int itmax,
     }
   } else { // !ajac: numerical derivatives of predicted data
     if (!bndLo && !bndHi) {
-      strcpy(lmfname, "dlevmar_dif");
+      airStrcpy(lmfname, sizeof(lmfname), "dlevmar_dif");
       /* extern int dlevmar_dif(
          void (*func)(double *p, double *hx, int m, int n, void *adata),
          double *p, double *x, int m, int n, int itmax, double *opts,
@@ -281,7 +281,7 @@ levmarCall(Nrrd *ndata, int ajac, int itmax,
                        info, NULL, NULL, AIR_VOIDP(bag));
 #endif
     } else {
-      strcpy(lmfname, "dlevmar_bc_dif");
+      airStrcpy(lmfname, sizeof(lmfname), "dlevmar_bc_dif");
       /* extern int dlevmar_bc_dif(
       void (*func)(double *p, double *hx, int m, int n, void *adata),
       double *p, double *x, int m, int n, double *lb, double *ub, double *dscl,
@@ -312,8 +312,9 @@ levmarCall(Nrrd *ndata, int ajac, int itmax,
     printf("info[6]: Termination reason: ");
     char obuff[AIR_STRLEN_SMALL + 1];
 #define OPTS(I)                                                                         \
-  (opts ? (sprintf(obuff, "%.17g", opts[I]), obuff)                                     \
-        : (sprintf(obuff, "default %.17g", optsDefault[I]), obuff))
+  (opts ? (airSinglePrintf(NULL, obuff, sizeof(obuff), "%lg", opts[I]), obuff)          \
+        : (airSinglePrintf(NULL, obuff, sizeof(obuff), "default %lg", optsDefault[I]),  \
+           obuff))
     switch ((int)(info[6])) {
     case 1:
       printf("(1) stopped by small gradient ||J^T e||_inf < %s = eps1\n", OPTS(1));

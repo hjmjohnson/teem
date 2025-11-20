@@ -34,29 +34,21 @@ static const char *_tend_epiregInfoL
 
 static int
 tend_epiregMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  int pret, rret;
   hestOpt *hopt = NULL;
-  char *perr, *err;
-  airArray *mop;
-  char *outS, *buff;
 
-  char *gradS;
-  NrrdKernelSpec *ksp;
-  Nrrd **nin, **nout3D, *nout4D, *ngrad, *ngradKVP, *nbmatKVP;
-  unsigned int ni, ninLen, *skip, skipNum, baseNum;
-  int ref, noverbose, progress, nocc;
-  float bw[2], thr, fitFrac;
-  double bvalue;
-
+  Nrrd **nin;
+  uint ninLen;
   hestOptAdd_Nv_Other(&hopt, "i", "dwi0 dwi1", 1, -1, &nin, NULL,
                       "all the diffusion-weighted images (DWIs), as separate 3D nrrds, "
                       "**OR**: one 4D nrrd of all DWIs stacked along axis 0",
                       &ninLen, nrrdHestNrrd);
+  char *gradS;
   hestOptAdd_1_String(&hopt, "g", "grads", &gradS, NULL,
                       "array of gradient directions, in the same order as the "
                       "associated DWIs were given to \"-i\", "
                       "**OR** \"-g kvp\" signifies that gradient directions should "
                       "be read from the key/value pairs of the DWI");
+  int ref;
   hestOptAdd_1_Int(&hopt, "r", "reference", &ref, "-1",
                    "which of the DW volumes (zero-based numbering) should be used "
                    "as the standard, to which all other images are transformed. "
@@ -67,26 +59,32 @@ tend_epiregMain(int argc, const char **argv, const char *me, const hestParm *hpa
                    "T2 image (which is never explicitly used in registration). "
                    "Otherwise, by picking a specific DWI, no distortion parameter "
                    "estimation is done. ");
+  int noverbose;
   hestOptAdd_Flag(&hopt, "nv", &noverbose,
                   "turn OFF verbose mode, and "
                   "have no idea what stage processing is at.");
+  int progress;
   hestOptAdd_Flag(&hopt, "p", &progress, "save out intermediate steps of processing");
+  float bw[2];
   hestOptAdd_2_Float(&hopt, "bw", "x,y blur", bw, "1.0 2.0",
                      "standard devs in X and Y directions of gaussian filter used "
                      "to blur the DWIs prior to doing segmentation. This blurring "
                      "does not effect the final resampling of registered DWIs. "
                      "Use \"0.0 0.0\" to say \"no blurring\"");
+  float thr;
   hestOptAdd_1_Float(&hopt, "t", "DWI thresh", &thr, "nan",
                      "Threshold value to use on DWIs, "
                      "to do initial separation of brain and non-brain.  By default, "
                      "the threshold is determined automatically by histogram "
                      "analysis.");
+  int nocc;
   hestOptAdd_Flag(&hopt, "ncc", &nocc,
                   "do *NOT* do connected component (CC) analysis, after "
                   "thresholding and before moment calculation.  Doing CC analysis "
                   "usually gives better results because it converts the "
                   "thresholding output into something much closer to a "
                   "real segmentation");
+  float fitFrac;
   hestOptAdd_1_Float(&hopt, "f", "fit frac", &fitFrac, "0.70",
                      "(only meaningful with \"-r -1\") When doing linear fitting "
                      "of the intrinsic distortion parameters, it is good "
@@ -95,23 +93,29 @@ tend_epiregMain(int argc, const char **argv, const char *me, const hestParm *hpa
                      "quality.  This option controls how many of the (best) slices "
                      "contribute to the fitting.  Use \"0\" to disable distortion "
                      "parameter fitting. ");
+  NrrdKernelSpec *ksp;
   hestOptAdd_1_Other(&hopt, "k", "kernel", &ksp, "cubic:0,0.5",
                      "kernel for resampling DWIs along the phase-encoding "
                      "direction during final registration stage",
                      nrrdHestKernelSpec);
+  uint baseNum;
   hestOptAdd_1_UInt(&hopt, "s", "start #", &baseNum, "1",
                     "first number to use in numbered sequence of output files.");
+  char *outS;
   hestOptAdd_1_String(&hopt, "o", "output/prefix", &outS, "-",
                       "For separate 3D DWI volume inputs: prefix for output filenames; "
                       "will save out one (registered) "
                       "DWI for each input DWI, using the same type as the input. "
                       "**OR**: For single 4D DWI input: output file name. ");
 
-  mop = airMopNew();
+  int pret;
+  char *perr;
+  airArray *mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
   USAGE_JUSTPARSE(_tend_epiregInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
-
+  char *err;
+  Nrrd *ngrad;
   if (strcmp("kvp", gradS)) {
     /* they're NOT coming from key/value pairs */
     if (nrrdLoad(ngrad = nrrdNew(), gradS, NULL)) {
@@ -127,6 +131,9 @@ tend_epiregMain(int argc, const char **argv, const char *me, const hestParm *hpa
       return 1;
     }
     /* they are coming from key/value pairs */
+    Nrrd *ngradKVP = NULL, *nbmatKVP = NULL;
+    double bvalue;
+    unsigned int *skip, skipNum;
     if (tenDWMRIKeyValueParse(&ngradKVP, &nbmatKVP, &bvalue, &skip, &skipNum, nin[0])) {
       airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);
       fprintf(stderr, "%s: trouble parsing gradient list:\n%s\n", me, err);
@@ -141,22 +148,23 @@ tend_epiregMain(int argc, const char **argv, const char *me, const hestParm *hpa
     ngrad = ngradKVP;
   }
   airMopAdd(mop, ngrad, nrrdNuke_mop, airMopAlways);
-
-  nout3D = AIR_CALLOC(ninLen, Nrrd *);
+  Nrrd **nout3D = AIR_CALLOC(ninLen, Nrrd *);
   airMopAdd(mop, nout3D, airFree, airMopAlways);
-  nout4D = nrrdNew();
+  Nrrd *nout4D = nrrdNew();
   airMopAdd(mop, nout4D, nrrdNuke_mop, airMopAlways);
-  buff = AIR_CALLOC(airStrlen(outS) + 10, char);
+  size_t buffSize = airStrlen(outS) + 10;
+  char *buff = AIR_CALLOC(buffSize, char);
   airMopAdd(mop, buff, airFree, airMopAlways);
   if (!(nout3D && nout4D && buff)) {
     fprintf(stderr, "%s: couldn't allocate buffers", me);
     airMopError(mop);
     return 1;
   }
-  for (ni = 0; ni < ninLen; ni++) {
+  for (uint ni = 0; ni < ninLen; ni++) {
     nout3D[ni] = nrrdNew();
     airMopAdd(mop, nout3D[ni], nrrdNuke_mop, airMopAlways);
   }
+  int rret;
   if (1 == ninLen) {
     rret = tenEpiRegister4D(nout4D, nin[0], ngrad, ref, bw[0], bw[1], fitFrac, thr,
                             !nocc, ksp->kernel, ksp->parm, progress, !noverbose);
@@ -179,13 +187,13 @@ tend_epiregMain(int argc, const char **argv, const char *me, const hestParm *hpa
       return 1;
     }
   } else {
-    for (ni = 0; ni < ninLen; ni++) {
+    for (uint ni = 0; ni < ninLen; ni++) {
       if (ninLen + baseNum > 99) {
-        sprintf(buff, "%s%05u.nrrd", outS, ni + baseNum);
+        snprintf(buff, buffSize, "%s%05u.nrrd", outS, ni + baseNum);
       } else if (ninLen + baseNum > 9) {
-        sprintf(buff, "%s%02u.nrrd", outS, ni + baseNum);
+        snprintf(buff, buffSize, "%s%02u.nrrd", outS, ni + baseNum);
       } else {
-        sprintf(buff, "%s%u.nrrd", outS, ni + baseNum);
+        snprintf(buff, buffSize, "%s%u.nrrd", outS, ni + baseNum);
       }
       if (nrrdSave(buff, nout3D[ni], NULL)) {
         airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
