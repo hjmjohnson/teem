@@ -327,7 +327,7 @@ _substAgain(char **strP,       // string to search in
   SN_INCR(nst, nstSize);
   SN_COPY(nst, nstSize, rep);
   SN_COPY(nst, nstSize, pos + fndLen);
-  fprintf(stderr, "%s: |%s| --> |%s|\n", __func__, *strP, _nst);
+  // fprintf(stderr, "%s: |%s| --> |%s|\n", __func__, *strP, _nst);
   free(*strP);
   *strP = _nst;
   /* next iteration should start looking just after end of what we replaced
@@ -343,9 +343,9 @@ tkwbStringSubst(char **strP,       /* string to search in */
                 const char *fnd,   /* find */
                 const char *rep) { /* replace */
 
-  fprintf(stderr, "%s: STARTING |%s|\n", __func__, *strP);
+  // fprintf(stderr, "%s: STARTING |%s|\n", __func__, *strP);
   _substAgain(strP, 0, fnd, rep);
-  fprintf(stderr, "%s:   ENDING |%s|\n", __func__, *strP);
+  // fprintf(stderr, "%s:   ENDING |%s|\n", __func__, *strP);
   return;
 }
 
