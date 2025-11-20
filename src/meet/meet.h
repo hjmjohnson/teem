@@ -87,58 +87,61 @@ MEET_EXPORT const hestCB *const meetHestGageKind;
 MEET_EXPORT const hestCB *const meetHestConstGageKind;
 
 /*
-******** meetPullVol
-**
-** this is information that somehow precedes the full pullVolume; it
-** is more likely to have been by the user, and is not everything that
-** a pullVolume is ("Vol" vs "Volume").  Does provide a way of parsing
-** a string to specify all this info (useful for command-line).  Note
-** that the nrrds inside are owned by this, in contrast to the
-** pullVolume.
-**
-** One constraint that motivates putting this in meet (instead of
-** pull) is that this has to be general WRT gageKind; and will
-** ultimately rely on meetConstGageKindParse.  So, either
-** meetConstGageKindParse gets passed to pull as a callback, or this
-** functionality moves up to meet.  Also, given the weird leeching
-** tricks that are being enabled here, perhaps it is better for this
-** to be properly outside of pull.
-*/
+ ******** meetPullVol
+ *
+ * This is information that somehow precedes the full pullVolume; it is more likely to
+ * have been set by the user, and it is not everything that a pullVolume is ("Vol" vs
+ * "Volume").  It does provide a way of parsing a string to specify all this info (useful
+ * for command-line).  Note that the nrrds inside are owned by this, in contrast to the
+ * pullVolume.
+ *
+ * One constraint that motivates putting this in meet (instead of pull) is that this has
+ * to be general WRT gageKind; and will ultimately rely on meetConstGageKindParse.  So,
+ * either meetConstGageKindParse gets passed to pull as a callback, or this functionality
+ * moves up to meet.  Also, given the weird leeching tricks that are being enabled here,
+ * perhaps it is better for this to be properly outside of pull.
+ */
 typedef struct {
   const gageKind *kind;
-  char *fileName, *volName;
-  gageStackBlurParm *sbp; /* the right place to store everything about how to
-                             pre-compute a blurring of an image, replacing
-                             uniformSS, optimSS, needSpatialBlurSS,
-                             rangeSS[2], numSS, and posSS.  More sensible to
-                             have this here, now that gage can parse the
-                             terse string-based description of scale-space
-                             sampling that originated in meet (via Deft) */
-  int leeching,           /* non-zero iff using the same nin and ninSS
-                             as another meetPullVol (so as to avoid
-                             redundant copies in memory) */
-    derivNormSS,          /* normalize derivatives based on scale */
-    recomputedSS;         /* (OUTPUT) non-zero if meetPullVolLoadMulti
-                             had to recompute these, versus being read
-                             from disk */
-  double derivNormBiasSS; /* for gageParmStackNormalizeDerivBias */
-  Nrrd *nin;              /* we DO own */
-  Nrrd **ninSS;           /* we DO own */
+  char *fileName;
+  /*                         From what filename do we load data */
+  char *volName;
+  /*                         Internal to computation, by what (short) name should we
+                             refer to this volume data (e.g. "V") */
+  gageStackBlurParm *sbp;
+  /*                         The place to store everything about how to pre-compute a
+                             blurring of an image. Replaces uniformSS, optimSS,
+                             needSpatialBlurSS, rangeSS[2], numSS, and posSS.  More
+                             sensible to have this here, now that gage can parse the
+                             terse string-based description of scale-space sampling that
+                             originated in meet (via Deft) */
+  int leeching;
+  /*                         Non-zero iff using the same `nin` and `ninSS` as another
+                             meetPullVol (so as to avoid redundant copies in memory) */
+  int derivNormSS;
+  /*                         Normalize derivatives based on scale */
+  int recomputedSS;
+  /*                         (OUTPUT) non-zero if meetPullVolLoadMulti had to recompute
+                             these, versus being read from disk */
+  double derivNormBiasSS;
+  /*                         for gageParmStackNormalizeDerivBias */
+  Nrrd *nin;
+  /*                         (we DO own this) */
+  Nrrd **ninSS;
+  /*                         (we DO own this) */
 } meetPullVol;
 
 /*
-******** meetPullInfo
-**
-** information that helps define a pullInfoSpec.
-**
-** The original reason that the pullInfo struct itself isn't being
-** used here is that we want a way of parsing and storing this
-** information from some source (e.g. command-line via hest), at a
-** point where we do not yet know, or not have access to all the
-** volumes and their gageKinds.  So, the gageItem information is
-** stored here only as a string, rather than the real integral item
-** number.
-*/
+ ******** meetPullInfo
+ *
+ * Information that helps define a pullInfoSpec.
+ *
+ * The original reason that the pullInfo struct itself isn't being used here is that we
+ * want a way of parsing and storing this information from some source (e.g. command-line
+ * via hest), at a point where we do not yet know, or not have access to all the volumes
+ * and their gageKinds.  So, the gageItem information is stored here only as a string,
+ * rather than the real integral item number.
+ */
 typedef struct {
   int info,           /* which pullInfo is being defined */
     source,           /* the source (from pullSource* enum) */
