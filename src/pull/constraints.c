@@ -703,7 +703,8 @@ _pullConstraintSatisfy(pullTask *task, pullPoint *point, double travelMax,
       FILE *fhist;
       char fname[AIR_STRLEN_LARGE + 1];
       nhist = nrrdNew();
-      sprintf(fname, "%04u-%04u-phist.nrrd", task->pctx->iter, point->idtag);
+      snprintf(fname, sizeof(fname), "%04u-%04u-phist.nrrd", task->pctx->iter,
+               point->idtag);
       if (pullPositionHistoryNrrdGet(nhist, task->pctx, point)) {
         biffAddf(PULL, "%s: trouble", me);
         return 1;

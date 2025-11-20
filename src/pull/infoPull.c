@@ -445,45 +445,44 @@ pullInfoGet(Nrrd *ninfo, int info, pullContext *pctx) {
 /* HEY this was written in a hurry;
 ** needs to be checked against parsing code */
 int /* Biff: 1 */
-pullInfoSpecSprint(char str[AIR_STRLEN_LARGE + 1], const pullContext *pctx,
+pullInfoSpecSprint(char _str[AIR_STRLEN_SMALL + 1], const pullContext *pctx,
                    const pullInfoSpec *ispec) {
   static const char me[] = "pullInfoSpecSprint";
-  const pullVolume *pvol;
-  char stmp[AIR_STRLEN_LARGE + 1];
 
-  if (!(str && pctx && ispec)) {
+  if (!(_str && pctx && ispec)) {
     biffAddf(PULL, "%s: got NULL pointer", me);
     return 1;
   }
-  strcpy(str, "");
-  /* HEY: no bounds checking! */
-  strcat(str, airEnumStr(pullInfo, ispec->info));
+  char *str = _str;
+  size_t strSize = ASP1_S;
+  str[0] = '\0';
+  SN_COPY(str, strSize, airEnumStr(pullInfo, ispec->info));
   if (ispec->constraint) {
-    strcat(str, "-c");
+    SN_COPY(str, strSize, "-c");
   }
-  strcat(str, ":");
+  SN_COPY(str, strSize, ":");
   if (pullSourceGage == ispec->source) {
     if (UINT_MAX == ispec->volIdx) {
       biffAddf(PULL, "%s: never learned volIdx for \"%s\"", me, ispec->volName);
       return 1;
     }
-    strcat(str, ispec->volName);
-    strcat(str, ":");
-    pvol = pctx->vol[ispec->volIdx];
-    strcat(str, airEnumStr(pvol->kind->enm, ispec->item));
+    SN_COPY(str, strSize, ispec->volName);
+    SN_COPY(str, strSize, ":");
+    const pullVolume *pvol = pctx->vol[ispec->volIdx];
+    SN_COPY(str, strSize, airEnumStr(pvol->kind->enm, ispec->item));
   } else if (pullSourceProp == ispec->source) {
-    strcat(str, airEnumStr(pullProp, ispec->prop));
+    SN_COPY(str, strSize, airEnumStr(pullProp, ispec->prop));
   } else {
     biffAddf(PULL, "%s: unexplained source %d", me, ispec->source);
     return 1;
   }
   if ((pullSourceGage == ispec->source && 1 == pullInfoLen(ispec->info))
       || (pullSourceProp == ispec->source && 1 == pullPropLen(ispec->prop))) {
-    sprintf(stmp, "%g", ispec->zero);
-    strcat(str, stmp);
-    strcat(str, ":");
-    sprintf(stmp, "%g", ispec->scale);
-    strcat(str, stmp);
+    airSinglePrintf(NULL, str, strSize, "%lg", ispec->zero);
+    SN_INCR(str, strSize);
+    SN_COPY(str, strSize, ":");
+    airSinglePrintf(NULL, str, strSize, "%lg", ispec->scale);
+    SN_INCR(str, strSize);
   }
   return 0;
 }

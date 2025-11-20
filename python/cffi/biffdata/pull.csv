@@ -39,7 +39,7 @@ pullPointNew,pullPoint *,NULL,0,pull,pull/pointPull.c:31
 pullProbe,int,1,0,pull,pull/pointPull.c:357
 pullPointInitializePerVoxel,int,1,0,pull,pull/pointPull.c:636
 pullPointInitializeRandomOrHalton,int,1,0,pull,pull/pointPull.c:821
-pullPointInitializeGivenPos,int,1,0,pull,pull/pointPull.c:992
+pullPointInitializeGivenPos,int,1,0,pull,pull/pointPull.c:993
 pullTraceSet,int,1,0,pull,pull/trace.c:243
 pullTraceMultiAdd,int,1,0,pull,pull/trace.c:672
 pullTraceMultiPlotAdd,int,1,0,pull,pull/trace.c:702

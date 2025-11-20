@@ -318,7 +318,7 @@ _pullIterate(pullContext *pctx, int mode) {
 #if PULL_HINTER
   if (pullProcessModeDescent == mode && pctx->nhinter) {
     char fname[AIR_STRLEN_SMALL + 1];
-    sprintf(fname, "hinter-%05u.nrrd", pctx->iter);
+    snprintf(fname, sizeof(fname), "hinter-%05u.nrrd", pctx->iter);
     if (nrrdSave(fname, pctx->nhinter, NULL)) {
       biffMovef(PULL, NRRD, "%s: saving hinter to %s", me, fname);
       return 1;
@@ -332,7 +332,6 @@ _pullIterate(pullContext *pctx, int mode) {
 int /* Biff: 1 */
 pullRun(pullContext *pctx) {
   static const char me[] = "pullRun";
-  char poutS[AIR_STRLEN_MED + 1];
   Nrrd *npos;
   double time0, time1, enrLast, enrNew = AIR_NAN, enrDecrease = AIR_NAN,
                                 enrDecreaseAvg = AIR_NAN;
@@ -364,11 +363,12 @@ pullRun(pullContext *pctx) {
     pctx->addNum = pctx->nixNum = 0;
     if (pctx->iterParm.snap && !(pctx->iter % pctx->iterParm.snap)) {
       npos = nrrdNew();
-      sprintf(poutS, "snap.%6u.pos.nrrd", pctx->iter);
       if (pullOutputGet(npos, NULL, NULL, NULL, 0.0, pctx)) {
         biffAddf(PULL, "%s: couldn't get snapshot for iter %u", me, pctx->iter);
         return 1;
       }
+      char poutS[AIR_STRLEN_MED + 1];
+      snprintf(poutS, sizeof(poutS), "snap.%6u.pos.nrrd", pctx->iter);
       if (nrrdSave(poutS, npos, NULL)) {
         biffMovef(PULL, NRRD, "%s: couldn't save snapshot for iter %u", me, pctx->iter);
         return 1;

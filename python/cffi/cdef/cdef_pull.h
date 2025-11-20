@@ -974,7 +974,7 @@ extern pullInfoSpec *pullInfoSpecNix(pullInfoSpec *ispec);
 extern void *pullInfoSpecNix_mop(void *);
 extern int pullInfoSpecAdd(pullContext *pctx, pullInfoSpec *ispec);
 extern int pullInfoGet(Nrrd *ninfo, int info, pullContext *pctx);
-extern int pullInfoSpecSprint(char str[AIR_STRLEN_LARGE + 1],
+extern int pullInfoSpecSprint(char str[AIR_STRLEN_SMALL + 1],
                                    const pullContext *pctx,
                                    const pullInfoSpec *ispec);
 /* contextPull.c */

@@ -1033,11 +1033,11 @@ pullTraceMultiWrite(FILE *file, const pullTraceMulti *mtrc) {
 static int /* Biff: 1 */
 traceread(pullTrace *trc, FILE *file, unsigned int _ti) {
   static const char me[] = "traceread";
-  char line[AIR_STRLEN_MED + 1], name[AIR_STRLEN_MED + 1];
+  char line[AIR_STRLEN_MED + 1], name[AIR_STRLEN_MED + 1 /* WHY so big? */];
   unsigned int ti, lineLen;
   int stops[3], hackhack, vertHN, strnHN, stabHN; /* HN == have nrrd */
 
-  sprintf(name, "separator");
+  snprintf(name, sizeof(name), "separator");
   lineLen = airOneLine(file, line, AIR_STRLEN_MED + 1);
   if (!lineLen) {
     biffAddf(PULL, "%s: didn't get %s line", me, name);
@@ -1051,7 +1051,7 @@ traceread(pullTrace *trc, FILE *file, unsigned int _ti) {
     biffAddf(PULL, "%s: read trace index %u but wanted %u", me, ti, _ti);
     return 1;
   }
-  sprintf(name, "seed pos");
+  snprintf(name, sizeof(name), "seed pos");
   lineLen = airOneLine(file, line, AIR_STRLEN_MED + 1);
   if (!lineLen) {
     biffAddf(PULL, "%s: didn't get %s line", me, name);
@@ -1063,7 +1063,7 @@ traceread(pullTrace *trc, FILE *file, unsigned int _ti) {
     biffAddf(PULL, "%s: couldn't parse %s line \"%s\" as 4 doubles", me, name, line);
     return 1;
   }
-  sprintf(name, "have nrrds");
+  snprintf(name, sizeof(name), "have nrrds");
   lineLen = airOneLine(file, line, AIR_STRLEN_MED + 1);
   if (!lineLen) {
     biffAddf(PULL, "%s: didn't get %s line", me, name);
@@ -1090,7 +1090,7 @@ traceread(pullTrace *trc, FILE *file, unsigned int _ti) {
   READ(stab);
   nrrdDefaultIoVerbose = hackhack;
 
-  sprintf(name, "seed idx");
+  snprintf(name, sizeof(name), "seed idx");
   lineLen = airOneLine(file, line, AIR_STRLEN_MED + 1);
   if (!lineLen) {
     biffAddf(PULL, "%s: didn't get %s line", me, name);
@@ -1100,7 +1100,7 @@ traceread(pullTrace *trc, FILE *file, unsigned int _ti) {
     biffAddf(PULL, "%s: didn't parse uint from %s line \"%s\"", me, name, line);
     return 1;
   }
-  sprintf(name, "stops");
+  snprintf(name, sizeof(name), "stops");
   lineLen = airOneLine(file, line, AIR_STRLEN_MED + 1);
   if (!lineLen) {
     biffAddf(PULL, "%s: didn't get %s line", me, name);
@@ -1117,7 +1117,7 @@ traceread(pullTrace *trc, FILE *file, unsigned int _ti) {
 int /* Biff: 1 */
 pullTraceMultiRead(pullTraceMulti *mtrc, FILE *file) {
   static const char me[] = "pullTraceMultiRead";
-  char line[AIR_STRLEN_MED + 1], name[AIR_STRLEN_MED + 1];
+  char line[AIR_STRLEN_MED + 1], name[AIR_STRLEN_MED + 1 /* why so big? */];
   unsigned int lineLen, ti, tnum;
   pullTrace *trc;
 
@@ -1126,7 +1126,7 @@ pullTraceMultiRead(pullTraceMulti *mtrc, FILE *file) {
     return 1;
   }
   airArrayLenSet(mtrc->traceArr, 0);
-  sprintf(name, "magic");
+  snprintf(name, sizeof(name), "magic");
   lineLen = airOneLine(file, line, AIR_STRLEN_MED + 1);
   if (!lineLen) {
     biffAddf(PULL, "%s: didn't get %s line", me, name);
@@ -1138,7 +1138,7 @@ pullTraceMultiRead(pullTraceMulti *mtrc, FILE *file) {
     return 1;
   }
 
-  sprintf(name, "# of traces");
+  snprintf(name, sizeof(name), "# of traces");
   lineLen = airOneLine(file, line, AIR_STRLEN_MED + 1);
   if (!lineLen) {
     biffAddf(PULL, "%s: didn't get %s line", me, name);

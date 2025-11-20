@@ -740,7 +740,7 @@ _BIFF_DICT = {  # contents here are filled in by teem/python/cffi/exult.py Tffi.
     'pullProbe': (_equals_one, 0, b'pull', 'pull/pointPull.c:357'),
     'pullPointInitializePerVoxel': (_equals_one, 0, b'pull', 'pull/pointPull.c:636'),
     'pullPointInitializeRandomOrHalton': (_equals_one, 0, b'pull', 'pull/pointPull.c:821'),
-    'pullPointInitializeGivenPos': (_equals_one, 0, b'pull', 'pull/pointPull.c:992'),
+    'pullPointInitializeGivenPos': (_equals_one, 0, b'pull', 'pull/pointPull.c:993'),
     'pullTraceSet': (_equals_one, 0, b'pull', 'pull/trace.c:243'),
     'pullTraceMultiAdd': (_equals_one, 0, b'pull', 'pull/trace.c:672'),
     'pullTraceMultiPlotAdd': (_equals_one, 0, b'pull', 'pull/trace.c:702'),

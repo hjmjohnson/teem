@@ -938,7 +938,8 @@ pullPointInitializeRandomOrHalton(pullContext *pctx, const unsigned int pointIdx
           biffAddf(PULL, "%s: trouble", me);
           return 1;
         }
-        sprintf(fname, "%04u-%04u-%04u-phist.nrrd", pctx->iter, point->idtag, tryCount);
+        snprintf(fname, sizeof(fname), "%04u-%04u-%04u-phist.nrrd", pctx->iter,
+                 point->idtag, tryCount);
         if ((fhist = fopen(fname, "w"))) {
           if (nrrdSave(fname, nhist, NULL)) {
             biffMovef(PULL, NRRD, "%s: trouble", me);
@@ -1062,34 +1063,25 @@ pullPointInitializeGivenPos(pullContext *pctx,
 int /* Biff: (private) 1 */
 _pullPointSetup(pullContext *pctx) {
   static const char me[] = "_pullPointSetup";
-  char doneStr[AIR_STRLEN_SMALL + 1];
-  unsigned int pointIdx, binIdx, tick, pn, initRorHack;
-  pullPoint *point;
-  pullBin *bin;
-  int createFail, added;
-  airArray *mop;
-  Nrrd *npos;
-  pullVolume *seedVol, *scaleVol;
-  gageShape *seedShape;
-  double factor, *posData;
-  unsigned int totalNumPoints, voxNum, ii;
 
-  /* on using pullBinsPointMaybeAdd: This is used only in the context
-     of constraints; it makes sense to be a little more selective
-     about adding points, so that they aren't completely piled on top
-     of each other. This relies on _PULL_BINNING_MAYBE_ADD_THRESH: its
-     tempting to set this value high, to more aggressively limit the
-     number of points added, but that's really the job of population
-     control, and we can't always guarantee that constraint manifolds
-     will be well-sampled (with respect to pctx->radiusSpace and
-     pctx->radiusScale) to start with */
+  /* on using pullBinsPointMaybeAdd: This is used only in the context of constraints; it
+     makes sense to be a little more selective about adding points, so that they aren't
+     completely piled on top of each other. This relies on
+     _PULL_BINNING_MAYBE_ADD_THRESH: its tempting to set this value high, to more
+     aggressively limit the number of points added, but that's really the job of
+     population control, and we can't always guarantee that constraint manifolds will be
+     well-sampled (with respect to pctx->radiusSpace and pctx->radiusScale) to start with
+   */
 
   if (pctx->verbose) {
     printf("%s: beginning (%s). . . ", me,
            airEnumStr(pullInitMethod, pctx->initParm.method));
     fflush(stdout);
   }
-  mop = airMopNew();
+  airArray *mop = airMopNew();
+  Nrrd *npos;
+  double *posData;
+  uint totalNumPoints;
   switch (pctx->initParm.method) {
   case pullInitMethodGivenPos:
     npos = nrrdNew();
@@ -1116,10 +1108,11 @@ _pullPointSetup(pullContext *pctx) {
              pctx->initParm.pointPerVoxel, pctx->initParm.numInitial);
     }
     /* Obtain number of voxels */
-    seedVol = pctx->vol[pctx->ispec[pullInfoSeedThresh]->volIdx];
-    seedShape = seedVol->gctx->shape;
+    pullVolume *seedVol = pctx->vol[pctx->ispec[pullInfoSeedThresh]->volIdx];
+    gageShape *seedShape = seedVol->gctx->shape;
+    uint voxNum;
     if (pctx->initParm.ppvZRange[0] <= pctx->initParm.ppvZRange[1]) {
-      unsigned int zrn;
+
       if (!(pctx->initParm.ppvZRange[0] < seedShape->size[2]
             && pctx->initParm.ppvZRange[1] < seedShape->size[2])) {
         biffAddf(PULL, "%s: ppvZRange[%u,%u] outside volume [0,%u]", me,
@@ -1128,7 +1121,7 @@ _pullPointSetup(pullContext *pctx) {
         airMopError(mop);
         return 1;
       }
-      zrn = pctx->initParm.ppvZRange[1] - pctx->initParm.ppvZRange[0] + 1;
+      uint zrn = pctx->initParm.ppvZRange[1] - pctx->initParm.ppvZRange[0] + 1;
       voxNum = seedShape->size[0] * seedShape->size[1] * zrn;
       if (pctx->verbose) {
         printf("%s: vol size %u %u [%u,%u] -> voxNum %u\n", me, seedShape->size[0],
@@ -1144,6 +1137,7 @@ _pullPointSetup(pullContext *pctx) {
     }
 
     /* Compute total number of points */
+    double factor;
     if (pctx->initParm.pointPerVoxel > 0) {
       factor = pctx->initParm.pointPerVoxel;
     } else {
@@ -1173,11 +1167,10 @@ _pullPointSetup(pullContext *pctx) {
     printf("%s: initializing/seeding %u pts. . .       ", me, totalNumPoints);
     fflush(stdout);
   }
-
   /* find first scale volume, if there is one; this is used by some
      seeders to determine placement along the scale axis */
-  scaleVol = NULL;
-  for (ii = 0; ii < pctx->volNum; ii++) {
+  pullVolume *scaleVol = NULL;
+  for (uint ii = 0; ii < pctx->volNum; ii++) {
     if (pctx->vol[ii]->ninScale) {
       scaleVol = pctx->vol[ii];
       break;
@@ -1185,17 +1178,18 @@ _pullPointSetup(pullContext *pctx) {
   }
 
   /* Start adding points */
-  tick = totalNumPoints / 1000;
-  point = NULL;
-  initRorHack = 0;
+  uint tick = totalNumPoints / 1000;
+  pullPoint *point = NULL;
+  uint initRorHack = 0;
   /* This loop would normally be:
      for (pointIdx = 0; pointIdx < totalNumPoints; pointIdx++) {
      but because of pctx->flag.nixAtVolumeEdgeSpaceInitRorH we
      need to be able to decrement pointIdx to force another redo,
      even if pointIdx==0. So loop index is actually one greater
      than the index value actually used */
+  char doneStr[AIR_STRLEN_SMALL + 1];
+  uint pointIdx;
   for (pointIdx = 1; pointIdx <= totalNumPoints; pointIdx++) {
-    int E;
     if (pctx->verbose) {
       if (tick < 100 || 0 == (pointIdx - 1) % tick) {
         printf("%s", airDoneStr(0, pointIdx - 1, totalNumPoints, doneStr));
@@ -1210,7 +1204,7 @@ _pullPointSetup(pullContext *pctx) {
       point = pullPointNew(pctx);
     }
     /* Filling array according to initialization method */
-    E = 0;
+    int createFail, E = 0;
     switch (pctx->initParm.method) {
     case pullInitMethodRandom:
     case pullInitMethodHalton:
@@ -1259,6 +1253,7 @@ _pullPointSetup(pullContext *pctx) {
 
     /* else, the point is ready for binning */
     if (pctx->constraint) {
+      int added;
       if (pullBinsPointMaybeAdd(pctx, point, NULL, &added)) {
         biffAddf(PULL, "%s: trouble binning point %u", me, point->idtag);
         airMopError(mop);
@@ -1294,24 +1289,25 @@ _pullPointSetup(pullContext *pctx) {
   }
 
   /* Final check: do we have any points? */
-  pn = pullPointNumber(pctx);
+  uint pn = pullPointNumber(pctx);
   if (!pn) {
-    char stmp0[AIR_STRLEN_MED + 1], stmp1[AIR_STRLEN_SMALL + 1];
+    char stmp0[AIR_STRLEN_MED + 1];
     int guess = AIR_FALSE;
-    sprintf(stmp0, "%s: seeded 0 points", me);
+    char *st = stmp0;
+    size_t stSize = sizeof(stmp0);
+    st[0] = '\0';
+    SN_PRINTF(st, stSize, "%s: seeded 0 points", me);
     if (pctx->ispec[pullInfoSeedThresh]) {
       guess = AIR_TRUE;
-      sprintf(stmp1, " (? bad seedthresh %g ?)", pctx->ispec[pullInfoSeedThresh]->zero);
-      strcat(stmp0, stmp1);
+      SN_PRINTF(st, stSize, " (? bad seedthresh %g ?)",
+                pctx->ispec[pullInfoSeedThresh]->zero);
     }
     if (pctx->flag.nixAtVolumeEdgeSpace) {
       guess = AIR_TRUE;
-      sprintf(stmp1, " (? flag.nixAtVolumeEdgeSpace true ?)");
-      strcat(stmp0, stmp1);
+      SN_COPY(st, stSize, " (? flag.nixAtVolumeEdgeSpace true ?)");
     }
     if (!guess) {
-      sprintf(stmp1, " (no guess as to why)");
-      strcat(stmp0, stmp1);
+      SN_COPY(st, stSize, " (no guess as to why)");
     }
     biffAddf(PULL, "%s", stmp0);
     airMopError(mop);
@@ -1342,8 +1338,8 @@ _pullPointSetup(pullContext *pctx) {
 
   /* now that all points have been added, set their energy to help
      inspect initial state */
-  for (binIdx = 0; binIdx < pctx->binNum; binIdx++) {
-    bin = pctx->bin + binIdx;
+  for (uint binIdx = 0; binIdx < pctx->binNum; binIdx++) {
+    pullBin *bin = pctx->bin + binIdx;
     for (pointIdx = 0; pointIdx < bin->pointNum; pointIdx++) {
       point = bin->point[pointIdx];
       point->energy = _pullPointEnergyTotal(pctx->task[0], bin, point,
