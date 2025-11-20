@@ -3292,7 +3292,7 @@ nrrdKernelSpecSprint(char _str[AIR_STRLEN_SMALL + 1], const NrrdKernelSpec *ksp)
 }
 
 int /* Biff: 1 */
-nrrdKernelSprint(char str[AIR_STRLEN_LARGE + 1], const NrrdKernel *kernel,
+nrrdKernelSprint(char str[AIR_STRLEN_SMALL + 1], const NrrdKernel *kernel,
                  const double kparm[NRRD_KERNEL_PARM_MAXNUM]) {
   static const char me[] = "nrrdKernelSprint";
   NrrdKernelSpec ksp;
@@ -3442,9 +3442,8 @@ nrrdKernelCheck(const NrrdKernel *kern, const double parm[NRRD_KERNEL_PARM_MAXNU
   static const char me[] = "nrrdKernelCheck";
   const NrrdKernel *parsedkern, *kernD;
   double parsedparm[NRRD_KERNEL_PARM_MAXNUM], supp, integral;
-  char kstr[AIR_STRLEN_LARGE + 1], kspstr[AIR_STRLEN_LARGE + 1],
-    explain[AIR_STRLEN_LARGE + 1], stmp[AIR_STRLEN_SMALL + 1],
-    kdstr[AIR_STRLEN_LARGE + 1];
+  char kstr[AIR_STRLEN_LARGE + 1], explain[AIR_STRLEN_LARGE + 1],
+    stmp[AIR_STRLEN_SMALL + 1], kdstr[AIR_STRLEN_LARGE + 1];
   int differ;
   size_t evalIdx;
   double *dom_d, *ran_d, wee;
@@ -3479,6 +3478,7 @@ nrrdKernelCheck(const NrrdKernel *kern, const double parm[NRRD_KERNEL_PARM_MAXNU
   kspB = nrrdKernelSpecNew();
   airMopAdd(mop, kspB, nrrdKernelSpecNix_mop, airMopAlways);
   nrrdKernelSpecSet(kspA, kern, parm);
+  char kspstr[AIR_STRLEN_SMALL + 1];
   if (nrrdKernelSprint(kstr, kern, parm) || nrrdKernelSpecSprint(kspstr, kspA)) {
     biffAddf(NRRD, "%s: trouble", me);
     ERRR;

@@ -172,7 +172,7 @@ nrrdBoundarySpecParse(NrrdBoundarySpec *bspec, const char *_str) {
 }
 
 int /* Biff: 1 */
-nrrdBoundarySpecSprint(char str[AIR_STRLEN_LARGE + 1], const NrrdBoundarySpec *bspec) {
+nrrdBoundarySpecSprint(char str[AIR_STRLEN_SMALL + 1], const NrrdBoundarySpec *bspec) {
   static const char me[] = "nrrdBoundarySpecSprint";
   char *out;
   size_t outSize;
@@ -186,12 +186,10 @@ nrrdBoundarySpecSprint(char str[AIR_STRLEN_LARGE + 1], const NrrdBoundarySpec *b
     return 1;
   }
   out = str;
-  outSize = AIR_STRLEN_LARGE + 1;
-  snprintf(out, outSize, "%s", airEnumStr(nrrdBoundary, bspec->boundary));
-  SN_INCR(out, outSize);
+  outSize = ASP1_S;
+  SN_PRINTF(out, outSize, "%s", airEnumStr(nrrdBoundary, bspec->boundary));
   if (nrrdBoundaryPad == bspec->boundary) {
-    snprintf(out, outSize, ":%.17g", bspec->padValue);
-    SN_INCR(out, outSize);
+    airSinglePrintf(NULL, out, outSize, ":%lg", bspec->padValue);
   }
   return 0;
 }
@@ -207,8 +205,8 @@ nrrdBoundarySpecCompare(const NrrdBoundarySpec *aa, const NrrdBoundarySpec *bb,
   }
   if (!!aa != !!bb) {
     if (explain) {
-      snprintf(explain, AIR_STRLEN_LARGE + 1, "NULL-ities differ: %s != %s",
-               aa ? "non-NULL" : "NULL", bb ? "non-NULL" : "NULL");
+      snprintf(explain, ASP1_L, "NULL-ities differ: %s != %s", aa ? "non-NULL" : "NULL",
+               bb ? "non-NULL" : "NULL");
     }
     *differ = 1;
     return 0;
@@ -220,7 +218,7 @@ nrrdBoundarySpecCompare(const NrrdBoundarySpec *aa, const NrrdBoundarySpec *bb,
   }
   if (aa->boundary != bb->boundary) {
     if (explain) {
-      snprintf(explain, AIR_STRLEN_LARGE + 1, "boundaries differ: %s != %s",
+      snprintf(explain, ASP1_L, "boundaries differ: %s != %s",
                airEnumStr(nrrdBoundary, aa->boundary),
                airEnumStr(nrrdBoundary, bb->boundary));
     }
@@ -230,8 +228,8 @@ nrrdBoundarySpecCompare(const NrrdBoundarySpec *aa, const NrrdBoundarySpec *bb,
   if (nrrdBoundaryPad == aa->boundary) {
     if (aa->padValue != bb->padValue) {
       if (explain) {
-        snprintf(explain, AIR_STRLEN_LARGE + 1, "padValue differ: %.17g != %.17g",
-                 aa->padValue, bb->padValue);
+        snprintf(explain, ASP1_L, "padValue differ: %.17g != %.17g", aa->padValue,
+                 bb->padValue);
       }
       *differ = 1;
       return 0;

@@ -919,7 +919,7 @@ NRRD_EXPORT void *nrrdBoundarySpecNix_mop(void *);
 NRRD_EXPORT NrrdBoundarySpec *nrrdBoundarySpecCopy(const NrrdBoundarySpec *bsp);
 NRRD_EXPORT int nrrdBoundarySpecCheck(const NrrdBoundarySpec *bspec);
 NRRD_EXPORT int nrrdBoundarySpecParse(NrrdBoundarySpec *bspec, const char *str);
-NRRD_EXPORT int nrrdBoundarySpecSprint(char str[AIR_STRLEN_LARGE + 1],
+NRRD_EXPORT int nrrdBoundarySpecSprint(char str[AIR_STRLEN_SMALL + 1],
                                        const NrrdBoundarySpec *bspec);
 NRRD_EXPORT int nrrdBoundarySpecCompare(const NrrdBoundarySpec *bspecA,
                                         const NrrdBoundarySpec *bspecB,
@@ -1663,7 +1663,7 @@ NRRD_EXPORT int nrrdKernelParse(const NrrdKernel **kernelP,
 NRRD_EXPORT int nrrdKernelSpecParse(NrrdKernelSpec *ksp, const char *str);
 NRRD_EXPORT int nrrdKernelSpecSprint(char str[AIR_STRLEN_SMALL + 1],
                                      const NrrdKernelSpec *ksp);
-NRRD_EXPORT int nrrdKernelSprint(char str[AIR_STRLEN_LARGE + 1],
+NRRD_EXPORT int nrrdKernelSprint(char str[AIR_STRLEN_SMALL + 1],
                                  const NrrdKernel *kernel,
                                  const double kparm[NRRD_KERNEL_PARM_MAXNUM]);
 NRRD_EXPORT int nrrdKernelCompare(const NrrdKernel *kernA,

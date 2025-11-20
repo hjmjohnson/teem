@@ -277,7 +277,7 @@ nrrdResampleKernelSet(NrrdResampleContext *rsmc, unsigned int axIdx,
       rsmc->axis[axIdx].kparm[kpIdx] = kparm[kpIdx];
     }
     if (rsmc->verbose) {
-      char kstr[AIR_STRLEN_LARGE + 1];
+      char kstr[AIR_STRLEN_SMALL + 1];
       NrrdKernelSpec ksp;
       nrrdKernelSpecSet(&ksp, rsmc->axis[axIdx].kernel, rsmc->axis[axIdx].kparm);
       nrrdKernelSpecSprint(kstr, &ksp);
