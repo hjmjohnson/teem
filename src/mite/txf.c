@@ -210,18 +210,20 @@ miteVariableParse(gageItemSpec *isp, const char *label) {
 }
 
 void
-miteVariablePrint(char *buff, const gageItemSpec *isp) {
-  static const char me[] = "miteVariablePrint";
+miteVariableSprint(char buff[AIR_STRLEN_SMALL + 1], const gageItemSpec *isp) {
+  static const char me[] = "miteVariableSprint";
 
   if (!(isp->kind)) {
-    strcpy(buff, "");
+    buff[0] = '\0';
   } else if (gageKindScl == isp->kind || gageKindVec == isp->kind
              || tenGageKind == isp->kind) {
-    sprintf(buff, "gage(%s:%s)", isp->kind->name, airEnumStr(isp->kind->enm, isp->item));
+    snprintf(buff, ASP1_S, "gage(%s:%s)", isp->kind->name,
+             airEnumStr(isp->kind->enm, isp->item));
   } else if (miteValGageKind == isp->kind) {
-    sprintf(buff, "%s(%s)", isp->kind->name, airEnumStr(isp->kind->enm, isp->item));
+    snprintf(buff, ASP1_S, "%s(%s)", isp->kind->name,
+             airEnumStr(isp->kind->enm, isp->item));
   } else {
-    sprintf(buff, "(%s: unknown gageKind!)", me);
+    snprintf(buff, ASP1_S, "(%s: unknown gageKind!)", me);
   }
   return;
 }

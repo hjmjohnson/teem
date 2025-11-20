@@ -172,28 +172,28 @@ miteShadeSpecParse(miteShadeSpec *shpec, char *shadeStr) {
 }
 
 void
-miteShadeSpecPrint(char *buff, const miteShadeSpec *shpec) {
-  static const char me[] = "miteShadeSpecPrint";
-  char var[4][AIR_STRLEN_MED + 1];
+miteShadeSpecSprint(char buff[AIR_STRLEN_SMALL + 1], const miteShadeSpec *shpec) {
+  static const char me[] = "miteShadeSpecSprint";
+  char var[4][AIR_STRLEN_SMALL + 1];
 
   if (buff && shpec) {
     switch (shpec->method) {
     case miteShadeMethodNone:
-      sprintf(buff, "none");
+      snprintf(buff, ASP1_S, "none");
       break;
     case miteShadeMethodPhong:
-      miteVariablePrint(var[0], shpec->vec0);
-      sprintf(buff, "phong:%s", var[0]);
+      miteVariableSprint(var[0], shpec->vec0);
+      snprintf(buff, ASP1_S, "phong:%s", var[0]);
       break;
     case miteShadeMethodLitTen:
-      miteVariablePrint(var[0], shpec->vec0);
-      miteVariablePrint(var[1], shpec->vec1);
-      miteVariablePrint(var[2], shpec->scl0);
-      miteVariablePrint(var[3], shpec->scl1);
-      sprintf(buff, "litten:%s,%s,%s,%s", var[0], var[1], var[2], var[3]);
+      miteVariableSprint(var[0], shpec->vec0);
+      miteVariableSprint(var[1], shpec->vec1);
+      miteVariableSprint(var[2], shpec->scl0);
+      miteVariableSprint(var[3], shpec->scl1);
+      snprintf(buff, ASP1_S, "litten:%s,%s,%s,%s", var[0], var[1], var[2], var[3]);
       break;
     default:
-      sprintf(buff, "%s: unknown shade method!", me);
+      snprintf(buff, ASP1_S, "%s: unknown shade method!", me);
       break;
     }
   }

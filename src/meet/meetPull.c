@@ -102,23 +102,20 @@ meetPullVolParse(meetPullVol *mpv, const char *_str) {
   /* there are other flags and parms but these are the main ones */
 #define SFMT      "<minScl>-<#smp>-<maxScl>[-n][/k=kss][/b=bspec][/s=smpling]"
 #define VFMT_LONG "<fileName>:<kind>:" SFMT ":<volName>"
-  char *str, *ctok, *clast = NULL;
-  airArray *mop;
-  int wantSS;
-  unsigned int ctokn;
 
   if (!(mpv && _str)) {
     biffAddf(MEET, "%s: got NULL pointer", me);
     return 1;
   }
+  char *str;
   if (!(str = airStrdup(_str))) {
     biffAddf(MEET, "%s: couldn't strdup input", me);
     return 1;
   }
 
-  mop = airMopNew();
+  airArray *mop = airMopNew();
   airMopAdd(mop, str, airFree, airMopAlways);
-  ctokn = airStrntok(str, ":");
+  uint ctokn = airStrntok(str, ":");
   /* An annoying side-effect of putting the blurring kernel specification and
      boundary specification inside the string representation of the
      gageStackBlurParm, is that the colon in dg:1,6" or "pad:10" is now
@@ -134,9 +131,9 @@ meetPullVolParse(meetPullVol *mpv, const char *_str) {
     airMopError(mop);
     return 1;
   }
-  wantSS = (ctokn > 3);
-
-  ctok = airStrtok(str, ":", &clast);
+  int wantSS = (ctokn > 3);
+  char *clast = NULL;
+  char *ctok = airStrtok(str, ":", &clast);
   if (!(mpv->fileName = airStrdup(ctok))) {
     biffAddf(MEET, "%s: couldn't strdup fileName", me);
     airMopError(mop);
@@ -152,16 +149,14 @@ meetPullVolParse(meetPullVol *mpv, const char *_str) {
   }
   if (wantSS) {
     int extraFlag[256];
-    char *extraParm = NULL, *ptok, *plast;
-    unsigned int efi, cti;
-    char *sbps;
+    char *extraParm = NULL;
     /* the hack to make the ":" inside a blurring kernel specification or
        boundary specification be unlike the ":" that delimits the real
        meetPullVol fields */
-    sbps = airStrdup(_str); /* to have a buffer big enough */
+    char *sbps = airStrdup(_str); /* to have a buffer big enough */
     airMopAdd(mop, sbps, airFree, airMopAlways);
     strcpy(sbps, "");
-    for (cti = 0; cti < ctokn - 3; cti++) {
+    for (uint cti = 0; cti < ctokn - 3; cti++) {
       if (cti) {
         strcat(sbps, ":");
       }
@@ -177,7 +172,7 @@ meetPullVolParse(meetPullVol *mpv, const char *_str) {
     }
     mpv->derivNormSS = !!extraFlag['n'];
     extraFlag['n'] = AIR_FALSE;
-    for (efi = 0; efi < 256; efi++) {
+    for (uint efi = 0; efi < 256; efi++) {
       if (extraFlag[AIR_UCHAR(efi)]) {
         biffAddf(MEET, "%s: got unknown extra flag '%c' in \"%s\"", me,
                  AIR_CAST(char, efi), sbps);
@@ -186,12 +181,12 @@ meetPullVolParse(meetPullVol *mpv, const char *_str) {
       }
     }
     if (extraParm) {
-      unsigned int pmi, pmn;
       static const char dnbiase[] = "dnbias=";
       airMopAdd(mop, extraParm, airFree, airMopAlways);
-      pmn = airStrntok(extraParm, "/");
-      for (pmi = 0; pmi < pmn; pmi++) {
-        ptok = airStrtok(!pmi ? extraParm : NULL, "/", &plast);
+      uint pmn = airStrntok(extraParm, "/");
+      for (uint pmi = 0; pmi < pmn; pmi++) {
+        char *plast;
+        char *ptok = airStrtok(!pmi ? extraParm : NULL, "/", &plast);
         if (strstr(ptok, dnbiase) == ptok) {
           if (1 != sscanf(ptok + strlen(dnbiase), "%lg", &(mpv->derivNormBiasSS))) {
             biffAddf(MEET, "%s: couldn't parse \"%s\" as double in \"%s\"", me,
@@ -251,7 +246,7 @@ meetHestPullVolParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) 
   if (meetPullVolParse(mpv, str)) {
     char *ler;
     airMopAdd(mop, ler = biffGetDone(MEET), airFree, airMopOnError);
-    airStrcpy(err, ASP1_L, ler);
+    airStrcpy(err, ASP1_H, ler);
     airMopError(mop);
     return 1;
   }
@@ -750,7 +745,7 @@ meetHestPullInfoParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1])
   if (meetPullInfoParse(minf, str)) {
     char *ler;
     airMopAdd(mop, ler = biffGetDone(MEET), airFree, airMopOnError);
-    airStrcpy(err, AIR_STRLEN_HUGE + 1, ler);
+    airStrcpy(err, ASP1_H, ler);
     airMopError(mop);
     return 1;
   }
@@ -808,12 +803,11 @@ meetPullInfoAddMulti(pullContext *pctx, meetPullInfo **minf, unsigned int minfNu
       airMopError(mop);
       return 1;
     }
-    /* else added the ispec okay. If we have an error with a different
-       ispec later in this loop, who's job is it to free up the ispecs
-       that have been added successfully?  In teem/src/bin/puller, that
-       is done by pullContextNix. So we now extricate ourself from the
-       business of freeing this ispec in case of error; one of the few
-       times that airMopSub is really needed */
+    /* else added the ispec okay. If we have an error with a different ispec later in
+       this loop, who's job is it to free up the ispecs that have been added
+       successfully?  In teem/src/bin/puller, that is done by pullContextNix. So we now
+       extricate ourself from the business of freeing this ispec in case of error; one of
+       the few times that airMopSub is really needed */
     airMopSub(mop, ispec, pullInfoSpecNix_mop);
   }
 

@@ -383,7 +383,8 @@ extern const gageKind *const miteValGageKind;
 extern const airEnum *const miteStageOp;
 extern const char *const miteRangeChar;
 extern int miteVariableParse(gageItemSpec *isp, const char *label);
-extern void miteVariablePrint(char *buff, const gageItemSpec *isp);
+extern void miteVariableSprint(char buff[AIR_STRLEN_SMALL + 1],
+                                    const gageItemSpec *isp);
 extern int miteNtxfCheck(const Nrrd *ntxf);
 extern void miteQueryAdd(gageQuery queryScl, gageQuery queryVec, gageQuery queryTen,
                               gageQuery queryMite, gageItemSpec *isp);
@@ -396,7 +397,8 @@ extern miteShadeSpec *miteShadeSpecNew(void);
 extern miteShadeSpec *miteShadeSpecNix(miteShadeSpec *);
 extern void *miteShadeSpecNix_mop(void *);
 extern int miteShadeSpecParse(miteShadeSpec *shpec, char *shadeStr);
-extern void miteShadeSpecPrint(char *buff, const miteShadeSpec *shpec);
+extern void miteShadeSpecSprint(char buff[AIR_STRLEN_SMALL + 1],
+                                     const miteShadeSpec *shpec);
 extern void miteShadeSpecQueryAdd(gageQuery queryScl, gageQuery queryVec,
                                        gageQuery queryTen, gageQuery queryMite,
                                        miteShadeSpec *shpec);

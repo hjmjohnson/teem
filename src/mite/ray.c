@@ -286,15 +286,11 @@ miteSample(miteThread *mtt, miteRender *mrr, miteUser *muu, int num, double rayT
 
 int /* Biff: nope */
 miteRayEnd(miteThread *mtt, miteRender *mrr, miteUser *muu) {
-  unsigned int idx, slen, stageIdx;
-  mite_t *imgData;
-  double A;
-
   AIR_UNUSED(mrr);
   mtt->samples += mtt->raySample;
-  idx = mtt->ui + AIR_UINT(muu->nout->axis[1].size) * mtt->vi;
-  imgData = (mite_t *)muu->nout->data;
-  A = 1 - mtt->TT;
+  uint idx = mtt->ui + AIR_UINT(muu->nout->axis[1].size) * mtt->vi;
+  mite_t *imgData = (mite_t *)muu->nout->data;
+  double A = 1 - mtt->TT;
   if (A) {
     ELL_5V_SET(imgData + 5 * idx, mtt->RR / A, mtt->GG / A, mtt->BB / A, A, mtt->ZZ);
   } else {
@@ -306,17 +302,17 @@ miteRayEnd(miteThread *mtt, miteRender *mrr, miteUser *muu) {
     nrrdWrap_va(muu->ndebug, muu->debug, nrrdTypeDouble, 2,
                 AIR_SIZE_T(muu->ndebug->axis[0].size), AIR_SIZE_T(mtt->raySample));
     airArrayNix(muu->debugArr);
-    slen = 0;
-    for (stageIdx = 0; stageIdx < mtt->stageNum; stageIdx++) {
-      slen += strlen(mtt->stage[stageIdx].label) + 2;
+    size_t labSize = 0;
+    for (uint stageIdx = 0; stageIdx < mtt->stageNum; stageIdx++) {
+      labSize += strlen(mtt->stage[stageIdx].label) + 2;
     }
-    slen += strlen("R,G,B,A,Z") + 1;
-    muu->ndebug->axis[0].label = (char *)calloc(slen, sizeof(char));
-    for (stageIdx = 0; stageIdx < mtt->stageNum; stageIdx++) {
-      strcat(muu->ndebug->axis[0].label, mtt->stage[stageIdx].label);
-      strcat(muu->ndebug->axis[0].label, ",,");
+    labSize += strlen("R,G,B,A,Z") + 1;
+    char *lab = muu->ndebug->axis[0].label = AIR_CALLOC(labSize, char);
+    for (uint stageIdx = 0; stageIdx < mtt->stageNum; stageIdx++) {
+      SN_COPY(lab, labSize, mtt->stage[stageIdx].label);
+      SN_COPY(lab, labSize, ",,");
     }
-    strcat(muu->ndebug->axis[0].label, "R,G,B,A,Z");
+    SN_COPY(lab, labSize, "R,G,B,A,Z");
   }
   return 0;
 }
