@@ -18,6 +18,7 @@
 */
 
 #include "limn.h"
+#include "privateLimn.h"
 
 int /* Biff: nope */
 limnObjectDescribe(FILE *file, const limnObject *obj) {
@@ -452,39 +453,31 @@ http://www.npr.org/templates/story/story.php?storyId=4531695
 int /* Biff: 1 */
 limnPolyDataWriteLMPD(FILE *file, const limnPolyData *pld) {
   static const char me[] = "limnPolyDataWriteLMPD";
-  char infoS[AIR_STRLEN_MED + 1];
-  unsigned int primIdx, infoNum, flag, bit;
-  Nrrd *nrrd;
-  airArray *mop;
-
   if (!(file && pld)) {
     biffAddf(LIMN, "%s: got NULL pointer", me);
     return 1;
   }
-
-  for (primIdx = 0; primIdx < pld->primNum; primIdx++) {
+  for (uint primIdx = 0; primIdx < pld->primNum; primIdx++) {
     if (limnPrimitiveNoop == pld->type[primIdx]) {
       biffAddf(LIMN, "%s: sorry, can't save with prim[%u] type %s", me, primIdx,
                airEnumStr(limnPrimitive, pld->type[primIdx]));
       return 1;
     }
   }
-
-  mop = airMopNew();
-
   fprintf(file, "%s\n", LMPD_MAGIC);
   fprintf(file, "%s%s %u %u %u\n", DEMARK_STR, NUM_STR, pld->xyzwNum, pld->indxNum,
           pld->primNum);
-
-  flag = limnPolyDataInfoBitFlag(pld);
-  infoNum = 0;
-  bit = 0;
-  strcpy(infoS, "");
+  char infoS[AIR_STRLEN_MED + 1];
+  char *iis = infoS;
+  size_t iisSize = sizeof(infoS);
+  uint flag = limnPolyDataInfoBitFlag(pld);
+  uint infoNum = 0;
+  uint bit = 0;
+  iis[0] = '\0';
   while (flag) {
     if (flag & 1) {
       infoNum += 1;
-      strcat(infoS, airEnumStr(limnPolyDataInfo, bit));
-      strcat(infoS, "\n");
+      SN_PRINTF(iis, iisSize, "%s\n", airEnumStr(limnPolyDataInfo, bit));
     }
     flag /= 2;
     bit += 1;
@@ -492,14 +485,15 @@ limnPolyDataWriteLMPD(FILE *file, const limnPolyData *pld) {
   fprintf(file, "%s%s %u\n%s", DEMARK_STR, INFO_STR, infoNum, infoS);
 
   fprintf(file, "%s%s\n", DEMARK_STR, TYPE_STR);
-  for (primIdx = 0; primIdx < pld->primNum; primIdx++) {
+  for (uint primIdx = 0; primIdx < pld->primNum; primIdx++) {
     fprintf(file, "%s\n", airEnumStr(limnPrimitive, pld->type[primIdx]));
   }
   fprintf(file, "%s%s\n", DEMARK_STR, ICNT_STR);
-  for (primIdx = 0; primIdx < pld->primNum; primIdx++) {
+  for (uint primIdx = 0; primIdx < pld->primNum; primIdx++) {
     fprintf(file, "%u\n", pld->icnt[primIdx]);
   }
-  nrrd = nrrdNew();
+  airArray *mop = airMopNew();
+  Nrrd *nrrd = nrrdNew();
   airMopAdd(mop, nrrd, nrrdNix_mop, airMopAlways); /* nix, not nuke */
 
   fprintf(file, "%s%s\n", DEMARK_STR, INDX_STR);
@@ -579,19 +573,13 @@ limnPolyDataWriteLMPD(FILE *file, const limnPolyData *pld) {
 int /* Biff: 1 */
 limnPolyDataReadLMPD(limnPolyData *pld, FILE *file) {
   static const char me[] = "limnPolyDataReadLMPD";
-  char line[AIR_STRLEN_MED + 1], name[AIR_STRLEN_MED + 1], *tmp;
-  unsigned int vertNum, indxNum, primNum, primIdx, lineLen, infoNum, infoIdx, info, flag;
-  Nrrd *nrrd;
-  airArray *mop;
-  int hackhack, tmpChar;
-
   if (!(pld && file)) {
     biffAddf(LIMN, "%s: got NULL pointer", me);
     return 1;
   }
-
-  sprintf(name, "magic");
-  lineLen = airOneLine(file, line, AIR_STRLEN_MED + 1);
+  char line[AIR_STRLEN_MED + 1], name[AIR_STRLEN_MED + 1];
+  airStrcpy(name, sizeof(name), "magic");
+  uint lineLen = airOneLine(file, line, sizeof(line));
   if (!lineLen) {
     biffAddf(LIMN, "%s: didn't get %s line", me, name);
     return 1;
@@ -600,9 +588,8 @@ limnPolyDataReadLMPD(limnPolyData *pld, FILE *file) {
     biffAddf(LIMN, "%s: %s line \"%s\" not expected \"%s\"", me, name, line, LMPD_MAGIC);
     return 1;
   }
-
-  sprintf(name, "nums");
-  lineLen = airOneLine(file, line, AIR_STRLEN_MED + 1);
+  airStrcpy(name, sizeof(name), "nums");
+  lineLen = airOneLine(file, line, sizeof(line));
   if (!lineLen) {
     biffAddf(LIMN, "%s: didn't get %s line", me, name);
     return 1;
@@ -612,14 +599,15 @@ limnPolyDataReadLMPD(limnPolyData *pld, FILE *file) {
              NUM_STR);
     return 1;
   }
-  tmp = line + strlen(DEMARK_STR NUM_STR);
+  char *tmp = line + strlen(DEMARK_STR NUM_STR);
+  uint vertNum, indxNum, primNum;
   if (3 != sscanf(tmp, " %u %u %u", &vertNum, &indxNum, &primNum)) {
     biffAddf(LIMN, "%s: couldn't parse \"%s\" as 3 uints on %s line", me, tmp, name);
     return 1;
   }
 
-  sprintf(name, "info");
-  lineLen = airOneLine(file, line, AIR_STRLEN_MED + 1);
+  airStrcpy(name, sizeof(name), "info");
+  lineLen = airOneLine(file, line, sizeof(line));
   if (!lineLen) {
     biffAddf(LIMN, "%s: didn't get %s line", me, name);
     return 1;
@@ -630,18 +618,19 @@ limnPolyDataReadLMPD(limnPolyData *pld, FILE *file) {
     return 1;
   }
   tmp = line + strlen(DEMARK_STR INFO_STR);
+  uint infoNum;
   if (1 != sscanf(tmp, " %u", &infoNum)) {
     biffAddf(LIMN, "%s: couldn't parse \"%s\" as 1 uints on %s line", me, tmp, name);
     return 1;
   }
-  flag = 0;
-  for (infoIdx = 0; infoIdx < infoNum; infoIdx++) {
-    lineLen = airOneLine(file, line, AIR_STRLEN_MED + 1);
+  uint flag = 0;
+  for (uint infoIdx = 0; infoIdx < infoNum; infoIdx++) {
+    lineLen = airOneLine(file, line, sizeof(line));
     if (!lineLen) {
       biffAddf(LIMN, "%s: didn't get %s line %u/%u", me, name, infoIdx, infoNum);
       return 1;
     }
-    info = airEnumVal(limnPolyDataInfo, line);
+    int info = airEnumVal(limnPolyDataInfo, line);
     if (!info) {
       biffAddf(LIMN, "%s: couldn't parse \"%s\" %s line %u/%u", me, line, name, infoIdx,
                infoNum);
@@ -657,8 +646,8 @@ limnPolyDataReadLMPD(limnPolyData *pld, FILE *file) {
   }
   /* actually, caller owns pld, so we don't register it with mop */
 
-  sprintf(name, "type");
-  lineLen = airOneLine(file, line, AIR_STRLEN_MED + 1);
+  airStrcpy(name, sizeof(name), "type");
+  lineLen = airOneLine(file, line, sizeof(line));
   if (!lineLen) {
     biffAddf(LIMN, "%s: didn't get %s line", me, name);
     return 1;
@@ -668,8 +657,8 @@ limnPolyDataReadLMPD(limnPolyData *pld, FILE *file) {
              DEMARK_STR TYPE_STR);
     return 1;
   }
-  for (primIdx = 0; primIdx < primNum; primIdx++) {
-    lineLen = airOneLine(file, line, AIR_STRLEN_MED + 1);
+  for (uint primIdx = 0; primIdx < primNum; primIdx++) {
+    lineLen = airOneLine(file, line, sizeof(line));
     if (!lineLen) {
       biffAddf(LIMN, "%s: didn't get %s line %u/%u", me, name, primIdx, primNum);
       return 1;
@@ -682,8 +671,8 @@ limnPolyDataReadLMPD(limnPolyData *pld, FILE *file) {
     }
   }
 
-  sprintf(name, "icnt");
-  lineLen = airOneLine(file, line, AIR_STRLEN_MED + 1);
+  airStrcpy(name, sizeof(name), "icnt");
+  lineLen = airOneLine(file, line, sizeof(line));
   if (!lineLen) {
     biffAddf(LIMN, "%s: didn't get %s line", me, name);
     return 1;
@@ -693,8 +682,8 @@ limnPolyDataReadLMPD(limnPolyData *pld, FILE *file) {
              DEMARK_STR ICNT_STR);
     return 1;
   }
-  for (primIdx = 0; primIdx < primNum; primIdx++) {
-    lineLen = airOneLine(file, line, AIR_STRLEN_MED + 1);
+  for (uint primIdx = 0; primIdx < primNum; primIdx++) {
+    lineLen = airOneLine(file, line, sizeof(line));
     if (!lineLen) {
       biffAddf(LIMN, "%s: didn't get %s line %u/%u", me, name, primIdx, primNum);
       return 1;
@@ -706,8 +695,8 @@ limnPolyDataReadLMPD(limnPolyData *pld, FILE *file) {
     }
   }
 
-  sprintf(name, "indx");
-  lineLen = airOneLine(file, line, AIR_STRLEN_MED + 1);
+  airStrcpy(name, sizeof(name), "indx");
+  lineLen = airOneLine(file, line, sizeof(line));
   if (!lineLen) {
     biffAddf(LIMN, "%s: didn't get %s line", me, name);
     return 1;
@@ -717,12 +706,11 @@ limnPolyDataReadLMPD(limnPolyData *pld, FILE *file) {
              DEMARK_STR ICNT_STR);
     return 1;
   }
-
   /* NOW its finally time to create the mop */
-  mop = airMopNew();
-  nrrd = nrrdNew();
+  airArray *mop = airMopNew();
+  Nrrd *nrrd = nrrdNew();
   airMopAdd(mop, nrrd, nrrdNuke_mop, airMopAlways);
-  hackhack = nrrdDefaultIoVerbose;
+  int hackhack = nrrdDefaultIoVerbose;
   // to stop notices of file position not being at end, post-fread
   nrrdDefaultIoVerbose = 0;
   if (nrrdRead(nrrd, file, NULL)) {
@@ -741,6 +729,7 @@ limnPolyDataReadLMPD(limnPolyData *pld, FILE *file) {
   }
   /* now copy the data */
   memcpy(pld->indx, nrrd->data, nrrdElementSize(nrrd) * nrrdElementNumber(nrrd));
+  int tmpChar;
   do {
     tmpChar = getc(file);
     if (EOF == tmpChar) {
@@ -751,8 +740,8 @@ limnPolyDataReadLMPD(limnPolyData *pld, FILE *file) {
   } while (DEMARK_CHAR != tmpChar);
   ungetc(tmpChar, file);
 
-  sprintf(name, "xyzw");
-  lineLen = airOneLine(file, line, AIR_STRLEN_MED + 1);
+  airStrcpy(name, sizeof(name), "xyzw");
+  lineLen = airOneLine(file, line, sizeof(line));
   if (!lineLen) {
     biffAddf(LIMN, "%s: didn't get %s line", me, name);
     return 1;
@@ -780,12 +769,11 @@ limnPolyDataReadLMPD(limnPolyData *pld, FILE *file) {
   }
   /* now copy the data */
   memcpy(pld->xyzw, nrrd->data, nrrdElementSize(nrrd) * nrrdElementNumber(nrrd));
-
   if (infoNum) {
     int wantType;
     unsigned int wantSize;
     void *data;
-    for (infoIdx = 0; infoIdx < infoNum; infoIdx++) {
+    for (uint infoIdx = 0; infoIdx < infoNum; infoIdx++) {
       do {
         tmpChar = getc(file);
         if (EOF == tmpChar) {
@@ -795,7 +783,7 @@ limnPolyDataReadLMPD(limnPolyData *pld, FILE *file) {
         }
       } while (DEMARK_CHAR != tmpChar);
       ungetc(tmpChar, file);
-      lineLen = airOneLine(file, line, AIR_STRLEN_MED + 1);
+      lineLen = airOneLine(file, line, sizeof(line));
       if (!lineLen) {
         biffAddf(LIMN, "%s: didn't get %s line %u/%u", me, INFO_STR, infoIdx, infoNum);
         return 1;
@@ -806,7 +794,7 @@ limnPolyDataReadLMPD(limnPolyData *pld, FILE *file) {
         return 1;
       }
       tmp = line + strlen(DEMARK_STR INFO_STR) + strlen(" ");
-      info = airEnumVal(limnPolyDataInfo, tmp);
+      int info = airEnumVal(limnPolyDataInfo, tmp);
       if (!info) {
         biffAddf(LIMN, "%s: couldn't parse \"%s\" as %s in %s line \"%s\"", me, tmp,
                  limnPolyDataInfo->name, INFO_STR, line);
@@ -839,7 +827,7 @@ limnPolyDataReadLMPD(limnPolyData *pld, FILE *file) {
         data = pld->tang;
         break;
       default:
-        biffAddf(LIMN, "%s: info %u (%s) not handled", me, info,
+        biffAddf(LIMN, "%s: info %d (%s) not handled", me, info,
                  airEnumStr(limnPolyDataInfo, info));
         airMopError(mop);
         return 1;
@@ -920,7 +908,7 @@ _limnHestPolyDataOFFParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE +
   FILE *file;
 
   if (!(ptr && str)) {
-    sprintf(err, "%s: got NULL pointer", me);
+    snprintf(err, ASP1_H, "%s: got NULL pointer", me);
     return 1;
   }
 
@@ -933,7 +921,8 @@ _limnHestPolyDataOFFParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE +
 
   mop = airMopNew();
   if (!(file = airFopen(str, stdin, "rb"))) {
-    sprintf(err, "%s: couldn't fopen(\"%s\",\"rb\"): %s", me, str, strerror(errno));
+    snprintf(err, ASP1_H, "%s: couldn't fopen(\"%s\",\"rb\"): %s", me, str,
+             strerror(errno));
     airMopError(mop);
     return 1;
   }

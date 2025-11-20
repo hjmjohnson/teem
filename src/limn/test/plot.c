@@ -180,7 +180,7 @@ plotAxes(plotPS *pps, plotParm *pparm, Nrrd *ndata) {
         xx = AIR_AFFINE(pparm->dbox[0], pparm->horzTick[ti], pparm->dbox[2],
                         pps->bbox[0], pps->bbox[2]);
         yy = axY + pparm->horzTickLabelOffset;
-        sprintf(buff, "%g", pparm->horzTick[ti]);
+        snprintf(buff, sizeof(buff), "%g", pparm->horzTick[ti]);
         plotLabel(pps, pparm, AIR_TRUE, xx, yy, buff);
       }
     }
@@ -203,7 +203,7 @@ plotAxes(plotPS *pps, plotParm *pparm, Nrrd *ndata) {
         yy = AIR_AFFINE(pparm->dbox[1], pparm->vertTick[ti], pparm->dbox[3],
                         pps->bbox[1], pps->bbox[3]);
         xx = axX + pparm->vertTickLabelOffset;
-        sprintf(buff, "%g", pparm->vertTick[ti]);
+        snprintf(buff, sizeof(buff), "%g", pparm->vertTick[ti]);
         plotLabel(pps, pparm, AIR_TRUE, xx, yy, buff);
       }
     }

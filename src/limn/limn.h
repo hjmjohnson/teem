@@ -709,8 +709,9 @@ LIMN_EXPORT void limnHestCameraOptAdd(hestOpt **hoptP, limnCamera *cam,
 LIMN_EXPORT int limnCameraAspectSet(limnCamera *cam, unsigned int horz,
                                     unsigned int vert, int centering);
 LIMN_EXPORT int limnCameraUpdate(limnCamera *cam);
-LIMN_EXPORT int limnCameraPathMake(limnCamera *cam, int numFrames, limnCamera *keycam,
-                                   double *time, int numKeys, int trackFrom,
+LIMN_EXPORT int limnCameraPathMake(limnCamera *cam, unsigned int numFrames,
+                                   limnCamera *keycam, double *time,
+                                   unsigned int numKeys, int trackFrom,
                                    limnSplineTypeSpec *quatType,
                                    limnSplineTypeSpec *posType,
                                    limnSplineTypeSpec *distType,
@@ -984,7 +985,6 @@ LIMN_EXPORT int limnCbfGo(limnCbfPath *path, limnCbfCtx *fctx,
   F(cbfit)
 LIMN_MAP(LIMN_DECLARE)
 LIMN_EXPORT const unrrduCmd *const limnPuCmdList[];
-LIMN_EXPORT void limnPuUsage(const char *me, hestParm *hparm);
 
 #ifdef __cplusplus
 }

@@ -631,8 +631,9 @@ extern void limnHestCameraOptAdd(hestOpt **hoptP, limnCamera *cam,
 extern int limnCameraAspectSet(limnCamera *cam, unsigned int horz,
                                     unsigned int vert, int centering);
 extern int limnCameraUpdate(limnCamera *cam);
-extern int limnCameraPathMake(limnCamera *cam, int numFrames, limnCamera *keycam,
-                                   double *time, int numKeys, int trackFrom,
+extern int limnCameraPathMake(limnCamera *cam, unsigned int numFrames,
+                                   limnCamera *keycam, double *time,
+                                   unsigned int numKeys, int trackFrom,
                                    limnSplineTypeSpec *quatType,
                                    limnSplineTypeSpec *posType,
                                    limnSplineTypeSpec *distType,
@@ -881,4 +882,3 @@ extern int limnCbfGo(limnCbfPath *path, limnCbfCtx *fctx,
 /* F(vwflip) \ */
 /* F(vwfix) */
 extern const unrrduCmd *const limnPuCmdList[];
-extern void limnPuUsage(const char *me, hestParm *hparm);

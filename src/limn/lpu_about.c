@@ -34,11 +34,13 @@ limnPu_aboutMain(int argc, const char **argv, const char *me, const hestParm *hp
   AIR_UNUSED(me);
 
   fprintf(stderr, "\n");
-  sprintf(buff, "--- lpu: LimnPolyData command-line interface ---");
-  sprintf(fmt, "%%%ds\n", (int)((hparm->columns - strlen(buff)) / 2 + strlen(buff) - 1));
+  snprintf(buff, sizeof(buff), "--- lpu: LimnPolyData command-line interface ---");
+  snprintf(fmt, sizeof(fmt), "%%%ds\n",
+           (int)((hparm->columns - strlen(buff)) / 2 + strlen(buff) - 1));
   fprintf(stderr, fmt, buff);
   airTeemVersionSprint(buff);
-  sprintf(fmt, "%%%ds\n", (int)((hparm->columns - strlen(buff)) / 2 + strlen(buff) - 1));
+  snprintf(fmt, sizeof(fmt), "%%%ds\n",
+           (int)((hparm->columns - strlen(buff)) / 2 + strlen(buff) - 1));
   fprintf(stderr, fmt, buff);
   fprintf(stderr, "\n");
 

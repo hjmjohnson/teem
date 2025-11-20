@@ -18,6 +18,7 @@
 */
 
 #include "limn.h"
+#include "privateLimn.h"
 
 /*
 ******** limnCameraUpdate()
@@ -184,20 +185,11 @@ limnCameraAspectSet(limnCamera *cam, unsigned int horz, unsigned int vert,
 ** ever changes!
 */
 int /* Biff: 1 */
-limnCameraPathMake(limnCamera *cam, int numFrames, limnCamera *keycam, double *time,
-                   int numKeys, int trackWhat, limnSplineTypeSpec *quatType,
+limnCameraPathMake(limnCamera *cam, uint numFrames, limnCamera *keycam, double *time,
+                   uint numKeys, int trackWhat, limnSplineTypeSpec *quatType,
                    limnSplineTypeSpec *posType, limnSplineTypeSpec *distType,
                    limnSplineTypeSpec *viewType) {
   static const char me[] = "limnCameraPathMake";
-  char which[AIR_STRLEN_MED + 1];
-  airArray *mop;
-  Nrrd *nquat, *nfrom, *natpt, *nupvc, *ndist, *nfova, *ntime, *nsample;
-  double fratVec[3], *quat, *from, *atpt, *upvc, *dist, *fova, W2V[9], N[3], fratDist;
-  limnSpline *timeSpline, *quatSpline, *fromSpline, *atptSpline, *upvcSpline,
-    *distSpline, *fovaSpline;
-  limnSplineTypeSpec *timeType;
-  int ii, E;
-
   if (!(cam && keycam && time && posType && distType && viewType)) {
     biffAddf(LIMN, "%s: got NULL pointer", me);
     return 1;
@@ -214,13 +206,13 @@ limnCameraPathMake(limnCamera *cam, int numFrames, limnCamera *keycam, double *t
              me);
     return 1;
   }
-
   /* create and allocate nrrds.  For the time being, we're allocating
      more different nrrds, and filling their contents, than we need
      to-- nquat is not needed if we're doing limnCameraPathTrackBoth,
      for example.  However, we do make an effort to only do the spline
      evaluation on the things we actually need to know. */
-  mop = airMopNew();
+  airArray *mop = airMopNew();
+  Nrrd *nquat, *nfrom, *natpt, *nupvc, *ndist, *nfova, *ntime, *nsample;
   airMopAdd(mop, nquat = nrrdNew(), nrrdNuke_mop, airMopAlways);
   airMopAdd(mop, nfrom = nrrdNew(), nrrdNuke_mop, airMopAlways);
   airMopAdd(mop, natpt = nrrdNew(), nrrdNuke_mop, airMopAlways);
@@ -234,7 +226,7 @@ limnCameraPathMake(limnCamera *cam, int numFrames, limnCamera *keycam, double *t
     return 1;
   }
   airMopAdd(mop, nsample = nrrdNew(), nrrdNuke_mop, airMopAlways);
-  timeType = limnSplineTypeSpecNew(limnSplineTypeTimeWarp);
+  limnSplineTypeSpec *timeType = limnSplineTypeSpecNew(limnSplineTypeTimeWarp);
   airMopAdd(mop, timeType, limnSplineTypeSpecNix_mop, airMopAlways);
   if (nrrdMaybeAlloc_va(nquat, nrrdTypeDouble, 2, AIR_SIZE_T(4), AIR_SIZE_T(numKeys))
       || nrrdMaybeAlloc_va(nfrom, nrrdTypeDouble, 2, AIR_SIZE_T(3), AIR_SIZE_T(numKeys))
@@ -247,22 +239,22 @@ limnCameraPathMake(limnCamera *cam, int numFrames, limnCamera *keycam, double *t
     airMopError(mop);
     return 1;
   }
-  quat = (double *)(nquat->data);
-  from = (double *)(nfrom->data);
-  atpt = (double *)(natpt->data);
-  upvc = (double *)(nupvc->data);
-  dist = (double *)(ndist->data);
-  fova = (double *)(nfova->data);
+  double *quat = nquat->data;
+  double *from = nfrom->data;
+  double *atpt = natpt->data;
+  double *upvc = nupvc->data;
+  double *dist = ndist->data;
+  double *fova = nfova->data;
 
   /* check cameras, and put camera information into nrrds */
-  for (ii = 0; ii < numKeys; ii++) {
+  for (uint ii = 0; ii < numKeys; ii++) {
     if (limnCameraUpdate(keycam + ii)) {
-      biffAddf(LIMN, "%s: trouble with camera at keyframe %d\n", me, ii);
+      biffAddf(LIMN, "%s: trouble with camera at keyframe %u\n", me, ii);
       airMopError(mop);
       return 1;
     }
     if (!(AIR_EXISTS(keycam[ii].fov) && AIR_EXISTS(keycam[ii].aspect))) {
-      biffAddf(LIMN, "%s: fov, aspect not both defined on keyframe %d", me, ii);
+      biffAddf(LIMN, "%s: fov, aspect not both defined on keyframe %u", me, ii);
       airMopError(mop);
       return 1;
     }
@@ -275,27 +267,31 @@ limnCameraPathMake(limnCamera *cam, int numFrames, limnCamera *keycam, double *t
     ELL_3V_COPY(from + 3 * ii, keycam[ii].from);
     ELL_3V_COPY(atpt + 3 * ii, keycam[ii].at);
     ELL_3V_COPY(upvc + 3 * ii, keycam[ii].up);
+    double fratVec[3];
     ELL_3V_SUB(fratVec, keycam[ii].from, keycam[ii].at);
-    fratDist = ELL_3V_LEN(fratVec);
+    double fratDist = ELL_3V_LEN(fratVec);
     ELL_4V_SET(dist + 4 * ii, fratDist, keycam[ii].neer, keycam[ii].dist,
                keycam[ii].faar);
     ELL_2V_SET(fova + 2 * ii, keycam[ii].fov, keycam[ii].aspect);
   }
 
   /* create splines from nrrds */
-  if (!((strcpy(which, "quaternion"),
+  char which[AIR_STRLEN_MED + 1];
+  limnSpline *quatSpline, *fromSpline, *atptSpline, *upvcSpline, *distSpline,
+    *fovaSpline, *timeSpline;
+  if (!((airStrcpy(which, sizeof(which), "quaternion"),
          quatSpline = limnSplineCleverNew(nquat, limnSplineInfoQuaternion, quatType))
-        && (strcpy(which, "from point"),
+        && (airStrcpy(which, sizeof(which), "from point"),
             fromSpline = limnSplineCleverNew(nfrom, limnSplineInfo3Vector, posType))
-        && (strcpy(which, "at point"),
+        && (airStrcpy(which, sizeof(which), "at point"),
             atptSpline = limnSplineCleverNew(natpt, limnSplineInfo3Vector, posType))
-        && (strcpy(which, "up vector"),
+        && (airStrcpy(which, sizeof(which), "up vector"),
             upvcSpline = limnSplineCleverNew(nupvc, limnSplineInfo3Vector, posType))
-        && (strcpy(which, "plane distances"),
+        && (airStrcpy(which, sizeof(which), "plane distances"),
             distSpline = limnSplineCleverNew(ndist, limnSplineInfo4Vector, distType))
-        && (strcpy(which, "field-of-view"),
+        && (airStrcpy(which, sizeof(which), "field-of-view"),
             fovaSpline = limnSplineCleverNew(nfova, limnSplineInfo2Vector, viewType))
-        && (strcpy(which, "time warp"),
+        && (airStrcpy(which, sizeof(which), "time warp"),
             timeSpline = limnSplineCleverNew(ntime, limnSplineInfoScalar, timeType)))) {
     biffAddf(LIMN, "%s: trouble creating %s spline", me, which);
     airMopError(mop);
@@ -310,7 +306,7 @@ limnCameraPathMake(limnCamera *cam, int numFrames, limnCamera *keycam, double *t
   airMopAdd(mop, timeSpline, limnSplineNix_mop, airMopAlways);
 
   /* evaluate splines */
-  E = AIR_FALSE;
+  int E = AIR_FALSE;
   if (!E)
     E |= limnSplineSample(nsample, timeSpline, limnSplineMinT(timeSpline), numFrames,
                           limnSplineMaxT(timeSpline));
@@ -353,7 +349,7 @@ limnCameraPathMake(limnCamera *cam, int numFrames, limnCamera *keycam, double *t
   }
 
   /* copy information from nrrds back into cameras */
-  for (ii = 0; ii < numFrames; ii++) {
+  for (uint ii = 0; ii < numFrames; ii++) {
     cam[ii].atRelative = keycam[0].atRelative;
     cam[ii].orthographic = keycam[0].orthographic;
     cam[ii].rightHanded = keycam[0].rightHanded;
@@ -362,12 +358,14 @@ limnCameraPathMake(limnCamera *cam, int numFrames, limnCamera *keycam, double *t
       ELL_3V_COPY(cam[ii].at, atpt + 3 * ii);
       ELL_3V_COPY(cam[ii].up, upvc + 3 * ii);
     } else {
-      fratDist = (dist + 4 * ii)[0];
+      double fratDist = (dist + 4 * ii)[0];
+      double W2V[9];
       ell_q_to_3m_d(W2V, quat + 4 * ii);
       ELL_3MV_ROW1_GET(cam[ii].up, W2V);
       if (cam[ii].rightHanded) {
         ELL_3V_SCALE(cam[ii].up, -1, cam[ii].up);
       }
+      double N[3];
       ELL_3MV_ROW2_GET(N, W2V);
       if (limnCameraPathTrackFrom == trackWhat) {
         ELL_3V_COPY(cam[ii].from, from + 3 * ii);
@@ -383,7 +381,7 @@ limnCameraPathMake(limnCamera *cam, int numFrames, limnCamera *keycam, double *t
     cam[ii].fov = (fova + 2 * ii)[0];
     cam[ii].aspect = (fova + 2 * ii)[1];
     if (limnCameraUpdate(cam + ii)) {
-      biffAddf(LIMN, "%s: trouble with output camera %d\n", me, ii);
+      biffAddf(LIMN, "%s: trouble with output camera %u\n", me, ii);
       airMopError(mop);
       return 1;
     }

@@ -26,39 +26,3 @@
 ** LIMN_MAP macro
 */
 const unrrduCmd *const limnPuCmdList[] = {LIMN_MAP(LIMN_LIST) NULL};
-
-/*
-******** limnPuUsage
-**
-** prints out a little banner, and a listing of all available commands
-** with their one-line descriptions
-*/
-void
-limnPuUsage(const char *me, hestParm *hparm) {
-  unsigned int i, maxlen, len, c;
-  char buff[AIR_STRLEN_LARGE + 1], fmt[AIR_STRLEN_LARGE + 1];
-
-  maxlen = 0;
-  for (i = 0; limnPuCmdList[i]; i++) {
-    maxlen = AIR_MAX(maxlen, AIR_UINT(strlen(limnPuCmdList[i]->name)));
-  }
-
-  sprintf(buff, "--- LimnPolyData Hacking ---");
-  sprintf(fmt, "%%%us\n",
-          AIR_UINT((hparm->columns - strlen(buff)) / 2 + strlen(buff) - 1));
-  fprintf(stderr, fmt, buff);
-
-  for (i = 0; limnPuCmdList[i]; i++) {
-    len = AIR_UINT(strlen(limnPuCmdList[i]->name));
-    strcpy(buff, "");
-    for (c = len; c < maxlen; c++)
-      strcat(buff, " ");
-    strcat(buff, me);
-    strcat(buff, " ");
-    strcat(buff, limnPuCmdList[i]->name);
-    strcat(buff, " ... ");
-    len = AIR_UINT(strlen(buff));
-    fprintf(stderr, "%s", buff);
-    hestPrintStr(stderr, len, len, hparm->columns, limnPuCmdList[i]->info, AIR_FALSE);
-  }
-}
