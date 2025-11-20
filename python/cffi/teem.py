@@ -776,12 +776,12 @@ _BIFF_DICT = {  # contents here are filled in by teem/python/cffi/exult.py Tffi.
     'meetNrrdKernelAllCheck': (_equals_one, 0, b'meet', 'meet/meetNrrd.c:235'),
     'meetPullVolCopy': (_equals_null, 0, b'meet', 'meet/meetPull.c:43'),
     'meetPullVolParse': (_equals_one, 0, b'meet', 'meet/meetPull.c:99'),
-    'meetPullVolLeechable': (_equals_one, 0, b'meet', 'meet/meetPull.c:309'),
-    'meetPullVolStackBlurParmFinishMulti': (_equals_one, 0, b'meet', 'meet/meetPull.c:423'),
-    'meetPullVolLoadMulti': (_equals_one, 0, b'meet', 'meet/meetPull.c:468'),
-    'meetPullVolAddMulti': (_equals_one, 0, b'meet', 'meet/meetPull.c:549'),
-    'meetPullInfoParse': (_equals_one, 0, b'meet', 'meet/meetPull.c:632'),
-    'meetPullInfoAddMulti': (_equals_one, 0, b'meet', 'meet/meetPull.c:762'),
+    'meetPullVolLeechable': (_equals_one, 0, b'meet', 'meet/meetPull.c:326'),
+    'meetPullVolStackBlurParmFinishMulti': (_equals_one, 0, b'meet', 'meet/meetPull.c:440'),
+    'meetPullVolLoadMulti': (_equals_one, 0, b'meet', 'meet/meetPull.c:485'),
+    'meetPullVolAddMulti': (_equals_one, 0, b'meet', 'meet/meetPull.c:566'),
+    'meetPullInfoParse': (_equals_one, 0, b'meet', 'meet/meetPull.c:649'),
+    'meetPullInfoAddMulti': (_equals_one, 0, b'meet', 'meet/meetPull.c:779'),
 }
 
 
