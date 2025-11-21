@@ -345,13 +345,17 @@ _nrrdResampleMakeWeightIndex(nrrdResample_t **weightP, int **indexP, double *rat
     *indexP = NULL;
     return 0;
   }
+  airArray *mop = airMopNew();
+  airMopAdd(mop, weight, airFree, airMopOnError);
   indx = AIR_CALLOC(sizeOut * dotLen, int);
   if (!indx) {
     biffAddf(NRRD, "%s: can't allocate index arrays", me);
     *weightP = NULL;
     *indexP = NULL;
+    airMopError(mop);
     return 0;
   }
+  airMopAdd(mop, indx, airFree, airMopOnError);
 
   /* calculate sample locations and do first pass on indices */
   halfLen = dotLen / 2;
@@ -398,6 +402,7 @@ _nrrdResampleMakeWeightIndex(nrrdResample_t **weightP, int **indexP, double *rat
                  info->boundary);
         *weightP = NULL;
         *indexP = NULL;
+        airMopError(mop);
         return 0;
       }
       indx[i] = idx;
@@ -485,6 +490,7 @@ _nrrdResampleMakeWeightIndex(nrrdResample_t **weightP, int **indexP, double *rat
   /*
   fprintf(stderr, "!%s: dotLen = %d\n", me, dotLen);
   */
+  airMopOkay(mop);
   return dotLen;
 }
 
