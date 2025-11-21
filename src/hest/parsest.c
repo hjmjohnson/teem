@@ -613,10 +613,10 @@ histProcess(hestArgVec *havec, int *helpWantedP, hestArg *tharg, hestInputStack 
     }
     // else this arg is not in a comment and is not related to commenting
     int helpWant = 0;
-    int usageWant = 0;
-    if (hparm->respectDashDashHelp                           /* */
-        && ((helpWant = !strcmp("--help", tharg->str))       /* */
-            || (usageWant = !strcmp("--usage", tharg->str))) /* */
+    // int usageWant = 0;
+    if (hparm->respectDashDashHelp                                 /* */
+        && ((helpWant = !strcmp("--help", tharg->str))             /* */
+            || (/* usageWant = */ !strcmp("--usage", tharg->str))) /* */
     ) {
       if (!topHin) {
         biffAddf(HEST, "%s%s(iter %u, on %s) unexpected empty stack (2)", _ME_, iters,
