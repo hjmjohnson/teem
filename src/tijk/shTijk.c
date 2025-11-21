@@ -20,7 +20,7 @@
 
 #include "tijk.h"
 
-#include "convertQuietPush.h"
+#include "quietPush.h"
 /* clang-format off */
 
 #define TIJK_TABLE_TYPE 0 /* create double version */
@@ -376,4 +376,4 @@ TIJK_ESH_MAKE_KERNEL_DELTA(double, d)
 TIJK_ESH_MAKE_KERNEL_DELTA(float, f)
 
 /* clang-format on */
-#include "convertQuietPop.h"
+#include "quietPop.h"

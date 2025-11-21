@@ -18,6 +18,8 @@
 /* clang-format off */
 #include "tijk.h"
 
+#include "quietPush.h"
+
 static const char *
 _tijk_class_str[TIJK_CLASS_MAX+1] = {
   "(unknown_class)",
@@ -61,3 +63,5 @@ _tijk_class_enum = {
 const airEnum *const
 tijk_class = &_tijk_class_enum;
 /* clang-format on */
+
+#include "quietPop.h"

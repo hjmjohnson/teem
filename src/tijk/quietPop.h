@@ -17,19 +17,10 @@
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 
-/* NOTE: these warning suppressions are hopefully
-   only a short-term fix */
-
-/* when using an MS compiler, suppress all warnings about
- * truncation (4304) or conversion (4244) from double to float
- */
 #ifdef _MSC_VER
-#  pragma warning(push)
-#  pragma warning(disable : 4305)
-#  pragma warning(disable : 4244)
+#  pragma warning(pop)
 #endif
 
-/* "-Wconversion" generates analogous warnings in gcc */
-#ifdef __GNUC__
-#  pragma GCC diagnostic ignored "-Wconversion"
+#if defined(__clang__)
+#  pragma clang diagnostic pop
 #endif

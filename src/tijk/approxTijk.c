@@ -21,7 +21,7 @@
 #include "tijk.h"
 #include "privateTijk.h"
 
-#include "convertQuietPush.h"
+#include "quietPush.h"
 /* clang-format off */
 
 /* Functions for symmetric tensor approximation */
@@ -542,4 +542,4 @@ _TIJK_APPROX_RANKK(double, d, 3)
 _TIJK_APPROX_RANKK(float, f, 3)
 
 /* clang-format on */
-#include "convertQuietPop.h"
+#include "quietPop.h"

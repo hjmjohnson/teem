@@ -44,7 +44,7 @@ $(L).Included := yes
 ####
 $(L).Depends = ell nrrd air
 $(L).PublicHdr = tijk.h
-$(L).PrivateHdr = convertQuietPop.h convertQuietPush.h privateTijk.h shtables.h
+$(L).PrivateHdr = quietPop.h quietPush.h privateTijk.h shtables.h
 $(L).Obj = $(patsubst %.c,%.o, \
     2dTijk.c 3dTijk.c approxTijk.c enumsTijk.c fsTijk.c miscTijk.c nrrdTijk.c \
     shTijk.c \

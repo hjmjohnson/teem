@@ -21,7 +21,7 @@
 #include "tijk.h"
 #include "privateTijk.h"
 
-#include "convertQuietPush.h"
+#include "quietPush.h"
 /* clang-format off */
 
 /* 1st order 3D - a simple vector */
@@ -2597,4 +2597,4 @@ _TIJK_8O3D_SYM_HESS(float,f)
 TIJK_TYPE_SYM(8o3d_sym, 8, 3, 45)
 /* clang-format on */
 
-#include "convertQuietPop.h"
+#include "quietPop.h"

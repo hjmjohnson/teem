@@ -20,7 +20,7 @@
 
 #include "tijk.h"
 
-#include "convertQuietPush.h"
+#include "quietPush.h"
 /* clang-format off */
 
 const unsigned int tijk_max_efs_order=4;
@@ -148,4 +148,4 @@ TIJK_EFS_TO_2D_SYM(double, d)
 TIJK_EFS_TO_2D_SYM(float, f)
 
 /* clang-format on */
-#include "convertQuietPop.h"
+#include "quietPop.h"
