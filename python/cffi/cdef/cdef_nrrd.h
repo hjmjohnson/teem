@@ -765,6 +765,7 @@ extern const char *nrrdStateUnknownContent;
 extern int nrrdStateGrayscaleImage3D;
 extern int nrrdStateKeyValueReturnInternalPointers;
 extern int nrrdStateKindNoop;
+extern int nrrdStateEncodingAsciiCommaAllow;
 /* ---- BEGIN non-NrrdIO */
 extern const char *const nrrdEnvVarDefaultWriteEncodingType;
 extern const char *const nrrdEnvVarDefaultWriteBareText;
@@ -783,6 +784,7 @@ extern const char *const nrrdEnvVarStateMeasureType;
 extern const char *const nrrdEnvVarStateMeasureModeBins;
 extern const char *const nrrdEnvVarStateMeasureHistoType;
 extern const char *const nrrdEnvVarStateGrayscaleImage3D;
+extern const char *const nrrdEnvVarStateEncodingAsciiCommaAllow;
 extern int nrrdGetenvBool(int *val, char **envStr, const char *envVar);
 extern int nrrdGetenvEnum(int *val, char **envStr, const airEnum *enm,
                                const char *envVar);
