@@ -52,7 +52,8 @@ _nrrdFgetWord(FILE *file, size_t II, char buff[AIR_STRLEN_SMALL + 1]) {
   AIR_UNUSED(II);
   /* fprintf(stderr, "!%s(%u): ---------\n", me, AIR_UINT(II)); */
   while (1) {
-    int gotWsp = AIR_FALSE, gotCom = AIR_FALSE;
+    int gotWsp = AIR_FALSE;
+    uint gotCom = 0; /* unsigned to match comCount */
     int car = getc(file);
     if (EOF == car) {
       if (!idx) {
@@ -68,7 +69,7 @@ _nrrdFgetWord(FILE *file, size_t II, char buff[AIR_STRLEN_SMALL + 1]) {
     comCount += gotCom;
     /* fprintf(stderr, "|%c|(%u)(w%d c%d(%u))\n", car, idx, gotWsp, gotCom, comCount); */
     if (gotWsp || gotCom) {
-      if (!idx) { // if have not gotten any charns yet
+      if (!idx) { /* if have not gotten any charns yet */
         if (comCount && gotWsp) {
           if (comCount > 1) {
             biffAddf(NRRD,
@@ -101,7 +102,7 @@ _nrrdFgetWord(FILE *file, size_t II, char buff[AIR_STRLEN_SMALL + 1]) {
               /* and we're done; break out */
               break;
             }
-            // else it's another trailing comma; ignore
+            /* else it's another trailing comma; ignore */
             continue;
           }
         }
