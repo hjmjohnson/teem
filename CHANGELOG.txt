@@ -15,6 +15,9 @@ tl;dr list of breaking-est changes for TeemV2 relative to previous release v1.11
 - Renamed unrrduCmdMain() --> unrrduMainOrExit()
   and removed the final `FILE *fusage` argument
   (now, all Teem functions that might call exit() have name ending with `Exit`)
+- How AIR_STRLEN_SMALL, AIR_STRLEN_MEDIUM, AIR_STRLEN_LARGE, and
+  AIR_STRLEN_HUGE are used was changed by one, which affects the nominal size
+  of buffer that some function expect (search for "svn Revision: 7034" below)
 
 NOTE : This file is still in progress as work on TeemV2 continues ...
 
@@ -326,7 +329,15 @@ will be a smaller change than 80-->90); time will tell.
 
 ========= all or many libraries in general =========
 
-"teem/python" has long had a "ctypes" subdir for an (automatically generated)
+• Thu Nov 20 13:51:35 2025 -0600 git commit: 1b486a67
+As of about this commit (and incrementally fixed in prior commits),
+Teem no longer uses scary string functions like strcat, strcpy, and sprintf
+(and the one use of fscanf(file, "%s", buff) was fixed in commit e157cf1b).
+See the SN_INCR, SN_COPY, and SN_PRINTF macros in most of the private headers
+(e.g. src/air/privateAir.h) which are now used consistently to always operate
+on a (pointer,size) variable pair.
+
+• "teem/python" has long had a "ctypes" subdir for an (automatically generated)
 ctypes-based Python module for all of Teem. Unfortunately, this relied on a hacked up
 version of gcc-xml, but gcc-xml is longer maintained (Kitware has moved on to
 https://github.com/CastXML/CastXML), so it is no longer convenient to regenerate this
@@ -1294,6 +1305,64 @@ should have been taking a const char * as a second arg (various files in other l
 updated to conform).
 
 ========= nrrd =========
+
+• Thu Nov 20 20:51:09 2025 -0600 git commit: e157cf1b
+API NEW: nrrdStateEncodingAsciiCommaAllow a new global (sorry) to control something that
+warrants control, but only for backwards compatibility in a specific setting, created by
+a BUG FIX in nrrd/encodingAscii.c:_nrrdEncodingAscii_read().
+
+The old _nrrdEncodingAscii_read() had a bad and unsafe way of reading a number from a
+file: `fscanf(file, "%s", numbStr)` into char numbStr[], which, while allocated for
+AIR_STRLEN_HUGE+1, but was still overflowing sometimes and causing memory problems
+(whenever data was not actually ASCII, but the NRRD header said it was), as in this
+seemingly innocent usage:
+
+       echo "0 0 0 0 1 0 0 0 0" \
+        | unu reshape -s 9 1 1 \
+        | unu pad -min 0 0 0 -max 8 8 8 \
+        | unu make -s 9 9 9 -t float -e ascii -ls 10 -spc LPS -orig "(0,0,0)" \
+          -dirs "(1,0,0) (0,1,0) (0,0,1)"
+
+(Do you see the problem?)
+This led to some desperate code to detect the overflow:
+
+  if (file != _fileSave) {
+    fprintf(stderr, "%s: PANIC memory corruption detected\n", me);
+    / * this may crash, hence the fprintf above to help debug * /
+    biffAddf(NRRD, "%s: PANIC memory corruption detected", me);
+    return 1;
+  }
+
+The newly re-written _nrrdEncodingAscii_read() does not use fscanf() this way by more
+carefully readin characters from the file, using the new (static)
+nrrd/encodingAscii.c:_nrrdFgetWord().  It reads characters into a
+(AIR_STRLEN_SMALL+1)-size buffer but stops just before it would overflow that.  As
+currently implemented, this new safe approach is unfortunately about 14% slower to read
+ASCII-encoded data, compared to the old code.
+
+One extra complication is in the handling of commas ',' in the data file: the old code
+effectively treated a comma as white-space: 1 or more contiguous commas before a number
+were ignored (by the use of `strspn`), and trailing commas were ignored (by the later
+`sscanf` to parse a number), AND, isolated single commas were ignored, but not isolated
+words of 2 or more commas.
+
+The new code emulates this behavior when nrrdStateEncodingAsciiCommaAllow is true.  The
+new code also correctly handles values being delimited by single commas (the old code did
+not entirely support this, so, BUG FIX?).
+
+NOTE: all of this cleverness will completely thwart any effort to set locale so that ','
+and '.' are interpreted differently; SORRY!
+
+The value of nrrdEnvVarStateEncodingAsciiCommaAllow can be controlled by setting
+environment variable
+nrrdEnvVarStateEncodingAsciiCommaAllow = "NRRD_STATE_ENCODING_ASCII_COMMA_ALLOW";
+this is set by nrrdStateGetenv, as described by "unu env".
+
+• Wed Nov 19 23:18:38 2025 -0600 git commit: 671a8546
+API CHANGE: nrrdBoundarySpecSprint and nrrdKernelSprint used to write into a char
+str[AIR_STRLEN_LARGE + 1] buffer. That is insanely over-sized given their purpose. Now
+they write into char str[AIR_STRLEN_SMALL + 1]. The next commit shows this propagating to
+other libraries
 
 • Sun Nov 16 22:22:23 2025 -0600 git commit: d1472dcf
 API CHANGE: rename nrrdSanityOrDie() --> nrrdSanityOrExit()
