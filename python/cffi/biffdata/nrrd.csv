@@ -25,10 +25,10 @@ nrrdAxisInfoCompare,int,1,0,nrrd,nrrd/axis.c:935
 nrrdOrientationReduce,int,1,0,nrrd,nrrd/axis.c:1223
 nrrdMetaDataNormalize,int,1,0,nrrd,nrrd/axis.c:1268
 nrrdCCFind,int,1,0,nrrd,nrrd/cc.c:306
-nrrdCCAdjacency,int,1,0,nrrd,nrrd/cc.c:577
-nrrdCCMerge,int,1,0,nrrd,nrrd/cc.c:675
-nrrdCCRevalue,int,1,0,nrrd,nrrd/cc.c:825
-nrrdCCSettle,int,1,0,nrrd,nrrd/cc.c:852
+nrrdCCAdjacency,int,1,0,nrrd,nrrd/cc.c:576
+nrrdCCMerge,int,1,0,nrrd,nrrd/cc.c:674
+nrrdCCRevalue,int,1,0,nrrd,nrrd/cc.c:824
+nrrdCCSettle,int,1,0,nrrd,nrrd/cc.c:851
 nrrdCCValid,int,0,0,nrrd,nrrd/ccmethods.c:24
 nrrdCCSize,unsigned int,1,0,nrrd,nrrd/ccmethods.c:55
 nrrdDeringVerboseSet,int,1,0,nrrd,nrrd/deringNrrd.c:100
@@ -125,7 +125,7 @@ nrrdResampleRoundSet,int,1,0,nrrd,nrrd/resampleContext.c:488
 nrrdResampleClampSet,int,1,0,nrrd,nrrd/resampleContext.c:505
 nrrdResampleExecute,int,1,0,nrrd,nrrd/resampleContext.c:1440
 nrrdSimpleResample,int,1,0,nrrd,nrrd/resampleNrrd.c:49
-nrrdSpatialResample,int,1,0,nrrd,nrrd/resampleNrrd.c:518
+nrrdSpatialResample,int,1,0,nrrd,nrrd/resampleNrrd.c:524
 nrrdSpaceSet,int,1,0,nrrd,nrrd/simple.c:81
 nrrdSpaceDimensionSet,int,1,0,nrrd,nrrd/simple.c:118
 nrrdSpaceOriginSet,int,1,0,nrrd,nrrd/simple.c:170
