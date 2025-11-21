@@ -80,6 +80,9 @@ int nrrdStateKeyValueReturnInternalPointers = AIR_FALSE;
    Nrrd is only going to implement the most converative kind of logic
    anyway, based on existing sementics nailed down by the format spec. */
 int nrrdStateKindNoop = AIR_FALSE;
+/* new for TeemV2: if true, ~emulate pre-TeemV2 behavior of ascii encoding
+   when reading NRRD files, almost treating commas as whitespace */
+int nrrdStateEncodingAsciiCommaAllow = AIR_FALSE;
 
 /* these are helper functions for min/max testing */
 airLLong /* Biff: (private) nope */
@@ -127,6 +130,8 @@ const char *const nrrdEnvVarStateMeasureType = "NRRD_STATE_MEASURE_TYPE";
 const char *const nrrdEnvVarStateMeasureModeBins = "NRRD_STATE_MEASURE_MODE_BINS";
 const char *const nrrdEnvVarStateMeasureHistoType = "NRRD_STATE_MEASURE_HISTO_TYPE";
 const char *const nrrdEnvVarStateGrayscaleImage3D = "NRRD_STATE_GRAYSCALE_IMAGE_3D";
+const char *const nrrdEnvVarStateEncodingAsciiCommaAllow
+  = "NRRD_STATE_ENCODING_ASCII_COMMA_ALLOW";
 
 /*
 **    return
@@ -336,7 +341,8 @@ nrrdStateGetenv(void) {
   nrrdGetenvEnum(/**/ &nrrdStateMeasureHistoType, NULL, nrrdType,
                  nrrdEnvVarStateMeasureHistoType);
   nrrdGetenvBool(/**/ &nrrdStateGrayscaleImage3D, NULL, nrrdEnvVarStateGrayscaleImage3D);
-
+  nrrdGetenvBool(/**/ &nrrdStateEncodingAsciiCommaAllow, NULL,
+                 nrrdEnvVarStateEncodingAsciiCommaAllow);
   return;
 }
 

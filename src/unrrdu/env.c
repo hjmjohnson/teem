@@ -326,6 +326,14 @@ unrrdu_envMain(int argc, const char **argv, const char *me, const hestParm *hpar
           "3-D image with a single sample (size=1) on the first "
           "(fastest) axis.",
           hparm->columns);
+  envBool(out,
+          nrrdEnvVarStateEncodingAsciiCommaAllow,
+          nrrdStateEncodingAsciiCommaAllow,
+          "nrrdStateEncodingAsciiCommaAllow",
+          "If true, emulate pre-TeemV2 behavior of ASCII encoding "
+          "when reading NRRD files: commas are almost but not quite "
+          "treated as white-space.",
+          hparm->columns);
   return 0;
 }
 

@@ -21,6 +21,11 @@
 #include "privateNrrd.h"
 #include <assert.h>
 
+/* TO THE CITIZENS OF THE WORLD:
+   I (GLK) would like to apologize for not supporting localizations
+   that would change how commas vs periods are interpreted during
+   number parsing. Please forgive me, or help me fix it :) */
+
 static int
 _nrrdFormatText_available(void) {
 

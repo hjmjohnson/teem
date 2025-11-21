@@ -843,6 +843,7 @@ NRRD_EXPORT const char *nrrdStateUnknownContent;
 NRRD_EXPORT int nrrdStateGrayscaleImage3D;
 NRRD_EXPORT int nrrdStateKeyValueReturnInternalPointers;
 NRRD_EXPORT int nrrdStateKindNoop;
+NRRD_EXPORT int nrrdStateEncodingAsciiCommaAllow;
 /* ---- BEGIN non-NrrdIO */
 NRRD_EXPORT const char *const nrrdEnvVarDefaultWriteEncodingType;
 NRRD_EXPORT const char *const nrrdEnvVarDefaultWriteBareText;
@@ -861,6 +862,7 @@ NRRD_EXPORT const char *const nrrdEnvVarStateMeasureType;
 NRRD_EXPORT const char *const nrrdEnvVarStateMeasureModeBins;
 NRRD_EXPORT const char *const nrrdEnvVarStateMeasureHistoType;
 NRRD_EXPORT const char *const nrrdEnvVarStateGrayscaleImage3D;
+NRRD_EXPORT const char *const nrrdEnvVarStateEncodingAsciiCommaAllow;
 NRRD_EXPORT int nrrdGetenvBool(int *val, char **envStr, const char *envVar);
 NRRD_EXPORT int nrrdGetenvEnum(int *val, char **envStr, const airEnum *enm,
                                const char *envVar);
