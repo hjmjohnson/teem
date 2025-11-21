@@ -309,7 +309,6 @@ nrrdCCFind(Nrrd *nout, Nrrd **nvalP, const Nrrd *nin, int type, unsigned int con
   airArray *mop, *eqvArr;
   unsigned int *fpid, numid, numsettleid, *map, (*lup)(const void *, size_t),
     (*ins)(void *, size_t, unsigned int);
-  int ret;
   size_t I, NN;
   void *val;
 
@@ -364,7 +363,7 @@ nrrdCCFind(Nrrd *nout, Nrrd **nvalP, const Nrrd *nin, int type, unsigned int con
   airMopAdd(mop, nfpid, nrrdNuke_mop, airMopAlways);
   eqvArr = airArrayNew(NULL, NULL, 2 * sizeof(unsigned int), _nrrdCC_EqvIncr);
   airMopAdd(mop, eqvArr, airArrayNuke_mop, airMopAlways);
-  ret = 0;
+  int ret = 0;
   switch (nin->dim) {
   case 1:
     ret = _nrrdCCFind_1(nfpid, &numid, nin);
