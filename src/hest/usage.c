@@ -282,7 +282,7 @@ hestGlossary(FILE *file, const hestOpt *hopt, const hestParm *_hparm) {
                  AIR_TRUE /* showshort */, AIR_FALSE /* showlong */);
     airOneLinify(_buff);
     len = strlen(_buff);
-    for (uint jj = len; jj < maxlen + HPARM->indent; jj++) {
+    for (size_t jj = len; jj < maxlen + HPARM->indent; jj++) {
       fputc(' ', file);
     }
     fprintf(file, "%s", _buff);
