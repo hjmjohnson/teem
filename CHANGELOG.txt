@@ -329,6 +329,90 @@ will be a smaller change than 80-->90); time will tell.
 
 ========= all or many libraries in general =========
 
+• Wed Nov 26 10:04:13 2025 -0600 git commit: 9f160880
+API CHANGE: in some libraries (see below), but that's not the main point.
+There is now a new naming convention for identifers in Teem. Whether fixing
+this will materially improve how Teem can be compiled or used is yet to be
+seen, but working on TeemV2 seemed like a good time to fix this long-standing
+concern.
+
+Quoting from new src/CODING.txt:
+
+* Names must not encroach on reserved identifiers in C (e.g. compiling with
+`-Wreserved-identifier` should not generated any additional warnings).  See
+https://en.cppreference.com/w/c/language/identifier.html for details. This
+rules out external symbols starting with `_`, or any identifier starting with
+either `_` and then a capital letter, or starting with `__`. The many many
+offending names that Teem has long had were fixed for TeemV2, and a six-fold
+naming scheme was created and enforced:
+
+(1) external symbols: start with `lib`, always. Most libraries use camelCase
+    naming, but ell and tijk use snake_case, so following `lib` may be at most
+    one underscore `_`, never two.  Even outside ell and tijk, underscores can
+    be used sparingly to improve legibility e.g. `unrrdu_sliceCmd`.
+
+(2) shared "internal" symbols (declared in `privateLib.h` and used in multiple
+    .c files, and not `LIB_EXPORT`d in `lib.h`): start with `lib__` (note the
+    two underscores).  The letter after `__` can be upper or lower case. There
+    is some precedent for this in the implementation of svn
+    https://subversion.apache.org/docs/community-guide/conventions.html and
+    Bind https://users.isc.org/~each/style.html Yes, it looks weird, but that's
+    appropriate, because this is a weird kind of symbol to create.
+
+(3) static symbols used only within one file: name should *not* start with
+    `lib` or any underscores.  Let static symbols enjoy the freedom of being
+    static!  Nothing outside that file will see them, so there's zero reason to
+    faux-name-space them. This also creates better visual contrast with the
+    external and "internal" symbols.
+
+(4) #defines in `lib.h` or another API-defining header (e.g. `nrrdMacros.h`):
+    start with `LIB_`, all-caps with `_`-separation of words. The only
+    exceptions are the TEEM_VERSION #define's (in air.h) described below.
+
+(5) #defines in `privateLib.h`: Following logic of `lib__` above would imply
+    `LIB__`, but the problem is that when there are already lots of `_`s, the
+    difference between one `_` and two `__` is slight
+    (e.g. `NRRD_LLONG_MIN_HELP` vs `NRRD__LLONG_MIN_HELP`).  So, rather than go
+    crazy with things like `LIB___` (triple underscores) or `LIB_PRIV_` (too
+    long), it is instead `MY_LIB_` or just `MY_` for brevity.  Thus, the `MY_`
+    prefix on #defines has the same role as the double `__` in `lib__` for
+    "internal" symbols.
+
+(6) #defines within one .c source file, for use in that file: name should *not*
+    start with either `LIB_` nor with `MY_`, but should be all caps.  Like with
+    the static symbols: this embraces the freedom of not having to interact
+    with anything outside that file, and increases the visual contrast with
+    external and private #defines.
+
+The nice consequence of this new naming system is that you can tell immediately
+by looking at an identifier which of the six kind of identifiers (listed above)
+it is.  Previously there was significant ambiguity.
+
+* When compile-time creating pointers to const structs
+(e.g. const airEnum *const pullEnergyType), in C89 we have to first make the
+const struct, and then define a pointer to it. There are some conventions for
+suffixes to use on the const struct itself (which is either static or "internal):
+- _ae for airEnum
+- _hcb for hestCB
+- _gk for gageKind
+Things would work ok without these suffixes, but they help flesh out what can
+be very short static/local names.
+
+As part of enforcing the new rules, some (API CHANGE) renames in public headers
+happened, but these are unlikely to affect Teem-using code:
+nrrd: _nrrdCheck --> nrrdCheckMore
+nrrd: _nrrdDataFNNumber --> nrrdIoDataFNNumber
+nrrd: _nrrdDataFNCheck --> nrrdIoDataFNCheck
+ell: _ELL_2M_DET --> ELL_2M_DET4
+ell: _ELL_3M_DET --> ELL_3M_DET9
+coil: _coilKindScalar --> coilKindScalar_impl
+coil: _coilKind7Tensor --> coilKind7Tensor_impl
+ten: _tenAnisoEval_f --> tenAnisoEvalArray_f
+ten: _tenAnisoEval_d --> tenAnisoEvalArray_d
+ten: _tenAnisoTen_f --> tenAnisoTenArray_f
+ten: _tenAnisoTen_d --> tenAnisoTenArray_d
+ten: _tenFindValley changed to internal ten__FindValley
+
 • Thu Nov 20 13:51:35 2025 -0600 git commit: 1b486a67
 As of about this commit (and incrementally fixed in prior commits),
 Teem no longer uses scary string functions like strcat, strcpy, and sprintf
