@@ -32,8 +32,6 @@
 #  endif
 #endif
 
-// your code for which the warning gets suppressed
-
 static int
 encodingBzip2_available(void) {
 
