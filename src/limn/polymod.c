@@ -1049,8 +1049,8 @@ doSplitting(limnPolyData *pld, Nrrd *nTriWithVert, Nrrd *nVertWithTri,
 }
 
 static int /* Biff: 1 */
-_limnPolyDataVertexWindingProcess(limnPolyData *pld, int splitting) {
-  static const char me[] = "_limnPolyDataVertexWindingProcess";
+lpdVertexWindingProcess(limnPolyData *pld, int splitting) {
+  static const char me[] = "lpdVertexWindingProcess";
   unsigned int primIdx, /* for indexing through primitives */
     triIdx,             /* for indexing through triangles in each primitive */
     maxTriPerPrim,      /* max # triangles per primitive, which is essential for
@@ -1229,13 +1229,13 @@ limnPolyDataVertexWindingFix(limnPolyData *pld, int splitting) {
   static const char me[] = "limnPolyDataVertexWindingFix";
 
   if (!splitting) {
-    if (_limnPolyDataVertexWindingProcess(pld, AIR_FALSE)) {
+    if (lpdVertexWindingProcess(pld, AIR_FALSE)) {
       biffAddf(LIMN, "%s: trouble", me);
       return 1;
     }
   } else {
-    if (_limnPolyDataVertexWindingProcess(pld, AIR_FALSE)
-        || _limnPolyDataVertexWindingProcess(pld, AIR_TRUE)) {
+    if (lpdVertexWindingProcess(pld, AIR_FALSE)
+        || lpdVertexWindingProcess(pld, AIR_TRUE)) {
       biffAddf(LIMN, "%s: trouble", me);
       return 1;
     }

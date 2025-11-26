@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Merge two adjacent axes into one"
-static const char *_unrrdu_axmergeInfoL
+static const char *unu_axmergeInfoL
   = (INFO ". A more general version of \"unu axdelete\". "
           "The underlying linear ordering of the samples is "
           "unchanged, and the information about the other axes is "
@@ -29,7 +29,7 @@ static const char *_unrrdu_axmergeInfoL
           "* Uses nrrdAxesMerge");
 
 static int
-unrrdu_axmergeMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_axmergeMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   uint *axes, axesLen;
   hestOptAdd_Nv_UInt(&hopt, "a,axis", "ax0", 1, -1, &axes, NULL,
@@ -40,12 +40,12 @@ unrrdu_axmergeMain(int argc, const char **argv, const char *me, const hestParm *
                      "the axes prior to any merging.",
                      &axesLen);
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_axmergeInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_axmergeInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -73,10 +73,10 @@ unrrdu_axmergeMain(int argc, const char **argv, const char *me, const hestParm *
     ni = 1 - ni;
   }
 
-  SAVE(out, nout[1 - ni], NULL);
+  MY_SAVE(out, nout[1 - ni], NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(axmerge, INFO);
+MY_UNRRDU_CMD(axmerge, INFO);

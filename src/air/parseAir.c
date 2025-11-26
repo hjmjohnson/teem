@@ -21,53 +21,52 @@
 
 /* clang-format off */
 static const char *
-_airBoolStr[] = {
+boolStr[] = {
   "(unknown bool)",
   "false",
   "true"
 };
 
 static const char *
-_airBoolDesc[] = {
+boolDesc[] = {
   "unknown boolean",
   "false",
   "true"
 };
 
 static const int
-_airBoolVal[] = {
+boolVal[] = {
   -1,
   AIR_FALSE,
   AIR_TRUE
 };
 
 static const char *
-_airBoolStrEqv[] = {
+boolStrEqv[] = {
   "0", "no", "n", "false", "f", "off", "nope",
   "1", "yes", "y", "true", "t", "on", "yea",
   ""
 };
 
 static const int
-_airBoolValEqv[] = {
+boolValEqv[] = {
   AIR_FALSE, AIR_FALSE, AIR_FALSE, AIR_FALSE, AIR_FALSE, AIR_FALSE, AIR_FALSE,
   AIR_TRUE, AIR_TRUE, AIR_TRUE, AIR_TRUE, AIR_TRUE, AIR_TRUE, AIR_TRUE
 };
 
 static const airEnum
-_airBool = {
+bool_ae = {
   "boolean",
   2,
-  _airBoolStr,
-  _airBoolVal,
-  _airBoolDesc,
-  _airBoolStrEqv,
-  _airBoolValEqv,
+  boolStr,
+  boolVal,
+  boolDesc,
+  boolStrEqv,
+  boolValEqv,
   AIR_FALSE
 };
 
-const airEnum *const
-airBool = &_airBool;
+const airEnum *const airBool = &bool_ae;
 /* clang-format on */
 
 double
@@ -175,8 +174,8 @@ airParseStrB(int *out, const char *_s, const char *ct, unsigned int n) {
   return n;
 }
 
-#define _PARSE_STR_ARGS(type) type *out, const char *_s, const char *ct, unsigned int n
-#define _PARSE_STR_BODY(format)                                                         \
+#define PARSE_STR_ARGS(type) type *out, const char *_s, const char *ct, unsigned int n
+#define PARSE_STR_BODY(format)                                                          \
   unsigned int i;                                                                       \
   char *tmp, *s, *last;                                                                 \
                                                                                         \
@@ -213,49 +212,51 @@ airParseStrB(int *out, const char *_s, const char *ct, unsigned int n) {
 * This uses air's thread-safe strtok() replacement: airStrtok()
 */
 unsigned int
-airParseStrH(_PARSE_STR_ARGS(short)) {
-  _PARSE_STR_BODY("%hd")
+airParseStrH(PARSE_STR_ARGS(short)) {
+  PARSE_STR_BODY("%hd")
 }
 
 unsigned int
-airParseStrUH(_PARSE_STR_ARGS(unsigned short)) {
-  _PARSE_STR_BODY("%hu")
+airParseStrUH(PARSE_STR_ARGS(unsigned short)) {
+  PARSE_STR_BODY("%hu")
 }
 
 unsigned int
-airParseStrI(_PARSE_STR_ARGS(int)) {
-  _PARSE_STR_BODY("%d")
+airParseStrI(PARSE_STR_ARGS(int)) {
+  PARSE_STR_BODY("%d")
 }
 
 unsigned int
-airParseStrUI(_PARSE_STR_ARGS(unsigned int)) {
-  _PARSE_STR_BODY("%u")
+airParseStrUI(PARSE_STR_ARGS(unsigned int)) {
+  PARSE_STR_BODY("%u")
 }
 
 unsigned int
-airParseStrL(_PARSE_STR_ARGS(long int)) {
-  _PARSE_STR_BODY("%ld")
+airParseStrL(PARSE_STR_ARGS(long int)) {
+  PARSE_STR_BODY("%ld")
 }
 
 unsigned int
-airParseStrUL(_PARSE_STR_ARGS(unsigned long int)) {
-  _PARSE_STR_BODY("%lu")
+airParseStrUL(PARSE_STR_ARGS(unsigned long int)) {
+  PARSE_STR_BODY("%lu")
 }
 
 unsigned int
-airParseStrZ(_PARSE_STR_ARGS(size_t)) {
-  _PARSE_STR_BODY("%zu")
+airParseStrZ(PARSE_STR_ARGS(size_t)) {
+  PARSE_STR_BODY("%zu")
 }
 
 unsigned int
-airParseStrF(_PARSE_STR_ARGS(float)) {
-  _PARSE_STR_BODY("%f")
+airParseStrF(PARSE_STR_ARGS(float)) {
+  PARSE_STR_BODY("%f")
 }
 
 unsigned int
-airParseStrD(_PARSE_STR_ARGS(double)) {
-  _PARSE_STR_BODY("%lf")
+airParseStrD(PARSE_STR_ARGS(double)) {
+  PARSE_STR_BODY("%lf")
 }
+#undef PARSE_STR_ARGS
+#undef PARSE_STR_BODY
 
 unsigned int
 airParseStrC(char *out, const char *_s, const char *ct, unsigned int n) {

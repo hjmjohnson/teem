@@ -22,7 +22,7 @@
 const char *info = ("Sample space of tensor shape.");
 
 void
-_ra2t(Nrrd *nten, double rad, double angle, double mRI[9], double mRF[9], double hack) {
+ra2t(Nrrd *nten, double rad, double angle, double mRI[9], double mRF[9], double hack) {
   double x, y, xyz[3], XX[3], YY[3], CC[3], EE[3], VV[3], tmp, mD[9], mT[9];
   float *tdata;
   unsigned int xi, yi, sx, sy;
@@ -54,7 +54,7 @@ _ra2t(Nrrd *nten, double rad, double angle, double mRI[9], double mRF[9], double
 }
 
 void
-_cap2xyz(double xyz[3], double ca, double cp, int version, int whole) {
+cap2xyz(double xyz[3], double ca, double cp, int version, int whole) {
   double cl, cs, mean;
 
   cs = 1 - ca;
@@ -175,81 +175,81 @@ main(int argc, const char *argv[]) {
   washQtoM3(mRF, q);
   ELL_3M_TRANSPOSE(mRI, mRF);
   if (right) {
-    _ra2t(nten, 0.00, 0.0, mRI, mRF, hack);
+    ra2t(nten, 0.00, 0.0, mRI, mRF, hack);
 
-    _ra2t(nten, 0.10, 0.0, mRI, mRF, hack);
-    _ra2t(nten, 0.10, 60.0, mRI, mRF, hack);
+    ra2t(nten, 0.10, 0.0, mRI, mRF, hack);
+    ra2t(nten, 0.10, 60.0, mRI, mRF, hack);
 
-    _ra2t(nten, 0.20, 0.0, mRI, mRF, hack);
-    _ra2t(nten, 0.20, 30.0, mRI, mRF, hack);
-    _ra2t(nten, 0.20, 60.0, mRI, mRF, hack);
+    ra2t(nten, 0.20, 0.0, mRI, mRF, hack);
+    ra2t(nten, 0.20, 30.0, mRI, mRF, hack);
+    ra2t(nten, 0.20, 60.0, mRI, mRF, hack);
 
-    _ra2t(nten, 0.30, 0.0, mRI, mRF, hack);
-    _ra2t(nten, 0.30, 20.0, mRI, mRF, hack);
-    _ra2t(nten, 0.30, 40.0, mRI, mRF, hack);
-    _ra2t(nten, 0.30, 60.0, mRI, mRF, hack);
+    ra2t(nten, 0.30, 0.0, mRI, mRF, hack);
+    ra2t(nten, 0.30, 20.0, mRI, mRF, hack);
+    ra2t(nten, 0.30, 40.0, mRI, mRF, hack);
+    ra2t(nten, 0.30, 60.0, mRI, mRF, hack);
 
-    _ra2t(nten, 0.40, 0.0, mRI, mRF, hack);
-    _ra2t(nten, 0.40, 15.0, mRI, mRF, hack);
-    _ra2t(nten, 0.40, 30.0, mRI, mRF, hack);
-    _ra2t(nten, 0.40, 45.0, mRI, mRF, hack);
-    _ra2t(nten, 0.40, 60.0, mRI, mRF, hack);
+    ra2t(nten, 0.40, 0.0, mRI, mRF, hack);
+    ra2t(nten, 0.40, 15.0, mRI, mRF, hack);
+    ra2t(nten, 0.40, 30.0, mRI, mRF, hack);
+    ra2t(nten, 0.40, 45.0, mRI, mRF, hack);
+    ra2t(nten, 0.40, 60.0, mRI, mRF, hack);
 
-    _ra2t(nten, 0.50, 0.0, mRI, mRF, hack);
-    _ra2t(nten, 0.50, 12.0, mRI, mRF, hack);
-    _ra2t(nten, 0.50, 24.0, mRI, mRF, hack);
-    _ra2t(nten, 0.50, 36.0, mRI, mRF, hack);
-    _ra2t(nten, 0.50, 48.0, mRI, mRF, hack);
-    _ra2t(nten, 0.50, 60.0, mRI, mRF, hack);
+    ra2t(nten, 0.50, 0.0, mRI, mRF, hack);
+    ra2t(nten, 0.50, 12.0, mRI, mRF, hack);
+    ra2t(nten, 0.50, 24.0, mRI, mRF, hack);
+    ra2t(nten, 0.50, 36.0, mRI, mRF, hack);
+    ra2t(nten, 0.50, 48.0, mRI, mRF, hack);
+    ra2t(nten, 0.50, 60.0, mRI, mRF, hack);
 
-    /* _ra2t(nten, 0.60, 30.0, mRI, mRF, hack); */
-    _ra2t(nten, 0.60, 40.0, mRI, mRF, hack);
-    _ra2t(nten, 0.60, 50.0, mRI, mRF, hack);
-    _ra2t(nten, 0.60, 60.0, mRI, mRF, hack);
+    /* ra2t(nten, 0.60, 30.0, mRI, mRF, hack); */
+    ra2t(nten, 0.60, 40.0, mRI, mRF, hack);
+    ra2t(nten, 0.60, 50.0, mRI, mRF, hack);
+    ra2t(nten, 0.60, 60.0, mRI, mRF, hack);
 
-    /* _ra2t(nten, 0.70, 34.3, mRI, mRF, hack); */
-    /* _ra2t(nten, 0.70, 42.8, mRI, mRF, hack); */
-    _ra2t(nten, 0.70, 51.4, mRI, mRF, hack);
-    _ra2t(nten, 0.70, 60.0, mRI, mRF, hack);
+    /* ra2t(nten, 0.70, 34.3, mRI, mRF, hack); */
+    /* ra2t(nten, 0.70, 42.8, mRI, mRF, hack); */
+    ra2t(nten, 0.70, 51.4, mRI, mRF, hack);
+    ra2t(nten, 0.70, 60.0, mRI, mRF, hack);
 
-    /* _ra2t(nten, 0.80, 45.0, mRI, mRF, hack); */
-    _ra2t(nten, 0.80, 52.5, mRI, mRF, hack);
-    _ra2t(nten, 0.80, 60.0, mRI, mRF, hack);
+    /* ra2t(nten, 0.80, 45.0, mRI, mRF, hack); */
+    ra2t(nten, 0.80, 52.5, mRI, mRF, hack);
+    ra2t(nten, 0.80, 60.0, mRI, mRF, hack);
 
-    _ra2t(nten, 0.90, 60.0, mRI, mRF, hack);
+    ra2t(nten, 0.90, 60.0, mRI, mRF, hack);
 
-    _ra2t(nten, 1.00, 60.0, mRI, mRF, hack);
+    ra2t(nten, 1.00, 60.0, mRI, mRF, hack);
     /*
-    _ra2t(nten, 0.000, 0.0, mRI, mRF, hack);
+    ra2t(nten, 0.000, 0.0, mRI, mRF, hack);
 
-    _ra2t(nten, 0.125, 0.0, mRI, mRF, hack);
-    _ra2t(nten, 0.125, 60.0, mRI, mRF, hack);
+    ra2t(nten, 0.125, 0.0, mRI, mRF, hack);
+    ra2t(nten, 0.125, 60.0, mRI, mRF, hack);
 
-    _ra2t(nten, 0.250, 0.0, mRI, mRF, hack);
-    _ra2t(nten, 0.250, 30.0, mRI, mRF, hack);
-    _ra2t(nten, 0.250, 60.0, mRI, mRF, hack);
+    ra2t(nten, 0.250, 0.0, mRI, mRF, hack);
+    ra2t(nten, 0.250, 30.0, mRI, mRF, hack);
+    ra2t(nten, 0.250, 60.0, mRI, mRF, hack);
 
-    _ra2t(nten, 0.375, 0.0, mRI, mRF, hack);
-    _ra2t(nten, 0.375, 20.0, mRI, mRF, hack);
-    _ra2t(nten, 0.375, 40.0, mRI, mRF, hack);
-    _ra2t(nten, 0.375, 60.0, mRI, mRF, hack);
+    ra2t(nten, 0.375, 0.0, mRI, mRF, hack);
+    ra2t(nten, 0.375, 20.0, mRI, mRF, hack);
+    ra2t(nten, 0.375, 40.0, mRI, mRF, hack);
+    ra2t(nten, 0.375, 60.0, mRI, mRF, hack);
 
-    _ra2t(nten, 0.500, 0.0, mRI, mRF, hack);
-    _ra2t(nten, 0.500, 15.0, mRI, mRF, hack);
-    _ra2t(nten, 0.500, 30.0, mRI, mRF, hack);
-    _ra2t(nten, 0.500, 45.0, mRI, mRF, hack);
-    _ra2t(nten, 0.500, 60.0, mRI, mRF, hack);
+    ra2t(nten, 0.500, 0.0, mRI, mRF, hack);
+    ra2t(nten, 0.500, 15.0, mRI, mRF, hack);
+    ra2t(nten, 0.500, 30.0, mRI, mRF, hack);
+    ra2t(nten, 0.500, 45.0, mRI, mRF, hack);
+    ra2t(nten, 0.500, 60.0, mRI, mRF, hack);
 
-    _ra2t(nten, 0.625, 37.0, mRI, mRF, hack);
-    _ra2t(nten, 0.625, 47.5, mRI, mRF, hack);
-    _ra2t(nten, 0.625, 60.0, mRI, mRF, hack);
+    ra2t(nten, 0.625, 37.0, mRI, mRF, hack);
+    ra2t(nten, 0.625, 47.5, mRI, mRF, hack);
+    ra2t(nten, 0.625, 60.0, mRI, mRF, hack);
 
-    _ra2t(nten, 0.750, 49.2, mRI, mRF, hack);
-    _ra2t(nten, 0.750, 60.0, mRI, mRF, hack);
+    ra2t(nten, 0.750, 49.2, mRI, mRF, hack);
+    ra2t(nten, 0.750, 60.0, mRI, mRF, hack);
 
-    _ra2t(nten, 0.875, 60.0, mRI, mRF, hack);
+    ra2t(nten, 0.875, 60.0, mRI, mRF, hack);
 
-    _ra2t(nten, 1.000, 60.0, mRI, mRF, hack);
+    ra2t(nten, 1.000, 60.0, mRI, mRF, hack);
     */
     nten->axis[1].spacing = 1;
     nten->axis[2].spacing = (sx - 1) / (sqrt(3.0) * (sy - 1));
@@ -268,7 +268,7 @@ main(int argc, const char *argv[]) {
         } else {
           cp = AIR_AFFINE(0, xi, samp - 1, hackcp, maxca - hack / 2.0);
         }
-        _cap2xyz(xyz, ca, cp, version, whole);
+        cap2xyz(xyz, ca, cp, version, whole);
         /*
           fprintf(stderr, "%s: (%d,%d) -> (%g,%g) -> %g %g %g\n", me,
           yi, xi, ca, cp, xyz[0], xyz[1], xyz[2]);

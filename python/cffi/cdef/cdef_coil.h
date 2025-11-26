@@ -179,11 +179,11 @@ extern int coilVerbose;
 extern const airEnum *const coilMethodType;
 extern const airEnum *const coilKindType;
 /* scalarCoil.c */
-extern const coilKind _coilKindScalar; /* no privateCoil.h */
+extern const coilKind coilKindScalar_impl; /* no privateCoil.h */
 extern const coilKind *const coilKindScalar;
 extern const coilKind *const coilKindArray[COIL_KIND_TYPE_MAX + 1];
 /* tensorCoil.c */
-extern const coilKind _coilKind7Tensor; /* no privateCoil.h */
+extern const coilKind coilKind7Tensor_impl; /* no privateCoil.h */
 extern const coilKind *const coilKind7Tensor;
 /* realmethods.c */
 extern const coilMethod *const coilMethodArray[COIL_METHOD_TYPE_MAX + 1];

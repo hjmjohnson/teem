@@ -32,36 +32,36 @@ const int biffPresent = 42;
 #  define snprintf _snprintf
 #endif
 
-static biffMsg **_bmsg = NULL;    /* master array of biffMsg pointers */
-static uint _bmsgNum = 0;         /* length of _biffErr == # keys maintained */
-static airArray *_bmsgArr = NULL; /* air array of _biffErr and _biffNum */
+static biffMsg **biff__msg = NULL;    /* master array of biffMsg pointers */
+static uint biff__msgNum = 0;         /* length of biff__Err == # keys maintained */
+static airArray *biff__msgArr = NULL; /* air array of biff__Err and biff__Num */
 
-#define __INCR 2
+#define MY_INCR 2
 
 typedef union {
   biffMsg ***b;
   void **v;
-} _beu;
+} biff__pu;
 
 /*
- * _bmsgStart()
+ * msgStart()
  *
  * allocates data structers needed by biff.  Panics if anything goes wrong.
  *
  * NOTE: Can be harmlessly called multiple times.
  */
 static void
-_bmsgStart(void) {
-  static const char me[] = "[biff] _bmsgStart";
-  _beu uu;
+msgStart(void) {
+  static const char me[] = "[biff] msgStart";
+  biff__pu uu;
 
-  if (_bmsgArr) {
+  if (biff__msgArr) {
     /* its non-NULL, must have been called already */
     return;
   }
-  uu.b = &_bmsg;
-  _bmsgArr = airArrayNew(uu.v, &_bmsgNum, sizeof(biffMsg *), __INCR);
-  if (!_bmsgArr) {
+  uu.b = &biff__msg;
+  biff__msgArr = airArrayNew(uu.v, &biff__msgNum, sizeof(biffMsg *), MY_INCR);
+  if (!biff__msgArr) {
     fprintf(stderr, "%s: PANIC: couldn't allocate internal data\n", me);
     /* exit(1); */
   }
@@ -69,25 +69,25 @@ _bmsgStart(void) {
 }
 
 static void
-_bmsgFinish(void) {
+msgFinish(void) {
 
-  if (_bmsgArr) {
-    /* setting _bmsgArr to NULL is needed to put biff back in initial state
-       so that next calls to biff re-trigger _bmsgStart() */
-    _bmsgArr = airArrayNuke(_bmsgArr);
+  if (biff__msgArr) {
+    /* setting biff__msgArr to NULL is needed to put biff back in initial state
+       so that next calls to biff re-trigger msgStart() */
+    biff__msgArr = airArrayNuke(biff__msgArr);
   }
   return;
 }
 
 /*
- * _bmsgFind()
+ * msgFind()
  *
- * returns the biffMsg (in _bmsg) of the entry with the given `key`,
+ * returns the biffMsg (in biff__msg) of the entry with the given `key`,
  * or NULL if it was not found
  */
 static biffMsg *
-_bmsgFind(const char *key) {
-  static const char me[] = "[biff] _bmsgFind";
+msgFind(const char *key) {
+  static const char me[] = "[biff] msgFind";
   biffMsg *msg;
   uint ii;
 
@@ -96,10 +96,10 @@ _bmsgFind(const char *key) {
     return NULL; /* exit(1); */
   }
   msg = NULL;
-  if (_bmsgNum) {
-    for (ii = 0; ii < _bmsgNum; ii++) {
-      if (!strcmp(_bmsg[ii]->key, key)) {
-        msg = _bmsg[ii];
+  if (biff__msgNum) {
+    for (ii = 0; ii < biff__msgNum; ii++) {
+      if (!strcmp(biff__msg[ii]->key, key)) {
+        msg = biff__msg[ii];
         break;
       }
     }
@@ -108,14 +108,14 @@ _bmsgFind(const char *key) {
 }
 
 /*
- * assumes that msg really is in _bmsg[]
+ * assumes that msg really is in biff__msg[]
  */
 static uint
-_bmsgFindIdx(biffMsg *msg) {
+msgFindIdx(biffMsg *msg) {
   uint ii;
 
-  for (ii = 0; ii < _bmsgNum; ii++) {
-    if (msg == _bmsg[ii]) {
+  for (ii = 0; ii < biff__msgNum; ii++) {
+    if (msg == biff__msg[ii]) {
       break;
     }
   }
@@ -123,34 +123,34 @@ _bmsgFindIdx(biffMsg *msg) {
 }
 
 /*
- * _bmsgAdd()
+ * msgAdd()
  *
- * If given `key` already has a biffMsg in `_bmsg`, returns that.
- * otherwise, adds a new biffMsg for given `key` to `_bmsg`, and returns it.
+ * If given `key` already has a biffMsg in `biff__msg`, returns that.
+ * otherwise, adds a new biffMsg for given `key` to `biff__msg`, and returns it.
  * Panics if there is a problem
  */
 static biffMsg *
-_bmsgAdd(const char *key) {
-  static const char me[] = "[biff] _bmsgAdd";
+msgAdd(const char *key) {
+  static const char me[] = "[biff] msgAdd";
   uint ii;
   biffMsg *msg;
 
   msg = NULL;
   /* find if key exists already */
-  for (ii = 0; ii < _bmsgNum; ii++) {
-    if (!strcmp(key, _bmsg[ii]->key)) {
-      msg = _bmsg[ii];
+  for (ii = 0; ii < biff__msgNum; ii++) {
+    if (!strcmp(key, biff__msg[ii]->key)) {
+      msg = biff__msg[ii];
       break;
     }
   }
   if (!msg) {
     /* have to add new biffMsg */
-    ii = airArrayLenIncr(_bmsgArr, 1);
-    if (!_bmsg) {
+    ii = airArrayLenIncr(biff__msgArr, 1);
+    if (!biff__msg) {
       fprintf(stderr, "%s: PANIC: couldn't accommodate one more key\n", me);
       return NULL; /* exit(1); */
     }
-    msg = _bmsg[ii] = _biffMsgNew(key);
+    msg = biff__msg[ii] = biff__MsgNew(key);
   }
   return msg;
 }
@@ -166,19 +166,19 @@ void
 biffAdd(const char *key, const char *err) {
   biffMsg *msg;
 
-  _bmsgStart();
-  msg = _bmsgAdd(key);
-  _biffMsgAdd(msg, err);
+  msgStart();
+  msg = msgAdd(key);
+  biff__MsgAdd(msg, err);
   return;
 }
 
 static void
-_biffAddVL(const char *key, const char *errfmt, va_list args) {
+bAddVL(const char *key, const char *errfmt, va_list args) {
   biffMsg *msg;
 
-  _bmsgStart();
-  msg = _bmsgAdd(key);
-  _biffMsgAddVL(msg, errfmt, args);
+  msgStart();
+  msg = msgAdd(key);
+  biff__MsgAddVL(msg, errfmt, args);
   return;
 }
 
@@ -193,7 +193,7 @@ biffAddf(const char *key, const char *errfmt, ...) {
   va_list args;
 
   va_start(args, errfmt);
-  _biffAddVL(key, errfmt, args);
+  bAddVL(key, errfmt, args);
   va_end(args);
   return;
 }
@@ -218,7 +218,7 @@ biffMaybeAddf(int useBiff, const char *key, const char *errfmt, ...) {
 
   va_start(args, errfmt);
   if (useBiff) {
-    _biffAddVL(key, errfmt, args);
+    bAddVL(key, errfmt, args);
   }
   va_end(args);
   return;
@@ -239,8 +239,8 @@ biffGet(const char *key) {
   biffMsg *msg;
   uint ii;
 
-  _bmsgStart();
-  msg = _bmsgFind(key);
+  msgStart();
+  msg = msgFind(key);
   if (!msg) {
     static const char err[] = "[%s] No information for this key!";
     fprintf(stderr, "%s: WARNING: no information for key \"%s\"\n", me, key);
@@ -280,9 +280,9 @@ unsigned int
 biffCheck(const char *key) {
   biffMsg *msg;
 
-  _bmsgStart();
-  msg = _bmsgFind(key);
-  if (_biffMsgNoop == msg) {
+  msgStart();
+  msg = msgFind(key);
+  if (biff__MsgNoop == msg) {
     return 0;
   }
   if (!msg) {
@@ -295,7 +295,7 @@ biffCheck(const char *key) {
  ******* biffDone()
  *
  * frees everything associated with given `key`, and shrinks list of keys,
- * and calls _bmsgFinish() if there are no keys left
+ * and calls msgFinish() if there are no keys left
  */
 void
 biffDone(const char *key) {
@@ -303,24 +303,24 @@ biffDone(const char *key) {
   uint idx;
   biffMsg *msg;
 
-  _bmsgStart();
+  msgStart();
 
-  msg = _bmsgFind(key);
+  msg = msgFind(key);
   if (!msg) {
     fprintf(stderr, "%s: WARNING: no information for key \"%s\"\n", me, key);
     return;
   }
-  idx = _bmsgFindIdx(msg);
-  _biffMsgNix(msg);
-  if (_bmsgNum > 1) {
+  idx = msgFindIdx(msg);
+  biff__MsgNix(msg);
+  if (biff__msgNum > 1) {
     /* if we have more than one key in action, move the last biffMsg
        to the position that was just cleared up */
-    _bmsg[idx] = _bmsg[_bmsgNum - 1];
+    biff__msg[idx] = biff__msg[biff__msgNum - 1];
   }
-  airArrayLenIncr(_bmsgArr, -1);
+  airArrayLenIncr(biff__msgArr, -1);
   /* if that was the last key, close shop */
-  if (!_bmsgArr->len) {
-    _bmsgFinish();
+  if (!biff__msgArr->len) {
+    msgFinish();
   }
 
   return;
@@ -331,30 +331,30 @@ biffMove(const char *destKey, const char *err, const char *srcKey) {
   static const char me[] = "biffMove";
   biffMsg *dest, *src;
 
-  _bmsgStart();
-  dest = _bmsgAdd(destKey);
-  src = _bmsgFind(srcKey);
+  msgStart();
+  dest = msgAdd(destKey);
+  src = msgFind(srcKey);
   if (!src) {
     fprintf(stderr, "%s: WARNING: key \"%s\" unknown\n", me, srcKey);
     return;
   }
-  _biffMsgMove(dest, src, err);
+  biff__MsgMove(dest, src, err);
   return;
 }
 
 static void
-_biffMoveVL(const char *destKey, const char *srcKey, const char *errfmt, va_list args) {
-  static const char me[] = "_biffMoveVL";
+moveVL(const char *destKey, const char *srcKey, const char *errfmt, va_list args) {
+  static const char me[] = "moveVL";
   biffMsg *dest, *src;
 
-  _bmsgStart();
-  dest = _bmsgAdd(destKey);
-  src = _bmsgFind(srcKey);
+  msgStart();
+  dest = msgAdd(destKey);
+  src = msgFind(srcKey);
   if (!src) {
     fprintf(stderr, "%s: WARNING: key \"%s\" unknown\n", me, srcKey);
     return;
   }
-  _biffMsgMoveVL(dest, src, errfmt, args);
+  biff__MsgMoveVL(dest, src, errfmt, args);
   biffDone(srcKey);
   return;
 }
@@ -364,7 +364,7 @@ biffMovef(const char *destKey, const char *srcKey, const char *errfmt, ...) {
   va_list args;
 
   va_start(args, errfmt);
-  _biffMoveVL(destKey, srcKey, errfmt, args);
+  moveVL(destKey, srcKey, errfmt, args);
   va_end(args);
   return;
 }
@@ -373,10 +373,10 @@ char *
 biffGetDone(const char *key) {
   char *ret;
 
-  _bmsgStart();
+  msgStart();
 
   ret = biffGet(key);
-  biffDone(key); /* will call _bmsgFinish if this is the last key */
+  biffDone(key); /* will call msgFinish if this is the last key */
 
   return ret;
 }

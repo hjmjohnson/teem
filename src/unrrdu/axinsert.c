@@ -21,18 +21,17 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Add a \"stub\" (length 1) axis to a nrrd"
-static const char *_unrrdu_axinsertInfoL
+static const char *unu_axinsertInfoL
   = (INFO ". The underlying linear ordering of the samples is "
           "unchanged, and the information about the other axes is "
           "shifted upwards as needed.\n "
           "* Uses nrrdAxesInsert, and with \"-s\", nrrdPad_nva");
 
 static int
-unrrdu_axinsertMain(int argc, const char **argv, const char *me,
-                    const hestParm *_hparm) {
+unu_axinsertMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
   uint axis;
-  OPT_ADD_AXIS(axis, "dimension (axis index) at which to insert the new axis");
+  MY_OPT_ADD_AXIS(axis, "dimension (axis index) at which to insert the new axis");
   char *label;
   hestOptAdd_1_String(&hopt, "l,label", "label", &label, "",
                       "label to associate with new axis");
@@ -59,14 +58,14 @@ unrrdu_axinsertMain(int argc, const char **argv, const char *me,
                      "\b\bo \"wrap\": wrap-around to other side",
                      nrrdHestBoundarySpec);
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for YES some hparm modification)
   hestParm *hparm = hestParmCopy(_hparm);
   hparm->elideSingleOtherDefault = AIR_FALSE;
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_axinsertInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_axinsertInfoL);
   airArray *mop = unrrduMopNew(hopt, hparm);
   char *err;
 
@@ -121,10 +120,10 @@ unrrdu_axinsertMain(int argc, const char **argv, const char *me,
     nout->axis[axis].max = mm[1];
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(axinsert, INFO);
+MY_UNRRDU_CMD(axinsert, INFO);

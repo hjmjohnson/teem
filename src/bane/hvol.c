@@ -34,8 +34,8 @@
 */
 
 int /* Biff: (private) 1 */
-_baneAxisCheck(baneAxis *ax) {
-  static const char me[] = "_baneAxisCheck";
+bane__AxisCheck(baneAxis *ax) {
+  static const char me[] = "bane__AxisCheck";
 
   if (!(ax->res >= 2)) {
     biffAddf(BANE, "%s: need resolution at least 2 (not %u)", me, ax->res);
@@ -85,8 +85,9 @@ int /* Biff: 1 */
 baneFindInclusion(double min[3], double max[3], Nrrd *nin, baneHVolParm *hvp,
                   gageContext *ctx) {
   static const char me[] = "baneFindInclusion";
-  char prog[13],
-    aname[3][AIR_STRLEN_SMALL + 1] = {"grad-mag", "2nd deriv", "data value"};
+  static const char aname[3][AIR_STRLEN_SMALL + 1] = {"grad-mag", "2nd deriv",
+                                                      "data value"};
+  char prog[13];
   int sx, sy, sz, x, y, z, E, ai;
   baneInc *inc[3];
   /* HEY HEY HEY:  The variable "hist" is used before its value is set.

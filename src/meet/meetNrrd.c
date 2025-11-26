@@ -23,7 +23,7 @@
 typedef union {
   const NrrdKernel ***k;
   void **v;
-} _kernu;
+} kpu;
 
 /*
 ** ALLOCATES and returns a NULL-terminated array of all the
@@ -35,7 +35,7 @@ meetNrrdKernelAll(void) {
   const NrrdKernel **kern;
   unsigned int ii;
   int di, ci, ai, dmax, cmax, amax;
-  _kernu ku;
+  kpu ku;
 
   ku.k = &kern;
   arr = airArrayNew(ku.v, NULL, sizeof(NrrdKernel *), 2);

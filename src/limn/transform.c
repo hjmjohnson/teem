@@ -119,7 +119,7 @@ limnObjectVertexNormals(limnObject *obj) {
 }
 
 static int
-_limnObjectViewTransform(limnObject *obj, limnCamera *cam) {
+lObjectViewTransform(limnObject *obj, limnCamera *cam) {
   unsigned int vertIdx;
   limnVertex *vert;
   float d;
@@ -131,7 +131,7 @@ _limnObjectViewTransform(limnObject *obj, limnCamera *cam) {
     ELL_4V_SCALE(vert->coord, d, vert->coord);
     /*
     printf("%s: w[%d] = %g %g %g %g --> v = %g %g %g\n",
-           "_limnObjectVTransform",
+           "lObjectVTransform",
            pi, p->w[0], p->w[1], p->w[2], p->w[3], p->v[0], p->v[1], p->v[2]);
     */
   }
@@ -140,8 +140,8 @@ _limnObjectViewTransform(limnObject *obj, limnCamera *cam) {
 }
 
 static int /* Biff: 1 */
-_limnObjectScreenTransform(limnObject *obj, limnCamera *cam) {
-  static const char me[] = "_limnObjectScreenTransform";
+lObjectScreenTransform(limnObject *obj, limnCamera *cam) {
+  static const char me[] = "lObjectScreenTransform";
   unsigned int vertIdx;
   limnVertex *vert;
   float d;
@@ -159,7 +159,7 @@ _limnObjectScreenTransform(limnObject *obj, limnCamera *cam) {
     vert->coord[1] *= d;
     /* coord[2] unchanged */
     /*
-    printf("%s: v[%d] = %g %g %g --> s = %g %g %g\n", "_limnObjectSTransform",
+    printf("%s: v[%d] = %g %g %g --> s = %g %g %g\n", "lObjectSTransform",
            pi, p->v[0], p->v[1], p->v[2], p->s[0], p->s[1], p->s[2]);
     */
   }
@@ -168,8 +168,8 @@ _limnObjectScreenTransform(limnObject *obj, limnCamera *cam) {
 }
 
 static int /* Biff: 1 */
-_limnObjectDeviceTransform(limnObject *obj, limnCamera *cam, limnWindow *win) {
-  static const char me[] = "_limnObjectDeviceTransform";
+lObjectDeviceTransform(limnObject *obj, limnCamera *cam, limnWindow *win) {
+  static const char me[] = "lObjectDeviceTransform";
   unsigned int vertIdx;
   limnVertex *vert;
   float wy0, wy1, wx0, wx1, t;
@@ -196,7 +196,7 @@ _limnObjectDeviceTransform(limnObject *obj, limnCamera *cam, limnWindow *win) {
                                           wy0, wy1));
     /* coord[2] unchanged */
     /*
-    printf("%s: s[%d] = %g %g --> s = %g %g\n", "_limnObjectDTransform",
+    printf("%s: s[%d] = %g %g --> s = %g %g\n", "lObjectDTransform",
            pi, p->s[0], p->s[1], p->d[0], p->d[1]);
     */
   }
@@ -212,13 +212,13 @@ limnObjectSpaceTransform(limnObject *obj, limnCamera *cam, limnWindow *win, int 
   /* HEY: deal with cam->orthographic */
   switch (space) {
   case limnSpaceView:
-    E = _limnObjectViewTransform(obj, cam);
+    E = lObjectViewTransform(obj, cam);
     break;
   case limnSpaceScreen:
-    E = _limnObjectScreenTransform(obj, cam);
+    E = lObjectScreenTransform(obj, cam);
     break;
   case limnSpaceDevice:
-    E = _limnObjectDeviceTransform(obj, cam, win);
+    E = lObjectDeviceTransform(obj, cam, win);
     break;
   default:
     biffAddf(LIMN, "%s: space %d unknown or unimplemented\n", me, space);
@@ -251,7 +251,7 @@ limnObjectPartTransform(limnObject *obj, unsigned int partIdx, float xform[16]) 
 }
 
 static int
-_limnPartDepthCompare(const void *_a, const void *_b) {
+lPartDepthCompare(const void *_a, const void *_b) {
   limnPart *const *a;
   limnPart *const *b;
 
@@ -278,7 +278,7 @@ limnObjectDepthSortParts(limnObject *obj) {
     part->depth /= part->vertIdxNum;
   }
 
-  qsort(obj->part, obj->partNum, sizeof(limnPart *), _limnPartDepthCompare);
+  qsort(obj->part, obj->partNum, sizeof(limnPart *), lPartDepthCompare);
 
   /* re-assign partIdx, post-sorting */
   for (partIdx = 0; partIdx < obj->partNum; partIdx++) {
@@ -297,7 +297,7 @@ limnObjectDepthSortParts(limnObject *obj) {
 }
 
 static int
-_limnFaceDepthCompare(const void *_a, const void *_b) {
+lFaceDepthCompare(const void *_a, const void *_b) {
   limnFace *const *a;
   limnFace *const *b;
 
@@ -324,7 +324,7 @@ limnObjectDepthSortFaces(limnObject *obj) {
     obj->faceSort[faceIdx] = face;
   }
 
-  qsort(obj->faceSort, obj->faceNum, sizeof(limnFace *), _limnFaceDepthCompare);
+  qsort(obj->faceSort, obj->faceNum, sizeof(limnFace *), lFaceDepthCompare);
 
   return 0;
 }

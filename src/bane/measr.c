@@ -21,7 +21,7 @@
 #include "privateBane.h"
 
 static double
-_baneMeasr_StockAnswer(baneMeasr *measr, double *san, double *parm) {
+measrStockAnswer(baneMeasr *measr, double *san, double *parm) {
 
   AIR_UNUSED(parm);
   return san[measr->offset0];
@@ -56,7 +56,7 @@ baneMeasrNew(int type, double *parm) {
     GAGE_QUERY_ITEM_ON(measr->query, item);
     measr->range = baneRangeNew(baneRangePositive);
     measr->offset0 = gageKindAnswerOffset(gageKindScl, item);
-    measr->answer = _baneMeasr_StockAnswer;
+    measr->answer = measrStockAnswer;
     break;
     /* --------------------------------------------------------------- */
   case baneMeasrValueZeroCentered:
@@ -66,7 +66,7 @@ baneMeasrNew(int type, double *parm) {
     GAGE_QUERY_ITEM_ON(measr->query, item);
     measr->range = baneRangeNew(baneRangeZeroCentered);
     measr->offset0 = gageKindAnswerOffset(gageKindScl, item);
-    measr->answer = _baneMeasr_StockAnswer;
+    measr->answer = measrStockAnswer;
     break;
     /* --------------------------------------------------------------- */
   case baneMeasrValueAnywhere:
@@ -76,7 +76,7 @@ baneMeasrNew(int type, double *parm) {
     GAGE_QUERY_ITEM_ON(measr->query, item);
     measr->range = baneRangeNew(baneRangeAnywhere);
     measr->offset0 = gageKindAnswerOffset(gageKindScl, item);
-    measr->answer = _baneMeasr_StockAnswer;
+    measr->answer = measrStockAnswer;
     break;
     /* --------------------------------------------------------------- */
   case baneMeasrGradMag:
@@ -85,7 +85,7 @@ baneMeasrNew(int type, double *parm) {
     GAGE_QUERY_ITEM_ON(measr->query, item);
     measr->range = baneRangeNew(baneRangePositive);
     measr->offset0 = gageKindAnswerOffset(gageKindScl, item);
-    measr->answer = _baneMeasr_StockAnswer;
+    measr->answer = measrStockAnswer;
     break;
     /* --------------------------------------------------------------- */
   case baneMeasrLaplacian:
@@ -94,7 +94,7 @@ baneMeasrNew(int type, double *parm) {
     GAGE_QUERY_ITEM_ON(measr->query, item);
     measr->range = baneRangeNew(baneRangeZeroCentered);
     measr->offset0 = gageKindAnswerOffset(gageKindScl, item);
-    measr->answer = _baneMeasr_StockAnswer;
+    measr->answer = measrStockAnswer;
     break;
     /* --------------------------------------------------------------- */
   case baneMeasr2ndDD:
@@ -103,7 +103,7 @@ baneMeasrNew(int type, double *parm) {
     GAGE_QUERY_ITEM_ON(measr->query, item);
     measr->range = baneRangeNew(baneRangeZeroCentered);
     measr->offset0 = gageKindAnswerOffset(gageKindScl, item);
-    measr->answer = _baneMeasr_StockAnswer;
+    measr->answer = measrStockAnswer;
     break;
     /* --------------------------------------------------------------- */
   case baneMeasrTotalCurv:
@@ -112,7 +112,7 @@ baneMeasrNew(int type, double *parm) {
     GAGE_QUERY_ITEM_ON(measr->query, item);
     measr->range = baneRangeNew(baneRangePositive);
     measr->offset0 = gageKindAnswerOffset(gageKindScl, item);
-    measr->answer = _baneMeasr_StockAnswer;
+    measr->answer = measrStockAnswer;
     break;
     /* --------------------------------------------------------------- */
   case baneMeasrFlowlineCurv:
@@ -121,7 +121,7 @@ baneMeasrNew(int type, double *parm) {
     GAGE_QUERY_ITEM_ON(measr->query, item);
     measr->range = baneRangeNew(baneRangePositive);
     measr->offset0 = gageKindAnswerOffset(gageKindScl, item);
-    measr->answer = _baneMeasr_StockAnswer;
+    measr->answer = measrStockAnswer;
     break;
     /* --------------------------------------------------------------- */
   default:

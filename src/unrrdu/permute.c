@@ -21,25 +21,25 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Permute ordering of axes"
-static const char *_unrrdu_permuteInfoL
+static const char *unu_permuteInfoL
   = (INFO ". The permutation gives the new ordering of the old "
           "axes (in 0-based numbering). For example, the "
           "permutation 0->1,\t1->2,\t2->0 would be \"2 0 1\".\n "
           "* Uses nrrdAxesPermute");
 
 static int
-unrrdu_permuteMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_permuteMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   uint *perm, permLen;
   hestOptAdd_Nv_UInt(&hopt, "p,permute", "ax0 ax1", 1, -1, &perm, NULL,
                      "new axis ordering", &permLen);
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_permuteInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_permuteInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -59,10 +59,10 @@ unrrdu_permuteMain(int argc, const char **argv, const char *me, const hestParm *
     return 1;
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(permute, INFO);
+MY_UNRRDU_CMD(permute, INFO);

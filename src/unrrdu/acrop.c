@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO " Automatically crop axes based on given measure"
-static const char *_unrrdu_acropInfoL
+static const char *unu_acropInfoL
   = (INFO ". For the axes that are to be cropped, the slices perpendicular "
           "to that axis are projected down to a scalar with the specified measure. "
           "The resulting 1D array is analyzed by determining what portions at the "
@@ -31,7 +31,7 @@ static const char *_unrrdu_acropInfoL
           "* Uses nrrdCropAuto");
 
 static int
-unrrdu_acropMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_acropMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   uint *axes, axesLen;
   hestOptAdd_Nv_UInt(&hopt, "a,axes", "ax0", 0, -1, &axes, "",
@@ -67,12 +67,12 @@ unrrdu_acropMain(int argc, const char **argv, const char *me, const hestParm *hp
                       "Unfortunately nothing using the \"m\" and \"M\" semantics "
                       "(above) can currently be saved in the bounds file.");
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_acropInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_acropInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -111,10 +111,10 @@ unrrdu_acropMain(int argc, const char **argv, const char *me, const hestParm *hp
     }
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(acrop, INFO);
+MY_UNRRDU_CMD(acrop, INFO);

@@ -26,8 +26,8 @@
 #include "alan.h"
 
 static int /* Biff: 1 */
-_alanCheck(alanContext *actx) {
-  static const char me[] = "_alanCheck";
+aCheck(alanContext *actx) {
+  static const char me[] = "aCheck";
 
   if (!actx) {
     biffAddf(ALAN, "%s: got NULL pointer", me);
@@ -59,7 +59,7 @@ alanUpdate(alanContext *actx) {
   static const char me[] = "alanUpdate";
   int ret;
 
-  if (_alanCheck(actx)) {
+  if (aCheck(actx)) {
     biffAddf(ALAN, "%s: ", me);
     return 1;
   }
@@ -99,7 +99,7 @@ alanInit(alanContext *actx, const Nrrd *nlevInit, const Nrrd *nparmInit) {
   alan_t *levInit = NULL, *lev0, *parmInit = NULL, *parm;
   size_t I, N;
 
-  if (_alanCheck(actx)) {
+  if (aCheck(actx)) {
     biffAddf(ALAN, "%s: ", me);
     return 1;
   }
@@ -167,8 +167,8 @@ alanInit(alanContext *actx, const Nrrd *nlevInit, const Nrrd *nparmInit) {
 }
 
 static int
-_alanPerIteration(alanContext *actx, int iter) {
-  static const char me[] = "_alanPerIteration";
+aPerIteration(alanContext *actx, int iter) {
+  static const char me[] = "aPerIteration";
   char fname[AIR_STRLEN_MED + 1];
   Nrrd *nslc, *nimg;
 
@@ -212,7 +212,7 @@ typedef struct {
 } alanTask;
 
 static void *
-_alanTuringWorker(void *_task) {
+aTuringWorker(void *_task) {
   alan_t *tendata, *ten, react, conf, Dxx, Dxy, Dyy, /* Dxz, Dyz, */
     *tpx, *tmx, *tpy, *tmy,                          /* *tpz, *tmz, */
     *lev0, *lev1, *parm, deltaT, alpha, beta, A, B, *v[27], lapA, lapB, corrA, corrB,
@@ -425,7 +425,7 @@ _alanTuringWorker(void *_task) {
         task->actx->stop = alanStopConverged;
       } else {
         /* we keep going */
-        _alanPerIteration(task->actx, iter);
+        aPerIteration(task->actx, iter);
         if (task->actx->perIteration) {
           task->actx->perIteration(task->actx, iter);
         }
@@ -454,7 +454,7 @@ alanRun(alanContext *actx) {
   unsigned int tid;
   alanTask task[ALAN_THREAD_MAX];
 
-  if (_alanCheck(actx)) {
+  if (aCheck(actx)) {
     biffAddf(ALAN, "%s: ", me);
     return 1;
   }
@@ -479,7 +479,7 @@ alanRun(alanContext *actx) {
     task[tid].actx = actx;
     task[tid].idx = tid;
     task[tid].thread = airThreadNew();
-    airThreadStart(task[tid].thread, _alanTuringWorker, (void *)&(task[tid]));
+    airThreadStart(task[tid].thread, aTuringWorker, (void *)&(task[tid]));
   }
   for (tid = 0; tid < actx->numThreads; tid++) {
     airThreadJoin(task[tid].thread, &(task[tid].me));

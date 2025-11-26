@@ -44,7 +44,7 @@ baneInputCheck(Nrrd *nin, baneHVolParm *hvp) {
     return 1;
   }
   for (i = 0; i <= 2; i++) {
-    if (_baneAxisCheck(hvp->axis + i)) {
+    if (bane__AxisCheck(hvp->axis + i)) {
       biffAddf(BANE, "%s: trouble with axis %d", me, i);
       return 1;
     }

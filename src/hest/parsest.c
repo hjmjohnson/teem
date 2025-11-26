@@ -30,23 +30,25 @@ hist  = hestInputStack
 hopt  = hestOpt
 */
 
+#define HIST_DEPTH_MAX 10u // max sensibly depth of hestInputStack
+
 // histPopt pops one hestInput from the `hist` stack
 static int /* Biff: 1 */
 histPop(hestInputStack *hist, const hestParm *hparm) {
   if (!(hist && hparm)) {
-    biffAddf(HEST, "%s%sgot NULL pointer (hist %p hparm %p)", _ME_, AIR_VOIDP(hist),
+    biffAddf(HEST, "%s%sgot NULL pointer (hist %p hparm %p)", MY_ME, AIR_VOIDP(hist),
              AIR_CVOIDP(hparm));
     return 1;
   }
   if (!(hist->len)) {
-    biffAddf(HEST, "%s%scannot pop from input stack height 0", _ME_);
+    biffAddf(HEST, "%s%scannot pop from input stack height 0", MY_ME);
     return 1;
   }
   hestInput *topHin = hist->hin + hist->len - 1;
   if (topHin->dashBraceComment) {
     biffAddf(HEST,
              "%s%s%u start comment marker%s \"-{\" not balanced by equal later \"}-\"",
-             _ME_, topHin->dashBraceComment, topHin->dashBraceComment > 1 ? "s" : "");
+             MY_ME, topHin->dashBraceComment, topHin->dashBraceComment > 1 ? "s" : "");
     return 1;
   }
   if (hparm->verbose) {
@@ -65,18 +67,17 @@ enum {
   nastTryAgain, // 2: inconclusive because we had to futz around
   nastBehold    // 3: have produced an arg, here it is
 };
-static const airEnum _nast_ae = {.name = "next-arg-status",
-                                 .M = 3,
-                                 .str = (const char *[]){"(unknown_status)", // 0
-                                                         "empty",            // 1
-                                                         "try-again",        // 2
-                                                         "behold"},          // 3
-                                 .val = NULL,
-                                 .desc = NULL,
-                                 .strEqv = NULL,
-                                 .valEqv = NULL,
-                                 .sense = AIR_FALSE};
-static const airEnum *const nast_ae = &_nast_ae;
+static const airEnum nast_aenum = {.name = "next-arg-status",
+                                   .M = 3,
+                                   .str = (const char *[]){"(unknown_status)", // 0
+                                                           "empty",            // 1
+                                                           "try-again",        // 2
+                                                           "behold"},          // 3
+                                   .val = NULL,
+                                   .desc = NULL,
+                                   .strEqv = NULL,
+                                   .valEqv = NULL,
+                                   .sense = AIR_FALSE};
 
 /* argst* enum values
 Properly parsing a character sequence into "arguments", like the shell does to convert
@@ -105,22 +106,21 @@ enum {
   argstComment,  // 7: #-initiated comment
 };
 // and airEnum for this
-static const airEnum _argst_ae = {.name = "tokenizer-state",
-                                  .M = 6,
-                                  .str = (const char *[]){"(unknown_state)", // 0
-                                                          "start",           // 1
-                                                          "inside",          // 2
-                                                          "singleQ",         // 3
-                                                          "doubleQ",         // 4
-                                                          "escapeIn",        // 5
-                                                          "escapeDQ",        // 6
-                                                          "#comment"},       // 7
-                                  .val = NULL,
-                                  .desc = NULL,
-                                  .strEqv = NULL,
-                                  .valEqv = NULL,
-                                  .sense = AIR_FALSE};
-static const airEnum *const argst_ae = &_argst_ae;
+static const airEnum argst_aenum = {.name = "tokenizer-state",
+                                    .M = 6,
+                                    .str = (const char *[]){"(unknown_state)", // 0
+                                                            "start",           // 1
+                                                            "inside",          // 2
+                                                            "singleQ",         // 3
+                                                            "doubleQ",         // 4
+                                                            "escapeIn",        // 5
+                                                            "escapeDQ",        // 6
+                                                            "#comment"},       // 7
+                                    .val = NULL,
+                                    .desc = NULL,
+                                    .strEqv = NULL,
+                                    .valEqv = NULL,
+                                    .sense = AIR_FALSE};
 
 /* argstGo
 Implements the DFA that tokenizes a character sequence into arguments: the thing that the
@@ -133,7 +133,7 @@ argstGo(int *nastP, hestArg *tharg, int *stateP, int source, int icc, int vrbo) 
   char cc = (char)icc;
   if (vrbo) {
     printf("%s: hello: getting %d=|%c| in state=%s\n", __func__, icc, cc,
-           airEnumStr(argst_ae, *stateP));
+           airEnumStr(&argst_aenum, *stateP));
   }
   // hitting end of input is special enough to handle separately
   if (EOF == icc) {
@@ -161,24 +161,24 @@ argstGo(int *nastP, hestArg *tharg, int *stateP, int source, int icc, int vrbo) 
       ret = 0;
       break;
     case argstSingleQ:
-      biffAddf(HEST, "%s%shit input end inside single-quoted string", _MEV_(vrbo));
+      biffAddf(HEST, "%s%shit input end inside single-quoted string", MY_MEV(vrbo));
       ret = 1;
       break;
     case argstDoubleQ:
-      biffAddf(HEST, "%s%shit input end inside double-quoted string", _MEV_(vrbo));
+      biffAddf(HEST, "%s%shit input end inside double-quoted string", MY_MEV(vrbo));
       ret = 1;
       break;
     case argstEscapeIn:
-      biffAddf(HEST, "%s%shit input end after \\ escape from arg", _MEV_(vrbo));
+      biffAddf(HEST, "%s%shit input end after \\ escape from arg", MY_MEV(vrbo));
       ret = 1;
       break;
     case argstEscapeDQ:
       biffAddf(HEST, "%s%shit input end after \\ escape from double-quoted string",
-               _MEV_(vrbo));
+               MY_MEV(vrbo));
       ret = 1;
       break;
     default:
-      biffAddf(HEST, "%s%shit input end in unknown state %d", _MEV_(vrbo), *stateP);
+      biffAddf(HEST, "%s%shit input end in unknown state %d", MY_MEV(vrbo), *stateP);
       ret = 1;
     }
     return ret;
@@ -286,7 +286,7 @@ static int /* Biff: 1 */
 histProcNextArgTry(int *nastP, hestArg *tharg, hestInputStack *hist,
                    const hestParm *hparm) {
   if (!(nastP && tharg && hist && hparm)) {
-    biffAddf(HEST, "%s%sgot NULL pointer (nastP %p tharg %p hist %p hparm %p)", _ME_,
+    biffAddf(HEST, "%s%sgot NULL pointer (nastP %p tharg %p hist %p hparm %p)", MY_ME,
              AIR_VOIDP(nastP), AIR_VOIDP(tharg), AIR_VOIDP(hist), AIR_CVOIDP(hparm));
     return 1;
   }
@@ -316,7 +316,7 @@ histProcNextArgTry(int *nastP, hestArg *tharg, hestInputStack *hist,
     } else {
       // we have gotten to the end of the given argv array, pop it as input source */
       if (histPop(hist, hparm)) {
-        biffAddf(HEST, "%s%strouble popping %s", _ME_,
+        biffAddf(HEST, "%s%strouble popping %s", MY_ME,
                  airEnumStr(hestSource, hestSourceCommandLine));
         return 1;
       }
@@ -336,31 +336,31 @@ histProcNextArgTry(int *nastP, hestArg *tharg, hestInputStack *hist,
       } else if (hestSourceResponseFile == hin->source) {
         icc = fgetc(hin->rfile); // may be EOF
       } else {
-        biffAddf(HEST, "%s%sconfused by input source %d", _ME_, hin->source);
+        biffAddf(HEST, "%s%sconfused by input source %d", MY_ME, hin->source);
         return 1;
       }
       if (argstGo(nastP, tharg, &state, hin->source, icc, hparm->verbose > 4)) {
         if (hestSourceResponseFile == hin->source) {
-          biffAddf(HEST, "%s%strouble at character %u of %s \"%s\"", _ME_, hin->carIdx,
+          biffAddf(HEST, "%s%strouble at character %u of %s \"%s\"", MY_ME, hin->carIdx,
                    airEnumStr(hestSource, hin->source), hin->rfname);
         } else {
-          biffAddf(HEST, "%s%strouble at character %u of %s |%s|", _ME_, hin->carIdx,
+          biffAddf(HEST, "%s%strouble at character %u of %s |%s|", MY_ME, hin->carIdx,
                    airEnumStr(hestSource, hin->source), hin->dfltStr);
         }
         return 1;
       }
       /* printf("!%s: icc = %d --> argstGo --> *nastP = %s; tharg:|%s|\n", __func__, icc,
-                airEnumStr(nast_ae, *nastP), tharg->str); */
+                airEnumStr(&nast_aenum, *nastP), tharg->str); */
       if (EOF != icc) {
         hin->carIdx++;
       } else {
         // we're at end; pop input; *nastP already set to nastTryAgain by argstGo()
         if (histPop(hist, hparm)) {
           if (hestSourceResponseFile == hin->source) {
-            biffAddf(HEST, "%s%strouble popping %s \"%s\"", _ME_,
+            biffAddf(HEST, "%s%strouble popping %s \"%s\"", MY_ME,
                      airEnumStr(hestSource, hin->source), hin->rfname);
           } else {
-            biffAddf(HEST, "%s%strouble popping %s |%s|", _ME_,
+            biffAddf(HEST, "%s%strouble popping %s |%s|", MY_ME,
                      airEnumStr(hestSource, hin->source), hin->dfltStr);
           }
           return 1;
@@ -368,7 +368,7 @@ histProcNextArgTry(int *nastP, hestArg *tharg, hestInputStack *hist,
       }
     } while (nastUnknown == *nastP);
   } else {
-    biffAddf(HEST, "%s%sconfused about hin->source %d", _ME_, hin->source);
+    biffAddf(HEST, "%s%sconfused about hin->source %d", MY_ME, hin->source);
     return 1;
   }
   return 0;
@@ -381,12 +381,12 @@ histProcNextArg(int *nastP, hestArg *tharg, hestInputStack *hist,
   // printf("!%s: hello hist->len %u\n", __func__, hist->len);
   do {
     if (histProcNextArgTry(nastP, tharg, hist, hparm)) {
-      biffAddf(HEST, "%s%strouble getting next arg", _ME_);
+      biffAddf(HEST, "%s%strouble getting next arg", MY_ME);
       return 1;
     }
     if (hparm->verbose > 1) {
       printf("%s: histProcNextArgTry set *nastP = %s\n", __func__,
-             airEnumStr(nast_ae, *nastP));
+             airEnumStr(&nast_aenum, *nastP));
     }
   } while (*nastP == nastTryAgain);
   return 0;
@@ -396,12 +396,12 @@ static int /* Biff: 1 */
 histPushCommandLine(hestInputStack *hist, int argc, const char **argv,
                     const hestParm *hparm) {
   if (!(hist && argv && hparm)) {
-    biffAddf(HEST, "%s%sgot NULL pointer (hist %p, argv %p, hparm %p)", _ME_,
+    biffAddf(HEST, "%s%sgot NULL pointer (hist %p, argv %p, hparm %p)", MY_ME,
              AIR_VOIDP(hist), AIR_CVOIDP(argv), AIR_CVOIDP(hparm));
     return 1;
   }
   if (HIST_DEPTH_MAX == hist->len) {
-    biffAddf(HEST, "%s%sinput stack depth already at max %u", _ME_, HIST_DEPTH_MAX);
+    biffAddf(HEST, "%s%sinput stack depth already at max %u", MY_ME, HIST_DEPTH_MAX);
     return 1;
   }
   if (hparm->verbose) {
@@ -423,13 +423,13 @@ histPushCommandLine(hestInputStack *hist, int argc, const char **argv,
 static int /* Biff: 1 */
 histPushResponseFile(hestInputStack *hist, const char *rfname, const hestParm *hparm) {
   if (!(hist && rfname && hparm)) {
-    biffAddf(HEST, "%s%sgot NULL pointer (hist %p, rfname %p, hparm %p)", _ME_,
+    biffAddf(HEST, "%s%sgot NULL pointer (hist %p, rfname %p, hparm %p)", MY_ME,
              AIR_VOIDP(hist), AIR_CVOIDP(rfname), AIR_CVOIDP(hparm));
     return 1;
   }
   if (HIST_DEPTH_MAX == hist->len) {
     // HEY test this error
-    biffAddf(HEST, "%s%sinput stack depth already at max %u", _ME_, HIST_DEPTH_MAX);
+    biffAddf(HEST, "%s%sinput stack depth already at max %u", MY_ME, HIST_DEPTH_MAX);
     return 1;
   }
   if (!strlen(rfname)) {
@@ -437,7 +437,7 @@ histPushResponseFile(hestInputStack *hist, const char *rfname, const hestParm *h
     biffAddf(HEST,
              "%s%ssaw arg start with response file flag \"%c\" "
              "but no filename followed",
-             _ME_, RESPONSE_FILE_FLAG);
+             MY_ME, MY_RESPONSE_FILE_FLAG);
     return 1;
   }
   // have we seen rfname before?
@@ -451,7 +451,7 @@ histPushResponseFile(hestInputStack *hist, const char *rfname, const hestParm *h
         biffAddf(HEST,
                  "%s%salready reading \"%s\" as response file; "
                  "cannot recursively read it again",
-                 _ME_, rfname);
+                 MY_ME, rfname);
         return 1;
       }
     }
@@ -459,14 +459,14 @@ histPushResponseFile(hestInputStack *hist, const char *rfname, const hestParm *h
   // are we trying to read stdin twice?
   if (!strcmp("-", rfname) && hist->stdinRead) {
     // HEY test this error
-    biffAddf(HEST, "%s%sresponse filename \"%s\" but previously read stdin", _ME_,
+    biffAddf(HEST, "%s%sresponse filename \"%s\" but previously read stdin", MY_ME,
              rfname);
     return 1;
   }
   // try to open response file
   FILE *rfile = airFopen(rfname, stdin, "r");
   if (!(rfile)) {
-    biffAddf(HEST, "%s%scouldn't fopen(\"%s\",\"r\"): %s", _ME_, rfname,
+    biffAddf(HEST, "%s%scouldn't fopen(\"%s\",\"r\"): %s", MY_ME, rfname,
              strerror(errno));
     return 1;
   }
@@ -488,12 +488,12 @@ histPushResponseFile(hestInputStack *hist, const char *rfname, const hestParm *h
 static int /* Biff: 1 */
 histPushDefault(hestInputStack *hist, const char *dflt, const hestParm *hparm) {
   if (!(hist && dflt && hparm)) {
-    biffAddf(HEST, "%s%sgot NULL pointer (hist %p, dflt %p, hparm %p)", _ME_,
+    biffAddf(HEST, "%s%sgot NULL pointer (hist %p, dflt %p, hparm %p)", MY_ME,
              AIR_CVOIDP(hist), AIR_CVOIDP(dflt), AIR_CVOIDP(hparm));
     return 1;
   }
   if (HIST_DEPTH_MAX == hist->len) {
-    biffAddf(HEST, "%s%sinput stack depth already at max %u", _ME_, HIST_DEPTH_MAX);
+    biffAddf(HEST, "%s%sinput stack depth already at max %u", MY_ME, HIST_DEPTH_MAX);
     return 1;
   }
   if (hparm->verbose) {
@@ -531,7 +531,7 @@ static int /* Biff: 1 */
 histProcess(hestArgVec *havec, int *helpWantedP, hestArg *tharg, hestInputStack *hist,
             const hestParm *hparm) {
   if (!hist->len) {
-    biffAddf(HEST, "%s%scannot process zero-height stack", _ME_);
+    biffAddf(HEST, "%s%scannot process zero-height stack", MY_ME);
     return 1;
   }
   if (helpWantedP) *helpWantedP = AIR_FALSE;
@@ -551,7 +551,8 @@ histProcess(hestArgVec *havec, int *helpWantedP, hestArg *tharg, hestInputStack 
     const char *srcstr = airEnumStr(hestSource, srcval);
     // read next arg into tharg
     if (histProcNextArg(&nast, tharg, hist, hparm)) {
-      biffAddf(HEST, "%s%s(iter %u, on %s) unable to get next arg", _ME_, iters, srcstr);
+      biffAddf(HEST, "%s%s(iter %u, on %s) unable to get next arg", MY_ME, iters,
+               srcstr);
       return 1;
     }
     if (nastEmpty == nast) {
@@ -566,11 +567,11 @@ histProcess(hestArgVec *havec, int *helpWantedP, hestArg *tharg, hestInputStack 
                 ? hist->hin + hist->len - 1
                 : NULL);
     // printf("!%s: nast = %s, |stack| = %u, topHin = %p\n", __func__,
-    //         airEnumStr(nast_ae, nast), hist->len, AIR_VOIDP(topHin));
+    //         airEnumStr(&nast_aenum, nast), hist->len, AIR_VOIDP(topHin));
     //  we have a token, is it turning off commenting?
     if (hparm->respectDashBraceComments && !strcmp("}-", tharg->str)) {
       if (!topHin) {
-        biffAddf(HEST, "%s%s(iter %u, on %s) unexpected empty stack (0)", _ME_, iters,
+        biffAddf(HEST, "%s%s(iter %u, on %s) unexpected empty stack (0)", MY_ME, iters,
                  srcstr);
         return 1;
       }
@@ -585,14 +586,14 @@ histProcess(hestArgVec *havec, int *helpWantedP, hestArg *tharg, hestInputStack 
         biffAddf(HEST,
                  "%s%s(iter %u, on %s) end comment marker \"}-\" not "
                  "balanced by prior \"-{\"",
-                 _ME_, iters, srcstr);
+                 MY_ME, iters, srcstr);
         return 1;
       }
     }
     // not ending comment, are we starting (or deepening) one?
     if (hparm->respectDashBraceComments && !strcmp("-{", tharg->str)) {
       if (!topHin) {
-        biffAddf(HEST, "%s%s(iter %u, on %s) unexpected empty stack (1)", _ME_, iters,
+        biffAddf(HEST, "%s%s(iter %u, on %s) unexpected empty stack (1)", MY_ME, iters,
                  srcstr);
         return 1;
       }
@@ -619,7 +620,7 @@ histProcess(hestArgVec *havec, int *helpWantedP, hestArg *tharg, hestInputStack 
             || (/* usageWant = */ !strcmp("--usage", tharg->str))) /* */
     ) {
       if (!topHin) {
-        biffAddf(HEST, "%s%s(iter %u, on %s) unexpected empty stack (2)", _ME_, iters,
+        biffAddf(HEST, "%s%s(iter %u, on %s) unexpected empty stack (2)", MY_ME, iters,
                  srcstr);
         return 1;
       }
@@ -628,14 +629,14 @@ histProcess(hestArgVec *havec, int *helpWantedP, hestArg *tharg, hestInputStack 
            for parsing results nor error messages about that process */
         if (!helpWantedP) {
           biffAddf(HEST, "%s%s(iter %u, on %s) saw \"%s\" but have NULL helpWantedP",
-                   _ME_, iters, srcstr, helpWant ? "--help" : "--usage");
+                   MY_ME, iters, srcstr, helpWant ? "--help" : "--usage");
           return 1;
         }
         // HERE is where we set the magic numbers 1 for --help, 2 for --usage
         *helpWantedP = helpWant ? 1 : 2;
         return 0;
       } else {
-        biffAddf(HEST, "%s%s(iter %u, on %s) \"%s\" not handled in this source", _ME_,
+        biffAddf(HEST, "%s%s(iter %u, on %s) \"%s\" not handled in this source", MY_ME,
                  iters, srcstr, helpWant ? "--help" : "--usage");
         return 1;
       }
@@ -645,22 +646,22 @@ histProcess(hestArgVec *havec, int *helpWantedP, hestArg *tharg, hestInputStack 
       printf("%s: (iter %u, on %s) looking at latest tharg |%s|\n", __func__, iters,
              srcstr, tharg->str);
     }
-    if (hparm->responseFileEnable && tharg->str[0] == RESPONSE_FILE_FLAG) {
+    if (hparm->responseFileEnable && tharg->str[0] == MY_RESPONSE_FILE_FLAG) {
       if (!topHin) {
-        biffAddf(HEST, "%s%s(iter %u, on %s) unexpected empty stack (3)", _ME_, iters,
+        biffAddf(HEST, "%s%s(iter %u, on %s) unexpected empty stack (3)", MY_ME, iters,
                  srcstr);
         return 1;
       }
       if (hestSourceDefault == topHin->source) {
         biffAddf(HEST,
                  "%s%s(iter %u, on %s) %s response files not handled in this source",
-                 _ME_, iters, srcstr, tharg->str);
+                 MY_ME, iters, srcstr, tharg->str);
         return 1;
       } else {
         // tharg->str is asking to open a response file; try pushing it
         if (histPushResponseFile(hist, tharg->str + 1, hparm)) {
-          biffAddf(HEST, "%s%s(iter %u, on %s) unable to process response file %s", _ME_,
-                   iters, srcstr, tharg->str);
+          biffAddf(HEST, "%s%s(iter %u, on %s) unable to process response file %s",
+                   MY_ME, iters, srcstr, tharg->str);
           return 1;
         }
         // have just added response file to stack, next iter will start reading from it
@@ -681,7 +682,7 @@ histProcess(hestArgVec *havec, int *helpWantedP, hestArg *tharg, hestInputStack 
     }
   }
   if (hist->len && nast == nastEmpty) {
-    biffAddf(HEST, "%s%snon-empty stack (depth %u) can't generate args???", _ME_,
+    biffAddf(HEST, "%s%snon-empty stack (depth %u) can't generate args???", MY_ME,
              hist->len);
     return 1;
   }
@@ -706,12 +707,12 @@ whichOptFlag(const hestOpt *hopt, const char *flarg, const hestParm *hparm) {
              hopt[optIdx].flag ? hopt[optIdx].flag : "(nullflag)");
     const char *optFlag = hopt[optIdx].flag;
     if (!optFlag) continue; // it can't be for this unflagged option
-    if (strchr(optFlag, MULTI_FLAG_SEP)) {
+    if (strchr(optFlag, MY_MULTI_FLAG_SEP)) {
       // look for both long and short versions
       size_t buffSize = strlen("--") + strlen(flarg) + strlen(optFlag) + 1;
       char *buff = AIR_CALLOC(buffSize, char);
       char *ofboth = airStrdup(optFlag);
-      char *sep = strchr(ofboth, MULTI_FLAG_SEP);
+      char *sep = strchr(ofboth, MY_MULTI_FLAG_SEP);
       *sep = '\0'; // break short and long into separate strings
       /* first try the short version */
       snprintf(buff, buffSize, "-%s", ofboth);
@@ -739,11 +740,12 @@ whichOptFlag(const hestOpt *hopt, const char *flarg, const hestParm *hparm) {
 static char * /* Biff: nope */
 identStr(char *ident, size_t identSize, const hestOpt *hopt) {
   if (hopt->flag) {
-    if (strchr(hopt->flag, MULTI_FLAG_SEP)) {
+    if (strchr(hopt->flag, MY_MULTI_FLAG_SEP)) {
       char *fcopy = airStrdup(hopt->flag);
-      char *sep = strchr(fcopy, MULTI_FLAG_SEP);
+      char *sep = strchr(fcopy, MY_MULTI_FLAG_SEP);
       *sep = '\0';
-      snprintf(ident, identSize, "\"-%s%c--%s\" option", fcopy, MULTI_FLAG_SEP, sep + 1);
+      snprintf(ident, identSize, "\"-%s%c--%s\" option", fcopy, MY_MULTI_FLAG_SEP,
+               sep + 1);
       free(fcopy);
     } else {
       snprintf(ident, identSize, "\"-%s\" option", hopt->flag);
@@ -764,18 +766,18 @@ static int /* Biff: 1 */
 havecTransfer(hestOpt *hopt, hestArgVec *hvsrc, uint srcIdx, uint num,
               const hestParm *hparm) {
   if (!(hopt && hvsrc)) {
-    biffAddf(HEST, "%s%sgot NULL hopt %p or hvsrc %p", _ME_, AIR_VOIDP(hopt),
+    biffAddf(HEST, "%s%sgot NULL hopt %p or hvsrc %p", MY_ME, AIR_VOIDP(hopt),
              AIR_VOIDP(hvsrc));
     return 1;
   }
   if (num) {
     if (!(srcIdx < hvsrc->len)) {
-      biffAddf(HEST, "%s%sstarting index %u in source beyond its length %u", _ME_,
+      biffAddf(HEST, "%s%sstarting index %u in source beyond its length %u", MY_ME,
                srcIdx, hvsrc->len);
       return 1;
     }
     if (!(srcIdx + num <= hvsrc->len)) {
-      biffAddf(HEST, "%s%shave only %u args but want %u starting at index %u", _ME_,
+      biffAddf(HEST, "%s%shave only %u args but want %u starting at index %u", MY_ME,
                hvsrc->len, num, srcIdx);
       return 1;
     }
@@ -795,7 +797,7 @@ optPrint(const hestOpt *hopt, uint opi) {
   printf("--- opt %u:", opi);
   printf("\t%s%s", hopt->flag ? "flag-" : "", hopt->flag ? hopt->flag : "UNflag");
   printf("\tname|%s|\t k%d (%u)--(%d) \t%s ", hopt->name ? hopt->name : "(null)",
-         hopt->kind, hopt->min, hopt->max, _hestTypeStr[hopt->type]);
+         hopt->kind, hopt->min, hopt->max, hest__TypeStr[hopt->type]);
   printf("\t%sdflt%s%s%s\n", hopt->dflt ? "" : "NO-", hopt->dflt ? "|" : "",
          hopt->dflt ? hopt->dflt : "", hopt->dflt ? "|" : "");
   printf("    source %s\n", airEnumStr(hestSource, hopt->source));
@@ -817,9 +819,9 @@ optAllPrint(const char *func, const char *ctx, const hestOpt *hoptall) {
 
 #define BIFF_GIVEN_ARGV(HAVSTR)                                                         \
   if (airStrlen((HAVSTR))) {                                                            \
-    biffAddf(HEST, "%s%swith (index: labeled) argv=|%s|", _ME_, (HAVSTR));              \
+    biffAddf(HEST, "%s%swith (index: labeled) argv=|%s|", MY_ME, (HAVSTR));             \
   } else {                                                                              \
-    biffAddf(HEST, "%s%swith *empty* argv", _ME_);                                      \
+    biffAddf(HEST, "%s%swith *empty* argv", MY_ME);                                     \
   }
 
 /* havecExtractFlagged
@@ -839,7 +841,7 @@ For variadic parameter options, the sawP information is not set here, since it i
 set at the final value parsing time, which happens after defaults are enstated.
 
 This is where, thanks to the action of whichOptFlag(), "--" (and only "--" due to
-VAR_PARM_STOP_FLAG) is used as a marker for the end of a flagged variadic parameter
+MY_VAR_PARM_STOP_FLAG) is used as a marker for the end of a flagged variadic parameter
 option.  AND, the "--" marker is removed from `havec`.
 */
 static int /* Biff: 1 */
@@ -871,14 +873,14 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     if (hparm->verbose) printf("%s: any associated parms?\n", __func__);
     int hitEnd = AIR_FALSE;
     int varParm = (5 == hopt[optIdx].kind);
-    const char VPS[3] = {'-', VAR_PARM_STOP_FLAG, '\0'};
+    const char VPS[3] = {'-', MY_VAR_PARM_STOP_FLAG, '\0'};
     int hitVPS = AIR_FALSE;
     uint nextOptIdx = 0, // what is index of option who's flag we hit next
       parmNum = 0,       // how many parm args have we counted up
       pai;               // tmp parm arg index
 
     while ( // parmNum is plausible # parms
-      AIR_INT(parmNum) < _hestMax(theOpt->max)
+      AIR_INT(parmNum) < hest__Max(theOpt->max)
       // and looking ahead by parmNum still gives us a valid index pai
       && !(hitEnd = !((pai = argIdx + 1 + parmNum) < havec->len))
       // and either this isn't a flagged variadic opt
@@ -906,16 +908,16 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
         biffAddf(HEST,
                  "%s%shit end of args before getting %u parameter%s "
                  "for %s (got %u)",
-                 _ME_, theOpt->min, theOpt->min > 1 ? "s" : "",
+                 MY_ME, theOpt->min, theOpt->min > 1 ? "s" : "",
                  identStr(ident1, sizeof(ident1), theOpt), parmNum);
       } else if (hitVPS) {
         biffAddf(HEST,
                  "%s%shit \"-%c\" (variadic-parameter-stop flag) before getting %u "
                  "parameter%s for %s (got %u)",
-                 _ME_, VAR_PARM_STOP_FLAG, theOpt->min, theOpt->min > 1 ? "s" : "",
+                 MY_ME, MY_VAR_PARM_STOP_FLAG, theOpt->min, theOpt->min > 1 ? "s" : "",
                  identStr(ident1, sizeof(ident1), theOpt), parmNum);
       } else if (UINT_MAX != nextOptIdx) {
-        biffAddf(HEST, "%s%ssaw %s before getting %u parameter%s for %s (got %u)", _ME_,
+        biffAddf(HEST, "%s%ssaw %s before getting %u parameter%s for %s (got %u)", MY_ME,
                  identStr(ident2, sizeof(ident2), hopt + nextOptIdx), theOpt->min,
                  theOpt->min > 1 ? "s" : "", identStr(ident1, sizeof(ident1), theOpt),
                  parmNum);
@@ -923,7 +925,7 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
         biffAddf(HEST,
                  "%s%ssorry, confused about not getting %u "
                  "parameter%s for %s (got %u)",
-                 _ME_, theOpt->min, theOpt->min > 1 ? "s" : "",
+                 MY_ME, theOpt->min, theOpt->min > 1 ? "s" : "",
                  identStr(ident1, sizeof(ident1), theOpt), parmNum);
       }
       free(havStr);
@@ -945,7 +947,7 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     havStr = hestArgVecSprint(havec, AIR_TRUE);
     if (havecTransfer(theOpt, havec, argIdx, parmNum, hparm)) {
       BIFF_GIVEN_ARGV(havStr);
-      biffAddf(HEST, "%s%strouble transferring %u args for %s", _ME_, parmNum,
+      biffAddf(HEST, "%s%strouble transferring %u args for %s", MY_ME, parmNum,
                identStr(ident1, sizeof(ident1), theOpt));
       return (free(havStr), 1);
     }
@@ -980,7 +982,7 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
       }
       // if needs to be set but hasn't been
       if (needing && hestSourceUnknown == theOpt->source) {
-        biffAddf(HEST, "%s%sdidn't get required (default-less) %s[%u]", _ME_,
+        biffAddf(HEST, "%s%sdidn't get required (default-less) %s[%u]", MY_ME,
                  identStr(ident1, sizeof(ident1), theOpt), opi);
         return 1;
       }
@@ -1052,7 +1054,7 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
       break;
     }
   }
-  /* now, if there is an unflagged variadic option (NOTE that _hestOPCheck()
+  /* now, if there is an unflagged variadic option (NOTE that hest__OPCheck()
      ensured that there is at most one of these), then ufVarOpi is its index in opt[].
      If there is no unflagged variadic option, ufVarOpi is optNum. */
   if (hparm->verbose) {
@@ -1074,7 +1076,7 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     default), or, we do *not* have enough args and hence want to use the default.  In the
     later case, if we don't have a default, that's a problem that needs an error message.
     So, either way, we try extracting the args and report any problems encountered,
-    including mention of whether we have a default. Recall that _hestOPCheck enforces
+    including mention of whether we have a default. Recall that hest__OPCheck enforces
     non-variadic unflagged options have min > 1. NOTE THAT WE DO NOT TRY TO COUNT the
     number of tokens in the default: we assume that if there is a default, the user knew
     how to set it to satisfy hopt[opi].min. It is only later (optProcessDefaults) that
@@ -1083,7 +1085,7 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
       havStr = hestArgVecSprint(havec, AIR_TRUE);
       if (havecTransfer(hopt + opi, havec, 0, hopt[opi].min, hparm)) {
         BIFF_GIVEN_ARGV(havStr);
-        biffAddf(HEST, "%s%strouble getting args for %s%s[%u]", _ME_,
+        biffAddf(HEST, "%s%strouble getting args for %s%s[%u]", MY_ME,
                  !hopt[opi].dflt ? "default-less " : "",
                  identStr(ident, sizeof(ident), hopt + opi), opi);
         return (free(havStr), free(ufOpi2), 1);
@@ -1114,7 +1116,7 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
       havStr = hestArgVecSprint(havec, AIR_TRUE);
       if (havecTransfer(hopt + opi, havec, idx0, hopt[opi].min, hparm)) {
         BIFF_GIVEN_ARGV(havStr);
-        biffAddf(HEST, "%s%strouble getting args for (later) %s%s[%u]", _ME_,
+        biffAddf(HEST, "%s%strouble getting args for (later) %s%s[%u]", MY_ME,
                  !hopt[opi].dflt ? "default-less " : "",
                  identStr(ident, sizeof(ident), hopt + opi), opi);
         return (free(havStr), free(ufOpi2), 1);
@@ -1126,7 +1128,7 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
   // We're here because there is an unflagged variadic option (index ufVarOpi < optNum)
   if (hparm->verbose) {
     printf("%s: ufVarOpi=%u   min, have, max = %u %u %d\n", __func__, ufVarOpi,
-           hopt[ufVarOpi].min, havec->len, _hestMax(hopt[ufVarOpi].max));
+           hopt[ufVarOpi].min, havec->len, hest__Max(hopt[ufVarOpi].max));
   }
   uint minArg = hopt[ufVarOpi].min; /* min < max for sure */
   if (minArg > havec->len && !hopt[ufVarOpi].dflt) {
@@ -1135,7 +1137,7 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     biffAddf(HEST,
              "%s%shave %s%u args left but need %u for "
              "(default-less) variadic %s[%u]",
-             _ME_, havec->len ? "only " : "", havec->len, minArg,
+             MY_ME, havec->len ? "only " : "", havec->len, minArg,
              identStr(ident, sizeof(ident), hopt + ufVarOpi), ufVarOpi);
     return (free(havStr), free(ufOpi2), 1);
   }
@@ -1149,7 +1151,7 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     if (havecTransfer(hopt + ufVarOpi, havec, 0, getArg, hparm)) {
       havStr = hestArgVecSprint(havec, AIR_TRUE);
       BIFF_GIVEN_ARGV(havStr);
-      biffAddf(HEST, "%s%strouble getting args for variadic %s[%u]", _ME_,
+      biffAddf(HEST, "%s%strouble getting args for variadic %s[%u]", MY_ME,
                identStr(ident, sizeof(ident), hopt + ufVarOpi), ufVarOpi);
       return (free(havStr), free(ufOpi2), 1);
     }
@@ -1174,7 +1176,7 @@ finishingup:
   for (upii = 0; upii < ufOptNum; upii++) {
     uint opi = ufOpi2[2 * upii + 0];
     if (!(hopt[opi].dflt) && hestSourceUnknown == hopt[opi].source) {
-      biffAddf(HEST, "%s%sdidn't get required (default-less) %s[%u]", _ME_,
+      biffAddf(HEST, "%s%sdidn't get required (default-less) %s[%u]", MY_ME,
                identStr(ident, sizeof(ident), hopt + opi), opi);
       return (free(ufOpi2), 1);
     }
@@ -1188,10 +1190,10 @@ finishingup:
       biffAddf(HEST,
                "%s%safter getting %u unflagged opts, have %u unexpected arg%s "
                "%s\"%s\"",
-               _ME_, ufOptNum, havec->len, havec->len > 1 ? "s," : "",
+               MY_ME, ufOptNum, havec->len, havec->len > 1 ? "s," : "",
                havec->len > 1 ? "starting with " : "", havec->harg[0]->str);
     } else {
-      biffAddf(HEST, "%s%shave %u unexpected arg%s %s\"%s\"", _ME_, havec->len,
+      biffAddf(HEST, "%s%shave %u unexpected arg%s %s\"%s\"", MY_ME, havec->len,
                havec->len > 1 ? "s," : "", havec->len > 1 ? "starting with " : "",
                havec->harg[0]->str);
     }
@@ -1240,7 +1242,7 @@ optProcessDefaults(hestOpt *hopt, hestArg *tharg, hestInputStack *hist,
     identStr(ident, sizeof(ident), hopt + opi);
     // should have already checked for this but just to make sure
     if (!hopt[opi].dflt) {
-      biffAddf(HEST, "%s%s %s[%u] needs default string but it is NULL", _ME_, ident,
+      biffAddf(HEST, "%s%s %s[%u] needs default string but it is NULL", MY_ME, ident,
                opi);
       return 1;
     }
@@ -1282,7 +1284,8 @@ optProcessDefaults(hestOpt *hopt, hestArg *tharg, hestInputStack *hist,
       // the option's default string should be processed like normal
       if (histPushDefault(hist, hopt[opi].dflt, hparm)
           || histProcess(hopt[opi].havec, NULL, tharg, hist, hparm)) {
-        biffAddf(HEST, "%s%sproblem tokenizing %s[%u] default string", _ME_, ident, opi);
+        biffAddf(HEST, "%s%sproblem tokenizing %s[%u] default string", MY_ME, ident,
+                 opi);
         return 1;
       }
     }
@@ -1292,7 +1295,7 @@ optProcessDefaults(hestOpt *hopt, hestArg *tharg, hestInputStack *hist,
     if (hopt[opi].havec->len < hopt[opi].min) {
       biffAddf(
         HEST, "%s%s %s[%u] default string \"%s\" supplied %u arg%s but need at least %u",
-        _ME_, ident, opi, hopt[opi].dflt, hopt[opi].havec->len,
+        MY_ME, ident, opi, hopt[opi].dflt, hopt[opi].havec->len,
         hopt[opi].havec->len > 1 ? "s" : "", hopt[opi].min);
       return 1;
     }
@@ -1305,20 +1308,20 @@ optProcessDefaults(hestOpt *hopt, hestArg *tharg, hestInputStack *hist,
   for (uint opi = 0; opi < optNum; opi++) {
     identStr(ident, sizeof(ident), hopt + opi);
     if (hestSourceUnknown == hopt[opi].source) {
-      biffAddf(HEST, "%s%s%s[%u] does not have a source set?", _ME_, ident, opi);
+      biffAddf(HEST, "%s%s%s[%u] does not have a source set?", MY_ME, ident, opi);
       return 1;
     }
     /* (Yes, half of this test is redundant with check above on whether the default
     string supplied at least hopt[opi].min args, but erring with doing more checks).
     Now that we've made a hopt[opi].havec array, and will soon parse strings to set
     values, we can check that the number of args matches what the option needs */
-    int maxArg = _hestMax(hopt[opi].max);
+    int maxArg = hest__Max(hopt[opi].max);
     int haveArg = AIR_INT(hopt[opi].havec->len);
     if (!(AIR_INT(hopt[opi].min) <= haveArg && haveArg <= maxArg)) {
       biffAddf(HEST,
                "%s%s%s[%u] got (from user or from default) %u args, but that is "
                "outside [min,max]=[%u,%d] range",
-               _ME_, ident, opi, hopt[opi].havec->len, hopt[opi].min, maxArg);
+               MY_ME, ident, opi, hopt[opi].havec->len, hopt[opi].min, maxArg);
       return 1;
     }
   }
@@ -1329,7 +1332,7 @@ optProcessDefaults(hestOpt *hopt, hestArg *tharg, hestInputStack *hist,
 Finally: the parsing of hopt[opi].havec to set values in whatever hopt[opi].valueP points
 to. No caller or parent mop is passed anymore, since the new per-hestOpt parseMop can
 remember what needs to be freed. The return value from this is (except for an instance of
-hestOpt kind confusion) in turn the return value from whichever _hestParseSingle[]
+hestOpt kind confusion) in turn the return value from whichever hest__ParseSingle[]
 function first returned non-zero to indicate a parsing error. That return could be
 anything non-zero, but the Biff: annotations currently do not have a way of expressing
 that. */
@@ -1361,7 +1364,7 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
                      ? sizeof(int)
                      : (airTypeOther == type /* */
                           ? hopt[opi].CB->size
-                          : _hestTypeSize[type]));
+                          : hest__TypeSize[type]));
     valueP = hopt[opi].valueP;
     if (hparm->verbose) {
       printf("%s: hopt[%u/%u]: havec_%c|%s| \t|%s| \t--> kind=%d, type=%d, size=%u\n",
@@ -1372,8 +1375,8 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
     if (hopt[opi].sawP) {
       *(hopt[opi].sawP) = 0;
     }
-    _hestPPair _hpp;
-    _hestPPair *hpp;
+    hest__PPair _hpp;
+    hest__PPair *hpp;
     if (1 == hopt[opi].kind) {
       hpp = NULL;
     } else {
@@ -1394,7 +1397,7 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
     case 4: { // -------- optional single variadics --------
       const char *strsrc;
       int invert;
-      /* 2025 _hestOPCheck now restricts possible types; these are no longer allowed:
+      /* 2025 hest__OPCheck now restricts possible types; these are no longer allowed:
          airTypeChar, airTypeString, airTypeEnum, airTypeOther. As for the semantics,
          the old web page seems to be clear (though we now disallow unflagged kind 4):
            - option flag does not appear
@@ -1419,29 +1422,30 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
         invert = AIR_FALSE;
       } else {
         biffAddf(HEST, "%s%sconfused by (kind 4) %s[%u] source %s and havec->len %u",
-                 _ME_, ident, opi, airEnumStr(hestSource, hopt[opi].source),
+                 MY_ME, ident, opi, airEnumStr(hestSource, hopt[opi].source),
                  hopt[opi].havec->len);
         return 1;
       }
-      if ((pret = _hestParseSingle[type](valueP, strsrc, hpp))) {
-        biffAddf(HEST, "%s%sfor (kind 4) %s[%u] could not parse |%s| as single %s", _ME_,
-                 ident, opi, strsrc, _hestTypeStr[type]);
+      if ((pret = hest__ParseSingle[type](valueP, strsrc, hpp))) {
+        biffAddf(HEST, "%s%sfor (kind 4) %s[%u] could not parse |%s| as single %s",
+                 MY_ME, ident, opi, strsrc, hest__TypeStr[type]);
         hopt[opi].parseErr = pret;
         hopt->parseErrOptIdx = AIR_INT(opi);
         return pret;
       }
       if (invert) {
-        _hestInvertScalar[type](valueP);
+        hest__InvertScalar[type](valueP);
       }
       // special handling of parmStr for kind 4
       hopt[opi].parmStr = airStrdup(strsrc);
     } // end case 4 {
     break;
     case 2: // -------- one required parameter --------
-      if ((pret = _hestParseSingle[type](valueP, hopt[opi].havec->harg[0]->str, hpp))) {
+      if ((pret = hest__ParseSingle[type](valueP, hopt[opi].havec->harg[0]->str, hpp))) {
         // hpp->err as just generated can have newlines
         // (from %s) . . .  airEnumStr(hestSource, hopt[opi].source)
-        biffAddf(HEST, "%s%sproblem parsing for %s[%u]: %s", _ME_, ident, opi, hpp->err);
+        biffAddf(HEST, "%s%sproblem parsing for %s[%u]: %s", MY_ME, ident, opi,
+                 hpp->err);
         hopt[opi].parseErr = pret;
         hopt->parseErrOptIdx = AIR_INT(opi);
         return pret;
@@ -1451,9 +1455,9 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
       // user already allocated array at valueP
       char *cvalueP = (char *)valueP;
       for (uint argi = 0; argi < hopt[opi].havec->len; argi++) {
-        if ((pret = _hestParseSingle[type](cvalueP + size * argi,
-                                           hopt[opi].havec->harg[argi]->str, hpp))) {
-          biffAddf(HEST, "%s%sproblem parsing arg[%u] (of %u) for %s[%u]: %s", _ME_,
+        if ((pret = hest__ParseSingle[type](cvalueP + size * argi,
+                                            hopt[opi].havec->harg[argi]->str, hpp))) {
+          biffAddf(HEST, "%s%sproblem parsing arg[%u] (of %u) for %s[%u]: %s", MY_ME,
                    argi, hopt[opi].havec->len, ident, opi, hpp->err);
           hopt[opi].parseErr = pret;
           hopt->parseErrOptIdx = AIR_INT(opi);
@@ -1481,16 +1485,16 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
         airMopMem(hopt[opi].parseMop, valueP, airMopAlways);
       }
       if (hopt[opi].sawP) {
-        /* quiet clang-tidy; non-NULLity enforced by methodsHest.c/_hestOPCheck() */
+        /* quiet clang-tidy; non-NULLity enforced by methodsHest.c/hest__OPCheck() */
         *(hopt[opi].sawP) = hopt[opi].havec->len;
       }
       char *cvalueP = *((void **)valueP);
       // (RIP hammerhead.ucsd.edu, Intel Itanium, and last days of grad school)
       for (uint argi = 0; argi < hopt[opi].havec->len; argi++) {
-        if ((pret = _hestParseSingle[type](cvalueP + size * argi,
-                                           hopt[opi].havec->harg[argi]->str, hpp))) {
+        if ((pret = hest__ParseSingle[type](cvalueP + size * argi,
+                                            hopt[opi].havec->harg[argi]->str, hpp))) {
           biffAddf(HEST, "%s%sproblem parsing arg[%u] (of %u) for (kind 5) %s[%u]: %s",
-                   _ME_, argi, hopt[opi].havec->len, ident, opi, hpp->err);
+                   MY_ME, argi, hopt[opi].havec->len, ident, opi, hpp->err);
           hopt[opi].parseErr = pret;
           hopt->parseErrOptIdx = AIR_INT(opi);
           return pret;
@@ -1560,7 +1564,7 @@ hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
 #if 0
   { // checking on the private airEnums
     char err[AIR_STRLEN_LARGE + 1];
-    static const airEnum *saenm[2] = {argst_ae, nast_ae};
+    static const airEnum *saenm[2] = {&argst_aenum, &nast_aenum};
     for (uint ei = 0; ei < 2; ei++) {
       if (airEnumCheck(err, saenm[ei])) {
         fprintf(stderr, "%s: problem with enum \"%s\" (%u):\n%s", __func__,
@@ -1573,7 +1577,7 @@ hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
 
   // error string song and dance
 #define DO_ERR(WUT)                                                                     \
-  biffAddf(HEST, "%s%s" WUT, _MEV_(HPARM->verbose));                                    \
+  biffAddf(HEST, "%s%s" WUT, MY_MEV(HPARM->verbose));                                   \
   char *err = biffGetDone(HEST);                                                        \
   if (errP) {                                                                           \
     *errP = err;                                                                        \
@@ -1585,13 +1589,13 @@ hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
 
   // --1--1--1--1--1-- check on validity of the hestOpt array
   int phase = 1;
-  if (_hestOPCheck(hopt, HPARM)) {
+  if (hest__OPCheck(hopt, HPARM)) {
     DO_ERR("problem with given hestOpt array");
     airMopError(mop);
     return -1;
   }
   if (HPARM->verbose > 1) {
-    printf("%s: _hestOPCheck passed\n", __func__);
+    printf("%s: hest__OPCheck passed\n", __func__);
   }
   /* initialize things indicating parse error to say "none known"
      the magic -5 is used by DO_ERR above to avoid clobbering

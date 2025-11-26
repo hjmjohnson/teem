@@ -26,27 +26,27 @@ buffer is used for message handling; this should eventually be avoided by using 
 like asprintf and vasprintf which allocated the string as needed.  However (writing here
 in 2025), vasprintf is not apparently part of any C standard (as per
 https://en.cppreference.com/w/c/experimental/dynamic/asprintf), so we make do with
-snprintf and vsnprintf, used with _HACK_STRLEN.  Note that we are NOT merely hoping
-that incoming error messages are shorter than _HACK_STRLEN. If they are longer, they
+snprintf and vsnprintf, used with MY_HACK_STRLEN.  Note that we are NOT merely hoping
+that incoming error messages are shorter than MY_HACK_STRLEN. If they are longer, they
 will be truncated safely to avoid any buffer overflow.
 */
-#define _HACK_STRLEN AIR_STRLEN_HUGE
-#define _MSG_INCR    2
+#define MY_HACK_STRLEN AIR_STRLEN_HUGE
+#define MY_MSG_INCR    2
 
 /*
- * _biffMsgNoop
+ * biff__MsgNoop
  *
  * pass this instead of a real biffMsg (allocated by biffMsgNew) as a
  * flag to say, "don't bother, really".  This turns all the biffMsg
  * functions into no-ops (except that var-args are still consumed
  * where they are used)
  */
-static const biffMsg _biffMsgNoopStruct = {NULL, NULL, 0, NULL};
-const biffMsg *const _biffMsgNoop = &_biffMsgNoopStruct;
+static const biffMsg msgNoopStruct = {NULL, NULL, 0, NULL};
+const biffMsg *const biff__MsgNoop = &msgNoopStruct;
 
 biffMsg *
-_biffMsgNew(const char *key) {
-  static const char me[] = "_biffMsgNew";
+biff__MsgNew(const char *key) {
+  static const char me[] = "biff__MsgNew";
   biffMsg *msg;
 
   if (!key) {
@@ -61,7 +61,7 @@ _biffMsgNew(const char *key) {
     msg->err = NULL;
     msg->errNum = 0;
     appu.cp = &(msg->err);
-    msg->errArr = airArrayNew(appu.v, &(msg->errNum), sizeof(char *), _MSG_INCR);
+    msg->errArr = airArrayNew(appu.v, &(msg->errNum), sizeof(char *), MY_MSG_INCR);
     if (msg->errArr) {
       airArrayPointerCB(msg->errArr, NULL, airFree);
     }
@@ -74,9 +74,9 @@ _biffMsgNew(const char *key) {
 }
 
 biffMsg *
-_biffMsgNix(biffMsg *msg) {
+biff__MsgNix(biffMsg *msg) {
 
-  if (msg && msg != _biffMsgNoop) {
+  if (msg && msg != biff__MsgNoop) {
     airFree(msg->key);
     airArrayLenSet(msg->errArr, 0); /* frees all msg->err[i] */
     airArrayNuke(msg->errArr);
@@ -91,11 +91,11 @@ _biffMsgNix(biffMsg *msg) {
  * end of the message.
  */
 void
-_biffMsgAdd(biffMsg *msg, const char *err) {
-  static const char me[] = "_biffMsgAdd";
+biff__MsgAdd(biffMsg *msg, const char *err) {
+  static const char me[] = "biff__MsgAdd";
   uint idx;
 
-  if (_biffMsgNoop == msg) {
+  if (biff__MsgNoop == msg) {
     return;
   }
   if (!(msg && err)) {
@@ -118,19 +118,19 @@ _biffMsgAdd(biffMsg *msg, const char *err) {
 }
 
 void
-_biffMsgAddVL(biffMsg *msg, const char *errfmt, va_list args) {
-  char errstr[_HACK_STRLEN + 1];
+biff__MsgAddVL(biffMsg *msg, const char *errfmt, va_list args) {
+  char errstr[MY_HACK_STRLEN + 1];
 
   /* h/t Jorik Blaas for highlighting need for vsnprintf over vsprintf */
-  vsnprintf(errstr, _HACK_STRLEN + 1, errfmt, args);
-  _biffMsgAdd(msg, errstr);
+  vsnprintf(errstr, MY_HACK_STRLEN + 1, errfmt, args);
+  biff__MsgAdd(msg, errstr);
   return;
 }
 
 static void
-_biffMsgClear(biffMsg *msg) {
+msgClear(biffMsg *msg) {
 
-  if (_biffMsgNoop == msg) {
+  if (biff__MsgNoop == msg) {
     return;
   }
   airArrayLenSet(msg->errArr, 0); /* frees all msg->err[i] */
@@ -142,11 +142,11 @@ _biffMsgClear(biffMsg *msg) {
 ** max length of line formatted "[<key>] <err>\n"
 */
 static size_t
-_biffMsgLineLenMax(const biffMsg *msg) {
+msgLineLenMax(const biffMsg *msg) {
   uint ii;
   size_t len, maxlen;
 
-  if (_biffMsgNoop == msg) {
+  if (biff__MsgNoop == msg) {
     return 0;
   }
   maxlen = 0;
@@ -158,18 +158,18 @@ _biffMsgLineLenMax(const biffMsg *msg) {
 }
 
 /*
- * _biffMsgMove
+ * biff__MsgMove
  *
  * "src" is not const because we clear it after moving things out
  */
 void
-_biffMsgMove(biffMsg *dest, biffMsg *src, const char *err) {
-  static const char me[] = "_biffMsgMove";
+biff__MsgMove(biffMsg *dest, biffMsg *src, const char *err) {
+  static const char me[] = "biff__MsgMove";
   uint ii;
   size_t buffSize;
   char *buff;
 
-  if (_biffMsgNoop == dest || _biffMsgNoop == src) {
+  if (biff__MsgNoop == dest || biff__MsgNoop == src) {
     return;
   }
   if (!(dest && src)) {
@@ -177,13 +177,13 @@ _biffMsgMove(biffMsg *dest, biffMsg *src, const char *err) {
             AIR_VOIDP(src));
     return; /* exit(1); */
   }
-  /* if src and dest are same, this degenerates to _biffMsgAdd */
+  /* if src and dest are same, this degenerates to biff__MsgAdd */
   if (dest == src && airStrlen(err)) {
-    _biffMsgAdd(dest, err);
+    biff__MsgAdd(dest, err);
     return;
   }
 
-  buffSize = _biffMsgLineLenMax(src) + 1;
+  buffSize = msgLineLenMax(src) + 1;
   buff = AIR_CALLOC(buffSize, char);
   if (!buff) {
     fprintf(stderr, "%s: PANIC: can't allocate buffer\n", me);
@@ -191,21 +191,21 @@ _biffMsgMove(biffMsg *dest, biffMsg *src, const char *err) {
   }
   for (ii = 0; ii < src->errNum; ii++) {
     snprintf(buff, buffSize, "[%s] %s", src->key, src->err[ii]);
-    _biffMsgAdd(dest, buff);
+    biff__MsgAdd(dest, buff);
   }
   free(buff);
-  _biffMsgClear(src);
+  msgClear(src);
   if (airStrlen(err)) {
-    _biffMsgAdd(dest, err);
+    biff__MsgAdd(dest, err);
   }
   return;
 }
 
 void
-_biffMsgMoveVL(biffMsg *dest, biffMsg *src, const char *errfmt, va_list args) {
-  char errstr[_HACK_STRLEN + 1];
+biff__MsgMoveVL(biffMsg *dest, biffMsg *src, const char *errfmt, va_list args) {
+  char errstr[MY_HACK_STRLEN + 1];
 
-  vsnprintf(errstr, _HACK_STRLEN + 1, errfmt, args);
-  _biffMsgMove(dest, src, errstr);
+  vsnprintf(errstr, MY_HACK_STRLEN + 1, errfmt, args);
+  biff__MsgMove(dest, src, errstr);
   return;
 }

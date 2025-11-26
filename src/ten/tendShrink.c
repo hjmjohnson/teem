@@ -21,12 +21,12 @@
 #include "privateTen.h"
 
 #define INFO "Converts a 9-value DT volume to a 7-value DT volume"
-static const char *_tend_shrinkInfoL
+static const char *shrinkInfoL
   = (INFO ". The confidence value is set to 1.0 everwhere.  You can \"unu splice\" "
           "or nrrdSplice() something else in its place later.");
 
 static int
-tend_shrinkMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+shrinkMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -47,7 +47,7 @@ tend_shrinkMain(int argc, const char **argv, const char *me, const hestParm *_hp
                       "output tensor volume, with the 7 values per sample");
 
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_tend_shrinkInfoL);
+  USAGE_PARSE(shrinkInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
@@ -69,4 +69,4 @@ tend_shrinkMain(int argc, const char **argv, const char *me, const hestParm *_hp
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(shrink, INFO);
+MY_TEND_CMD(shrink, INFO);

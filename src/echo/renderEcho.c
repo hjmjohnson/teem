@@ -238,7 +238,7 @@ echoRayColor(echoCol_t chan[4], echoRay *ray, echoScene *scene, echoRTParm *parm
   intx.boxhits = 0;
   if (!echoRayIntx(&intx, ray, scene, parm, tstate)) {
     if (tstate->verbose) {
-      fprintf(stderr, "%s%s: (nothing was hit)\n", _echoDot(tstate->depth), me);
+      fprintf(stderr, "%s%s: (nothing was hit)\n", echo__Dot(tstate->depth), me);
     }
     /* ray hits nothing in scene */
     ELL_4V_SET_TT(chan, echoCol_t, scene->bkgr[0], scene->bkgr[1], scene->bkgr[2],
@@ -251,8 +251,8 @@ echoRayColor(echoCol_t chan[4], echoRay *ray, echoScene *scene, echoRTParm *parm
     fprintf(stderr,
             "%s%s: hit a %d (%p) at (%g,%g,%g)\n"
             "%s    = %g along (%g,%g,%g)\n",
-            _echoDot(tstate->depth), me, intx.obj->type, AIR_VOIDP(intx.obj),
-            intx.pos[0], intx.pos[1], intx.pos[2], _echoDot(tstate->depth), intx.t,
+            echo__Dot(tstate->depth), me, intx.obj->type, AIR_VOIDP(intx.obj),
+            intx.pos[0], intx.pos[1], intx.pos[2], echo__Dot(tstate->depth), intx.t,
             ray->dir[0], ray->dir[1], ray->dir[2]);
   }
   echoIntxColor(rgba, &intx, scene, parm, tstate);
@@ -263,7 +263,7 @@ done:
 }
 
 static void *
-_echoRTRenderThreadBody(void *_arg) {
+RTRenderThreadBody(void *_arg) {
   char done[20];
   int imgUi, imgVi,                     /* integral pixel indices */
     samp;                               /* which sample are we doing */
@@ -454,7 +454,7 @@ echoRTRender(Nrrd *nraw, limnCamera *cam, echoScene *scene, echoRTParm *parm,
   fprintf(stderr, "%s:       ", me); /* prep for printing airDoneStr */
   gstate->workIdx = 0;
   for (tid = 0; tid < parm->numThreads; tid++) {
-    if ((ret = airThreadStart(tstate[tid]->thread, _echoRTRenderThreadBody,
+    if ((ret = airThreadStart(tstate[tid]->thread, RTRenderThreadBody,
                               (void *)(tstate[tid])))) {
       biffAddf(ECHO, "%s: thread[%d] failed to start: %d", me, tid, ret);
       airMopError(mop);

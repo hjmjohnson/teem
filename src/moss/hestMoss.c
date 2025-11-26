@@ -20,9 +20,17 @@
 #include "moss.h"
 #include "privateMoss.h"
 
+#define MAT_COPY(m2, m1)                                                                \
+  (m2)[0] = (m1)[0];                                                                    \
+  (m2)[1] = (m1)[1];                                                                    \
+  (m2)[2] = (m1)[2];                                                                    \
+  (m2)[3] = (m1)[3];                                                                    \
+  (m2)[4] = (m1)[4];                                                                    \
+  (m2)[5] = (m1)[5]
+
 static int
-_mossHestTransformParse(void *ptr, const char *_str, char err[AIR_STRLEN_HUGE + 1]) {
-  static const char me[] = "_mossHestTransformParse";
+mHestTransformParse(void *ptr, const char *_str, char err[AIR_STRLEN_HUGE + 1]) {
+  static const char me[] = "mHestTransformParse";
   char *str;
   double **matP, tx, ty, sx, sy, angle, mat[6], shf, sha;
   airArray *mop;
@@ -65,7 +73,7 @@ _mossHestTransformParse(void *ptr, const char *_str, char err[AIR_STRLEN_HUGE + 
   } else if (6
              == sscanf(str, "%lf,%lf,%lf,%lf,%lf,%lf", mat + 0, mat + 1, mat + 2,
                        mat + 3, mat + 4, mat + 5)) {
-    MOSS_MAT_COPY(*matP, mat);
+    MAT_COPY(*matP, mat);
 
   } else {
     snprintf(err, ASP1_H, "%s: couldn't parse \"%s\" as a transform", me, _str);
@@ -77,23 +85,23 @@ _mossHestTransformParse(void *ptr, const char *_str, char err[AIR_STRLEN_HUGE + 
   return 0;
 }
 
-static const hestCB _mossHestTransform = {sizeof(double *), "2D transform",
-                                          _mossHestTransformParse, airFree};
+static const hestCB mHestTransform_hcb = {sizeof(double *), "2D transform",
+                                          mHestTransformParse, airFree};
 
-const hestCB *const mossHestTransform = &_mossHestTransform;
+const hestCB *const mossHestTransform = &mHestTransform_hcb;
 
 /* ----------------------------------------------------------------- */
 
 /*
-** _mossHestOriginParse()
+** mHestOriginParse()
 **
 ** parse an origin specification
 ** p(x,y): absolute pixel position --> val[3] = (0,x,y)
 ** u(x,y): position in unit box [0,1]x[0,1] --> val[3] = (1,x,y)
 */
 static int
-_mossHestOriginParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
-  static const char me[] = "_mossHestOriginParse";
+mHestOriginParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
+  static const char me[] = "mHestOriginParse";
   double **valP;
   airArray *mop;
 
@@ -115,7 +123,7 @@ _mossHestOriginParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) 
   return 0;
 }
 
-static const hestCB _mossHestOrigin = {sizeof(double *), "origin specification",
-                                       _mossHestOriginParse, airFree};
+static const hestCB mHestOrigin_hcb = {sizeof(double *), "origin specification",
+                                       mHestOriginParse, airFree};
 
-const hestCB *const mossHestOrigin = &_mossHestOrigin;
+const hestCB *const mossHestOrigin = &mHestOrigin_hcb;

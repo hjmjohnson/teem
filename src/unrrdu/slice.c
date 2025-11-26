@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Slice along one or more axes at given positions"
-static const char *_unrrdu_sliceInfoL
+static const char *unu_sliceInfoL
   = (INFO ". Output nrrd dimension is less than input nrrd "
           "dimension by the number of slice axes (except when the "
           "input is or gets down to 1-D). Can slice on all axes "
@@ -30,7 +30,7 @@ static const char *_unrrdu_sliceInfoL
           "* Uses nrrdSlice (possibly called multiple times)");
 
 static int
-unrrdu_sliceMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_sliceMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   uint *axis, axisNum;
   hestOptAdd_Nv_UInt(&hopt, "a,axis", "axis", 1, -1, &axis, NULL,
@@ -52,12 +52,12 @@ unrrdu_sliceMain(int argc, const char **argv, const char *me, const hestParm *hp
                       "to the last sample on the axis (M == #samples-1).",
                       &posNum, &unrrduHestPosCB);
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_sliceInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_sliceInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -156,10 +156,10 @@ unrrdu_sliceMain(int argc, const char **argv, const char *me, const hestParm *hp
     }
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(slice, INFO);
+MY_UNRRDU_CMD(slice, INFO);

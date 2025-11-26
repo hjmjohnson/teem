@@ -42,7 +42,7 @@ gageShapeReset(gageShape *shape) {
 }
 
 static void *
-_mopShapeReset(void *_shape) {
+mopShapeReset(void *_shape) {
   gageShape *shape;
 
   shape = AIR_CAST(gageShape *, _shape);
@@ -97,7 +97,7 @@ shapeUnitItoW(const gageShape *shape, double world[3], const double indx[3],
 }
 
 /*
-** _gageShapeSet
+** gage__ShapeSet
 **
 ** we are serving two purposes here.  If ctx is non-NULL, we are being called
 ** from within gage, and we are to be lax or strict according to the settings
@@ -110,9 +110,9 @@ shapeUnitItoW(const gageShape *shape, double world[3], const double indx[3],
 ** (gageShape) initializer.  Oh well...
 */
 int /* Biff: (private) 1 */
-_gageShapeSet(const gageContext *ctx, gageShape *shape, const Nrrd *nin,
-              unsigned int baseDim) {
-  static const char me[] = "_gageShapeSet";
+gage__ShapeSet(const gageContext *ctx, gageShape *shape, const Nrrd *nin,
+               unsigned int baseDim) {
+  static const char me[] = "gage__ShapeSet";
   int cx, cy, cz, statCalc[3], status, ofspc;
   unsigned int minsize;
   const NrrdAxisInfo *ax[3];
@@ -135,7 +135,7 @@ _gageShapeSet(const gageContext *ctx, gageShape *shape, const Nrrd *nin,
   */
   /* ------ basic error checking */
   mop = airMopNew();
-  airMopAdd(mop, shape, _mopShapeReset, airMopOnError);
+  airMopAdd(mop, shape, mopShapeReset, airMopOnError);
   if (!(shape && nin)) {
     biffAddf(GAGE, "%s: got NULL pointer", me);
     airMopError(mop);
@@ -402,7 +402,7 @@ int /* Biff: 1 */
 gageShapeSet(gageShape *shape, const Nrrd *nin, int baseDim) {
   static const char me[] = "gageShapeSet";
 
-  if (_gageShapeSet(NULL, shape, nin, baseDim)) {
+  if (gage__ShapeSet(NULL, shape, nin, baseDim)) {
     biffAddf(GAGE, "%s: trouble", me);
     return 1;
   }

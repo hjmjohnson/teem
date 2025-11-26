@@ -80,60 +80,60 @@ typedef unsigned int uint; /* uint is just more concise */
 // However, there is more confusion than utility created by allowing these to be
 // changed. The actual value in giving these things names was in code legibility by
 // removing magic constants, so that's the role of these #define's now.
-#define RESPONSE_FILE_FLAG    '@'
-#define RESPONSE_FILE_COMMENT '#'
-#define VAR_PARM_STOP_FLAG    '-'
-#define MULTI_FLAG_SEP        ','
+#define MY_RESPONSE_FILE_FLAG    '@'
+#define MY_RESPONSE_FILE_COMMENT '#'
+#define MY_VAR_PARM_STOP_FLAG    '-'
+#define MY_MULTI_FLAG_SEP        ','
 
-#define HEST _hestBiffKey
-
-#define HIST_DEPTH_MAX 10u // max sensibly depth of hestInputStack
+/* normally this would be in the main lib.h, but hest is unusual in that its
+   usage of biff is internal only; no user of the hest API would call into biff */
+#define HEST hest__BiffKey
 
 /* methodsHest.c */
 /*
  * These were moved not just from air.h (see note there) but also from public hest.h,
- * with a air --> _hest renaming, since these are only used to implement hest functions.
+ * with a air --> hest renaming, since these are only used to implement hest functions.
  */
-#define _HEST_TYPE_MAX 14
-extern const char _hestTypeStr[_HEST_TYPE_MAX + 1][AIR_STRLEN_SMALL + 1];
-extern const size_t _hestTypeSize[_HEST_TYPE_MAX + 1];
-extern void (*const _hestInvertScalar[_HEST_TYPE_MAX + 1])(void *);
-/* the _hestPPair (hest parse pair) struct is a 2025 idea for addressing one of the most
+#define MY_HEST_TYPE_MAX 14
+extern const char hest__TypeStr[MY_HEST_TYPE_MAX + 1][AIR_STRLEN_SMALL + 1];
+extern const size_t hest__TypeSize[MY_HEST_TYPE_MAX + 1];
+extern void (*const hest__InvertScalar[MY_HEST_TYPE_MAX + 1])(void *);
+/* the hest__PPair (hest parse pair) struct is a 2025 idea for addressing one of the most
 annoying parts of hest's code: the special-casing of how values are parsed from strings,
 depending on type (scalar vs enum vs other-via-callbacks). Old code has long had nested
 switch statements: first for option kind, and then for option type. Fresh scrutiny of
 this code revealed how, now that there is no more airStrtok/airStrntok action because all
 individual args have been saved into per-option arg vectors, the parsing problem is just
 to get a single value, and, how to get a single value can be made entirely uniform across
-type; via the _hestParseSingle[] array. All the info needed here is just the hestOpt
+type; via the hest__ParseSingle[] array. All the info needed here is just the hestOpt
 (and `parseMop`, `enm`, and `CB` fields within it), and the `err` msg buffer that is
 used to describe any parsing error, not just via hestCB.  */
 typedef struct {
   hestOpt *hopt;                 // what option is this for
   char err[AIR_STRLEN_HUGE + 1]; // error message can go for any type
-} _hestPPair;
-extern int (*const _hestParseSingle[_HEST_TYPE_MAX + 1])(void *, const char *,
-                                                         _hestPPair *);
-extern const char *const _hestBiffKey;
-extern int _hestMax(int max);
-extern int _hestOPCheck(const hestOpt *hopt, const hestParm *parm);
+} hest__PPair;
+extern int (*const hest__ParseSingle[MY_HEST_TYPE_MAX + 1])(void *, const char *,
+                                                            hest__PPair *);
+extern const char *const hest__BiffKey;
+extern int hest__Max(int max);
+extern int hest__OPCheck(const hestOpt *hopt, const hestParm *parm);
 
 // argvHest.c
-extern int _hestPlainWord(const char *s);
+extern int hest__PlainWord(const char *s);
 
 /* wacky hack to use with biffAddf(HEST), so that normal hest users, who haven't
    cranked up hestParm->verbose to debug hest itself and don't want error messages
    prefixed by a lot of weird hest function names:
    In a function where hestParm *hparm is defined, the biff call should look like:
-     biffAddf(HEST, "%s%shit a problem", _ME_, ... )
+     biffAddf(HEST, "%s%shit a problem", MY_ME, ... )
    Note the "%s%s" start, with NO following space.
    Or if its not hparm but some other source `verb` of a verbosity level
-     biffAddf(HEST, "%s%sthis is the error", _MEV_(verb), ... )
+     biffAddf(HEST, "%s%sthis is the error", MY_MEV(verb), ... )
  */
-#define _ME_                                                                            \
+#define MY_ME                                                                           \
   ((hparm) && (hparm)->verbose ? __func__ : ""),                                        \
     ((hparm) && (hparm)->verbose ? ": " : "")
-#define _MEV_(V) ((V) ? __func__ : ""), ((V) ? ": " : "")
+#define MY_MEV(V) ((V) ? __func__ : ""), ((V) ? ": " : "")
 
 #ifdef __cplusplus
 }

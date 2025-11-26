@@ -21,12 +21,11 @@
 #include "privateUnrrdu.h"
 
 #define INFO "List relevant environment variables and their values"
-static const char *_unrrdu_envInfoL = (INFO
-                                       ". These environment variables provide a way of "
-                                       "setting global variables that can affect"
-                                       " the way Nrrd (and unu) operates.\n "
-                                       "* Uses nrrdGetenvBool, nrrdGetenvEnum, "
-                                       "nrrdGetenvInt, and nrrdGetenvUInt");
+static const char *unu_envInfoL = (INFO ". These environment variables provide a way of "
+                                        "setting global variables that can affect"
+                                        " the way Nrrd (and unu) operates.\n "
+                                        "* Uses nrrdGetenvBool, nrrdGetenvEnum, "
+                                        "nrrdGetenvInt, and nrrdGetenvUInt");
 
 static void
 envBool(FILE *file, const char *envKey, int currVal, const char *varName,
@@ -166,7 +165,7 @@ envUInt(FILE *file, const char *envKey, unsigned int currVal, const char *varNam
 }
 
 static int
-unrrdu_envMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_envMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   FILE *out;
 
   AIR_UNUSED(argc);
@@ -174,7 +173,7 @@ unrrdu_envMain(int argc, const char **argv, const char *me, const hestParm *hpar
   AIR_UNUSED(me);
   out = stdout;
 
-  hestInfo(out, me, _unrrdu_envInfoL, hparm);
+  hestInfo(out, me, unu_envInfoL, hparm);
   fprintf(out, "\n");
 
   hestPrintStr(out, 0, 0, hparm->columns,
@@ -337,4 +336,4 @@ unrrdu_envMain(int argc, const char **argv, const char *me, const hestParm *hpar
   return 0;
 }
 
-UNRRDU_CMD(env, INFO);
+MY_UNRRDU_CMD(env, INFO);

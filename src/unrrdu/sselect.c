@@ -21,19 +21,19 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Select subset of slices along an axis"
-static const char *_unrrdu_sselectInfoL
+static const char *unu_sselectInfoL
   = (INFO ". The choice to keep or nix a slice is determined by whether the "
           "values in a given 1-D line of values is above or below a given "
           "threshold.\n "
           "* Uses nrrdSliceSelect");
 
 static int
-unrrdu_sselectMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_sselectMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   uint axis;
-  OPT_ADD_AXIS(axis, "axis to slice along");
+  MY_OPT_ADD_AXIS(axis, "axis to slice along");
   Nrrd *nline;
   hestOptAdd_1_Other(&hopt, "s,selector", "nline", &nline, NULL,
                      "the 1-D nrrd of values to compare with threshold",
@@ -48,7 +48,7 @@ unrrdu_sselectMain(int argc, const char **argv, const char *me, const hestParm *
                       "Use \"x\" to say that no output is desired.");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_sselectInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_sselectInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -82,14 +82,14 @@ unrrdu_sselectMain(int argc, const char **argv, const char *me, const hestParm *
   }
 
   if (noutAbove) {
-    SAVE(outS[0], noutAbove, NULL);
+    MY_SAVE(outS[0], noutAbove, NULL);
   }
   if (noutBelow) {
-    SAVE(outS[1], noutBelow, NULL);
+    MY_SAVE(outS[1], noutBelow, NULL);
   }
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(sselect, INFO);
+MY_UNRRDU_CMD(sselect, INFO);

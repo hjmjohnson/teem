@@ -329,19 +329,19 @@ tenModelSimulate(Nrrd *ndwi, int typeOut, tenExperSpec *espec, const tenModel *m
 }
 
 /*
-** _tenModelSqeFitSingle
+** ten__ModelSqeFitSingle
 **
 ** callable function (as opposed to tenModel method) for doing
 ** sqe fitting.  Returns the sqe at the converged fit location
 ** Requires PARM_NUM length buffers testParm and grad
 */
 double /* Biff: (private) nope */
-_tenModelSqeFitSingle(const tenModel *model, double *testParm, double *grad,
-                      double *parm, double *convFrac, unsigned int *itersTaken,
-                      const tenExperSpec *espec, double *dwiBuff, const double *dwiMeas,
-                      const double *parmInit, int knownB0, unsigned int minIter,
-                      unsigned int maxIter, double convEps, int verbose) {
-  static const char me[] = "_tenModelSqeFitSingle";
+ten__ModelSqeFitSingle(const tenModel *model, double *testParm, double *grad,
+                       double *parm, double *convFrac, unsigned int *itersTaken,
+                       const tenExperSpec *espec, double *dwiBuff, const double *dwiMeas,
+                       const double *parmInit, int knownB0, unsigned int minIter,
+                       unsigned int maxIter, double convEps, int verbose) {
+  static const char me[] = "ten__ModelSqeFitSingle";
   unsigned int iter, subIter;
   double step, bak, opp, val, testval, dist, td;
   int done;

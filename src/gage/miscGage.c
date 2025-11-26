@@ -34,7 +34,7 @@ double gageZeroNormal[3] = {0, 0, 0};
 
 /* clang-format off */
 static const char *
-_gageKernelStr[] = {
+kernelStr[] = {
   "(unknown_kernel)",
   "00",
   "10",
@@ -48,7 +48,7 @@ _gageKernelStr[] = {
 };
 
 static const char *
-_gageKernelDesc[] = {
+kernelDesc[] = {
   "unknown kernel",
   "kernel for reconstructing values",
   "kernel for reconstruction values when doing 1st derivatives",
@@ -62,7 +62,7 @@ _gageKernelDesc[] = {
 };
 
 static const char *
-_gageKernelStrEqv[] = {
+kernelStrEqv[] = {
   "00", "k00",
   "10", "k10",
   "11", "k11",
@@ -76,7 +76,7 @@ _gageKernelStrEqv[] = {
 };
 
 static const int
-_gageKernelValEqv[] = {
+kernelValEqv[] = {
   gageKernel00, gageKernel00,
   gageKernel10, gageKernel10,
   gageKernel11, gageKernel11,
@@ -89,16 +89,15 @@ _gageKernelValEqv[] = {
 };
 
 static const airEnum
-_gageKernel_enum = {
+kernel_ae = {
   "kernel",
   GAGE_KERNEL_MAX,
-  _gageKernelStr, NULL,
-  _gageKernelDesc,
-  _gageKernelStrEqv, _gageKernelValEqv,
+  kernelStr, NULL,
+  kernelDesc,
+  kernelStrEqv, kernelValEqv,
   AIR_FALSE
 };
-const airEnum *const
-gageKernel = &_gageKernel_enum;
+const airEnum *const gageKernel = &kernel_ae;
 /* clang-format on */
 
 void
@@ -170,7 +169,7 @@ AIR_MOPPER(gageItemSpecNix)
 
 /* clang-format off */
 static const char *
-_gageErrStr[GAGE_ERR_MAX+1] = {
+errStr[GAGE_ERR_MAX+1] = {
   "(unknown gageErr)",
   "none",
   "space bounds",
@@ -181,19 +180,18 @@ _gageErrStr[GAGE_ERR_MAX+1] = {
 };
 
 static const airEnum
-_gageErr = {
+err_ae = {
   "gageErr",
   GAGE_ERR_MAX,
-  _gageErrStr, NULL,
+  errStr, NULL,
   NULL,
   NULL, NULL,
   AIR_FALSE
 };
-const airEnum *const
-gageErr = &_gageErr;
+const airEnum *const gageErr = &err_ae;
 
 static const char *
-_gageItemPackPartStr[] = {
+itemPackPartStr[] = {
   "(unknown_pack_part)",
   "scalar",
   "gradvec",
@@ -209,7 +207,7 @@ _gageItemPackPartStr[] = {
 };
 
 static const char *
-_gageItemPackPartDesc[] = {
+itemPackPartDesc[] = {
   "unknown pack part",
   "the base scalar F",
   "gradient (vector) of F",
@@ -225,7 +223,7 @@ _gageItemPackPartDesc[] = {
 };
 
 static const char *
-_gageItemPackPartStrEqv[] = {
+itemPackPartStrEqv[] = {
   "scalar", "scl",
   "gradvec", "gvec",
   "gradmag", "gmag",
@@ -241,7 +239,7 @@ _gageItemPackPartStrEqv[] = {
 };
 
 static const int
-_gageItemPackPartValEqv[] = {
+itemPackPartValEqv[] = {
   gageItemPackPartScalar,      gageItemPackPartScalar,
   gageItemPackPartGradVec,     gageItemPackPartGradVec,
   gageItemPackPartGradMag,     gageItemPackPartGradMag,
@@ -256,14 +254,14 @@ _gageItemPackPartValEqv[] = {
 };
 
 static const airEnum
-_gageItemPackPart_enum = {
+itemPackPart_aenum = {
   "pack part",
   GAGE_ITEM_PACK_PART_MAX,
-  _gageItemPackPartStr, NULL,
-  _gageItemPackPartDesc,
-  _gageItemPackPartStrEqv, _gageItemPackPartValEqv,
+  itemPackPartStr, NULL,
+  itemPackPartDesc,
+  itemPackPartStrEqv, itemPackPartValEqv,
   AIR_FALSE
 };
 const airEnum *const
-gageItemPackPart = &_gageItemPackPart_enum;
+gageItemPackPart = &itemPackPart_aenum;
 /* clang-format on */

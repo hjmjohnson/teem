@@ -56,7 +56,7 @@ typedef unsigned int uint; /* uint is just more concise */
  * have to handle hidden commands and the possible non-availability of "fft"
  */
 static void
-_unuUsage(const char *me, const hestParm *hparm, int alsoHidden) {
+usage(const char *me, const hestParm *hparm, int alsoHidden) {
   size_t maxlen = 0;
   for (uint cmdi = 0; unrrduUnuCmdList[cmdi]; cmdi++) {
     size_t cnsize = strlen(unrrduUnuCmdList[cmdi]->name);
@@ -167,13 +167,13 @@ main(int argc, const char **argv) {
   // Gone in TeemV2: hparm->greedySingleString = AIR_TRUE;
   /* New for TeemV2: a more explicit way to support quiet quitting,
      instead of hacky macros hiding in unrrdu/privateUnrrdu.h */
-  hparm->quietQuit = unrrdQuietQuitTest;
+  hparm->quietQuit = unrrduQuietQuitTest;
 
   /* if there are no arguments, or "unu list" (or "unu all" shhh), then we give general
   usage information */
   listAll = (2 == argc && !strcmp("all", argv[1]));
   if (1 >= argc || listAll || (2 == argc && !strcmp("list", argv[1]))) {
-    _unuUsage("unu", hparm, listAll /* alsoHidden */);
+    usage("unu", hparm, listAll /* alsoHidden */);
     hestParmFree(hparm);
     exit(1);
   }

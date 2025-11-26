@@ -23,7 +23,7 @@
 #include <teem/ellMacros.h>
 
 #define INFO "Makes 2D color image to inspect 3D scalar volume"
-static const char *_unrrdu_infoL
+static const char *unu_infoL
   = (INFO " without lots of parameter fiddling; useful for making gallery of "
           "large set of volumes. A color image "
           "of three axis-aligned projections is composed of histogram-"
@@ -325,7 +325,7 @@ doit(Nrrd *nout, const Nrrd *nin, int smart, float amount, unsigned int margin,
 }
 
 static int
-unrrdu_ninspectMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_ninspectMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   Nrrd *nin;
   hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-",
@@ -347,7 +347,7 @@ unrrdu_ninspectMain(int argc, const char **argv, const char *me, const hestParm 
                       "format is implied by extension, but will fall back to PPM.");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_infoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_infoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -383,4 +383,4 @@ unrrdu_ninspectMain(int argc, const char **argv, const char *me, const hestParm 
   return 0;
 }
 
-UNRRDU_CMD(ninspect, INFO);
+MY_UNRRDU_CMD(ninspect, INFO);

@@ -21,7 +21,7 @@
 #include "privateMite.h"
 
 static miteRender *
-_miteRenderNew(void) {
+renderNew(void) {
   miteRender *mrr;
 
   mrr = (miteRender *)calloc(1, sizeof(miteRender));
@@ -48,7 +48,7 @@ _miteRenderNew(void) {
 }
 
 static miteRender *
-_miteRenderNix(miteRender *mrr) {
+renderNix(miteRender *mrr) {
 
   if (mrr) {
     airMopOkay(mrr->rmop);
@@ -70,15 +70,15 @@ miteRenderBegin(miteRender **mrrP, miteUser *muu) {
     biffAddf(MITE, "%s: got NULL pointer", me);
     return 1;
   }
-  if (_miteUserCheck(muu)) {
+  if (mite__UserCheck(muu)) {
     biffAddf(MITE, "%s: problem with user-set parameters", me);
     return 1;
   }
-  if (!(*mrrP = _miteRenderNew())) {
+  if (!(*mrrP = renderNew())) {
     biffAddf(MITE, "%s: couldn't alloc miteRender", me);
     return 1;
   }
-  if (_miteNtxfAlphaAdjust(*mrrP, muu)) {
+  if (mite__NtxfAlphaAdjust(*mrrP, muu)) {
     biffAddf(MITE, "%s: trouble copying and alpha-adjusting txfs", me);
     return 1;
   }
@@ -173,6 +173,6 @@ miteRenderEnd(miteRender *mrr, miteUser *muu) {
     samples += mrr->tt[thr]->samples;
   }
   muu->sampRate = samples / (1000.0 * muu->rendTime);
-  _miteRenderNix(mrr);
+  renderNix(mrr);
   return 0;
 }

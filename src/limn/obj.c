@@ -82,7 +82,7 @@ limnObjectNew(int incr, int doEdges) {
 }
 
 static limnPart *
-_limnObjectPartNew(int incr) {
+objectPartNew(int incr) {
   limnPart *part;
   airPtrPtrUnion appu;
 
@@ -102,7 +102,7 @@ _limnObjectPartNew(int incr) {
 }
 
 static limnPart *
-_limnObjectPartNix(limnPart *part) {
+objectPartNix(limnPart *part) {
 
   if (part) {
     airArrayNuke(part->vertIdxArr);
@@ -114,7 +114,7 @@ _limnObjectPartNix(limnPart *part) {
 }
 
 static void
-_limnObjectFaceEmpty(limnFace *face) {
+objectFaceEmpty(limnFace *face) {
 
   if (face) {
     airFree(face->vertIdx);
@@ -129,15 +129,15 @@ limnObjectNix(limnObject *obj) {
 
   if (obj) {
     for (partIdx = 0; partIdx < obj->partNum; partIdx++) {
-      _limnObjectPartNix(obj->part[partIdx]);
+      objectPartNix(obj->part[partIdx]);
     }
     airArrayNuke(obj->partArr);
     for (partIdx = 0; partIdx < obj->partPoolNum; partIdx++) {
-      _limnObjectPartNix(obj->partPool[partIdx]);
+      objectPartNix(obj->partPool[partIdx]);
     }
     airArrayNuke(obj->partPoolArr);
     for (faceIdx = 0; faceIdx < obj->faceNum; faceIdx++) {
-      _limnObjectFaceEmpty(obj->face + faceIdx);
+      objectFaceEmpty(obj->face + faceIdx);
     }
     airArrayNuke(obj->faceArr);
     airArrayNuke(obj->vertArr);
@@ -155,15 +155,15 @@ limnObjectEmpty(limnObject *obj) {
   unsigned int partIdx, faceIdx;
 
   for (partIdx = 0; partIdx < obj->partNum; partIdx++) {
-    _limnObjectPartNix(obj->part[partIdx]);
+    objectPartNix(obj->part[partIdx]);
   }
   airArrayLenSet(obj->partArr, 0);
   for (partIdx = 0; partIdx < obj->partPoolNum; partIdx++) {
-    _limnObjectPartNix(obj->partPool[partIdx]);
+    objectPartNix(obj->partPool[partIdx]);
   }
   airArrayLenSet(obj->partPoolArr, 0);
   for (faceIdx = 0; faceIdx < obj->faceNum; faceIdx++) {
-    _limnObjectFaceEmpty(obj->face + faceIdx);
+    objectFaceEmpty(obj->face + faceIdx);
   }
   airArrayLenSet(obj->faceArr, 0);
   airArrayLenSet(obj->vertArr, 0);
@@ -200,7 +200,7 @@ limnObjectPreSet(limnObject *obj, unsigned int partNum, unsigned int lookNum,
 
   airArrayLenSet(obj->partPoolArr, partNum);
   for (partIdx = 0; partIdx < partNum; partIdx++) {
-    part = obj->partPool[partIdx] = _limnObjectPartNew(obj->incr);
+    part = obj->partPool[partIdx] = objectPartNew(obj->incr);
     airArrayLenPreSet(part->vertIdxArr, vertPerPart);
     airArrayLenPreSet(part->edgeIdxArr, edgePerPart);
     airArrayLenPreSet(part->faceIdxArr, facePerPart);
@@ -223,7 +223,7 @@ limnObjectPartAdd(limnObject *obj) {
     airArrayLenSet(part->faceIdxArr, 0);
   } else {
     /* there are no available parts in the pool */
-    part = obj->part[partIdx] = _limnObjectPartNew(obj->incr);
+    part = obj->part[partIdx] = objectPartNew(obj->incr);
   }
   part->lookIdx = 0;
   part->depth = AIR_NAN;

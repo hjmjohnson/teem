@@ -29,7 +29,7 @@
  * Input vectors should be non-zero, but do not need to be normalized
  * thetaphi needs to be pre-allocated to length 2*ct
  */
-#define ELFCART2THETAPHI(TYPE, SUF)                                     \
+#define CART2THETAPHI(TYPE, SUF)                                     \
   void elfCart2Thetaphi_##SUF(TYPE *thetaphi, const TYPE *dirs,         \
                               unsigned int ct) {                        \
     unsigned int i;                                                     \
@@ -43,8 +43,8 @@
     }                                                                   \
   }                                                                     \
 
-ELFCART2THETAPHI(double, d)
-ELFCART2THETAPHI(float, f)
+CART2THETAPHI(double, d)
+CART2THETAPHI(float, f)
 
 /* elfESHEstimMatrix:
  *
@@ -64,7 +64,7 @@ ELFCART2THETAPHI(float, f)
  *         1 if order is unsupported
  *         2 if len(v)<len(c) (i.e., system is underdetermined)
  */
-#define ELFESHESTIMMATRIX(TYPE, SUF)                                    \
+#define ESHESTIMMATRIX(TYPE, SUF)                                    \
   int elfESHEstimMatrix_##SUF(TYPE *T, TYPE *H, unsigned int order,     \
                               const TYPE *thetaphi,                     \
                               unsigned int ct, TYPE lambda, TYPE *w) {  \
@@ -162,8 +162,8 @@ ELFCART2THETAPHI(float, f)
   return 0;                                                             \
 }
 
-ELFESHESTIMMATRIX(double, d)
-ELFESHESTIMMATRIX(float, f)
+ESHESTIMMATRIX(double, d)
+ESHESTIMMATRIX(float, f)
 
 /* elfTenEstimMatrix:
  *
@@ -183,7 +183,7 @@ ELFESHESTIMMATRIX(float, f)
  *         2 if len(v)<len(c) (i.e., system is underdetermined)
  */
 /* This is strongly modeled on elfESHEstimMatrix */
-#define ELFTENESTIMMATRIX(TYPE, SUF)                                    \
+#define TENESTIMMATRIX(TYPE, SUF)                                    \
   int elfTenEstimMatrix_##SUF(TYPE *T, TYPE *H, const tijk_type *type,  \
                               const TYPE *vecs,                         \
                               unsigned int ct, TYPE *w) {               \
@@ -292,6 +292,6 @@ ELFESHESTIMMATRIX(float, f)
   return 0;                                                             \
 }
 
-ELFTENESTIMMATRIX(double, d)
-ELFTENESTIMMATRIX(float, f)
+TENESTIMMATRIX(double, d)
+TENESTIMMATRIX(float, f)
 /* clang-format on */

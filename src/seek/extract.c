@@ -198,7 +198,7 @@ sclGet(seekContext *sctx, baggage *bag, unsigned int xi, unsigned int yi,
 }
 
 void
-_seekIdxProbe(seekContext *sctx, baggage *bag, double xi, double yi, double zi) {
+seek__IdxProbe(seekContext *sctx, baggage *bag, double xi, double yi, double zi) {
   double idxOut[4], idxIn[4];
   AIR_UNUSED(bag);
 
@@ -250,7 +250,7 @@ evecFlipProbe(seekContext *sctx, baggage *bag, signed char *flip, /* OUTPUT HERE
 
 #define SETNEXT(uu)                                                                     \
   ELL_3V_SCALE_ADD2(posNext, 1.0 - (uu), posA, (uu), posB);                             \
-  _seekIdxProbe(sctx, bag, posNext[0], posNext[1], posNext[2]);                         \
+  seek__IdxProbe(sctx, bag, posNext[0], posNext[1], posNext[2]);                        \
   ELL_3V_COPY(next, sctx->evecAns + 3 * bag->esIdx);                                    \
   if (ELL_3V_DOT(current, next) < 0) {                                                  \
     ELL_3V_SCALE(next, -1, next);                                                       \
@@ -430,7 +430,7 @@ shuffleProbe(seekContext *sctx, baggage *bag) {
         sctx->vidx[0 + 5 * si] = -1;
         sctx->vidx[1 + 5 * si] = -1;
         if (sctx->gctx) { /* HEY: need this check, what's the right way? */
-          _seekIdxProbe(sctx, bag, xi, yi, 0);
+          seek__IdxProbe(sctx, bag, xi, yi, 0);
         }
         if (sctx->strengthUse) {
           sctx->stng[0 + 2 * si] = sctx->strengthSign * sctx->stngAns[0];
@@ -486,7 +486,7 @@ shuffleProbe(seekContext *sctx, baggage *bag) {
       sctx->vidx[3 + 5 * si] = -1;
       sctx->vidx[4 + 5 * si] = -1;
       if (sctx->gctx) { /* HEY: need this check, what's the right way? */
-        _seekIdxProbe(sctx, bag, xi, yi, bag->zi + 1);
+        seek__IdxProbe(sctx, bag, xi, yi, bag->zi + 1);
       }
       if (sctx->strengthUse) {
         sctx->stng[1 + 2 * si] = sctx->strengthSign * sctx->stngAns[0];
@@ -907,7 +907,7 @@ surfaceExtract(seekContext *sctx, limnPolyData *lpld) {
     }
     bag->zi = zi;
     if (sctx->type == seekTypeRidgeSurfaceT || sctx->type == seekTypeValleySurfaceT) {
-      if (_seekShuffleProbeT(sctx, bag) || _seekTriangulateT(sctx, bag, lpld))
+      if (seek__ShuffleProbeT(sctx, bag) || seek__TriangulateT(sctx, bag, lpld))
         trouble = 1;
     } else {
       if (shuffleProbe(sctx, bag) || triangulate(sctx, bag, lpld)) trouble = 1;

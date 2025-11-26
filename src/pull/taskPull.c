@@ -20,9 +20,9 @@
 #include "pull.h"
 #include "privatePull.h"
 
-pullTask * /* Biff: (private) NULL */
-_pullTaskNew(pullContext *pctx, int threadIdx) {
-  static const char me[] = "_pullTaskNew";
+static pullTask * /* Biff: NULL */
+taskNew(pullContext *pctx, int threadIdx) {
+  static const char me[] = "taskNew";
   pullTask *task;
   unsigned int ii;
   pullPtrPtrUnion pppu;
@@ -35,7 +35,7 @@ _pullTaskNew(pullContext *pctx, int threadIdx) {
 
   task->pctx = pctx;
   for (ii = 0; ii < pctx->volNum; ii++) {
-    if (!(task->vol[ii] = _pullVolumeCopy(pctx, pctx->vol[ii]))) {
+    if (!(task->vol[ii] = pull__VolumeCopy(pctx, pctx->vol[ii]))) {
       biffAddf(PULL, "%s: trouble copying vol %u/%u", me, ii, pctx->volNum);
       return NULL;
     }
@@ -91,7 +91,7 @@ _pullTaskNew(pullContext *pctx, int threadIdx) {
   task->pointBuffer = pullPointNew(pctx);
   pctx->idtagNext = 0; /* because pullPointNew incremented it */
   task->neighPoint = AIR_CAST(pullPoint **,
-                              calloc(_PULL_NEIGH_MAXNUM, sizeof(pullPoint *)));
+                              calloc(MY_PULL_NEIGH_MAXNUM, sizeof(pullPoint *)));
   task->addPoint = NULL;
   task->addPointNum = 0;
   pppu.points = &(task->addPoint);
@@ -109,8 +109,8 @@ _pullTaskNew(pullContext *pctx, int threadIdx) {
   return task;
 }
 
-pullTask * /* Biff: (private) nope */
-_pullTaskNix(pullTask *task) {
+static pullTask * /* Biff: nope */
+taskNix(pullTask *task) {
   unsigned int ii;
 
   if (task) {
@@ -131,13 +131,13 @@ _pullTaskNix(pullTask *task) {
 }
 
 /*
-** _pullTaskSetup sets:
+** pull__TaskSetup sets:
 **** pctx->task
 **** pctx->task[]
 */
 int /* Biff: (private) 1 */
-_pullTaskSetup(pullContext *pctx) {
-  static const char me[] = "_pullTaskSetup";
+pull__TaskSetup(pullContext *pctx) {
+  static const char me[] = "pull__TaskSetup";
   unsigned int tidx;
 
   pctx->task = (pullTask **)calloc(pctx->threadNum, sizeof(pullTask *));
@@ -149,7 +149,7 @@ _pullTaskSetup(pullContext *pctx) {
     if (pctx->verbose) {
       printf("%s: creating task %u/%u\n", me, tidx, pctx->threadNum);
     }
-    pctx->task[tidx] = _pullTaskNew(pctx, tidx);
+    pctx->task[tidx] = taskNew(pctx, tidx);
     if (!(pctx->task[tidx])) {
       biffAddf(PULL, "%s: couldn't allocate task %u", me, tidx);
       return 1;
@@ -159,11 +159,11 @@ _pullTaskSetup(pullContext *pctx) {
 }
 
 void
-_pullTaskFinish(pullContext *pctx) {
+pull__TaskFinish(pullContext *pctx) {
   unsigned int tidx;
 
   for (tidx = 0; tidx < pctx->threadNum; tidx++) {
-    pctx->task[tidx] = _pullTaskNix(pctx->task[tidx]);
+    pctx->task[tidx] = taskNix(pctx->task[tidx]);
   }
   airFree(pctx->task);
   pctx->task = NULL;

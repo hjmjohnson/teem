@@ -241,7 +241,7 @@ tenBMatrixCheck(const Nrrd *nbmat, int type, unsigned int minnum) {
 }
 
 /*
-******** _tenFindValley
+******** ten__FindValley
 **
 ** This is not a general purpose function, and it will take some
 ** work to make it that way.
@@ -251,8 +251,8 @@ tenBMatrixCheck(const Nrrd *nbmat, int type, unsigned int minnum) {
 ** narrower then stdev for brain
 */
 int /* Biff: 1 */
-_tenFindValley(double *valP, const Nrrd *nhist, double tweak, int save) {
-  static const char me[] = "_tenFindValley";
+ten__FindValley(double *valP, const Nrrd *nhist, double tweak, int save) {
+  static const char me[] = "ten__FindValley";
   double gparm[NRRD_KERNEL_PARM_MAXNUM], dparm[NRRD_KERNEL_PARM_MAXNUM];
   Nrrd *ntmpA, *ntmpB, *nhistD, *nhistDD;
   float *hist, *histD, *histDD;

@@ -52,7 +52,7 @@ _tijk_class_val_eqv[] = {
 };
 
 static const airEnum
-_tijk_class_enum = {
+_tijk_class_ae = {
   "class",
   TIJK_CLASS_MAX,
   _tijk_class_str, NULL,
@@ -60,8 +60,7 @@ _tijk_class_enum = {
   _tijk_class_str_eqv, _tijk_class_val_eqv,
   AIR_FALSE
 };
-const airEnum *const
-tijk_class = &_tijk_class_enum;
+const airEnum *const tijk_class = &_tijk_class_ae;
 /* clang-format on */
 
 #include "quietPop.h"

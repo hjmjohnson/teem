@@ -143,13 +143,13 @@ ell_Nm_mul(Nrrd *nAB, Nrrd *nA, Nrrd *nB) {
 }
 
 /*
-** _ell_LU_decomp()
+** LU_decomp()
 **
 ** in-place LU decomposition
 */
 static int /* Biff: 1 */
-_ell_LU_decomp(double *aa, size_t *indx, size_t NN) {
-  static const char me[] = "_ell_LU_decomp";
+LU_decomp(double *aa, size_t *indx, size_t NN) {
+  static const char me[] = "LU_decomp";
   int ret = 0;
   size_t ii, imax = 0, jj, kk;
   double big, sum, tmp;
@@ -243,14 +243,14 @@ seeya:
 }
 
 /*
-** _ell_LU_back_sub
+** LU_back_sub
 **
 ** given the matrix and index array from _ellLUDecomp generated from
 ** some matrix M, solves for x in the linear equation Mx = b, and
 ** puts the result back into b
 */
 static void
-_ell_LU_back_sub(double *aa, size_t *indx, double *bb, size_t NN) {
+LU_back_sub(double *aa, size_t *indx, double *bb, size_t NN) {
   size_t ii, jj;
   double sum;
 
@@ -276,7 +276,7 @@ _ell_LU_back_sub(double *aa, size_t *indx, double *bb, size_t NN) {
 }
 
 /*
-** _ell_inv
+** inv
 **
 ** Invert NNxNN matrix based on LU-decomposition
 **
@@ -285,8 +285,8 @@ _ell_LU_back_sub(double *aa, size_t *indx, double *bb, size_t NN) {
 ** the inverse.
 */
 static int /* Biff: 1 */
-_ell_inv(double *inv, double *_mat, size_t NN) {
-  static const char me[] = "_ell_inv";
+nminv(double *inv, double *_mat, size_t NN) {
+  static const char me[] = "nminv";
   size_t ii, jj, *indx = NULL;
   double *col = NULL, *mat = NULL;
   int ret = 0;
@@ -302,7 +302,7 @@ _ell_inv(double *inv, double *_mat, size_t NN) {
 
   memcpy(mat, _mat, NN * NN * sizeof(double));
 
-  if (_ell_LU_decomp(mat, indx, NN)) {
+  if (LU_decomp(mat, indx, NN)) {
     biffAddf(ELL, "%s: trouble", me);
     /* return 1; (for biff auto-scan) */
     ret = 1;
@@ -312,7 +312,7 @@ _ell_inv(double *inv, double *_mat, size_t NN) {
   for (jj = 0; jj < NN; jj++) {
     memset(col, 0, NN * sizeof(double));
     col[jj] = 1.0;
-    _ell_LU_back_sub(mat, indx, col, NN);
+    LU_back_sub(mat, indx, col, NN);
     /* set column jj of inv to result of backsub */
     for (ii = 0; ii < NN; ii++) {
       inv[ii * NN + jj] = col[ii];
@@ -356,7 +356,7 @@ ell_Nm_inv(Nrrd *ninv, Nrrd *nmat) {
   }
   inv = (double *)(ninv->data);
   mat = (double *)(nmat->data);
-  if (_ell_inv(inv, mat, NN)) {
+  if (nminv(inv, mat, NN)) {
     biffAddf(ELL, "%s: trouble", me);
     return 1;
   }

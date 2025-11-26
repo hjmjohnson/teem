@@ -114,7 +114,7 @@ typedef union {
   tkwbSlide ***ps;
   char ***pc;
   void **v;
-} _tkwbU;
+} tkwb_pu;
 
 int
 tkwbReadFileToString(char **strP, int *hitEOF, FILE *file, char *stop) {
@@ -122,7 +122,7 @@ tkwbReadFileToString(char **strP, int *hitEOF, FILE *file, char *stop) {
   airArray *allArr;
   unsigned int allLen;
   unsigned int lineLen, lineIdx, totalLen;
-  _tkwbU uu;
+  tkwb_pu uu;
 
   uu.pc = &all;
   allArr = airArrayNew(uu.v, &allLen, sizeof(char *), tkwbArrayIncr);
@@ -185,7 +185,7 @@ tkwbReadSlides(tkwbSlide ***slideP, char *filename, airArray *pmop) {
   char *title, *image, *text, stop[AIR_STRLEN_HUGE + 1], line[AIR_STRLEN_HUGE + 1];
   int slideIdx = 0, hitEOF, notReally;
   unsigned int len;
-  _tkwbU uu;
+  tkwb_pu uu;
 
   mop = airMopNew();
   if (!(file = airFopen(filename, stdin, "rb"))) {
@@ -301,10 +301,10 @@ tkwbWriteStringToFile(const char *filename, const char *content) {
    make the first substitution, and then recurse for any later substitution.
    like tkwbStringSubst, may reallocate given *strP */
 static void
-_substAgain(char **strP,       // string to search in
-            size_t skip,       // how much of *strP to skip over (already processed)
-            const char *fnd,   // find
-            const char *rep) { // replace
+substAgain(char **strP,       // string to search in
+           size_t skip,       // how much of *strP to skip over (already processed)
+           const char *fnd,   // find
+           const char *rep) { // replace
   char *pos = strstr(*strP + skip, fnd);
   if (!pos) {
     // `fnd` not found, so nothing to do
@@ -332,7 +332,7 @@ _substAgain(char **strP,       // string to search in
   *strP = _nst;
   /* next iteration should start looking just after end of what we replaced
      skip = pfxLen + repLen */
-  return _substAgain(strP, pfxLen + repLen, fnd, rep);
+  return substAgain(strP, pfxLen + repLen, fnd, rep);
 }
 
 /*
@@ -344,7 +344,7 @@ tkwbStringSubst(char **strP,       /* string to search in */
                 const char *rep) { /* replace */
 
   // fprintf(stderr, "%s: STARTING |%s|\n", __func__, *strP);
-  _substAgain(strP, 0, fnd, rep);
+  substAgain(strP, 0, fnd, rep);
   // fprintf(stderr, "%s:   ENDING |%s|\n", __func__, *strP);
   return;
 }

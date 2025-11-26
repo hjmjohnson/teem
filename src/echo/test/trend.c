@@ -22,7 +22,7 @@
 
 /* bad bad bad Gordon */
 void
-_dyeHSVtoRGB(float *R, float *G, float *B, float H, float S, float V) {
+notdyeHSVtoRGB(float *R, float *G, float *B, float H, float S, float V) {
   float min, fract, vsf, mid1, mid2;
   int sextant;
 
@@ -158,7 +158,7 @@ makeSceneBVH(limnCamera *cam, echoRTParm *parm, echoObject **sceneP) {
     sphere = echoObjectNew(echoSphere);
     echoSphereSet(sphere,
                   4*airDrandMT()-2, 4*airDrandMT()-2, 4*airDrandMT()-2, 0.005);
-    _dyeHSVtoRGB(&r, &g, &b, AIR_AFFINE(0, i, N, 0.0, 1.0), 1.0, 1.0);
+    notdyeHSVtoRGB(&r, &g, &b, AIR_AFFINE(0, i, N, 0.0, 1.0), 1.0, 1.0);
     echoMatterPhongSet(sphere, r, g, b, 1.0,
                        1.0, 0.0, 0.0, 50);
     LIST(scene)->obj[i] = sphere;
@@ -422,7 +422,7 @@ makeSceneGlassTest(limnCamera *cam, echoRTParm *parm, echoScene *scene) {
   N = 11;
   for (i = 0; i < N; i++) {
     cube = echoObjectNew(scene, echoTypeCube);
-    _dyeHSVtoRGB(&r, &g, &b, AIR_AFFINE(0, i, N, 0.0, 1.0), 1.0, 1.0);
+    notdyeHSVtoRGB(&r, &g, &b, AIR_AFFINE(0, i, N, 0.0, 1.0), 1.0, 1.0);
     echoColorSet(cube, r, g, b, 1);
     echoMatterGlassSet(scene, cube, 1.1, 0.0, 0.0, 0);
     inst = echoObjectNew(scene, echoTypeInstance);
@@ -793,7 +793,7 @@ makeSceneRainLights(limnCamera *cam, echoRTParm *parm, echoScene *scene) {
     rect = echoObjectNew(scene, echoTypeRectangle);
     echoRectangleSet(rect, w / 2, AIR_AFFINE(0, i, N - 1, -1 - w / 2, 1 - w / 2), 1.5, 0,
                      w, 0, w, 0, 0);
-    _dyeHSVtoRGB(&r, &g, &b, AIR_AFFINE(0, i, N, 0.0, 1.0), 1.0, 1.0);
+    notdyeHSVtoRGB(&r, &g, &b, AIR_AFFINE(0, i, N, 0.0, 1.0), 1.0, 1.0);
     echoColorSet(rect, r, g, b, 1);
     echoMatterLightSet(scene, rect, 1, 0);
     echoObjectAdd(scene, rect);

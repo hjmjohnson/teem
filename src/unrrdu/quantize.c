@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Quantize values to 8, 16, or 32 bits"
-static const char *_unrrdu_quantizeInfoL
+static const char *unu_quantizeInfoL
   = (INFO ". Input values can be fixed point (e.g. quantizing ushorts down to "
           "uchars) or floating point.  Values are clamped to the min and max before "
           "they are quantized, so there is no risk of getting 255 where you expect 0 "
@@ -34,7 +34,7 @@ static const char *_unrrdu_quantizeInfoL
           "* Uses nrrdQuantize");
 
 static int
-unrrdu_quantizeMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_quantizeMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   uint bits;
   hestOptAdd_1_Other(&hopt, "b,bits", "bits", &bits, NULL,
@@ -104,12 +104,12 @@ unrrdu_quantizeMain(int argc, const char **argv, const char *me, const hestParm 
                     "the range of 8-bit data blindly (uchar is always [0,255], "
                     "signed char is [-128,127])");
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_quantizeInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_quantizeInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -164,10 +164,10 @@ unrrdu_quantizeMain(int argc, const char **argv, const char *me, const hestParm 
                                   that's handled by the writer */
   }
 
-  SAVE(out, nout, nio);
+  MY_SAVE(out, nout, nio);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(quantize, INFO);
+MY_UNRRDU_CMD(quantize, INFO);

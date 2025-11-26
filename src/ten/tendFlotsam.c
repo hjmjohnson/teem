@@ -144,7 +144,7 @@ fiberStopParse(void *ptr, const char *_str, char err[AIR_STRLEN_HUGE + 1]) {
   return 0;
 }
 
-static const hestCB _tendFiberStopCB = {3 * sizeof(double), "fiber stop", fiberStopParse,
-                                        NULL};
+static const hestCB fiberStopCB_hcb = {3 * sizeof(double), "fiber stop", fiberStopParse,
+                                       NULL};
 
-const hestCB *const tendFiberStopCB = &_tendFiberStopCB;
+const hestCB *const tendFiberStopCB = &fiberStopCB_hcb;

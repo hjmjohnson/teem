@@ -22,7 +22,7 @@
 
 /* ------------------------------------------ */
 static const coilMethod
-_coilMethodTesting = {
+methodTesting = {
   "testing",
   coilMethodTypeTesting,
   0
@@ -30,7 +30,7 @@ _coilMethodTesting = {
 
 /* ------------------------------------------ */
 static const coilMethod
-_coilMethodHomogeneous = {
+methodHomogeneous = {
   "homogeneous",
   coilMethodTypeHomogeneous,
   1
@@ -38,7 +38,7 @@ _coilMethodHomogeneous = {
 
 /* ------------------------------------------ */
 static const coilMethod
-_coilMethodPeronaMalik = {
+methodPeronaMalik = {
   "perona-malik",
   coilMethodTypePeronaMalik,
   2
@@ -46,7 +46,7 @@ _coilMethodPeronaMalik = {
 
 /* ------------------------------------------ */
 static const coilMethod
-_coilMethodModifiedCurvature = {
+methodModifiedCurvature = {
   "modified-curvature",
   coilMethodTypeModifiedCurvature,
   3
@@ -54,7 +54,7 @@ _coilMethodModifiedCurvature = {
 
 /* ------------------------------------------ */
 static const coilMethod
-_coilMethodModifiedCurvatureRings = {
+methodModifiedCurvatureRings = {
   "modified-curvature-rings",
   coilMethodTypeModifiedCurvatureRings,
   6
@@ -62,7 +62,7 @@ _coilMethodModifiedCurvatureRings = {
 
 /* ------------------------------------------ */
 static const coilMethod
-_coilMethodSelf = {
+methodSelf = {
   "self",
   coilMethodTypeSelf,
   1
@@ -70,7 +70,7 @@ _coilMethodSelf = {
 
 /* ------------------------------------------ */
 static const coilMethod
-_coilMethodFinish = {
+methodFinish = {
   "finish",
   coilMethodTypeFinish,
   4
@@ -80,13 +80,13 @@ _coilMethodFinish = {
 const coilMethod* const
 coilMethodArray[COIL_METHOD_TYPE_MAX+1] = {
   NULL,
-  &_coilMethodTesting,
-  &_coilMethodHomogeneous,
-  &_coilMethodPeronaMalik,
-  &_coilMethodModifiedCurvature,
-  &_coilMethodModifiedCurvatureRings,
+  &methodTesting,
+  &methodHomogeneous,
+  &methodPeronaMalik,
+  &methodModifiedCurvature,
+  &methodModifiedCurvatureRings,
   NULL,
-  &_coilMethodSelf,
-  &_coilMethodFinish
+  &methodSelf,
+  &methodFinish
 };
 /* clang-format on */

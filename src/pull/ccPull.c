@@ -36,7 +36,7 @@ pullCCFind(pullContext *pctx) {
     biffAddf(PULL, "%s: got NULL pointer", me);
     return 1;
   }
-  if (_pullIterate(pctx, pullProcessModeNeighLearn)) {
+  if (pull__Iterate(pctx, pullProcessModeNeighLearn)) {
     biffAddf(PULL, "%s: trouble with %s for CC", me,
              airEnumStr(pullProcessMode, pullProcessModeNeighLearn));
     return 1;

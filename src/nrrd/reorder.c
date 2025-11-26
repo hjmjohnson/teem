@@ -99,21 +99,21 @@ nrrdAxesInsert(Nrrd *nout, const Nrrd *nin, unsigned int axis) {
     return 1;
   }
   if (nout != nin) {
-    if (_nrrdCopy(nout, nin,
-                  (NRRD_BASIC_INFO_COMMENTS_BIT
-                   | (nrrdStateKeyValuePairsPropagate
-                        ? 0
-                        : NRRD_BASIC_INFO_KEYVALUEPAIRS_BIT)))) {
+    if (nrrd__Copy(nout, nin,
+                   (NRRD_BASIC_INFO_COMMENTS_BIT
+                    | (nrrdStateKeyValuePairsPropagate
+                         ? 0
+                         : NRRD_BASIC_INFO_KEYVALUEPAIRS_BIT)))) {
       biffAddf(NRRD, "%s:", me);
       return 1;
     }
   }
   nout->dim = 1 + nin->dim;
   for (ai = nin->dim; ai > axis; ai--) {
-    _nrrdAxisInfoCopy(&(nout->axis[ai]), &(nin->axis[ai - 1]), NRRD_AXIS_INFO_NONE);
+    nrrd__AxisInfoCopy(&(nout->axis[ai]), &(nin->axis[ai - 1]), NRRD_AXIS_INFO_NONE);
   }
   /* the ONLY thing we can say about the new axis is its size */
-  _nrrdAxisInfoInit(&(nout->axis[axis]));
+  nrrd__AxisInfoInit(&(nout->axis[axis]));
   if (!nrrdStateKindNoop) {
     /* except maybe the kind */
     nout->axis[axis].kind = nrrdKindStub;
@@ -366,7 +366,7 @@ nrrdShuffle(Nrrd *nout, const Nrrd *nin, unsigned int axis, const size_t *perm) 
   /* the min and max along the shuffled axis are now meaningless */
   nout->axis[axis].min = nout->axis[axis].max = AIR_NAN;
   /* do the safe thing first */
-  nout->axis[axis].kind = _nrrdKindAltered(nin->axis[axis].kind, AIR_FALSE);
+  nout->axis[axis].kind = nrrd__KindAltered(nin->axis[axis].kind, AIR_FALSE);
   /* try cleverness */
   if (!nrrdStateKindNoop) {
     if (0 == nrrdKindSize(nin->axis[axis].kind) || nrrdKindStub == nin->axis[axis].kind
@@ -519,8 +519,8 @@ nrrdFlip(Nrrd *nout, const Nrrd *nin, unsigned int axis) {
     airMopError(mop);
     return 1;
   }
-  _nrrdAxisInfoCopy(&(nout->axis[axis]), &(nin->axis[axis]),
-                    NRRD_AXIS_INFO_SIZE_BIT | NRRD_AXIS_INFO_KIND_BIT);
+  nrrd__AxisInfoCopy(&(nout->axis[axis]), &(nin->axis[axis]),
+                     NRRD_AXIS_INFO_SIZE_BIT | NRRD_AXIS_INFO_KIND_BIT);
   /* HEY: (Tue Jan 18 00:28:26 EST 2005) there's a basic question to
      be answered here: do we want to keep the "location" of the
      samples fixed, while changing their ordering, or do want to flip
@@ -842,22 +842,22 @@ nrrdAxesSplit(Nrrd *nout, const Nrrd *nin, unsigned int saxi, size_t sizeFast,
     return 1;
   }
   if (nout != nin) {
-    if (_nrrdCopy(nout, nin,
-                  (NRRD_BASIC_INFO_COMMENTS_BIT
-                   | (nrrdStateKeyValuePairsPropagate
-                        ? 0
-                        : NRRD_BASIC_INFO_KEYVALUEPAIRS_BIT)))) {
+    if (nrrd__Copy(nout, nin,
+                   (NRRD_BASIC_INFO_COMMENTS_BIT
+                    | (nrrdStateKeyValuePairsPropagate
+                         ? 0
+                         : NRRD_BASIC_INFO_KEYVALUEPAIRS_BIT)))) {
       biffAddf(NRRD, "%s:", me);
       return 1;
     }
   }
   nout->dim = 1 + nin->dim;
   for (ai = nin->dim - 1; ai >= saxi + 1; ai--) {
-    _nrrdAxisInfoCopy(&(nout->axis[ai + 1]), &(nin->axis[ai]), NRRD_AXIS_INFO_NONE);
+    nrrd__AxisInfoCopy(&(nout->axis[ai + 1]), &(nin->axis[ai]), NRRD_AXIS_INFO_NONE);
   }
   /* the ONLY thing we can say about the new axes are their sizes */
-  _nrrdAxisInfoInit(&(nout->axis[saxi]));
-  _nrrdAxisInfoInit(&(nout->axis[saxi + 1]));
+  nrrd__AxisInfoInit(&(nout->axis[saxi]));
+  nrrd__AxisInfoInit(&(nout->axis[saxi + 1]));
   nout->axis[saxi].size = sizeFast;
   nout->axis[saxi + 1].size = sizeSlow;
   if (nrrdContentSet_va(nout, func, nin, "%d,%d,%d", saxi, sizeFast, sizeSlow)) {
@@ -899,17 +899,17 @@ nrrdAxesDelete(Nrrd *nout, const Nrrd *nin, unsigned int daxi) {
     return 1;
   }
   if (nout != nin) {
-    if (_nrrdCopy(nout, nin,
-                  (NRRD_BASIC_INFO_COMMENTS_BIT
-                   | (nrrdStateKeyValuePairsPropagate
-                        ? 0
-                        : NRRD_BASIC_INFO_KEYVALUEPAIRS_BIT)))) {
+    if (nrrd__Copy(nout, nin,
+                   (NRRD_BASIC_INFO_COMMENTS_BIT
+                    | (nrrdStateKeyValuePairsPropagate
+                         ? 0
+                         : NRRD_BASIC_INFO_KEYVALUEPAIRS_BIT)))) {
       biffAddf(NRRD, "%s:", me);
       return 1;
     }
   }
   for (ai = daxi; ai < nin->dim - 1; ai++) {
-    _nrrdAxisInfoCopy(&(nout->axis[ai]), &(nin->axis[ai + 1]), NRRD_AXIS_INFO_NONE);
+    nrrd__AxisInfoCopy(&(nout->axis[ai]), &(nin->axis[ai + 1]), NRRD_AXIS_INFO_NONE);
   }
   nout->dim = nin->dim - 1;
   if (nrrdContentSet_va(nout, func, nin, "%d", daxi)) {
@@ -946,11 +946,11 @@ nrrdAxesMerge(Nrrd *nout, const Nrrd *nin, unsigned int maxi) {
     return 1;
   }
   if (nout != nin) {
-    if (_nrrdCopy(nout, nin,
-                  (NRRD_BASIC_INFO_COMMENTS_BIT
-                   | (nrrdStateKeyValuePairsPropagate
-                        ? 0
-                        : NRRD_BASIC_INFO_KEYVALUEPAIRS_BIT)))) {
+    if (nrrd__Copy(nout, nin,
+                   (NRRD_BASIC_INFO_COMMENTS_BIT
+                    | (nrrdStateKeyValuePairsPropagate
+                         ? 0
+                         : NRRD_BASIC_INFO_KEYVALUEPAIRS_BIT)))) {
       biffAddf(NRRD, "%s:", me);
       return 1;
     }
@@ -959,10 +959,10 @@ nrrdAxesMerge(Nrrd *nout, const Nrrd *nin, unsigned int maxi) {
   sizeSlow = nin->axis[maxi + 1].size;
   nout->dim = nin->dim - 1;
   for (ai = maxi + 1; ai < nout->dim; ai++) {
-    _nrrdAxisInfoCopy(&(nout->axis[ai]), &(nin->axis[ai + 1]), NRRD_AXIS_INFO_NONE);
+    nrrd__AxisInfoCopy(&(nout->axis[ai]), &(nin->axis[ai + 1]), NRRD_AXIS_INFO_NONE);
   }
   /* the ONLY thing we can say about the new axis is its size */
-  _nrrdAxisInfoInit(&(nout->axis[maxi]));
+  nrrd__AxisInfoInit(&(nout->axis[maxi]));
   nout->axis[maxi].size = sizeFast * sizeSlow;
   if (nrrdContentSet_va(nout, func, nin, "%d", maxi)) {
     biffAddf(NRRD, "%s:", me);
@@ -993,7 +993,7 @@ nrrdReshape_nva(Nrrd *nout, const Nrrd *nin, unsigned int dim, const size_t *siz
              NRRD_DIM_MAX);
     return 1;
   }
-  if (_nrrdSizeCheck(size, dim, AIR_TRUE)) {
+  if (nrrd__SizeCheck(size, dim, AIR_TRUE)) {
     biffAddf(NRRD, "%s:", me);
     return 1;
   }
@@ -1009,11 +1009,11 @@ nrrdReshape_nva(Nrrd *nout, const Nrrd *nin, unsigned int dim, const size_t *siz
   }
 
   if (nout != nin) {
-    if (_nrrdCopy(nout, nin,
-                  (NRRD_BASIC_INFO_COMMENTS_BIT
-                   | (nrrdStateKeyValuePairsPropagate
-                        ? 0
-                        : NRRD_BASIC_INFO_KEYVALUEPAIRS_BIT)))) {
+    if (nrrd__Copy(nout, nin,
+                   (NRRD_BASIC_INFO_COMMENTS_BIT
+                    | (nrrdStateKeyValuePairsPropagate
+                         ? 0
+                         : NRRD_BASIC_INFO_KEYVALUEPAIRS_BIT)))) {
       biffAddf(NRRD, "%s:", me);
       return 1;
     }
@@ -1021,7 +1021,7 @@ nrrdReshape_nva(Nrrd *nout, const Nrrd *nin, unsigned int dim, const size_t *siz
   nout->dim = dim;
   for (ai = 0; ai < dim; ai++) {
     /* the ONLY thing we can say about the axes is the size */
-    _nrrdAxisInfoInit(&(nout->axis[ai]));
+    nrrd__AxisInfoInit(&(nout->axis[ai]));
     nout->axis[ai].size = size[ai];
   }
 
@@ -1032,7 +1032,7 @@ nrrdReshape_nva(Nrrd *nout, const Nrrd *nin, unsigned int dim, const size_t *siz
              airSprintSize_t(stmp[0], size[ai]));
     SN_INCR(buff, buffSize);
   }
-  /* basic info copied by _nrrdCopy, but probably more than we
+  /* basic info copied by nrrd__Copy, but probably more than we
      want- perhaps space dimension and origin should be nixed? */
   if (nrrdContentSet_va(nout, func, nin, "%s", _buff)) {
     biffAddf(NRRD, "%s:", me);
@@ -1285,11 +1285,11 @@ nrrdTile2D(Nrrd *nout, const Nrrd *nin, unsigned int ax0, unsigned int ax1,
   }
 
   if (nout != nin) {
-    if (_nrrdCopy(nout, nin,
-                  (NRRD_BASIC_INFO_COMMENTS_BIT
-                   | (nrrdStateKeyValuePairsPropagate
-                        ? 0
-                        : NRRD_BASIC_INFO_KEYVALUEPAIRS_BIT)))) {
+    if (nrrd__Copy(nout, nin,
+                   (NRRD_BASIC_INFO_COMMENTS_BIT
+                    | (nrrdStateKeyValuePairsPropagate
+                         ? 0
+                         : NRRD_BASIC_INFO_KEYVALUEPAIRS_BIT)))) {
       biffAddf(NRRD, "%s:", me);
       return 1;
     }
@@ -1406,11 +1406,11 @@ nrrdUntile2D(Nrrd *nout, const Nrrd *nin, unsigned int ax0, unsigned int ax1,
   }
 
   if (nout != nin) {
-    if (_nrrdCopy(nout, nin,
-                  (NRRD_BASIC_INFO_COMMENTS_BIT
-                   | (nrrdStateKeyValuePairsPropagate
-                        ? 0
-                        : NRRD_BASIC_INFO_KEYVALUEPAIRS_BIT)))) {
+    if (nrrd__Copy(nout, nin,
+                   (NRRD_BASIC_INFO_COMMENTS_BIT
+                    | (nrrdStateKeyValuePairsPropagate
+                         ? 0
+                         : NRRD_BASIC_INFO_KEYVALUEPAIRS_BIT)))) {
       biffAddf(NRRD, "%s:", me);
       return 1;
     }

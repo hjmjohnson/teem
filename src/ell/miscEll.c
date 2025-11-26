@@ -38,7 +38,7 @@ int ell_debug = 0;
 
 /* clang-format off */
 static const char *
-_ell_quadratic_root_str[] = {
+quadratic_root_str[] = {
   "(unknown ell_quadratic_root)",
   "two",
   "double",
@@ -46,7 +46,7 @@ _ell_quadratic_root_str[] = {
 };
 
 static const char *
-_ell_quadratic_root_desc[] = {
+quadratic_root_desc[] = {
   "(unknown ell_quadratic_root)",
   "two distinct roots",
   "one double root",
@@ -54,20 +54,19 @@ _ell_quadratic_root_desc[] = {
 };
 
 static const airEnum
-_ell_quadratic_root = {
+quadratic_root_ae = {
   "quadratic root solutions",
   ELL_QUADRATIC_ROOT_MAX,
-  _ell_quadratic_root_str, NULL,
-  _ell_quadratic_root_desc,
+  quadratic_root_str, NULL,
+  quadratic_root_desc,
   NULL, NULL,
   AIR_FALSE
 };
-const airEnum *const
-ell_quadratic_root = &_ell_quadratic_root;
+const airEnum *const ell_quadratic_root = &quadratic_root_ae;
 
 
 static const char *
-_ell_cubic_root_str[] = {
+cubic_root_str[] = {
   "(unknown ell_cubic_root)",
   "single",
   "triple",
@@ -76,7 +75,7 @@ _ell_cubic_root_str[] = {
 };
 
 static const char *
-_ell_cubic_root_desc[] = {
+cubic_root_desc[] = {
   "(unknown ell_cubic_root)",
   "one single root",
   "one triple root",
@@ -85,16 +84,15 @@ _ell_cubic_root_desc[] = {
 };
 
 static const airEnum
-_ell_cubic_root = {
+cubic_root_ae = {
   "cubic root solutions",
   ELL_CUBIC_ROOT_MAX,
-  _ell_cubic_root_str, NULL,
-  _ell_cubic_root_desc,
+  cubic_root_str, NULL,
+  cubic_root_desc,
   NULL, NULL,
   AIR_FALSE
 };
-const airEnum *const
-ell_cubic_root = &_ell_cubic_root;
+const airEnum *const ell_cubic_root = &cubic_root_ae;
 
 void
 ell_3m_print_f(FILE *f, const float s[9]) {

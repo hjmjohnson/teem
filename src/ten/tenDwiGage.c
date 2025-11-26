@@ -20,14 +20,22 @@
 #include "ten.h"
 #include "privateTen.h"
 #ifdef TEEM_LEVMAR
+#  if defined(__clang__)
+#    pragma clang diagnostic push
+#    pragma clang diagnostic ignored "-Wreserved-identifier"
+/*   because levmar.h's "#define _LEVMAR_H_" has reserved identifier _LEVMAR_H_ */
+#  endif
 #  include <levmar.h>
+#  if defined(__clang__)
+#    pragma clang diagnostic pop
+#  endif
 #endif
 
 /* --------------------------------------------------------------------- */
 /* clang-format off */
 
 static const char *
-_tenDwiGageStr[] = {
+dwiGageStr[] = {
   "(unknown tenDwiGage)",
   "all",
   "b0",
@@ -67,7 +75,7 @@ _tenDwiGageStr[] = {
 };
 
 static const int
-_tenDwiGageVal[] = {
+dwiGageVal[] = {
   tenDwiGageUnknown,
   tenDwiGageAll,
   tenDwiGageB0,
@@ -107,21 +115,20 @@ _tenDwiGageVal[] = {
 };
 
 static const airEnum
-_tenDwiGage = {
+dwiGage_ae = {
   "tenDwiGage",
   TEN_DWI_GAGE_ITEM_MAX,
-  _tenDwiGageStr, _tenDwiGageVal,
+  dwiGageStr, dwiGageVal,
   NULL,
   NULL, NULL,
   AIR_FALSE
 };
-const airEnum *const
-tenDwiGage = &_tenDwiGage;
+const airEnum *const tenDwiGage = &dwiGage_ae;
 
 /* --------------------------------------------------------------------- */
 
 static gageItemEntry
-_tenDwiGageTable[TEN_DWI_GAGE_ITEM_MAX+1] = {
+dwiGageTable[TEN_DWI_GAGE_ITEM_MAX+1] = {
   /* enum value                     len,deriv, prereqs,                           parent item, parent index, needData */
   {tenDwiGageUnknown,                 0,  0,  {0},                                                    0,  0, AIR_TRUE},
   /* len == 0 for tenDwiGage{All,JustDWI,ADC} means "learn later at run-time" */
@@ -180,8 +187,8 @@ _tenDwiGageTable[TEN_DWI_GAGE_ITEM_MAX+1] = {
 };
 
 static void
-_tenDwiGageIv3Print(FILE *file, gageContext *ctx, gagePerVolume *pvl) {
-  static const char me[] = "_tenDwiGageIv3Print";
+dwiGageIv3Print(FILE *file, gageContext *ctx, gagePerVolume *pvl) {
+  static const char me[] = "dwiGageIv3Print";
 
   AIR_UNUSED(ctx);
   AIR_UNUSED(pvl);
@@ -190,8 +197,8 @@ _tenDwiGageIv3Print(FILE *file, gageContext *ctx, gagePerVolume *pvl) {
 }
 
 static void
-_tenDwiGageFilter(gageContext *ctx, gagePerVolume *pvl) {
-  static const char me[] = "_tenDwiGageFilter";
+dwiGageFilter(gageContext *ctx, gagePerVolume *pvl) {
+  static const char me[] = "dwiGageFilter";
   double *fw00, *fw11, *fw22, *dwi;
   int fd, needD[3]={AIR_TRUE, AIR_FALSE, AIR_FALSE};
   /* tenDwiGageKindData *kindData; */
@@ -267,7 +274,7 @@ _tenComputeAIC(double residual, int n, int k) {
 
 /* Form a 2D tensor from the parameters */
 static void
-_tenPeledRotate2D(double ten[7], double lam1, double lam3, double phi) {
+tpelRotate2D(double ten[7], double lam1, double lam3, double phi) {
   double cc, ss, d3, d1, d2;
 
   cc = cos(phi);
@@ -288,8 +295,8 @@ _tenPeledRotate2D(double ten[7], double lam1, double lam3, double phi) {
 ** pp[3]: phi for 2nd tensor
 */
 static void
-_tenLevmarPeledCB(double *pp, double *xx, int mm, int nn, void *_pvlData) {
-  /* static const char me[] = "_tenLevmarPeledCB"; */
+tlevPeledCB(double *pp, double *xx, int mm, int nn, void *_pvlData) {
+  /* static const char me[] = "tlevPeledCB"; */
   double tenA[7], tenB[7];
   int ii;
   tenDwiGagePvlData *pvlData;
@@ -299,8 +306,8 @@ _tenLevmarPeledCB(double *pp, double *xx, int mm, int nn, void *_pvlData) {
   pvlData = AIR_CAST(tenDwiGagePvlData *, _pvlData);
 
   /* Form the tensors using the estimated parms */
-  _tenPeledRotate2D(tenA, pp[0], pvlData->ten1Eval[2], pp[2]);
-  _tenPeledRotate2D(tenB, pp[0], pvlData->ten1Eval[2], pp[3]);
+  tpelRotate2D(tenA, pp[0], pvlData->ten1Eval[2], pp[2]);
+  tpelRotate2D(tenB, pp[0], pvlData->ten1Eval[2], pp[3]);
 
   egrad = AIR_CAST(double *, pvlData->nten1EigenGrads->data);
   /* skip past b0 gradient, HEY: not general purpose */
@@ -323,8 +330,8 @@ _tenLevmarPeledCB(double *pp, double *xx, int mm, int nn, void *_pvlData) {
 #endif /* #ifdef TEEM_LEVMAR */
 
 static void
-_tenDwiGageAnswer(gageContext *ctx, gagePerVolume *pvl) {
-  static const char me[] = "_tenDwiGageAnswer";
+dwiGageAnswer(gageContext *ctx, gagePerVolume *pvl) {
+  static const char me[] = "dwiGageAnswer";
   unsigned int dwiIdx;
   tenDwiGageKindData *kindData;
   tenDwiGagePvlData *pvlData;
@@ -469,10 +476,10 @@ _tenDwiGageAnswer(gageContext *ctx, gagePerVolume *pvl) {
     gradcount = pvl->kind->valLen -1; /* Dont count b0 */
     grads = ((const double*) kindData->ngrad->data) +3; /* Ignore b0 grad */
     if (dwiAll[0] != 0) { /*  S0 = 0 */
-      _tenQball(pvlData->tec2->bValue, gradcount, dwiAll, grads,
+      ten__Qball(pvlData->tec2->bValue, gradcount, dwiAll, grads,
                 pvlData->qvals);
-      _tenQvals2points(gradcount, pvlData->qvals, grads, pvlData->qpoints);
-      _tenSegsamp2(gradcount, pvlData->qvals, grads, pvlData->qpoints,
+      ten__Qvals2points(gradcount, pvlData->qvals, grads, pvlData->qpoints);
+      ten__Segsamp2(gradcount, pvlData->qvals, grads, pvlData->qpoints,
                    pvlData->wght + 1, pvlData->dists );
     } else {
       /* stupid; should really return right here since data is garbage */
@@ -605,7 +612,7 @@ _tenDwiGageAnswer(gageContext *ctx, gagePerVolume *pvl) {
 
       /* rotate DW gradients by inverse of eigenvector column matrix
          and place into pvlData->nten1EigenGrads (which has been
-         allocated by _tenDwiGagePvlDataNew()) */
+         allocated by dwiGagePvlDataNew()) */
       grad = AIR_CAST(double *, kindData->ngrad->data);
       egrad = AIR_CAST(double *, pvlData->nten1EigenGrads->data);
       for (gi=0; gi<kindData->ngrad->axis[1].size; gi++) {
@@ -649,7 +656,7 @@ _tenDwiGageAnswer(gageContext *ctx, gagePerVolume *pvl) {
 
       /* run NLLS, results are stored back into guess[] */
       pvlData->levmarUseFastExp = AIR_FALSE;
-      lmret = dlevmar_bc_dif(_tenLevmarPeledCB, guess, pvlData->tec1->dwi,
+      lmret = dlevmar_bc_dif(tlevPeledCB, guess, pvlData->tec1->dwi,
                              PARAMS, pvlData->tec1->dwiNum, loBnd, upBnd,
                              NULL, pvlData->levmarMaxIter, opts,
                              pvlData->levmarInfo,
@@ -665,8 +672,8 @@ _tenDwiGageAnswer(gageContext *ctx, gagePerVolume *pvl) {
           AICTwoFit = _tenComputeAIC(residual, pvlData->tec1->dwiNum, 12);
         */
         /* Form the tensors using the estimated pp, returned in guess */
-        _tenPeledRotate2D(tenA, guess[0], pvlData->ten1Eval[2], guess[2]);
-        _tenPeledRotate2D(tenB, guess[0], pvlData->ten1Eval[2], guess[3]);
+        tpelRotate2D(tenA, guess[0], pvlData->ten1Eval[2], guess[2]);
+        tpelRotate2D(tenB, guess[0], pvlData->ten1Eval[2], guess[3]);
         TEN_T2M(matA, tenA);
         TEN_T2M(matB, tenB);
 
@@ -745,8 +752,8 @@ _tenDwiGageAnswer(gageContext *ctx, gagePerVolume *pvl) {
 /* note use of the GAGE biff key, which is appropriate (at least GLK thought so
    at the time of writing) given that this is implementing part of a gageKind */
 static void * /* Biff: NULL */
-_tenDwiGagePvlDataNew(const gageKind *kind) {
-  static const char me[] = "_tenDwiGagePvlDataNew";
+dwiGagePvlDataNew(const gageKind *kind) {
+  static const char me[] = "dwiGagePvlDataNew";
   tenDwiGagePvlData *pvlData;
   tenDwiGageKindData *kindData;
   const int segcount = 2;
@@ -846,12 +853,12 @@ _tenDwiGagePvlDataNew(const gageKind *kind) {
 }
 
 static void *
-_tenDwiGagePvlDataCopy(const gageKind *kind, const void *_pvlDataOld) {
+dwiGagePvlDataCopy(const gageKind *kind, const void *_pvlDataOld) {
   const tenDwiGagePvlData *pvlDataOld;
   tenDwiGagePvlData *pvlDataNew;
 
   pvlDataOld = AIR_CAST(const tenDwiGagePvlData *, _pvlDataOld);
-  pvlDataNew = AIR_CAST(tenDwiGagePvlData *, _tenDwiGagePvlDataNew(kind));
+  pvlDataNew = AIR_CAST(tenDwiGagePvlData *, dwiGagePvlDataNew(kind));
 
   /* HEY: no error checking? */
   if (pvlDataOld->nten1EigenGrads) {
@@ -877,10 +884,10 @@ _tenDwiGagePvlDataCopy(const gageKind *kind, const void *_pvlDataOld) {
 }
 
 static int
-_tenDwiGagePvlDataUpdate(const gageKind *kind,
+dwiGagePvlDataUpdate(const gageKind *kind,
                          const gageContext *ctx,
                          const gagePerVolume *pvl, void *_pvlData) {
-  /* static const char me[] = "_tenDwiGagePvlDataUpdate"; */
+  /* static const char me[] = "dwiGagePvlDataUpdate"; */
   tenDwiGagePvlData *pvlData;
 
   AIR_UNUSED(ctx);
@@ -920,7 +927,7 @@ _tenDwiGagePvlDataUpdate(const gageKind *kind,
 }
 
 static void *
-_tenDwiGagePvlDataNix(const gageKind *kind, void *_pvlData) {
+dwiGagePvlDataNix(const gageKind *kind, void *_pvlData) {
   tenDwiGagePvlData *pvlData;
 
   AIR_UNUSED(kind);
@@ -944,7 +951,7 @@ _tenDwiGagePvlDataNix(const gageKind *kind, void *_pvlData) {
 /* --------------------- kindData */
 
 static tenDwiGageKindData*
-tenDwiGageKindDataNew(void) {
+dwiGageKindDataNew(void) {
   tenDwiGageKindData *ret;
 
   ret = AIR_CALLOC(1, tenDwiGageKindData);
@@ -961,7 +968,7 @@ tenDwiGageKindDataNew(void) {
 }
 
 static tenDwiGageKindData*
-tenDwiGageKindDataNix(tenDwiGageKindData *kindData) {
+dwiGageKindDataNix(tenDwiGageKindData *kindData) {
 
   if (kindData) {
     nrrdNuke(kindData->ngrad);
@@ -981,23 +988,23 @@ tenDwiGageKindDataNix(tenDwiGageKindData *kindData) {
 ** without having to allocate it each time
 */
 static gageKind
-_tenDwiGageKindTmpl = {
+tdgKinTmpl = {
   AIR_TRUE, /* dynamically allocated */
   TEN_DWI_GAGE_KIND_NAME,
-  &_tenDwiGage,
+  &dwiGage_ae,
   1,
   0, /* NOT: set later by tenDwiGageKindSet() */
   TEN_DWI_GAGE_ITEM_MAX,
-  NULL, /* NOT: modified copy of _tenDwiGageTable,
+  NULL, /* NOT: modified copy of dwiGageTable,
            allocated by tenDwiGageKindNew(), and
-           set by _tenDwiGageKindSet() */
-  _tenDwiGageIv3Print,
-  _tenDwiGageFilter,
-  _tenDwiGageAnswer,
-  _tenDwiGagePvlDataNew,
-  _tenDwiGagePvlDataCopy,
-  _tenDwiGagePvlDataNix,
-  _tenDwiGagePvlDataUpdate,
+           set by tenDwiGageKindSet() */
+  dwiGageIv3Print,
+  dwiGageFilter,
+  dwiGageAnswer,
+  dwiGagePvlDataNew,
+  dwiGagePvlDataCopy,
+  dwiGagePvlDataNix,
+  dwiGagePvlDataUpdate,
   NULL /* NOT: allocated by tenDwiGageKindNew(),
           insides set by tenDwiGageKindSet() */
 };
@@ -1008,12 +1015,12 @@ tenDwiGageKindNew(void) {
 
   kind = AIR_CALLOC(1, gageKind);
   if (kind) {
-    memcpy(kind, &_tenDwiGageKindTmpl, sizeof(gageKind));
+    memcpy(kind, &tdgKinTmpl, sizeof(gageKind));
     kind->valLen = 0; /* still has to be set later */
     kind->table = AIR_CAST(gageItemEntry *,
-                           malloc(sizeof(_tenDwiGageTable)));
-    memcpy(kind->table, _tenDwiGageTable, sizeof(_tenDwiGageTable));
-    kind->data = AIR_VOIDP(tenDwiGageKindDataNew());
+                           malloc(sizeof(dwiGageTable)));
+    memcpy(kind->table, dwiGageTable, sizeof(dwiGageTable));
+    kind->data = AIR_VOIDP(dwiGageKindDataNew());
   }
   return kind;
 }
@@ -1023,7 +1030,7 @@ tenDwiGageKindNix(gageKind *kind) {
 
   if (kind) {
     airFree(kind->table);
-    tenDwiGageKindDataNix(AIR_CAST(tenDwiGageKindData *, kind->data));
+    dwiGageKindDataNix(AIR_CAST(tenDwiGageKindData *, kind->data));
     airFree(kind);
   }
   return NULL;

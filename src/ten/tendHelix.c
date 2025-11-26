@@ -21,7 +21,7 @@
 #include "privateTen.h"
 
 #define INFO "Generate twisting helical tensor field"
-static const char *_tend_helixInfoL
+static const char *helixInfoL
   = (INFO ". The main utility of such a field is to debug handling of coordinate "
           "systems in tensor field visualization.  The \"space directions\" and "
           "\"space origin\" fields of the NRRD header determines the mapping from "
@@ -40,9 +40,9 @@ static const char *_tend_helixInfoL
           "if twisting a set of fibers into single-stranded helical bundle. ");
 
 static void
-tend_helixDoit(Nrrd *nout, double bnd, double orig[3], double i2w[9], double mf[9],
-               double r, double R, double S, double angle, int incrtwist, double ev[3],
-               double bgEval, int verbose) {
+helixDoit(Nrrd *nout, double bnd, double orig[3], double i2w[9], double mf[9], double r,
+          double R, double S, double angle, int incrtwist, double ev[3], double bgEval,
+          int verbose) {
   unsigned int sx, sy, sz, xi, yi, zi;
   double th, t0, t1, t2, t3, v1, v2, wpos[3], vpos[3], mfT[9], W2H[9], H2W[9], H2C[9],
     C2H[9], fv[3], rv[3], uv[3], mA[9], mB[9], inside, tmp[3], len;
@@ -146,7 +146,7 @@ tend_helixDoit(Nrrd *nout, double bnd, double orig[3], double i2w[9], double mf[
 }
 
 static int
-tend_helixMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+helixMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -197,7 +197,7 @@ tend_helixMain(int argc, const char **argv, const char *me, const hestParm *hpar
 
   mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_JUSTPARSE(_tend_helixInfoL);
+  USAGE_JUSTPARSE(helixInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
@@ -224,8 +224,8 @@ tend_helixMain(int argc, const char **argv, const char *me, const hestParm *hpar
   ELL_3M_COPY(i2w, tmp);
   ELL_4V_SET(mq, 1.0, mp[0], mp[1], mp[2]);
   ell_q_to_3m_d(mf, mq);
-  tend_helixDoit(nout, bnd, orig, i2w, mf, r, R, S, angle * AIR_PI / 180, !nit, ev, bge,
-                 verbose);
+  helixDoit(nout, bnd, orig, i2w, mf, r, R, S, angle * AIR_PI / 180, !nit, ev, bge,
+            verbose);
   nrrdSpaceSet(nout, nrrdSpaceRightAnteriorSuperior);
   nrrdSpaceOriginSet(nout, orig);
   ELL_3V_SET(spd[0], AIR_NAN, AIR_NAN, AIR_NAN);
@@ -257,4 +257,4 @@ tend_helixMain(int argc, const char **argv, const char *me, const hestParm *hpar
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(helix, INFO);
+MY_TEND_CMD(helix, INFO);

@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Superficially change dimension and/or axes sizes"
-static const char *_unrrdu_reshapeInfoL
+static const char *unu_reshapeInfoL
   = (INFO ". The underlying linear ordering of the samples is "
           "unchanged, but the reported dimension or axes sizes "
           "are changed.  Identical in concept to Matlab's "
@@ -29,19 +29,19 @@ static const char *_unrrdu_reshapeInfoL
           "* Uses nrrdReshape_nva");
 
 static int
-unrrdu_reshapeMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_reshapeMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   size_t *size;
   uint sizeLen;
   hestOptAdd_Nv_Size_t(&hopt, "s,size", "sz0 sz1 ", 1, -1, &size, NULL, "new axes sizes",
                        &sizeLen);
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_reshapeInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_reshapeInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -54,10 +54,10 @@ unrrdu_reshapeMain(int argc, const char **argv, const char *me, const hestParm *
     return 1;
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(reshape, INFO);
+MY_UNRRDU_CMD(reshape, INFO);

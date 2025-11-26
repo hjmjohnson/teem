@@ -21,13 +21,13 @@
 #include "privateTen.h"
 
 #define INFO "Non-linear least-squares fitting of b-value curves"
-static const char *_tend_bfitInfoL
+static const char *bfitInfoL
   = (INFO ". Axis 0 is replaced by three values: amp, dec, err, based on a "
           "non-linear least-squares fit of amp*exp(-b*dec) to the range of DWI "
           "values along input axis 0, as a function of changing b values.  ");
 
 static int
-tend_bfitMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+bfitMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -59,7 +59,7 @@ tend_bfitMain(int argc, const char **argv, const char *me, const hestParm *_hpar
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output tensor volume");
 
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_tend_bfitInfoL);
+  USAGE_PARSE(bfitInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   if (!(bbLen == nin->axis[0].size)) {
@@ -107,4 +107,4 @@ tend_bfitMain(int argc, const char **argv, const char *me, const hestParm *_hpar
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(bfit, INFO);
+MY_TEND_CMD(bfit, INFO);

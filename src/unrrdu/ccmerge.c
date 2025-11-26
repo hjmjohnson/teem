@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Merge CCs with their neighbors, under various constraints"
-static const char *_unrrdu_ccmergeInfoL
+static const char *unu_ccmergeInfoL
   = (INFO ".  This operates on the output of \"ccfind\". "
           "Merging of a CC is always done into its largest neighbor. "
           "Whether or not to merge can be constrained by one or more of: "
@@ -30,7 +30,7 @@ static const char *_unrrdu_ccmergeInfoL
           "* Uses nrrdCCMerge");
 
 static int
-unrrdu_ccmergeMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+unu_ccmergeMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
   int dir;
   hestOptAdd_1_Int(&hopt, "d,directed", "dir", &dir, "0",
@@ -71,12 +71,12 @@ unrrdu_ccmergeMain(int argc, const char **argv, const char *me, const hestParm *
                      "but is not needed otherwise",
                      nrrdHestNrrdNoTTY);
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for YES some hparm modification)
   hestParm *hparm = hestParmCopy(_hparm);
   hparm->noArgsIsNoProblem = AIR_TRUE; // thanks to nrrdHestNrrdNoTTY
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_ccmergeInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_ccmergeInfoL);
   airArray *mop = unrrduMopNew(hopt, hparm);
   char *err;
 
@@ -97,10 +97,10 @@ unrrdu_ccmergeMain(int argc, const char **argv, const char *me, const hestParm *
     return 1;
   }
 
-  SAVE(out, revalue ? nout2 : nout, NULL);
+  MY_SAVE(out, revalue ? nout2 : nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(ccmerge, INFO);
+MY_UNRRDU_CMD(ccmerge, INFO);

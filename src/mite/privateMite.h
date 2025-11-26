@@ -58,13 +58,13 @@ typedef unsigned int uint; /* uint is just more concise */
 #endif
 
 /* txf.c */
-extern double *_miteAnswerPointer(miteThread *mtt, gageItemSpec *isp);
-extern int _miteNtxfAlphaAdjust(miteRender *mrr, miteUser *muu);
-extern int _miteStageSet(miteThread *mtt, miteRender *mrr);
-extern void _miteStageRun(miteThread *mtt, miteUser *muu);
+extern double *mite__AnswerPointer(miteThread *mtt, gageItemSpec *isp);
+extern int mite__NtxfAlphaAdjust(miteRender *mrr, miteUser *muu);
+extern int mite__StageSet(miteThread *mtt, miteRender *mrr);
+extern void mite__StageRun(miteThread *mtt, miteUser *muu);
 
 /* user.c */
-extern int _miteUserCheck(miteUser *muu);
+extern int mite__UserCheck(miteUser *muu);
 
 #ifdef __cplusplus
 }

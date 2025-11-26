@@ -30,8 +30,8 @@
    (a)[6] = (s) * (b)[6])
 
 void
-_gageSclAnswer(gageContext *ctx, gagePerVolume *pvl) {
-  static const char me[] = "_gageSclAnswer";
+gage__SclAnswer(gageContext *ctx, gagePerVolume *pvl) {
+  static const char me[] = "gage__SclAnswer";
   double gmag = 0, *hess, *norm, *gvec, *gten, *k1, *k2, curv = 0,
          sHess[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
   double tmpMat[9], tmpVec[3], hevec[9], heval[3];

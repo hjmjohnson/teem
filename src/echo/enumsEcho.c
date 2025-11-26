@@ -23,7 +23,7 @@
 /* ------------------------------- jitter --------------------------- */
 
 static const char *
-_echoJitterStr[ECHO_JITTER_NUM+1] = {
+JitterStr[ECHO_JITTER_NUM+1] = {
   "(unknown_jitter)",
   "none",
   "grid",
@@ -32,7 +32,7 @@ _echoJitterStr[ECHO_JITTER_NUM+1] = {
 };
 
 static const int
-_echoJitterVal[ECHO_JITTER_NUM+1] = {
+JitterVal[ECHO_JITTER_NUM+1] = {
   echoJitterUnknown,
   echoJitterNone,
   echoJitterGrid,
@@ -41,7 +41,7 @@ _echoJitterVal[ECHO_JITTER_NUM+1] = {
 };
 
 static const char *
-_echoJitterDesc[ECHO_JITTER_NUM+1] = {
+JitterDesc[ECHO_JITTER_NUM+1] = {
   "unknown jitter",
   "nothing- samples are ALWAYS at center of region",
   "no jittering- samples are at regular grid vertices",
@@ -50,7 +50,7 @@ _echoJitterDesc[ECHO_JITTER_NUM+1] = {
 };
 
 static const char *
-_echoJitterStrEqv[] = {
+JitterStrEqv[] = {
   "none",
   "grid", "regular",
   "jitter",
@@ -59,7 +59,7 @@ _echoJitterStrEqv[] = {
 };
 
 static const int
-_echoJitterValEqv[] = {
+JitterValEqv[] = {
   echoJitterNone,
   echoJitterGrid, echoJitterGrid,
   echoJitterJitter,
@@ -67,21 +67,21 @@ _echoJitterValEqv[] = {
 };
 
 static const airEnum
-_echoJitter = {
+Jitter_ae = {
   "jitter",
   ECHO_JITTER_NUM,
-  _echoJitterStr,  _echoJitterVal,
-  _echoJitterDesc,
-  _echoJitterStrEqv, _echoJitterValEqv,
+  JitterStr,  JitterVal,
+  JitterDesc,
+  JitterStrEqv, JitterValEqv,
   AIR_FALSE
 };
 const airEnum *const
-echoJitter = &_echoJitter;
+echoJitter = &Jitter_ae;
 
 /* ------------------------------- object type --------------------------- */
 
 static const char *
-_echoTypeStr[ECHO_TYPE_NUM+1] = {
+TypeStr[ECHO_TYPE_NUM+1] = {
   "(unknown_object)",
   "sphere",
   "cylinder",
@@ -98,7 +98,7 @@ _echoTypeStr[ECHO_TYPE_NUM+1] = {
 };
 
 static const int
-_echoTypeVal[ECHO_TYPE_NUM+1] = {
+TypeVal[ECHO_TYPE_NUM+1] = {
   echoTypeUnknown,
   echoTypeSphere,
   echoTypeCylinder,
@@ -115,7 +115,7 @@ _echoTypeVal[ECHO_TYPE_NUM+1] = {
 };
 
 static const char *
-_echoTypeDesc[ECHO_TYPE_NUM+1] = {
+TypeDesc[ECHO_TYPE_NUM+1] = {
   "unknown_object",
   "sphere",
   "axis-aligned cylinder",
@@ -132,7 +132,7 @@ _echoTypeDesc[ECHO_TYPE_NUM+1] = {
 };
 
 static const char *
-_echoTypeStrEqv[] = {
+TypeStrEqv[] = {
   "sphere",
   "cylinder", "cylind", "rod",
   "superquad", "squad",
@@ -149,7 +149,7 @@ _echoTypeStrEqv[] = {
 };
 
 static const int
-_echoTypeValEqv[] = {
+TypeValEqv[] = {
   echoTypeSphere,
   echoTypeCylinder, echoTypeCylinder, echoTypeCylinder,
   echoTypeSuperquad, echoTypeSuperquad,
@@ -165,21 +165,21 @@ _echoTypeValEqv[] = {
 };
 
 static const airEnum
-_echoType = {
+Type_ae = {
   "object type",
   ECHO_TYPE_NUM,
-  _echoTypeStr,  _echoTypeVal,
-  _echoTypeDesc,
-  _echoTypeStrEqv, _echoTypeValEqv,
+  TypeStr,  TypeVal,
+  TypeDesc,
+  TypeStrEqv, TypeValEqv,
   AIR_FALSE
 };
 const airEnum *const
-echoType = &_echoType;
+echoType = &Type_ae;
 
 /* ------------------------------ material types --------------------------- */
 
 static const char *
-_echoMatterStr[ECHO_MATTER_MAX+1] = {
+MatterStr[ECHO_MATTER_MAX+1] = {
   "(unknown_matter)",
   "phong",
   "glass",
@@ -188,7 +188,7 @@ _echoMatterStr[ECHO_MATTER_MAX+1] = {
 };
 
 static const char *
-_echoMatterDesc[ECHO_MATTER_MAX+1] = {
+MatterDesc[ECHO_MATTER_MAX+1] = {
   "unknown material",
   "phong shaded surface",
   "glass",
@@ -197,14 +197,14 @@ _echoMatterDesc[ECHO_MATTER_MAX+1] = {
 };
 
 static const airEnum
-_echoMatter = {
+Matter_ae = {
   "matter",
   ECHO_MATTER_MAX,
-  _echoMatterStr,  NULL,
-  _echoMatterDesc,
+  MatterStr,  NULL,
+  MatterDesc,
   NULL, NULL,
   AIR_FALSE
 };
 const airEnum *const
-echoMatter = &_echoMatter;
+echoMatter = &Matter_ae;
 /* clang-format on */

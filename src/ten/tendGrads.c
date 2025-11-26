@@ -21,7 +21,7 @@
 #include "privateTen.h"
 
 #define INFO "Calculate balanced gradient directions for DWI acquisition"
-static const char *_tend_gradsInfoL
+static const char *gradsInfoL
   = (INFO ", based on a simulation of anti-podal point pairs repelling each other "
           "on the unit sphere surface. This can either distribute more uniformly "
           "a given set of gradients, or it can make a new distribution from scratch. "
@@ -35,7 +35,7 @@ static const char *_tend_gradsInfoL
           "restarting with a different \"-seed\".");
 
 static int
-tend_gradsMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+gradsMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -99,8 +99,8 @@ tend_gradsMain(int argc, const char **argv, const char *me, const hestParm *hpar
   hestOptAdd_1_String(&hopt, "o", "filename", &outS, "-",
                       "file to write output nrrd to");
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE(_tend_gradsInfoL);
-  JUSTPARSE(_tend_gradsInfoL);
+  USAGE(gradsInfoL);
+  JUSTPARSE(gradsInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
   nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
@@ -137,4 +137,4 @@ tend_gradsMain(int argc, const char **argv, const char *me, const hestParm *hpar
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(grads, INFO);
+MY_TEND_CMD(grads, INFO);

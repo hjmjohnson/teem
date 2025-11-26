@@ -21,24 +21,24 @@
 #include "privateUnrrdu.h"
 
 #define INFO "a hack of some kind"
-static const char *_unrrdu_hackInfoL
+static const char *unu_hackInfoL
   = (INFO ". This is used as a place to put whatever one-off code "
           "you want to try, with the whatever benefits come with being a "
           "unu command.\n "
           "* (not based on any particular nrrd function)");
 
 static int
-unrrdu_hackMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_hackMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   char *what;
   hestOptAdd_1_String(&hopt, NULL, "what", &what, NULL, "what hack to do");
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_hackInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_hackInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -72,10 +72,10 @@ unrrdu_hackMain(int argc, const char **argv, const char *me, const hestParm *hpa
     return 1;
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD_HIDE(hack, INFO);
+MY_UNRRDU_CMD_HIDE(hack, INFO);

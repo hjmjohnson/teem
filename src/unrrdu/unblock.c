@@ -21,28 +21,28 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Expand \"blocks\" into scanlines on axis 0"
-static const char *_unrrdu_unblockInfoL
+static const char *unu_unblockInfoL
   = (INFO ". Based on the requested output type, the number of "
           "samples along axis 0 will be determined automatically. "
           "Axis N information will be bumped up to axis N+1. "
           "Underlying data is unchanged.");
 
 static int
-unrrdu_unblockMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_unblockMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   int type;
-  OPT_ADD_TYPE(type, "type to unblock to", NULL);
+  MY_OPT_ADD_TYPE(type, "type to unblock to", NULL);
   size_t blockSize;
   hestOptAdd_1_Size_t(&hopt, "bs", "blocksize", &blockSize, "0",
                       "Useful only if *output* type is also block: the size of "
                       "blocks in output nrrd");
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_unblockInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_unblockInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -57,10 +57,10 @@ unrrdu_unblockMain(int argc, const char **argv, const char *me, const hestParm *
     return 1;
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD_HIDE(unblock, INFO);
+MY_UNRRDU_CMD_HIDE(unblock, INFO);

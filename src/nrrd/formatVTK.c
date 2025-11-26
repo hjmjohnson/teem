@@ -25,20 +25,20 @@
 #define MAGIC3 "# vtk DataFile Version 3.0"
 
 static int
-_nrrdFormatVTK_available(void) {
+formatVTK_available(void) {
 
   return AIR_TRUE;
 }
 
 static int
-_nrrdFormatVTK_nameLooksLike(const char *fname) {
+formatVTK_nameLooksLike(const char *fname) {
 
   return airEndsWith(fname, NRRD_EXT_VTK);
 }
 
 static int /* Biff: maybe:3:AIR_FALSE */
-_nrrdFormatVTK_fitsInto(const Nrrd *nrrd, const NrrdEncoding *encoding, int useBiff) {
-  static const char me[] = "_nrrdFormatVTK_fitsInto";
+formatVTK_fitsInto(const Nrrd *nrrd, const NrrdEncoding *encoding, int useBiff) {
+  static const char me[] = "formatVTK_fitsInto";
 
   if (!(nrrd && encoding)) {
     biffMaybeAddf(useBiff, NRRD, "%s: got NULL nrrd (%p) or encoding (%p)", me,
@@ -71,15 +71,15 @@ _nrrdFormatVTK_fitsInto(const Nrrd *nrrd, const NrrdEncoding *encoding, int useB
 }
 
 static int
-_nrrdFormatVTK_contentStartsLike(NrrdIoState *nio) {
+formatVTK_contentStartsLike(NrrdIoState *nio) {
 
   return (!strcmp(MAGIC1, nio->line) || !strcmp(MAGIC2, nio->line)
           || !strcmp(MAGIC3, nio->line));
 }
 
 static int /* Biff: 1 */
-_nrrdFormatVTK_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
-  static const char me[] = "_nrrdFormatVTK_read";
+formatVTK_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
+  static const char me[] = "formatVTK_read";
   char *three[3];
   int ret;
   double xm = 0.0, ym = 0.0, zm = 0.0, xs = 1.0, ys = 1.0, zs = 1.0;
@@ -87,7 +87,7 @@ _nrrdFormatVTK_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
   unsigned int sx, sy, sz, N;
   size_t llen;
 
-  if (!_nrrdFormatVTK_contentStartsLike(nio)) {
+  if (!formatVTK_contentStartsLike(nio)) {
     biffAddf(NRRD, "%s: this doesn't look like a %s file", me, nrrdFormatVTK->name);
     return 1;
   }
@@ -246,7 +246,7 @@ _nrrdFormatVTK_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
     return 1;
   }
   if (!nio->skipData) {
-    if (_nrrdCalloc(nrrd, nio)) {
+    if (nrrd__Calloc(nrrd, nio)) {
       biffAddf(NRRD, "%s: couldn't allocate memory for data", me);
       return 1;
     }
@@ -269,8 +269,8 @@ _nrrdFormatVTK_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
 
 /* this strongly assumes that nrrdFitsInFormat() was true */
 static int /* Biff: 1 */
-_nrrdFormatVTK_write(FILE *file, const Nrrd *_nrrd, NrrdIoState *nio) {
-  static const char me[] = "_nrrdFormatVTK_write";
+formatVTK_write(FILE *file, const Nrrd *nrrd__, NrrdIoState *nio) {
+  static const char me[] = "formatVTK_write";
   int i, sax;
   unsigned int sx, sy, sz;
   double xs, ys, zs, xm, ym, zm;
@@ -282,7 +282,7 @@ _nrrdFormatVTK_write(FILE *file, const Nrrd *_nrrd, NrrdIoState *nio) {
   /* HEY: should this copy be done more conservatively */
   mop = airMopNew();
   airMopAdd(mop, nrrd = nrrdNew(), nrrdNuke_mop, airMopAlways);
-  if (nrrdCopy(nrrd, _nrrd)) {
+  if (nrrdCopy(nrrd, nrrd__)) {
     biffAddf(NRRD, "%s: couldn't make private copy", me);
     airMopError(mop);
     return 1;
@@ -390,14 +390,14 @@ _nrrdFormatVTK_write(FILE *file, const Nrrd *_nrrd, NrrdIoState *nio) {
   return 0;
 }
 
-const NrrdFormat _nrrdFormatVTK = {"VTK",
-                                   AIR_FALSE, /* isImage */
-                                   AIR_TRUE,  /* readable */
-                                   _nrrdFormatVTK_available,
-                                   _nrrdFormatVTK_nameLooksLike,
-                                   _nrrdFormatVTK_fitsInto,
-                                   _nrrdFormatVTK_contentStartsLike,
-                                   _nrrdFormatVTK_read,
-                                   _nrrdFormatVTK_write};
+const NrrdFormat nrrd__FormatVTK = {"VTK",
+                                    AIR_FALSE, /* isImage */
+                                    AIR_TRUE,  /* readable */
+                                    formatVTK_available,
+                                    formatVTK_nameLooksLike,
+                                    formatVTK_fitsInto,
+                                    formatVTK_contentStartsLike,
+                                    formatVTK_read,
+                                    formatVTK_write};
 
-const NrrdFormat *const nrrdFormatVTK = &_nrrdFormatVTK;
+const NrrdFormat *const nrrdFormatVTK = &nrrd__FormatVTK;

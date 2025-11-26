@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Remove one or more singleton axes from a nrrd"
-static const char *_unrrdu_axdeleteInfoL
+static const char *unu_axdeleteInfoL
   = (INFO ". Singleton axes have only a single sample along them. "
           "The underlying linear ordering of the samples is "
           "unchanged, and the information about the other axes is "
@@ -29,7 +29,7 @@ static const char *_unrrdu_axdeleteInfoL
           "* Uses nrrdAxesDelete");
 
 static int
-unrrdu_axdeleteMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_axdeleteMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   /* really needs to be signed int, because of hack */
   int _axis;
@@ -38,12 +38,12 @@ unrrdu_axdeleteMain(int argc, const char **argv, const char *me, const hestParm 
                    "you give -1 as the axis, this will do a matlab-style \"squeeze\", "
                    "in which any and all singleton axes are removed.");
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_axdeleteInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_axdeleteInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -85,10 +85,10 @@ unrrdu_axdeleteMain(int argc, const char **argv, const char *me, const hestParm 
     }
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(axdelete, INFO);
+MY_UNRRDU_CMD(axdelete, INFO);

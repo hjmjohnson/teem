@@ -21,13 +21,13 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Create 1-D histogram of values in a nrrd"
-static const char *_unrrdu_histoInfoL
+static const char *unu_histoInfoL
   = (INFO ". Can explicitly set bounds of histogram domain or can learn these "
           "from the data.\n "
           "* Uses nrrdHisto");
 
 static int
-unrrdu_histoMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_histoMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   uint bins;
   hestOptAdd_1_UInt(&hopt, "b,bins", "num", &bins, NULL, "# of bins in histogram");
@@ -67,14 +67,14 @@ unrrdu_histoMain(int argc, const char **argv, const char *me, const hestParm *hp
                     "Whether to know the range of 8-bit data blindly "
                     "(uchar is always [0,255], signed char is [-128,127]).");
   int type;
-  OPT_ADD_TYPE(type, "type to use for bins in output histogram", "uint");
+  MY_OPT_ADD_TYPE(type, "type to use for bins in output histogram", "uint");
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_histoInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_histoInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -91,10 +91,10 @@ unrrdu_histoMain(int argc, const char **argv, const char *me, const hestParm *hp
     return 1;
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(histo, INFO);
+MY_UNRRDU_CMD(histo, INFO);

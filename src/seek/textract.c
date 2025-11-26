@@ -35,7 +35,7 @@
  * ridge is non-zero if we are looking for a ridge (zero for valley)
  */
 void
-_seekHess2T(double *T, const double *evals, const double *evecs,
+seek__Hess2T(double *T, const double *evals, const double *evecs,
             const double evalDiffThresh, const char ridge) {
   double lambdas[3]={0.0,0.0,0.0};
   double tmpMat[9], diag[9], evecsT[9];
@@ -68,7 +68,7 @@ _seekHess2T(double *T, const double *evals, const double *evecs,
  * ridge is non-zero if we are looking for a ridge (zero for valley)
  */
 void
-_seekHessder2Tder(double *Tder, const double *hessder, const double *evals,
+seek__Hessder2Tder(double *Tder, const double *hessder, const double *evals,
                   const double *evecs, const double evalDiffThresh,
                   const char ridge) {
   double evecTrans[9];
@@ -149,7 +149,7 @@ findFeatureIntersection(double *results, double *Tleft,
     ELL_3M_LERP(hessnew,0.5,hessleft,hessright);
     ell_3m_eigensolve_d(evals, evecs, hessnew, AIR_TRUE);
 
-    _seekHess2T(Tnew, evals, evecs, evalDiffThresh, ridge);
+    seek__Hess2T(Tnew, evals, evecs, evalDiffThresh, ridge);
 
     ELL_3V_LERP(gradnew,0.5,gleft,gright);
     retval = findFeatureIntersection(results, Tleft, hessleft,
@@ -948,13 +948,13 @@ findConnectivity(signed char *pairs, double *bestval, int ct, char *idcs,
   }
 }
 
-#define _SEEK_TREATED_REQUEST 0x01 /* this voxel has to be treated */
-#define _SEEK_TREATED_EDGE0 0x02 /* unique edge 0 has been treated */
-#define _SEEK_TREATED_EDGE1 0x04 /* unique edge 1 has been treated */
-#define _SEEK_TREATED_EDGE2 0x08 /* unique edge 2 has been treated */
-#define _SEEK_TREATED_EDGE3 0x10 /* unique edge 3 has been treated */
-#define _SEEK_TREATED_EDGE4 0x20 /* unique edge 4 has been treated */
-#define _SEEK_TREATED_FACE3 0x40 /* unique face 3 has been treated */
+#define TREATED_REQUEST 0x01 /* this voxel has to be treated */
+#define TREATED_EDGE0 0x02 /* unique edge 0 has been treated */
+#define TREATED_EDGE1 0x04 /* unique edge 1 has been treated */
+#define TREATED_EDGE2 0x08 /* unique edge 2 has been treated */
+#define TREATED_EDGE3 0x10 /* unique edge 3 has been treated */
+#define TREATED_EDGE4 0x20 /* unique edge 4 has been treated */
+#define TREATED_FACE3 0x40 /* unique face 3 has been treated */
 
 #define CHAR(x) AIR_CAST(char, x)
 
@@ -980,14 +980,14 @@ connectFace(seekContext *sctx, baggage *bag,
   int verti[4][4];
   int voxel[4][4];
   /* mask for treated information in the above voxel */
-  char mask[4][4]={{_SEEK_TREATED_EDGE0, _SEEK_TREATED_EDGE1,
-                    _SEEK_TREATED_EDGE0, _SEEK_TREATED_EDGE1},
-                   {_SEEK_TREATED_EDGE0, _SEEK_TREATED_EDGE2,
-                    _SEEK_TREATED_EDGE3, _SEEK_TREATED_EDGE2},
-                   {_SEEK_TREATED_EDGE1, _SEEK_TREATED_EDGE2,
-                    _SEEK_TREATED_EDGE4, _SEEK_TREATED_EDGE2},
-                   {_SEEK_TREATED_EDGE3, _SEEK_TREATED_EDGE4,
-                    _SEEK_TREATED_EDGE3, _SEEK_TREATED_EDGE4}};
+  char mask[4][4]={{TREATED_EDGE0, TREATED_EDGE1,
+                    TREATED_EDGE0, TREATED_EDGE1},
+                   {TREATED_EDGE0, TREATED_EDGE2,
+                    TREATED_EDGE3, TREATED_EDGE2},
+                   {TREATED_EDGE1, TREATED_EDGE2,
+                    TREATED_EDGE4, TREATED_EDGE2},
+                   {TREATED_EDGE3, TREATED_EDGE4,
+                    TREATED_EDGE3, TREATED_EDGE4}};
   /* start- and endpoints of the edges */
   int verts[4][4], verte[4][4];
   char treat[4]={0,0,0,0};
@@ -1236,37 +1236,37 @@ intersectionShuffleProbe(seekContext *sctx, baggage *bag) {
 
       /* copy or reset data on the 5 unique edges */
 
-      if (sctx->treated[si]&_SEEK_TREATED_EDGE3) {
+      if (sctx->treated[si]&TREATED_EDGE3) {
         /* has been treated, just copy results */
         ELL_3V_COPY(sctx->edgealpha+3*(0+5*si), sctx->edgealpha+3*(3+5*si));
         ELL_3M_COPY(sctx->edgenorm+9*(0+5*si), sctx->edgenorm+9*(3+5*si));
         ELL_3M_COPY(sctx->edgeicoord+9*(0+5*si), sctx->edgeicoord+9*(3+5*si));
-        sctx->treated[si]|=_SEEK_TREATED_EDGE0;
+        sctx->treated[si]|=TREATED_EDGE0;
       } else if (xi!=sx-1) {
         ELL_3V_SET(sctx->edgealpha+3*(0+5*si),-1,-1,-1);
-        sctx->treated[si]&=0xFF^_SEEK_TREATED_EDGE0;
+        sctx->treated[si]&=0xFF^TREATED_EDGE0;
       }
 
-      if (sctx->treated[si]&_SEEK_TREATED_EDGE4) {
+      if (sctx->treated[si]&TREATED_EDGE4) {
         /* has been treated, just copy results */
         ELL_3V_COPY(sctx->edgealpha+3*(1+5*si), sctx->edgealpha+3*(4+5*si));
         ELL_3M_COPY(sctx->edgenorm+9*(1+5*si), sctx->edgenorm+9*(4+5*si));
         ELL_3M_COPY(sctx->edgeicoord+9*(1+5*si), sctx->edgeicoord+9*(4+5*si));
-        sctx->treated[si]|=_SEEK_TREATED_EDGE1;
+        sctx->treated[si]|=TREATED_EDGE1;
       } else if (yi!=sy-1) {
         ELL_3V_SET(sctx->edgealpha+3*(1+5*si),-1,-1,-1);
-        sctx->treated[si]&=0xFF^_SEEK_TREATED_EDGE1;
+        sctx->treated[si]&=0xFF^TREATED_EDGE1;
       }
 
       /* edges within and at top of the slab are new */
       ELL_3V_SET(sctx->edgealpha+3*(2+5*si),-1,-1,-1);
-      sctx->treated[si]&=0xFF^_SEEK_TREATED_EDGE2;
+      sctx->treated[si]&=0xFF^TREATED_EDGE2;
 
       ELL_3V_SET(sctx->edgealpha+3*(3+5*si),-1,-1,-1);
-      sctx->treated[si]&=0xFF^_SEEK_TREATED_EDGE3;
+      sctx->treated[si]&=0xFF^TREATED_EDGE3;
 
       ELL_3V_SET(sctx->edgealpha+3*(4+5*si),-1,-1,-1);
-      sctx->treated[si]&=0xFF^_SEEK_TREATED_EDGE4;
+      sctx->treated[si]&=0xFF^TREATED_EDGE4;
     }
   }
 
@@ -1277,7 +1277,7 @@ intersectionShuffleProbe(seekContext *sctx, baggage *bag) {
   for (yi=0; yi<sy; yi++) {
     for (xi=0; xi<sx; xi++) {
       si = xi + sx*yi;
-      if (sctx->treated[si]&_SEEK_TREATED_FACE3) {
+      if (sctx->treated[si]&TREATED_FACE3) {
         /* we can copy previous results */
         ELL_2V_COPY(sctx->facecoord+2*(0+4*si), sctx->facecoord+2*(3+4*si));
         ELL_3V_COPY(sctx->faceicoord+3*(0+4*si), sctx->faceicoord+3*(3+4*si));
@@ -1285,29 +1285,29 @@ intersectionShuffleProbe(seekContext *sctx, baggage *bag) {
         for (i=0; i<3; i++)
           ELL_4V_COPY(sctx->pairs+12*(0+4*si)+4*i, sctx->pairs+12*(3+4*si)+4*i);
       } else if (xi!=sx-1 && yi!=sy-1) {
-        if (sctx->treated[si]&_SEEK_TREATED_REQUEST)
+        if (sctx->treated[si]&TREATED_REQUEST)
           connectFace(sctx, bag, xi, yi, 0);
         else
           ELL_4V_SET(sctx->pairs+12*(0+4*si),-1,-1,-1,-1);
       }
       if (xi!=sx-1) {
-        if (sctx->treated[si]&_SEEK_TREATED_REQUEST ||
-            (yi!=0 && sctx->treated[xi+sx*(yi-1)]&_SEEK_TREATED_REQUEST))
+        if (sctx->treated[si]&TREATED_REQUEST ||
+            (yi!=0 && sctx->treated[xi+sx*(yi-1)]&TREATED_REQUEST))
           connectFace(sctx, bag, xi, yi, 1);
         else ELL_4V_SET(sctx->pairs+12*(1+4*si),-1,-1,-1,-1);
       }
       if (yi!=sy-1) {
-        if (sctx->treated[si]&_SEEK_TREATED_REQUEST ||
-            (xi!=0 && sctx->treated[xi-1+sx*yi]&_SEEK_TREATED_REQUEST))
+        if (sctx->treated[si]&TREATED_REQUEST ||
+            (xi!=0 && sctx->treated[xi-1+sx*yi]&TREATED_REQUEST))
           connectFace(sctx, bag, xi, yi, 2);
         else ELL_4V_SET(sctx->pairs+12*(2+4*si),-1,-1,-1,-1);
         if (xi!=sx-1) {
-          if (sctx->treated[si]&_SEEK_TREATED_REQUEST) {
+          if (sctx->treated[si]&TREATED_REQUEST) {
             connectFace(sctx, bag, xi, yi, 3);
-            sctx->treated[si]|=_SEEK_TREATED_FACE3;
+            sctx->treated[si]|=TREATED_FACE3;
           } else {
             ELL_4V_SET(sctx->pairs+12*(3+4*si),-1,-1,-1,-1);
-            sctx->treated[si]&=0xFF^_SEEK_TREATED_FACE3;
+            sctx->treated[si]&=0xFF^TREATED_FACE3;
           }
         }
       }
@@ -1317,7 +1317,7 @@ intersectionShuffleProbe(seekContext *sctx, baggage *bag) {
 
 /* special triangulation routine for use with T-based extraction */
 int /* Biff: (private) nope */
-_seekTriangulateT(seekContext *sctx, baggage *bag, limnPolyData *lpld) {
+seek__TriangulateT(seekContext *sctx, baggage *bag, limnPolyData *lpld) {
   unsigned xi, yi, sx, sy, si, i;
 
   /* map edge indices w.r.t. faces (as used in sctx->pairs) back to
@@ -1751,7 +1751,7 @@ shuffleT(seekContext *sctx, baggage *bag) {
   if (sctx->strengthUse) { /* requests need to be cleared initially */
     for (yi=0; yi<sy; yi++) {
       for (xi=0; xi<sx; xi++) {
-        sctx->treated[xi+sx*yi] &= 0xFF^_SEEK_TREATED_REQUEST;
+        sctx->treated[xi+sx*yi] &= 0xFF^TREATED_REQUEST;
       }
     }
   } /* else, the request bits are always on */
@@ -1779,11 +1779,11 @@ shuffleT(seekContext *sctx, baggage *bag) {
         if (sctx->stng[0+2*si]>sctx->strength ||
             sctx->stng[1+2*si]>sctx->strength) {
           /* set up to four request bits */
-          sctx->treated[si] |= _SEEK_TREATED_REQUEST;
-          if (xi!=0) sctx->treated[xi-1+sx*yi] |= _SEEK_TREATED_REQUEST;
-          if (yi!=0) sctx->treated[xi+sx*(yi-1)] |= _SEEK_TREATED_REQUEST;
+          sctx->treated[si] |= TREATED_REQUEST;
+          if (xi!=0) sctx->treated[xi-1+sx*yi] |= TREATED_REQUEST;
+          if (yi!=0) sctx->treated[xi+sx*(yi-1)] |= TREATED_REQUEST;
           if (xi!=0 && yi!=0)
-            sctx->treated[xi-1+sx*(yi-1)] |= _SEEK_TREATED_REQUEST;
+            sctx->treated[xi-1+sx*(yi-1)] |= TREATED_REQUEST;
         }
       }
 
@@ -1817,7 +1817,7 @@ probeT(seekContext *sctx, baggage *bag, double zi) {
       si = xi + sx*yi;
 
       if (sctx->gctx) { /* HEY: need this check, what's the right way? */
-        _seekIdxProbe(sctx, bag, xi, yi, zi);
+        seek__IdxProbe(sctx, bag, xi, yi, zi);
       }
       if (sctx->strengthUse) {
         sctx->stngcontext[si] = sctx->strengthSign*sctx->stngAns[0];
@@ -1829,7 +1829,7 @@ probeT(seekContext *sctx, baggage *bag, double zi) {
       }
       ELL_3V_COPY(sctx->gradcontext + 3*(1 + 2*si), sctx->gradAns);
       ELL_3M_COPY(sctx->hesscontext + 9*(1 + 2*si), sctx->hessAns);
-      _seekHess2T(sctx->tcontext + 9*(1 + 2*si), sctx->evalAns, sctx->evecAns,
+      seek__Hess2T(sctx->tcontext + 9*(1 + 2*si), sctx->evalAns, sctx->evecAns,
                   sctx->evalDiffThresh, (sctx->type==seekTypeRidgeSurfaceT));
     }
   }
@@ -1839,7 +1839,7 @@ probeT(seekContext *sctx, baggage *bag, double zi) {
  * (vs. adding many more case distinctions to shuffleProbe)
  * this only duplicates little (and trivial) code */
 int /* Biff: (private) nope */
-_seekShuffleProbeT(seekContext *sctx, baggage *bag) {
+seek__ShuffleProbeT(seekContext *sctx, baggage *bag) {
   /* for high-quality normal estimation, we need two slices of data
    * context; to keep the code simple, separate shuffle and probe
    * operations - let's hope this doesn't destroy cache performance */
@@ -1849,7 +1849,7 @@ _seekShuffleProbeT(seekContext *sctx, baggage *bag) {
       /* before the first round, initialize treated to zero */
       memset(sctx->treated, 0, sizeof(char)*sctx->sx*sctx->sy);
     else /* request all edges */
-      memset(sctx->treated, _SEEK_TREATED_REQUEST,
+      memset(sctx->treated, TREATED_REQUEST,
              sizeof(char)*sctx->sx*sctx->sy);
     probeT(sctx, bag, 0);
     shuffleT(sctx, bag);

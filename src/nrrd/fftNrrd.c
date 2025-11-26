@@ -44,13 +44,13 @@ nrrdFFTWWisdomRead(FILE *file) {
 }
 
 static void *
-_nrrdFftwFreeWrapper(void *ptr) {
+fftwFreeWrapper(void *ptr) {
   fftw_free(ptr);
   return NULL;
 }
 
 static void *
-_nrrdFftwDestroyPlanWrapper(void *ptr) {
+fftwDestroyPlanWrapper(void *ptr) {
   fftw_plan plan;
   plan = AIR_CAST(fftw_plan, ptr);
   fftw_destroy_plan(plan);
@@ -58,7 +58,7 @@ _nrrdFftwDestroyPlanWrapper(void *ptr) {
 }
 
 static void
-_nrrdDimsReverse(fftw_iodim *dims, unsigned int len) {
+dimsReverse(fftw_iodim *dims, unsigned int len) {
   fftw_iodim buff[NRRD_DIM_MAX];
   unsigned int ii;
   for (ii = 0; ii < len; ii++) {
@@ -141,7 +141,7 @@ nrrdFFT(Nrrd *nout, const Nrrd *_nin, unsigned int *axes, unsigned int axesNum, 
      to be const, and we can't have const with the plan creation over-writing
      the input (except with FFTW_ESTIMATE).  Given that, we might as well use
      the memory-alignment-savvy fftw_malloc; the freeing is handled by both
-     _nrrdFftwFreeWrapper and nrrdNix. */
+     fftwFreeWrapper and nrrdNix. */
   /* (NN = 2 * number of complex values) */
   inData = AIR_CAST(double *, fftw_malloc(NN * sizeof(double)));
   if (!inData) {
@@ -149,7 +149,7 @@ nrrdFFT(Nrrd *nout, const Nrrd *_nin, unsigned int *axes, unsigned int axesNum, 
     return 1;
   }
   mop = airMopNew();
-  airMopAdd(mop, inData, _nrrdFftwFreeWrapper, airMopAlways);
+  airMopAdd(mop, inData, fftwFreeWrapper, airMopAlways);
   nin = nrrdNew();
   airMopAdd(mop, nin, nrrdNix_mop /* NOT Nuke */, airMopAlways);
   nrrdAxisInfoGet_nva(_nin, nrrdAxisInfoSize, inSize);
@@ -190,8 +190,8 @@ nrrdFFT(Nrrd *nout, const Nrrd *_nin, unsigned int *axes, unsigned int axesNum, 
     }
     stride *= inSize[axi];
   }
-  _nrrdDimsReverse(txfDims, txfRank);
-  _nrrdDimsReverse(howDims, howRank);
+  dimsReverse(txfDims, txfRank);
+  dimsReverse(howDims, howRank);
 
   /*
   fprintf(stderr, "!%s: ------------- txfRank %u, howRank %u\n",
@@ -234,7 +234,7 @@ nrrdFFT(Nrrd *nout, const Nrrd *_nin, unsigned int *axes, unsigned int axesNum, 
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, plan, _nrrdFftwDestroyPlanWrapper, airMopAlways);
+  airMopAdd(mop, plan, fftwDestroyPlanWrapper, airMopAlways);
 
   /* only after planning is done (which can over-write contents of inData)
      do we copy the real input values over */

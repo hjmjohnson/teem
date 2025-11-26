@@ -21,8 +21,8 @@
 #include "privateTen.h"
 
 static int /* Biff: 1 */
-_experAlloc(tenExperSpec *espec, unsigned int num) {
-  static const char me[] = "_experAlloc";
+experAlloc(tenExperSpec *espec, unsigned int num) {
+  static const char me[] = "experAlloc";
 
   airFree(espec->bval);
   espec->bval = NULL;
@@ -78,7 +78,7 @@ tenExperSpecGradSingleBValSet(tenExperSpec *espec,
     return 1;
   }
   imgNum = gradNum + !!insertB0;
-  if (_experAlloc(espec, imgNum)) {
+  if (experAlloc(espec, imgNum)) {
     biffAddf(TEN, "%s: couldn't allocate", me);
     return 1;
   }
@@ -119,7 +119,7 @@ tenExperSpecGradBValSet(tenExperSpec *espec,
     return 1;
   }
   imgNum = bgNum + !!insertB0;
-  if (_experAlloc(espec, imgNum)) {
+  if (experAlloc(espec, imgNum)) {
     biffAddf(TEN, "%s: couldn't allocate", me);
     return 1;
   }
@@ -153,7 +153,7 @@ tenExperSpecGradBValWghtSet(tenExperSpec *espec,
     biffAddf(TEN, "%s: got NULL pointer", me);
     return 1;
   }
-  if (_experAlloc(espec, imgNum)) {
+  if (experAlloc(espec, imgNum)) {
     biffAddf(TEN, "%s: couldn't allocate", me);
     return 1;
   }
@@ -265,8 +265,8 @@ tenExperSpecNix(tenExperSpec *espec) {
 AIR_MOPPER(tenExperSpecNix)
 
 double /* Biff: (private) nope */
-_tenExperSpec_sqe(const double *dwiMeas, const double *dwiSim, const tenExperSpec *espec,
-                  int knownB0) {
+ten__ExperSpec_sqe(const double *dwiMeas, const double *dwiSim,
+                   const tenExperSpec *espec, int knownB0) {
   unsigned int ii;
   double sqe;
 
@@ -280,7 +280,7 @@ _tenExperSpec_sqe(const double *dwiMeas, const double *dwiSim, const tenExperSpe
       dd = dwiMeas[ii] - dwiSim[ii];
       sqe += dd * dd;
       /*
-      fprintf(stderr, "!%s: dwi[%u]: %g - %g -> %g\n", "_tenExperSpec_sqe",
+      fprintf(stderr, "!%s: dwi[%u]: %g - %g -> %g\n", "ten__ExperSpec_sqe",
               ii, dwiMeas[ii], dwiSim[ii], sqe);
       */
     }
@@ -295,8 +295,8 @@ _tenExperSpec_sqe(const double *dwiMeas, const double *dwiSim, const tenExperSpe
 }
 
 double /* Biff: (private) nope */
-_tenExperSpec_nll(const double *dwiMeas, const double *dwiSim, const tenExperSpec *espec,
-                  int rician, double sigma, int knownB0) {
+ten__ExperSpec_nll(const double *dwiMeas, const double *dwiSim,
+                   const tenExperSpec *espec, int rician, double sigma, int knownB0) {
   double nll;
   unsigned int ii;
 

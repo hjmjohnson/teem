@@ -21,9 +21,9 @@
 #include "privateGage.h"
 
 void
-_gageVecIv3Print(FILE *file, gageContext *ctx, gagePerVolume *pvl) {
+gage__VecIv3Print(FILE *file, gageContext *ctx, gagePerVolume *pvl) {
 
   AIR_UNUSED(ctx);
   AIR_UNUSED(pvl);
-  fprintf(file, "_gageVecIv3Print() not implemented\n");
+  fprintf(file, "gage__VecIv3Print() not implemented\n");
 }

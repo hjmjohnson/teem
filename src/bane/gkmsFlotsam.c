@@ -25,14 +25,14 @@
 /* ----------------------------------------------------------- */
 
 /*
-** baneGkmsParseIncStrategy
+** parseIncStrategy
 **
 ** inc[0]: member of baneInc* enum
 ** inc[1], inc[2] ... : incParm[0], incParm[1] ...
 */
 static int
-baneGkmsParseIncStrategy(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
-  static const char me[] = "baneGkmsParseIncStrategy";
+parseIncStrategy(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
+  static const char me[] = "parseIncStrategy";
   double *inc, *incParm;
   int i, bins;
 
@@ -77,19 +77,18 @@ baneGkmsParseIncStrategy(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 
   return 1;
 }
 
-static const hestCB _baneGkmsHestIncStrategy = {(1 + BANE_PARM_NUM) * sizeof(double),
-                                                "inclusion strategy",
-                                                baneGkmsParseIncStrategy, NULL};
+static const hestCB incStrategy_hcb = {(1 + BANE_PARM_NUM) * sizeof(double),
+                                       "inclusion strategy", parseIncStrategy, NULL};
 
-const hestCB *const baneGkmsHestIncStrategy = &_baneGkmsHestIncStrategy;
+const hestCB *const baneGkmsHestIncStrategy = &incStrategy_hcb;
 
 /* ----------------------------------------------------------- */
 /* ----------------------------------------------------------- */
 /* ----------------------------------------------------------- */
 
 static int
-baneGkmsParseBEF(void *ptr, const char *str, char _err[AIR_STRLEN_HUGE + 1]) {
-  static const char me[] = "baneGkmsParseBEF";
+parseBEF(void *ptr, const char *str, char _err[AIR_STRLEN_HUGE + 1]) {
+  static const char me[] = "parseBEF";
   char *nerr;
   float cent, width, shape, alpha, off, *bef;
   Nrrd **nrrdP;
@@ -151,10 +150,10 @@ baneGkmsParseBEF(void *ptr, const char *str, char _err[AIR_STRLEN_HUGE + 1]) {
   return 0;
 }
 
-static const hestCB _baneGkmsHestBEF = {sizeof(Nrrd *), "boundary emphasis function",
-                                        baneGkmsParseBEF, nrrdNuke_mop};
+static const hestCB BEF_hcb = {sizeof(Nrrd *), "boundary emphasis function", parseBEF,
+                               nrrdNuke_mop};
 
-const hestCB *const baneGkmsHestBEF = &_baneGkmsHestBEF;
+const hestCB *const baneGkmsHestBEF = &BEF_hcb;
 
 /* ----------------------------------------------------------- */
 /* ----------------------------------------------------------- */
@@ -166,8 +165,8 @@ const hestCB *const baneGkmsHestBEF = &_baneGkmsHestBEF;
 ** gthr[1] = the scaling, or the absolute
 */
 static int
-baneGkmsParseGthresh(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
-  static const char me[] = "baneGkmsParseGthresh";
+parseGthresh(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
+  static const char me[] = "parseGthresh";
   float *gthr;
 
   if (!(ptr && str)) {
@@ -192,10 +191,10 @@ baneGkmsParseGthresh(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) 
   return 0;
 }
 
-static const hestCB _baneGkmsHestGthresh = {2 * sizeof(float), "gthresh specification",
-                                            baneGkmsParseGthresh, NULL};
+static const hestCB gthresh_hcb = {2 * sizeof(float), "gthresh specification",
+                                   parseGthresh, NULL};
 
-const hestCB *const baneGkmsHestGthresh = &_baneGkmsHestGthresh;
+const hestCB *const baneGkmsHestGthresh = &gthresh_hcb;
 
 /* ----------------------------------------------------------- */
 /* ----------------------------------------------------------- */
@@ -211,7 +210,7 @@ const unrrduCmd *const baneGkmsCmdList[] = {BANE_GKMS_MAP(BANE_GKMS_LIST) NULL};
 
 /* clang-format off */
 static const char *
-_baneGkmsMeasrStr[] = {
+measrStr[] = {
   "(unknown measr)",
   "min",
   "max",
@@ -221,7 +220,7 @@ _baneGkmsMeasrStr[] = {
 };
 
 static const int
-_baneGkmsMeasrVal[] = {
+measrVal[] = {
   nrrdMeasureUnknown,
   nrrdMeasureHistoMin,
   nrrdMeasureHistoMax,
@@ -231,15 +230,14 @@ _baneGkmsMeasrVal[] = {
 };
 
 static const airEnum
-_baneGkmsMeasr = {
+measr_ae = {
   "measurement",
   5,
-  _baneGkmsMeasrStr, _baneGkmsMeasrVal,
+  measrStr, measrVal,
   NULL,
   NULL, NULL,
   AIR_FALSE
 };
 
-const airEnum *const
-baneGkmsMeasr = &_baneGkmsMeasr;
+const airEnum *const baneGkmsMeasr = &measr_ae;
 /* clang-format on */

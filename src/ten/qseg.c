@@ -22,10 +22,19 @@
 
 #define MAX_KMEANS_ITERATIONS 50
 
+// forward declaration of things removed from privateTen.h (and made static)
+static void initCent2(const int gradcount, const double qvals[], const double qpoints[],
+                      double centroids[6]);
+static int calcCent2(const int gradcount, const double qpoints[], const double dists[],
+                     double centroid[6], unsigned int seg[]);
+static void calcDists(const int centcount, const double centroid[], const int gradcount,
+                      const double qpoints[], double dists[]);
+static double pldist(const double point[], const double line[]);
+
 /* Calculate the Q-ball profile from DWIs */
 void
-_tenQball(const double b, const int gradcount, const double svals[],
-          const double grads[], double qvals[]) {
+ten__Qball(const double b, const int gradcount, const double svals[],
+           const double grads[], double qvals[]) {
   /* Not an optimal Q-ball implementation! (Taken from submission to
      MICCAI 2006) Should be solved analytically in the future,
      implemented from recent papers. */
@@ -57,18 +66,18 @@ _tenQball(const double b, const int gradcount, const double svals[],
 
 /* Segments DWIs into 2 segments based on Q-ball profiles */
 void
-_tenSegsamp2(const int gradcount, const double qvals[], const double grads[],
-             const double qpoints[], unsigned int seg[], double dists[]) {
+ten__Segsamp2(const int gradcount, const double qvals[], const double grads[],
+              const double qpoints[], unsigned int seg[], double dists[]) {
   const int segcount = 2;
   int i, changed = AIR_TRUE;
   double centroids[3 * 2]; /* 3*segcount */
 
   AIR_UNUSED(grads);
-  _tenInitcent2(gradcount, qvals, qpoints, centroids);
+  initCent2(gradcount, qvals, qpoints, centroids);
 
   for (i = 0; i < MAX_KMEANS_ITERATIONS && changed; i++) {
-    _tenCalcdists(segcount, centroids, gradcount, qpoints, dists);
-    changed = _tenCalccent2(gradcount, qpoints, dists, centroids, seg);
+    calcDists(segcount, centroids, gradcount, qpoints, dists);
+    changed = calcCent2(gradcount, qpoints, dists, centroids, seg);
 
     /*
       printf( "Seg[%d]\t= { ",i );
@@ -80,9 +89,9 @@ _tenSegsamp2(const int gradcount, const double qvals[], const double grads[],
 }
 
 /* Gives an inital choice of 2 centroids */
-void
-_tenInitcent2(const int gradcount, const double qvals[], const double qpoints[],
-              double centroids[6]) {
+static void
+initCent2(const int gradcount, const double qvals[], const double qpoints[],
+          double centroids[6]) {
   int i, maxidx;
   double max, dist;
 
@@ -100,7 +109,7 @@ _tenInitcent2(const int gradcount, const double qvals[], const double qpoints[],
   /* Find peak/axis from Q-ball furthest away from first peak */
   max = 0;
   for (i = 0; i < gradcount; i++) {
-    dist = _tenPldist(qpoints + 3 * i, centroids);
+    dist = pldist(qpoints + 3 * i, centroids);
     if (dist > max) {
       maxidx = i;
       max = dist;
@@ -117,9 +126,9 @@ _tenInitcent2(const int gradcount, const double qvals[], const double qpoints[],
 /* Calculates 2 new centroids (and a new segmentation) from distances
    between Q-balls and centroids, returns true if segmentation changed
 */
-int /* Biff: (private) nope */
-_tenCalccent2(const int gradcount, const double qpoints[], const double dists[],
-              double centroid[6], unsigned int seg[]) {
+static int /* Biff: nope */
+calcCent2(const int gradcount, const double qpoints[], const double dists[],
+          double centroid[6], unsigned int seg[]) {
 #if 0
   /* HEY: Attempt to implement better line-adding by adding
      outerproducts of points and estimating major eigenvector
@@ -225,8 +234,8 @@ _tenCalccent2(const int gradcount, const double qpoints[], const double dists[],
 
 /* Converts Q-values and gradients to points on the Q-ball surface */
 void
-_tenQvals2points(const int gradcount, const double qvals[], const double grads[],
-                 double qpoints[]) {
+ten__Qvals2points(const int gradcount, const double qvals[], const double grads[],
+                  double qpoints[]) {
   int i;
   memcpy(qpoints, grads, 3 * gradcount * sizeof(double));
   for (i = 0; i < gradcount; i++) {
@@ -238,13 +247,13 @@ _tenQvals2points(const int gradcount, const double qvals[], const double grads[]
 
 /* Calculates the shortest distances from each centroid/axis to each
    Q-ball point */
-void
-_tenCalcdists(const int centcount, const double centroid[], const int gradcount,
-              const double qpoints[], double dists[]) {
+static void
+calcDists(const int centcount, const double centroid[], const int gradcount,
+          const double qpoints[], double dists[]) {
   int i, j;
   for (j = 0; j < centcount; j++)
     for (i = 0; i < gradcount; i++)
-      dists[j * gradcount + i] = _tenPldist(&qpoints[3 * i], &centroid[3 * j]);
+      dists[j * gradcount + i] = pldist(&qpoints[3 * i], &centroid[3 * j]);
 
   /*
     printf("dists = ");
@@ -256,8 +265,8 @@ _tenCalcdists(const int centcount, const double centroid[], const int gradcount,
 
 /* Estimates the shortest distance from a point to a line going
    through the origin */
-double /* Biff: (private) nope */
-_tenPldist(const double point[], const double line[]) {
+static double /* Biff: nope */
+pldist(const double point[], const double line[]) {
 
   double cross[3];
   double negpoint[3];
@@ -271,10 +280,10 @@ _tenPldist(const double point[], const double line[]) {
   return ELL_3V_LEN(cross) / ELL_3V_LEN(line);
 }
 
+#if 0 // Removed in TeemV2 because apparently not being used?
 /* Converts a segmentation into a set of 0-1 weights */
-void
-_tenSeg2weights(const int gradcount, const int seg[], const int segcount,
-                double weights[]) {
+static void
+seg2weights(const int gradcount, const int seg[], const int segcount, double weights[]) {
   int i, j;
   for (j = 0; j < segcount; j++) {
     for (i = 0; i < gradcount; i++) {
@@ -283,3 +292,4 @@ _tenSeg2weights(const int gradcount, const int seg[], const int segcount,
   }
   return;
 }
+#endif

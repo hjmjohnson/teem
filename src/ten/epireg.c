@@ -21,9 +21,8 @@
 #include "privateTen.h"
 
 static int /* Biff: 1 */
-_tenEpiRegSave(const char *fname, Nrrd *nsingle, Nrrd **nmulti, int len,
-               const char *desc) {
-  static const char me[] = "_tenEpiRegSave";
+epiRegSave(const char *fname, Nrrd *nsingle, Nrrd **nmulti, int len, const char *desc) {
+  static const char me[] = "epiRegSave";
   Nrrd *nout;
   airArray *mop;
 
@@ -49,10 +48,10 @@ _tenEpiRegSave(const char *fname, Nrrd *nsingle, Nrrd **nmulti, int len,
 }
 
 static int /* Biff: 1 */
-_tenEpiRegCheck(Nrrd **nout, Nrrd **ndwi, unsigned int dwiLen, Nrrd *ngrad,
-                int reference, double bwX, double bwY, double DWthr,
-                const NrrdKernel *kern, double *kparm) {
-  static const char me[] = "_tenEpiRegCheck";
+epiRegCheck(Nrrd **nout, Nrrd **ndwi, unsigned int dwiLen, Nrrd *ngrad, int reference,
+            double bwX, double bwY, double DWthr, const NrrdKernel *kern,
+            double *kparm) {
+  static const char me[] = "epiRegCheck";
   unsigned int ni;
 
   AIR_UNUSED(DWthr);
@@ -109,9 +108,9 @@ _tenEpiRegCheck(Nrrd **nout, Nrrd **ndwi, unsigned int dwiLen, Nrrd *ngrad,
 ** to manage them
 */
 static int /* Biff: 1 */
-_tenEpiRegBlur(Nrrd **nblur, Nrrd **ndwi, unsigned int dwiLen, double bwX, double bwY,
-               int verb) {
-  static const char me[] = "_tenEpiRegBlur";
+epiRegBlur(Nrrd **nblur, Nrrd **ndwi, unsigned int dwiLen, double bwX, double bwY,
+           int verb) {
+  static const char me[] = "epiRegBlur";
   NrrdResampleInfo *rinfo;
   airArray *mop;
   size_t ni, sx, sy, sz;
@@ -201,8 +200,8 @@ _tenEpiRegBlur(Nrrd **nblur, Nrrd **ndwi, unsigned int dwiLen, double bwX, doubl
 }
 
 int /* Biff: (private) 1 */
-_tenEpiRegThresholdFind(double *DWthrP, Nrrd **nin, int ninLen, int save, double expo) {
-  static const char me[] = "_tenEpiRegThresholdFind";
+ten__EpiRegThresholdFind(double *DWthrP, Nrrd **nin, int ninLen, int save, double expo) {
+  static const char me[] = "ten__EpiRegThresholdFind";
   Nrrd *nhist, *ntmp;
   airArray *mop;
   int ni, bins, E;
@@ -248,7 +247,7 @@ _tenEpiRegThresholdFind(double *DWthrP, Nrrd **nin, int ninLen, int save, double
     nrrdSave("regtmp-dwihist.nrrd", nhist, NULL);
   }
   /*
-  if (_tenFindValley(DWthrP, nhist, 0.65, save)) {
+  if (ten__FindValley(DWthrP, nhist, 0.65, save)) {
     biffAddf(TEN, "%s: problem finding DWI histogram valley", me);
     airMopError(mop); return 1;
   }
@@ -264,16 +263,16 @@ _tenEpiRegThresholdFind(double *DWthrP, Nrrd **nin, int ninLen, int save, double
 }
 
 static int /* Biff: 1 */
-_tenEpiRegThreshold(Nrrd **nthresh, Nrrd **nblur, unsigned int ninLen, double DWthr,
-                    int verb, int progress, double expo) {
-  static const char me[] = "_tenEpiRegThreshold";
+epiRegThreshold(Nrrd **nthresh, Nrrd **nblur, unsigned int ninLen, double DWthr,
+                int verb, int progress, double expo) {
+  static const char me[] = "epiRegThreshold";
   airArray *mop;
   size_t I, sx, sy, sz, ni;
   float val;
   unsigned char *thr;
 
   if (!(AIR_EXISTS(DWthr))) {
-    if (_tenEpiRegThresholdFind(&DWthr, nblur, ninLen, progress, expo)) {
+    if (ten__EpiRegThresholdFind(&DWthr, nblur, ninLen, progress, expo)) {
       biffAddf(TEN, "%s: trouble with automatic threshold determination", me);
       return 1;
     }
@@ -314,10 +313,10 @@ _tenEpiRegThreshold(Nrrd **nthresh, Nrrd **nblur, unsigned int ninLen, double DW
 }
 
 /*
-** _tenEpiRegBB: find the biggest bright CC
+** epiRegBB: find the biggest bright CC
 */
 static int
-_tenEpiRegBB(Nrrd *nval, Nrrd *nsize) {
+epiRegBB(Nrrd *nval, Nrrd *nsize) {
   unsigned char *val;
   int *size, big;
   unsigned int ci;
@@ -332,8 +331,8 @@ _tenEpiRegBB(Nrrd *nval, Nrrd *nsize) {
 }
 
 static int /* Biff: 1 */
-_tenEpiRegCC(Nrrd **nthr, unsigned int ninLen, int conny, int verb) {
-  static const char me[] = "_tenEpiRegCC";
+epiRegCC(Nrrd **nthr, unsigned int ninLen, int conny, int verb) {
+  static const char me[] = "epiRegCC";
   Nrrd *nslc, *ncc, *nval, *nsize;
   airArray *mop;
   int big;
@@ -361,7 +360,7 @@ _tenEpiRegCC(Nrrd **nthr, unsigned int ninLen, int conny, int verb) {
        (currently) small is big/2 */
     big = -1;
     if (nrrdCCFind(ncc, &nval, nthr[ni], nrrdTypeDefault, conny)
-        || nrrdCCSize(nsize, ncc) || !(big = _tenEpiRegBB(nval, nsize))
+        || nrrdCCSize(nsize, ncc) || !(big = epiRegBB(nval, nsize))
         || nrrdCCMerge(ncc, ncc, nval, -1, big - 1, 0, conny)
         || nrrdCCRevalue(nthr[ni], ncc, nval)) {
       if (big) {
@@ -376,7 +375,7 @@ _tenEpiRegCC(Nrrd **nthr, unsigned int ninLen, int conny, int verb) {
       big = -1;
       if (nrrdSlice(nslc, nthr[ni], 2, z)
           || nrrdCCFind(ncc, &nval, nslc, nrrdTypeDefault, conny)
-          || nrrdCCSize(nsize, ncc) || !(big = _tenEpiRegBB(nval, nsize))
+          || nrrdCCSize(nsize, ncc) || !(big = epiRegBB(nval, nsize))
           || nrrdCCMerge(ncc, ncc, nval, 1, big / 2, 0, conny)
           || nrrdCCRevalue(nslc, ncc, nval)
           || nrrdSplice(nthr[ni], nthr[ni], nslc, 2, z)) {
@@ -405,7 +404,7 @@ _tenEpiRegCC(Nrrd **nthr, unsigned int ninLen, int conny, int verb) {
 #define M_20   4
 
 /*
-** _tenEpiRegMoments()
+** epiRegMoments()
 **
 ** the moments are stored in (of course) a nrrd, one scanline per slice,
 ** with each scanline containing:
@@ -414,8 +413,8 @@ _tenEpiRegCC(Nrrd **nthr, unsigned int ninLen, int conny, int verb) {
 **   mean(x)  mean(y)  M_02    M_11    M_20
 */
 static int /* Biff: 1 */
-_tenEpiRegMoments(Nrrd **nmom, Nrrd **nthresh, unsigned int ninLen, int verb) {
-  static const char me[] = "_tenEpiRegMoments";
+epiRegMoments(Nrrd **nmom, Nrrd **nthresh, unsigned int ninLen, int verb) {
+  static const char me[] = "epiRegMoments";
   size_t sx, sy, sz, xi, yi, zi, ni;
   double N, mx, my, cx, cy, x, y, M02, M11, M20, *mom;
   float val;
@@ -506,7 +505,7 @@ _tenEpiRegMoments(Nrrd **nmom, Nrrd **nthresh, unsigned int ninLen, int verb) {
 }
 
 /*
-** _tenEpiRegPairXforms
+** epiRegPairXforms
 **
 ** uses moment information to compute all pair-wise transforms, which are
 ** stored in the 3 x ninLen x ninLen x sizeZ output.  If xfr = npxfr->data,
@@ -516,8 +515,8 @@ _tenEpiRegMoments(Nrrd **nmom, Nrrd **nthresh, unsigned int ninLen, int verb) {
 ** that maps slice zi from volume A to volume B.
 */
 static int /* Biff: 1 */
-_tenEpiRegPairXforms(Nrrd *npxfr, Nrrd **nmom, int ninLen) {
-  static const char me[] = "_tenEpiRegPairXforms";
+epiRegPairXforms(Nrrd *npxfr, Nrrd **nmom, int ninLen) {
+  static const char me[] = "epiRegPairXforms";
   double *xfr, *A, *B, hh, ss, tt;
   int ai, bi;
   unsigned int zi, sz;
@@ -552,8 +551,8 @@ _tenEpiRegPairXforms(Nrrd *npxfr, Nrrd **nmom, int ninLen) {
 #define TRAN  4
 
 static int /* Biff: 1 */
-_tenEpiRegEstimHST(Nrrd *nhst, Nrrd *npxfr, int ninLen, Nrrd *ngrad) {
-  static const char me[] = "_tenEpiRegEstimHST";
+epiRegEstimHST(Nrrd *nhst, Nrrd *npxfr, int ninLen, Nrrd *ngrad) {
+  static const char me[] = "epiRegEstimHST";
   double *hst, *grad, *mat, *vec, *ans, *pxfr, *gA, *gB;
   int A, B, npairs, ri;
   Nrrd **nmat, *nvec, **ninv, *nans;
@@ -744,9 +743,8 @@ _tenEpiRegEstimHST(Nrrd *nhst, Nrrd *npxfr, int ninLen, Nrrd *ngrad) {
 }
 
 static int /* Biff: 1 */
-_tenEpiRegFitHST(Nrrd *nhst, Nrrd **_ncc, int ninLen, double goodFrac, int prog,
-                 int verb) {
-  static const char me[] = "_tenEpiRegFitHST";
+epiRegFitHST(Nrrd *nhst, Nrrd **_ncc, int ninLen, double goodFrac, int prog, int verb) {
+  static const char me[] = "epiRegFitHST";
   airArray *mop;
   Nrrd *ncc, *ntA, *ntB, *nsd, *nl2;
   unsigned int cc, sz, zi, sh, hi;
@@ -782,8 +780,7 @@ _tenEpiRegFitHST(Nrrd *nhst, Nrrd **_ncc, int ninLen, double goodFrac, int prog,
   if (verb) {
     fprintf(stderr, "done\n");
   }
-  if (prog
-      && _tenEpiRegSave("regtmp-messy.txt", ntA, NULL, 0, "segmentation uncertainty")) {
+  if (prog && epiRegSave("regtmp-messy.txt", ntA, NULL, 0, "segmentation uncertainty")) {
     biffMovef(TEN, NRRD, "%s: EpiRegSave failed", me);
     airMopError(mop);
     return 1;
@@ -857,8 +854,8 @@ _tenEpiRegFitHST(Nrrd *nhst, Nrrd **_ncc, int ninLen, double goodFrac, int prog,
 }
 
 static int
-_tenEpiRegGetHST(double *hhP, double *ssP, double *ttP, int reference, int ni, int zi,
-                 Nrrd *npxfr, Nrrd *nhst, Nrrd *ngrad) {
+epiRegGetHST(double *hhP, double *ssP, double *ttP, int reference, int ni, int zi,
+             Nrrd *npxfr, Nrrd *nhst, Nrrd *ngrad) {
   double *xfr, *hst, *_g, grad[9]; /* big enough for 2nd order */
   unsigned int sz, ninLen;
 
@@ -905,7 +902,7 @@ _tenEpiRegGetHST(double *hhP, double *ssP, double *ttP, int reference, int ni, i
 }
 
 /*
-** _tenEpiRegSliceWarp
+** epiRegSliceWarp
 **
 ** Apply [hh,ss,tt] transform to nin, putting results in nout, but with
 ** some trickiness:
@@ -917,9 +914,8 @@ _tenEpiRegGetHST(double *hhP, double *ssP, double *ttP, int reference, int ni, i
 **   but nout output will not be transposed
 */
 static int
-_tenEpiRegSliceWarp(Nrrd *nout, Nrrd *nin, Nrrd *nwght, Nrrd *nidx,
-                    const NrrdKernel *kern, double *kparm, double hh, double ss,
-                    double tt, double cx, double cy) {
+epiRegSliceWarp(Nrrd *nout, Nrrd *nin, Nrrd *nwght, Nrrd *nidx, const NrrdKernel *kern,
+                double *kparm, double hh, double ss, double tt, double cx, double cy) {
   float *wght, *in, pp, pf, tmp;
   int *idx;
   unsigned int supp;
@@ -967,14 +963,14 @@ _tenEpiRegSliceWarp(Nrrd *nout, Nrrd *nin, Nrrd *nwght, Nrrd *nidx,
 }
 
 /*
-** _tenEpiRegWarp()
+** epiRegWarp()
 **
 */
 static int /* Biff: 1 */
-_tenEpiRegWarp(Nrrd **ndone, Nrrd *npxfr, Nrrd *nhst, Nrrd *ngrad, Nrrd **nin,
-               unsigned int ninLen, int reference, const NrrdKernel *kern, double *kparm,
-               int verb) {
-  static const char me[] = "_tenEpiRegWarp";
+epiRegWarp(Nrrd **ndone, Nrrd *npxfr, Nrrd *nhst, Nrrd *ngrad, Nrrd **nin,
+           unsigned int ninLen, int reference, const NrrdKernel *kern, double *kparm,
+           int verb) {
+  static const char me[] = "epiRegWarp";
   Nrrd *ntmp, *nfin, *nslcA, *nslcB, *nwght, *nidx;
   airArray *mop;
   unsigned int sx, sy, sz, ni, zi, supp;
@@ -1018,10 +1014,9 @@ _tenEpiRegWarp(Nrrd **ndone, Nrrd *npxfr, Nrrd *nhst, Nrrd *ngrad, Nrrd **nin,
       return 1;
     }
     for (zi = 0; zi < sz; zi++) {
-      if (_tenEpiRegGetHST(&hh, &ss, &tt, reference, ni, zi, npxfr, nhst, ngrad)
+      if (epiRegGetHST(&hh, &ss, &tt, reference, ni, zi, npxfr, nhst, ngrad)
           || nrrdSlice(nslcA, nfin, 2, zi)
-          || _tenEpiRegSliceWarp(nslcB, nslcA, nwght, nidx, kern, kparm, hh, ss, tt, cx,
-                                 cy)
+          || epiRegSliceWarp(nslcB, nslcA, nwght, nidx, kern, kparm, hh, ss, tt, cx, cy)
           || nrrdSplice(ndone[ni], ndone[ni], nslcB, 2, zi)) {
         biffMovef(TEN, NRRD, "%s: trouble on slice %u of ni=%u", me, zi, ni);
         /* because the _tenEpiReg calls above don't use biff */
@@ -1055,8 +1050,7 @@ tenEpiRegister3D(Nrrd **nout, Nrrd **nin, unsigned int ninLen, Nrrd *_ngrad,
   nrrdStateDisableContent = AIR_TRUE;
 
   mop = airMopNew();
-  if (_tenEpiRegCheck(nout, nin, ninLen, _ngrad, reference, bwX, bwY, DWthr, kern,
-                      kparm)) {
+  if (epiRegCheck(nout, nin, ninLen, _ngrad, reference, bwX, bwY, DWthr, kern, kparm)) {
     biffAddf(TEN, "%s: trouble with input", me);
     airMopError(mop);
     return 1;
@@ -1086,89 +1080,84 @@ tenEpiRegister3D(Nrrd **nout, Nrrd **nin, unsigned int ninLen, Nrrd *_ngrad,
   }
 
   /* ------ blur */
-  if (_tenEpiRegBlur(nbuffA, nin, ninLen, bwX, bwY, verbose)) {
+  if (epiRegBlur(nbuffA, nin, ninLen, bwX, bwY, verbose)) {
     biffAddf(TEN, "%s: trouble %s", me, (bwX || bwY) ? "blurring" : "copying");
     airMopError(mop);
     return 1;
   }
-  if (progress
-      && _tenEpiRegSave("regtmp-blur.nrrd", NULL, nbuffA, ninLen, "blurred DWIs")) {
+  if (progress && epiRegSave("regtmp-blur.nrrd", NULL, nbuffA, ninLen, "blurred DWIs")) {
     airMopError(mop);
     return 1;
   }
 
   /* ------ threshold */
-  if (_tenEpiRegThreshold(nbuffB, nbuffA, ninLen, DWthr, verbose, progress, 1.5)) {
+  if (epiRegThreshold(nbuffB, nbuffA, ninLen, DWthr, verbose, progress, 1.5)) {
     biffAddf(TEN, "%s: trouble thresholding", me);
     airMopError(mop);
     return 1;
   }
   if (progress
-      && _tenEpiRegSave("regtmp-thresh.nrrd", NULL, nbuffB, ninLen,
-                        "thresholded DWIs")) {
+      && epiRegSave("regtmp-thresh.nrrd", NULL, nbuffB, ninLen, "thresholded DWIs")) {
     airMopError(mop);
     return 1;
   }
 
   /* ------ connected components */
   if (doCC) {
-    if (_tenEpiRegCC(nbuffB, ninLen, 1, verbose)) {
+    if (epiRegCC(nbuffB, ninLen, 1, verbose)) {
       biffAddf(TEN, "%s: trouble doing connected components", me);
       airMopError(mop);
       return 1;
     }
     if (progress
-        && _tenEpiRegSave("regtmp-ccs.nrrd", NULL, nbuffB, ninLen,
-                          "connected components")) {
+        && epiRegSave("regtmp-ccs.nrrd", NULL, nbuffB, ninLen, "connected components")) {
       airMopError(mop);
       return 1;
     }
   }
 
   /* ------ moments */
-  if (_tenEpiRegMoments(nbuffA, nbuffB, ninLen, verbose)) {
+  if (epiRegMoments(nbuffA, nbuffB, ninLen, verbose)) {
     biffAddf(TEN, "%s: trouble finding moments", me);
     airMopError(mop);
     return 1;
   }
-  if (progress && _tenEpiRegSave("regtmp-mom.nrrd", NULL, nbuffA, ninLen, "moments")) {
+  if (progress && epiRegSave("regtmp-mom.nrrd", NULL, nbuffA, ninLen, "moments")) {
     airMopError(mop);
     return 1;
   }
 
   /* ------ transforms */
-  if (_tenEpiRegPairXforms(npxfr, nbuffA, ninLen)) {
+  if (epiRegPairXforms(npxfr, nbuffA, ninLen)) {
     biffAddf(TEN, "%s: trouble calculating transforms", me);
     airMopError(mop);
     return 1;
   }
-  if (progress
-      && _tenEpiRegSave("regtmp-pxfr.nrrd", npxfr, NULL, 0, "pair-wise xforms")) {
+  if (progress && epiRegSave("regtmp-pxfr.nrrd", npxfr, NULL, 0, "pair-wise xforms")) {
     airMopError(mop);
     return 1;
   }
 
   if (-1 == reference) {
     /* ------ HST estimation */
-    if (_tenEpiRegEstimHST(nhst, npxfr, ninLen, ngrad)) {
+    if (epiRegEstimHST(nhst, npxfr, ninLen, ngrad)) {
       biffAddf(TEN, "%s: trouble estimating HST", me);
       airMopError(mop);
       return 1;
     }
-    if (progress && _tenEpiRegSave("regtmp-hst.txt", nhst, NULL, 0, "HST estimates")) {
+    if (progress && epiRegSave("regtmp-hst.txt", nhst, NULL, 0, "HST estimates")) {
       airMopError(mop);
       return 1;
     }
 
     if (fitFrac) {
       /* ------ HST parameter fitting */
-      if (_tenEpiRegFitHST(nhst, nbuffB, ninLen, fitFrac, progress, verbose)) {
+      if (epiRegFitHST(nhst, nbuffB, ninLen, fitFrac, progress, verbose)) {
         biffAddf(TEN, "%s: trouble fitting HST", me);
         airMopError(mop);
         return 1;
       }
-      if (progress
-          && _tenEpiRegSave("regtmp-fit-hst.txt", nhst, NULL, 0, "fitted HST")) {
+      if (progress && epiRegSave("regtmp-fit-hst.txt", nhst, NULL, 0, "fitted HST")) {
         airMopError(mop);
         return 1;
       }
@@ -1176,8 +1165,8 @@ tenEpiRegister3D(Nrrd **nout, Nrrd **nin, unsigned int ninLen, Nrrd *_ngrad,
   }
 
   /* ------ doit */
-  if (_tenEpiRegWarp(nout, npxfr, nhst, ngrad, nin, ninLen, reference, kern, kparm,
-                     verbose)) {
+  if (epiRegWarp(nout, npxfr, nhst, ngrad, nin, ninLen, reference, kern, kparm,
+                 verbose)) {
     biffAddf(TEN, "%s: trouble performing final registration", me);
     airMopError(mop);
     return 1;

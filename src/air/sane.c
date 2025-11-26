@@ -40,8 +40,8 @@ airSanity(void) {
      floating point rounding mode can be changed at run-time, which makes it more
      reasonable to re-run the FP-related tests. The non-FP tests are simple and should be
      fast to do. If profiling reveals this to be a bottleneck we can reconsider.
-  static int _airSanity = 0;
-  if (_airSanity) {
+  static int air__Sanity = 0;
+  if (air__Sanity) {
     return airInsane_not;
   }
   */
@@ -81,16 +81,16 @@ airSanity(void) {
 
   /* run-time NaN checks */
   ninf = -1e+300; /* pretty close to -DBL_MAX */
-  ninf = _airSanityHelper(ninf);
-  ninf = _airSanityHelper(ninf);
-  ninf = _airSanityHelper(ninf);
+  ninf = air__SanityHelper(ninf);
+  ninf = air__SanityHelper(ninf);
+  ninf = air__SanityHelper(ninf);
   if (AIR_EXISTS(ninf)) {
     return airInsane_nInfExists;
   }
   pinf = 1e+300; /* pretty close to DBL_MAX */
-  pinf = _airSanityHelper(pinf);
-  pinf = _airSanityHelper(pinf);
-  pinf = _airSanityHelper(pinf);
+  pinf = air__SanityHelper(pinf);
+  pinf = air__SanityHelper(pinf);
+  pinf = air__SanityHelper(pinf);
   if (AIR_EXISTS(pinf)) {
     return airInsane_pInfExists;
   }
@@ -160,11 +160,11 @@ airSanity(void) {
     return airInsane_FltDblFPClass;
   }
 
-  /* _airSanity = 1; (see above) */
+  /* air__Sanity = 1; (see above) */
   return airInsane_not;
 }
 
-static const char _airInsaneErr[AIR_INSANE_MAX + 1][AIR_STRLEN_MED + 1] = {
+static const char insaneErr[AIR_INSANE_MAX + 1][AIR_STRLEN_MED + 1] = {
   "sanity checked PASSED!",                           /* 0: airInsane_not */
   "airMyEndian() is wrong",                           /* 1: airInsane_endian */
   "AIR_EXISTS(+inf) was true",                        /* 2: airInsane_pInfExists */
@@ -178,14 +178,14 @@ static const char _airInsaneErr[AIR_INSANE_MAX + 1][AIR_STRLEN_MED + 1] = {
   "sizeof(double), sizeof(airLLong) not both == 8",   /* 10: airInsane_DLSize */
 };
 
-static const char _airBadInsane[] = "(invalid insane value)";
+static const char badInsane[] = "(invalid insane value)";
 
 const char *
 airInsaneErr(int insane) {
 
   if (AIR_IN_CL(0, insane, AIR_INSANE_MAX)) {
-    return _airInsaneErr[insane];
+    return insaneErr[insane];
   } else {
-    return _airBadInsane;
+    return badInsane;
   }
 }

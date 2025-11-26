@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Tile slices of one axis into two other axes"
-static const char *_unrrdu_tileInfoL
+static const char *unu_tileInfoL
   = (INFO ". Tiling an array means splitting one axis into fast and slow parts, "
           "and then interleaving those parts into other (existing) axes by doing "
           "two axis merges, which combine an existing axis with part of the split "
@@ -32,7 +32,7 @@ static const char *_unrrdu_tileInfoL
           "* Uses nrrdTile2D");
 
 static int
-unrrdu_tileMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_tileMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   uint axes[3];
   hestOptAdd_3_UInt(&hopt, "a,axis", "axSplit ax0 ax1", axes, NULL,
@@ -42,12 +42,12 @@ unrrdu_tileMain(int argc, const char **argv, const char *me, const hestParm *hpa
                       "fast and slow axis sizes to produce as result of splitting "
                       "the axSplit axis.");
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_tileInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_tileInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -60,10 +60,10 @@ unrrdu_tileMain(int argc, const char **argv, const char *me, const hestParm *hpa
     return 1;
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(tile, INFO);
+MY_UNRRDU_CMD(tile, INFO);

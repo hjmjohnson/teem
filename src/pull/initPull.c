@@ -21,7 +21,7 @@
 #include "privatePull.h"
 
 void
-_pullInitParmInit(pullInitParm *initParm) {
+pull__InitParmInit(pullInitParm *initParm) {
 
   initParm->method = pullInitMethodUnknown;
   initParm->liveThreshUse = AIR_FALSE;
@@ -45,8 +45,8 @@ _pullInitParmInit(pullInitParm *initParm) {
   }
 
 int /* Biff: (private) 1 */
-_pullInitParmCheck(pullInitParm *iparm) {
-  static const char me[] = "_pullInitParmCheck";
+pull__InitParmCheck(pullInitParm *iparm) {
+  static const char me[] = "pull__InitParmCheck";
 
   if (!AIR_IN_OP(pullInitMethodUnknown, iparm->method, pullInitMethodLast)) {
     biffAddf(PULL, "%s: init method %d not valid", me, iparm->method);
@@ -210,4 +210,4 @@ pullInitUnequalShapesAllowSet(pullContext *pctx, int allow) {
 
 #undef CHECK
 
-/* FILE *_pullPointAddLog = NULL; */
+/* FILE *pull__PointAddLog = NULL; */

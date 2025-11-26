@@ -22,7 +22,7 @@
 #define INFO "Information about this program and its use"
 
 static int
-limnPu_aboutMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+lpu_aboutMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   char buff[AIR_STRLEN_LARGE + 1], fmt[AIR_STRLEN_MED + 1];
   char par1[] = "\t\t\t\t"
                 "\"lpu\" is a complete hack.\n";
@@ -50,4 +50,4 @@ limnPu_aboutMain(int argc, const char **argv, const char *me, const hestParm *hp
   return 0;
 }
 
-const unrrduCmd limnPu_aboutCmd = {"about", INFO, limnPu_aboutMain, AIR_FALSE};
+const unrrduCmd limnPu_aboutCmd = {"about", INFO, lpu_aboutMain, AIR_FALSE};

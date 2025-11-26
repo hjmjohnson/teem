@@ -24,11 +24,11 @@ typedef struct {
   double *buffTen, *buffWght;
   tenInterpParm *tip; /* sneakiness: using tip->allocLen to record
                          allocation sizes of buffTen and buffWght, too */
-} _tenGagePvlData;
+} tgPvlData;
 
 /* clang-format off */
 static gageItemEntry
-_tenGageTable[TEN_GAGE_ITEM_MAX+1] = {
+tgTable[TEN_GAGE_ITEM_MAX+1] = {
   /* enum value                  len,deriv, prereqs,                                                   parent item, parent index, needData */
   {tenGageUnknown,                 0,  0,  {0},                                                                  0,        0,     AIR_FALSE},
   {tenGageTensor,                  7,  0,  {0},                                                                  0,        0,     AIR_FALSE},
@@ -286,7 +286,7 @@ _tenGageTable[TEN_GAGE_ITEM_MAX+1] = {
 };
 
 static void
-_tenGageIv3Print(FILE *file, gageContext *ctx, gagePerVolume *pvl) {
+tgIv3Print(FILE *file, gageContext *ctx, gagePerVolume *pvl) {
   double *iv3;
   int i, fd;
 
@@ -330,8 +330,8 @@ _tenGageIv3Print(FILE *file, gageContext *ctx, gagePerVolume *pvl) {
 }
 
 static void
-_tenGageFilter(gageContext *ctx, gagePerVolume *pvl) {
-  static const char me[] = "_tenGageFilter";
+tgFilter(gageContext *ctx, gagePerVolume *pvl) {
+  static const char me[] = "tgFilter";
   double *fw00, *fw11, *fw22, *ten, *tgrad, *thess;
   int fd;
   gageScl3PFilter_t *filter[5] = {NULL, gageScl3PFilter2, gageScl3PFilter4,
@@ -377,8 +377,8 @@ _tenGageFilter(gageContext *ctx, gagePerVolume *pvl) {
 }
 
 static void
-_tenGageAnswer(gageContext *ctx, gagePerVolume *pvl) {
-  static const char me[] = "_tenGageAnswer";
+tgAnswer(gageContext *ctx, gagePerVolume *pvl) {
+  static const char me[] = "tgAnswer";
   double *tenAns, *evalAns, *evecAns, *vecTmp=NULL, *matTmp=NULL,
     *gradDtA=NULL, *gradDtB=NULL, *gradDtC=NULL,
     *gradDtD=NULL, *gradDtE=NULL, *gradDtF=NULL,
@@ -1470,11 +1470,11 @@ _tenGageAnswer(gageContext *ctx, gagePerVolume *pvl) {
       GAGE_QUERY_ITEM_TEST(pvl->query, tenGageTensorQuatGeoLoxR) ||
       GAGE_QUERY_ITEM_TEST(pvl->query, tenGageTensorRThetaPhiLinear)) {
     unsigned int vijk, vii, vjj, vkk, fd, fddd;
-    _tenGagePvlData *pvlData;
+    tgPvlData *pvlData;
     double *ans;
     int qret;
 
-    pvlData = AIR_CAST(_tenGagePvlData *, pvl->data);
+    pvlData = AIR_CAST(tgPvlData *, pvl->data);
     /* HEY: casting because radius is signed (shouldn't be) */
     fd = AIR_UINT(2*ctx->radius);
     fddd = fd*fd*fd;
@@ -2031,11 +2031,11 @@ _tenGageAnswer(gageContext *ctx, gagePerVolume *pvl) {
 
 
 static void *
-_tenGagePvlDataNew(const struct gageKind_t *kind) {
-  _tenGagePvlData *pvlData;
+tgPvlDataNew(const struct gageKind_t *kind) {
+  tgPvlData *pvlData;
 
   AIR_UNUSED(kind);
-  pvlData = AIR_CALLOC(1, _tenGagePvlData);
+  pvlData = AIR_CALLOC(1, tgPvlData);
   if (pvlData) {
     pvlData->buffTen = NULL;
     pvlData->buffWght = NULL;
@@ -2045,16 +2045,16 @@ _tenGagePvlDataNew(const struct gageKind_t *kind) {
 }
 
 static void *
-_tenGagePvlDataCopy(const struct gageKind_t *kind,
+tgPvlDataCopy(const struct gageKind_t *kind,
                     const void *_pvlDataOld) {
-  _tenGagePvlData *pvlDataNew;
-  const _tenGagePvlData *pvlDataOld;
+  tgPvlData *pvlDataNew;
+  const tgPvlData *pvlDataOld;
   unsigned int num;
 
   AIR_UNUSED(kind);
-  pvlDataOld = AIR_CAST(const _tenGagePvlData *, _pvlDataOld);
+  pvlDataOld = AIR_CAST(const tgPvlData *, _pvlDataOld);
   num = pvlDataOld->tip->allocLen;
-  pvlDataNew = AIR_CALLOC(1, _tenGagePvlData);
+  pvlDataNew = AIR_CALLOC(1, tgPvlData);
   if (pvlDataNew) {
     pvlDataNew->buffTen = AIR_CALLOC(7*num, double);
     pvlDataNew->buffWght = AIR_CALLOC(num, double);
@@ -2064,12 +2064,12 @@ _tenGagePvlDataCopy(const struct gageKind_t *kind,
 }
 
 static void *
-_tenGagePvlDataNix(const struct gageKind_t *kind,
+tgPvlDataNix(const struct gageKind_t *kind,
                    void *_pvlData) {
-  _tenGagePvlData *pvlData;
+  tgPvlData *pvlData;
 
   AIR_UNUSED(kind);
-  pvlData = AIR_CAST(_tenGagePvlData *, _pvlData);
+  pvlData = AIR_CAST(tgPvlData *, _pvlData);
   airFree(pvlData->buffTen);
   airFree(pvlData->buffWght);
   tenInterpParmNix(pvlData->tip);
@@ -2078,15 +2078,15 @@ _tenGagePvlDataNix(const struct gageKind_t *kind,
 }
 
 static int
-_tenGagePvlDataUpdate(const struct gageKind_t *kind,
+tgPvlDataUpdate(const struct gageKind_t *kind,
                       const gageContext *ctx, const gagePerVolume *pvl,
                       void *_pvlData) {
-  _tenGagePvlData *pvlData;
+  tgPvlData *pvlData;
   unsigned int fd, num;
 
   AIR_UNUSED(kind);
   AIR_UNUSED(pvl);
-  pvlData = AIR_CAST(_tenGagePvlData *, _pvlData);
+  pvlData = AIR_CAST(tgPvlData *, _pvlData);
   fd = AIR_UINT(2*ctx->radius);
   num = fd*fd*fd;
   if (num != pvlData->tip->allocLen) {
@@ -2104,23 +2104,22 @@ _tenGagePvlDataUpdate(const struct gageKind_t *kind,
 
 
 static gageKind
-_tenGageKind = {
+tgKind_gk = {
   AIR_FALSE, /* statically allocated */
   "tensor",
-  &_tenGage,
+  &ten__Gage_ae,
   1,
   7,
   TEN_GAGE_ITEM_MAX,
-  _tenGageTable,
-  _tenGageIv3Print,
-  _tenGageFilter,
-  _tenGageAnswer,
-  _tenGagePvlDataNew,
-  _tenGagePvlDataCopy,
-  _tenGagePvlDataNix,
-  _tenGagePvlDataUpdate,
+  tgTable,
+  tgIv3Print,
+  tgFilter,
+  tgAnswer,
+  tgPvlDataNew,
+  tgPvlDataCopy,
+  tgPvlDataNix,
+  tgPvlDataUpdate,
   NULL
 };
-gageKind *const
-tenGageKind = &_tenGageKind;
+gageKind *const tenGageKind = &tgKind_gk;
 /* clang-format on */

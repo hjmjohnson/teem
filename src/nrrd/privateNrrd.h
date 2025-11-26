@@ -74,49 +74,26 @@ extern "C" {
 
 typedef unsigned int uint; /* uint is just more concise */
 
-#define _NRRD_TEXT_INCR      1024u
-#define _NRRD_LLONG_MAX_HELP AIR_LLONG(2305843009213693951)
-#define _NRRD_LLONG_MIN_HELP AIR_LLONG(-2305843009213693952)
+#define MY_NRRD_TEXT_INCR      1024u
+#define MY_NRRD_LLONG_MAX_HELP AIR_LLONG(2305843009213693951)
+#define MY_NRRD_LLONG_MIN_HELP AIR_LLONG(-2305843009213693952)
 
-#define _NRRD_WHITESPACE_NOTAB " \n\r\v\f" /* K+R pg. 157 */
+#define MY_NRRD_WHITESPACE_NOTAB " \n\r\v\f" /* K+R pg. 157 */
 
 /* ---- BEGIN non-NrrdIO */
 
 #if NRRD_RESAMPLE_FLOAT
-#  define nrrdResample_nrrdType nrrdTypeFloat
-#  define EVALN                 evalN_f /* NrrdKernel method */
+#  define nrrdResamplenrrd__Type nrrdTypeFloat
+#  define EVALN                  evalN_f /* NrrdKernel method */
 #else
 #  define nrrdResample_nrrdType nrrdTypeDouble
 #  define EVALN                 evalN_d /* NrrdKernel method */
 #endif
 
 /* to access whatever nrrd there may be in in a NrrdIter */
-#define _NRRD_ITER_NRRD(iter) ((iter)->nrrd ? (iter)->nrrd : (iter)->ownNrrd)
+#define MY_NRRD_ITER_NRRD(iter) ((iter)->nrrd ? (iter)->nrrd : (iter)->ownNrrd)
 
 /* ---- END non-NrrdIO */
-
-/* NOTE: these SN_ string,size macros copy-pasta'd to other private<Lib>.h files:
-   SN_INCR: safely increments STR arg to point '\0'-termination of STR
-   SN_COPY: safely copies SRC to DST, then increments DST
-   SN_PRINTF: snprintf's into DST then increments DST */
-#define SN_INCR(STR, SIZE)                                                              \
-  do {                                                                                  \
-    size_t tmp_str_len_##STR = strlen(STR);                                             \
-    STR += tmp_str_len_##STR;                                                           \
-    SIZE -= tmp_str_len_##STR;                                                          \
-  } while (0)
-#define SN_COPY(DST, DST_SIZE, SRC)                                                     \
-  do {                                                                                  \
-    airStrcpy((DST), (DST_SIZE), (SRC));                                                \
-    SN_INCR(DST, DST_SIZE);                                                             \
-  } while (0)
-/* oops can't use this upstream of NrrdIO; variadic macros are C99
-#define SN_PRINTF(DST, DST_SIZE, FMT, ...)                                              \
-  do {                                                                                  \
-    snprintf((DST), (DST_SIZE), (FMT), __VA_ARGS__);                                    \
-    SN_INCR(DST, DST_SIZE);                                                             \
-  } while (0)
-*/
 
 typedef union {
   char **CP;
@@ -126,7 +103,7 @@ typedef union {
   double *D;
   const void *P;
   double (*V)[NRRD_SPACE_DIM_MAX];
-} _nrrdAxisInfoSetPtrs;
+} nrrd__AxisInfoSetPtrs;
 
 typedef union {
   char **CP;
@@ -136,99 +113,96 @@ typedef union {
   double *D;
   void *P;
   double (*V)[NRRD_SPACE_DIM_MAX];
-} _nrrdAxisInfoGetPtrs;
+} nrrd__AxisInfoGetPtrs;
 
 /* defaultsNrrd.c */
-extern airLLong _nrrdLLongMaxHelp(airLLong val);
-extern airLLong _nrrdLLongMinHelp(airLLong val);
-extern airULLong _nrrdULLongMaxHelp(airULLong val);
+extern airLLong nrrd__LLongMaxHelp(airLLong val);
+extern airLLong nrrd__LLongMinHelp(airLLong val);
+extern airULLong nrrd__ULLongMaxHelp(airULLong val);
 
 /* keyvalue.c */
-extern void _nrrdWriteEscaped(FILE *file, char *dst, size_t dstSize, const char *str,
-                              const char *toescape, const char *tospace);
-extern int _nrrdKeyValueWrite(FILE *file, char **stringP, const char *prefix,
-                              const char *key, const char *value);
+extern void nrrd__WriteEscaped(FILE *file, char *dst, size_t dstSize, const char *str,
+                               const char *toescape, const char *tospace);
+extern int nrrd__KeyValueWrite(FILE *file, char **stringP, const char *prefix,
+                               const char *key, const char *value);
 
 /* formatXXX.c */
-extern const char *const _nrrdFormatURLLine0;
-extern const char *const _nrrdFormatURLLine1;
-extern const NrrdFormat _nrrdFormatNRRD;
-extern const NrrdFormat _nrrdFormatPNM;
-extern const NrrdFormat _nrrdFormatPNG;
-extern const NrrdFormat _nrrdFormatVTK;
-extern const NrrdFormat _nrrdFormatText;
-extern const NrrdFormat _nrrdFormatEPS;
-extern int _nrrdHeaderCheck(Nrrd *nrrd, NrrdIoState *nio, int checkSeen);
-extern int _nrrdFormatNRRD_whichVersion(const Nrrd *nrrd, NrrdIoState *nio);
+extern const char *const nrrd__FormatURLLine0;
+extern const char *const nrrd__FormatURLLine1;
+extern const NrrdFormat nrrd__FormatNRRD;
+extern const NrrdFormat nrrd__FormatPNM;
+extern const NrrdFormat nrrd__FormatPNG;
+extern const NrrdFormat nrrd__FormatVTK;
+extern const NrrdFormat nrrd__FormatText;
+extern const NrrdFormat nrrd__FormatEPS;
+extern int nrrd__HeaderCheck(Nrrd *nrrd, NrrdIoState *nio, int checkSeen);
+extern int nrrd__FormatNRRD_whichVersion(const Nrrd *nrrd, NrrdIoState *nio);
 
 /* encodingXXX.c */
-extern const NrrdEncoding _nrrdEncodingRaw;
-extern const NrrdEncoding _nrrdEncodingAscii;
-extern const NrrdEncoding _nrrdEncodingHex;
-extern const NrrdEncoding _nrrdEncodingGzip;
-extern const NrrdEncoding _nrrdEncodingBzip2;
-extern const NrrdEncoding _nrrdEncodingZRL;
+extern const NrrdEncoding nrrd__EncodingRaw;
+extern const NrrdEncoding nrrd__EncodingAscii;
+extern const NrrdEncoding nrrd__EncodingHex;
+extern const NrrdEncoding nrrd__EncodingGzip;
+extern const NrrdEncoding nrrd__EncodingBzip2;
+extern const NrrdEncoding nrrd__EncodingZRL;
 
 /* arrays.c */
-extern const int _nrrdFieldValidInImage[NRRD_FIELD_MAX + 1];
-extern const int _nrrdFieldValidInText[NRRD_FIELD_MAX + 1];
-extern const int _nrrdFieldOnePerAxis[NRRD_FIELD_MAX + 1];
-extern const int _nrrdFieldRequired[NRRD_FIELD_MAX + 1];
+extern const int nrrd__FieldValidInImage[NRRD_FIELD_MAX + 1];
+extern const int nrrd__FieldValidInText[NRRD_FIELD_MAX + 1];
+extern const int nrrd__FieldOnePerAxis[NRRD_FIELD_MAX + 1];
+extern const int nrrd__FieldRequired[NRRD_FIELD_MAX + 1];
 
 /* simple.c */
-extern char *_nrrdContentGet(const Nrrd *nin);
-extern int _nrrdContentSet_nva(Nrrd *nout, const char *func, char *content,
-                               const char *format, va_list arg);
-extern int _nrrdContentSet_va(Nrrd *nout, const char *func, char *content,
-                              const char *format, ...);
-extern int (*const _nrrdFieldCheck[NRRD_FIELD_MAX + 1])(const Nrrd *nrrd, int useBiff);
-extern void _nrrdSplitSizes(size_t *pieceSize, size_t *pieceNum, Nrrd *nrrd,
-                            unsigned int listDim);
+extern char *nrrd__ContentGet(const Nrrd *nin);
+extern int nrrd__ContentSet_va(Nrrd *nout, const char *func, char *content,
+                               const char *format, ...);
+extern int (*const nrrd__FieldCheck[NRRD_FIELD_MAX + 1])(const Nrrd *nrrd, int useBiff);
+extern void nrrd__SplitSizes(size_t *pieceSize, size_t *pieceNum, Nrrd *nrrd,
+                             unsigned int listDim);
 
 /* axis.c */
-extern int _nrrdKindAltered(int kindIn, int resampling);
-extern void _nrrdAxisInfoCopy(NrrdAxisInfo *dest, const NrrdAxisInfo *src, int bitflag);
-extern void _nrrdAxisInfoInit(NrrdAxisInfo *axis);
-extern void _nrrdAxisInfoNewInit(NrrdAxisInfo *axis);
-extern int _nrrdCenter(int center);
-extern int _nrrdCenter2(int center, int def);
+extern int nrrd__KindAltered(int kindIn, int resampling);
+extern void nrrd__AxisInfoCopy(NrrdAxisInfo *dest, const NrrdAxisInfo *src, int bitflag);
+extern void nrrd__AxisInfoInit(NrrdAxisInfo *axis);
+extern void nrrd__AxisInfoNewInit(NrrdAxisInfo *axis);
+extern int nrrd__Center(int center);
+extern int nrrd__Center2(int center, int def);
 /* ---- BEGIN non-NrrdIO */
-extern int _nrrdDblcmp(double aa, double bb);
+extern int nrrd__Dblcmp(double aa, double bb);
 
 /* convertNrrd.c */
-extern void (*const _nrrdConv[][NRRD_TYPE_MAX + 1])(void *, const void *, size_t);
-extern void (*const _nrrdClampConv[][NRRD_TYPE_MAX + 1])(void *, const void *, size_t);
-extern void (*const _nrrdCastClampRound[][NRRD_TYPE_MAX + 1])(void *, const void *,
-                                                              size_t, int doClamp,
-                                                              int roundd);
+extern void (*const nrrd__Conv[][NRRD_TYPE_MAX + 1])(void *, const void *, size_t);
+extern void (*const nrrd__ClampConv[][NRRD_TYPE_MAX + 1])(void *, const void *, size_t);
+extern void (*const nrrd__CastClampRound[][NRRD_TYPE_MAX + 1])(void *, const void *,
+                                                               size_t, int doClamp,
+                                                               int roundd);
 /* ---- END non-NrrdIO */
 
 /* read.c */
-extern const char *const _nrrdReadHitEOF;
-extern const char *const _nrrdFieldSep;
-extern const char *const _nrrdTextSep;
-extern const char *const _nrrdNoSpaceVector;
-extern int _nrrdCharIsFieldSep(char cc);
-extern int _nrrdByteSkipSkip(FILE *dataFile, Nrrd *nrrd, NrrdIoState *nio,
-                             long int byteSkip);
-extern int _nrrdCalloc(Nrrd *nrrd, NrrdIoState *nio);
-extern void _nrrdSplitName(char **dirP, char **baseP, const char *name);
+extern const char *const nrrd__ReadHitEOF;
+extern const char *const nrrd__FieldSep;
+extern const char *const nrrd__NoSpaceVector;
+extern int nrrd__CharIsFieldSep(char cc);
+extern int nrrd__ByteSkipSkip(FILE *dataFile, Nrrd *nrrd, NrrdIoState *nio,
+                              long int byteSkip);
+extern int nrrd__Calloc(Nrrd *nrrd, NrrdIoState *nio);
+extern void nrrd__SplitName(char **dirP, char **baseP, const char *name);
 
 /* write.c */
-extern int _nrrdFieldInteresting(const Nrrd *nrrd, NrrdIoState *nio, int field);
-extern void _nrrdSprintFieldInfo(char **strP, const char *prefix, const Nrrd *nrrd,
-                                 NrrdIoState *nio, int field, int dropAxis0);
-extern void _nrrdFprintFieldInfo(FILE *file, const char *prefix, const Nrrd *nrrd,
-                                 NrrdIoState *nio, int field, int dropAxis0);
+extern int nrrd__FieldInteresting(const Nrrd *nrrd, NrrdIoState *nio, int field);
+extern void nrrd__SprintFieldInfo(char **strP, const char *prefix, const Nrrd *nrrd,
+                                  NrrdIoState *nio, int field, int dropAxis0);
+extern void nrrd__FprintFieldInfo(FILE *file, const char *prefix, const Nrrd *nrrd,
+                                  NrrdIoState *nio, int field, int dropAxis0);
 
 /* parseNrrd.c */
-extern int _nrrdReadNrrdParseField(NrrdIoState *nio, int useBiff);
+extern int nrrd__ReadNrrdParseField(NrrdIoState *nio, int useBiff);
 
 /* methodsNrrd.c */
-extern int _nrrdCopy(Nrrd *nout, const Nrrd *nin, int bitflag);
-extern int _nrrdSizeCheck(const size_t *size, unsigned int dim, int useBiff);
-extern int _nrrdMaybeAllocMaybeZero_nva(Nrrd *nrrd, int type, unsigned int dim,
-                                        const size_t *size, int zeroWhenNoAlloc);
+extern int nrrd__Copy(Nrrd *nout, const Nrrd *nin, int bitflag);
+extern int nrrd__SizeCheck(const size_t *size, unsigned int dim, int useBiff);
+extern int nrrd__MaybeAllocMaybeZero_nva(Nrrd *nrrd, int type, unsigned int dim,
+                                         const size_t *size, int zeroWhenNoAlloc);
 
 #ifdef TEEM_ZLIB
 #  ifdef TEEM_VTK_MANGLE
@@ -237,19 +211,19 @@ extern int _nrrdMaybeAllocMaybeZero_nva(Nrrd *nrrd, int type, unsigned int dim,
 #  include <zlib.h> /* NrrdIO-hack-004 */
 
 /* gzio.c */
-extern gzFile _nrrdGzOpen(FILE *fd, const char *mode);
-extern int _nrrdGzClose(gzFile file);
-extern int _nrrdGzRead(gzFile file, void *buf, unsigned int len, unsigned int *read);
-extern int _nrrdGzWrite(gzFile file, const void *buf, unsigned int len,
-                        unsigned int *written);
+extern gzFile nrrd__GzOpen(FILE *fd, const char *mode);
+extern int nrrd__GzClose(gzFile file);
+extern int nrrd__GzRead(gzFile file, void *buf, unsigned int len, unsigned int *read);
+extern int nrrd__GzWrite(gzFile file, const void *buf, unsigned int len,
+                         unsigned int *written);
 #else
-extern int _nrrdGzDummySymbol(void);
+extern int nrrd__GzDummySymbol(void);
 #endif
 
 /* ---- BEGIN non-NrrdIO */
 /* apply1D.c */
-extern double _nrrdApplyDomainMin(const Nrrd *nmap, int ramps, unsigned int mapAxis);
-extern double _nrrdApplyDomainMax(const Nrrd *nmap, int ramps, unsigned int mapAxis);
+extern double nrrd__ApplyDomainMin(const Nrrd *nmap, int ramps, unsigned int mapAxis);
+extern double nrrd__ApplyDomainMax(const Nrrd *nmap, int ramps, unsigned int mapAxis);
 
 /* ---- END non-NrrdIO */
 

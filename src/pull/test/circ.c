@@ -33,12 +33,12 @@ enum {
 };
 #define STEP_STYLE_MAX 4
 
-const char *_stepStyleStr[STEP_STYLE_MAX + 1] = {"(unknown_style)", "small", "descent",
-                                                 "runiform", "rcool"};
+static const char *stepStyleStr[STEP_STYLE_MAX + 1] = {"(unknown_style)", "small",
+                                                       "descent", "runiform", "rcool"};
 
-const airEnum _stepStyle = {"step style", STEP_STYLE_MAX, _stepStyleStr, NULL,
-                            NULL,         NULL,           NULL,          AIR_FALSE};
-const airEnum *const stepStyle = &_stepStyle;
+static const airEnum stepStyle_ae
+  = {"step style", STEP_STYLE_MAX, stepStyleStr, NULL, NULL, NULL, NULL, AIR_FALSE};
+static const airEnum *const stepStyle = &stepStyle_ae;
 
 static double
 tpimod(double phi) {

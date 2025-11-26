@@ -21,10 +21,10 @@
 #include "privateTen.h"
 
 #define INFO "Calculate one or more eigenvectors in a DT volume"
-static const char *_tend_evecInfoL = (INFO ". ");
+static const char *evecInfoL = (INFO ". ");
 
 static int
-tend_evecMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+evecMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -49,7 +49,7 @@ tend_evecMain(int argc, const char **argv, const char *me, const hestParm *hparm
 
   mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_tend_evecInfoL);
+  USAGE_PARSE(evecInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   for (cc = 0; cc < compLen; cc++) {
@@ -128,4 +128,4 @@ tend_evecMain(int argc, const char **argv, const char *me, const hestParm *hparm
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(evec, INFO);
+MY_TEND_CMD(evec, INFO);

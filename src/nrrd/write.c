@@ -208,8 +208,8 @@ nrrdIoStateFormatGet(NrrdIoState *nio) {
 }
 
 static void
-_nrrdStrcatSpaceVector(char *_str, size_t _strSize, unsigned int spaceDim,
-                       const double val[NRRD_SPACE_DIM_MAX], int hdep) {
+strcatSpaceVector(char *_str, size_t _strSize, unsigned int spaceDim,
+                  const double val[NRRD_SPACE_DIM_MAX], int hdep) {
   unsigned int dd;
 
   if (AIR_EXISTS(val[0])) {
@@ -224,13 +224,13 @@ _nrrdStrcatSpaceVector(char *_str, size_t _strSize, unsigned int spaceDim,
       }
     }
   } else {
-    airStrcpy(_str, _strSize, _nrrdNoSpaceVector);
+    airStrcpy(_str, _strSize, nrrd__NoSpaceVector);
   }
   return;
 }
 
 int /* Biff: (private) nope */
-_nrrdFieldInteresting(const Nrrd *nrrd, NrrdIoState *nio, int field) {
+nrrd__FieldInteresting(const Nrrd *nrrd, NrrdIoState *nio, int field) {
   int ret;
   unsigned int ai;
 
@@ -377,14 +377,14 @@ _nrrdFieldInteresting(const Nrrd *nrrd, NrrdIoState *nio, int field) {
 }
 
 /*
-** _nrrdSprintFieldInfo
+** nrrd__SprintFieldInfo
 **
 ** this prints "<prefix><field>: <info>" into *strP (after allocating it for
 ** big enough, usually with a stupidly big margin of error), in a form
 ** suitable to be written to NRRD or other image headers.  This will always
 ** print something (for valid inputs), even stupid <info>s like
 ** "(unknown endian)".  It is up to the caller to decide which fields
-** are worth writing, via _nrrdFieldInteresting().
+** are worth writing, via nrrd__FieldInteresting().
 **
 ** NOTE: some of these fields make sense in non-NRRD files (e.g. all
 ** the per-axis information), but many only make sense in NRRD files.
@@ -392,9 +392,9 @@ _nrrdFieldInteresting(const Nrrd *nrrd, NrrdIoState *nio, int field) {
 ** in formatNRRD.c
 */
 void
-_nrrdSprintFieldInfo(char **strP, const char *prefix, const Nrrd *nrrd, NrrdIoState *nio,
-                     int field, int dropAxis0) {
-  static const char me[] = "_nrrdSprintFieldInfo";
+nrrd__SprintFieldInfo(char **strP, const char *prefix, const Nrrd *nrrd,
+                      NrrdIoState *nio, int field, int dropAxis0) {
+  static const char me[] = "nrrd__SprintFieldInfo";
   char *str = NULL, *fnb, stmp[AIR_STRLEN_SMALL + 1], *strtmp = NULL;
   size_t strSize = 0;
   double colvec[NRRD_SPACE_DIM_MAX];
@@ -409,11 +409,11 @@ _nrrdSprintFieldInfo(char **strP, const char *prefix, const Nrrd *nrrd, NrrdIoSt
   }
   /* As of Sun Dec  2 01:57:48 CST 2012 (revision 5832) the only
      places where this function is called is when it has been guarded
-     by "if (_nrrdFieldInteresting())" (except for in formatText.c when
+     by "if (nrrd__FieldInteresting())" (except for in formatText.c when
      its called on the dimension field, which is always interesting).
      So, the following:
 
-     if (!_nrrdFieldInteresting(nrrd, nio, field)) {
+     if (!nrrd__FieldInteresting(nrrd, nio, field)) {
        *strP = airStrdup("");
      }
 
@@ -531,8 +531,8 @@ _nrrdSprintFieldInfo(char **strP, const char *prefix, const Nrrd *nrrd, NrrdIoSt
     snprintf(str, strSize, "%s%s: ", prefix, fs);
     SN_INCR(str, strSize);
     for (ii = !!dropAxis0; ii < nrrd->dim; ii++) {
-      _nrrdStrcatSpaceVector(str, strSize, nrrd->spaceDim, nrrd->axis[ii].spaceDirection,
-                             hdep);
+      strcatSpaceVector(str, strSize, nrrd->spaceDim, nrrd->axis[ii].spaceDirection,
+                        hdep);
       SN_INCR(str, strSize);
       if (ii < nrrd->dim - 1) {
         if (strSize > 1) {
@@ -598,8 +598,8 @@ _nrrdSprintFieldInfo(char **strP, const char *prefix, const Nrrd *nrrd, NrrdIoSt
       SN_COPY(str, strSize, " \"");
       if (nrrdField_labels == field ? airStrlen(nrrd->axis[ii].label)
                                     : airStrlen(nrrd->axis[ii].units)) {
-        _nrrdWriteEscaped(NULL, str, strSize, LABEL_OR_UNITS, "\"",
-                          _NRRD_WHITESPACE_NOTAB);
+        nrrd__WriteEscaped(NULL, str, strSize, LABEL_OR_UNITS, "\"",
+                           MY_NRRD_WHITESPACE_NOTAB);
         SN_INCR(str, strSize);
       }
       SN_COPY(str, strSize, "\"");
@@ -684,8 +684,8 @@ _nrrdSprintFieldInfo(char **strP, const char *prefix, const Nrrd *nrrd, NrrdIoSt
     for (ii = 0; ii < nrrd->spaceDim; ii++) {
       SN_COPY(str, strSize, " \"");
       if (airStrlen(nrrd->spaceUnits[ii])) {
-        _nrrdWriteEscaped(NULL, str, strSize, nrrd->spaceUnits[ii], "\"",
-                          _NRRD_WHITESPACE_NOTAB);
+        nrrd__WriteEscaped(NULL, str, strSize, nrrd->spaceUnits[ii], "\"",
+                           MY_NRRD_WHITESPACE_NOTAB);
         SN_INCR(str, strSize);
       }
       SN_COPY(str, strSize, "\"");
@@ -696,7 +696,7 @@ _nrrdSprintFieldInfo(char **strP, const char *prefix, const Nrrd *nrrd, NrrdIoSt
     str = *strP = AIR_CALLOC(strSize, char);
     snprintf(str, strSize, "%s%s: ", prefix, fs);
     SN_INCR(str, strSize);
-    _nrrdStrcatSpaceVector(str, strSize, nrrd->spaceDim, nrrd->spaceOrigin, hdep);
+    strcatSpaceVector(str, strSize, nrrd->spaceDim, nrrd->spaceOrigin, hdep);
     break;
   case nrrdField_measurement_frame:
     strSize = fslen
@@ -708,7 +708,7 @@ _nrrdSprintFieldInfo(char **strP, const char *prefix, const Nrrd *nrrd, NrrdIoSt
       for (ii = 0; ii < nrrd->spaceDim; ii++) {
         colvec[ii] = nrrd->measurementFrame[dd][ii];
       }
-      _nrrdStrcatSpaceVector(str, strSize, nrrd->spaceDim, colvec, hdep);
+      strcatSpaceVector(str, strSize, nrrd->spaceDim, colvec, hdep);
       SN_INCR(str, strSize);
       if (dd < nrrd->spaceDim - 1) {
         SN_COPY(str, strSize, " ");
@@ -765,7 +765,7 @@ _nrrdSprintFieldInfo(char **strP, const char *prefix, const Nrrd *nrrd, NrrdIoSt
                   this NRRD file because its being saved in a NRRD0003
                   (or below) version, so we don't want to confuse them
                   by not having the old explicit header-relative flag */
-               (_nrrdFormatNRRD_whichVersion(nrrd, nio) < 4 ? "./" : ""),
+               (nrrd__FormatNRRD_whichVersion(nrrd, nio) < 4 ? "./" : ""),
                nio->dataFN[0]);
     }
     break;
@@ -779,17 +779,17 @@ _nrrdSprintFieldInfo(char **strP, const char *prefix, const Nrrd *nrrd, NrrdIoSt
 }
 
 /*
-** _nrrdFprintFieldInfo
+** nrrd__FprintFieldInfo
 **
-** convenience wrapper around _nrrdSprintFieldInfo, for writing into
-** a file.  Same caveats here: use _nrrdFieldInteresting
+** convenience wrapper around nrrd__SprintFieldInfo, for writing into
+** a file.  Same caveats here: use nrrd__FieldInteresting
 */
 void
-_nrrdFprintFieldInfo(FILE *file, const char *prefix, const Nrrd *nrrd, NrrdIoState *nio,
-                     int field, int dropAxis0) {
+nrrd__FprintFieldInfo(FILE *file, const char *prefix, const Nrrd *nrrd, NrrdIoState *nio,
+                      int field, int dropAxis0) {
   char *line = NULL;
 
-  _nrrdSprintFieldInfo(&line, prefix, nrrd, nio, field, dropAxis0);
+  nrrd__SprintFieldInfo(&line, prefix, nrrd, nio, field, dropAxis0);
   if (line) {
     fprintf(file, "%s\n", line);
     free(line);
@@ -798,8 +798,8 @@ _nrrdFprintFieldInfo(FILE *file, const char *prefix, const Nrrd *nrrd, NrrdIoSta
 }
 
 static int /* Biff: 1 */
-_nrrdEncodingMaybeSet(NrrdIoState *nio) {
-  static const char me[] = "_nrrdEncodingMaybeSet";
+encodingMaybeSet(NrrdIoState *nio) {
+  static const char me[] = "encodingMaybeSet";
 
   if (!nio) {
     biffAddf(NRRD, "%s: got NULL pointer", me);
@@ -827,8 +827,8 @@ _nrrdEncodingMaybeSet(NrrdIoState *nio) {
 ** we must set nio->format to something useful/non-trivial
 */
 static int /* Biff: 1 */
-_nrrdFormatMaybeGuess(const Nrrd *nrrd, NrrdIoState *nio, const char *filename) {
-  static const char me[] = "_nrrdFormatMaybeGuess";
+formatMaybeGuess(const Nrrd *nrrd, NrrdIoState *nio, const char *filename) {
+  static const char me[] = "formatMaybeGuess";
   char mesg[AIR_STRLEN_MED + 1];
   size_t mesgSize = AIR_STRLEN_MED + 1;
   int fi, guessed, available, fits;
@@ -874,8 +874,8 @@ _nrrdFormatMaybeGuess(const Nrrd *nrrd, NrrdIoState *nio, const char *filename) 
 }
 
 static int /* Biff: 1 */
-_nrrdFormatMaybeSet(NrrdIoState *nio) {
-  static const char me[] = "_nrrdFormatMaybeSet";
+formatMaybeSet(NrrdIoState *nio) {
+  static const char me[] = "formatMaybeSet";
 
   if (!nio->format) {
     biffAddf(NRRD, "%s: invalid (NULL) format", me);
@@ -893,7 +893,7 @@ _nrrdFormatMaybeSet(NrrdIoState *nio) {
 }
 
 /*
-** _nrrdWrite
+** nWrite
 **
 ** Write a nrrd to given file or string (allocated by nrrd), using the
 ** format and and encoding indicated in nio.  Cleverness should be
@@ -902,8 +902,8 @@ _nrrdFormatMaybeSet(NrrdIoState *nio) {
 ** appropriateness is explicitly tested
 */
 static int /* Biff: 1 */
-_nrrdWrite(FILE *file, char **stringP, const Nrrd *nrrd, NrrdIoState *_nio) {
-  static const char me[] = "_nrrdWrite";
+nWrite(FILE *file, char **stringP, const Nrrd *nrrd, NrrdIoState *_nio) {
+  static const char me[] = "nWrite";
   NrrdIoState *nio;
   airArray *mop;
 
@@ -931,7 +931,7 @@ _nrrdWrite(FILE *file, char **stringP, const Nrrd *nrrd, NrrdIoState *_nio) {
     }
     airMopAdd(mop, nio, nrrdIoStateNix_mop, airMopAlways);
   }
-  if (_nrrdEncodingMaybeSet(nio) || _nrrdFormatMaybeSet(nio)) {
+  if (encodingMaybeSet(nio) || formatMaybeSet(nio)) {
     biffAddf(NRRD, "%s: ", me);
     airMopError(mop);
     return 1;
@@ -988,13 +988,13 @@ _nrrdWrite(FILE *file, char **stringP, const Nrrd *nrrd, NrrdIoState *_nio) {
 /*
 ******** nrrdWrite
 **
-** wrapper around _nrrdWrite; writes to a FILE*
+** wrapper around nWrite; writes to a FILE*
 */
 int /* Biff: 1 */
 nrrdWrite(FILE *file, const Nrrd *nrrd, NrrdIoState *_nio) {
   static const char me[] = "nrrdWrite";
 
-  if (_nrrdWrite(file, NULL, nrrd, _nio)) {
+  if (nWrite(file, NULL, nrrd, _nio)) {
     biffAddf(NRRD, "%s: trouble", me);
     return 1;
   }
@@ -1004,13 +1004,13 @@ nrrdWrite(FILE *file, const Nrrd *nrrd, NrrdIoState *_nio) {
 /*
 ******** nrrdStringWrite
 **
-** wrapper around _nrrdWrite; *allocates* and writes to a string
+** wrapper around nWrite; *allocates* and writes to a string
 */
 int /* Biff: 1 */
 nrrdStringWrite(char **stringP, const Nrrd *nrrd, NrrdIoState *_nio) {
   static const char me[] = "nrrdStringWrite";
 
-  if (_nrrdWrite(NULL, stringP, nrrd, _nio)) {
+  if (nWrite(NULL, stringP, nrrd, _nio)) {
     biffAddf(NRRD, "%s: trouble", me);
     return 1;
   }
@@ -1046,7 +1046,7 @@ nrrdSave(const char *filename, const Nrrd *nrrd, NrrdIoState *nio) {
     }
     airMopAdd(mop, nio, nrrdIoStateNix_mop, airMopAlways);
   }
-  if (_nrrdEncodingMaybeSet(nio) || _nrrdFormatMaybeGuess(nrrd, nio, filename)) {
+  if (encodingMaybeSet(nio) || formatMaybeGuess(nrrd, nio, filename)) {
     biffAddf(NRRD, "%s: ", me);
     airMopError(mop);
     return 1;
@@ -1054,7 +1054,7 @@ nrrdSave(const char *filename, const Nrrd *nrrd, NrrdIoState *nio) {
 
   if (nrrdFormatNRRD == nio->format && airEndsWith(filename, NRRD_EXT_NHDR)) {
     nio->detachedHeader = AIR_TRUE;
-    _nrrdSplitName(&(nio->path), &(nio->base), filename);
+    nrrd__SplitName(&(nio->path), &(nio->base), filename);
     /* nix the ".nhdr" suffix */
     nio->base[strlen(nio->base) - strlen(NRRD_EXT_NHDR)] = 0;
     /* nrrdFormatNRRD->write will do the rest */

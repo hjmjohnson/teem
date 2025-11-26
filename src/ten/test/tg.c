@@ -22,7 +22,7 @@
 const char *info = ("Sample space of tensor shape.");
 
 void
-_clp2xyz(double xyz[3], double clp[2]) {
+clp2xyz(double xyz[3], double clp[2]) {
   double cl, cp, cs;
 
   cl = clp[0];
@@ -81,7 +81,7 @@ main(int argc, const char *argv[]) {
   float *tdata;
   double xyz[3], q[4], len;
   double mD[9], mRF[9], mRI[9], mT[9];
-  _clp2xyz(xyz, clp);
+  clp2xyz(xyz, clp);
   fprintf(stderr, "%s: want evals = %g %g %g\n", me, xyz[0], xyz[1], xyz[2]);
 
   if (nrrdMaybeAlloc_va(nten, nrrdTypeFloat, 4, AIR_SIZE_T(7), AIR_SIZE_T(samp),

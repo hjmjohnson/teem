@@ -80,8 +80,8 @@
 #include "air.h"
 #include "privateAir.h"
 
-#define AIR_RANDMT_M            397
-#define AIR_RANDMT_DEFAULT_SEED 42
+#define RANDMT_M            397
+#define RANDMT_DEFAULT_SEED 42
 
 /* Inlined class member functions that I made macros */
 #define HIBIT(u)      ((u) & 0x80000000UL)
@@ -95,17 +95,17 @@
 /* airRandMTStateGlobal is not allocated at compile-time because of
    weirdness of where non-initialized global objects go in shared
    libraries.  Its allocation and initialization are controlled by
-   _airRandMTStateGlobal_{allocated,initialized}. Users who want to
+   air__RandMTStateGlobal_{allocated,initialized}. Users who want to
    ensure thread safety should be using airRandMTStateNew and
    airDrandMT_r, not the global state.
 */
 
 airRandMTState *airRandMTStateGlobal = NULL;
-static int _airRandMTStateGlobal_allocated = AIR_FALSE;
-static int _airRandMTStateGlobal_initialized = AIR_FALSE;
+static int air__RandMTStateGlobal_allocated = AIR_FALSE;
+static int air__RandMTStateGlobal_initialized = AIR_FALSE;
 
 static void
-_airRandMTInitialize(airRandMTState *rng, unsigned int seed) {
+randMTInitialize(airRandMTState *rng, unsigned int seed) {
   /* Initialize generator state with seed See Knuth TAOCP Vol 2, 3rd
    Ed, p.106 for multiplier.  In previous versions, most significant
    bits (MSBs) of the seed affect only MSBs of the state array.
@@ -122,18 +122,18 @@ _airRandMTInitialize(airRandMTState *rng, unsigned int seed) {
 }
 
 static void
-_airRandMTReload(airRandMTState *rng) {
+randMTReload(airRandMTState *rng) {
   /* Generate N new values in state.  Made clearer and faster by
      Matthew Bellew (matthew.bellew@home.com) */
   register int i;
   register unsigned int *p = rng->state;
-  for (i = AIR_RANDMT_N - AIR_RANDMT_M; i--; ++p) {
-    *p = TWIST(p[AIR_RANDMT_M], p[0], p[1]);
+  for (i = AIR_RANDMT_N - RANDMT_M; i--; ++p) {
+    *p = TWIST(p[RANDMT_M], p[0], p[1]);
   }
-  for (i = AIR_RANDMT_M; --i; ++p) {
-    *p = TWIST(p[AIR_RANDMT_M - AIR_RANDMT_N], p[0], p[1]);
+  for (i = RANDMT_M; --i; ++p) {
+    *p = TWIST(p[RANDMT_M - AIR_RANDMT_N], p[0], p[1]);
   }
-  *p = TWIST(p[AIR_RANDMT_M - AIR_RANDMT_N], p[0], rng->state[0]);
+  *p = TWIST(p[RANDMT_M - AIR_RANDMT_N], p[0], rng->state[0]);
 
   rng->left = AIR_RANDMT_N;
   rng->pNext = rng->state;
@@ -158,8 +158,8 @@ AIR_MOPPER(airRandMTStateNix);
 void
 airSrandMT_r(airRandMTState *rng, unsigned int seed) {
   /* Seed the generator with a simple uint32 */
-  _airRandMTInitialize(rng, seed);
-  _airRandMTReload(rng);
+  randMTInitialize(rng, seed);
+  randMTReload(rng);
 }
 
 /* Pull a 32-bit integer from the generator state.  Every other access
@@ -170,7 +170,7 @@ airUIrandMT_r(airRandMTState *rng) {
   register unsigned int s1;
 
   if (rng->left == 0) {
-    _airRandMTReload(rng);
+    randMTReload(rng);
   }
   --rng->left;
 
@@ -197,14 +197,14 @@ airDrandMT53_r(airRandMTState *rng) {
   return (a * 67108864.0 + b) * (1.0 / 9007199254740992.0); /* by Isaku Wada */
 }
 
-#define _GLOBAL_ALLOC                                                                   \
-  if (!_airRandMTStateGlobal_allocated) {                                               \
+#define GLOBAL_ALLOC                                                                    \
+  if (!air__RandMTStateGlobal_allocated) {                                              \
     airRandMTStateGlobal = airRandMTStateNew(0);                                        \
-    _airRandMTStateGlobal_allocated = AIR_TRUE;                                         \
+    air__RandMTStateGlobal_allocated = AIR_TRUE;                                        \
   }
-#define _GLOBAL_INIT                                                                    \
-  if (!_airRandMTStateGlobal_initialized) {                                             \
-    airSrandMT(AIR_RANDMT_DEFAULT_SEED);                                                \
+#define GLOBAL_INIT                                                                     \
+  if (!air__RandMTStateGlobal_initialized) {                                            \
+    airSrandMT(RANDMT_DEFAULT_SEED);                                                    \
   }
 
 /*
@@ -219,21 +219,21 @@ airDrandMT53_r(airRandMTState *rng) {
 */
 void
 airRandMTStateGlobalInit(void) {
-  _GLOBAL_ALLOC;
-  _GLOBAL_INIT;
+  GLOBAL_ALLOC;
+  GLOBAL_INIT;
 }
 
 void
 airSrandMT(unsigned int seed) {
-  _GLOBAL_ALLOC;
+  GLOBAL_ALLOC;
   airSrandMT_r(airRandMTStateGlobal, seed);
-  _airRandMTStateGlobal_initialized = AIR_TRUE;
+  air__RandMTStateGlobal_initialized = AIR_TRUE;
 }
 
 double
 airDrandMT(void) {
-  _GLOBAL_ALLOC;
-  _GLOBAL_INIT;
+  GLOBAL_ALLOC;
+  GLOBAL_INIT;
   return airDrandMT_r(airRandMTStateGlobal);
 }
 
@@ -244,10 +244,13 @@ airDrandMT(void) {
 */
 unsigned int
 airRandInt(unsigned int N) {
-  _GLOBAL_ALLOC;
-  _GLOBAL_INIT;
+  GLOBAL_ALLOC;
+  GLOBAL_INIT;
   return airUIrandMT_r(airRandMTStateGlobal) % N;
 }
+
+#undef GLOBAL_ALLOC
+#undef GLOBAL_INIT
 
 unsigned int
 airRandInt_r(airRandMTState *state, unsigned int N) {
@@ -265,7 +268,7 @@ int
 airRandMTSanity(void) {
   int result = 0;
   /* Create a new generator with our seed */
-  airRandMTState *rng = airRandMTStateNew(AIR_RANDMT_DEFAULT_SEED);
+  airRandMTState *rng = airRandMTStateNew(RANDMT_DEFAULT_SEED);
 
   if (!rng) {
     /* Couldn't allocate memory */

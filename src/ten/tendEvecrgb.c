@@ -21,10 +21,10 @@
 #include "privateTen.h"
 
 #define INFO "Make an RGB volume from an eigenvector and an anisotropy"
-static const char *_tend_evecrgbInfoL = (INFO ". ");
+static const char *evecrgbInfoL = (INFO ". ");
 
 static int
-tend_evecrgbMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+evecrgbMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -61,7 +61,7 @@ tend_evecrgbMain(int argc, const char **argv, const char *me, const hestParm *hp
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output image (floating point)");
 
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_tend_evecrgbInfoL);
+  USAGE_PARSE(evecrgbInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
@@ -82,4 +82,4 @@ tend_evecrgbMain(int argc, const char **argv, const char *me, const hestParm *hp
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(evecrgb, INFO);
+MY_TEND_CMD(evecrgb, INFO);

@@ -105,7 +105,7 @@ make files, documentation, symbol enumeration, etc), then always include the
 word "TEEM_LIB_LIST" nearby (to facilitate consistent maintenance), and always
 list the libraries in this dependency order (or its opposite):
 
-  air hest biff nrrd ell moss unrrdu alan tijk gage dye bane
+  air biff hest nrrd ell moss unrrdu alan tijk gage dye bane
   limn echo hoover seek ten elf pull coil push mite meet
 
 * All libraries "lib" contain a const int "libPresent", defined in one of the
@@ -167,22 +167,72 @@ Teem itself, but is essential for regenerating NrrdIO.
 
 ============ Identifiers and their suffixes
 
-* All public symbols (functions and globals) must begin with "lib" or "_lib",
-where "lib" is the library name (air, hest, biff, etc).  All #defines must
-begin with "LIB" or "_LIB" (the only exceptions are the TEEM_VERSION #defines
-described below).  The leading underscore should only be used in exceptional
-circumstances, where there is compelling value in making accessible in the API
-some additional functionality or set of function arguments that would otherwise
-be hidden inside an implementation.
+* Names must not encroach on reserved identifiers in C (e.g. compiling with
+`-Wreserved-identifier` should not generated any additional warnings).  See
+https://en.cppreference.com/w/c/language/identifier.html for details. This
+rules out external symbols starting with `_`, or any identifier starting with
+either `_` and then a capital letter, or starting with `__`. The many many
+offending names that Teem has long had were fixed for TeemV2, and a six-fold
+naming scheme was created and enforced:
+
+(1) external symbols: start with `lib`, always. Most libraries use camelCase
+    naming, but ell and tijk use snake_case, so following `lib` may be at most
+    one underscore `_`, never two.  Even outside ell and tijk, underscores can
+    be used sparingly to improve legibility e.g. `unrrdu_sliceCmd`.
+
+(2) shared "internal" symbols (declared in `privateLib.h` and used in multiple
+    .c files, and not `LIB_EXPORT`d in `lib.h`): start with `lib__` (note the
+    two underscores).  The letter after `__` can be upper or lower case. There
+    is some precedent for this in the implementation of svn
+    https://subversion.apache.org/docs/community-guide/conventions.html and
+    Bind https://users.isc.org/~each/style.html Yes, it looks weird, but that's
+    appropriate, because this is a weird kind of symbol to create.
+
+(3) static symbols used only within one file: name should *not* start with
+    `lib` or any underscores.  Let static symbols enjoy the freedom of being
+    static!  Nothing outside that file will see them, so there's zero reason to
+    faux-name-space them. This also creates better visual contrast with the
+    external and "internal" symbols.
+
+(4) #defines in `lib.h` or another API-defining header (e.g. `nrrdMacros.h`):
+    start with `LIB_`, all-caps with `_`-separation of words. The only
+    exceptions are the TEEM_VERSION #define's (in air.h) described below.
+
+(5) #defines in `privateLib.h`: Following logic of `lib__` above would imply
+    `LIB__`, but the problem is that when there are already lots of `_`s, the
+    difference between one `_` and two `__` is slight
+    (e.g. `NRRD_LLONG_MIN_HELP` vs `NRRD__LLONG_MIN_HELP`).  So, rather than go
+    crazy with things like `LIB___` (triple underscores) or `LIB_PRIV_` (too
+    long), it is instead `MY_LIB_` or just `MY_` for brevity.  Thus, the `MY_`
+    prefix on #defines has the same role as the double `__` in `lib__` for
+    "internal" symbols.
+
+(6) #defines within one .c source file, for use in that file: name should *not*
+    start with either `LIB_` nor with `MY_`, but should be all caps.  Like with
+    the static symbols: this embraces the freedom of not having to interact
+    with anything outside that file, and increases the visual contrast with
+    external and private #defines.
+
+The nice consequence of this new naming system is that you can tell immediately
+by looking at an identifier which of the six kind of identifiers (listed above)
+it is.  Previously there was significant ambiguity.
+
+* When compile-time creating pointers to const structs
+(e.g. const airEnum *const pullEnergyType), in C89 we have to first make the
+const struct, and then define a pointer to it. There are some conventions for
+suffixes to use on the const struct itself (which is either static or "internal):
+- _ae for airEnum
+- _hcb for hestCB
+- _gk for gageKind
+Things would work ok without these suffixes, but they help flesh out what can
+be very short static/local names.
 
 * In most libraries, function names, struct names, enum value names, and
 variables are in camel case, starting with a lower-case letter
 (e.g. tenExperSpecGradBValSet).  One exception is the nrrd library, in which
-the N is capitalize in Nrrd, NrrdIOState, NrrdKernel, etc.  The other
-exceptions are the ell and tijk library, in which everything is lower case,
-with _ separations (e.g. ell_cubic_root_triple).  In all libraries #defines and
-macros are all upper case, with _ separations (e.g. NRRD_INDEX_GEN,
-TIJK_TYPE_MAX_NUM)
+the N is capital in Nrrd, NrrdIOState, NrrdKernel, etc.  The other exceptions
+are the ell and tijk library, in which everything is lower case, with _
+separations (e.g. ell_cubic_root_triple).
 
 * All functions that use var-args must have a name that ends with "_va".  There
 are currently some functions ending with "_nva" (for "no var-args"), but in a

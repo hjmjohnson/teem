@@ -111,7 +111,7 @@ gageContextCopy(gageContext *ctx) {
     return NULL;
   }
   for (pvlIdx = 0; pvlIdx < ntx->pvlNum; pvlIdx++) {
-    ntx->pvl[pvlIdx] = _gagePerVolumeCopy(ctx->pvl[pvlIdx], 2 * ctx->radius);
+    ntx->pvl[pvlIdx] = gage__PerVolumeCopy(ctx->pvl[pvlIdx], 2 * ctx->radius);
     if (!ntx->pvl[pvlIdx]) {
       biffAddf(GAGE, "%s: trouble copying pervolume %u", me, pvlIdx);
       return NULL;
@@ -350,7 +350,7 @@ gageParmSet(gageContext *ctx, int which, double val) {
     break;
   case gageParmOrientationFromSpacing:
     ctx->parm.orientationFromSpacing = AIR_INT(val);
-    /* affects future calls to _gageShapeSet */
+    /* affects future calls to gage__ShapeSet */
     break;
   case gageParmGenerateErrStr:
     ctx->parm.generateErrStr = AIR_INT(val);
@@ -408,7 +408,7 @@ gagePerVolumeAttach(gageContext *ctx, gagePerVolume *pvl) {
     /* the volume "shape" is context state that we set now, because unlike
        everything else (handled by gageUpdate()), it does not effect
        the kind or amount of padding done */
-    if (_gageShapeSet(ctx, ctx->shape, pvl->nin, pvl->kind->baseDim)) {
+    if (gage__ShapeSet(ctx, ctx->shape, pvl->nin, pvl->kind->baseDim)) {
       biffAddf(GAGE, "%s: trouble", me);
       return 1;
     }
@@ -418,7 +418,7 @@ gagePerVolumeAttach(gageContext *ctx, gagePerVolume *pvl) {
        attached pvls were at some point the "new" one, they all
        should match each other */
     shape = gageShapeNew();
-    if (_gageShapeSet(ctx, shape, pvl->nin, pvl->kind->baseDim)) {
+    if (gage__ShapeSet(ctx, shape, pvl->nin, pvl->kind->baseDim)) {
       biffAddf(GAGE, "%s: trouble", me);
       return 1;
     }
@@ -480,7 +480,7 @@ gagePerVolumeDetach(gageContext *ctx, gagePerVolume *pvl) {
 }
 
 /*
-** _gageIv3Fill()
+** iv3Fill()
 **
 ** based on ctx's shape and radius, and the (xi,yi,zi) determined from
 ** the probe location, fills the iv3 cache in the given pervolume
@@ -493,8 +493,8 @@ gagePerVolumeDetach(gageContext *ctx, gagePerVolume *pvl) {
 **
 */
 static void
-_gageIv3Fill(gageContext *ctx, gagePerVolume *pvl) {
-  static const char me[] = "_gageIv3Fill";
+iv3Fill(gageContext *ctx, gagePerVolume *pvl) {
+  static const char me[] = "iv3Fill";
   int lx, ly, lz, hx, hy, hz, _xx, _yy, _zz;
   unsigned int xx, yy, zz, fr, cacheIdx, dataIdx, fddd;
   unsigned int sx, sy, sz;
@@ -667,7 +667,7 @@ _gageIv3Fill(gageContext *ctx, gagePerVolume *pvl) {
 }
 
 /*
-** _gageProbe
+** gage__Probe
 **
 ** how to do probing.  (x,y,z) position is *index space* position.
 ** Note, however, that derivatives (gradients and hessians) will
@@ -677,11 +677,11 @@ _gageIv3Fill(gageContext *ctx, gagePerVolume *pvl) {
 ** structs of the attached pervolumes
 **
 ** NOTE: the stack filter weights are (like the spatial filter weights)
-** computed inside _gageLocationSet()
+** computed inside gage__LocationSet()
 */
 int /* Biff: (private) nope */
-_gageProbe(gageContext *ctx, double _xi, double _yi, double _zi, double _si) {
-  static const char me[] = "_gageProbe";
+gage__Probe(gageContext *ctx, double _xi, double _yi, double _zi, double _si) {
+  static const char me[] = "gage__Probe";
   unsigned int oldIdx[4], oldNnz = 0, pvlIdx;
   int idxChanged;
 
@@ -693,9 +693,9 @@ _gageProbe(gageContext *ctx, double _xi, double _yi, double _zi, double _si) {
   }
   ELL_4V_COPY(oldIdx, ctx->point.idx);
   oldNnz = ctx->point.stackFwNonZeroNum;
-  if (_gageLocationSet(ctx, _xi, _yi, _zi, _si)) {
+  if (gage__LocationSet(ctx, _xi, _yi, _zi, _si)) {
     /* we're outside the volume; leave ctx->errNum and ctx->errStr set;
-       as they have just been set by _gageLocationSet() */
+       as they have just been set by gage__LocationSet() */
     /* GLK had added but not checked in the following line;
        the logic of this has to be studied further */
     /* ctx->edgeFrac = 0.666; */
@@ -727,10 +727,10 @@ _gageProbe(gageContext *ctx, double _xi, double _yi, double _zi, double _si) {
     if (!ctx->parm.stackUse) {
       for (pvlIdx = 0; pvlIdx < ctx->pvlNum; pvlIdx++) {
         if (ctx->verbose > 3) {
-          fprintf(stderr, "%s: _gageIv3Fill(pvl[%u/%u] %s): .......\n", me, pvlIdx,
+          fprintf(stderr, "%s: iv3Fill(pvl[%u/%u] %s): .......\n", me, pvlIdx,
                   ctx->pvlNum, ctx->pvl[pvlIdx]->kind->name);
         }
-        _gageIv3Fill(ctx, ctx->pvl[pvlIdx]);
+        iv3Fill(ctx, ctx->pvl[pvlIdx]);
       }
     } else {
       for (pvlIdx = 0; pvlIdx < ctx->pvlNum - 1; pvlIdx++) {
@@ -744,7 +744,7 @@ _gageProbe(gageContext *ctx, double _xi, double _yi, double _zi, double _si) {
             fprintf(stderr, "%s: stackFw[%u] == %g -> iv3fill needed\n", me, pvlIdx,
                     ctx->stackFw[pvlIdx]);
           }
-          _gageIv3Fill(ctx, ctx->pvl[pvlIdx]);
+          iv3Fill(ctx, ctx->pvl[pvlIdx]);
         } else {
           if (ctx->verbose > 3) {
             fprintf(stderr, "%s: stackFw[%u] == %g -> NO iv3fill\n", me, pvlIdx,
@@ -766,7 +766,7 @@ _gageProbe(gageContext *ctx, double _xi, double _yi, double _zi, double _si) {
         ctx->pvl[vi]->kind->iv3Print(stderr, ctx, ctx->pvl[vi]);
       }
     }
-    _gageStackBaseIv3Fill(ctx);
+    gage__StackBaseIv3Fill(ctx);
     if (ctx->verbose > 3) {
       fprintf(stderr,
               "%s: (stack) base pvl's value cache at "
@@ -806,13 +806,13 @@ _gageProbe(gageContext *ctx, double _xi, double _yi, double _zi, double _si) {
 int /* Biff: nope */
 gageProbe(gageContext *ctx, double xi, double yi, double zi) {
 
-  return _gageProbe(ctx, xi, yi, zi, 0.0);
+  return gage__Probe(ctx, xi, yi, zi, 0.0);
 }
 
 int /* Biff: (private) nope */
-_gageProbeSpace(gageContext *ctx, double xx, double yy, double zz, double ss,
-                int indexSpace, int clamp) {
-  static const char me[] = "_gageProbeSpace";
+gage__ProbeSpace(gageContext *ctx, double xx, double yy, double zz, double ss,
+                 int indexSpace, int clamp) {
+  static const char me[] = "gage__ProbeSpace";
   unsigned int *size;
   double xi, yi, zi, si;
 
@@ -869,7 +869,7 @@ _gageProbeSpace(gageContext *ctx, double xx, double yy, double zz, double ss,
             snprintf(ctx->errStr, sizeof(ctx->errStr), "%s: search failure for ss = %g",
                      me, ss);
           } else {
-            airStrcpy(ctx->errStr, sizeof(ctx->errStr), _GAGE_NON_ERR_STR);
+            airStrcpy(ctx->errStr, sizeof(ctx->errStr), MY_GAGE_NON_ERR_STR);
           }
           ctx->errNum = gageErrStackSearch;
           return 1;
@@ -905,12 +905,12 @@ _gageProbeSpace(gageContext *ctx, double xx, double yy, double zz, double ss,
       fprintf(stderr, "%s: with clamping --> ipos (%g,%g,%g)\n", me, xi, yi, zi);
     }
   }
-  return _gageProbe(ctx, xi, yi, zi, si);
+  return gage__Probe(ctx, xi, yi, zi, si);
 }
 
 int /* Biff: nope */
 gageProbeSpace(gageContext *ctx, double xx, double yy, double zz, int indexSpace,
                int clamp) {
 
-  return _gageProbeSpace(ctx, xx, yy, zz, AIR_NAN, indexSpace, clamp);
+  return gage__ProbeSpace(ctx, xx, yy, zz, AIR_NAN, indexSpace, clamp);
 }

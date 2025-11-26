@@ -21,19 +21,19 @@
 
 const char *info = ("Works with camanim.tcl to test camera path splines.");
 
-#define _LIMNMAGIC "LIMN0000"
+#define LIMNMAGIC "LIMN0000"
 
 int
-_limnReadCamanim(int imgSize[2], limnCamera **keycamP, double **timeP,
-                 unsigned int *numKeysP, FILE *fin) {
-  static const char me[] = "_limnReadCamanim";
+limn__ReadCamanim(int imgSize[2], limnCamera **keycamP, double **timeP,
+                  unsigned int *numKeysP, FILE *fin) {
+  static const char me[] = "limn__ReadCamanim";
   char line[AIR_STRLEN_HUGE + 1];
   unsigned int ki;
   double *tmp, *dwell, di, dn, df, fr[3], at[3], up[3], va;
   airArray *mop, *camA, *dwellA;
 
-  if (!(0 < airOneLine(fin, line, AIR_STRLEN_HUGE + 1) && !strcmp(_LIMNMAGIC, line))) {
-    biffAddf(LIMN, "%s: couldn't read first line or it wasn't \"%s\"", me, _LIMNMAGIC);
+  if (!(0 < airOneLine(fin, line, AIR_STRLEN_HUGE + 1) && !strcmp(LIMNMAGIC, line))) {
+    biffAddf(LIMN, "%s: couldn't read first line or it wasn't \"%s\"", me, LIMNMAGIC);
     return 1;
   }
   if (!(0 < airOneLine(fin, line, AIR_STRLEN_HUGE + 1)
@@ -100,11 +100,11 @@ _limnReadCamanim(int imgSize[2], limnCamera **keycamP, double **timeP,
 }
 
 int
-_limnWriteCamanim(FILE *fout, int imgSize[2], limnCamera *cam, int numFrames) {
-  /* char me[]="_limnWriteCamanim", err[AIR_STRLEN_MED+1]; */
+limn__WriteCamanim(FILE *fout, int imgSize[2], limnCamera *cam, int numFrames) {
+  /* char me[]="limn__WriteCamanim", err[AIR_STRLEN_MED+1]; */
   int fi;
 
-  fprintf(fout, "%s\n", _LIMNMAGIC);
+  fprintf(fout, "%s\n", LIMNMAGIC);
   fprintf(fout, "imgSize {%d %d}\n", imgSize[0], imgSize[1]);
   for (fi = 0; fi < numFrames; fi++) {
     fprintf(fout,
@@ -169,7 +169,7 @@ main(int argc, const char *argv[]) {
   airMopAdd(mop, fin, airFclose_mop, airMopAlways);
   airMopAdd(mop, fout, airFclose_mop, airMopAlways);
 
-  if (_limnReadCamanim(imgSize, &keycam, &time, &numKeys, fin)) {
+  if (limn__ReadCamanim(imgSize, &keycam, &time, &numKeys, fin)) {
     airMopAdd(mop, err = biffGetDone(LIMN), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble reading keyframe file:\n%s\n", me, err);
     airMopError(mop);
@@ -186,7 +186,7 @@ main(int argc, const char *argv[]) {
     airMopError(mop);
     return 1;
   }
-  if (_limnWriteCamanim(fout, imgSize, cam, N)) {
+  if (limn__WriteCamanim(fout, imgSize, cam, N)) {
     airMopAdd(mop, err = biffGetDone(LIMN), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble writing frame file:\n%s\n", me, err);
     airMopError(mop);

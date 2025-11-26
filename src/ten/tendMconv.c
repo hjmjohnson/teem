@@ -21,10 +21,10 @@
 #include "privateTen.h"
 
 #define INFO "convert from one model to another"
-static const char *_tend_mconvInfoL = (INFO ". More docs here.");
+static const char *mconvInfoL = (INFO ". More docs here.");
 
 static int
-tend_mconvMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+mconvMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -46,7 +46,7 @@ tend_mconvMain(int argc, const char **argv, const char *me, const hestParm *hpar
 
   mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_JUSTPARSE(_tend_mconvInfoL);
+  USAGE_JUSTPARSE(mconvInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
@@ -88,4 +88,4 @@ tend_mconvMain(int argc, const char **argv, const char *me, const hestParm *hpar
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(mconv, INFO);
+MY_TEND_CMD(mconv, INFO);

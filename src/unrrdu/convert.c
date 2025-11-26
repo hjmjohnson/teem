@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Convert to another type (as if by cast, w/ optional clamp)"
-static const char *_unrrdu_convertInfoL
+static const char *unu_convertInfoL
   = (INFO ". By default this does not transform, scale, or intelligently "
           "quantize values; it just copies them from one type to another, which "
           "replicates exactly what you'd get in C when you assign from a variable "
@@ -33,21 +33,21 @@ static const char *_unrrdu_convertInfoL
           "* Uses nrrdConvert or nrrdClampConvert");
 
 static int
-unrrdu_convertMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_convertMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   int type;
-  OPT_ADD_TYPE(type, "type to convert to", NULL);
+  MY_OPT_ADD_TYPE(type, "type to convert to", NULL);
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   int doClamp;
   hestOptAdd_Flag(&hopt, "clamp", &doClamp,
                   "clamp input values to representable range of values of "
                   "output type, to avoid wrap-around problems");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_convertInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_convertInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -66,10 +66,10 @@ unrrdu_convertMain(int argc, const char **argv, const char *me, const hestParm *
     return 1;
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(convert, INFO);
+MY_UNRRDU_CMD(convert, INFO);

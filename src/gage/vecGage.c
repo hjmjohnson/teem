@@ -25,7 +25,7 @@
  * conjugate eigenvalues of a 3x3 non-symmetric matrix
  */
 static double
-gage_imaginary_part_eigenvalues(double *M) {
+imaginary_part_eigenvalues(double *M) {
   double A, B, C, scale, frob, m[9], _eval[3];
   double beta, _gamma;
   int roots;
@@ -53,7 +53,7 @@ gage_imaginary_part_eigenvalues(double *M) {
 
 /* clang-format off */
 static gageItemEntry
-_gageVecTable[GAGE_VEC_ITEM_MAX+1] = {
+vecTable[GAGE_VEC_ITEM_MAX+1] = {
   /* enum value         len, deriv, prereqs,                                                  parent item, parent index, needData */
   {gageVecUnknown,         0,  0,   {0},                                                                0,      0,       AIR_FALSE},
   {gageVecVector,          3,  0,   {0},                                                                0,      0,       AIR_FALSE},
@@ -91,8 +91,8 @@ _gageVecTable[GAGE_VEC_ITEM_MAX+1] = {
 };
 
 static void
-_gageVecFilter(gageContext *ctx, gagePerVolume *pvl) {
-  static const char me[] = "_gageVecFilter";
+vecFilter(gageContext *ctx, gagePerVolume *pvl) {
+  static const char me[] = "vecFilter";
   double *fw00, *fw11, *fw22, *vec, *jac, *hes;
   int fd;
   gageScl3PFilter_t *filter[5] = {NULL, gageScl3PFilter2, gageScl3PFilter4,
@@ -137,8 +137,8 @@ _gageVecFilter(gageContext *ctx, gagePerVolume *pvl) {
 }
 
 static void
-_gageVecAnswer(gageContext *ctx, gagePerVolume *pvl) {
-  static const char me[] = "_gageVecAnswer";
+vecAnswer(gageContext *ctx, gagePerVolume *pvl) {
+  static const char me[] = "vecAnswer";
   double cmag, tmpMat[9], mgevec[9], mgeval[3];
   double asym[9], tran[9], eval[3], tmpVec[3], norm;
   double *vecAns, *normAns, *jacAns, *strainAns, *somegaAns,
@@ -241,7 +241,7 @@ _gageVecAnswer(gageContext *ctx, gagePerVolume *pvl) {
   }
   if (GAGE_QUERY_ITEM_TEST(pvl->query, gageVecImaginaryPart)) {
     pvl->directAnswer[gageVecImaginaryPart][0] =
-      gage_imaginary_part_eigenvalues(jacAns);
+      imaginary_part_eigenvalues(jacAns);
   }
   /* 2nd order vector derivative continued */
   if (GAGE_QUERY_ITEM_TEST(pvl->query, gageVecHessian)) {
@@ -384,7 +384,7 @@ _gageVecAnswer(gageContext *ctx, gagePerVolume *pvl) {
 }
 
 static const char *
-_gageVecStr[] = {
+vecStr[] = {
   "(unknown gageVec)",
   "vector",
   "vector0",
@@ -420,7 +420,7 @@ _gageVecStr[] = {
 };
 
 static const char *
-_gageVecDesc[] = {
+vecDesc[] = {
   "unknown gageVec query",
   "component-wise-interpolated vector",
   "vector[0]",
@@ -456,7 +456,7 @@ _gageVecDesc[] = {
 };
 
 static const int
-_gageVecVal[] = {
+vecVal[] = {
   gageVecUnknown,
   gageVecVector,
   gageVecVector0,
@@ -524,7 +524,7 @@ _gageVecVal[] = {
 #define GV_MC  gageVecMGEvec
 
 static const char *
-_gageVecStrEqv[] = {
+vecStrEqv[] = {
   "v", "vector", "vec",
   "v0", "vector0", "vec0",
   "v1", "vector1", "vec1",
@@ -560,7 +560,7 @@ _gageVecStrEqv[] = {
 };
 
 static const int
-_gageVecValEqv[] = {
+vecValEqv[] = {
   GV_V, GV_V, GV_V,
   GV_V0, GV_V0, GV_V0,
   GV_V1, GV_V1, GV_V1,
@@ -595,32 +595,30 @@ _gageVecValEqv[] = {
 };
 
 static const airEnum
-_gageVec = {
+vec_ae = {
   "gageVec",
   GAGE_VEC_ITEM_MAX,
-  _gageVecStr, _gageVecVal,
-  _gageVecDesc,
-  _gageVecStrEqv, _gageVecValEqv,
+  vecStr, vecVal,
+  vecDesc,
+  vecStrEqv, vecValEqv,
   AIR_FALSE
 };
-const airEnum *const
-gageVec = &_gageVec;
+const airEnum *const gageVec = &vec_ae;
 
 static gageKind
-_gageKindVec = {
+vec_gk = {
   AIR_FALSE, /* statically allocated */
   "vector",
-  &_gageVec,
+  &vec_ae,
   1, /* baseDim */
   3, /* valLen */
   GAGE_VEC_ITEM_MAX,
-  _gageVecTable,
-  _gageVecIv3Print,
-  _gageVecFilter,
-  _gageVecAnswer,
+  vecTable,
+  gage__VecIv3Print,
+  vecFilter,
+  vecAnswer,
   NULL, NULL, NULL, NULL,
   NULL
 };
-gageKind *const
-gageKindVec = &_gageKindVec;
+gageKind *const gageKindVec = &vec_gk;
 /* clang-format on */

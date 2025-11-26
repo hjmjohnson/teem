@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Binary operation on two nrrds, or on a nrrd and a constant"
-static const char *_unrrdu_2opInfoL
+static const char *unu_2opInfoL
   = (INFO ". Either the first or second operand can be a float constant, "
           "but not both.  Use \"-\" for an operand to signify "
           "a nrrd to be read from stdin (a pipe).  Note, however, "
@@ -29,7 +29,7 @@ static const char *_unrrdu_2opInfoL
           "* Uses nrrdArithIterBinaryOp or (with -w) nrrdArithIterBinaryOpSelect");
 
 static int
-unrrdu_2opMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_2opMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   int op;
   hestOptAdd_1_Enum(&hopt, NULL, "operator", &op, NULL,
@@ -83,10 +83,10 @@ unrrdu_2opMain(int argc, const char **argv, const char *me, const hestParm *hpar
                    "shape of the output nrrd. By default (not using this option), "
                    "the first non-constant argument is used. ");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_2opInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_2opInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -143,10 +143,10 @@ unrrdu_2opMain(int argc, const char **argv, const char *me, const hestParm *hpar
     return 1;
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(2op, INFO);
+MY_UNRRDU_CMD(2op, INFO);

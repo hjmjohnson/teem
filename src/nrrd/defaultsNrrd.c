@@ -86,15 +86,15 @@ int nrrdStateEncodingAsciiCommaAllow = AIR_FALSE;
 
 /* these are helper functions for min/max testing */
 airLLong /* Biff: (private) nope */
-_nrrdLLongMaxHelp(airLLong val) {
+nrrd__LLongMaxHelp(airLLong val) {
   return val * 2 + 1;
 }
 airLLong /* Biff: (private) nope */
-_nrrdLLongMinHelp(airLLong val) {
+nrrd__LLongMinHelp(airLLong val) {
   return val * 2;
 }
 airULLong /* Biff: (private) nope */
-_nrrdULLongMaxHelp(airULLong val) {
+nrrd__ULLongMaxHelp(airULLong val) {
   return val + 1;
 }
 
@@ -115,12 +115,12 @@ const char *const nrrdEnvVarDefaultCenter = "NRRD_DEFAULT_CENTER";
 const char *const nrrdEnvVarDefaultWriteCharsPerLine
   = "NRRD_DEFAULT_WRITE_CHARS_PER_LINE";
 const char *const nrrdEnvVarDefaultWriteValsPerLine = "NRRD_DEFAULT_WRITE_VALS_PER_LINE";
-/* over-writes _EnvVarStateVerboseIO for setting nrrdDefaultIoVerbose */
+/* over-writes nrrd__StateVerboseIO for setting nrrdDefaultIoVerbose */
 const char *const nrrdEnvVarDefaultIoVerbose = "NRRD_DEFAULT_IO_VERBOSE";
 
 const char *const nrrdEnvVarStateKindNoop = "NRRD_STATE_KIND_NOOP";
 /* nrrdStateVerboseIO gone but still respect this to set nrrdDefaultIoVerbose */
-static const char *const _EnvVarStateVerboseIO = "NRRD_STATE_VERBOSE_IO";
+static const char *const nrrd__StateVerboseIO = "NRRD_STATE_VERBOSE_IO";
 const char *const nrrdEnvVarStateKeyValuePairsPropagate
   = "NRRD_STATE_KEYVALUEPAIRS_PROPAGATE";
 const char *const nrrdEnvVarStateBlind8BitRange = "NRRD_STATE_BLIND_8_BIT_RANGE";
@@ -305,20 +305,20 @@ nrrdDefaultGetenv(void) {
 
   /* for TeemV2 nrrdStateVerboseIO --> nrrdDefaultIoVerbose but we'll
    still honor the old env var name if new env var name is not given */
-  setOldWay = (AIR_TRUE == nrrdGetenvInt(&oldVal, NULL, _EnvVarStateVerboseIO));
+  setOldWay = (AIR_TRUE == nrrdGetenvInt(&oldVal, NULL, nrrd__StateVerboseIO));
   setNewWay = (AIR_TRUE == nrrdGetenvInt(&newVal, NULL, nrrdEnvVarDefaultIoVerbose));
   if (setOldWay) {
     if (!setNewWay) {
       fprintf(stderr,
               "%s: WARNING environment variable \"%s\" deprecated, "
               "use \"%s\" instead\n",
-              me, _EnvVarStateVerboseIO, nrrdEnvVarDefaultIoVerbose);
+              me, nrrd__StateVerboseIO, nrrdEnvVarDefaultIoVerbose);
       nrrdDefaultIoVerbose = oldVal;
     } else if (setNewWay) {
       fprintf(stderr,
               "%s: WARNING environment variable \"%s\" "
               "over-riding deprecated \"%s\"\n",
-              me, nrrdEnvVarDefaultIoVerbose, _EnvVarStateVerboseIO);
+              me, nrrdEnvVarDefaultIoVerbose, nrrd__StateVerboseIO);
       nrrdDefaultIoVerbose = newVal;
     }
   } else if (setNewWay) {

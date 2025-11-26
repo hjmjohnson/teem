@@ -21,7 +21,7 @@
 #include "privateTen.h"
 
 #define INFO "Generate postscript or ray-traced renderings of 3D glyphs"
-static const char *_tend_glyphInfoL
+static const char *glyphInfoL
   = (INFO ".  Whether the output is postscript or a ray-traced image is controlled "
           "by the initial \"rt\" flag (by default, the output is postscript). "
           "Because this is doing viz/graphics, many parameters need to be set. "
@@ -33,19 +33,18 @@ static const char *_tend_glyphInfoL
           "\"unu crop -min 0 0 0 -max 2 M M \" followed by "
           "\"unu gamma\" and/or \"unu quantize -b 8\".");
 
-#define _LIMNMAGIC "LIMN0000"
+#define LIMNMAGIC "LIMN0000"
 
 static int /* Biff: 1 */
-_tendGlyphReadCams(int imgSize[2], limnCamera **camP, unsigned int *numCamsP,
-                   FILE *fin) {
-  static const char me[] = "_tendGlyphReadCams";
+readCams(int imgSize[2], limnCamera **camP, unsigned int *numCamsP, FILE *fin) {
+  static const char me[] = "readCams";
   char line[AIR_STRLEN_HUGE + 1];
   int ki;
   double di, dn, df, fr[3], at[3], up[3], va, dwell;
   airArray *mop, *camA;
 
-  if (!(0 < airOneLine(fin, line, AIR_STRLEN_HUGE + 1) && !strcmp(_LIMNMAGIC, line))) {
-    biffAddf(TEN, "%s: couldn't read first line or it wasn't \"%s\"", me, _LIMNMAGIC);
+  if (!(0 < airOneLine(fin, line, AIR_STRLEN_HUGE + 1) && !strcmp(LIMNMAGIC, line))) {
+    biffAddf(TEN, "%s: couldn't read first line or it wasn't \"%s\"", me, LIMNMAGIC);
     return 1;
   }
   if (!(0 < airOneLine(fin, line, AIR_STRLEN_HUGE + 1)
@@ -95,7 +94,7 @@ _tendGlyphReadCams(int imgSize[2], limnCamera **camP, unsigned int *numCamsP,
 }
 
 static int
-tend_glyphMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+glyphMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   int pret, doRT = AIR_FALSE;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -304,7 +303,7 @@ tend_glyphMain(int argc, const char **argv, const char *me, const hestParm *_hpa
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output file");
 
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_tend_glyphInfoL);
+  USAGE_PARSE(glyphInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   /* set up slicing stuff */
@@ -449,7 +448,7 @@ tend_glyphMain(int argc, const char **argv, const char *me, const hestParm *_hpa
         airMopError(mop);
         return 1;
       }
-      if (_tendGlyphReadCams(ires, &hackcams, &hacknumcam, hackF)) {
+      if (readCams(ires, &hackcams, &hacknumcam, hackF)) {
         airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);
         fprintf(stderr, "%s: trouble reading frames %s\n", me, err);
         airMopError(mop);
@@ -540,4 +539,4 @@ tend_glyphMain(int argc, const char **argv, const char *me, const hestParm *_hpa
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(glyph, INFO);
+MY_TEND_CMD(glyph, INFO);

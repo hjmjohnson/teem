@@ -26,7 +26,7 @@ enum {
 };
 
 /*
- * _nrrdApply2DSetUp()
+ * apply2DSetUp()
  *
  * some error checking and initializing needed for 2D LUTS and regular maps.  The intent
  * is that if this succeeds, then there is no need for any further error checking.
@@ -38,10 +38,10 @@ enum {
  * range->min and range->max must exist.
  */
 static int /* Biff: 1 */
-_nrrdApply2DSetUp(Nrrd *nout, const Nrrd *nin, const NrrdRange *range0,
-                  const NrrdRange *range1, const Nrrd *nmap, int kind, int typeOut,
-                  int rescale0, int rescale1) {
-  static const char me[] = "_nrrdApply2DSetUp";
+apply2DSetUp(Nrrd *nout, const Nrrd *nin, const NrrdRange *range0,
+             const NrrdRange *range1, const Nrrd *nmap, int kind, int typeOut,
+             int rescale0, int rescale1) {
+  static const char me[] = "apply2DSetUp";
   char *mapcnt;
   char nounStr[][AIR_STRLEN_SMALL + 1] = {"2D lut", "2D regular map"};
   char verbStr[][AIR_STRLEN_SMALL + 1] = {"lut2", "rmap2"};
@@ -94,15 +94,15 @@ _nrrdApply2DSetUp(Nrrd *nout, const Nrrd *nin, const NrrdRange *range0,
     return 1;
   }
   copyMapAxis0 = (1 == mapAxis);
-  domMin = _nrrdApplyDomainMin(nmap, AIR_FALSE, mapAxis);
-  domMax = _nrrdApplyDomainMax(nmap, AIR_FALSE, mapAxis);
+  domMin = nrrd__ApplyDomainMin(nmap, AIR_FALSE, mapAxis);
+  domMax = nrrd__ApplyDomainMax(nmap, AIR_FALSE, mapAxis);
   if (!(domMin < domMax)) {
     biffAddf(NRRD, "%s: (axis %u) domain min (%g) not less than max (%g)", me, mapAxis,
              domMin, domMax);
     return 1;
   }
-  domMin = _nrrdApplyDomainMin(nmap, AIR_FALSE, mapAxis + 1);
-  domMax = _nrrdApplyDomainMax(nmap, AIR_FALSE, mapAxis + 1);
+  domMin = nrrd__ApplyDomainMin(nmap, AIR_FALSE, mapAxis + 1);
+  domMax = nrrd__ApplyDomainMax(nmap, AIR_FALSE, mapAxis + 1);
   if (!(domMin < domMax)) {
     biffAddf(NRRD, "%s: (axis %u) domain min (%g) not less than max (%g)", me,
              mapAxis + 1, domMin, domMax);
@@ -159,10 +159,10 @@ _nrrdApply2DSetUp(Nrrd *nout, const Nrrd *nin, const NrrdRange *range0,
     return 1;
   }
   if (copyMapAxis0) {
-    _nrrdAxisInfoCopy(nout->axis + 0, nmap->axis + 0, NRRD_AXIS_INFO_SIZE_BIT);
+    nrrd__AxisInfoCopy(nout->axis + 0, nmap->axis + 0, NRRD_AXIS_INFO_SIZE_BIT);
   }
 
-  mapcnt = _nrrdContentGet(nmap);
+  mapcnt = nrrd__ContentGet(nmap);
   if (nrrdContentSet_va(nout, verbStr[kind], nin, "%s", mapcnt)) {
     biffAddf(NRRD, "%s:", me);
     free(mapcnt);
@@ -177,7 +177,7 @@ _nrrdApply2DSetUp(Nrrd *nout, const Nrrd *nin, const NrrdRange *range0,
 }
 
 /*
-** _nrrdApply2DLutOrRegMap()
+** apply2DLutOrRegMap()
 **
 ** the guts of nrrdApply2DLut and nrrdApply2DRegMap
 **
@@ -197,10 +197,10 @@ _nrrdApply2DSetUp(Nrrd *nout, const Nrrd *nin, const NrrdRange *range0,
 ** there really should be.
 */
 static int /* Biff: 1 */
-_nrrdApply2DLutOrRegMap(Nrrd *nout, const Nrrd *nin, const NrrdRange *range0,
-                        const NrrdRange *range1, const Nrrd *nmap, int ramps,
-                        int rescale0, int rescale1) {
-  static const char me[] = "_nrrdApply2DLutOrRegMap";
+apply2DLutOrRegMap(Nrrd *nout, const Nrrd *nin, const NrrdRange *range0,
+                   const NrrdRange *range1, const Nrrd *nmap, int ramps, int rescale0,
+                   int rescale1) {
+  static const char me[] = "apply2DLutOrRegMap";
   char *inData, *outData, *mapData, *entData;
   size_t N, I;
   double (*inLoad)(const void *v), (*mapLup)(const void *v, size_t I),
@@ -212,11 +212,11 @@ _nrrdApply2DLutOrRegMap(Nrrd *nout, const Nrrd *nin, const NrrdRange *range0,
   mapAxis = nmap->dim - 2;      /* axis of nmap containing entries */
   mapData = (char *)nmap->data; /* map data, as char* */
                                 /* low end of map domain */
-  domMin0 = _nrrdApplyDomainMin(nmap, ramps, mapAxis + 0);
-  domMin1 = _nrrdApplyDomainMin(nmap, ramps, mapAxis + 1);
+  domMin0 = nrrd__ApplyDomainMin(nmap, ramps, mapAxis + 0);
+  domMin1 = nrrd__ApplyDomainMin(nmap, ramps, mapAxis + 1);
   /* high end of map domain */
-  domMax0 = _nrrdApplyDomainMax(nmap, ramps, mapAxis + 0);
-  domMax1 = _nrrdApplyDomainMax(nmap, ramps, mapAxis + 1);
+  domMax0 = nrrd__ApplyDomainMax(nmap, ramps, mapAxis + 0);
+  domMax1 = nrrd__ApplyDomainMax(nmap, ramps, mapAxis + 1);
   mapLen0 = AIR_UINT(nmap->axis[mapAxis + 0].size); /* number of entries in map axis 0 */
   mapLen1 = AIR_UINT(nmap->axis[mapAxis + 1].size); /* number of entries in map axis 1 */
   mapLup = nrrdDLookup[nmap->type];                 /* how to get doubles out of map */
@@ -335,10 +335,9 @@ nrrdApply2DLut(Nrrd *nout, const Nrrd *nin, unsigned int domainAxis,
   }
   airMopAdd(mop, range0, nrrdRangeNix_mop, airMopAlways);
   airMopAdd(mop, range1, nrrdRangeNix_mop, airMopAlways);
-  if (_nrrdApply2DSetUp(nout, nin, range0, range1, nlut, kindLut, typeOut, rescale0,
-                        rescale1)
-      || _nrrdApply2DLutOrRegMap(nout, nin, range0, range1, nlut, AIR_FALSE, rescale0,
-                                 rescale1)) {
+  if (apply2DSetUp(nout, nin, range0, range1, nlut, kindLut, typeOut, rescale0, rescale1)
+      || apply2DLutOrRegMap(nout, nin, range0, range1, nlut, AIR_FALSE, rescale0,
+                            rescale1)) {
     biffAddf(NRRD, "%s:", me);
     airMopError(mop);
     return 1;
@@ -373,9 +372,9 @@ nrrdApply2DRegMap(Nrrd *nout, const Nrrd *nin,
     range = nrrdRangeNewSet(nin, nrrdBlind8BitRangeState);
   }
   airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
-  if (_nrrdApply2DSetUp(nout, nin, range, nmap, kindRmap, typeOut,
+  if (apply2DSetUp(nout, nin, range, nmap, kindRmap, typeOut,
                         rescale, AIR_FALSE)
-      || _nrrdApply2DLutOrRegMap(nout, nin, range, nmap, AIR_TRUE,
+      || apply2DLutOrRegMap(nout, nin, range, nmap, AIR_TRUE,
                                  rescale, AIR_FALSE)) {
     biffAddf(NRRD, "%s:", me);
     airMopError(mop); return 1;

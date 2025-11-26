@@ -21,12 +21,12 @@
 #include "privateTen.h"
 
 #define INFO "Average across tensor volumes"
-static const char *_tend_avgInfoL
+static const char *avgInfoL
   = (INFO ".  The output is the same size as the any one of the inputs. "
           "The individual tensors may be averaged in various ways.");
 
 static int
-tend_avgMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+avgMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -45,7 +45,7 @@ tend_avgMain(int argc, const char **argv, const char *me, const hestParm *hparm)
 
   mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_JUSTPARSE(_tend_avgInfoL);
+  USAGE_JUSTPARSE(avgInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
@@ -69,4 +69,4 @@ tend_avgMain(int argc, const char **argv, const char *me, const hestParm *hparm)
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(avg, INFO);
+MY_TEND_CMD(avg, INFO);

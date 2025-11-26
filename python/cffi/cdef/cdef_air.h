@@ -248,9 +248,9 @@ extern const int airThreadCapable;
 */
 extern int airThreadNoopWarning;
 /* opaque typedefs for OS-specific stuff */
-typedef struct _airThread airThread;
-typedef struct _airThreadMutex airThreadMutex;
-typedef struct _airThreadCond airThreadCond;
+typedef struct airThreadImpl airThread;
+typedef struct airThreadMutexImpl airThreadMutex;
+typedef struct airThreadCondImpl airThreadCond;
 typedef struct {
   unsigned int numUsers, numDone;
   airThreadMutex *doneMutex;

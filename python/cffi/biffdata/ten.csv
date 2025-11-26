@@ -1,8 +1,8 @@
 func_name,return_type,error_val(s),mubi,biff_key,cfile:linenumber
-tenAnisoPlot,int,1,0,ten,ten/aniso.c:1066
-tenAnisoVolume,int,1,0,ten,ten/aniso.c:1125
-tenAnisoHistogram,int,1,0,ten,ten/aniso.c:1197
-tenEvecRGBParmCheck,int,1,0,ten,ten/aniso.c:1312
+tenAnisoPlot,int,1,0,ten,ten/aniso.c:975
+tenAnisoVolume,int,1,0,ten,ten/aniso.c:1034
+tenAnisoHistogram,int,1,0,ten,ten/aniso.c:1106
+tenEvecRGBParmCheck,int,1,0,ten,ten/aniso.c:1221
 tenEMBimodal,int,1,0,ten,ten/bimod.c:406
 tenBVecNonLinearFit,int,1,0,ten,ten/bvec.c:97
 tenDWMRIKeyValueParse,int,1,0,ten,ten/chan.c:58
@@ -11,8 +11,8 @@ tenEMatrixCalc,int,1,0,ten,ten/chan.c:387
 tenEstimateLinear3D,int,1,0,ten,ten/chan.c:581
 tenEstimateLinear4D,int,1,0,ten,ten/chan.c:628
 tenSimulate,int,1,0,ten,ten/chan.c:870
-tenEpiRegister3D,int,1,0,ten,ten/epireg.c:1042
-tenEpiRegister4D,int,1,0,ten,ten/epireg.c:1193
+tenEpiRegister3D,int,1,0,ten,ten/epireg.c:1037
+tenEpiRegister4D,int,1,0,ten,ten/epireg.c:1182
 tenEstimateMethodSet,int,1,0,ten,ten/estimate.c:282
 tenEstimateSigmaSet,int,1,0,ten,ten/estimate.c:304
 tenEstimateValueMinSet,int,1,0,ten,ten/estimate.c:322
@@ -33,14 +33,14 @@ tenExperSpecGradSingleBValSet,int,1,0,ten,ten/experSpec.c:61
 tenExperSpecGradBValSet,int,1,0,ten,ten/experSpec.c:102
 tenExperSpecFromKeyValueSet,int,1,0,ten,ten/experSpec.c:171
 tenDWMRIKeyValueFromExperSpecSet,int,1,0,ten,ten/experSpec.c:327
-tenFiberTraceSet,int,1,0,ten,ten/fiber.c:826
-tenFiberTrace,int,1,0,ten,ten/fiber.c:846
-tenFiberDirectionNumber,unsigned int,0,0,ten,ten/fiber.c:866
-tenFiberSingleTrace,int,1,0,ten,ten/fiber.c:915
-tenFiberMultiNew,tenFiberMulti *,NULL,0,ten,ten/fiber.c:958
-tenFiberMultiTrace,int,1,0,ten,ten/fiber.c:1024
-tenFiberMultiPolyData,int,1,0,ten,ten/fiber.c:1244
-tenFiberMultiProbeVals,int,1,0,ten,ten/fiber.c:1255
+tenFiberTraceSet,int,1,0,ten,ten/fiber.c:825
+tenFiberTrace,int,1,0,ten,ten/fiber.c:845
+tenFiberDirectionNumber,unsigned int,0,0,ten,ten/fiber.c:865
+tenFiberSingleTrace,int,1,0,ten,ten/fiber.c:914
+tenFiberMultiNew,tenFiberMulti *,NULL,0,ten,ten/fiber.c:957
+tenFiberMultiTrace,int,1,0,ten,ten/fiber.c:1023
+tenFiberMultiPolyData,int,1,0,ten,ten/fiber.c:1243
+tenFiberMultiProbeVals,int,1,0,ten,ten/fiber.c:1254
 tenFiberContextDwiNew,tenFiberContext *,NULL,0,ten,ten/fiberMethods.c:209
 tenFiberContextNew,tenFiberContext *,NULL,0,ten,ten/fiberMethods.c:223
 tenFiberTypeSet,int,1,0,ten,ten/fiberMethods.c:247
@@ -65,7 +65,7 @@ tenGradientGenerate,int,1,0,ten,ten/grads.c:647
 tenEvecRGB,int,1,0,ten,ten/miscTen.c:24
 tenEvqVolume,int,1,0,ten,ten/miscTen.c:149
 tenBMatrixCheck,int,1,0,ten,ten/miscTen.c:210
-_tenFindValley,int,1,0,ten,ten/miscTen.c:254
+ten__FindValley,int,1,0,ten,ten/miscTen.c:254
 tenSizeNormalize,int,1,0,ten,ten/mod.c:219
 tenSizeScale,int,1,0,ten,ten/mod.c:235
 tenAnisoScale,int,1,0,ten,ten/mod.c:253
@@ -78,10 +78,10 @@ tenExp,int,1,0,ten,ten/mod.c:363
 tenInterpParmBufferAlloc,int,1,0,ten,ten/path.c:62
 tenInterpParmCopy,tenInterpParm *,NULL,0,ten,ten/path.c:121
 tenInterpN_d,int,1,0,ten,ten/path.c:304
-tenInterpTwoDiscrete_d,int,1,0,ten,ten/path.c:803
-tenInterpMulti3D,int,1,0,ten,ten/path.c:953
-tenDwiGageKindSet,int,1,0,ten,ten/tenDwiGage.c:1037
-tenDwiGageKindCheck,int,1,0,ten,ten/tenDwiGage.c:1177
+tenInterpTwoDiscrete_d,int,1,0,ten,ten/path.c:802
+tenInterpMulti3D,int,1,0,ten,ten/path.c:952
+tenDwiGageKindSet,int,1,0,ten,ten/tenDwiGage.c:1044
+tenDwiGageKindCheck,int,1,0,ten,ten/tenDwiGage.c:1184
 tenModelParse,int,1,0,ten,ten/tenModel.c:61
 tenModelFromAxisLearn,int,1,0,ten,ten/tenModel.c:122
 tenModelSimulate,int,1,0,ten,ten/tenModel.c:160

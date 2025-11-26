@@ -71,7 +71,8 @@ airTeemVersionPrintAndExit(const char *pfx) {
 /* ---- END non-NrrdIO */
 
 double
-_airSanityHelper(double val) {
+air__SanityHelper(double val) {
+  /* not a static symbol but is "private"; used by sane.c:airSanity() */
   return val * val * val;
 }
 
@@ -559,10 +560,10 @@ airBitsSet(unsigned int vv) {
 ** another-- the given t can be any integral type, including long long.
 */
 /*
-#define AIR_INDEX(i,x,I,L,t) ( \
-(t) = (L) * ((double)(x)-(i)) / ((double)(I)-(i)), \
-(t) -= ((t) == (L)) )
-*/
+ * #define AIR_INDEX(i,x,I,L,t) ( \
+ * (t) = (L) * ((double)(x)-(i)) / ((double)(I)-(i)), \
+ * (t) -= ((t) == (L)) )
+ */
 /*
 ******* airIndex
 **

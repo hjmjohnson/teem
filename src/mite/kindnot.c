@@ -22,7 +22,7 @@
 
 /* clang-format off */
 static const char *
-_miteValStr[] = {
+valStr[] = {
   "(unknown miteVal)",
   "Xw",
   "Xi",
@@ -46,7 +46,7 @@ _miteValStr[] = {
 };
 
 static const int
-_miteValVal[] = {
+valVal[] = {
   miteValUnknown,
   miteValXw,
   miteValXi,
@@ -70,7 +70,7 @@ _miteValVal[] = {
 };
 
 static const char *
-_miteValStrEqv[] = {
+valStrEqv[] = {
   "xw",
   "xi",
   "yw",
@@ -94,7 +94,7 @@ _miteValStrEqv[] = {
 };
 
 static const int
-_miteValValEqv[] = {
+valValEqv[] = {
   miteValXw,
   miteValXi,
   miteValYw,
@@ -117,16 +117,15 @@ _miteValValEqv[] = {
 };
 
 static const airEnum
-_miteVal = {
+val_ae = {
   "miteVal",
   MITE_VAL_ITEM_MAX,
-  _miteValStr, _miteValVal,
+  valStr, valVal,
   NULL,
-  _miteValStrEqv, _miteValValEqv,
+  valStrEqv, valValEqv,
   AIR_FALSE
 };
-const airEnum *const
-miteVal = &_miteVal;
+const airEnum *const miteVal = &val_ae;
 
 /*
 ** again, this is not a true gageKind- mainly because these items may
@@ -135,7 +134,7 @@ miteVal = &_miteVal;
 ** to see these items' true prereqs
 */
 static gageItemEntry
-_miteValTable[MITE_VAL_ITEM_MAX+1] = {
+valTable[MITE_VAL_ITEM_MAX+1] = {
   /* enum value        len,deriv, prereqs,  parent item, index, needData*/
   {miteValUnknown,       0,  0,   {0},              0,   0,     AIR_FALSE},
   {miteValXw,            1,  0,   {0},              0,   0,     AIR_FALSE},
@@ -161,14 +160,14 @@ _miteValTable[MITE_VAL_ITEM_MAX+1] = {
 
 
 static const gageKind
-_miteValGageKind = {
+valGageKind_gk = {
   AIR_FALSE,
   "mite",
-  &_miteVal,
+  &val_ae,
   0,
   0,
   MITE_VAL_ITEM_MAX,
-  _miteValTable,
+  valTable,
   NULL,
   NULL,
   NULL,
@@ -176,6 +175,5 @@ _miteValGageKind = {
   NULL
 };
 
-const gageKind *const
-miteValGageKind = &_miteValGageKind;
+const gageKind *const miteValGageKind = &valGageKind_gk;
 /* clang-format on */

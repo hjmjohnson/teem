@@ -21,21 +21,21 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Reverse order of slices along one axis"
-static const char *_unrrdu_flipInfoL = (INFO ". Special case of \"unu\tshuffle\".\n "
-                                             "* Uses nrrdFlip");
+static const char *unu_flipInfoL = (INFO ". Special case of \"unu\tshuffle\".\n "
+                                         "* Uses nrrdFlip");
 
 static int
-unrrdu_flipMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_flipMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   uint axis;
-  OPT_ADD_AXIS(axis, "axis to flip along");
+  MY_OPT_ADD_AXIS(axis, "axis to flip along");
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_flipInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_flipInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -48,10 +48,10 @@ unrrdu_flipMain(int argc, const char **argv, const char *me, const hestParm *hpa
     return 1;
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(flip, INFO);
+MY_UNRRDU_CMD(flip, INFO);

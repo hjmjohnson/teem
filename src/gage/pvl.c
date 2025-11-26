@@ -26,7 +26,7 @@
 ** checks whether a given volume is valid for the given kind
 ** and the given parameter settings in the context
 **
-** Note that ctx is simply passed to _gageShapeSet(), with no NULL-ity
+** Note that ctx is simply passed to gage__ShapeSet(), with no NULL-ity
 ** test- which is fine- it just means that the check is not specific
 ** to the parameters that can be set in the gageContext.
 */
@@ -36,7 +36,7 @@ gageVolumeCheck(const gageContext *ctx, const Nrrd *nin, const gageKind *kind) {
   gageShape shape;
 
   gageShapeReset(&shape);
-  if (_gageShapeSet(ctx, &shape, nin, kind->baseDim)) {
+  if (gage__ShapeSet(ctx, &shape, nin, kind->baseDim)) {
     biffAddf(GAGE, "%s: trouble setting volume as %s kind", me, kind->name);
     return 1;
   }
@@ -63,7 +63,7 @@ gagePerVolumeNew(gageContext *ctx, const Nrrd *nin, const gageKind *kind) {
     return NULL;
   }
   /* Craziness: since circa 2003, the test below was to call gageVolumeCheck,
-     which is now just a wrapper around _gageShapeSet(), and which never
+     which is now just a wrapper around gage__ShapeSet(), and which never
      actually does the important checks of gageKindVolumeCheck (which in turn
      eventually calls gageVolumeCheck). This means that basic errors were not
      being caught, like having the wrong number of samples along axis 0 for
@@ -119,14 +119,14 @@ gagePerVolumeNew(gageContext *ctx, const Nrrd *nin, const gageKind *kind) {
 }
 
 /*
-** _gagePerVolumeCopy()
+** gage__PerVolumeCopy()
 **
 ** copies a pervolume for use in a copied context, and probably
 ** should only be called by gageContextCopy()
 */
 gagePerVolume * /* Biff: (private) NULL */
-_gagePerVolumeCopy(gagePerVolume *pvl, unsigned int fd) {
-  static const char me[] = "_gagePerVolumeCopy";
+gage__PerVolumeCopy(gagePerVolume *pvl, unsigned int fd) {
+  static const char me[] = "gage__PerVolumeCopy";
   gagePerVolume *nvl;
   int ii;
   airArray *mop;
@@ -230,7 +230,7 @@ gageAnswerPointer(const gageContext *ctx, const gagePerVolume *pvl, int item) {
 
 /* non-const version of the above */
 double * /* Biff: (private) nope */
-_gageAnswerPointer(const gageContext *ctx, gagePerVolume *pvl, int item) {
+gage__AnswerPointer(const gageContext *ctx, gagePerVolume *pvl, int item) {
   double *ret;
 
   AIR_UNUSED(ctx);

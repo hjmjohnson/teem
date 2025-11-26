@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Map nrrd through *irregular* univariate map (\"colormap\")"
-static const char *_unrrdu_imapInfoL
+static const char *unu_imapInfoL
   = (INFO ". A map is irregular if the control points are not evenly "
           "spaced along the domain, and hence their position must be "
           "explicitly represented in the map.  As nrrds, these maps "
@@ -33,7 +33,7 @@ static const char *_unrrdu_imapInfoL
           "* Uses nrrdApply1DIrregMap");
 
 static int
-unrrdu_imapMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_imapMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   Nrrd *nmap;
   hestOptAdd_1_Other(&hopt, "m,map", "map", &nmap, NULL,
@@ -70,12 +70,12 @@ unrrdu_imapMain(int argc, const char **argv, const char *me, const hestParm *hpa
                      "is the map's type",
                      &unrrduHestMaybeTypeCB);
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_imapInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_imapInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -116,10 +116,10 @@ unrrdu_imapMain(int argc, const char **argv, const char *me, const hestParm *hpa
     return 1;
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(imap, INFO);
+MY_UNRRDU_CMD(imap, INFO);

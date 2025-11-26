@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Brighten or darken values with a gamma"
-static const char *_unrrdu_gammaInfoL
+static const char *unu_gammaInfoL
   = (INFO ". Just as in xv, the gamma value here is actually the "
           "reciprocal of the exponent actually used to transform "
           "the values. Can also do the non-linear transforms used "
@@ -29,7 +29,7 @@ static const char *_unrrdu_gammaInfoL
           "* Uses nrrdArithGamma or nrrdArithGammaSRGB");
 
 static int
-unrrdu_gammaMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_gammaMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   char *GammaS;
   hestOptAdd_1_String(&hopt, "g,gamma", "gamma", &GammaS, NULL,
@@ -50,12 +50,12 @@ unrrdu_gammaMain(int argc, const char **argv, const char *me, const hestParm *hp
                     "Whether to know the range of 8-bit data blindly "
                     "(uchar is always [0,255], signed char is [-128,127]).");
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_gammaInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_gammaInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -97,10 +97,10 @@ unrrdu_gammaMain(int argc, const char **argv, const char *me, const hestParm *hp
     airMopError(mop);
     return 1;
   }
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(gamma, INFO);
+MY_UNRRDU_CMD(gamma, INFO);

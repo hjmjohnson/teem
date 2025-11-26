@@ -82,7 +82,7 @@ static const char *debugReconErrName = NULL;
 */
 /* clang-format off */
 static double
-_optimSigTable[GAGE_OPTIMSIG_SIGMA_MAX][GAGE_OPTIMSIG_SAMPLE_MAXNUM-1][GAGE_OPTIMSIG_SAMPLE_MAXNUM] = {
+optimSigTable[GAGE_OPTIMSIG_SIGMA_MAX][GAGE_OPTIMSIG_SAMPLE_MAXNUM-1][GAGE_OPTIMSIG_SAMPLE_MAXNUM] = {
   {
     {0,1,N,N,N,N,N,N,N,N,N},
     {0,0.5279398,1,N,N,N,N,N,N,N,N},
@@ -232,7 +232,7 @@ gageOptimSigSet(double *scale, unsigned int num, unsigned int sigmaMax) {
   }
 
   for (si = 0; si < num; si++) {
-    scale[si] = _optimSigTable[sigmaMax - 1][num - 2][si];
+    scale[si] = optimSigTable[sigmaMax - 1][num - 2][si];
   }
   return 0;
 }
@@ -256,7 +256,7 @@ gageOptimSigSet(double *scale, unsigned int num, unsigned int sigmaMax) {
 ** by rho.  Keeping it around for reference.
 *
 *static double
-*_RhoOfSig(double sig) {
+*rhoOfSig(double sig) {
 *  double rho;
 *
 *  if (sig < 1.05189095) {
@@ -270,7 +270,7 @@ gageOptimSigSet(double *scale, unsigned int num, unsigned int sigmaMax) {
 *}
 *
 *static double
-*_SigOfRho(double rho) {
+*sigOfRho(double rho) {
 *  double sig;
 *
 *  if (rho < 0.46724360022171363) {
@@ -290,13 +290,13 @@ gageOptimSigSet(double *scale, unsigned int num, unsigned int sigmaMax) {
 */
 
 static double
-_RhoOfSig(double sig) {
+rhoOfSig(double sig) {
 
   return log(sig + 1);
 }
 
 static double
-_SigOfRho(double rho) {
+sigOfRho(double rho) {
 
   return exp(rho) - 1;
 }
@@ -377,8 +377,8 @@ gageOptimSigContextNew(unsigned int dim, unsigned int sampleNumMax,
   }
   nrrdAxisInfoSet_va(oscx->ninterp, nrrdAxisInfoSpacing, 1.0, 1.0, 1.0);
   nrrdAxisInfoSet_va(oscx->ndiff, nrrdAxisInfoSpacing, 1.0, 1.0, 1.0);
-  oscx->rhoRange[0] = _RhoOfSig(oscx->sigmaRange[0]);
-  oscx->rhoRange[1] = _RhoOfSig(oscx->sigmaRange[1]);
+  oscx->rhoRange[0] = rhoOfSig(oscx->sigmaRange[0]);
+  oscx->rhoRange[1] = rhoOfSig(oscx->sigmaRange[1]);
   nrrdAxisInfoSet_va(oscx->nerr, nrrdAxisInfoMin, oscx->rhoRange[0]);
   nrrdAxisInfoSet_va(oscx->nerr, nrrdAxisInfoMax, oscx->rhoRange[1]);
 
@@ -388,8 +388,8 @@ gageOptimSigContextNew(unsigned int dim, unsigned int sampleNumMax,
   for (ii = 0; ii < oscx->trueImgNum; ii++) {
     double rr, ss, rc, eps = 1e-13;
     rr = AIR_AFFINE(0, ii, oscx->trueImgNum - 1, oscx->rhoRange[0], oscx->rhoRange[1]);
-    ss = _SigOfRho(rr);
-    rc = _RhoOfSig(ss);
+    ss = sigOfRho(rr);
+    rc = rhoOfSig(ss);
     /*
     fprintf(stderr, "!%s: (%u) rho %.17g -> sig %.17g -> rho %.17g (%.17g)\n",
             me, ii, rr, ss, rc, AIR_ABS(rr - rc)/(rr + eps/2));
@@ -397,7 +397,7 @@ gageOptimSigContextNew(unsigned int dim, unsigned int sampleNumMax,
     if (AIR_ABS(rr - rc) / (rr + eps) > eps) {
       biffAddf(GAGE,
                "%s: rho %g -> sig %g -> rho %g has error %g > %g; "
-               "_SigOfRho() and _RhoOfSig() not invertible",
+               "sigOfRho() and rhoOfSig() not invertible",
                me, rr, ss, rc, AIR_ABS(rr - rc) / (rr + eps / 2), eps);
       return NULL;
     }
@@ -479,8 +479,8 @@ gageOptimSigContextNix(gageOptimSigContext *oscx) {
 AIR_MOPPER(gageOptimSigContextNix)
 
 static int /* Biff: 1 */
-_volInterp(Nrrd *ninterp, double rho, gageOptimSigContext *oscx) {
-  static const char me[] = "_volInterp";
+volInterp(Nrrd *ninterp, double rho, gageOptimSigContext *oscx) {
+  static const char me[] = "volInterp";
   double *interp, scaleIdx, sigma;
   const double *answer;
   unsigned int xi, yi, zi;
@@ -490,9 +490,9 @@ _volInterp(Nrrd *ninterp, double rho, gageOptimSigContext *oscx) {
   debugging = rho > 1.197;
   gageParmSet(oscx->gctx, gageParmVerbose, 2*debugging);
   */
-  sigma = _SigOfRho(rho);
+  sigma = sigOfRho(rho);
   scaleIdx = gageStackWtoI(oscx->gctx, sigma, &outside);
-  /* Because of limited numerical precision, _SigOfRho(rhoRange[1])
+  /* Because of limited numerical precision, sigOfRho(rhoRange[1])
      can end up "outside" stack, which should really be a bug.
      However, since the use of gage is pretty straight-forward here,
      we're okay with ignoring the "outside" here, and also clamping
@@ -526,8 +526,8 @@ _volInterp(Nrrd *ninterp, double rho, gageOptimSigContext *oscx) {
 }
 
 static void
-_kernset(double **kzP, double **kyP, double **kxP, gageOptimSigContext *oscx,
-         double rho) {
+kernset(double **kzP, double **kyP, double **kxP, gageOptimSigContext *oscx,
+        double rho) {
   const NrrdKernel *dg;
   double sig, kparm[NRRD_KERNEL_PARM_MAXNUM], *kloc, *kern, *ktmp1, *ktmp2;
   unsigned int ki, kj, kk, sx;
@@ -537,7 +537,7 @@ _kernset(double **kzP, double **kyP, double **kxP, gageOptimSigContext *oscx,
   ktmp1 = oscx->ktmp1;
   ktmp2 = oscx->ktmp2;
   sx = oscx->sx;
-  sig = _SigOfRho(rho);
+  sig = sigOfRho(rho);
   dg = nrrdKernelDiscreteGaussian;
   kparm[1] = oscx->cutoff;
   if (sig < GOOD_SIGMA_MAX) {
@@ -582,14 +582,14 @@ _kernset(double **kzP, double **kyP, double **kxP, gageOptimSigContext *oscx,
 ** sets one of the sampleImg, to be used as a sample in scale-space interp
 */
 static void
-_sampleSet(gageOptimSigContext *oscx, unsigned int si, double rho) {
+sampleSet(gageOptimSigContext *oscx, unsigned int si, double rho) {
   double *vol, *kz, *ky, *kx;
   unsigned int ii, xi, yi, zi;
 
-  oscx->sampleSigma[si] = _SigOfRho(rho);
+  oscx->sampleSigma[si] = sigOfRho(rho);
   oscx->sampleRho[si] = rho;
   vol = AIR_CAST(double *, oscx->nsampleImg[si]->data);
-  _kernset(&kz, &ky, &kx, oscx, rho);
+  kernset(&kz, &ky, &kx, oscx, rho);
   ii = 0;
   for (zi = 0; zi < oscx->sz; zi++) {
     for (yi = 0; yi < oscx->sy; yi++) {
@@ -610,13 +610,13 @@ _sampleSet(gageOptimSigContext *oscx, unsigned int si, double rho) {
 }
 
 static int /* Biff: 1 */
-_errSingle(double *retP, gageOptimSigContext *oscx, double rho) {
-  static const char me[] = "_errSingle";
+errSingle(double *retP, gageOptimSigContext *oscx, double rho) {
+  static const char me[] = "errSingle";
   double *diff, *kx, *ky, *kz;
   const double *interp;
   unsigned int ii, xi, yi, zi;
 
-  if (_volInterp(oscx->ninterp, rho, oscx)) {
+  if (volInterp(oscx->ninterp, rho, oscx)) {
     biffAddf(GAGE, "%s: trouble at rho %.17g\n", me, rho);
     return 1;
   }
@@ -629,7 +629,7 @@ _errSingle(double *retP, gageOptimSigContext *oscx, double rho) {
    */
   interp = AIR_CAST(const double *, oscx->ninterp->data);
   diff = AIR_CAST(double *, oscx->ndiff->data);
-  _kernset(&kz, &ky, &kx, oscx, rho);
+  kernset(&kz, &ky, &kx, oscx, rho);
   ii = 0;
   for (zi = 0; zi < oscx->sz; zi++) {
     for (yi = 0; yi < oscx->sy; yi++) {
@@ -652,17 +652,17 @@ _errSingle(double *retP, gageOptimSigContext *oscx, double rho) {
 }
 
 static int /* Biff: 1 */
-_errTotal(double *retP, gageOptimSigContext *oscx) {
-  static const char me[] = "_errTotal";
+errTotal(double *retP, gageOptimSigContext *oscx) {
+  static const char me[] = "errTotal";
   unsigned int ii;
   double *err;
 
   err = AIR_CAST(double *, oscx->nerr->data);
   for (ii = 0; ii < oscx->trueImgNum; ii++) {
     /* debugii = ii; */
-    if (_errSingle(err + ii, oscx,
-                   AIR_AFFINE(0, ii, oscx->trueImgNum - 1, oscx->rhoRange[0],
-                              oscx->rhoRange[1]))) {
+    if (errSingle(err + ii, oscx,
+                  AIR_AFFINE(0, ii, oscx->trueImgNum - 1, oscx->rhoRange[0],
+                             oscx->rhoRange[1]))) {
       biffAddf(GAGE, "%s: trouble at ii %u", me, ii);
       return 1;
     }
@@ -690,9 +690,9 @@ _errTotal(double *retP, gageOptimSigContext *oscx) {
 }
 
 static int /* Biff: 1 */
-_errTotalLinf(double *retP, gageOptimSigContext *oscx, unsigned int mmIdx[2],
-              double mmErr[2]) {
-  static const char me[] = "_errTotalLinf";
+errTotalLinf(double *retP, gageOptimSigContext *oscx, unsigned int mmIdx[2],
+             double mmErr[2]) {
+  static const char me[] = "errTotalLinf";
   unsigned int ii, pi;
   double *err, *sem, *rr, rho, sig, pid;
   int outside;
@@ -708,11 +708,11 @@ _errTotalLinf(double *retP, gageOptimSigContext *oscx, unsigned int mmIdx[2],
   for (ii = 0; ii < oscx->trueImgNum - 1; ii++) {
     /* debugii = ii; */
     rho = AIR_AFFINE(0, ii, oscx->trueImgNum - 1, rr[0], rr[1]);
-    if (_errSingle(err + ii, oscx, rho)) {
+    if (errSingle(err + ii, oscx, rho)) {
       biffAddf(GAGE, "%s: trouble at ii %u", me, ii);
       return 1;
     }
-    sig = _SigOfRho(rho);
+    sig = sigOfRho(rho);
     pid = gageStackWtoI(oscx->gctx, sig, &outside);
     pi = AIR_UINT(pid);
     if (outside || !(pi <= oscx->sampleNum - 2)) {
@@ -751,8 +751,8 @@ _errTotalLinf(double *retP, gageOptimSigContext *oscx, unsigned int mmIdx[2],
 ** this can be called repeatedly
 */
 static int /* Biff: 1 */
-_gageSetup(gageOptimSigContext *oscx) {
-  static const char me[] = "_gageSetup";
+setup(gageOptimSigContext *oscx) {
+  static const char me[] = "setup";
   double kparm[NRRD_KERNEL_PARM_MAXNUM];
   int E;
 
@@ -791,7 +791,7 @@ _gageSetup(gageOptimSigContext *oscx) {
 }
 
 static char *
-_timefmt(char tstr[AIR_STRLEN_MED + 1], double deltim) {
+timefmt(char tstr[AIR_STRLEN_MED + 1], double deltim) {
 
   if (deltim < 60) {
     snprintf(tstr, ASP1_M, "%g secs", deltim);
@@ -818,8 +818,8 @@ _timefmt(char tstr[AIR_STRLEN_MED + 1], double deltim) {
 }
 
 static int /* Biff: 1 */
-_optsigrun(gageOptimSigContext *oscx) {
-  static const char me[] = "_optsigrun";
+optsigrun(gageOptimSigContext *oscx) {
+  static const char me[] = "optsigrun";
   char tstr[AIR_STRLEN_MED + 1];
   unsigned int iter, pnt;
   double lastErr, newErr, rhoeps, oppor, lastPos, backoff, decavg, time0;
@@ -831,19 +831,19 @@ _optsigrun(gageOptimSigContext *oscx) {
     double rr;
     for (hi=0; hi<hn; hi++) {
       rr = AIR_AFFINE(-20, hi, hn+20, oscx->rhoRange[0], oscx->rhoRange[1]);
-      _sampleSet(oscx, 1, rr);
-      _errTotal(oscx);
+      sampleSet(oscx, 1, rr);
+      errTotal(oscx);
     }
   }
   */
 
   time0 = airTime();
-  if (_errTotal(&lastErr, oscx)) {
+  if (errTotal(&lastErr, oscx)) {
     biffAddf(GAGE, "%s: first error measurement", me);
     return 1;
   }
   fprintf(stderr, "%s: (%s for initial error measr)\n", me,
-          _timefmt(tstr, airTime() - time0));
+          timefmt(tstr, airTime() - time0));
   newErr = AIR_NAN;
   decavg = oscx->sampleNum; /* hack */
   /* meaningful discrete difference for looking at error gradient is
@@ -863,19 +863,19 @@ _optsigrun(gageOptimSigContext *oscx) {
     pnt = 1 + (iter % (oscx->sampleNum - 2));
     lastPos = oscx->sampleRho[pnt];
     fprintf(stderr, "%s: ***** iter %u; [[ err %g ]] %s\n", me, iter, lastErr,
-            _timefmt(tstr, airTime() - time0));
+            timefmt(tstr, airTime() - time0));
     limit = AIR_MIN((oscx->sampleRho[pnt] - oscx->sampleRho[pnt - 1]) / 3,
                     (oscx->sampleRho[pnt + 1] - oscx->sampleRho[pnt]) / 3);
     fprintf(stderr, ". pnt %u: pos %g, step %g\n", pnt, lastPos, oscx->step[pnt]);
     fprintf(stderr, ". limit = min((%g-%g)/3,(%g-%g)/3) = %g\n", oscx->sampleRho[pnt],
             oscx->sampleRho[pnt - 1], oscx->sampleRho[pnt + 1], oscx->sampleRho[pnt],
             limit);
-    _sampleSet(oscx, pnt, lastPos + esgn * rhoeps);
-    if (_errTotal(&err1, oscx)) {
+    sampleSet(oscx, pnt, lastPos + esgn * rhoeps);
+    if (errTotal(&err1, oscx)) {
       biffAddf(GAGE, "%s: for err1 (%u -> %.17g)", me, pnt, lastPos + esgn * rhoeps);
       return 1;
     }
-    _sampleSet(oscx, pnt, lastPos);
+    sampleSet(oscx, pnt, lastPos);
     grad = (err1 - lastErr) / (esgn * rhoeps);
     fprintf(stderr, ". grad = %g\n", grad);
     delta = -grad * oscx->step[pnt];
@@ -904,8 +904,8 @@ _optsigrun(gageOptimSigContext *oscx) {
         zerodelta = AIR_TRUE;
       } else {
         zerodelta = AIR_FALSE;
-        _sampleSet(oscx, pnt, lastPos + delta);
-        if (_errTotal(&newErr, oscx)) {
+        sampleSet(oscx, pnt, lastPos + delta);
+        if (errTotal(&newErr, oscx)) {
           biffAddf(GAGE, "%s: for newErr (%u -> %.17g)", me, pnt, lastPos + delta);
           return 1;
         }
@@ -924,7 +924,7 @@ _optsigrun(gageOptimSigContext *oscx) {
                     "... !! step %g < %g pointlessly small, "
                     "moving on\n",
                     oscx->step[pnt], rhoeps / 1000);
-            _sampleSet(oscx, pnt, lastPos);
+            sampleSet(oscx, pnt, lastPos);
             newErr = lastErr;
             badStep = AIR_FALSE;
           } else {
@@ -960,8 +960,8 @@ _optsigrun(gageOptimSigContext *oscx) {
 }
 
 static int /* Biff: 1 */
-_optsigrunLinf(gageOptimSigContext *oscx) {
-  static const char me[] = "_optsigrunLinf";
+optsigrunLinf(gageOptimSigContext *oscx) {
+  static const char me[] = "optsigrunLinf";
   char tstr[AIR_STRLEN_MED + 1];
   double *srho, *stmp, time0, lastErr, newErr, decavg, step, oppor, backoff, ceps,
     mmErr[2];
@@ -969,14 +969,14 @@ _optsigrunLinf(gageOptimSigContext *oscx) {
   int shrink;
 
   time0 = airTime();
-  if (_errTotalLinf(&lastErr, oscx, mmIdx, mmErr)) {
+  if (errTotalLinf(&lastErr, oscx, mmIdx, mmErr)) {
     biffAddf(GAGE, "%s: first error measurement", me);
     return 1;
   }
   fprintf(stderr, "%s: (init)  min %u %g          max %u %g\n", me, mmIdx[0], mmErr[0],
           mmIdx[1], mmErr[1]);
   fprintf(stderr, "%s: (%s for initial error measr)\n", me,
-          _timefmt(tstr, airTime() - time0));
+          timefmt(tstr, airTime() - time0));
   newErr = AIR_NAN;
 
   /* shorcuts */
@@ -1036,12 +1036,12 @@ _optsigrunLinf(gageOptimSigContext *oscx) {
       fprintf(stderr, "%s:     rho[%u] %g | %g  -- rho[%u] %g | %g\n", me, gap,
               srho[gap], wlo, gap + 1, srho[gap + 1], whi);
       for (si = 1; si < sn - 1; si++) {
-        _sampleSet(oscx, si,
-                   (si <= gap
-                      ? AIR_AFFINE(srho[0], srho[si], glo, srho[0], wlo)
-                      : AIR_AFFINE(ghi, srho[si], srho[sn - 1], whi, srho[sn - 1])));
+        sampleSet(oscx, si,
+                  (si <= gap
+                     ? AIR_AFFINE(srho[0], srho[si], glo, srho[0], wlo)
+                     : AIR_AFFINE(ghi, srho[si], srho[sn - 1], whi, srho[sn - 1])));
       }
-      if (_errTotalLinf(&newErr, oscx, mmIdx, mmErr)) {
+      if (errTotalLinf(&newErr, oscx, mmIdx, mmErr)) {
         biffAddf(GAGE, "%s: iter %u", me, iter);
         return 1;
       }
@@ -1108,9 +1108,9 @@ gageOptimSigCalculate(gageOptimSigContext *oscx,
   fprintf(stderr, "%s: initializing %u samples ... ", me, oscx->sampleNum);
   fflush(stderr);
   for (ii = 0; ii < oscx->sampleNum; ii++) {
-    _sampleSet(oscx, ii,
-               AIR_AFFINE(0, ii, oscx->sampleNum - 1, oscx->rhoRange[0],
-                          oscx->rhoRange[1]));
+    sampleSet(oscx, ii,
+              AIR_AFFINE(0, ii, oscx->sampleNum - 1, oscx->rhoRange[0],
+                         oscx->rhoRange[1]));
   }
   fprintf(stderr, "done.\n");
 
@@ -1125,7 +1125,7 @@ gageOptimSigCalculate(gageOptimSigContext *oscx,
 
   /* set up gage */
   fprintf(stderr, "%s: setting up gage ... \n", me);
-  if (_gageSetup(oscx)) {
+  if (setup(oscx)) {
     biffAddf(GAGE, "%s: problem setting up gage", me);
     return 1;
   }
@@ -1134,7 +1134,7 @@ gageOptimSigCalculate(gageOptimSigContext *oscx,
   /* run the optimization */
   if (oscx->sampleNum > 2) {
     int EE;
-    EE = (nrrdMeasureLinf == oscx->allMeasr ? _optsigrunLinf(oscx) : _optsigrun(oscx));
+    EE = (nrrdMeasureLinf == oscx->allMeasr ? optsigrunLinf(oscx) : optsigrun(oscx));
     if (EE) {
       biffAddf(GAGE, "%s: trouble", me);
       return 1;
@@ -1142,7 +1142,7 @@ gageOptimSigCalculate(gageOptimSigContext *oscx,
   } else {
     fprintf(stderr, "%s: num == 2, no optimization, finding error ... ", me);
     fflush(stderr);
-    if (_errTotal(&(oscx->finalErr), oscx)) {
+    if (errTotal(&(oscx->finalErr), oscx)) {
       biffAddf(GAGE, "%s: for finalErr", me);
       return 1;
     }
@@ -1197,9 +1197,9 @@ gageOptimSigErrorPlot(gageOptimSigContext *oscx, Nrrd *nout, const double *sigma
 
   /* set up requested samples */
   for (ii = 0; ii < oscx->sampleNum; ii++) {
-    _sampleSet(oscx, ii, _RhoOfSig(sigma[ii]));
+    sampleSet(oscx, ii, rhoOfSig(sigma[ii]));
   }
-  if (_gageSetup(oscx)) {
+  if (setup(oscx)) {
     biffAddf(GAGE, "%s: problem setting up gage", me);
     return 1;
   }
@@ -1212,7 +1212,7 @@ gageOptimSigErrorPlot(gageOptimSigContext *oscx, Nrrd *nout, const double *sigma
     rho = AIR_AFFINE(0, ii, oscx->trueImgNum - 1, oscx->rhoRange[0], oscx->rhoRange[1]);
     out[0 + 2 * ii] = rho;
     /* debugii = ii; */
-    if (_errSingle(&err, oscx, rho)) {
+    if (errSingle(&err, oscx, rho)) {
       biffAddf(GAGE, "%s: plotting %u", me, ii);
       return 1;
     }
@@ -1290,7 +1290,7 @@ gageOptimSigErrorPlotSliding(gageOptimSigContext *oscx, Nrrd *nout, double windo
   oscx->sampleSigma[0] = oscx->sigmaRange[0]; /* just for gage setup */
   oscx->sampleSigma[1] = oscx->sigmaRange[1]; /* just for gage setup */
   oscx->sampleSigma[2] = oscx->sigmaRange[1] + 1;
-  if (_gageSetup(oscx)) {
+  if (setup(oscx)) {
     biffAddf(GAGE, "%s: problem setting up gage", me);
     return 1;
   }
@@ -1311,21 +1311,21 @@ gageOptimSigErrorPlotSliding(gageOptimSigContext *oscx, Nrrd *nout, double windo
     if (rlo < oscx->rhoRange[0] || rhi > oscx->rhoRange[1]) {
       if (debugReconErrArr) {
         /* we have to simulate the updates to debugReconErrArr
-           that would happen with a call to _errSingle */
+           that would happen with a call to errSingle */
         airArrayLenIncr(debugReconErrArr, 2 * oscx->sz * oscx->sy * oscx->sx);
       }
-      out[0 + 2 * ii] = _SigOfRho(rho);
+      out[0 + 2 * ii] = sigOfRho(rho);
       out[1 + 2 * ii] = AIR_NAN;
       continue;
     }
     /* required samples will slide along with plotting */
-    _sampleSet(oscx, 0, rlo);
-    _sampleSet(oscx, 1, rhi);
-    if (_errSingle(&err, oscx, rho)) {
+    sampleSet(oscx, 0, rlo);
+    sampleSet(oscx, 1, rhi);
+    if (errSingle(&err, oscx, rho)) {
       biffAddf(GAGE, "%s: plotting/sliding %u", me, ii);
       return 1;
     }
-    out[0 + 2 * ii] = _SigOfRho(rho);
+    out[0 + 2 * ii] = sigOfRho(rho);
     out[1 + 2 * ii] = err;
   }
   fprintf(stderr, "%s\n", airDoneStr(0, ii, oscx->trueImgNum, doneStr));

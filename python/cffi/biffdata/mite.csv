@@ -4,5 +4,5 @@ miteRenderBegin,int,1,0,mite,mite/renderMite.c:61
 miteShadeSpecParse,int,1,0,mite,mite/shade.c:68
 miteThreadNew,miteThread *,NULL,0,mite,mite/thread.c:24
 miteThreadBegin,int,1,0,mite,mite/thread.c:91
-miteVariableParse,int,1,0,mite,mite/txf.c:99
-miteNtxfCheck,int,1,0,mite,mite/txf.c:232
+miteVariableParse,int,1,0,mite,mite/txf.c:98
+miteNtxfCheck,int,1,0,mite,mite/txf.c:231

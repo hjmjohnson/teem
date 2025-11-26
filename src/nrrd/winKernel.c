@@ -25,10 +25,10 @@ since revision 1327 2003-03-30 07:21:37 ("hello to the first windowed sincs"), a
 tweaks that came in the following weeks (r1328, r1329, r1346), including r1347 that
 introduced using Taylor expansions zero 0, to avoid numerical instabilities.
 
-A big bug originated in one of those early edits, wherein the _HANN macro (basis for
+A big bug originated in one of those early edits, wherein the HANN macro (basis for
 evaluating nrrdKernelHann) had an incorrect Taylor expansion, which meant that it
 evaluated to 1.1 near 0, not 1.0; yikes!  Recent work of revisiting the various kernels
-prior to a 1.13 release discovered this.
+prior to the TeemV2 release discovered this.
 
 The math implementation of these kernels has been redone to fix that bug, and to make an
 effort at improving numerical stability, now that GLK understand that topic better than
@@ -75,7 +75,7 @@ https://en.wikipedia.org/wiki/Window_function#Blackman_window
 */
 
 static double
-_nrrdWindSincInt(const double *parm) {
+WindSincInt(const double *parm) {
 
   AIR_UNUSED(parm);
   /* This isn't true, but there aren't good accurate, closed-form
@@ -84,7 +84,7 @@ _nrrdWindSincInt(const double *parm) {
 }
 
 static double
-_nrrdDWindSincInt(const double *parm) {
+DWindSincInt(const double *parm) {
 
   AIR_UNUSED(parm);
   /* ... or their derivatives */
@@ -92,7 +92,7 @@ _nrrdDWindSincInt(const double *parm) {
 }
 
 static double
-_nrrdWindSincSup(const double *parm) {
+WindSincSup(const double *parm) {
   double S;
 
   S = parm[0];
@@ -116,7 +116,7 @@ _nrrdWindSincSup(const double *parm) {
    px = PI*x  (set by macros)
   */
 #define WS_1_F(name, kernelmacro, sclmacro, spow)                                       \
-  static float _nrrd##name##_1_f(float _x, const double *parm) {                        \
+  static float name##_1_f(float _x, const double *parm) {                               \
     double R, S, scl, x, ax, px;                                                        \
     AIR_UNUSED(px);                                                                     \
     S = parm[0];                                                                        \
@@ -130,8 +130,7 @@ _nrrdWindSincSup(const double *parm) {
   }
 
 #define WS_N_F(name, kernelmacro, sclmacro, spow)                                       \
-  static void _nrrd##name##_N_f(float *f, const float *xvec, size_t len,                \
-                                const double *parm) {                                   \
+  static void name##_N_f(float *f, const float *xvec, size_t len, const double *parm) { \
     double S, R, scl, x, ax, px;                                                        \
     size_t i;                                                                           \
     AIR_UNUSED(px);                                                                     \
@@ -148,7 +147,7 @@ _nrrdWindSincSup(const double *parm) {
   }
 
 #define WS_1_D(name, kernelmacro, sclmacro, spow)                                       \
-  static double _nrrd##name##_1_d(double x, const double *parm) {                       \
+  static double name##_1_d(double x, const double *parm) {                              \
     double R, S, scl, ax, px;                                                           \
     AIR_UNUSED(px);                                                                     \
     S = parm[0];                                                                        \
@@ -162,8 +161,8 @@ _nrrdWindSincSup(const double *parm) {
   }
 
 #define WS_N_D(name, kernelmacro, sclmacro, spow)                                       \
-  static void _nrrd##name##_N_d(double *f, const double *xvec, size_t len,              \
-                                const double *parm) {                                   \
+  static void name##_N_d(double *f, const double *xvec, size_t len,                     \
+                         const double *parm) {                                          \
     double S, R, scl, x, ax, px;                                                        \
     size_t i;                                                                           \
     AIR_UNUSED(px);                                                                     \
@@ -184,7 +183,7 @@ _nrrdWindSincSup(const double *parm) {
 /* http://www.plunk.org/~hatch/rightway.html on sin(x)/x */
 #define SINC (1 + px == 1 ? 1 : sin(px) / px)
 
-#define _HANN(T, x, R, SCL)                                                             \
+#define HANN(T, x, R, SCL)                                                              \
   (ax < R            /* inside radius of support */                                     \
      ? (px = PI * x, /* */                                                              \
         (1 + cos(px / R)) * SINC / 2)                                                   \
@@ -192,21 +191,19 @@ _nrrdWindSincSup(const double *parm) {
 
 #define SCL_ONE(R) 1
 
-WS_1_D(Hann, _HANN, SCL_ONE, POW1)
-WS_1_F(Hann, _HANN, SCL_ONE, POW1)
-WS_N_F(Hann, _HANN, SCL_ONE, POW1)
-WS_N_D(Hann, _HANN, SCL_ONE, POW1)
+WS_1_D(Hann, HANN, SCL_ONE, POW1)
+WS_1_F(Hann, HANN, SCL_ONE, POW1)
+WS_N_F(Hann, HANN, SCL_ONE, POW1)
+WS_N_D(Hann, HANN, SCL_ONE, POW1)
 
-static const NrrdKernel _nrrdKernelHann = {"hann",           2,
-                                           AIR_TRUE,         _nrrdWindSincSup,
-                                           _nrrdWindSincInt, _nrrdHann_1_f,
-                                           _nrrdHann_N_f,    _nrrdHann_1_d,
-                                           _nrrdHann_N_d};
-const NrrdKernel *const nrrdKernelHann = &_nrrdKernelHann;
+static const NrrdKernel KernelHann = {"hann",      2,           AIR_TRUE,
+                                      WindSincSup, WindSincInt, Hann_1_f,
+                                      Hann_N_f,    Hann_1_d,    Hann_N_d};
+const NrrdKernel *const nrrdKernelHann = &KernelHann;
 
 /* ------------------------------------------------------------ */
 
-#define _DHANN(T, x, R, SCL)                                                            \
+#define DHANN(T, x, R, SCL)                                                             \
   (ax < CUT /* where to use 3rd-order Taylor expansion;                                 \
               :-)  ^__^ sometimes our cat is an evil potato MEEWW  -Jane */             \
      ? x * PIPI                                                                         \
@@ -220,7 +217,7 @@ const NrrdKernel *const nrrdKernelHann = &_nrrdKernelHann;
                / (2 * PI * R * x * x))                                                  \
           : 0))
 
-#define _DHANN_SCL(R)                                                                   \
+#define DHANN_SCL(R)                                                                    \
   (10240 * R * R                                                                        \
    * (3 + R * R * (2 + 3072 * cos(1.0 / 32))                                            \
       + 3072 * R                                                                        \
@@ -228,21 +225,19 @@ const NrrdKernel *const nrrdKernelHann = &_nrrdKernelHann;
              - sin(1.0 / 32) * (32 * R + sin(1.0 / (32 * R))))))                        \
     / (5 + 2 * R * R * (5 + R * R))
 
-WS_1_D(DHann, _DHANN, _DHANN_SCL, POW2)
-WS_1_F(DHann, _DHANN, _DHANN_SCL, POW2)
-WS_N_F(DHann, _DHANN, _DHANN_SCL, POW2)
-WS_N_D(DHann, _DHANN, _DHANN_SCL, POW2)
+WS_1_D(DHann, DHANN, DHANN_SCL, POW2)
+WS_1_F(DHann, DHANN, DHANN_SCL, POW2)
+WS_N_F(DHann, DHANN, DHANN_SCL, POW2)
+WS_N_D(DHann, DHANN, DHANN_SCL, POW2)
 
-static const NrrdKernel _nrrdKernelDHann = {"hannD",           2,
-                                            AIR_TRUE,          _nrrdWindSincSup,
-                                            _nrrdDWindSincInt, _nrrdDHann_1_f,
-                                            _nrrdDHann_N_f,    _nrrdDHann_1_d,
-                                            _nrrdDHann_N_d};
-const NrrdKernel *const nrrdKernelHannD = &_nrrdKernelDHann;
+static const NrrdKernel KernelDHann = {"hannD",      2,         AIR_TRUE,  WindSincSup,
+                                       DWindSincInt, DHann_1_f, DHann_N_f, DHann_1_d,
+                                       DHann_N_d};
+const NrrdKernel *const nrrdKernelHannD = &KernelDHann;
 
 /* ------------------------------------------------------------ */
 
-#define _DDHANN(T, x, R, SCL)                                                           \
+#define DDHANN(T, x, R, SCL)                                                            \
   (ax < CUT /* when to use Taylor */                                                    \
      ? PIPI                                                                             \
          * (-(3 + 2 * R * R) / 3                                                        \
@@ -257,7 +252,7 @@ const NrrdKernel *const nrrdKernelHannD = &_nrrdKernelDHann;
                / (2 * R * R * px * x * x))                                              \
           : 0))
 
-#define _DDHANN_SCL(R)                                                                  \
+#define DDHANN_SCL(R)                                                                   \
   (10240 * R * R                                                                        \
    * (3                                                                                 \
       - 96 * cos(1.0 / (32 * R))                                                        \
@@ -266,40 +261,36 @@ const NrrdKernel *const nrrdKernelHannD = &_nrrdKernelDHann;
       - 192 * R * (cos(1.0 / 32) - 32 * sin(1.0 / 32)) * sin(1.0 / (32 * R)))           \
    / (15 + 6 * R * R * (5 + R * R)))
 
-WS_1_D(DDHann, _DDHANN, _DDHANN_SCL, POW3)
-WS_1_F(DDHann, _DDHANN, _DDHANN_SCL, POW3)
-WS_N_F(DDHann, _DDHANN, _DDHANN_SCL, POW3)
-WS_N_D(DDHann, _DDHANN, _DDHANN_SCL, POW3)
+WS_1_D(DDHann, DDHANN, DDHANN_SCL, POW3)
+WS_1_F(DDHann, DDHANN, DDHANN_SCL, POW3)
+WS_N_F(DDHann, DDHANN, DDHANN_SCL, POW3)
+WS_N_D(DDHann, DDHANN, DDHANN_SCL, POW3)
 
-static const NrrdKernel _nrrdKernelDDHann = {"hannDD",          2,
-                                             AIR_TRUE,          _nrrdWindSincSup,
-                                             _nrrdDWindSincInt, _nrrdDDHann_1_f,
-                                             _nrrdDDHann_N_f,   _nrrdDDHann_1_d,
-                                             _nrrdDDHann_N_d};
-const NrrdKernel *const nrrdKernelHannDD = &_nrrdKernelDDHann;
+static const NrrdKernel KernelDDHann
+  = {"hannDD",   2,          AIR_TRUE,   WindSincSup, DWindSincInt,
+     DDHann_1_f, DDHann_N_f, DDHann_1_d, DDHann_N_d};
+const NrrdKernel *const nrrdKernelHannDD = &KernelDDHann;
 
 /* ------------------------------------------------------------ */
-#define _BLACK(T, x, R, SCL)                                                            \
+#define BLACK(T, x, R, SCL)                                                             \
   (ax < R            /* inside support */                                               \
      ? (px = PI * x, /* */                                                              \
         (21 * 1.0 / 50 + cos(px / R) / 2 + 2 * cos((2 * px) / R) / 25) * SINC)          \
      : 0)
 
-WS_1_D(Black, _BLACK, SCL_ONE, POW1)
-WS_1_F(Black, _BLACK, SCL_ONE, POW1)
-WS_N_F(Black, _BLACK, SCL_ONE, POW1)
-WS_N_D(Black, _BLACK, SCL_ONE, POW1)
+WS_1_D(Black, BLACK, SCL_ONE, POW1)
+WS_1_F(Black, BLACK, SCL_ONE, POW1)
+WS_N_F(Black, BLACK, SCL_ONE, POW1)
+WS_N_D(Black, BLACK, SCL_ONE, POW1)
 
-static const NrrdKernel _nrrdKernelBlackman = {"blackman",       2,
-                                               AIR_TRUE,         _nrrdWindSincSup,
-                                               _nrrdWindSincInt, _nrrdBlack_1_f,
-                                               _nrrdBlack_N_f,   _nrrdBlack_1_d,
-                                               _nrrdBlack_N_d};
-const NrrdKernel *const nrrdKernelBlackman = &_nrrdKernelBlackman;
+static const NrrdKernel KernelBlackman = {"blackman",  2,           AIR_TRUE,
+                                          WindSincSup, WindSincInt, Black_1_f,
+                                          Black_N_f,   Black_1_d,   Black_N_d};
+const NrrdKernel *const nrrdKernelBlackman = &KernelBlackman;
 
 /* ------------------------------------------------------------ */
 
-#define _DBLACK(T, x, R, SCL)                                                           \
+#define DBLACK(T, x, R, SCL)                                                            \
   (ax < CUT /* when to use Taylor */                                                    \
      ? (PI * PI * x                                                                     \
         * ((-50 - 123 / (R * R))                                                        \
@@ -315,7 +306,7 @@ const NrrdKernel *const nrrdKernelBlackman = &_nrrdKernelBlackman;
               / (50 * R * px * x)))                                                     \
           : 0))
 
-#define _DBLACK_SCL(R)                                                                  \
+#define DBLACK_SCL(R)                                                                   \
   ((2048 * R * R                                                                        \
     * (123 + R * R * (50 + 64512 * cos(1.0 / 32))                                       \
        + 3072 * R                                                                       \
@@ -325,21 +316,19 @@ const NrrdKernel *const nrrdKernelBlackman = &_nrrdKernelBlackman;
                   * (672 * R + 25 * sin(1.0 / (32 * R)) + 8 * sin(1.0 / (16 * R))))))   \
    / (89 + 82 * R * R + 10 * R * R * R * R))
 
-WS_1_D(DBlack, _DBLACK, _DBLACK_SCL, POW2)
-WS_1_F(DBlack, _DBLACK, _DBLACK_SCL, POW2)
-WS_N_F(DBlack, _DBLACK, _DBLACK_SCL, POW2)
-WS_N_D(DBlack, _DBLACK, _DBLACK_SCL, POW2)
+WS_1_D(DBlack, DBLACK, DBLACK_SCL, POW2)
+WS_1_F(DBlack, DBLACK, DBLACK_SCL, POW2)
+WS_N_F(DBlack, DBLACK, DBLACK_SCL, POW2)
+WS_N_D(DBlack, DBLACK, DBLACK_SCL, POW2)
 
-static const NrrdKernel _nrrdKernelDBlack = {"blackmanD",       2,
-                                             AIR_TRUE,          _nrrdWindSincSup,
-                                             _nrrdDWindSincInt, _nrrdDBlack_1_f,
-                                             _nrrdDBlack_N_f,   _nrrdDBlack_1_d,
-                                             _nrrdDBlack_N_d};
-const NrrdKernel *const nrrdKernelBlackmanD = &_nrrdKernelDBlack;
+static const NrrdKernel KernelDBlack
+  = {"blackmanD", 2,          AIR_TRUE,   WindSincSup, DWindSincInt,
+     DBlack_1_f,  DBlack_N_f, DBlack_1_d, DBlack_N_d};
+const NrrdKernel *const nrrdKernelBlackmanD = &KernelDBlack;
 
 /* ------------------------------------------------------------ */
 
-#define _DDBLACK(T, x, R, SCL)                                                          \
+#define DDBLACK(T, x, R, SCL)                                                           \
   (ax < CUT /* when to use Taylor */                                                    \
      ? (PIPI                                                                            \
         * ((-50 - 123 / (R * R)) / 3                                                    \
@@ -360,7 +349,7 @@ const NrrdKernel *const nrrdKernelBlackmanD = &_nrrdKernelDBlack;
               / (50 * R * R * px * x * x)))                                             \
           : 0))
 
-#define _DDBLACK_SCL(R)                                                                 \
+#define DDBLACK_SCL(R)                                                                  \
   (2048 * R * R                                                                         \
    * (123 + R * R * (50 - 129024 * cos(1.0 / 32))                                       \
       + 96                                                                              \
@@ -374,14 +363,12 @@ const NrrdKernel *const nrrdKernelBlackmanD = &_nrrdKernelDBlack;
                         * (25 * sin(1.0 / (32 * R)) + 8 * sin(1.0 / (16 * R))))))       \
    / (3 * (89 + 82 * R * R + 10 * R * R * R * R)))
 
-WS_1_D(DDBlack, _DDBLACK, _DDBLACK_SCL, POW3)
-WS_1_F(DDBlack, _DDBLACK, _DDBLACK_SCL, POW3)
-WS_N_F(DDBlack, _DDBLACK, _DDBLACK_SCL, POW3)
-WS_N_D(DDBlack, _DDBLACK, _DDBLACK_SCL, POW3)
+WS_1_D(DDBlack, DDBLACK, DDBLACK_SCL, POW3)
+WS_1_F(DDBlack, DDBLACK, DDBLACK_SCL, POW3)
+WS_N_F(DDBlack, DDBLACK, DDBLACK_SCL, POW3)
+WS_N_D(DDBlack, DDBLACK, DDBLACK_SCL, POW3)
 
-static const NrrdKernel _nrrdKernelDDBlack = {"blackmanDD",      2,
-                                              AIR_TRUE,          _nrrdWindSincSup,
-                                              _nrrdDWindSincInt, _nrrdDDBlack_1_f,
-                                              _nrrdDDBlack_N_f,  _nrrdDDBlack_1_d,
-                                              _nrrdDDBlack_N_d};
-const NrrdKernel *const nrrdKernelBlackmanDD = &_nrrdKernelDDBlack;
+static const NrrdKernel KernelDDBlack
+  = {"blackmanDD", 2,           AIR_TRUE,    WindSincSup, DWindSincInt,
+     DDBlack_1_f,  DDBlack_N_f, DDBlack_1_d, DDBlack_N_d};
+const NrrdKernel *const nrrdKernelBlackmanDD = &KernelDDBlack;

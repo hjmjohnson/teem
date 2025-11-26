@@ -21,10 +21,10 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Fast Fourier Transform of selected axes"
-static const char *_unrrdu_fftInfoL_yes = (INFO ". Powered by the FFTW3 library.\n "
-                                                "* Uses nrrdFFT");
+static const char *unu_fftInfoL_yes = (INFO ". Powered by the FFTW3 library.\n "
+                                            "* Uses nrrdFFT");
 
-static const char *_unrrdu_fftInfoL_no
+static const char *unu_fftInfoL_no
   = (INFO ". This Teem has NOT been compiled with FFTW3 <http://www.fftw.org/>. "
           "If it had been, "
           "this would be a command-line interface to that functionality. "
@@ -34,10 +34,10 @@ static const char *_unrrdu_fftInfoL_no
 /* We create an airEnum to parse the "forward" and "backwards" values
    needed to specify which kind of transform to run */
 
-static const char *_directionStr[] = {"(unknown direction)", "forward", "backward"};
+static const char *dirStr[] = {"(unknown direction)", "forward", "backward"};
 
-static const char *_directionDesc[] = {"unknown direction", "forward transform",
-                                       "backward (inverse) transform"};
+static const char *dirDesc[] = {"unknown direction", "forward transform",
+                                "backward (inverse) transform"};
 
 /*  from fftw3.h
 #define FFTW_FORWARD (-1)
@@ -47,29 +47,37 @@ static const char *_directionDesc[] = {"unknown direction", "forward transform",
 #define FORW (-1)
 #define BACK (+1)
 
-static const int _directionVal[] = {0, FORW, BACK};
+static const int dirVal[] = {0, FORW, BACK};
 
-static const char *_directionStrEqv[] = {"f", "forw", "forward", "b", "back", "backward",
-                                         "i", "inv",  "inverse", ""};
+static const char *dirStrEqv[] = {"f",        "forw", "forward", "b",       "back",
+                                  "backward", "i",    "inv",     "inverse", ""};
 
-static const int _directionValEqv[] = {FORW, FORW, FORW, BACK, BACK,
-                                       BACK, BACK, BACK, BACK};
+static const int dirValEqv[] = {FORW, FORW, FORW, BACK, BACK, BACK, BACK, BACK, BACK};
 
-static const airEnum _direction_enm = {"direction",      2,
-                                       _directionStr,    _directionVal,
-                                       _directionDesc,   _directionStrEqv,
-                                       _directionValEqv, AIR_FALSE};
+static const airEnum dir_ae = {"direction", 2,         dirStr,    dirVal,
+                               dirDesc,     dirStrEqv, dirValEqv, AIR_FALSE};
 
-static const airEnum *const direction_enm = &_direction_enm;
+static const airEnum *const direction_ae = &dir_ae;
 
 static int
-unrrdu_fftMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_fftMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+#if 0
+  { // checking on the private airEnums
+    char eerr[AIR_STRLEN_LARGE + 1];
+    if (airEnumCheck(eerr, direction_ae)) {
+      fprintf(stderr, "%s: problem with enum \"%s\":\n%s", __func__, direction_ae->name,
+              eerr);
+      exit(1); /* inside `#if 0` for airEnum checking */
+    }
+    fprintf(stderr, "%s: %s enum ok\n", __func__, direction_ae->name);
+  }
+#endif
   hestOpt *hopt = NULL;
   int sign;
   hestOptAdd_1_Enum(&hopt, NULL, "dir", &sign, NULL,
                     "forward (\"forw\", \"f\") or backward/inverse "
                     "(\"back\", \"b\") transform ",
-                    direction_enm);
+                    direction_ae);
   uint *axes, axesLen;
   hestOptAdd_Nv_UInt(&hopt, "a,axes", "ax0", 1, -1, &axes, NULL,
                      "the one or more axes that should be transformed", &axesLen);
@@ -94,18 +102,18 @@ unrrdu_fftMain(int argc, const char **argv, const char *me, const hestParm *hpar
                       "no wisdom is read or saved. Note: no wisdom is gained "
                       "(that is, learned by FFTW) with planning rigor \"estimate\".");
   Nrrd *_nin;
-  OPT_ADD_NIN(_nin, "input nrrd");
+  MY_OPT_ADD_NIN(_nin, "input nrrd");
   int realInput;
   hestOptAdd_Flag(&hopt, "ri,realinput", &realInput,
                   "input is real-valued, so insert new length-2 axis 0 "
                   "and set complex component to 0.0.  Axes to transform "
                   "(indicated by \"-a\") will be incremented accordingly.");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
   hestParseOrExit(hopt, argc, argv, hparm, me,
-                  (nrrdFFTWEnabled ? _unrrdu_fftInfoL_yes : _unrrdu_fftInfoL_no));
+                  (nrrdFFTWEnabled ? unu_fftInfoL_yes : unu_fftInfoL_no));
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -191,10 +199,10 @@ unrrdu_fftMain(int argc, const char **argv, const char *me, const hestParm *hpar
     fclose(fwise);
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(fft, INFO);
+MY_UNRRDU_CMD(fft, INFO);

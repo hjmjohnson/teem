@@ -78,10 +78,10 @@ typedef size_t IT;
 /* F(A, LD) */
 
 /*
- * _nrrdConv<Ta><Tb>()
+ * nConv<Ta><Tb>()
  *
  * given two arrays, a and b, of different types (Ta and Tb) but equal size N,
- * _nrrdConvTaTb(a, b, N) will copy all the values from b into a, thereby effecting the
+ * nConvTaTb(a, b, N) will copy all the values from b into a, thereby effecting the
  * same type-conversion as one gets with a cast.  See K+R Appendix A6 (pg. 197) for the
  * details of what that entails.  There are plenty of situations where the results are
  * "undefined" (assigning -23 to an unsigned char); the point here is simply to make
@@ -90,7 +90,7 @@ typedef size_t IT;
  * leads to undefined behavior (UB) as soon as the function is called.
  */
 #define CONV_DEF(TA, TB)                                                                \
-  static void _nrrdConv##TA##TB(void *_a, const void *_b, IT N) {                       \
+  static void nConv##TA##TB(void *_a, const void *_b, IT N) {                           \
     TA *a = _a;                                                                         \
     const TB *b = _b;                                                                   \
     size_t ii;                                                                          \
@@ -100,33 +100,32 @@ typedef size_t IT;
   }
 
 /*
-** _nrrdClCv<Ta><Tb>()
+** nClCv<Ta><Tb>()
 **
-** same as _nrrdConv<Ta><Tb>(), but with clamping to the representable
+** same as nConv<Ta><Tb>(), but with clamping to the representable
 ** range of values of the output type, using a double as intermediate
 ** storage type HEY WHICH MEANS THAT LONG LONG (BOTH SIGNED AND UNSIGNED)
 ** may suffer loss of data!!!
 */
 #define CLCV_DEF(TA, TB)                                                                \
-  static void _nrrdClCv##TA##TB(void *_a, const void *_b, IT N) {                       \
+  static void nClCv##TA##TB(void *_a, const void *_b, IT N) {                           \
     TA *a = _a;                                                                         \
     const TB *b = _b;                                                                   \
     size_t ii;                                                                          \
     for (ii = 0; ii < N; ii++) {                                                        \
-      a[ii] = AIR_CAST(TA, _nrrdDClamp##TA(AIR_CAST(double, b[ii])));                   \
+      a[ii] = AIR_CAST(TA, nDclamp##TA(AIR_CAST(double, b[ii])));                       \
     }                                                                                   \
   }
 
 /*
-** _nrrdCcrd<Ta><Tb>()
+** nccrd<Ta><Tb>()
 **
-** like _nrrdClCv<Ta><Tb>() and _nrrdConv<Ta><Tb>(), but with the
+** like nClCv<Ta><Tb>() and nConv<Ta><Tb>(), but with the
 ** ability to control if there is rounding and/or clamping. As above,
 ** there may be loss of precision with long long input.
 */
 #define CCRD_DEF(TA, TB)                                                                \
-  static void _nrrdCcrd##TA##TB(void *_a, const void *_b, IT N, int doClamp,            \
-                                int roundd) {                                           \
+  static void nccrd##TA##TB(void *_a, const void *_b, IT N, int doClamp, int roundd) {  \
     TA *a = _a;                                                                         \
     const TB *b = _b;                                                                   \
     size_t ii;                                                                          \
@@ -134,7 +133,7 @@ typedef size_t IT;
       double ccrdTmp = AIR_CAST(double, b[ii]);                                         \
       ccrdTmp = (roundd > 0 ? floor(ccrdTmp + 0.5)                                      \
                             : (roundd < 0 ? ceil(ccrdTmp - 0.5) : ccrdTmp));            \
-      ccrdTmp = (doClamp ? _nrrdDClamp##TA(ccrdTmp) : ccrdTmp);                         \
+      ccrdTmp = (doClamp ? nDclamp##TA(ccrdTmp) : ccrdTmp);                             \
       a[ii] = AIR_CAST(TA, ccrdTmp);                                                    \
     }                                                                                   \
   }
@@ -143,9 +142,9 @@ typedef size_t IT;
 ** the individual converter's appearance in the array initialization,
 ** using the cast to the typedefs above
 */
-#define CONV_LIST(TA, TB) _nrrdConv##TA##TB,
-#define CLCV_LIST(TA, TB) _nrrdClCv##TA##TB,
-#define CCRD_LIST(TA, TB) _nrrdCcrd##TA##TB,
+#define CONV_LIST(TA, TB) nConv##TA##TB,
+#define CLCV_LIST(TA, TB) nClCv##TA##TB,
+#define CCRD_LIST(TA, TB) nccrd##TA##TB,
 
 /*
 ** the brace-delimited list of all converters _to_ type TA
@@ -184,13 +183,13 @@ typedef size_t IT;
  * conversion warnings highlighted actual bugs in code.
  */
 /* clang-format off */
-static float _nrrdFClampCH(FL v) { return AIR_CLAMP(SCHAR_MIN, v, SCHAR_MAX); }
-static float _nrrdFClampUC(FL v) { return AIR_CLAMP(     0,    v, UCHAR_MAX); }
-static float _nrrdFClampSH(FL v) { return AIR_CLAMP( SHRT_MIN, v, SHRT_MAX);  }
-static float _nrrdFClampUS(FL v) { return AIR_CLAMP(     0,    v, USHRT_MAX); }
+static float nFclampCH(FL v) { return AIR_CLAMP(SCHAR_MIN, v, SCHAR_MAX); }
+static float nFclampUC(FL v) { return AIR_CLAMP(     0,    v, UCHAR_MAX); }
+static float nFclampSH(FL v) { return AIR_CLAMP( SHRT_MIN, v, SHRT_MAX);  }
+static float nFclampUS(FL v) { return AIR_CLAMP(     0,    v, USHRT_MAX); }
 /* clang-format on */
 static float
-_nrrdFClampJN(FL v) {
+nFclampJN(FL v) {
   airFloat umax, umin; /* float, uint union */
   umax.f = (float)INT_MAX;
   umax.i -= 1; /* decrease by one ULP */
@@ -199,14 +198,14 @@ _nrrdFClampJN(FL v) {
   return AIR_CLAMP(umin.f, v, umax.f);
 }
 static float
-_nrrdFClampUI(FL v) {
+nFclampUI(FL v) {
   airFloat umax; /* float, uint union */
   umax.f = (float)UINT_MAX;
   umax.i -= 1;
   return AIR_CLAMP(0, v, umax.f);
 }
 static float
-_nrrdFClampLL(FL v) { /* HEY copy-pasta from above */
+nFclampLL(FL v) { /* HEY copy-pasta from above */
   airFloat umax, umin;
   umax.f = (float)NRRD_LLONG_MAX;
   umax.i -= 1;
@@ -215,24 +214,24 @@ _nrrdFClampLL(FL v) { /* HEY copy-pasta from above */
   return AIR_CLAMP(umin.f, v, umax.f);
 }
 static float
-_nrrdFClampUL(FL v) {
+nFclampUL(FL v) {
   airFloat umax;
   umax.f = (float)NRRD_ULLONG_MAX;
   umax.i -= 1;
   return AIR_CLAMP(0, v, umax.f);
 }
 static float
-_nrrdFClampFL(FL v) {
+nFclampFL(FL v) {
   return v;
 }
 static float
-_nrrdFClampDB(FL v) {
+nFclampDB(FL v) {
   return v;
 }
-float (*const nrrdFClamp[NRRD_TYPE_MAX + 1])(FL)
-  = {NULL,          _nrrdFClampCH, _nrrdFClampUC, _nrrdFClampSH,
-     _nrrdFClampUS, _nrrdFClampJN, _nrrdFClampUI, _nrrdFClampLL,
-     _nrrdFClampUL, _nrrdFClampFL, _nrrdFClampDB, NULL};
+float (*const nrrdFClamp[NRRD_TYPE_MAX + 1])(FL) = {NULL,      nFclampCH, nFclampUC,
+                                                    nFclampSH, nFclampUS, nFclampJN,
+                                                    nFclampUI, nFclampLL, nFclampUL,
+                                                    nFclampFL, nFclampDB, NULL};
 
 /*
  ******** nrrdDClamp
@@ -242,15 +241,15 @@ float (*const nrrdFClamp[NRRD_TYPE_MAX + 1])(FL)
  * One change: for floats, doubles are clamped to [-FLT_MAX, FLT_MAX].
  */
 /* clang-format off */
-static double _nrrdDClampCH(DB v) { return AIR_CLAMP(SCHAR_MIN, v, SCHAR_MAX); }
-static double _nrrdDClampUC(DB v) { return AIR_CLAMP(     0,    v, UCHAR_MAX); }
-static double _nrrdDClampSH(DB v) { return AIR_CLAMP( SHRT_MIN, v, SHRT_MAX);  }
-static double _nrrdDClampUS(DB v) { return AIR_CLAMP(     0,    v, USHRT_MAX); }
-static double _nrrdDClampJN(DB v) { return AIR_CLAMP(  INT_MIN, v, INT_MAX);   }
-static double _nrrdDClampUI(DB v) { return AIR_CLAMP(     0,    v, UINT_MAX);  }
+static double nDclampCH(DB v) { return AIR_CLAMP(SCHAR_MIN, v, SCHAR_MAX); }
+static double nDclampUC(DB v) { return AIR_CLAMP(     0,    v, UCHAR_MAX); }
+static double nDclampSH(DB v) { return AIR_CLAMP( SHRT_MIN, v, SHRT_MAX);  }
+static double nDclampUS(DB v) { return AIR_CLAMP(     0,    v, USHRT_MAX); }
+static double nDclampJN(DB v) { return AIR_CLAMP(  INT_MIN, v, INT_MAX);   }
+static double nDclampUI(DB v) { return AIR_CLAMP(     0,    v, UINT_MAX);  }
 /* clang-format on */
 static double
-_nrrdDClampLL(DB v) { /* HEY copy-pasta from above */
+nDclampLL(DB v) { /* HEY copy-pasta from above */
   airDouble umax, umin;
   umax.d = (double)NRRD_LLONG_MAX;
   umax.i -= 1;
@@ -259,24 +258,24 @@ _nrrdDClampLL(DB v) { /* HEY copy-pasta from above */
   return AIR_CLAMP(umin.d, v, umax.d);
 }
 static double
-_nrrdDClampUL(DB v) {
+nDclampUL(DB v) {
   airDouble umax;
   umax.d = (double)NRRD_ULLONG_MAX;
   umax.i -= 1;
   return AIR_CLAMP(0, v, umax.d);
 }
 static double
-_nrrdDClampFL(DB v) {
+nDclampFL(DB v) {
   return AIR_CLAMP(-FLT_MAX, v, FLT_MAX);
 }
 static double
-_nrrdDClampDB(DB v) {
+nDclampDB(DB v) {
   return v;
 }
-double (*const nrrdDClamp[NRRD_TYPE_MAX + 1])(DB)
-  = {NULL,          _nrrdDClampCH, _nrrdDClampUC, _nrrdDClampSH,
-     _nrrdDClampUS, _nrrdDClampJN, _nrrdDClampUI, _nrrdDClampLL,
-     _nrrdDClampUL, _nrrdDClampFL, _nrrdDClampDB, NULL};
+double (*const nrrdDClamp[NRRD_TYPE_MAX + 1])(DB) = {NULL,      nDclampCH, nDclampUC,
+                                                     nDclampSH, nDclampUS, nDclampJN,
+                                                     nDclampUI, nDclampLL, nDclampUL,
+                                                     nDclampFL, nDclampDB, NULL};
 
 /*
 ** Define all the converters.
@@ -293,9 +292,9 @@ MAP1(MAP2, CCRD_DEF)
  */
 typedef void (*CF)(void *, const void *, IT);
 typedef void (*CN)(void *, const void *, IT, int, int);
-CF const _nrrdConv[NRRD_TYPE_MAX + 1][NRRD_TYPE_MAX + 1]
+CF const nrrd__Conv[NRRD_TYPE_MAX + 1][NRRD_TYPE_MAX + 1]
   = {{NULL}, MAP1(CONVTO_LIST, _dummy_){NULL}};
-CF const _nrrdClampConv[NRRD_TYPE_MAX + 1][NRRD_TYPE_MAX + 1]
+CF const nrrd__ClampConv[NRRD_TYPE_MAX + 1][NRRD_TYPE_MAX + 1]
   = {{NULL}, MAP1(CLCVTO_LIST, _dummy_){NULL}};
-CN const _nrrdCastClampRound[NRRD_TYPE_MAX + 1][NRRD_TYPE_MAX + 1]
+CN const nrrd__CastClampRound[NRRD_TYPE_MAX + 1][NRRD_TYPE_MAX + 1]
   = {{NULL}, MAP1(CCRDTO_LIST, _dummy_){NULL}};

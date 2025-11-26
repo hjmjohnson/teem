@@ -21,11 +21,11 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Unary operation on a nrrd"
-static const char *_unrrdu_1opInfoL = (INFO ".\n "
-                                            "* Uses nrrdArithUnaryOp");
+static const char *unu_1opInfoL = (INFO ".\n "
+                                        "* Uses nrrdArithUnaryOp");
 
 static int
-unrrdu_1opMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_1opMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   int op;
   hestOptAdd_1_Enum(&hopt, NULL, "operator", &op, NULL,
@@ -66,12 +66,12 @@ unrrdu_1opMain(int argc, const char **argv, const char *me, const hestParm *hpar
                      "the input nrrds are left unchanged.",
                      &unrrduHestMaybeTypeCB);
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_1opInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_1opInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -111,10 +111,10 @@ unrrdu_1opMain(int argc, const char **argv, const char *me, const hestParm *hpar
   /* if we had to create ntmp with nrrdConvert, it will be mopped,
      otherwise ntmp is an alias for nin, which will also be mopped */
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(1op, INFO);
+MY_UNRRDU_CMD(1op, INFO);

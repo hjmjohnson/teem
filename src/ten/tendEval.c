@@ -21,10 +21,10 @@
 #include "privateTen.h"
 
 #define INFO "Calculate one or more eigenvalues in a DT volume"
-static const char *_tend_evalInfoL = (INFO ". ");
+static const char *evalInfoL = (INFO ". ");
 
 static int
-tend_evalMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+evalMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret, map[4];
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -49,7 +49,7 @@ tend_evalMain(int argc, const char **argv, const char *me, const hestParm *hparm
 
   mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_tend_evalInfoL);
+  USAGE_PARSE(evalInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   for (cc = 0; cc < compLen; cc++) {
@@ -132,4 +132,4 @@ tend_evalMain(int argc, const char **argv, const char *me, const hestParm *hparm
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(eval, INFO);
+MY_TEND_CMD(eval, INFO);

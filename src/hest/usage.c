@@ -21,32 +21,32 @@
 #include "privateHest.h"
 
 /*
- * _hestSetBuff sprints into `_buff` (of size `_buffSize`)
+ * hsetBuf sprints into `_buff` (of size `_buffSize`)
  * the flag and name part of the usage line for `hopt`,
  * e.g. -p,--position^I<pos^I...>
  * but note the tab characters ("^I") which is how to create non-breaking-space
  * for hestPrintStr
  */
 static void
-_hestSetBuff(char *_buff, size_t _buffSize, const hestOpt *hopt, /* */
-             int showshort, int showlong) {
+hsetBuf(char *_buff, size_t _buffSize, const hestOpt *hopt, /* */
+        int showshort, int showlong) {
   char *buff = _buff;
   size_t buffSize = _buffSize;
 
-  int max = _hestMax(hopt->max);
+  int max = hest__Max(hopt->max);
   if (hopt->flag) {
     char *sep, flagCopy[AIR_STRLEN_SMALL + 1];
-    /* currently methodsHest.c/_hestOPCheck() verifies
+    /* currently methodsHest.c/hest__OPCheck() verifies
        that strlen(hopt->flag) < AIR_STRLEN_SMALL/2 */
     airStrcpy(flagCopy, sizeof(flagCopy), hopt->flag);
-    if ((sep = strchr(flagCopy, MULTI_FLAG_SEP))) {
+    if ((sep = strchr(flagCopy, MY_MULTI_FLAG_SEP))) {
       *sep = 0;
       if (showshort) {
         SN_PRINTF(buff, buffSize, "-%s", flagCopy);
       }
       if (showlong) {
         if (showshort) {
-          SN_PRINTF(buff, buffSize, "%c", MULTI_FLAG_SEP);
+          SN_PRINTF(buff, buffSize, "%c", MY_MULTI_FLAG_SEP);
         }
         SN_PRINTF(buff, buffSize, "--%s", sep + 1);
       }
@@ -73,7 +73,7 @@ _hestSetBuff(char *_buff, size_t _buffSize, const hestOpt *hopt, /* */
   return;
 }
 
-/* early version of _hestSetBuff() function preserved for nostalgia
+/* early version of hsetBuf() function preserved for nostalgia
  * #define SETBUFF(B, O)                                                              \
  *   strcat(B, O.flag ? "-" : ""), strcat(B, O.flag ? O.flag : ""),                   \
  *     strcat(B, O.flag && (O.min || _hestMax(O.max)) ? "\t" : ""),                   \
@@ -187,7 +187,7 @@ hestUsage(FILE *file, const hestOpt *hopt, const char *argv0, const hestParm *_h
   char _buff[LIKE_SO_SO_HUGE];
   hestParm *hparm = _hparm ? NULL : hestParmNew();
 
-  if (_hestOPCheck(hopt, HPARM)) {
+  if (hest__OPCheck(hopt, HPARM)) {
     /* we can't continue; the opt array is botched */
     DO_ERR;
     if (hparm) {
@@ -210,15 +210,15 @@ hestUsage(FILE *file, const hestOpt *hopt, const char *argv0, const hestParm *_h
   }
   SN_COPY(buff, buffSize, argv0 ? argv0 : "");
   if (HPARM->responseFileEnable) {
-    SN_PRINTF(buff, buffSize, " [%cfile\t...]", RESPONSE_FILE_FLAG);
+    SN_PRINTF(buff, buffSize, " [%cfile\t...]", MY_RESPONSE_FILE_FLAG);
   }
   for (uint opi = 0; opi < numOpts; opi++) {
     SN_COPY(buff, buffSize, " ");
     if (1 == hopt[opi].kind || (hopt[opi].flag && hopt[opi].dflt)) {
       SN_COPY(buff, buffSize, "[");
     }
-    _hestSetBuff(buff, buffSize, hopt + opi, /* */
-                 AIR_TRUE /* showshort */, AIR_TRUE /* showlong */);
+    hsetBuf(buff, buffSize, hopt + opi, /* */
+            AIR_TRUE /* showshort */, AIR_TRUE /* showlong */);
     SN_INCR(buff, buffSize);
     if (1 == hopt[opi].kind || (hopt[opi].flag && hopt[opi].dflt)) {
       SN_COPY(buff, buffSize, "]");
@@ -244,7 +244,7 @@ hestGlossary(FILE *file, const hestOpt *hopt, const hestParm *_hparm) {
   const size_t _buffSize = LIKE_SO_SO_HUGE;
   hestParm *hparm = _hparm ? NULL : hestParmNew();
 
-  if (_hestOPCheck(hopt, HPARM)) {
+  if (hest__OPCheck(hopt, HPARM)) {
     /* we can't continue; the opt array is botched */
     DO_ERR;
     if (hparm) {
@@ -259,8 +259,8 @@ hestGlossary(FILE *file, const hestOpt *hopt, const hestParm *_hparm) {
     fprintf(file, "\nOptions:\n");
   }
   for (uint opi = 0; opi < optNum; opi++) {
-    _hestSetBuff(_buff, _buffSize, hopt + opi, /* */
-                 AIR_TRUE /* showshort */, AIR_FALSE /* showlong */);
+    hsetBuf(_buff, _buffSize, hopt + opi, /* */
+            AIR_TRUE /* showshort */, AIR_FALSE /* showlong */);
     size_t sblen = strlen(_buff);
     maxlen = AIR_MAX(sblen, maxlen);
   }
@@ -268,7 +268,7 @@ hestGlossary(FILE *file, const hestOpt *hopt, const hestParm *_hparm) {
           HPARM->responseFileEnable); */
   if (HPARM->responseFileEnable) {
     maxlen = AIR_MAX(9, maxlen); /* 9 = strlen("@file ...") */
-    snprintf(_buff, _buffSize, "%cfile ...", RESPONSE_FILE_FLAG);
+    snprintf(_buff, _buffSize, "%cfile ...", MY_RESPONSE_FILE_FLAG);
     for (size_t jj = strlen(_buff); jj < maxlen; jj++) {
       fputc(' ', file);
     }
@@ -278,8 +278,8 @@ hestGlossary(FILE *file, const hestOpt *hopt, const hestParm *_hparm) {
   }
   for (uint opi = 0; opi < optNum; opi++) {
     // fprintf(stderr, "!%s(%u/%u): HELLO\n", __func__, opi, optNum);
-    _hestSetBuff(_buff, _buffSize, hopt + opi, /* */
-                 AIR_TRUE /* showshort */, AIR_FALSE /* showlong */);
+    hsetBuf(_buff, _buffSize, hopt + opi, /* */
+            AIR_TRUE /* showshort */, AIR_FALSE /* showlong */);
     airOneLinify(_buff);
     len = strlen(_buff);
     for (size_t jj = len; jj < maxlen + HPARM->indent; jj++) {
@@ -292,10 +292,10 @@ hestGlossary(FILE *file, const hestOpt *hopt, const hestParm *_hparm) {
     buff = _buff;
     buffSize = _buffSize;
     buff[0] = '\0';
-    if (hopt[opi].flag && strchr(hopt[opi].flag, MULTI_FLAG_SEP)) {
+    if (hopt[opi].flag && strchr(hopt[opi].flag, MY_MULTI_FLAG_SEP)) {
       /* there is a long-form flag as well as short */
-      _hestSetBuff(buff, buffSize, hopt + opi, /* */
-                   AIR_FALSE /* showshort */, AIR_TRUE /* showlong */);
+      hsetBuf(buff, buffSize, hopt + opi, /* */
+              AIR_FALSE /* showshort */, AIR_TRUE /* showlong */);
       SN_INCR(buff, buffSize);
       SN_COPY(buff, buffSize, " = ");
       fprintf(file, " , ");
@@ -306,7 +306,7 @@ hestGlossary(FILE *file, const hestOpt *hopt, const hestParm *_hparm) {
     if (hopt[opi].info) {
       SN_COPY(buff, buffSize, hopt[opi].info);
     }
-    if ((hopt[opi].min || _hestMax(hopt[opi].max))
+    if ((hopt[opi].min || hest__Max(hopt[opi].max))
         && (!(2 == hopt[opi].kind && airTypeEnum == hopt[opi].type
               && HPARM->elideSingleEnumType))
         && (!(2 == hopt[opi].kind && airTypeOther == hopt[opi].type
@@ -319,19 +319,19 @@ hestGlossary(FILE *file, const hestOpt *hopt, const hestParm *_hparm) {
         SN_COPY(buff, buffSize, " ");
       }
       SN_COPY(buff, buffSize, "(");
-      if (hopt[opi].min == 0 && _hestMax(hopt[opi].max) == 1) {
+      if (hopt[opi].min == 0 && hest__Max(hopt[opi].max) == 1) {
         SN_COPY(buff, buffSize, "optional\t");
       } else {
-        if ((int)hopt[opi].min == _hestMax(hopt[opi].max)
-            && _hestMax(hopt[opi].max) > 1) { /* HEY scrutinize casts */
-          SN_PRINTF(buff, buffSize, "%d\t", _hestMax(hopt[opi].max));
+        if ((int)hopt[opi].min == hest__Max(hopt[opi].max)
+            && hest__Max(hopt[opi].max) > 1) { /* HEY scrutinize casts */
+          SN_PRINTF(buff, buffSize, "%d\t", hest__Max(hopt[opi].max));
         } else if ((int)hopt[opi].min
-                   < _hestMax(hopt[opi].max)) { /* HEY scrutinize casts */
+                   < hest__Max(hopt[opi].max)) { /* HEY scrutinize casts */
           if (-1 == hopt[opi].max) {
             SN_PRINTF(buff, buffSize, "%u\tor\tmore\t", hopt[opi].min);
           } else {
             SN_PRINTF(buff, buffSize, "%u..%d\t", hopt[opi].min,
-                      _hestMax(hopt[opi].max));
+                      hest__Max(hopt[opi].max));
           }
         }
       }
@@ -339,8 +339,8 @@ hestGlossary(FILE *file, const hestOpt *hopt, const hestParm *_hparm) {
                 (airTypeEnum == hopt[opi].type
                    ? hopt[opi].enm->name
                    : (airTypeOther == hopt[opi].type ? hopt[opi].CB->type
-                                                     : _hestTypeStr[hopt[opi].type])),
-                (_hestMax(hopt[opi].max) > 1
+                                                     : hest__TypeStr[hopt[opi].type])),
+                (hest__Max(hopt[opi].max) > 1
                    ? (airTypeOther == hopt[opi].type
                           && 'y' == hopt[opi].CB->type[airStrlen(hopt[opi].CB->type) - 1]
                           && HPARM->cleverPluralizeOtherY
@@ -352,7 +352,7 @@ hestGlossary(FILE *file, const hestOpt *hopt, const hestParm *_hparm) {
     fprintf(stderr, "!%s: HPARM->elideSingleOtherDefault = %d\n",
             "hestGlossary", HPARM->elideSingleOtherDefault);
     */
-    if (hopt[opi].dflt && (hopt[opi].min || _hestMax(hopt[opi].max))
+    if (hopt[opi].dflt && (hopt[opi].min || hest__Max(hopt[opi].max))
         && (!(2 == hopt[opi].kind
               && (airTypeFloat == hopt[opi].type || airTypeDouble == hopt[opi].type)
               && !AIR_EXISTS(airAtod(hopt[opi].dflt))

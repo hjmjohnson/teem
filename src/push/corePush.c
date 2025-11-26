@@ -25,8 +25,8 @@
 ** left to process, get the next one, and process it
 */
 static int /* Biff: 1 */
-_pushProcess(pushTask *task) {
-  static const char me[] = "_pushProcess";
+process(pushTask *task) {
+  static const char me[] = "process";
   unsigned int binIdx;
 
   while (task->pctx->binIdx < task->pctx->binNum) {
@@ -58,8 +58,8 @@ _pushProcess(pushTask *task) {
 
 /* the main loop for each worker thread */
 static void * /* Biff: NULL */
-_pushWorker(void *_task) {
-  static const char me[] = "_pushWorker";
+worker(void *_task) {
+  static const char me[] = "worker";
   void *ret;
   pushTask *task;
 
@@ -82,7 +82,7 @@ _pushWorker(void *_task) {
     if (task->pctx->verbose > 1) {
       fprintf(stderr, "%s(%u): starting to process\n", me, task->threadIdx);
     }
-    if (_pushProcess(task)) {
+    if (process(task)) {
       /* HEY clearly not threadsafe ... */
       biffAddf(PUSH, "%s: thread %u trouble", me, task->threadIdx);
       /* return NULL; (for biff auto-scan) */
@@ -99,8 +99,8 @@ _pushWorker(void *_task) {
 }
 
 static int /* Biff: 1 */
-_pushContextCheck(pushContext *pctx) {
-  static const char me[] = "_pushContextCheck";
+contextCheck(pushContext *pctx) {
+  static const char me[] = "contextCheck";
   unsigned int numSingle;
 
   if (!pctx) {
@@ -182,7 +182,7 @@ pushStart(pushContext *pctx) {
   static const char me[] = "pushStart";
   unsigned int tidx;
 
-  if (_pushContextCheck(pctx)) {
+  if (contextCheck(pctx)) {
     biffAddf(PUSH, "%s: trouble", me);
     return 1;
   }
@@ -192,8 +192,8 @@ pushStart(pushContext *pctx) {
   /* the ordering of steps below is important: gage context
      has to be set up before its copied by task setup */
   pctx->step = pctx->stepInitial;
-  if (_pushTensorFieldSetup(pctx) || _pushGageSetup(pctx) || _pushTaskSetup(pctx)
-      || _pushBinSetup(pctx) || _pushPointSetup(pctx)) {
+  if (push__TensorFieldSetup(pctx) || push__GageSetup(pctx) || push__TaskSetup(pctx)
+      || push__BinSetup(pctx) || push__PointSetup(pctx)) {
     biffAddf(PUSH, "%s: trouble setting up context", me);
     return 1;
   }
@@ -208,7 +208,7 @@ pushStart(pushContext *pctx) {
       if (pctx->verbose > 1) {
         fprintf(stderr, "%s: spawning thread %u\n", me, tidx);
       }
-      airThreadStart(pctx->task[tidx]->thread, _pushWorker, (void *)(pctx->task[tidx]));
+      airThreadStart(pctx->task[tidx]->thread, worker, (void *)(pctx->task[tidx]));
     }
   } else {
     pctx->binMutex = NULL;
@@ -245,7 +245,7 @@ pushIterate(pushContext *pctx) {
 
   time0 = airTime();
 
-  /* the _pushWorker checks finished after iterBarrierA */
+  /* the worker checks finished after iterBarrierA */
   pctx->finished = AIR_FALSE;
   pctx->binIdx = 0;
   for (ti = 0; ti < pctx->threadNum; ti++) {
@@ -262,7 +262,7 @@ pushIterate(pushContext *pctx) {
     airThreadBarrierWait(pctx->iterBarrierA);
   }
   myError = AIR_FALSE;
-  if (_pushProcess(pctx->task[0])) {
+  if (process(pctx->task[0])) {
     biffAddf(PUSH, "%s: master thread trouble w/ iter %u", me, pctx->iter);
     pctx->finished = AIR_TRUE;
     myError = AIR_TRUE;
@@ -414,7 +414,7 @@ pushFinish(pushContext *pctx) {
       airThreadJoin(pctx->task[tidx - 1]->thread, &(pctx->task[tidx - 1]->returnPtr));
     }
     pctx->task[tidx - 1]->thread = airThreadNix(pctx->task[tidx - 1]->thread);
-    pctx->task[tidx - 1] = _pushTaskNix(pctx->task[tidx - 1]);
+    pctx->task[tidx - 1] = push__TaskNix(pctx->task[tidx - 1]);
   }
   pctx->task = (pushTask **)airFree(pctx->task);
 

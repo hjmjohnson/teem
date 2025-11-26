@@ -35,6 +35,22 @@
 
 */
 
+#define MAT_SET(mat, a, b, x, c, d, y)                                                  \
+  (mat)[0] = (a);                                                                       \
+  (mat)[1] = (b);                                                                       \
+  (mat)[2] = (x);                                                                       \
+  (mat)[3] = (c);                                                                       \
+  (mat)[4] = (d);                                                                       \
+  (mat)[5] = (y)
+
+#define MAT_6TO9(m2, m1)                                                                \
+  ELL_3V_COPY((m2) + 0, (m1) + 0);                                                      \
+  ELL_3V_COPY((m2) + 3, (m1) + 3);                                                      \
+  ELL_3V_SET((m2) + 6, 0, 0, 1)
+
+#define MAT_9TO6(m2, m1)                                                                \
+  MAT_SET(m2, (m1)[0], (m1)[1], (m1)[2], (m1)[3], (m1)[4], (m1)[5])
+
 void
 mossMatPrint(FILE *f, const double *mat) {
 
@@ -46,10 +62,10 @@ double * /* Biff: nope */
 mossMatRightMultiply(double *_mat, const double *_x) {
   double mat[9], x[9];
 
-  MOSS_MAT_6TO9(x, _x);
-  MOSS_MAT_6TO9(mat, _mat);
+  MAT_6TO9(x, _x);
+  MAT_6TO9(mat, _mat);
   ell_3m_pre_mul_d(mat, x);
-  MOSS_MAT_9TO6(_mat, mat);
+  MAT_9TO6(_mat, mat);
   return _mat;
 }
 
@@ -57,10 +73,10 @@ double * /* Biff: nope */
 mossMatLeftMultiply(double *_mat, const double *_x) {
   double mat[9], x[9];
 
-  MOSS_MAT_6TO9(x, _x);
-  MOSS_MAT_6TO9(mat, _mat);
+  MAT_6TO9(x, _x);
+  MAT_6TO9(mat, _mat);
   ell_3m_post_mul_d(mat, x);
-  MOSS_MAT_9TO6(_mat, mat);
+  MAT_9TO6(_mat, mat);
   return _mat;
 }
 
@@ -68,23 +84,23 @@ double * /* Biff: nope */
 mossMatInvert(double *inv, const double *mat) {
   double inv9[9], mat9[9];
 
-  MOSS_MAT_6TO9(mat9, mat);
+  MAT_6TO9(mat9, mat);
   ell_3m_inv_d(inv9, mat9);
-  MOSS_MAT_9TO6(inv, inv9);
+  MAT_9TO6(inv, inv9);
   return inv;
 }
 
 double * /* Biff: nope */
 mossMatIdentitySet(double *mat) {
 
-  MOSS_MAT_SET(mat, 1, 0, 0, 0, 1, 0);
+  MAT_SET(mat, 1, 0, 0, 0, 1, 0);
   return mat;
 }
 
 double * /* Biff: nope */
 mossMatTranslateSet(double *mat, double tx, double ty) {
 
-  MOSS_MAT_SET(mat, 1, 0, tx, 0, 1, ty);
+  MAT_SET(mat, 1, 0, tx, 0, 1, ty);
   return mat;
 }
 
@@ -92,7 +108,7 @@ double * /* Biff: nope */
 mossMatRotateSet(double *mat, double angle) {
 
   angle *= AIR_PI / 180.0;
-  MOSS_MAT_SET(mat, cos(angle), -sin(angle), 0, sin(angle), cos(angle), 0);
+  MAT_SET(mat, cos(angle), -sin(angle), 0, sin(angle), cos(angle), 0);
   return mat;
 }
 
@@ -100,7 +116,7 @@ double * /* Biff: nope */
 mossMatFlipSet(double *mat, double angle) {
   double rot[6], flip[6];
 
-  MOSS_MAT_SET(flip, -1, 0, 0, 0, 1, 0);
+  MAT_SET(flip, -1, 0, 0, 0, 1, 0);
   mossMatIdentitySet(mat);
   mossMatLeftMultiply(mat, mossMatRotateSet(rot, -angle));
   mossMatLeftMultiply(mat, flip);
@@ -112,7 +128,7 @@ double * /* Biff: nope */
 mossMatShearSet(double *mat, double angleFixed, double amount) {
   double rot[6], shear[6];
 
-  MOSS_MAT_SET(shear, 1, amount, 0, 0, 1, 0);
+  MAT_SET(shear, 1, amount, 0, 0, 1, 0);
   mossMatIdentitySet(mat);
   mossMatLeftMultiply(mat, mossMatRotateSet(rot, -angleFixed));
   mossMatLeftMultiply(mat, shear);
@@ -123,7 +139,7 @@ mossMatShearSet(double *mat, double angleFixed, double amount) {
 double * /* Biff: nope */
 mossMatScaleSet(double *mat, double sx, double sy) {
 
-  MOSS_MAT_SET(mat, sx, 0, 0, 0, sy, 0);
+  MAT_SET(mat, sx, 0, 0, 0, sy, 0);
   return mat;
 }
 
@@ -173,10 +189,10 @@ mossLinearTransform(Nrrd *nout, const Nrrd *nin, int boundary, const double *bg,
   }
   val = AIR_CALLOC(nchan, double);
   if (nrrdCenterUnknown == nout->axis[ax0 + 0].center)
-    nout->axis[ax0 + 0].center = _mossCenter(nin->axis[ax0 + 0].center);
+    nout->axis[ax0 + 0].center = moss__Center(nin->axis[ax0 + 0].center);
   xCent = nout->axis[ax0 + 0].center;
   if (nrrdCenterUnknown == nout->axis[ax0 + 1].center)
-    nout->axis[ax0 + 1].center = _mossCenter(nin->axis[ax0 + 1].center);
+    nout->axis[ax0 + 1].center = moss__Center(nin->axis[ax0 + 1].center);
   yCent = nout->axis[ax0 + 1].center;
   nout->axis[ax0 + 0].min = xMin;
   nout->axis[ax0 + 0].max = xMax;

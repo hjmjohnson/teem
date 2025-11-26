@@ -64,9 +64,9 @@ miteRayBegin(miteThread *mtt, miteRender *mrr, miteUser *muu, int uIndex, int vI
 }
 
 static void
-_miteRGBACalc(mite_t *R, mite_t *G, mite_t *B, mite_t *A, miteThread *mtt,
-              miteRender *mrr, miteUser *muu) {
-  static const char me[] = "_miteRGBACalc";
+calcRGBA(mite_t *R, mite_t *G, mite_t *B, mite_t *A, miteThread *mtt, miteRender *mrr,
+         miteUser *muu) {
+  static const char me[] = "calcRGBA";
   mite_t tmp, ad[3],              /* ambient+diffuse light contribution */
     s[3] = {0, 0, 0},             /* specular light contribution */
     col[3], E, ka, kd, ks, sp,    /* txf-determined rendering variables */
@@ -238,7 +238,7 @@ miteSample(miteThread *mtt, miteRender *mrr, miteUser *muu, int num, double rayT
   }
 
   memcpy(mtt->range, muu->rangeInit, MITE_RANGE_NUM * sizeof(mite_t));
-  _miteStageRun(mtt, muu);
+  mite__StageRun(mtt, muu);
 
   /* if there's opacity, do shading and compositing */
   if (mtt->range[miteRangeAlpha]) {
@@ -249,7 +249,7 @@ miteSample(miteThread *mtt, miteRender *mrr, miteUser *muu, int num, double rayT
               me, mtt->RR, mtt->GG, mtt->BB, mtt->TT);
     }
     */
-    _miteRGBACalc(&R, &G, &B, &A, mtt, mrr, muu);
+    calcRGBA(&R, &G, &B, &A, mtt, mrr, muu);
     mtt->RR += mtt->TT * A * R;
     mtt->GG += mtt->TT * A * G;
     mtt->BB += mtt->TT * A * B;

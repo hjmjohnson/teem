@@ -21,12 +21,12 @@
 #include "privateTen.h"
 
 #define INFO "Apply an anisotropy metric to a DT volume"
-static const char *_tend_anvolInfoL
+static const char *anvolInfoL
   = (INFO ".  The anisotropy value will be zero in the locations which "
           "don't meet the given confidence threshold.");
 
 static int
-tend_anvolMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+anvolMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -46,7 +46,7 @@ tend_anvolMain(int argc, const char **argv, const char *me, const hestParm *hpar
 
   mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_tend_anvolInfoL);
+  USAGE_PARSE(anvolInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
@@ -67,4 +67,4 @@ tend_anvolMain(int argc, const char **argv, const char *me, const hestParm *hpar
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(anvol, INFO);
+MY_TEND_CMD(anvol, INFO);

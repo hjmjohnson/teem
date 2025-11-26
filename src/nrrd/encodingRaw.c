@@ -21,15 +21,15 @@
 #include "privateNrrd.h"
 
 static int
-_nrrdEncodingRaw_available(void) {
+encodingRaw_available(void) {
 
   return AIR_TRUE;
 }
 
 static int /* Biff: 1 */
-_nrrdEncodingRaw_read(FILE *file, void *data, size_t elementNum, Nrrd *nrrd,
-                      NrrdIoState *nio) {
-  static const char me[] = "_nrrdEncodingRaw_read";
+encodingRaw_read(FILE *file, void *data, size_t elementNum, Nrrd *nrrd,
+                 NrrdIoState *nio) {
+  static const char me[] = "encodingRaw_read";
   size_t ret, bsize;
   int car;
   long savePos;
@@ -91,9 +91,9 @@ _nrrdEncodingRaw_read(FILE *file, void *data, size_t elementNum, Nrrd *nrrd,
 }
 
 static int /* Biff: 1 */
-_nrrdEncodingRaw_write(FILE *file, const void *data, size_t elementNum, const Nrrd *nrrd,
-                       NrrdIoState *nio) {
-  static const char me[] = "_nrrdEncodingRaw_write";
+encodingRaw_write(FILE *file, const void *data, size_t elementNum, const Nrrd *nrrd,
+                  NrrdIoState *nio) {
+  static const char me[] = "encodingRaw_write";
   size_t ret;
   const char *data_c;
   size_t elementSize, maxChunkSize, remainderValue, chunkSize;
@@ -143,12 +143,12 @@ _nrrdEncodingRaw_write(FILE *file, const void *data, size_t elementNum, const Nr
   return 0;
 }
 
-const NrrdEncoding _nrrdEncodingRaw = {"raw",     /* name */
-                                       "raw",     /* suffix */
-                                       AIR_TRUE,  /* endianMatters */
-                                       AIR_FALSE, /* isCompression */
-                                       _nrrdEncodingRaw_available,
-                                       _nrrdEncodingRaw_read,
-                                       _nrrdEncodingRaw_write};
+const NrrdEncoding nrrd__EncodingRaw = {"raw",     /* name */
+                                        "raw",     /* suffix */
+                                        AIR_TRUE,  /* endianMatters */
+                                        AIR_FALSE, /* isCompression */
+                                        encodingRaw_available,
+                                        encodingRaw_read,
+                                        encodingRaw_write};
 
-const NrrdEncoding *const nrrdEncodingRaw = &_nrrdEncodingRaw;
+const NrrdEncoding *const nrrdEncodingRaw = &nrrd__EncodingRaw;

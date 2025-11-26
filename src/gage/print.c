@@ -21,48 +21,49 @@
 #include "privateGage.h"
 
 /* clang-format off */
-void
-_gagePrint_off(FILE *file, gageContext *ctx) {
-  int i, fd;
-  unsigned int *off;
-
-  fd = 2*ctx->radius;
-  off = ctx->off;
-  fprintf(file, "off[]:\n");
-  switch(fd) {
-  case 2:
-    fprintf(file, "%6u   %6u\n", off[6], off[7]);
-    fprintf(file, "   %6u   %6u\n\n", off[4], off[5]);
-    fprintf(file, "%6u   %6u\n", off[2], off[3]);
-    fprintf(file, "   %6u   %6u\n", off[0], off[1]);
-    break;
-  case 4:
-    for (i=3; i>=0; i--) {
-      fprintf(file, "%6u   %6u   %6u   %6u\n",
-              off[12+16*i], off[13+16*i],
-              off[14+16*i], off[15+16*i]);
-      fprintf(file, "   %6u  %c%6u   %6u%c   %6u\n",
-              off[ 8+16*i], (i==1||i==2)?'\\':' ',
-              off[ 9+16*i], off[10+16*i], (i==1||i==2)?'\\':' ',
-              off[11+16*i]);
-      fprintf(file, "      %6u  %c%6u   %6u%c   %6u\n",
-              off[ 4+16*i], (i==1||i==2)?'\\':' ',
-              off[ 5+16*i], off[ 6+16*i], (i==1||i==2)?'\\':' ',
-              off[ 7+16*i]);
-      fprintf(file, "         %6u   %6u   %6u   %6u\n",
-              off[ 0+16*i], off[ 1+16*i],
-              off[ 2+16*i], off[ 3+16*i]);
-      if (i) fprintf(file, "\n");
-    }
-    break;
-  default:
-    for (i=0; i<fd*fd*fd; i++) {
-      fprintf(file, "  off[% 3d,% 3d,% 3d] = %6u\n",
-              i%fd, (i/fd)%fd, i/(fd*fd), off[i]);
-    }
-    break;
-  }
-}
+/* void    (noticed for TeemV2 this was never called elsewhere in Teem)
+ * gage__Print_off(FILE *file, gageContext *ctx) {
+ *   int i, fd;
+ *   unsigned int *off;
+ *
+ *   fd = 2*ctx->radius;
+ *   off = ctx->off;
+ *   fprintf(file, "off[]:\n");
+ *   switch(fd) {
+ *   case 2:
+ *     fprintf(file, "%6u   %6u\n", off[6], off[7]);
+ *     fprintf(file, "   %6u   %6u\n\n", off[4], off[5]);
+ *     fprintf(file, "%6u   %6u\n", off[2], off[3]);
+ *     fprintf(file, "   %6u   %6u\n", off[0], off[1]);
+ *     break;
+ *   case 4:
+ *     for (i=3; i>=0; i--) {
+ *       fprintf(file, "%6u   %6u   %6u   %6u\n",
+ *               off[12+16*i], off[13+16*i],
+ *               off[14+16*i], off[15+16*i]);
+ *       fprintf(file, "   %6u  %c%6u   %6u%c   %6u\n",
+ *               off[ 8+16*i], (i==1||i==2)?'\\':' ',
+ *               off[ 9+16*i], off[10+16*i], (i==1||i==2)?'\\':' ',
+ *               off[11+16*i]);
+ *       fprintf(file, "      %6u  %c%6u   %6u%c   %6u\n",
+ *               off[ 4+16*i], (i==1||i==2)?'\\':' ',
+ *               off[ 5+16*i], off[ 6+16*i], (i==1||i==2)?'\\':' ',
+ *               off[ 7+16*i]);
+ *       fprintf(file, "         %6u   %6u   %6u   %6u\n",
+ *               off[ 0+16*i], off[ 1+16*i],
+ *               off[ 2+16*i], off[ 3+16*i]);
+ *       if (i) fprintf(file, "\n");
+ *     }
+ *     break;
+ *   default:
+ *     for (i=0; i<fd*fd*fd; i++) {
+ *       fprintf(file, "  off[% 3d,% 3d,% 3d] = %6u\n",
+ *               i%fd, (i/fd)%fd, i/(fd*fd), off[i]);
+ *     }
+ *     break;
+ *   }
+ * }
+ */
 
 #define PRINT_2(NN,C)                                  \
    fw = fw##NN##C;                                     \
@@ -89,7 +90,7 @@ _gagePrint_off(FILE *file, gageContext *ctx) {
 /* clang-format on */
 
 void
-_gagePrint_fslw(FILE *file, gageContext *ctx) {
+gage__Print_fslw(FILE *file, gageContext *ctx) {
   int i, fd;
   double *fslx, *fsly, *fslz, *fw, *fw000, *fw001, *fw002, *fw100, *fw101, *fw102,
     *fw110, *fw111, *fw112, *fw200, *fw201, *fw202, *fw210, *fw211, *fw212, *fw220,

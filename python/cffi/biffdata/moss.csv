@@ -1,9 +1,9 @@
 func_name,return_type,error_val(s),mubi,biff_key,cfile:linenumber
 mossImageCheck,int,1,0,moss,moss/methodsMoss.c:73
 mossImageAlloc,int,1,0,moss,moss/methodsMoss.c:94
-mossSamplerImageSet,int,1,0,moss,moss/sampler.c:24
-mossSamplerKernelSet,int,1,0,moss,moss/sampler.c:76
-mossSamplerUpdate,int,1,0,moss,moss/sampler.c:98
-mossSamplerSample,int,1,0,moss,moss/sampler.c:193
-mossLinearTransform,int,1,0,moss,moss/xform.c:138
-mossFourPointTransform,int,1,0,moss,moss/xform.c:217
+mossSamplerImageSet,int,1,0,moss,moss/sampler.c:29
+mossSamplerKernelSet,int,1,0,moss,moss/sampler.c:81
+mossSamplerUpdate,int,1,0,moss,moss/sampler.c:103
+mossSamplerSample,int,1,0,moss,moss/sampler.c:198
+mossLinearTransform,int,1,0,moss,moss/xform.c:154
+mossFourPointTransform,int,1,0,moss,moss/xform.c:233

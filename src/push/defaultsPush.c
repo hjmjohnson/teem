@@ -24,4 +24,4 @@ const int pushPresent = 42;
 
 const char *const pushBiffKey = "push";
 
-int _pushVerbose = 0;
+int push__Verbose = 0;

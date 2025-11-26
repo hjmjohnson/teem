@@ -28,12 +28,12 @@ const char *const unrrduBiffKey = "unrrdu";
 /* how rescale was set in {lut,rmap,mlut,mrmap}.c when
    lut,rmap,mlut,mrmap domain is implicit */
 int unrrduDefaultImplicitLutRmapRescale = AIR_TRUE;
-const char *const unrrduEnvVarDefaultImplicitLutRmapRescale = UNRRDU_DILRR;
+const char *const unrrduEnvVarDefaultImplicitLutRmapRescale = MY_UNRRDU_DILRR;
 
 // (new for TeemV2) how unu (and others, if they want) can test for quiet quitting
 // see more info in unrrdu.h's description of UNRRDU_QUIET_QUIT_ENV
 int
-unrrdQuietQuitTest(const char *parseErrStr, const hestOpt *errOpt) {
+unrrduQuietQuitTest(const char *parseErrStr, const hestOpt *errOpt) {
   int ret = 0;
   AIR_UNUSED(parseErrStr);
   /*
@@ -75,7 +75,7 @@ unrrduGetenvDefaultImplicitLutRmapRescale(void) {
  *
  * NULL-terminated array of unrrduCmd pointers, as ordered by UNRRDU_MAP macro
  */
-const unrrduCmd *const unrrduUnuCmdList[] = {UNRRDU_MAP(UNRRDU_LIST) NULL};
+const unrrduCmd *const unrrduUnuCmdList[] = {MY_UNRRDU_MAP(MY_UNRRDU_LIST) NULL};
 
 /*
  ******** unrrduMopNew
@@ -229,14 +229,14 @@ unrrduUsage(const char *argv0, const char *prog, const char *title,
   return 0;
 }
 
-static int                      /* Biff: nope */
-_unrrduPrime(int argc,          /* as received by main() */
-             const char **argv, /* as received by main() */
-             const char *prog,  /* conventional name of command-line program */
-             const char *title, /* for top of listing sub-commands */
-             const unrrduCmd *const *cmdList, /* all the sub-commands */
-             const hestParm *_hparm,
-             const char *biffKey) {
+static int                   /* Biff: nope */
+unu_Prime(int argc,          /* as received by main() */
+          const char **argv, /* as received by main() */
+          const char *prog,  /* conventional name of command-line program */
+          const char *title, /* for top of listing sub-commands */
+          const unrrduCmd *const *cmdList, /* all the sub-commands */
+          const hestParm *_hparm,
+          const char *biffKey) {
   if (!(argc >= 1 && argv && airStrlen(argv[0]) && airStrlen(prog) && airStrlen(title)
         && cmdList)) { // bad args (_hparm, biffKey allowed to be NULL)
     fprintf(stderr,
@@ -244,13 +244,13 @@ _unrrduPrime(int argc,          /* as received by main() */
             "prog (%p), title (%p), or cmdList (%p)",
             __func__, argc, AIR_CVOIDP(argv), AIR_CVOIDP(argv[0]), AIR_CVOIDP(prog),
             AIR_CVOIDP(title), AIR_CVOIDP(cmdList));
-    exit(1); // (in _unrrduPrime)
+    exit(1); // (in unu_Prime)
   }
   int ret;
   if (1 == argc) {
     ret = unrrduUsage(argv[0], prog, title, cmdList, _hparm);
     /* if `ret`: already fprintf(stderr) what went wrong */
-    exit(ret); // (in _unrrduPrime)
+    exit(ret); // (in unu_Prime)
   }
   // else argc >= 2
   if (2 == argc && !strcmp("--version", argv[1])) {
@@ -262,7 +262,7 @@ _unrrduPrime(int argc,          /* as received by main() */
   uint aboutCmdIdx;
   if (cmdListCheckLen(prog, cmdList, NULL, &aboutCmdIdx)) {
     /* already fprintf(stderr) what went wrong */
-    exit(1); // (in _unrrduPrime)
+    exit(1); // (in unu_Prime)
   }
   int aboutHave = (aboutCmdIdx != UINT_MAX);
   if (2 == argc && !strcmp("--usage", argv[1])) {
@@ -275,11 +275,11 @@ _unrrduPrime(int argc,          /* as received by main() */
       printf("Run \"%s\" or \"%s --help\" for list of %s commands\n", argv[0], argv[0],
              prog);
     }
-    exit(0); // (in _unrrduPrime)
+    exit(0); // (in unu_Prime)
   }
   if (2 == argc && !strcmp("--help", argv[1]) && !aboutHave) {
     // without an "about" command, --help is another way to ask for command list
-    exit(unrrduUsage(argv[0], prog, title, cmdList, _hparm)); // (in _unrrduPrime)
+    exit(unrrduUsage(argv[0], prog, title, cmdList, _hparm)); // (in unu_Prime)
   }
   /* now:
      either we're run with "--help" which effectively equals "about",
@@ -298,7 +298,7 @@ _unrrduPrime(int argc,          /* as received by main() */
   if (!torun) {
     fprintf(stderr, "%s: unknown %s command \"%s\"; run \"%s\" for complete list\n",
             argv[0], prog, argv[1], argv[0]);
-    exit(1); // (in _unrrduPrime)
+    exit(1); // (in unu_Prime)
   }
   // now: we actually know we're going to run `torun`
   /* parse environment variables first, in case they break nrrdDefault*
@@ -367,7 +367,7 @@ _unrrduPrime(int argc,          /* as received by main() */
 /*
  ******** unrrduMainOrExit
  *
- * (See _unrrduPrime above for the real function;
+ * (See unu_Prime above for the real function;
  *  this and unrrduMainBiffOrExit are its wrappers)
  *
  * A "main" function for unu-like programs, which is very similar to
@@ -403,13 +403,13 @@ unrrduMainOrExit(int argc,          /* as received by main() */
                  const char *title, /* for top of listing sub-commands */
                  const unrrduCmd *const *cmdList, /* all the sub-commands */
                  const hestParm *_hparm) {
-  return _unrrduPrime(argc, argv, prog, title, cmdList, _hparm, NULL);
+  return unu_Prime(argc, argv, prog, title, cmdList, _hparm, NULL);
 }
 
 /*
  ******** unrrduMainBiffOrExit
  *
- * (See _unrrduPrime for the real function;
+ * (See unu_Prime for the real function;
  *  this and unrrduMainOrExit are its wrappers)
  *
  * Like unrrduMainOrExit, but it's our job to do final collection and printing of a biff
@@ -427,7 +427,7 @@ unrrduMainBiffOrExit(int argc,          /* as received by main() */
     fprintf(stderr, "%s: got NULL biffKey\n", __func__);
     exit(1); // (in unrrduMainBiffOrExit)
   }
-  return _unrrduPrime(argc, argv, prog, title, cmdList, _hparm, biffKey);
+  return unu_Prime(argc, argv, prog, title, cmdList, _hparm, biffKey);
 }
 
 /* --------------------------------------------------------- */

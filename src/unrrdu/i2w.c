@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "converts from 1-D index to world position"
-static const char *_unrrdu_i2wInfoL
+static const char *unu_i2wInfoL
   = (INFO ", given the centering of the data (cell vs. node), "
           "the range of positions, and the number of intervals into "
           "which position has been quantized. "
@@ -30,7 +30,7 @@ static const char *_unrrdu_i2wInfoL
           "* Uses NRRD_POS macro");
 
 static int
-unrrdu_i2wMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_i2wMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   int center;
   hestOptAdd_1_Enum(&hopt, NULL, "center", &center, NULL,
@@ -52,7 +52,7 @@ unrrdu_i2wMain(int argc, const char **argv, const char *me, const hestParm *hpar
                       "the input index position, to be converted to world");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_i2wInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_i2wInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   // char *err;
 
@@ -63,4 +63,4 @@ unrrdu_i2wMain(int argc, const char **argv, const char *me, const hestParm *hpar
   return 0;
 }
 
-UNRRDU_CMD(i2w, INFO);
+MY_UNRRDU_CMD(i2w, INFO);

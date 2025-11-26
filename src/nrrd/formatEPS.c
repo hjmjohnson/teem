@@ -21,21 +21,21 @@
 #include "privateNrrd.h"
 
 static int
-_nrrdFormatEPS_available(void) {
+formatEPS_available(void) {
 
   /* but only for writing ... */
   return AIR_TRUE;
 }
 
 static int
-_nrrdFormatEPS_nameLooksLike(const char *filename) {
+formatEPS_nameLooksLike(const char *filename) {
 
   return airEndsWith(filename, NRRD_EXT_EPS);
 }
 
 static int /* Biff: maybe:3:AIR_FALSE */
-_nrrdFormatEPS_fitsInto(const Nrrd *nrrd, const NrrdEncoding *encoding, int useBiff) {
-  static const char me[] = "_nrrdFormatEPS_fitsInto";
+formatEPS_fitsInto(const Nrrd *nrrd, const NrrdEncoding *encoding, int useBiff) {
+  static const char me[] = "formatEPS_fitsInto";
   int ret;
 
   AIR_UNUSED(encoding);
@@ -78,7 +78,7 @@ _nrrdFormatEPS_fitsInto(const Nrrd *nrrd, const NrrdEncoding *encoding, int useB
 }
 
 static int
-_nrrdFormatEPS_contentStartsLike(NrrdIoState *nio) {
+formatEPS_contentStartsLike(NrrdIoState *nio) {
 
   AIR_UNUSED(nio);
   /* this is a write-only format */
@@ -86,8 +86,8 @@ _nrrdFormatEPS_contentStartsLike(NrrdIoState *nio) {
 }
 
 static int /* Biff: 1 */
-_nrrdFormatEPS_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
-  static const char me[] = "_nrrdFormatEPS_read";
+formatEPS_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
+  static const char me[] = "formatEPS_read";
 
   AIR_UNUSED(file);
   AIR_UNUSED(nrrd);
@@ -97,8 +97,8 @@ _nrrdFormatEPS_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
 }
 
 static int /* Biff: 1 */
-_nrrdFormatEPS_write(FILE *file, const Nrrd *_nrrd, NrrdIoState *nio) {
-  static const char me[] = "_nrrdFormatEPS_write";
+formatEPS_write(FILE *file, const Nrrd *nrrd__, NrrdIoState *nio) {
+  static const char me[] = "formatEPS_write";
   int color, cmyk;
   Nrrd *nrrd;
   double aspect, minX, minY, maxX, maxY, scale;
@@ -107,7 +107,7 @@ _nrrdFormatEPS_write(FILE *file, const Nrrd *_nrrd, NrrdIoState *nio) {
 
   mop = airMopNew();
   airMopAdd(mop, nrrd = nrrdNew(), nrrdNuke_mop, airMopAlways);
-  if (nrrdCopy(nrrd, _nrrd)) {
+  if (nrrdCopy(nrrd, nrrd__)) {
     biffAddf(NRRD, "%s: couldn't make private copy", me);
     airMopError(mop);
     return 1;
@@ -195,14 +195,14 @@ _nrrdFormatEPS_write(FILE *file, const Nrrd *_nrrd, NrrdIoState *nio) {
   return 0;
 }
 
-const NrrdFormat _nrrdFormatEPS = {"EPS",
-                                   AIR_FALSE, /* isImage */
-                                   AIR_FALSE, /* readable */
-                                   _nrrdFormatEPS_available,
-                                   _nrrdFormatEPS_nameLooksLike,
-                                   _nrrdFormatEPS_fitsInto,
-                                   _nrrdFormatEPS_contentStartsLike,
-                                   _nrrdFormatEPS_read,
-                                   _nrrdFormatEPS_write};
+const NrrdFormat nrrd__FormatEPS = {"EPS",
+                                    AIR_FALSE, /* isImage */
+                                    AIR_FALSE, /* readable */
+                                    formatEPS_available,
+                                    formatEPS_nameLooksLike,
+                                    formatEPS_fitsInto,
+                                    formatEPS_contentStartsLike,
+                                    formatEPS_read,
+                                    formatEPS_write};
 
-const NrrdFormat *const nrrdFormatEPS = &_nrrdFormatEPS;
+const NrrdFormat *const nrrdFormatEPS = &nrrd__FormatEPS;

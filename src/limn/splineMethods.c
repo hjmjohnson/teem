@@ -49,13 +49,13 @@ limnSplineTypeSpecNix(limnSplineTypeSpec *spec) {
 AIR_MOPPER(limnSplineTypeSpecNix);
 
 /*
-** _limnSplineTimeWarpSet
+** splineTimeWarpSet
 **
 ** implements GK's patented time warping technology
 */
 static int /* Biff: 1 */
-_limnSplineTimeWarpSet(limnSpline *spline) {
-  static const char me[] = "_limnSplineTimeWarpSet";
+splineTimeWarpSet(limnSpline *spline) {
+  static const char me[] = "splineTimeWarpSet";
   double *cpt, *time, ss;
   int ii, N;
 
@@ -203,7 +203,7 @@ limnSplineNew(Nrrd *_ncpt, int info, limnSplineTypeSpec *spec) {
       return NULL;
     }
     /* and set it all to something useful */
-    if (_limnSplineTimeWarpSet(spline)) {
+    if (splineTimeWarpSet(spline)) {
       biffAddf(LIMN, "%s: trouble setting time warp", me);
       airMopError(mop);
       return NULL;
@@ -458,7 +458,7 @@ limnSplineUpdate(limnSpline *spline, Nrrd *_ncpt) {
       nrrdNix(ntmp);
       return 1;
     }
-    if (_limnSplineTimeWarpSet(spline)) {
+    if (splineTimeWarpSet(spline)) {
       biffAddf(LIMN, "%s: trouble setting time warp", me);
       nrrdNix(ntmp);
       return 1;

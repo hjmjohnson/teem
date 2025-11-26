@@ -23,7 +23,7 @@
 #define GAGE_CACHE_LEN 1013
 
 static unsigned int
-_gageHash(int x, int y, int z) {
+ghash(int x, int y, int z) {
   unsigned int h, g;
   unsigned char s[6];
   int i;
@@ -47,11 +47,10 @@ _gageHash(int x, int y, int z) {
 }
 
 static void
-_gageCacheProbe(gageContext *ctx, double *grad, int *cc, double *gc, int x, int y,
-                int z) {
+cacheProbe(gageContext *ctx, double *grad, int *cc, double *gc, int x, int y, int z) {
   int hi;
 
-  hi = _gageHash(x, y, z);
+  hi = ghash(x, y, z);
   if ((cc[3 * hi + 0] == x) && (cc[3 * hi + 1] == y) && (cc[3 * hi + 2] == z)) {
     /* cache hit */
     ELL_3V_COPY(grad, gc + 3 * hi);
@@ -146,7 +145,7 @@ gageStructureTensor(Nrrd *nout, const Nrrd *nin, int dScale, int iScale, int dsm
     airMopError(mop);
     return 1;
   }
-  grad = _gageAnswerPointer(ctx, pvl, gageSclGradVec);
+  grad = gage__AnswerPointer(ctx, pvl, gageSclGradVec);
 
   xs = nin->axis[0].spacing;
   ys = nin->axis[1].spacing;
@@ -239,7 +238,7 @@ gageStructureTensor(Nrrd *nout, const Nrrd *nin, int dScale, int iScale, int dsm
               ixi = AIR_CLAMP(0, _ixi - rad + oxi * dsmp, (int)nin->axis[0].size - 1);
               if (!ixw[_ixi]) continue;
               wght = ixw[_ixi] * iyw[_iyi] * izw[_izi];
-              _gageCacheProbe(ctx, grad, coordCache, gradCache, ixi, iyi, izi);
+              cacheProbe(ctx, grad, coordCache, gradCache, ixi, iyi, izi);
               sten[0] += wght * grad[0] * grad[0];
               sten[1] += wght * grad[0] * grad[1];
               sten[2] += wght * grad[0] * grad[2];

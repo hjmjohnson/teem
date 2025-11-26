@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Map nrrd through a univariate substitution table"
-static const char *_unrrdu_substInfoL
+static const char *unu_substInfoL
   = (INFO " (itself represented as a nrrd). The substitution table "
           "is a 2-by-N table: a list of pairs giving the old value (to replace) "
           "and the the new value (to change to), in that order.  A plain text file "
@@ -31,18 +31,18 @@ static const char *_unrrdu_substInfoL
           "* Uses nrrdApply1DSubstitution");
 
 static int
-unrrdu_substMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_substMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   Nrrd *nsubst;
   hestOptAdd_1_Other(&hopt, "s,subst", "subst", &nsubst, NULL,
                      "substition table to map input nrrd through", nrrdHestNrrd);
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_substInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_substInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -55,10 +55,10 @@ unrrdu_substMain(int argc, const char **argv, const char *me, const hestParm *hp
     return 1;
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(subst, INFO);
+MY_UNRRDU_CMD(subst, INFO);

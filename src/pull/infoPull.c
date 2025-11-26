@@ -22,7 +22,7 @@
 
 /* --------------------------------------------- */
 
-unsigned int const _pullInfoLen[PULL_INFO_MAX + 1] = {
+unsigned int const pull__InfoLen[PULL_INFO_MAX + 1] = {
   0, /* pullInfoUnknown */
   7, /* pullInfoTensor */
   7, /* pullInfoTensorInverse */
@@ -54,7 +54,7 @@ pullInfoLen(int info) {
   unsigned int ret;
 
   if (!airEnumValCheck(pullInfo, info)) {
-    ret = _pullInfoLen[info];
+    ret = pull__InfoLen[info];
   } else {
     ret = 0;
   }
@@ -163,7 +163,7 @@ pullInfoSpecAdd(pullContext *pctx, pullInfoSpec *ispec) {
   }
   needLen = pullInfoLen(ispec->info);
   if (pullSourceGage == ispec->source) {
-    vi = _pullVolumeIndex(pctx, ispec->volName);
+    vi = pull__VolumeIndex(pctx, ispec->volName);
     if (UINT_MAX == vi) {
       biffAddf(PULL, "%s(%s): no volume has name \"%s\"", me,
                airEnumStr(pullInfo, ispec->info), ispec->volName);
@@ -236,8 +236,8 @@ pullInfoSpecAdd(pullContext *pctx, pullInfoSpec *ispec) {
 ** pctx->targetDim (non-trivial logic for scale-space!)
 */
 int /* Biff: (private) 1 */
-_pullInfoSetup(pullContext *pctx) {
-  static const char me[] = "_pullInfoSetup";
+pull__InfoSetup(pullContext *pctx) {
+  static const char me[] = "pull__InfoSetup";
   unsigned int ii;
 
   pctx->infoTotalLen = 0;
@@ -263,7 +263,7 @@ _pullInfoSetup(pullContext *pctx) {
     }
   }
   if (pctx->constraint) {
-    pctx->constraintDim = _pullConstraintDim(pctx);
+    pctx->constraintDim = pull__ConstraintDim(pctx);
     if (-1 == pctx->constraintDim) {
       biffAddf(PULL, "%s: problem learning constraint dimension", me);
       return 1;
@@ -286,7 +286,7 @@ _pullInfoSetup(pullContext *pctx) {
       case pullInterTypeAdditive:
         parmS = pctx->energySpecS->parm;
         evalS = pctx->energySpecS->energy->eval;
-        evalS(&denS, _PULL_TARGET_DIM_S_PROBE, parmS);
+        evalS(&denS, MY_PULL_TARGET_DIM_S_PROBE, parmS);
         if (denS > 0) {
           /* at small positive s, derivative was positive ==> attractive */
           pctx->targetDim = pctx->constraintDim;
@@ -315,25 +315,25 @@ _pullInfoSetup(pullContext *pctx) {
 }
 
 static void
-_infoCopy1(double *dst, const double *src) {
+infoCopy1(double *dst, const double *src) {
   dst[0] = src[0];
 }
 
 static void
-_infoCopy2(double *dst, const double *src) {
+infoCopy2(double *dst, const double *src) {
   dst[0] = src[0];
   dst[1] = src[1];
 }
 
 static void
-_infoCopy3(double *dst, const double *src) {
+infoCopy3(double *dst, const double *src) {
   dst[0] = src[0];
   dst[1] = src[1];
   dst[2] = src[2];
 }
 
 static void
-_infoCopy4(double *dst, const double *src) {
+infoCopy4(double *dst, const double *src) {
   dst[0] = src[0];
   dst[1] = src[1];
   dst[2] = src[2];
@@ -341,7 +341,7 @@ _infoCopy4(double *dst, const double *src) {
 }
 
 static void
-_infoCopy5(double *dst, const double *src) {
+infoCopy5(double *dst, const double *src) {
   dst[0] = src[0];
   dst[1] = src[1];
   dst[2] = src[2];
@@ -350,7 +350,7 @@ _infoCopy5(double *dst, const double *src) {
 }
 
 static void
-_infoCopy6(double *dst, const double *src) {
+infoCopy6(double *dst, const double *src) {
   dst[0] = src[0];
   dst[1] = src[1];
   dst[2] = src[2];
@@ -360,7 +360,7 @@ _infoCopy6(double *dst, const double *src) {
 }
 
 static void
-_infoCopy7(double *dst, const double *src) {
+infoCopy7(double *dst, const double *src) {
   dst[0] = src[0];
   dst[1] = src[1];
   dst[2] = src[2];
@@ -371,7 +371,7 @@ _infoCopy7(double *dst, const double *src) {
 }
 
 static void
-_infoCopy8(double *dst, const double *src) {
+infoCopy8(double *dst, const double *src) {
   dst[0] = src[0];
   dst[1] = src[1];
   dst[2] = src[2];
@@ -383,7 +383,7 @@ _infoCopy8(double *dst, const double *src) {
 }
 
 static void
-_infoCopy9(double *dst, const double *src) {
+infoCopy9(double *dst, const double *src) {
   dst[0] = src[0];
   dst[1] = src[1];
   dst[2] = src[2];
@@ -395,9 +395,9 @@ _infoCopy9(double *dst, const double *src) {
   dst[8] = src[8];
 }
 
-void (*const _pullInfoCopy[10])(double *, const double *)
-  = {NULL,       _infoCopy1, _infoCopy2, _infoCopy3, _infoCopy4,
-     _infoCopy5, _infoCopy6, _infoCopy7, _infoCopy8, _infoCopy9};
+void (*const pull__InfoCopy[10])(double *, const double *)
+  = {NULL,      infoCopy1, infoCopy2, infoCopy3, infoCopy4,
+     infoCopy5, infoCopy6, infoCopy7, infoCopy8, infoCopy9};
 
 int /* Biff: 1 */
 pullInfoGet(Nrrd *ninfo, int info, pullContext *pctx) {
@@ -434,7 +434,7 @@ pullInfoGet(Nrrd *ninfo, int info, pullContext *pctx) {
     bin = pctx->bin + binIdx;
     for (pointIdx = 0; pointIdx < bin->pointNum; pointIdx++) {
       point = bin->point[pointIdx];
-      _pullInfoCopy[alen](out_d + outIdx, point->info + aidx);
+      pull__InfoCopy[alen](out_d + outIdx, point->info + aidx);
       outIdx += alen;
     }
   }

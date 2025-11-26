@@ -21,11 +21,11 @@
 #include "privateTen.h"
 
 #define INFO "Fiber tractography, from one or more seeds"
-static const char *_tend_fiberInfoL
+static const char *fiberInfoL
   = (INFO ".  A fairly complete command-line interface to the tenFiber API.");
 
 static int
-tend_fiberMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+fiberMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -107,7 +107,7 @@ tend_fiberMain(int argc, const char **argv, const char *me, const hestParm *hpar
 
   mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_tend_fiberInfoL);
+  USAGE_PARSE(fiberInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   tfbs = tenFiberSingleNew();
@@ -309,4 +309,4 @@ tend_fiberMain(int argc, const char **argv, const char *me, const hestParm *hpar
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(fiber, INFO);
+MY_TEND_CMD(fiber, INFO);

@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Perform histogram equalization"
-static const char *_unrrdu_heqInfoL
+static const char *unu_heqInfoL
   = (INFO ". If this seems to be doing nothing, try increasing the "
           "number of histograms bins by an order of magnitude or "
           "two (or more).  Or, use \"unu gamma\" to warp the values "
@@ -31,7 +31,7 @@ static const char *_unrrdu_heqInfoL
           "* Uses nrrdHistoEq");
 
 static int
-unrrdu_heqMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_heqMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   uint bins;
   hestOptAdd_1_UInt(&hopt, "b,bin", "bins", &bins, NULL,
@@ -57,12 +57,12 @@ unrrdu_heqMain(int argc, const char **argv, const char *me, const hestParm *hpar
                       "here, that map can be saved out and applied to other nrrds "
                       "with \"unu rmap\"");
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_heqInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_heqInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -77,12 +77,12 @@ unrrdu_heqMain(int argc, const char **argv, const char *me, const hestParm *hpar
   }
 
   if (airStrlen(mapS)) {
-    SAVE(mapS, nmap, NULL);
+    MY_SAVE(mapS, nmap, NULL);
   }
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(heq, INFO);
+MY_UNRRDU_CMD(heq, INFO);

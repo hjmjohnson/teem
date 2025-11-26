@@ -21,13 +21,13 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Find connected components (CCs)"
-static const char *_unrrdu_ccfindInfoL
+static const char *unu_ccfindInfoL
   = (INFO ". This works on 1-byte and 2-byte integral values, as well as "
           "4-byte ints.\n "
           "* Uses nrrdCCFind");
 
 static int
-unrrdu_ccfindMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+unu_ccfindMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
   char *valS;
   hestOptAdd_1_String(&hopt, "v,values", "filename", &valS, "",
@@ -52,12 +52,12 @@ unrrdu_ccfindMain(int argc, const char **argv, const char *me, const hestParm *_
   hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-", "input nrrd",
                      nrrdHestNrrdNoTTY);
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for YES some hparm modification)
   hestParm *hparm = hestParmCopy(_hparm);
   hparm->noArgsIsNoProblem = AIR_TRUE; // thanks to nrrdHestNrrdNoTTY
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_ccfindInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_ccfindInfoL);
   airArray *mop = unrrduMopNew(hopt, hparm);
   char *err;
 
@@ -74,12 +74,12 @@ unrrdu_ccfindMain(int argc, const char **argv, const char *me, const hestParm *_
   }
 
   if (airStrlen(valS)) {
-    SAVE(valS, nval, NULL);
+    MY_SAVE(valS, nval, NULL);
   }
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(ccfind, INFO);
+MY_UNRRDU_CMD(ccfind, INFO);

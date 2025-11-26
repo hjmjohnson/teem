@@ -21,13 +21,13 @@
 #include "privateTen.h"
 
 #define INFO "Normalize tensor size"
-static const char *_tend_normInfoL
+static const char *normInfoL
   = (INFO ". This operates on the eigenvalues of the tensor, and allows "
           "normalizing some user-defined weighting (\"-w\") of the eigenvalues by "
           "some user-defined amount (\"-a\").");
 
 static int
-tend_normMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+normMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -53,7 +53,7 @@ tend_normMain(int argc, const char **argv, const char *me, const hestParm *hparm
 
   mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_tend_normInfoL);
+  USAGE_PARSE(normInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
@@ -74,4 +74,4 @@ tend_normMain(int argc, const char **argv, const char *me, const hestParm *hparm
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(norm, INFO);
+MY_TEND_CMD(norm, INFO);

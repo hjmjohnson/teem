@@ -31,15 +31,15 @@ int airThreadNoopWarning = AIR_TRUE;
 
 const int airThreadCapable = AIR_TRUE;
 
-struct _airThread {
+struct airThreadImpl {
   pthread_t id;
 };
 
-struct _airThreadMutex {
+struct airThreadMutexImpl {
   pthread_mutex_t id;
 };
 
-struct _airThreadCond {
+struct airThreadCondImpl {
   pthread_cond_t id;
 };
 
@@ -170,18 +170,18 @@ airThreadCondNix(airThreadCond *cond) {
 
 const int airThreadCapable = AIR_TRUE;
 
-struct _airThread {
+struct airThreadImpl {
   HANDLE handle;
   void *(*body)(void *);
   void *arg;
   void *ret;
 };
 
-struct _airThreadMutex {
+struct airThreadMutexImpl {
   HANDLE handle;
 };
 
-struct _airThreadCond {
+struct airThreadCondImpl {
   int count;
   CRITICAL_SECTION lock;
   HANDLE sema;
@@ -207,7 +207,7 @@ unsigned long
 int
 #  endif /* defined(__BORLANDC__) */
   WINAPI
-  _airThreadWin32Body(void *_thread) {
+  threadWin32Body(void *_thread) {
   airThread *thread;
 
   thread = (airThread *)_thread;
@@ -220,7 +220,7 @@ airThreadStart(airThread *thread, void *(*threadBody)(void *), void *arg) {
 
   thread->body = threadBody;
   thread->arg = arg;
-  thread->handle = CreateThread(0, 0, _airThreadWin32Body, (void *)thread, 0, 0);
+  thread->handle = CreateThread(0, 0, threadWin32Body, (void *)thread, 0, 0);
   return NULL == thread->handle;
 }
 
@@ -411,15 +411,15 @@ airThreadCondNix(airThreadCond *cond) {
 
 const int airThreadCapable = AIR_FALSE;
 
-struct _airThread {
+struct airThreadImpl {
   void *ret;
 };
 
-struct _airThreadMutex {
+struct airThreadMutexImpl {
   int dummy;
 };
 
-struct _airThreadCond {
+struct airThreadCondImpl {
   int dummy;
 };
 

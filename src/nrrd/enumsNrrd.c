@@ -44,7 +44,7 @@
 /* ------------------------ nrrdFormat ------------------------- */
 
 static const char *
-_nrrdFormatTypeStr[NRRD_FORMAT_TYPE_MAX+1] = {
+formatTypeStr[NRRD_FORMAT_TYPE_MAX+1] = {
   "(unknown_format)",
   "nrrd",
   "pnm",
@@ -55,7 +55,7 @@ _nrrdFormatTypeStr[NRRD_FORMAT_TYPE_MAX+1] = {
 };
 
 static const char *
-_nrrdFormatTypeDesc[NRRD_FORMAT_TYPE_MAX+1] = {
+formatTypeDesc[NRRD_FORMAT_TYPE_MAX+1] = {
   "unknown_format",
   "native format for nearly raw raster data",
   "Portable aNy Map: includes PGM for grayscale and PPM for color",
@@ -66,7 +66,7 @@ _nrrdFormatTypeDesc[NRRD_FORMAT_TYPE_MAX+1] = {
 };
 
 static const char *
-_nrrdFormatTypeStrEqv[] = {
+formatTypeStrEqv[] = {
   "nrrd",
   "pnm",
   "png",
@@ -77,7 +77,7 @@ _nrrdFormatTypeStrEqv[] = {
 };
 
 static const int
-_nrrdFormatTypeValEqv[] = {
+formatTypeValEqv[] = {
   nrrdFormatTypeNRRD,
   nrrdFormatTypePNM,
   nrrdFormatTypePNG,
@@ -87,21 +87,20 @@ _nrrdFormatTypeValEqv[] = {
 };
 
 static const airEnum
-_nrrdFormatType = {
+formatType_ae = {
   "format",
   NRRD_FORMAT_TYPE_MAX,
-  _nrrdFormatTypeStr,  NULL,
-  _nrrdFormatTypeDesc,
-  _nrrdFormatTypeStrEqv, _nrrdFormatTypeValEqv,
+  formatTypeStr,  NULL,
+  formatTypeDesc,
+  formatTypeStrEqv, formatTypeValEqv,
   AIR_FALSE
 };
-const airEnum *const
-nrrdFormatType = &_nrrdFormatType;
+const airEnum *const nrrdFormatType = &formatType_ae;
 
 /* ------------------------ nrrdType ------------------------- */
 
 static const char *
-_nrrdTypeStr[NRRD_TYPE_MAX+1] = {
+typeStr[NRRD_TYPE_MAX+1] = {
   "(unknown_type)",
   "signed char",
   "unsigned char",
@@ -117,7 +116,7 @@ _nrrdTypeStr[NRRD_TYPE_MAX+1] = {
 };
 
 static const char *
-_nrrdTypeDesc[NRRD_TYPE_MAX+1] = {
+typeDesc[NRRD_TYPE_MAX+1] = {
   "unknown type",
   "signed 1-byte integer",
   "unsigned 1-byte integer",
@@ -145,7 +144,7 @@ _nrrdTypeDesc[NRRD_TYPE_MAX+1] = {
 #define ntBL nrrdTypeBlock
 
 static const char *
-_nrrdTypeStrEqv[] = {
+typeStrEqv[] = {
   "signed char", /* but NOT just "char" */ "int8", "int8_t",
   "uchar", "unsigned char", "uint8", "uint8_t",
   "short", "short int", "signed short", "signed short int", "int16", "int16_t",
@@ -163,7 +162,7 @@ _nrrdTypeStrEqv[] = {
 };
 
 static const int
-_nrrdTypeValEqv[] = {
+typeValEqv[] = {
   ntCH, ntCH, ntCH,
   ntUC, ntUC, ntUC, ntUC,
   ntSH, ntSH, ntSH, ntSH, ntSH, ntSH,
@@ -178,21 +177,20 @@ _nrrdTypeValEqv[] = {
 };
 
 static const airEnum
-_nrrdType = {
+type_ae = {
   "type",
   NRRD_TYPE_MAX,
-  _nrrdTypeStr, NULL,
-  _nrrdTypeDesc,
-  _nrrdTypeStrEqv, _nrrdTypeValEqv,
+  typeStr, NULL,
+  typeDesc,
+  typeStrEqv, typeValEqv,
   AIR_FALSE
 };
-const airEnum *const
-nrrdType = &_nrrdType;
+const airEnum *const nrrdType = &type_ae;
 
 /* ------------------------ nrrdEncodingType ------------------------- */
 
 static const char *
-_nrrdEncodingTypeStr[NRRD_ENCODING_TYPE_MAX+1] = {
+encodingTypeStr[NRRD_ENCODING_TYPE_MAX+1] = {
   "(unknown_encoding)",
   "raw",
   "ascii",
@@ -203,7 +201,7 @@ _nrrdEncodingTypeStr[NRRD_ENCODING_TYPE_MAX+1] = {
 };
 
 static const char *
-_nrrdEncodingTypeDesc[NRRD_ENCODING_TYPE_MAX+1] = {
+encodingTypeDesc[NRRD_ENCODING_TYPE_MAX+1] = {
   "unknown encoding",
   "file is byte-for-byte same as memory representation",
   "values written out in ASCII",
@@ -214,7 +212,7 @@ _nrrdEncodingTypeDesc[NRRD_ENCODING_TYPE_MAX+1] = {
 };
 
 static const char *
-_nrrdEncodingTypeStrEqv[] = {
+encodingTypeStrEqv[] = {
   "raw",
   "txt", "text", "ascii",
   "hex",
@@ -225,7 +223,7 @@ _nrrdEncodingTypeStrEqv[] = {
 };
 
 static const int
-_nrrdEncodingTypeValEqv[] = {
+encodingTypeValEqv[] = {
   nrrdEncodingTypeRaw,
   nrrdEncodingTypeAscii, nrrdEncodingTypeAscii, nrrdEncodingTypeAscii,
   nrrdEncodingTypeHex,
@@ -235,44 +233,42 @@ _nrrdEncodingTypeValEqv[] = {
 };
 
 static const airEnum
-_nrrdEncodingType = {
+encodingType_ae = {
   "encoding",
   NRRD_ENCODING_TYPE_MAX,
-  _nrrdEncodingTypeStr, NULL,
-  _nrrdEncodingTypeDesc,
-  _nrrdEncodingTypeStrEqv, _nrrdEncodingTypeValEqv,
+  encodingTypeStr, NULL,
+  encodingTypeDesc,
+  encodingTypeStrEqv, encodingTypeValEqv,
   AIR_FALSE
 };
-const airEnum *const
-nrrdEncodingType = &_nrrdEncodingType;
+const airEnum *const nrrdEncodingType = &encodingType_ae;
 
 /* ------------------------ nrrdCenter ------------------------- */
 
 static const char *
-_nrrdCenterStr[NRRD_CENTER_MAX+1] = {
+centerStr[NRRD_CENTER_MAX+1] = {
   "(unknown_center)",
   "node",
   "cell",
 };
 
 static const char *
-_nrrdCenterDesc[NRRD_CENTER_MAX+1] = {
+centerDesc[NRRD_CENTER_MAX+1] = {
   "unknown centering",
   "samples are at boundaries between elements along axis",
   "samples are at centers of elements along axis",
 };
 
 static const airEnum
-_nrrdCenter_enum = {
+center_ae = {
   "centering",
   NRRD_CENTER_MAX,
-  _nrrdCenterStr, NULL,
-  _nrrdCenterDesc,
+  centerStr, NULL,
+  centerDesc,
   NULL, NULL,
   AIR_FALSE
 };
-const airEnum *const
-nrrdCenter = &_nrrdCenter_enum;
+const airEnum *const nrrdCenter = &center_ae;
 
 /* ------------------------ nrrdKind ------------------------- */
 
@@ -316,7 +312,7 @@ nrrdCenter = &_nrrdCenter_enum;
 */
 
 static const char *
-_nrrdKindStr[NRRD_KIND_MAX+1] = {
+kindStr[NRRD_KIND_MAX+1] = {
   "(unknown_kind)",
   "domain",
   "space",
@@ -352,7 +348,7 @@ _nrrdKindStr[NRRD_KIND_MAX+1] = {
 };
 
 static const char *
-_nrrdKindDesc[NRRD_KIND_MAX+1] = {
+kindDesc[NRRD_KIND_MAX+1] = {
   "unknown kind",
   "a domain variable of the function which the nrrd samples",
   "a spatial domain, like the axes of a measured volume image",
@@ -388,7 +384,7 @@ _nrrdKindDesc[NRRD_KIND_MAX+1] = {
 };
 
 static const char *
-_nrrdKindStr_Eqv[] = {
+kindStr_Eqv[] = {
   "domain",
   "space",
   "time",
@@ -432,7 +428,7 @@ _nrrdKindStr_Eqv[] = {
 };
 
 static int
-_nrrdKindVal_Eqv[] = {
+kindVal_Eqv[] = {
   nrrdKindDomain,
   nrrdKindSpace,
   nrrdKindTime,
@@ -475,21 +471,20 @@ _nrrdKindVal_Eqv[] = {
 };
 
 static const airEnum
-_nrrdKind_enum = {
+kind_ae = {
   "kind",
   NRRD_KIND_MAX,
-  _nrrdKindStr, NULL,
-  _nrrdKindDesc,
-  _nrrdKindStr_Eqv, _nrrdKindVal_Eqv,
+  kindStr, NULL,
+  kindDesc,
+  kindStr_Eqv, kindVal_Eqv,
   AIR_FALSE
 };
-const airEnum *const
-nrrdKind = &_nrrdKind_enum;
+const airEnum *const nrrdKind = &kind_ae;
 
 /* ------------------------ nrrdField ------------------------- */
 
 static const char *
-_nrrdFieldStr[NRRD_FIELD_MAX+1] = {
+fieldStr[NRRD_FIELD_MAX+1] = {
   "Ernesto \"Che\" Guevara",
   "#",
   "content",
@@ -530,7 +525,7 @@ _nrrdFieldStr[NRRD_FIELD_MAX+1] = {
 };
 
 static const char *
-_nrrdFieldDesc[NRRD_FIELD_MAX+1] = {
+fieldDesc[NRRD_FIELD_MAX+1] = {
   "unknown field identifier",
   "comment",
   "short description of whole array and/or its provenance",
@@ -567,7 +562,7 @@ _nrrdFieldDesc[NRRD_FIELD_MAX+1] = {
 };
 
 static const char *
-_nrrdFieldStrEqv[] = {
+fieldStrEqv[] = {
   "#",
   "content",
   "number",
@@ -604,7 +599,7 @@ _nrrdFieldStrEqv[] = {
 };
 
 static const int
-_nrrdFieldValEqv[] = {
+fieldValEqv[] = {
   nrrdField_comment,
   nrrdField_content,
   nrrdField_number,
@@ -640,16 +635,15 @@ _nrrdFieldValEqv[] = {
 };
 
 static const airEnum
-_nrrdField = {
+field_ae = {
   "nrrd_field",
   NRRD_FIELD_MAX,
-  _nrrdFieldStr, NULL,
-  _nrrdFieldDesc,
-  _nrrdFieldStrEqv, _nrrdFieldValEqv,
+  fieldStr, NULL,
+  fieldDesc,
+  fieldStrEqv, fieldValEqv,
   AIR_FALSE  /* field identifiers not case sensitive */
 };
-const airEnum *const
-nrrdField = &_nrrdField;
+const airEnum *const nrrdField = &field_ae;
 
 /* ------------------------ nrrdSpace ------------------------- */
 
@@ -675,7 +669,7 @@ nrrdField = &_nrrdField;
 */
 
 static const char *
-_nrrdSpaceStr[NRRD_SPACE_MAX+1] = {
+spaceStr[NRRD_SPACE_MAX+1] = {
   "(unknown_space)",
   "right-up",
   "right-down",
@@ -694,7 +688,7 @@ _nrrdSpaceStr[NRRD_SPACE_MAX+1] = {
 };
 
 static const char *
-_nrrdSpaceDesc[NRRD_SPACE_MAX+1] = {
+spaceDesc[NRRD_SPACE_MAX+1] = {
   "unknown space",
   "right-up (like Cartesian quadrant I)",
   "right-down (like raster coordinates)",
@@ -713,7 +707,7 @@ _nrrdSpaceDesc[NRRD_SPACE_MAX+1] = {
 };
 
 static const char *
-_nrrdSpaceStrEqv[] = {
+spaceStrEqv[] = {
   "right-up", "right up",
   "right-down", "right down",
   "right-anterior-superior", "right anterior superior",
@@ -740,7 +734,7 @@ _nrrdSpaceStrEqv[] = {
 };
 
 static const int
-_nrrdSpaceValEqv[] = {
+spaceValEqv[] = {
   nrrdSpaceRightUp, nrrdSpaceRightUp,
   nrrdSpaceRightDown, nrrdSpaceRightDown,
   nrrdSpaceRightAnteriorSuperior, nrrdSpaceRightAnteriorSuperior,
@@ -766,21 +760,20 @@ _nrrdSpaceValEqv[] = {
 };
 
 static const airEnum
-_nrrdSpace = {
+space_ae = {
   "space",
   NRRD_SPACE_MAX,
-  _nrrdSpaceStr, NULL,
-  _nrrdSpaceDesc,
-  _nrrdSpaceStrEqv, _nrrdSpaceValEqv,
+  spaceStr, NULL,
+  spaceDesc,
+  spaceStrEqv, spaceValEqv,
   AIR_FALSE
 };
-const airEnum *const
-nrrdSpace = &_nrrdSpace;
+const airEnum *const nrrdSpace = &space_ae;
 
 /* ------------------------ nrrdSpacingStatus ------------------------- */
 
 static const char *
-_nrrdSpacingStatusStr[NRRD_SPACING_STATUS_MAX+1] = {
+spacingStatusStr[NRRD_SPACING_STATUS_MAX+1] = {
   "(unknown_status)",
   "none",
   "scalarNoSpace",
@@ -789,7 +782,7 @@ _nrrdSpacingStatusStr[NRRD_SPACING_STATUS_MAX+1] = {
 };
 
 static const char *
-_nrrdSpacingStatusDesc[NRRD_SPACING_STATUS_MAX+1] = {
+spacingStatusDesc[NRRD_SPACING_STATUS_MAX+1] = {
   "unknown spacing status behavior",
   "neither axis->spacing nor axis->spaceDirection set",
   "axis->spacing set normally",
@@ -798,23 +791,22 @@ _nrrdSpacingStatusDesc[NRRD_SPACING_STATUS_MAX+1] = {
 };
 
 static const airEnum
-_nrrdSpacingStatus = {
+spacingStatus_ae = {
   "spacing status",
   NRRD_SPACING_STATUS_MAX,
-  _nrrdSpacingStatusStr, NULL,
-  _nrrdSpacingStatusDesc,
+  spacingStatusStr, NULL,
+  spacingStatusDesc,
   NULL, NULL,
   AIR_FALSE
 };
-const airEnum *const
-nrrdSpacingStatus = &_nrrdSpacingStatus;
+const airEnum *const nrrdSpacingStatus = &spacingStatus_ae;
 
 /* ---- BEGIN non-NrrdIO */
 
 /* ---------------------- nrrdFormatPNGsRGBIntent ------------------------- */
 
 static const char *
-_nrrdFormatPNGsRGBIntentStr[NRRD_FORMAT_PNG_SRGB_INTENT_NUM+1] = {
+formatPNGsRGBIntentStr[NRRD_FORMAT_PNG_SRGB_INTENT_NUM+1] = {
   "(unknown_sRGB_intent)",
   "perceptual",
   "relative",
@@ -824,7 +816,7 @@ _nrrdFormatPNGsRGBIntentStr[NRRD_FORMAT_PNG_SRGB_INTENT_NUM+1] = {
 };
 
 static int
-_nrrdFormatPNGsRGBIntentVal[NRRD_FORMAT_PNG_SRGB_INTENT_NUM+1] = {
+formatPNGsRGBIntentVal[NRRD_FORMAT_PNG_SRGB_INTENT_NUM+1] = {
   nrrdFormatPNGsRGBIntentUnknown,    /* -1: nobody knows */
   /* it is true and perhaps odd that we aren't using the values like
      PNG_sRGB_INTENT_PERCEPTUAL, PNG_sRGB_INTENT_RELATIVE, etc. Why not:
@@ -841,7 +833,7 @@ _nrrdFormatPNGsRGBIntentVal[NRRD_FORMAT_PNG_SRGB_INTENT_NUM+1] = {
 };
 
 static const char *
-_nrrdFormatPNGsRGBIntentStrEqv[] = {
+formatPNGsRGBIntentStrEqv[] = {
   "perceptual", "perc", "p",
   "relative",   "rel",  "r",
   "saturation", "sat",  "s",
@@ -851,7 +843,7 @@ _nrrdFormatPNGsRGBIntentStrEqv[] = {
 };
 
 static int
-_nrrdFormatPNGsRGBIntentValEqv[] = {
+formatPNGsRGBIntentValEqv[] = {
   nrrdFormatPNGsRGBIntentPerceptual, nrrdFormatPNGsRGBIntentPerceptual, nrrdFormatPNGsRGBIntentPerceptual,
   nrrdFormatPNGsRGBIntentRelative,   nrrdFormatPNGsRGBIntentRelative,   nrrdFormatPNGsRGBIntentRelative,
   nrrdFormatPNGsRGBIntentSaturation, nrrdFormatPNGsRGBIntentSaturation, nrrdFormatPNGsRGBIntentSaturation,
@@ -860,7 +852,7 @@ _nrrdFormatPNGsRGBIntentValEqv[] = {
 };
 
 static const char *
-_nrrdFormatPNGsRGBIntentDesc[NRRD_FORMAT_PNG_SRGB_INTENT_NUM+1] = {
+formatPNGsRGBIntentDesc[NRRD_FORMAT_PNG_SRGB_INTENT_NUM+1] = {
   "unknown sRGB rendering intent",
   /* see http://www.libpng.org/pub/png/book/chapter10.html and
      https://en.wikipedia.org/wiki/Color_management#Rendering_intent */
@@ -872,21 +864,20 @@ _nrrdFormatPNGsRGBIntentDesc[NRRD_FORMAT_PNG_SRGB_INTENT_NUM+1] = {
 };
 
 static const airEnum
-_nrrdFormatPNGsRGBIntent = {
+formatPNGsRGBIntent_ae = {
   "sRGB intent",
   NRRD_FORMAT_PNG_SRGB_INTENT_NUM,
-  _nrrdFormatPNGsRGBIntentStr, _nrrdFormatPNGsRGBIntentVal,
-  _nrrdFormatPNGsRGBIntentDesc,
-  _nrrdFormatPNGsRGBIntentStrEqv, _nrrdFormatPNGsRGBIntentValEqv,
+  formatPNGsRGBIntentStr, formatPNGsRGBIntentVal,
+  formatPNGsRGBIntentDesc,
+  formatPNGsRGBIntentStrEqv, formatPNGsRGBIntentValEqv,
   AIR_FALSE
 };
-const airEnum *const
-nrrdFormatPNGsRGBIntent = &_nrrdFormatPNGsRGBIntent;
+const airEnum *const nrrdFormatPNGsRGBIntent = &formatPNGsRGBIntent_ae;
 
 /* -------------------- nrrdOrientationHave --------------------- */
 
 static const char *
-_nrrdOrientationHaveStr[NRRD_ORIENTATION_HAVE_MAX+1] = {
+orientationHaveStr[NRRD_ORIENTATION_HAVE_MAX+1] = {
   "(unknown_orientation_have)",
   "nothing",
   "spacing",
@@ -897,7 +888,7 @@ _nrrdOrientationHaveStr[NRRD_ORIENTATION_HAVE_MAX+1] = {
 };
 
 static const char *
-_nrrdOrientationHaveDesc[NRRD_ORIENTATION_HAVE_MAX+1] = {
+orientationHaveDesc[NRRD_ORIENTATION_HAVE_MAX+1] = {
   "unknown orientation have",
   "know nothing",
   "know per-axis spacing",
@@ -908,7 +899,7 @@ _nrrdOrientationHaveDesc[NRRD_ORIENTATION_HAVE_MAX+1] = {
 };
 
 static const char *
-_nrrdOrientationHaveStrEqv[] = {
+orientationHaveStrEqv[] = {
   "nothing",
   "spacing", "spc",
   "min+spacing", "min+spc", "minspacing", "minspc",
@@ -919,7 +910,7 @@ _nrrdOrientationHaveStrEqv[] = {
 };
 
 static const int
-_nrrdOrientationHaveValEqv[] = {
+orientationHaveValEqv[] = {
   nrrdOrientationHaveNothing,
   nrrdOrientationHaveSpacing,
   nrrdOrientationHaveSpacing,
@@ -938,22 +929,21 @@ _nrrdOrientationHaveValEqv[] = {
 };
 
 static const airEnum
-_nrrdOrientationHave = {
+orientationHave_ae = {
   "orientation have",
   NRRD_ORIENTATION_HAVE_MAX,
-  _nrrdOrientationHaveStr, NULL,
-  _nrrdOrientationHaveDesc,
-  _nrrdOrientationHaveStrEqv, _nrrdOrientationHaveValEqv,
+  orientationHaveStr, NULL,
+  orientationHaveDesc,
+  orientationHaveStrEqv, orientationHaveValEqv,
   AIR_FALSE
 };
-const airEnum *const
-nrrdOrientationHave = &_nrrdOrientationHave;
+const airEnum *const nrrdOrientationHave = &orientationHave_ae;
 
 /* ---- BEGIN non-NrrdIO */
 /* ------------------------ nrrdBoundary ------------------------- */
 
 static const char *
-_nrrdBoundaryStr[NRRD_BOUNDARY_MAX+1] = {
+boundaryStr[NRRD_BOUNDARY_MAX+1] = {
   "(unknown_boundary)",
   "pad",
   "bleed",
@@ -963,7 +953,7 @@ _nrrdBoundaryStr[NRRD_BOUNDARY_MAX+1] = {
 };
 
 static const char *
-_nrrdBoundaryDesc[NRRD_BOUNDARY_MAX+1] = {
+boundaryDesc[NRRD_BOUNDARY_MAX+1] = {
   "unknown boundary behavior",
   "pad with some specified value",
   "copy values from edge outward as needed",
@@ -973,21 +963,20 @@ _nrrdBoundaryDesc[NRRD_BOUNDARY_MAX+1] = {
 };
 
 static const airEnum
-_nrrdBoundary = {
+boundary_ae = {
   "boundary behavior",
   NRRD_BOUNDARY_MAX,
-  _nrrdBoundaryStr, NULL,
-  _nrrdBoundaryDesc,
+  boundaryStr, NULL,
+  boundaryDesc,
   NULL, NULL,
   AIR_FALSE
 };
-const airEnum *const
-nrrdBoundary = &_nrrdBoundary;
+const airEnum *const nrrdBoundary = &boundary_ae;
 
 /* ------------------------ nrrdMeasure ------------------------- */
 
 static const char *
-_nrrdMeasureStr[NRRD_MEASURE_MAX+1] = {
+measureStr[NRRD_MEASURE_MAX+1] = {
   "(unknown_measure)",
   "min",
   "max",
@@ -1022,7 +1011,7 @@ _nrrdMeasureStr[NRRD_MEASURE_MAX+1] = {
 };
 
 static const char *
-_nrrdMeasureDesc[NRRD_MEASURE_MAX+1] = {
+measureDesc[NRRD_MEASURE_MAX+1] = {
   "unknown measure",
   "minimum of values",
   "maximum of values",
@@ -1057,7 +1046,7 @@ _nrrdMeasureDesc[NRRD_MEASURE_MAX+1] = {
 };
 
 static const char *
-_nrrdMeasureStrEqv[] = {
+measureStrEqv[] = {
   "min",
   "max",
   "mean",
@@ -1092,7 +1081,7 @@ _nrrdMeasureStrEqv[] = {
 };
 
 static const int
-_nrrdMeasureValEqv[] = {
+measureValEqv[] = {
   nrrdMeasureMin,
   nrrdMeasureMax,
   nrrdMeasureMean,
@@ -1127,16 +1116,15 @@ _nrrdMeasureValEqv[] = {
 };
 
 static const airEnum
-_nrrdMeasure = {
+measure_ae = {
   "measure",
   NRRD_MEASURE_MAX,
-  _nrrdMeasureStr, NULL,
-  _nrrdMeasureDesc,
-  _nrrdMeasureStrEqv, _nrrdMeasureValEqv,
+  measureStr, NULL,
+  measureDesc,
+  measureStrEqv, measureValEqv,
   AIR_FALSE
 };
-const airEnum *const
-nrrdMeasure = &_nrrdMeasure;
+const airEnum *const nrrdMeasure = &measure_ae;
 
 /* ------------------------ nrrdUnaryOp ---------------------- */
 
@@ -1172,7 +1160,7 @@ nrrdMeasure = &_nrrdMeasure;
 #define nuOne nrrdUnaryOpOne
 
 static const char *
-_nrrdUnaryOpStr[NRRD_UNARY_OP_MAX+1] = {
+unaryOpStr[NRRD_UNARY_OP_MAX+1] = {
   "(unknown_unary_op)",
   "-",
   "r",
@@ -1209,7 +1197,7 @@ _nrrdUnaryOpStr[NRRD_UNARY_OP_MAX+1] = {
 };
 
 static const char *
-_nrrdUnaryOpDesc[NRRD_UNARY_OP_MAX+1] = {
+unaryOpDesc[NRRD_UNARY_OP_MAX+1] = {
   "unknown unary op",
   "negative; additive inverse",
   "reciprocal; multiplicative inverse",
@@ -1246,7 +1234,7 @@ _nrrdUnaryOpDesc[NRRD_UNARY_OP_MAX+1] = {
 };
 
 static const char *
-_nrrdUnaryOpStrEqv[] = {
+unaryOpStrEqv[] = {
   "-", "neg", "negative", "minus",
   "r", "recip",
   "sin",
@@ -1283,7 +1271,7 @@ _nrrdUnaryOpStrEqv[] = {
 };
 
 static const int
-_nrrdUnaryOpValEqv[] = {
+unaryOpValEqv[] = {
   nuNeg, nuNeg, nuNeg, nuNeg,
   nuRcp, nuRcp,
   nuSin,
@@ -1319,21 +1307,20 @@ _nrrdUnaryOpValEqv[] = {
 };
 
 static const airEnum
-_nrrdUnaryOp_enum = {
+unaryOp_ae = {
   "unary op",
   NRRD_UNARY_OP_MAX,
-  _nrrdUnaryOpStr, NULL,
-  _nrrdUnaryOpDesc,
-  _nrrdUnaryOpStrEqv, _nrrdUnaryOpValEqv,
+  unaryOpStr, NULL,
+  unaryOpDesc,
+  unaryOpStrEqv, unaryOpValEqv,
   AIR_FALSE
 };
-const airEnum *const
-nrrdUnaryOp = &_nrrdUnaryOp_enum;
+const airEnum *const nrrdUnaryOp = &unaryOp_ae;
 
 /* ------------------------ nrrdBinaryOp ---------------------- */
 
 static const char *
-_nrrdBinaryOpStr[NRRD_BINARY_OP_MAX+1] = {
+binaryOpStr[NRRD_BINARY_OP_MAX+1] = {
   "(unknown_binary_op)",
   "+",
   "-",
@@ -1365,7 +1352,7 @@ _nrrdBinaryOpStr[NRRD_BINARY_OP_MAX+1] = {
 };
 
 static const char *
-_nrrdBinaryOpDesc[NRRD_BINARY_OP_MAX+1] = {
+binaryOpDesc[NRRD_BINARY_OP_MAX+1] = {
   "unknown binary op",
   "add",
   "subtract",
@@ -1420,7 +1407,7 @@ _nrrdBinaryOpDesc[NRRD_BINARY_OP_MAX+1] = {
 #define nbUlp nrrdBinaryOpULPDistance
 
 static const char *
-_nrrdBinaryOpStrEqv[] = {
+binaryOpStrEqv[] = {
   "+", "plus", "add",
   "-", "minus", "subtract", "sub",
   "x", "*", "times", "multiply", "product",
@@ -1452,7 +1439,7 @@ _nrrdBinaryOpStrEqv[] = {
 };
 
 static const int
-_nrrdBinaryOpValEqv[] = {
+binaryOpValEqv[] = {
   nbAdd, nbAdd, nbAdd,
   nbSub, nbSub, nbSub, nbSub,
   nbMul, nbMul, nbMul, nbMul, nbMul,
@@ -1483,21 +1470,20 @@ _nrrdBinaryOpValEqv[] = {
 };
 
 static const airEnum
-_nrrdBinaryOp_enum = {
+binaryOp_ae = {
   "binary op",
   NRRD_BINARY_OP_MAX,
-  _nrrdBinaryOpStr, NULL,
-  _nrrdBinaryOpDesc,
-  _nrrdBinaryOpStrEqv, _nrrdBinaryOpValEqv,
+  binaryOpStr, NULL,
+  binaryOpDesc,
+  binaryOpStrEqv, binaryOpValEqv,
   AIR_FALSE
 };
-const airEnum *const
-nrrdBinaryOp = &_nrrdBinaryOp_enum;
+const airEnum *const nrrdBinaryOp = &binaryOp_ae;
 
 /* ------------------------ nrrdTernaryOp ---------------------- */
 
 static const char *
-_nrrdTernaryOpStr[NRRD_TERNARY_OP_MAX+1] = {
+ternaryOpStr[NRRD_TERNARY_OP_MAX+1] = {
   "(unknown_ternary_op)",
   "add",
   "multiply",
@@ -1518,7 +1504,7 @@ _nrrdTernaryOpStr[NRRD_TERNARY_OP_MAX+1] = {
 };
 
 static const char *
-_nrrdTernaryOpDesc[NRRD_TERNARY_OP_MAX+1] = {
+ternaryOpDesc[NRRD_TERNARY_OP_MAX+1] = {
   "unknown ternary op",
   "add three values",
   "multiply three values",
@@ -1542,7 +1528,7 @@ _nrrdTernaryOpDesc[NRRD_TERNARY_OP_MAX+1] = {
 #define ntMul nrrdTernaryOpMultiply
 
 static const char *
-_nrrdTernaryOpStrEqv[] = {
+ternaryOpStrEqv[] = {
   "+", "plus", "add",
   "x", "*", "times", "multiply", "product",
   "min",
@@ -1563,7 +1549,7 @@ _nrrdTernaryOpStrEqv[] = {
 };
 
 static const int
-_nrrdTernaryOpValEqv[] = {
+ternaryOpValEqv[] = {
   ntAdd, ntAdd, ntAdd,
   ntMul, ntMul, ntMul, ntMul, ntMul,
   nrrdTernaryOpMin,
@@ -1583,21 +1569,20 @@ _nrrdTernaryOpValEqv[] = {
 };
 
 static const airEnum
-_nrrdTernaryOp_enum = {
+ternaryOp_ae = {
   "ternary op",
   NRRD_TERNARY_OP_MAX,
-  _nrrdTernaryOpStr, NULL,
-  _nrrdTernaryOpDesc,
-  _nrrdTernaryOpStrEqv, _nrrdTernaryOpValEqv,
+  ternaryOpStr, NULL,
+  ternaryOpDesc,
+  ternaryOpStrEqv, ternaryOpValEqv,
   AIR_FALSE
 };
-const airEnum *const
-nrrdTernaryOp = &_nrrdTernaryOp_enum;
+const airEnum *const nrrdTernaryOp = &ternaryOp_ae;
 
 /* ------------------------ nrrdFFTWPlanRigor ---------------------- */
 
 static const char *
-_nrrdFFTWPlanRigorStr[NRRD_FFTW_PLAN_RIGOR_MAX+1] = {
+FFTWPlanRigorStr[NRRD_FFTW_PLAN_RIGOR_MAX+1] = {
   "(unknown_rigor)",
   "estimate",
   "measure",
@@ -1606,7 +1591,7 @@ _nrrdFFTWPlanRigorStr[NRRD_FFTW_PLAN_RIGOR_MAX+1] = {
 };
 
 static const char *
-_nrrdFFTWPlanRigorDesc[NRRD_FFTW_PLAN_RIGOR_MAX+1] = {
+FFTWPlanRigorDesc[NRRD_FFTW_PLAN_RIGOR_MAX+1] = {
   "unknown rigor",
   "no machine-specific measurements, just estimate a plan",
   "do several machine-specific measurements to determine plan",
@@ -1615,7 +1600,7 @@ _nrrdFFTWPlanRigorDesc[NRRD_FFTW_PLAN_RIGOR_MAX+1] = {
 };
 
 static const char *
-_nrrdFFTWPlanRigorStrEqv[] = {
+FFTWPlanRigorStrEqv[] = {
   "e", "est", "estimate",
   "m", "meas", "measure",
   "p", "pat", "patient",
@@ -1624,7 +1609,7 @@ _nrrdFFTWPlanRigorStrEqv[] = {
 };
 
 static const int
-_nrrdFFTWPlanRigorValEqv[] = {
+FFTWPlanRigorValEqv[] = {
   nrrdFFTWPlanRigorEstimate, nrrdFFTWPlanRigorEstimate, nrrdFFTWPlanRigorEstimate,
   nrrdFFTWPlanRigorMeasure, nrrdFFTWPlanRigorMeasure, nrrdFFTWPlanRigorMeasure,
   nrrdFFTWPlanRigorPatient, nrrdFFTWPlanRigorPatient, nrrdFFTWPlanRigorPatient,
@@ -1632,21 +1617,20 @@ _nrrdFFTWPlanRigorValEqv[] = {
 };
 
 static const airEnum
-_nrrdFFTWPlanRigor_enum = {
+FFTWPlanRigor_ae = {
   "fftw plan rigor",
   NRRD_FFTW_PLAN_RIGOR_MAX,
-  _nrrdFFTWPlanRigorStr, NULL,
-  _nrrdFFTWPlanRigorDesc,
-  _nrrdFFTWPlanRigorStrEqv, _nrrdFFTWPlanRigorValEqv,
+  FFTWPlanRigorStr, NULL,
+  FFTWPlanRigorDesc,
+  FFTWPlanRigorStrEqv, FFTWPlanRigorValEqv,
   AIR_FALSE
 };
-const airEnum *const
-nrrdFFTWPlanRigor = &_nrrdFFTWPlanRigor_enum;
+const airEnum *const nrrdFFTWPlanRigor = &FFTWPlanRigor_ae;
 
 /* ---------------------- nrrdResampleNonExistent -------------------- */
 
 static const char *
-_nrrdResampleNonExistentStr[NRRD_RESAMPLE_NON_EXISTENT_MAX+1] = {
+resampleNonExistentStr[NRRD_RESAMPLE_NON_EXISTENT_MAX+1] = {
   "(unknown_resample_non_existent)",
   "noop",
   "renormalize",
@@ -1654,7 +1638,7 @@ _nrrdResampleNonExistentStr[NRRD_RESAMPLE_NON_EXISTENT_MAX+1] = {
 };
 
 static const char *
-_nrrdResampleNonExistentDesc[NRRD_RESAMPLE_NON_EXISTENT_MAX+1] = {
+resampleNonExistentDesc[NRRD_RESAMPLE_NON_EXISTENT_MAX+1] = {
   "unknown resample non-existent",
   "no-op; include non-existent values in convolution sum",
   "use only existent values in kernel support and renormalize weights",
@@ -1662,7 +1646,7 @@ _nrrdResampleNonExistentDesc[NRRD_RESAMPLE_NON_EXISTENT_MAX+1] = {
 };
 
 static const char *
-_nrrdResampleNonExistentStrEqv[] = {
+resampleNonExistentStrEqv[] = {
   "noop",
   "renorm", "renormalize",
   "wght", "weight",
@@ -1670,48 +1654,46 @@ _nrrdResampleNonExistentStrEqv[] = {
 };
 
 static const int
-_nrrdResampleNonExistentValEqv[] = {
+resampleNonExistentValEqv[] = {
   nrrdResampleNonExistentNoop,
   nrrdResampleNonExistentRenormalize, nrrdResampleNonExistentRenormalize,
   nrrdResampleNonExistentWeight, nrrdResampleNonExistentWeight
 };
 
 static const airEnum
-_nrrdResampleNonExistent_enum = {
+resampleNonExistent_ae = {
   "resample non-existent",
   NRRD_RESAMPLE_NON_EXISTENT_MAX,
-  _nrrdResampleNonExistentStr, NULL,
-  _nrrdResampleNonExistentDesc,
-  _nrrdResampleNonExistentStrEqv, _nrrdResampleNonExistentValEqv,
+  resampleNonExistentStr, NULL,
+  resampleNonExistentDesc,
+  resampleNonExistentStrEqv, resampleNonExistentValEqv,
   AIR_FALSE
 };
-const airEnum *const
-nrrdResampleNonExistent = &_nrrdResampleNonExistent_enum;
+const airEnum *const nrrdResampleNonExistent = &resampleNonExistent_ae;
 
 /* ---------------------- nrrdMetaDataCanonicalVersion -------------------- */
 
 static const char *
-_nrrdMetaDataCanonicalVersionStr[NRRD_META_DATA_CANONICAL_VERSION_MAX+1] = {
+metaDataCanonicalVersionStr[NRRD_META_DATA_CANONICAL_VERSION_MAX+1] = {
   "(unknown_meta_data_canonical_version)",
   "alpha",
 };
 
 static const char *
-_nrrdMetaDataCanonicalVersionDesc[NRRD_META_DATA_CANONICAL_VERSION_MAX+1] = {
+metaDataCanonicalVersionDesc[NRRD_META_DATA_CANONICAL_VERSION_MAX+1] = {
   "unknown meta data canonical version",
   "initial version, used for Diderot until at least 2016",
 };
 
 static const airEnum
-_nrrdMetaDataCanonicalVersion_enum = {
+metaDataCanonicalVersion_ae = {
   "canonical meta-data version",
   NRRD_META_DATA_CANONICAL_VERSION_MAX,
-  _nrrdMetaDataCanonicalVersionStr, NULL,
-  _nrrdMetaDataCanonicalVersionDesc,
+  metaDataCanonicalVersionStr, NULL,
+  metaDataCanonicalVersionDesc,
   NULL, NULL,
   AIR_FALSE
 };
-const airEnum *const
-nrrdMetaDataCanonicalVersion = &_nrrdMetaDataCanonicalVersion_enum;
+const airEnum *const nrrdMetaDataCanonicalVersion = &metaDataCanonicalVersion_ae;
 /* clang-format on */
 /* ---- END non-NrrdIO */

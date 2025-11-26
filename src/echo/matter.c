@@ -90,7 +90,7 @@ echoMatterLightSet(echoScene *scene, echoObject *obj, echoCol_t power, echoCol_t
     obj->mat[echoMatterLightPower] = power;
     obj->mat[echoMatterLightUnit] = unit;
     /* HEY: god forbid we should change the material of the light after this */
-    _echoSceneLightAdd(scene, obj);
+    echo__SceneLightAdd(scene, obj);
   }
 }
 
@@ -100,6 +100,6 @@ echoMatterTextureSet(echoScene *scene, echoObject *obj, Nrrd *ntext) {
   if (scene && obj && ntext && echoObjectHasMatter[obj->type] && 3 == ntext->dim
       && nrrdTypeUChar == ntext->type && 4 == ntext->axis[0].size) {
     obj->ntext = ntext;
-    _echoSceneNrrdAdd(scene, ntext);
+    echo__SceneNrrdAdd(scene, ntext);
   }
 }

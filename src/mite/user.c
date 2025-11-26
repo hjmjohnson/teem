@@ -82,8 +82,8 @@ miteUserNix(miteUser *muu) {
 AIR_MOPPER(miteUserNix)
 
 int /* Biff: (private) 1 */
-_miteUserCheck(miteUser *muu) {
-  static const char me[] = "_miteUserCheck";
+mite__UserCheck(miteUser *muu) {
+  static const char me[] = "mite__UserCheck";
   int gotOpac;
   gageItemSpec isp;
   gageQuery queryScl, queryVec, queryTen, queryMite;

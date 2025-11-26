@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Undo \"unu tile\": merge slow parts of two axis splits"
-static const char *_unrrdu_untileInfoL
+static const char *unu_untileInfoL
   = (INFO ". Untiling an array means spliting two axes, permuting the slow parts "
           "of those axes to be adjecent in the axis ordering, and then merging "
           "them.  This increases the dimension by one.  Undoing a \"unu tile\" "
@@ -33,7 +33,7 @@ static const char *_unrrdu_untileInfoL
           "* Uses nrrdUntile2D");
 
 static int
-unrrdu_untileMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_untileMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   uint axes[3];
   hestOptAdd_3_UInt(&hopt, "a,axis", "axMerge ax0 ax1", axes, NULL,
@@ -45,12 +45,12 @@ unrrdu_untileMain(int argc, const char **argv, const char *me, const hestParm *h
                       "size0 and size1, respectively, and axis axMerge will have "
                       "size size0*size1.");
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_untileInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_untileInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -63,10 +63,10 @@ unrrdu_untileMain(int argc, const char **argv, const char *me, const hestParm *h
     return 1;
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(untile, INFO);
+MY_UNRRDU_CMD(untile, INFO);

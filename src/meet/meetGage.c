@@ -21,14 +21,14 @@
 #include "privateMeet.h"
 
 static gageKind *
-_meetGageKindParse(const char *_str, int constOnly) {
+mgKindParse(const char *str_, int constOnly) {
   char *str;
   gageKind *ret;
 
-  if (!_str) {
+  if (!str_) {
     return NULL;
   }
-  str = airToLower(airStrdup(_str));
+  str = airToLower(airStrdup(str_));
   if (!str) {
     return NULL;
   }
@@ -50,24 +50,24 @@ _meetGageKindParse(const char *_str, int constOnly) {
 }
 
 gageKind * /* Biff: nope */
-meetGageKindParse(const char *_str) {
+meetGageKindParse(const char *str) {
 
-  return _meetGageKindParse(_str, AIR_FALSE);
+  return mgKindParse(str, AIR_FALSE);
 }
 
 const gageKind * /* Biff: nope */
-meetConstGageKindParse(const char *_str) {
+meetConstGageKindParse(const char *str) {
 
-  return _meetGageKindParse(_str, AIR_TRUE);
+  return mgKindParse(str, AIR_TRUE);
 }
 
 /*
-** same as _meetHestGageKindParse below but without the DWI kind,
+** same as mhgKindParse below but without the DWI kind,
 ** which isn't const
 */
 static int
-_meetHestConstGageKindParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
-  static const char me[] = "_meetHestGageConstKindParse";
+mhgConstKindParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
+  static const char me[] = "mhgConstKindParse";
   const gageKind **kindP;
 
   if (!(ptr && str)) {
@@ -89,8 +89,8 @@ _meetHestConstGageKindParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE
 }
 
 static int
-_meetHestGageKindParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
-  static const char me[] = "_meetHestGageKindParse";
+mhgKindParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
+  static const char me[] = "mhgKindParse";
   gageKind **kindP;
 
   if (!(ptr && str)) {
@@ -110,7 +110,7 @@ _meetHestGageKindParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]
 }
 
 static void *
-_meetHestGageKindDestroy(void *ptr) {
+mhgKindDestroy(void *ptr) {
   gageKind *kind;
 
   if (ptr) {
@@ -122,16 +122,16 @@ _meetHestGageKindDestroy(void *ptr) {
   return NULL;
 }
 
-static const hestCB _meetHestGageKind
-  = {sizeof(gageKind *), "gageKind", _meetHestGageKindParse, _meetHestGageKindDestroy};
+static const hestCB mhgKind_hcb = {sizeof(gageKind *), "gageKind", mhgKindParse,
+                                   mhgKindDestroy};
 
-static const hestCB _meetHestConstGageKind = {sizeof(gageKind *), "gageKind",
-                                              _meetHestConstGageKindParse, NULL};
+static const hestCB mhgConstKind_hcb = {sizeof(gageKind *), "gageKind",
+                                        mhgConstKindParse, NULL};
 
 /*
 ******** meetHestGageKind
 **
 ** This provides a uniform way to parse gageKinds from the command-line
 */
-const hestCB *const meetHestGageKind = &_meetHestGageKind;
-const hestCB *const meetHestConstGageKind = &_meetHestConstGageKind;
+const hestCB *const meetHestGageKind = &mhgKind_hcb;
+const hestCB *const meetHestConstGageKind = &mhgConstKind_hcb;

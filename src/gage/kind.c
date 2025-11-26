@@ -148,14 +148,14 @@ gageKindTotalAnswerLength(const gageKind *kind) {
 }
 
 /*
-** _gageKindAnswerOffset
+** kindAnswerOffset
 **
 ** return the location of the item in the top-level answer array
 **
 ** I don't think this will work if there are sub-sub-items
 */
 static int
-_gageKindAnswerOffset(const gageKind *kind, int item) {
+kindAnswerOffset(const gageKind *kind, int item) {
   int parent, ii;
 
   if (1 >= item) {
@@ -167,7 +167,7 @@ _gageKindAnswerOffset(const gageKind *kind, int item) {
   parent = kind->table[item].parentItem;
   if (0 != parent) {
     /* we're a sub-item */
-    return (kind->table[item].parentIndex + _gageKindAnswerOffset(kind, parent));
+    return (kind->table[item].parentIndex + kindAnswerOffset(kind, parent));
   }
 
   /* else we're not a sub-item: find the first previous non-sub-item */
@@ -176,7 +176,7 @@ _gageKindAnswerOffset(const gageKind *kind, int item) {
     /* gageKindCheck ensures that item 1 is not a sub-item */
     ii--;
   }
-  return (kind->table[ii].answerLength + _gageKindAnswerOffset(kind, ii));
+  return (kind->table[ii].answerLength + kindAnswerOffset(kind, ii));
 }
 
 unsigned int /* Biff: nope */
@@ -206,7 +206,7 @@ gageKindAnswerOffset(const gageKind *kind, int item) {
     return INT_MAX; /* was exit(1); */
   }
 
-  return _gageKindAnswerOffset(kind, item);
+  return kindAnswerOffset(kind, item);
 }
 
 /*
@@ -261,7 +261,7 @@ gageKindVolumeCheck(const gageKind *kind, const Nrrd *nrrd) {
       }
     }
   }
-  /* this eventually calls _gageShapeSet(), which, for purely historical
+  /* this eventually calls gage__ShapeSet(), which, for purely historical
      reasons, does the brunt of the error checking, some of which is almost
      certainly redundant with checks above . . . */
   if (gageVolumeCheck(NULL, nrrd, kind)) {

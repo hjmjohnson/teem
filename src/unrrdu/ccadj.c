@@ -21,14 +21,14 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Form adjecency matrix of connected components"
-static const char *_unrrdu_ccadjInfoL
+static const char *unu_ccadjInfoL
   = (INFO ".  This operates on the output of \"ccfind\".  Output is unsigned char "
           "array containing 1 at locations (I,J) and (J,I) if CCs with ids I and J are "
           "adjacent, according to the chosen style of adjacency.\n "
           "* Uses nrrdCCAdjacency");
 
 static int
-unrrdu_ccadjMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+unu_ccadjMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
   uint conny;
   hestOptAdd_1_UInt(&hopt, "c,connect", "connectivity", &conny, "1",
@@ -39,11 +39,11 @@ unrrdu_ccadjMain(int argc, const char **argv, const char *me, const hestParm *_h
   hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-", "input nrrd",
                      nrrdHestNrrdNoTTY);
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   hestParm *hparm = hestParmCopy(_hparm);
   hparm->noArgsIsNoProblem = AIR_TRUE; // thanks to nrrdHestNrrdNoTTY
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_ccadjInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_ccadjInfoL);
   airArray *mop = unrrduMopNew(hopt, hparm);
   char *err;
 
@@ -56,10 +56,10 @@ unrrdu_ccadjMain(int argc, const char **argv, const char *me, const hestParm *_h
     return 1;
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(ccadj, INFO);
+MY_UNRRDU_CMD(ccadj, INFO);

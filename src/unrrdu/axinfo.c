@@ -21,13 +21,13 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Modify attributes of one or more axes"
-static const char *_unrrdu_axinfoInfoL
+static const char *unu_axinfoInfoL
   = (INFO ". The only attributes which are set are those for which command-line "
           "options are given.\n "
           "* Uses no particular function; just sets fields in the NrrdAxisInfo");
 
 static int
-unrrdu_axinfoMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_axinfoMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   uint *axes, axesLen;
   hestOptAdd_Nv_UInt(&hopt, "a,axes", "ax0", 1, -1, &axes, NULL,
@@ -66,12 +66,12 @@ unrrdu_axinfoMain(int argc, const char **argv, const char *me, const hestParm *h
                       "axis kind. Not using this option "
                       "leaves the kind as it is on input");
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_axinfoInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_axinfoInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -194,10 +194,10 @@ unrrdu_axinfoMain(int argc, const char **argv, const char *me, const hestParm *h
     }
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(axinfo, INFO);
+MY_UNRRDU_CMD(axinfo, INFO);

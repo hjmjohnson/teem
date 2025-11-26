@@ -55,9 +55,9 @@ pushBinDone(pushBin *bin) {
 ** bins on boundary now extend to infinity; so the only time this
 ** returns NULL (indicating error) is for non-existent positions
 */
-pushBin * /* Biff: (private) NULL */
-_pushBinLocate(pushContext *pctx, double *_posWorld) {
-  static const char me[] = "_pushBinLocate";
+static pushBin * /* Biff: NULL */
+binLocate(pushContext *pctx, double *_posWorld) {
+  static const char me[] = "binLocate";
   double posWorld[4], posIdx[4];
   unsigned int axi, eidx[3], binIdx;
 
@@ -93,8 +93,8 @@ _pushBinLocate(pushContext *pctx, double *_posWorld) {
 /*
 ** this makes the bin the owner of the point
 */
-void
-_pushBinPointAdd(pushContext *pctx, pushBin *bin, pushPoint *point) {
+static void
+binPointAdd(pushContext *pctx, pushBin *bin, pushPoint *point) {
   int pntI;
 
   AIR_UNUSED(pctx);
@@ -108,7 +108,7 @@ _pushBinPointAdd(pushContext *pctx, pushBin *bin, pushPoint *point) {
 ** the bin loses track of the point, caller responsible for ownership
 */
 static void
-_pushBinPointRemove(pushContext *pctx, pushBin *bin, int loseIdx) {
+binPointRemove(pushContext *pctx, pushBin *bin, int loseIdx) {
 
   AIR_UNUSED(pctx);
   bin->point[loseIdx] = bin->point[bin->pointNum - 1];
@@ -118,7 +118,7 @@ _pushBinPointRemove(pushContext *pctx, pushBin *bin, int loseIdx) {
 }
 
 static void
-_pushBinNeighborSet(pushBin *bin, pushBin **nei, unsigned int num) {
+binNeighborSet(pushBin *bin, pushBin **nei, unsigned int num) {
   unsigned int neiI;
 
   bin->neighbor = (pushBin **)airFree(bin->neighbor);
@@ -140,7 +140,7 @@ pushBinAllNeighborSet(pushContext *pctx) {
   if (pctx->binSingle) {
     neiNum = 0;
     nei[neiNum++] = pctx->bin + 0;
-    _pushBinNeighborSet(pctx->bin + 0, nei, neiNum);
+    binNeighborSet(pctx->bin + 0, nei, neiNum);
   } else {
     for (zi = 0; zi < pctx->binsEdge[2]; zi++) {
       zmin = AIR_MAX(0, (int)zi - 1);
@@ -164,9 +164,9 @@ pushBinAllNeighborSet(pushContext *pctx) {
               }
             }
           }
-          _pushBinNeighborSet(pctx->bin + xi
-                                + pctx->binsEdge[0] * (yi + pctx->binsEdge[1] * zi),
-                              nei, neiNum);
+          binNeighborSet(pctx->bin + xi
+                           + pctx->binsEdge[0] * (yi + pctx->binsEdge[1] * zi),
+                         nei, neiNum);
         }
       }
     }
@@ -179,11 +179,11 @@ pushBinPointAdd(pushContext *pctx, pushPoint *point) {
   static const char me[] = "pushBinPointAdd";
   pushBin *bin;
 
-  if (!(bin = _pushBinLocate(pctx, point->pos))) {
+  if (!(bin = binLocate(pctx, point->pos))) {
     biffAddf(PUSH, "%s: can't locate point %p %u", me, AIR_VOIDP(point), point->ttaagg);
     return 1;
   }
-  _pushBinPointAdd(pctx, bin, point);
+  binPointAdd(pctx, bin, point);
   return 0;
 }
 
@@ -204,15 +204,15 @@ pushRebin(pushContext *pctx) {
 
       for (pointIdx = 0; pointIdx < oldBin->pointNum; /* nope! */) {
         point = oldBin->point[pointIdx];
-        newBin = _pushBinLocate(pctx, point->pos);
+        newBin = binLocate(pctx, point->pos);
         if (!newBin) {
           biffAddf(PUSH, "%s: can't locate point %p %u", me, AIR_VOIDP(point),
                    point->ttaagg);
           return 1;
         }
         if (oldBin != newBin) {
-          _pushBinPointRemove(pctx, oldBin, pointIdx);
-          _pushBinPointAdd(pctx, newBin, point);
+          binPointRemove(pctx, oldBin, pointIdx);
+          binPointAdd(pctx, newBin, point);
         } else {
           /* its in the right bin, move on */
           pointIdx++;

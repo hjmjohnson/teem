@@ -855,8 +855,8 @@ limnPolyDataReadLMPD(limnPolyData *pld, FILE *file) {
 }
 
 static int /* Biff: 1 */
-_limnHestPolyDataLMPDParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
-  static const char me[] = "_limnHestPolyDataLMPDParse";
+lhPolyDataLMPDParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
+  static const char me[] = "lhPolyDataLMPDParse";
   char *nerr;
   limnPolyData **lpldP;
   airArray *mop;
@@ -893,15 +893,14 @@ _limnHestPolyDataLMPDParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE 
   return 0;
 }
 
-static const hestCB _limnHestPolyDataLMPD = {sizeof(limnPolyData *), "polydata",
-                                             _limnHestPolyDataLMPDParse,
-                                             limnPolyDataNix_mop};
+static const hestCB lhPolyDataLMPD_hcb = {sizeof(limnPolyData *), "polydata",
+                                          lhPolyDataLMPDParse, limnPolyDataNix_mop};
 
-const hestCB *const limnHestPolyDataLMPD = &_limnHestPolyDataLMPD;
+const hestCB *const limnHestPolyDataLMPD = &lhPolyDataLMPD_hcb;
 
 static int
-_limnHestPolyDataOFFParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
-  static const char me[] = "_limnHestPolyDataOFFParse";
+lhPolyDataOFFParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
+  static const char me[] = "lhPolyDataOFFParse";
   char *nerr;
   limnPolyData **lpldP;
   airArray *mop;
@@ -939,10 +938,10 @@ _limnHestPolyDataOFFParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE +
   return 0;
 }
 
-static const hestCB _limnHestPolyDataOFF
-  = {sizeof(limnPolyData *), "polydata", _limnHestPolyDataOFFParse, limnPolyDataNix_mop};
+static const hestCB lhPolyDataOFF_hcb = {sizeof(limnPolyData *), "polydata",
+                                         lhPolyDataOFFParse, limnPolyDataNix_mop};
 
-const hestCB *const limnHestPolyDataOFF = &_limnHestPolyDataOFF;
+const hestCB *const limnHestPolyDataOFF = &lhPolyDataOFF_hcb;
 
 int /* Biff: 1 */
 limnPolyDataWriteVTK(FILE *file, const limnPolyData *pld) {

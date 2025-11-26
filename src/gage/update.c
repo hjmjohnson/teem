@@ -21,7 +21,7 @@
 #include "privateGage.h"
 
 static int
-_gagePvlFlagCheck(gageContext *ctx, int pvlFlag) {
+pvlFlagCheck(gageContext *ctx, int pvlFlag) {
   int ret;
   unsigned int pvlIdx;
 
@@ -33,7 +33,7 @@ _gagePvlFlagCheck(gageContext *ctx, int pvlFlag) {
 }
 
 static void
-_gagePvlFlagDown(gageContext *ctx, int pvlFlag) {
+pvlFlagDown(gageContext *ctx, int pvlFlag) {
   unsigned int pvlIdx;
 
   for (pvlIdx = 0; pvlIdx < ctx->pvlNum; pvlIdx++) {
@@ -52,8 +52,8 @@ _gagePvlFlagDown(gageContext *ctx, int pvlFlag) {
 ** for each pvl: pvl's query --> pvl's needD
 */
 static void
-_gagePvlNeedDUpdate(gageContext *ctx) {
-  static const char me[] = "_gagePvlNeedDUpdate";
+pvlNeedDUpdate(gageContext *ctx) {
+  static const char me[] = "pvlNeedDUpdate";
   gagePerVolume *pvl;
   int que, needD[GAGE_DERIV_MAX + 1];
   unsigned int pvlIdx, di;
@@ -91,8 +91,8 @@ _gagePvlNeedDUpdate(gageContext *ctx) {
 ** all pvls' needD --> ctx's needD
 */
 static void
-_gageNeedDUpdate(gageContext *ctx) {
-  static const char me[] = "_gageNeedDUpdate";
+needDUpdate(gageContext *ctx) {
+  static const char me[] = "needDUpdate";
   gagePerVolume *pvl;
   int needD[GAGE_DERIV_MAX + 1];
   unsigned int pvlIdx, di;
@@ -125,8 +125,8 @@ _gageNeedDUpdate(gageContext *ctx) {
 ** ctx's needD & k3pack --> needK
 */
 static int /* Biff: 1 */
-_gageNeedKUpdate(gageContext *ctx) {
-  static const char me[] = "_gageNeedKUpdate";
+needKUpdate(gageContext *ctx) {
+  static const char me[] = "needKUpdate";
   int kernIdx, needK[GAGE_KERNEL_MAX + 1], change;
   unsigned int di;
 
@@ -183,8 +183,8 @@ _gageNeedKUpdate(gageContext *ctx) {
 **
 */
 static int /* Biff: 1 */
-_gageRadiusUpdate(gageContext *ctx) {
-  static const char me[] = "_gageRadiusUpdate";
+radiusUpdate(gageContext *ctx) {
+  static const char me[] = "radiusUpdate";
   unsigned int kernIdx, radius;
   double maxRad, rad;
   NrrdKernelSpec *ksp;
@@ -233,8 +233,8 @@ _gageRadiusUpdate(gageContext *ctx) {
 }
 
 static int /* Biff: 1 */
-_gageCacheSizeUpdate(gageContext *ctx) {
-  static const char me[] = "_gageCacheSizeUpdate";
+cacheSizeUpdate(gageContext *ctx) {
+  static const char me[] = "cacheSizeUpdate";
   unsigned int fd;
   gagePerVolume *pvl;
   unsigned int pvlIdx;
@@ -278,8 +278,8 @@ _gageCacheSizeUpdate(gageContext *ctx) {
 }
 
 static void
-_gageOffValueUpdate(gageContext *ctx) {
-  static const char me[] = "_gageOffValueUpdate";
+offValueUpdate(gageContext *ctx) {
+  static const char me[] = "offValueUpdate";
   int fd, i, j, k;
   unsigned int sx, sy;
 
@@ -361,20 +361,20 @@ gageUpdate(gageContext *ctx) {
     fprintf(stderr, "\n");
     fprintf(stderr, "    pvl flags:");
     for (i = gagePvlFlagUnknown + 1; i < gagePvlFlagLast; i++) {
-      fprintf(stderr, " %d=%d", i, _gagePvlFlagCheck(ctx, i));
+      fprintf(stderr, " %d=%d", i, pvlFlagCheck(ctx, i));
     }
     fprintf(stderr, "\n");
   }
-  if (_gagePvlFlagCheck(ctx, gagePvlFlagQuery)) {
-    _gagePvlNeedDUpdate(ctx);
-    _gagePvlFlagDown(ctx, gagePvlFlagQuery);
+  if (pvlFlagCheck(ctx, gagePvlFlagQuery)) {
+    pvlNeedDUpdate(ctx);
+    pvlFlagDown(ctx, gagePvlFlagQuery);
   }
-  if (_gagePvlFlagCheck(ctx, gagePvlFlagNeedD)) {
-    _gageNeedDUpdate(ctx);
-    _gagePvlFlagDown(ctx, gagePvlFlagNeedD);
+  if (pvlFlagCheck(ctx, gagePvlFlagNeedD)) {
+    needDUpdate(ctx);
+    pvlFlagDown(ctx, gagePvlFlagNeedD);
   }
   if (ctx->flag[gageCtxFlagNeedD] || ctx->flag[gageCtxFlagK3Pack]) {
-    if (_gageNeedKUpdate(ctx)) {
+    if (needKUpdate(ctx)) {
       biffAddf(GAGE, "%s: trouble", me);
       return 1;
     }
@@ -382,7 +382,7 @@ gageUpdate(gageContext *ctx) {
     ctx->flag[gageCtxFlagK3Pack] = AIR_FALSE;
   }
   if (ctx->flag[gageCtxFlagKernel] || ctx->flag[gageCtxFlagNeedK]) {
-    if (_gageRadiusUpdate(ctx)) {
+    if (radiusUpdate(ctx)) {
       biffAddf(GAGE, "%s: trouble", me);
       return 1;
     }
@@ -395,17 +395,17 @@ gageUpdate(gageContext *ctx) {
          context which had already been probing, as was the case with
          _tenRegisterDoit.  So, with this hack we reallocate ALL caches
          just because a new pervolume was attached . . . */
-      || _gagePvlFlagCheck(ctx, gagePvlFlagVolume)) {
-    if (_gageCacheSizeUpdate(ctx)) {
+      || pvlFlagCheck(ctx, gagePvlFlagVolume)) {
+    if (cacheSizeUpdate(ctx)) {
       biffAddf(GAGE, "%s: trouble", me);
       return 1;
     }
   }
   if (ctx->flag[gageCtxFlagRadius]
       || ctx->flag[gageCtxFlagShape]
-      /* see above; following flags that triggered _gageCacheSizeUpdate(ctx) */
-      || _gagePvlFlagCheck(ctx, gagePvlFlagVolume)) {
-    _gageOffValueUpdate(ctx);
+      /* see above; following flags that triggered cacheSizeUpdate(ctx) */
+      || pvlFlagCheck(ctx, gagePvlFlagVolume)) {
+    offValueUpdate(ctx);
     ctx->flag[gageCtxFlagShape] = AIR_FALSE;
   }
   ctx->flag[gageCtxFlagRadius] = AIR_FALSE;

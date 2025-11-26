@@ -732,12 +732,12 @@ tenSlice(Nrrd *nout, const Nrrd *nten, unsigned int axis, size_t pos, unsigned i
 ** eigenvalue skewness should be perpendicular
 */
 static void
-_tenEvalSkewnessGradient_d(double skw[7],
-                           const double perp1[7],
-                           const double perp2[7],
-                           const double ten[7],
-                           const double minnorm) {
-  /* static const char me[] = "_tenEvalSkewnessGradient_d"; */
+evalSkewnessGradient_d(double skw[7],
+                       const double perp1[7],
+                       const double perp2[7],
+                       const double ten[7],
+                       const double minnorm) {
+  /* static const char me[] = "evalSkewnessGradient_d"; */
   double dot, scl, norm;
 
   /* start with gradient of determinant */
@@ -809,7 +809,7 @@ tenInvariantGradientsK_d(double mu1[7], double mu2[7], double skw[7],
   TEN_T_SCALE_INCR(mu2, -dot, mu1);
   norm = TEN_T_NORM(mu2);
   TEN_T_SCALE(mu2, 1.0 / norm, mu2);
-  _tenEvalSkewnessGradient_d(skw, mu1, mu2, ten, minnorm);
+  evalSkewnessGradient_d(skw, mu1, mu2, ten, minnorm);
 
   return;
 }
@@ -846,7 +846,7 @@ tenInvariantGradientsR_d(double R1[7], double R2[7], double R3[7], const double 
   } else {
     TEN_T_SCALE(R2, 1.0 / norm, R2);
   }
-  _tenEvalSkewnessGradient_d(R3, R1, R2, ten, minnorm);
+  evalSkewnessGradient_d(R3, R1, R2, ten, minnorm);
 
   return;
 }

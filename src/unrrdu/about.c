@@ -23,7 +23,7 @@
 #define INFO "Information about this program and its use"
 
 static int
-unrrdu_aboutMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_aboutMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   char buff[AIR_STRLEN_LARGE + 1], fmt[AIR_STRLEN_MED + 1];
   char par1[] = "\t\t\t\t"
                 "\"unu\" is a command-line interface to much of the functionality "
@@ -174,4 +174,4 @@ unrrdu_aboutMain(int argc, const char **argv, const char *me, const hestParm *hp
   return 0;
 }
 
-UNRRDU_CMD(about, INFO);
+MY_UNRRDU_CMD(about, INFO);

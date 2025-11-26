@@ -21,18 +21,18 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Replace each scanline along an axis with its histogram"
-static const char *_unrrdu_histaxInfoL = (INFO ".\n "
-                                               "* Uses nrrdHistoAxis");
+static const char *unu_histaxInfoL = (INFO ".\n "
+                                           "* Uses nrrdHistoAxis");
 
 static int
-unrrdu_histaxMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_histaxMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   uint axis;
-  OPT_ADD_AXIS(axis, "axis to histogram along");
+  MY_OPT_ADD_AXIS(axis, "axis to histogram along");
   uint bins;
   hestOptAdd_1_UInt(&hopt, "b,bin", "bins", &bins, NULL, "# of bins in histogram");
   int type;
-  OPT_ADD_TYPE(type, "output type", "uchar");
+  MY_OPT_ADD_TYPE(type, "output type", "uchar");
   /* HEY copy and paste from unrrdu/quantize.c */
   char *minStr, *maxStr;
   hestOptAdd_1_String(&hopt, "min,minimum", "value", &minStr, "nan",
@@ -68,12 +68,12 @@ unrrdu_histaxMain(int argc, const char **argv, const char *me, const hestParm *h
                     "Whether to know the range of 8-bit data blindly "
                     "(uchar is always [0,255], signed char is [-128,127]).");
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_histaxInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_histaxInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -90,10 +90,10 @@ unrrdu_histaxMain(int argc, const char **argv, const char *me, const hestParm *h
     return 1;
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(histax, INFO);
+MY_UNRRDU_CMD(histax, INFO);

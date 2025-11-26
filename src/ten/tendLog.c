@@ -21,11 +21,11 @@
 #include "privateTen.h"
 
 #define INFO "Calculates logarithm of the tensor"
-static const char *_tend_logInfoL
+static const char *logInfoL
   = (INFO ", which is based on finding the log of the eigenvalues.");
 
 static int
-tend_logMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+logMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -40,7 +40,7 @@ tend_logMain(int argc, const char **argv, const char *me, const hestParm *hparm)
 
   mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_tend_logInfoL);
+  USAGE_PARSE(logInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
@@ -61,4 +61,4 @@ tend_logMain(int argc, const char **argv, const char *me, const hestParm *hparm)
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(log, INFO);
+MY_TEND_CMD(log, INFO);

@@ -21,14 +21,14 @@
 #include "privateTen.h"
 
 #define INFO "Applies and removes the measurement frame"
-static const char *_tend_unmfInfoL
+static const char *unmfInfoL
   = (INFO ". When the given tensor volume has a measurement frame associated "
           "with it, this will apply the measurement frame transform to all "
           "tensors to convert them into world space, and remove the measurement "
           "frame from the nrrd.");
 
 static int
-tend_unmfMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+unmfMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -46,7 +46,7 @@ tend_unmfMain(int argc, const char **argv, const char *me, const hestParm *_hpar
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output tensor volume");
 
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_tend_unmfInfoL);
+  USAGE_PARSE(unmfInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
@@ -68,4 +68,4 @@ tend_unmfMain(int argc, const char **argv, const char *me, const hestParm *_hpar
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(unmf, INFO);
+MY_TEND_CMD(unmf, INFO);

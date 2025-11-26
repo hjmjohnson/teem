@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Filtering and {up,down}sampling with a separable kernel"
-static const char *_unrrdu_resampleInfoL
+static const char *unu_resampleInfoL
   = (INFO ". Simplifies access to the NrrdResampleContext functions "
           "by assuming (among other things) that the same kernel "
           "is used for resampling "
@@ -38,8 +38,7 @@ static const char *_unrrdu_resampleInfoL
           "* Uses the many nrrdResample* functions operating on a nrrdResampleContext");
 
 static int
-unrrdu_resampleMain(int argc, const char **argv, const char *me,
-                    const hestParm *_hparm) {
+unu_resampleMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
   int older;
   hestOptAdd_Flag(&hopt, "old", &older,
@@ -180,14 +179,14 @@ unrrdu_resampleMain(int argc, const char **argv, const char *me,
   hestOptAdd_1_Int(&hopt, "verbose", "v", &verbose, "0",
                    "(not available with \"-old\") verbosity level");
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for YES some hparm modification)
   hestParm *hparm = hestParmCopy(_hparm);
   hparm->elideSingleOtherDefault = AIR_FALSE;
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_resampleInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_resampleInfoL);
   airArray *mop = unrrduMopNew(hopt, hparm);
   char *err;
 
@@ -488,10 +487,10 @@ unrrdu_resampleMain(int argc, const char **argv, const char *me,
     }
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(resample, INFO);
+MY_UNRRDU_CMD(resample, INFO);

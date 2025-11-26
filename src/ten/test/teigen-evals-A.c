@@ -4,12 +4,12 @@
   int roots;
 
   /* copy the given matrix elements */
-  M00 = _M00;
-  M01 = _M01;
-  M02 = _M02;
-  M11 = _M11;
-  M12 = _M12;
-  M22 = _M22;
+  M00 = M00_;
+  M01 = M01_;
+  M02 = M02_;
+  M11 = M11_;
+  M12 = M12_;
+  M22 = M22_;
 
   /*
   ** subtract out the eigenvalue mean (will add back to evals later);

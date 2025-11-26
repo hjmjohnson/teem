@@ -21,7 +21,7 @@
 #include "privateTen.h"
 
 #define INFO "Estimate tensors from a set of DW images"
-static const char *_tend_estimInfoL
+static const char *estimInfoL
   = (INFO ". The tensor coefficient weightings associated with "
           "each of the DWIs, the B-matrix, is given either as a separate array, "
           "(see \"tend bmat\" usage info for details), or by the key-value pairs "
@@ -30,7 +30,7 @@ static const char *_tend_estimInfoL
           "according to the threshold and softness parameters. ");
 
 static int
-tend_estimMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+estimMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -122,7 +122,7 @@ tend_estimMain(int argc, const char **argv, const char *me, const hestParm *hpar
 
   mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_JUSTPARSE(_tend_estimInfoL);
+  USAGE_JUSTPARSE(estimInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
@@ -389,4 +389,4 @@ tend_estimMain(int argc, const char **argv, const char *me, const hestParm *hpar
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(estim, INFO);
+MY_TEND_CMD(estim, INFO);

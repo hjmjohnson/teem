@@ -34,7 +34,7 @@ echoListAdd(echoObject *list, echoObject *child) {
 }
 
 static int
-_echoPosCompare(double *A, double *B) {
+PosCompare(double *A, double *B) {
 
   return *A < *B ? -1 : (*A > *B ? 1 : 0);
 }
@@ -77,8 +77,7 @@ echoListSplit(echoScene *scene, echoObject *list, int axis) {
     *((unsigned int *)(mids + 1 + 2 * i)) = i;
   }
   /* overkill, I know, I know */
-  qsort(mids, len, 2 * sizeof(double),
-        (int (*)(const void *, const void *))_echoPosCompare);
+  qsort(mids, len, 2 * sizeof(double), (int (*)(const void *, const void *))PosCompare);
   /*
   for (i=0; i<len; i++) {
     printf("%d -> %g\n", i, mids[0 + 2*i]);

@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Configuration and platform parameters of this \"unu\""
-static const char *_unrrdu_builtInfoL
+static const char *unu_builtInfoL
   = (INFO ". Not every configuration/compilation choice made when building Teem "
           "matters for nrrd and the other libraries that \"unu\" depends on. "
           "The CMake-generated teem-install/lib/pkgconfig/teem.pc and "
@@ -30,7 +30,7 @@ static const char *_unrrdu_builtInfoL
           "This command only documents things visible to \"unu\".");
 
 static int
-unrrdu_builtMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+unu_builtMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   AIR_UNUSED(argc);
   AIR_UNUSED(argv);
   AIR_UNUSED(me);
@@ -42,7 +42,7 @@ unrrdu_builtMain(int argc, const char **argv, const char *me, const hestParm *_h
 
   hestParm *hparm = hestParmCopy(_hparm);
   hparm->noArgsIsNoProblem = AIR_TRUE;
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_builtInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_builtInfoL);
   airArray *mop = unrrduMopNew(hopt, hparm);
   // char *err;
 
@@ -79,4 +79,4 @@ unrrdu_builtMain(int argc, const char **argv, const char *me, const hestParm *_h
   return 0;
 }
 
-UNRRDU_CMD(built, INFO);
+MY_UNRRDU_CMD(built, INFO);

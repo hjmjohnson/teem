@@ -55,22 +55,22 @@ typedef double DB;
   F(A, DB)
 
 /*
- * _nrrdLoad<TA><TB>(const void *_v)
+ * nload<TA><TB>(const void *_v)
  *
  * Load value from TB*, convert to TA:
  * assign `*_v` to `const TB*`, dereference, cast value to TA, return it.
  *
  * calling a cast function pointer is undefined behavior (UB), so TeemV2 avoids this:
- * #define LOAD_DEFN(TA, TB) static TA _nrrdLoad##TA##TB(TB *v) { return (TA)(*v); }
- * #define LOAD_LIST(TA, TB) (TA (*)(const void *)) _nrrdLoad##TA##TB,
+ * #define LOAD_DEFN(TA, TB) static TA nload##TA##TB(TB *v) { return (TA)(*v); }
+ * #define LOAD_LIST(TA, TB) (TA (*)(const void *)) nload##TA##TB,
  *                           ^^^^^^^^^^^^^^^^^^^^^^ casting function pointer
  */
 #define LOAD_DEFN(TA, TB)                                                               \
-  static TA _nrrdLoad##TA##TB(const void *_v) {                                         \
+  static TA nload##TA##TB(const void *_v) {                                             \
     const TB *v = _v;                                                                   \
     return (TA)(*v);                                                                    \
   }
-#define LOAD_LIST(TA, TB) _nrrdLoad##TA##TB,
+#define LOAD_LIST(TA, TB) nload##TA##TB,
 
 MAP(LOAD_DEFN, UI)
 MAP(LOAD_DEFN, JN)
@@ -87,7 +87,7 @@ unsigned int (*const nrrdUILoad[NRRD_TYPE_MAX + 1])(const void *) = {NULL, MAP(L
 #undef LOAD_LIST
 
 /*
- * _nrrdStore<TA><TB>(void *_v, <TA> j)
+ * nstore<TA><TB>(void *_v, <TA> j)
  *
  * Stores TA `j` in (after casting to `TB*`) `*_v`, implicitly casting value to TB.
  * Returns the result of the assignment, cast back to TA, which may not be the same as
@@ -95,16 +95,16 @@ unsigned int (*const nrrdUILoad[NRRD_TYPE_MAX + 1])(const void *) = {NULL, MAP(L
  *
  * TeemV2 seeks to avoid UB by not casting function pointers, so no longer doing:
  * #define STORE_DEF(TA, TB) \
- *    static TA _nrrdStore##TA##TB(TB *v, TA j) { return (TA)(*v = (TB)j); }
- * #define STORE_LIST(TA, TB) (TA (*)(void *, TA)) _nrrdStore##TA##TB,
+ *    static TA nstore##TA##TB(TB *v, TA j) { return (TA)(*v = (TB)j); }
+ * #define STORE_LIST(TA, TB) (TA (*)(void *, TA)) nstore##TA##TB,
  *                            ^^^^^^^^^^^^^^^^^^^ casting function pointer
  */
 #define STORE_DEF(TA, TB)                                                               \
-  static TA _nrrdStore##TA##TB(void *_v, TA j) {                                        \
+  static TA nstore##TA##TB(void *_v, TA j) {                                            \
     TB *v = _v;                                                                         \
     return (TA)(*v = (TB)j);                                                            \
   }
-#define STORE_LIST(TA, TB) _nrrdStore##TA##TB,
+#define STORE_LIST(TA, TB) nstore##TA##TB,
 
 MAP(STORE_DEF, UI)
 MAP(STORE_DEF, JN)
@@ -121,21 +121,21 @@ unsigned int (*const nrrdUIStore[NRRD_TYPE_MAX + 1])(void *, unsigned int) = {NU
 #undef STORE_LIST
 
 /*
- * _nrrdLookup<TA><TB>(const void *_v, size_t I)
+ * nlookup<TA><TB>(const void *_v, size_t I)
  *
  * After assigning _v to TB *v, looks up TB v[I], and returns it cast to TA.
  *
  * pre-TeemV2 UB code:
  * #define LOOKUP_DEF(TA, TB)
- *   static TA _nrrdLookup##TA##TB(TB *v, size_t I) { return (TA)v[I]; }
- * #define LOOKUP_LIST(TA, TB) (TA (*)(const void *, size_t)) _nrrdLookup##TA##TB,
+ *   static TA nlookup##TA##TB(TB *v, size_t I) { return (TA)v[I]; }
+ * #define LOOKUP_LIST(TA, TB) (TA (*)(const void *, size_t)) nlookup##TA##TB,
  */
 #define LOOKUP_DEF(TA, TB)                                                              \
-  static TA _nrrdLookup##TA##TB(const void *_v, size_t I) {                             \
+  static TA nlookup##TA##TB(const void *_v, size_t I) {                                 \
     const TB *v = _v;                                                                   \
     return (TA)v[I];                                                                    \
   }
-#define LOOKUP_LIST(TA, TB) _nrrdLookup##TA##TB,
+#define LOOKUP_LIST(TA, TB) nlookup##TA##TB,
 
 MAP(LOOKUP_DEF, UI)
 MAP(LOOKUP_DEF, JN)
@@ -152,22 +152,22 @@ unsigned int (*const nrrdUILookup[NRRD_TYPE_MAX + 1])(const void *, size_t) = {N
 #undef LOOKUP_LIST
 
 /*
- * _nrrdInsert<TA><TB>(void *_v, size_t I, <TA> j)
+ * ninsert<TA><TB>(void *_v, size_t I, <TA> j)
  *
  * Given TA j, casts to TB, and stores it in (after casting to TB*) _v[i].
  * Returns the result of the assignment, cast back to TA, which may not be the same as
  * the value that was passed in.
  * pre-TeemV2 UB code:
  * #define INSERT_DEF(TA, TB)
- *   static TA _nrrdInsert##TA##TB(TB *v, size_t I, TA j) { return (TA)(v[I] = (TB)j); }
- * #define INSERT_LIST(TA, TB) (TA (*)(void *, size_t, TA)) _nrrdInsert##TA##TB,
+ *   static TA ninsert##TA##TB(TB *v, size_t I, TA j) { return (TA)(v[I] = (TB)j); }
+ * #define INSERT_LIST(TA, TB) (TA (*)(void *, size_t, TA)) ninsert##TA##TB,
  */
 #define INSERT_DEF(TA, TB)                                                              \
-  static TA _nrrdInsert##TA##TB(void *_v, size_t I, TA j) {                             \
+  static TA ninsert##TA##TB(void *_v, size_t I, TA j) {                                 \
     TB *v = _v;                                                                         \
     return (TA)(v[I] = (TB)j);                                                          \
   }
-#define INSERT_LIST(TA, TB) _nrrdInsert##TA##TB,
+#define INSERT_LIST(TA, TB) ninsert##TA##TB,
 
 MAP(INSERT_DEF, UI)
 MAP(INSERT_DEF, JN)
@@ -192,54 +192,54 @@ unsigned int (*const nrrdUIInsert[NRRD_TYPE_MAX + 1])(void *, size_t, unsigned i
  */
 /* clang-format off */
 static int
-_nrrdSprintCH(char *s, size_t sz, const void *_v) {
+nsprintCH(char *s, size_t sz, const void *_v) {
      const CH *v = _v; return snprintf(s, sz, "%d", *v); }
 static int
-_nrrdSprintUC(char *s, size_t sz, const void *_v) {
+nsprintUC(char *s, size_t sz, const void *_v) {
      const UC *v = _v; return snprintf(s, sz, "%u", *v); }
 static int
-_nrrdSprintSH(char *s, size_t sz, const void *_v) {
+nsprintSH(char *s, size_t sz, const void *_v) {
     const SH *v = _v; return snprintf(s, sz, "%d", *v); }
 static int
-_nrrdSprintUS(char *s, size_t sz, const void *_v) {
+nsprintUS(char *s, size_t sz, const void *_v) {
      const US *v = _v; return snprintf(s, sz, "%u", *v); }
 static int
-_nrrdSprintIN(char *s, size_t sz, const void *_v) {
+nsprintIN(char *s, size_t sz, const void *_v) {
      const JN *v = _v; return snprintf(s, sz, "%d", *v); }
 static int
-_nrrdSprintUI(char *s, size_t sz, const void *_v) {
+nsprintUI(char *s, size_t sz, const void *_v) {
      const UI *v = _v; return snprintf(s, sz, "%u", *v); }
 static int
-_nrrdSprintLL(char *s, size_t sz, const void *_v) {
+nsprintLL(char *s, size_t sz, const void *_v) {
      const LL *v = _v; return snprintf(s, sz, AIR_LLONG_FMT, *v); }
 static int
-_nrrdSprintUL(char *s, size_t sz, const void *_v) {
+nsprintUL(char *s, size_t sz, const void *_v) {
      const UL *v = _v; return snprintf(s, sz, AIR_ULLONG_FMT, *v); }
 static int
-_nrrdSprintFL(char *s, size_t sz, const void *_v) {
+nsprintFL(char *s, size_t sz, const void *_v) {
   const FL *v = _v;
   /* having %.8g instead of %.9g was a roughly 20-year old bug,
      but now using %g with TeemV2 airSinglePrintf */
   return airSinglePrintf(NULL, s, sz, "%g", *v);
 }
 static int
-_nrrdSprintDB(char *s, size_t sz, const void *_v) {
+nsprintDB(char *s, size_t sz, const void *_v) {
   const DB *v = _v;
   /* not with %.17g thanks to TeemV2 airSinglePrintf */
   return airSinglePrintf(NULL, s, sz, "%lg", *v);
 }
 int (*const nrrdSprint[NRRD_TYPE_MAX + 1])(char *, size_t, const void *)
   = {NULL,
-     _nrrdSprintCH,
-     _nrrdSprintUC,
-     _nrrdSprintSH,
-     _nrrdSprintUS,
-     _nrrdSprintIN,
-     _nrrdSprintUI,
-     _nrrdSprintLL,
-     _nrrdSprintUL,
-     _nrrdSprintFL,
-     _nrrdSprintDB,
+     nsprintCH,
+     nsprintUC,
+     nsprintSH,
+     nsprintUS,
+     nsprintIN,
+     nsprintUI,
+     nsprintLL,
+     nsprintUL,
+     nsprintFL,
+     nsprintDB,
      NULL};
 /* clang-format on */
 
@@ -254,38 +254,38 @@ int (*const nrrdSprint[NRRD_TYPE_MAX + 1])(char *, size_t, const void *)
  */
 /* clang-format off */
 static int
-_nrrdFprintCH(FILE *f, const void *_v) {
+nfprintCH(FILE *f, const void *_v) {
      const CH *v = _v; return fprintf(f, "%d", *v); }
 static int
-_nrrdFprintUC(FILE *f, const void *_v) {
+nfprintUC(FILE *f, const void *_v) {
      const UC *v = _v; return fprintf(f, "%u", *v); }
 static int
-_nrrdFprintSH(FILE *f, const void *_v) {
+nfprintSH(FILE *f, const void *_v) {
      const SH *v = _v; return fprintf(f, "%d", *v); }
 static int
-_nrrdFprintUS(FILE *f, const void *_v) {
+nfprintUS(FILE *f, const void *_v) {
      const US *v = _v; return fprintf(f, "%u", *v); }
 static int
-_nrrdFprintIN(FILE *f, const void *_v) {
+nfprintIN(FILE *f, const void *_v) {
      const JN *v = _v; return fprintf(f, "%d", *v); }
 static int
-_nrrdFprintUI(FILE *f, const void *_v) {
+nfprintUI(FILE *f, const void *_v) {
      const UI *v = _v; return fprintf(f, "%u", *v); }
 static int
-_nrrdFprintLL(FILE *f, const void *_v) {
+nfprintLL(FILE *f, const void *_v) {
      const LL *v = _v; return fprintf(f, AIR_LLONG_FMT, *v); }
 static int
-_nrrdFprintUL(FILE *f, const void *_v) {
+nfprintUL(FILE *f, const void *_v) {
      const UL *v = _v; return fprintf(f, AIR_ULLONG_FMT, *v); }
 static int
-_nrrdFprintFL(FILE *f, const void *_v) {
+nfprintFL(FILE *f, const void *_v) {
   const FL *v = _v;
   /* had %.8g here since r427 2002-04-29 (23-year old bug)
      now using %g with TeemV2 airSinglePrintf instead of %.9g */
   return airSinglePrintf(f, NULL, 0, "%g", (double)(*v));
 }
 static int
-_nrrdFprintDB(FILE *f, const void *_v) {
+nfprintDB(FILE *f, const void *_v) {
   const DB *v = _v;
   /* not with %.17g thanks to TeemV2 airSinglePrintf */
   return airSinglePrintf(f, NULL, 0, "%lg", *v);
@@ -293,24 +293,24 @@ _nrrdFprintDB(FILE *f, const void *_v) {
 
 int (*const nrrdFprint[NRRD_TYPE_MAX + 1])(FILE *, const void *)
   = {NULL,
-     _nrrdFprintCH,
-     _nrrdFprintUC,
-     _nrrdFprintSH,
-     _nrrdFprintUS,
-     _nrrdFprintIN,
-     _nrrdFprintUI,
-     _nrrdFprintLL,
-     _nrrdFprintUL,
-     _nrrdFprintFL,
-     _nrrdFprintDB,
+     nfprintCH,
+     nfprintUC,
+     nfprintSH,
+     nfprintUS,
+     nfprintIN,
+     nfprintUI,
+     nfprintLL,
+     nfprintUL,
+     nfprintFL,
+     nfprintDB,
      NULL};
 /* clang-format on */
 
 /* about here is where Gordon admits he might have some use for C++ */
 
-#define _MMEF_ARGS(type) void *_minP, void *_maxP, int *hneP, const Nrrd *nrrd
+#define MMEF_ARGS(type) void *_minP, void *_maxP, int *hneP, const Nrrd *nrrd
 
-#define _MMEF_FIXED(type)                                                               \
+#define MMEF_FIXED(type)                                                                \
   size_t I, N;                                                                          \
   type *minP, *maxP, a, b, min, max, *v;                                                \
                                                                                         \
@@ -357,7 +357,7 @@ int (*const nrrdFprint[NRRD_TYPE_MAX + 1])(FILE *, const void *)
   *minP = min;                                                                          \
   *maxP = max;
 
-#define _MMEF_FLOAT(type)                                                               \
+#define MMEF_FLOAT(type)                                                                \
   size_t I, N;                                                                          \
   type *minP, *maxP, a, min, max, *v;                                                   \
                                                                                         \
@@ -410,20 +410,20 @@ int (*const nrrdFprint[NRRD_TYPE_MAX + 1])(FILE *, const void *)
   *maxP = max;
 
 /* clang-format off */
-static void _nrrdMinMaxExactFindCH(_MMEF_ARGS(CH)) { _MMEF_FIXED(CH) }
-static void _nrrdMinMaxExactFindUC(_MMEF_ARGS(UC)) { _MMEF_FIXED(UC) }
-static void _nrrdMinMaxExactFindSH(_MMEF_ARGS(SH)) { _MMEF_FIXED(SH) }
-static void _nrrdMinMaxExactFindUS(_MMEF_ARGS(US)) { _MMEF_FIXED(US) }
-static void _nrrdMinMaxExactFindIN(_MMEF_ARGS(JN)) { _MMEF_FIXED(JN) }
-static void _nrrdMinMaxExactFindUI(_MMEF_ARGS(UI)) { _MMEF_FIXED(UI) }
-static void _nrrdMinMaxExactFindLL(_MMEF_ARGS(LL)) { _MMEF_FIXED(LL) }
-static void _nrrdMinMaxExactFindUL(_MMEF_ARGS(UL)) { _MMEF_FIXED(UL) }
-static void _nrrdMinMaxExactFindFL(_MMEF_ARGS(FL)) { _MMEF_FLOAT(FL) }
-static void _nrrdMinMaxExactFindDB(_MMEF_ARGS(DB)) { _MMEF_FLOAT(DB) }
+static void nMinMaxExactFindCH(MMEF_ARGS(CH)) { MMEF_FIXED(CH) }
+static void nMinMaxExactFindUC(MMEF_ARGS(UC)) { MMEF_FIXED(UC) }
+static void nMinMaxExactFindSH(MMEF_ARGS(SH)) { MMEF_FIXED(SH) }
+static void nMinMaxExactFindUS(MMEF_ARGS(US)) { MMEF_FIXED(US) }
+static void nMinMaxExactFindIN(MMEF_ARGS(JN)) { MMEF_FIXED(JN) }
+static void nMinMaxExactFindUI(MMEF_ARGS(UI)) { MMEF_FIXED(UI) }
+static void nMinMaxExactFindLL(MMEF_ARGS(LL)) { MMEF_FIXED(LL) }
+static void nMinMaxExactFindUL(MMEF_ARGS(UL)) { MMEF_FIXED(UL) }
+static void nMinMaxExactFindFL(MMEF_ARGS(FL)) { MMEF_FLOAT(FL) }
+static void nMinMaxExactFindDB(MMEF_ARGS(DB)) { MMEF_FLOAT(DB) }
 /* clang-format on */
-#undef _MMEF_ARGS
-#undef _MMEF_FIXED
-#undef _MMEF_FLOAG
+#undef MMEF_ARGS
+#undef MMEF_FIXED
+#undef MMEF_FLOAT
 
 /*
  ******** nrrdMinMaxExactFind[]
@@ -437,16 +437,16 @@ static void _nrrdMinMaxExactFindDB(_MMEF_ARGS(DB)) { _MMEF_FLOAT(DB) }
 void (*const nrrdMinMaxExactFind[NRRD_TYPE_MAX + 1])(void *minP, void *maxP, int *hneP,
                                                      const Nrrd *)
   = {NULL,
-     _nrrdMinMaxExactFindCH,
-     _nrrdMinMaxExactFindUC,
-     _nrrdMinMaxExactFindSH,
-     _nrrdMinMaxExactFindUS,
-     _nrrdMinMaxExactFindIN,
-     _nrrdMinMaxExactFindUI,
-     _nrrdMinMaxExactFindLL,
-     _nrrdMinMaxExactFindUL,
-     _nrrdMinMaxExactFindFL,
-     _nrrdMinMaxExactFindDB,
+     nMinMaxExactFindCH,
+     nMinMaxExactFindUC,
+     nMinMaxExactFindSH,
+     nMinMaxExactFindUS,
+     nMinMaxExactFindIN,
+     nMinMaxExactFindUI,
+     nMinMaxExactFindLL,
+     nMinMaxExactFindUL,
+     nMinMaxExactFindFL,
+     nMinMaxExactFindDB,
      NULL};
 
 /*
@@ -460,24 +460,24 @@ void (*const nrrdMinMaxExactFind[NRRD_TYPE_MAX + 1])(void *minP, void *maxP, int
  * dictate that all non-existent values are smaller than all existent
  * values, regardless of their actual values (so +infinity < -42).  This
  * is to make sure that we have comparison that won't confuse qsort(),
- * which underlies _nrrdMeasureMedian(), and to make it easier to separate
+ * which underlies nrrd__MeasureMedian(), and to make it easier to separate
  * existent from non-existent values.
  */
-#define _ASC_COMP(AA, BB) ((AA) < (BB) ? -1 : ((AA) > (BB) ? 1 : 0))
-#define _DEC_COMP(AA, BB) (-(_ASC_COMP(AA, BB)))
-#define _VC_FIXED(COMP, type)                                                           \
-  const type *A = _A, *B = _B;                                                          \
-  return COMP(*A, *B)
-#define _VC_FLOAT(COMP, type)                                                           \
-  const type *A = _A, *B = _B;                                                          \
-  int exA = AIR_EXISTS(*A), exB = AIR_EXISTS(*B);                                       \
+#define ASC_COMP(AA, BB) ((AA) < (BB) ? -1 : ((AA) > (BB) ? 1 : 0))
+#define DEC_COMP(AA, BB) (-(ASC_COMP(AA, BB)))
+#define VC_FIXED(COMP, type)                                                            \
+  const type *aa = _aa, *bb = _bb;                                                      \
+  return COMP(*aa, *bb)
+#define VC_FLOAT(COMP, type)                                                            \
+  const type *aa = _aa, *bb = _bb;                                                      \
+  int exaa = AIR_EXISTS(*aa), exbb = AIR_EXISTS(*bb);                                   \
   int ret;                                                                              \
-  switch (exA + exB) {                                                                  \
+  switch (exaa + exbb) {                                                                \
   case 2:                                                                               \
-    ret = COMP(*A, *B);                                                                 \
+    ret = COMP(*aa, *bb);                                                               \
     break;                                                                              \
   case 1:                                                                               \
-    ret = COMP(exA, exB);                                                               \
+    ret = COMP(exaa, exbb);                                                             \
     break;                                                                              \
   case 0:                                                                               \
   default:                                                                              \
@@ -486,61 +486,61 @@ void (*const nrrdMinMaxExactFind[NRRD_TYPE_MAX + 1])(void *minP, void *maxP, int
   return ret
 
 /* clang-format off */
-static int _nrrdValCompareCH(const void *_A, const void *_B) { _VC_FIXED(_ASC_COMP, CH); }
-static int _nrrdValCompareUC(const void *_A, const void *_B) { _VC_FIXED(_ASC_COMP, UC); }
-static int _nrrdValCompareSH(const void *_A, const void *_B) { _VC_FIXED(_ASC_COMP, SH); }
-static int _nrrdValCompareUS(const void *_A, const void *_B) { _VC_FIXED(_ASC_COMP, US); }
-static int _nrrdValCompareIN(const void *_A, const void *_B) { _VC_FIXED(_ASC_COMP, JN); }
-static int _nrrdValCompareUI(const void *_A, const void *_B) { _VC_FIXED(_ASC_COMP, UI); }
-static int _nrrdValCompareLL(const void *_A, const void *_B) { _VC_FIXED(_ASC_COMP, LL); }
-static int _nrrdValCompareUL(const void *_A, const void *_B) { _VC_FIXED(_ASC_COMP, UL); }
-static int _nrrdValCompareFL(const void *_A, const void *_B) { _VC_FLOAT(_ASC_COMP, FL); }
-static int _nrrdValCompareDB(const void *_A, const void *_B) { _VC_FLOAT(_ASC_COMP, DB); }
+static int nvCompareCH(const void *_aa, const void *_bb) { VC_FIXED(ASC_COMP, CH); }
+static int nvCompareUC(const void *_aa, const void *_bb) { VC_FIXED(ASC_COMP, UC); }
+static int nvCompareSH(const void *_aa, const void *_bb) { VC_FIXED(ASC_COMP, SH); }
+static int nvCompareUS(const void *_aa, const void *_bb) { VC_FIXED(ASC_COMP, US); }
+static int nvCompareIN(const void *_aa, const void *_bb) { VC_FIXED(ASC_COMP, JN); }
+static int nvCompareUI(const void *_aa, const void *_bb) { VC_FIXED(ASC_COMP, UI); }
+static int nvCompareLL(const void *_aa, const void *_bb) { VC_FIXED(ASC_COMP, LL); }
+static int nvCompareUL(const void *_aa, const void *_bb) { VC_FIXED(ASC_COMP, UL); }
+static int nvCompareFL(const void *_aa, const void *_bb) { VC_FLOAT(ASC_COMP, FL); }
+static int nvCompareDB(const void *_aa, const void *_bb) { VC_FLOAT(ASC_COMP, DB); }
 int (*const nrrdValCompare[NRRD_TYPE_MAX + 1])(const void *, const void *)
   = {NULL,
-     _nrrdValCompareCH,
-     _nrrdValCompareUC,
-     _nrrdValCompareSH,
-     _nrrdValCompareUS,
-     _nrrdValCompareIN,
-     _nrrdValCompareUI,
-     _nrrdValCompareLL,
-     _nrrdValCompareUL,
-     _nrrdValCompareFL,
-     _nrrdValCompareDB,
+     nvCompareCH,
+     nvCompareUC,
+     nvCompareSH,
+     nvCompareUS,
+     nvCompareIN,
+     nvCompareUI,
+     nvCompareLL,
+     nvCompareUL,
+     nvCompareFL,
+     nvCompareDB,
      NULL};
 
 /*
  * ...Inv: for descending order
  */
-static int _nrrdValCompareInvCH(const void *_A, const void *_B) { _VC_FIXED(_DEC_COMP, CH); }
-static int _nrrdValCompareInvUC(const void *_A, const void *_B) { _VC_FIXED(_DEC_COMP, UC); }
-static int _nrrdValCompareInvSH(const void *_A, const void *_B) { _VC_FIXED(_DEC_COMP, SH); }
-static int _nrrdValCompareInvUS(const void *_A, const void *_B) { _VC_FIXED(_DEC_COMP, US); }
-static int _nrrdValCompareInvIN(const void *_A, const void *_B) { _VC_FIXED(_DEC_COMP, JN); }
-static int _nrrdValCompareInvUI(const void *_A, const void *_B) { _VC_FIXED(_DEC_COMP, UI); }
-static int _nrrdValCompareInvLL(const void *_A, const void *_B) { _VC_FIXED(_DEC_COMP, LL); }
-static int _nrrdValCompareInvUL(const void *_A, const void *_B) { _VC_FIXED(_DEC_COMP, UL); }
-static int _nrrdValCompareInvFL(const void *_A, const void *_B) { _VC_FLOAT(_DEC_COMP, FL); }
-static int _nrrdValCompareInvDB(const void *_A, const void *_B) { _VC_FLOAT(_DEC_COMP, DB); }
+static int nvCompareInvCH(const void *_aa, const void *_bb) { VC_FIXED(DEC_COMP, CH); }
+static int nvCompareInvUC(const void *_aa, const void *_bb) { VC_FIXED(DEC_COMP, UC); }
+static int nvCompareInvSH(const void *_aa, const void *_bb) { VC_FIXED(DEC_COMP, SH); }
+static int nvCompareInvUS(const void *_aa, const void *_bb) { VC_FIXED(DEC_COMP, US); }
+static int nvCompareInvIN(const void *_aa, const void *_bb) { VC_FIXED(DEC_COMP, JN); }
+static int nvCompareInvUI(const void *_aa, const void *_bb) { VC_FIXED(DEC_COMP, UI); }
+static int nvCompareInvLL(const void *_aa, const void *_bb) { VC_FIXED(DEC_COMP, LL); }
+static int nvCompareInvUL(const void *_aa, const void *_bb) { VC_FIXED(DEC_COMP, UL); }
+static int nvCompareInvFL(const void *_aa, const void *_bb) { VC_FLOAT(DEC_COMP, FL); }
+static int nvCompareInvDB(const void *_aa, const void *_bb) { VC_FLOAT(DEC_COMP, DB); }
 int (*const nrrdValCompareInv[NRRD_TYPE_MAX + 1])(const void *, const void *)
   = {NULL,
-     _nrrdValCompareInvCH,
-     _nrrdValCompareInvUC,
-     _nrrdValCompareInvSH,
-     _nrrdValCompareInvUS,
-     _nrrdValCompareInvIN,
-     _nrrdValCompareInvUI,
-     _nrrdValCompareInvLL,
-     _nrrdValCompareInvUL,
-     _nrrdValCompareInvFL,
-     _nrrdValCompareInvDB,
+     nvCompareInvCH,
+     nvCompareInvUC,
+     nvCompareInvSH,
+     nvCompareInvUS,
+     nvCompareInvIN,
+     nvCompareInvUI,
+     nvCompareInvLL,
+     nvCompareInvUL,
+     nvCompareInvFL,
+     nvCompareInvDB,
      NULL};
 /* clang-format on */
-#undef _ASC_COMP
-#undef _DEC_COMP
-#undef _VC_FIXED
-#undef _VC_FLOAT
+#undef ASC_COMP
+#undef DEC_COMP
+#undef VC_FIXED
+#undef VC_FLOAT
 
 /*
  ******** nrrdArrayCompare

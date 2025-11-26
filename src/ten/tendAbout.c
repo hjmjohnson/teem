@@ -23,7 +23,7 @@
 #define INFO "Information about this program and its use"
 
 static int
-tend_aboutMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+aboutMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   char par1[] = "\t\t\t\t"
                 "\"tend\" is a command-line interface to much of the functionality "
                 "in \"ten\", a C library for diffusion image processing. Ten is one "
@@ -97,4 +97,4 @@ tend_aboutMain(int argc, const char **argv, const char *me, const hestParm *hpar
   return 0;
 }
 
-TEND_CMD(about, INFO);
+MY_TEND_CMD(about, INFO);

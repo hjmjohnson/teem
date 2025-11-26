@@ -541,7 +541,7 @@ tenEstimateLinearSingle_d(double *ten, double *B0P,              /* output */
 }
 
 void
-tenEstimateLinearSingle_f(float *_ten, float *_B0P,              /* output */
+tenEstimateLinearSingle_f(float *_ten, float *B0P_,              /* output */
                           const float *_dwi, const double *emat, /* input .. */
                           double *vbuf, unsigned int DD, int knownB0, float thresh,
                           float soft, float b) {
@@ -560,11 +560,11 @@ tenEstimateLinearSingle_f(float *_ten, float *_B0P,              /* output */
   for (dwiIdx = 0; dwiIdx < DD; dwiIdx++) {
     dwi[dwiIdx] = _dwi[dwiIdx];
   }
-  tenEstimateLinearSingle_d(ten, _B0P ? &B0 : NULL, dwi, emat, vbuf, DD, knownB0, thresh,
+  tenEstimateLinearSingle_d(ten, B0P_ ? &B0 : NULL, dwi, emat, vbuf, DD, knownB0, thresh,
                             soft, b);
   TEN_T_COPY_TT(_ten, float, ten);
-  if (_B0P) {
-    *_B0P = AIR_FLOAT(B0);
+  if (B0P_) {
+    *B0P_ = AIR_FLOAT(B0);
   }
   return;
 }
@@ -633,7 +633,7 @@ tenEstimateLinear4D(Nrrd *nten, Nrrd **nterrP, Nrrd **nB0P, const Nrrd *ndwi,
   airArray *mop;
   size_t cmin[4], cmax[4], sx, sy, sz, II, d, DD;
   int E, amap[4];
-  float *ten, *dwi1, *dwi2, *terr, _B0, *B0, (*lup)(const void *, size_t);
+  float *ten, *dwi1, *dwi2, *terr, B0_, *B0, (*lup)(const void *, size_t);
   double *emat, *bmat, *vbuf;
   NrrdRange *range;
   float te, d1, d2;
@@ -717,7 +717,7 @@ tenEstimateLinear4D(Nrrd *nten, Nrrd **nterrP, Nrrd **nB0P, const Nrrd *ndwi,
       airMopError(mop);
       return 1;
     }
-    if (_tenFindValley(&thresh, nhist, 0.75, AIR_FALSE)) {
+    if (ten__FindValley(&thresh, nhist, 0.75, AIR_FALSE)) {
       biffAddf(TEN, "%s: problem finding DW histogram valley", me);
       airMopError(mop);
       return 1;
@@ -771,11 +771,11 @@ tenEstimateLinear4D(Nrrd *nten, Nrrd **nterrP, Nrrd **nB0P, const Nrrd *ndwi,
         fprintf(stderr, "%s: input dwi1[%d] = %g\n", me, d, dwi1[d]);
       } */
     }
-    _B0 = 0; // sssh warning
-    tenEstimateLinearSingle_f(ten, &_B0, dwi1, emat, vbuf, AIR_UINT(DD), knownB0,
+    B0_ = 0; // sssh warning
+    tenEstimateLinearSingle_f(ten, &B0_, dwi1, emat, vbuf, AIR_UINT(DD), knownB0,
                               AIR_FLOAT(thresh), AIR_FLOAT(soft), AIR_FLOAT(b));
     if (nB0P) {
-      *B0 = _B0;
+      *B0 = B0_;
     }
     /* if (tenVerbose) {
       fprintf(stderr, "%s: output ten = (%g) %g,%g,%g  %g,%g  %g\n", me,
@@ -784,7 +784,7 @@ tenEstimateLinear4D(Nrrd *nten, Nrrd **nterrP, Nrrd **nB0P, const Nrrd *ndwi,
     if (nterrP) {
       te = 0;
       if (knownB0) {
-        tenSimulateSingle_f(dwi2, _B0, ten, bmat, AIR_UINT(DD), AIR_FLOAT(b));
+        tenSimulateSingle_f(dwi2, B0_, ten, bmat, AIR_UINT(DD), AIR_FLOAT(b));
         for (d = 1; d < DD; d++) {
           d1 = AIR_MAX(dwi1[d], 1);
           d2 = AIR_MAX(dwi2[d], 1);
@@ -792,7 +792,7 @@ tenEstimateLinear4D(Nrrd *nten, Nrrd **nterrP, Nrrd **nB0P, const Nrrd *ndwi,
         }
         te /= (DD - 1);
       } else {
-        tenSimulateSingle_f(dwi2, _B0, ten, bmat, AIR_UINT(DD + 1), AIR_FLOAT(b));
+        tenSimulateSingle_f(dwi2, B0_, ten, bmat, AIR_UINT(DD + 1), AIR_FLOAT(b));
         for (d = 0; d < DD; d++) {
           d1 = AIR_MAX(dwi1[d], 1);
           /* tenSimulateSingle_f always puts the B0 in the beginning of

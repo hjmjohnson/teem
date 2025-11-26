@@ -227,12 +227,12 @@ COIL_EXPORT const airEnum *const coilMethodType;
 COIL_EXPORT const airEnum *const coilKindType;
 
 /* scalarCoil.c */
-COIL_EXPORT const coilKind _coilKindScalar; /* no privateCoil.h */
+COIL_EXPORT const coilKind coilKindScalar_impl; /* no privateCoil.h */
 COIL_EXPORT const coilKind *const coilKindScalar;
 COIL_EXPORT const coilKind *const coilKindArray[COIL_KIND_TYPE_MAX + 1];
 
 /* tensorCoil.c */
-COIL_EXPORT const coilKind _coilKind7Tensor; /* no privateCoil.h */
+COIL_EXPORT const coilKind coilKind7Tensor_impl; /* no privateCoil.h */
 COIL_EXPORT const coilKind *const coilKind7Tensor;
 
 /* realmethods.c */

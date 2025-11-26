@@ -21,7 +21,7 @@
 #include "privateEcho.h"
 
 static void
-_echoPosSet(echoPos_t *p3, echoPos_t *matx, echoPos_t *p4) {
+PosSet(echoPos_t *p3, echoPos_t *matx, echoPos_t *p4) {
   echoPos_t a[4], b[4];
 
   if (matx) {
@@ -48,19 +48,19 @@ echoRoughSphereNew(echoScene *scene, int theRes, int phiRes, echoPos_t *matx) {
   _vert = vert = (int *)calloc(3 * TRIMESH(trim)->numF, sizeof(int));
 
   ELL_3V_SET(tmp, 0, 0, 1);
-  _echoPosSet(pos, matx, tmp);
+  PosSet(pos, matx, tmp);
   pos += 3;
   for (phidx = 1; phidx < phiRes; phidx++) {
     ph = AIR_AFFINE(0, phidx, phiRes, 0.0, AIR_PI);
     for (thidx = 0; thidx < theRes; thidx++) {
       th = AIR_AFFINE(0, thidx, theRes, 0.0, 2 * AIR_PI);
       ELL_3V_SET(tmp, cos(th) * sin(ph), sin(th) * sin(ph), cos(ph));
-      _echoPosSet(pos, matx, tmp);
+      PosSet(pos, matx, tmp);
       pos += 3;
     }
   }
   ELL_3V_SET(tmp, 0, 0, -1);
-  _echoPosSet(pos, matx, tmp);
+  PosSet(pos, matx, tmp);
 
   for (thidx = 0; thidx < theRes; thidx++) {
     n = AIR_MOD(thidx + 1, theRes);

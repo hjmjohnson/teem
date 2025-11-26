@@ -24,7 +24,7 @@
 static const char *myinfo = (INFO ". ");
 
 static int
-limnPu_sortMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+lpu_sortMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   limnPolyData *pld;
   hestOptAdd_1_Other(&hopt, NULL, "input lpld", &pld, NULL, "input polydata filename",
@@ -59,4 +59,4 @@ limnPu_sortMain(int argc, const char **argv, const char *me, const hestParm *hpa
   return 0;
 }
 
-const unrrduCmd limnPu_sortCmd = {"sort", INFO, limnPu_sortMain, AIR_FALSE};
+const unrrduCmd limnPu_sortCmd = {"sort", INFO, lpu_sortMain, AIR_FALSE};

@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Connect slices and/or slabs into a bigger nrrd"
-static const char *_unrrdu_joinInfoL
+static const char *unu_joinInfoL
   = (INFO ". Can stich images into volumes, or tile images side "
           "by side, or attach images onto volumes.  If there are many many "
           "files to name in the \"-i\" option, and using wildcards won't work, "
@@ -35,14 +35,14 @@ static const char *_unrrdu_joinInfoL
           "* Uses nrrdJoin");
 
 static int
-unrrdu_joinMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+unu_joinMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
   Nrrd **nin;
   uint ninLen;
   hestOptAdd_Nv_Other(&hopt, "i,input", "nin0", 1, -1, &nin, NULL,
                       "everything to be joined together", &ninLen, nrrdHestNrrdNoTTY);
   uint axis;
-  OPT_ADD_AXIS(axis, "axis to join along");
+  MY_OPT_ADD_AXIS(axis, "axis to join along");
   int incrDim;
   hestOptAdd_Flag(&hopt, "incr", &incrDim,
                   "in situations where the join axis is *not* among the existing "
@@ -64,12 +64,12 @@ unrrdu_joinMain(int argc, const char **argv, const char *me, const hestParm *_hp
   hestOptAdd_1_Double(&hopt, "sp,spacing", "spc", &spc, "nan",
                       "spacing between samples along join axis");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for YES some hparm modification)
   hestParm *hparm = hestParmCopy(_hparm);
   hparm->responseFileEnable = AIR_TRUE;
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_joinInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_joinInfoL);
   airArray *mop = unrrduMopNew(hopt, hparm);
   char *err;
 
@@ -109,10 +109,10 @@ unrrdu_joinMain(int argc, const char **argv, const char *me, const hestParm *_hp
     nout->axis[axis].spacing = spc;
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(join, INFO);
+MY_UNRRDU_CMD(join, INFO);

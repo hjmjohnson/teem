@@ -20,13 +20,13 @@
 #include "echo.h"
 #include "privateEcho.h"
 
-typedef void (*_echoBoundsGet_t)(echoPos_t lo[3], echoPos_t hi[3], echoObject *obj);
+typedef void (*BoundsGet_t)(echoPos_t lo[3], echoPos_t hi[3], echoObject *obj);
 
 /* GLK not sure how to do forward declaration of static array */
-/* extern const _echoBoundsGet_t _echoBoundsGet[ECHO_TYPE_NUM]; */
+/* extern const BoundsGet_t BoundsGet[ECHO_TYPE_NUM]; */
 
 #define BNDS_TMPL(TYPE, BODY)                                                           \
-  static void _echo##TYPE##_bounds(echoPos_t lo[3], echoPos_t hi[3], echo##TYPE *obj) { \
+  static void TYPE##_bounds(echoPos_t lo[3], echoPos_t hi[3], echo##TYPE *obj) {        \
     int dummy = 0;                                                                      \
                                                                                         \
     do {                                                                                \
@@ -68,7 +68,7 @@ BNDS_TMPL(Rectangle, echoPos_t v[3][3];
 BNDS_TMPL(TriMesh, ELL_3V_COPY(lo, obj->min); ELL_3V_COPY(hi, obj->max);)
 
 BNDS_TMPL(Isosurface, AIR_UNUSED(obj);
-          fprintf(stderr, "_echoIsosurface_bounds: unimplemented!\n");)
+          fprintf(stderr, "%s: unimplemented!\n", __func__);)
 
 BNDS_TMPL(AABBox, ELL_3V_COPY(lo, obj->min); ELL_3V_COPY(hi, obj->max);)
 
@@ -79,18 +79,17 @@ BNDS_TMPL(
   ELL_3V_SET(hi, ECHO_POS_MIN, ECHO_POS_MIN, ECHO_POS_MIN);
   for (i = 0; i < obj->objArr->len; i++) {
     o = obj->obj[i];
-    /* due to making this array static, can't: _echoBoundsGet[o->type](l, h, o); */
+    /* due to making this array static, can't: BoundsGet[o->type](l, h, o); */
     echoBoundsGet(l, h, o);
     ELL_3V_MIN(lo, lo, l);
     ELL_3V_MAX(hi, hi, h);
   })
 
-BNDS_TMPL(Split, AIR_UNUSED(obj);
-          fprintf(stderr, "_echoSplit_bounds: unimplemented!\n");)
+BNDS_TMPL(Split, AIR_UNUSED(obj); fprintf(stderr, "%s: unimplemented!\n", __func__);)
 
 BNDS_TMPL(Instance, echoPos_t a[8][4]; echoPos_t b[8][4]; echoPos_t l[3]; echoPos_t h[3];
 
-          /* see above; can't: _echoBoundsGet[obj->obj->type](l, h, obj->obj); */
+          /* see above; can't: BoundsGet[obj->obj->type](l, h, obj->obj); */
           echoBoundsGet(l, h, obj->obj); ELL_4V_SET(a[0], l[0], l[1], l[2], 1);
           ELL_4V_SET(a[1], h[0], l[1], l[2], 1); ELL_4V_SET(a[2], l[0], h[1], l[2], 1);
           ELL_4V_SET(a[3], h[0], h[1], l[2], 1); ELL_4V_SET(a[4], l[0], l[1], h[2], 1);
@@ -109,16 +108,16 @@ BNDS_TMPL(Instance, echoPos_t a[8][4]; echoPos_t b[8][4]; echoPos_t l[3]; echoPo
           ELL_3V_MAX(hi, hi, b[2]); ELL_3V_MAX(hi, hi, b[3]); ELL_3V_MAX(hi, hi, b[4]);
           ELL_3V_MAX(hi, hi, b[5]); ELL_3V_MAX(hi, hi, b[6]); ELL_3V_MAX(hi, hi, b[7]);)
 
-static const _echoBoundsGet_t _echoBoundsGet[ECHO_TYPE_NUM] = {
-  (_echoBoundsGet_t)_echoSphere_bounds,    (_echoBoundsGet_t)_echoCylinder_bounds,
-  (_echoBoundsGet_t)_echoSuperquad_bounds, (_echoBoundsGet_t)_echoCube_bounds,
-  (_echoBoundsGet_t)_echoTriangle_bounds,  (_echoBoundsGet_t)_echoRectangle_bounds,
-  (_echoBoundsGet_t)_echoTriMesh_bounds,   (_echoBoundsGet_t)_echoIsosurface_bounds,
-  (_echoBoundsGet_t)_echoAABBox_bounds,    (_echoBoundsGet_t)_echoSplit_bounds,
-  (_echoBoundsGet_t)_echoList_bounds,      (_echoBoundsGet_t)_echoInstance_bounds,
+static const BoundsGet_t BoundsGet[ECHO_TYPE_NUM] = {
+  (BoundsGet_t)Sphere_bounds,    (BoundsGet_t)Cylinder_bounds,
+  (BoundsGet_t)Superquad_bounds, (BoundsGet_t)Cube_bounds,
+  (BoundsGet_t)Triangle_bounds,  (BoundsGet_t)Rectangle_bounds,
+  (BoundsGet_t)TriMesh_bounds,   (BoundsGet_t)Isosurface_bounds,
+  (BoundsGet_t)AABBox_bounds,    (BoundsGet_t)Split_bounds,
+  (BoundsGet_t)List_bounds,      (BoundsGet_t)Instance_bounds,
 };
 
 void
 echoBoundsGet(echoPos_t *lo, echoPos_t *hi, echoObject *obj) {
-  _echoBoundsGet[obj->type](lo, hi, obj);
+  BoundsGet[obj->type](lo, hi, obj);
 }

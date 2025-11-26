@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Change comment contents in a C99 input file"
-static const char *_unrrdu_uncmtInfoL
+static const char *unu_uncmtInfoL
   = (INFO
      ". By default comments are wholly excised, but it is also possible to preserve "
      "comment delimiters while over-writing comment contents. "
@@ -335,7 +335,7 @@ uncomment(const char *me, const char *nameOut, int nixcmt, const char *cmtSub, i
 }
 
 static int
-unrrdu_uncmtMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+unu_uncmtMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
   char *cmtSubst;
   hestOptAdd_1_String(
@@ -369,7 +369,7 @@ unrrdu_uncmtMain(int argc, const char **argv, const char *me, const hestParm *_h
   // (boilerplate for YES some hparm modification)
   hestParm *hparm = hestParmCopy(_hparm);
   hparm->elideSingleEmptyStringDefault = AIR_FALSE;
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_uncmtInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_uncmtInfoL);
   airArray *mop = unrrduMopNew(hopt, hparm);
   // char *err;
 
@@ -387,4 +387,4 @@ unrrdu_uncmtMain(int argc, const char **argv, const char *me, const hestParm *_h
   return 0;
 }
 
-UNRRDU_CMD_HIDE(uncmt, INFO);
+MY_UNRRDU_CMD_HIDE(uncmt, INFO);

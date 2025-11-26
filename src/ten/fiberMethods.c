@@ -71,9 +71,9 @@ tenFiberSingleNix(tenFiberSingle *tfbs) {
 AIR_MOPPER(tenFiberSingleNix)
 
 static tenFiberContext * /* Biff: NULL */
-_tenFiberContextCommonNew(const Nrrd *vol, int useDwi, double thresh, double soft,
-                          double valueMin, int ten1method, int ten2method) {
-  static const char me[] = "_tenFiberContextCommonNew";
+fiberContextCommonNew(const Nrrd *vol, int useDwi, double thresh, double soft,
+                      double valueMin, int ten1method, int ten2method) {
+  static const char me[] = "fiberContextCommonNew";
   tenFiberContext *tfx;
   gageKind *kind;
   airArray *mop;
@@ -211,8 +211,8 @@ tenFiberContextDwiNew(const Nrrd *dwivol, double thresh, double soft, double val
   static const char me[] = "tenFiberContextDwiNew";
   tenFiberContext *tfx;
 
-  if (!(tfx = _tenFiberContextCommonNew(dwivol, AIR_TRUE, thresh, soft, valueMin,
-                                        ten1method, ten2method))) {
+  if (!(tfx = fiberContextCommonNew(dwivol, AIR_TRUE, thresh, soft, valueMin, ten1method,
+                                    ten2method))) {
     biffAddf(TEN, "%s: couldn't create new context", me);
     return NULL;
   }
@@ -224,9 +224,9 @@ tenFiberContextNew(const Nrrd *dtvol) {
   static const char me[] = "tenFiberContextNew";
   tenFiberContext *tfx;
 
-  if (!(tfx = _tenFiberContextCommonNew(dtvol, AIR_FALSE, AIR_NAN, AIR_NAN, AIR_NAN,
-                                        tenEstimate1MethodUnknown,
-                                        tenEstimate2MethodUnknown))) {
+  if (!(tfx = fiberContextCommonNew(dtvol, AIR_FALSE, AIR_NAN, AIR_NAN, AIR_NAN,
+                                    tenEstimate1MethodUnknown,
+                                    tenEstimate2MethodUnknown))) {
     biffAddf(TEN, "%s: couldn't create new context", me);
     return NULL;
   }

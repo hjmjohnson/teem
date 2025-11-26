@@ -26,22 +26,24 @@
    that would change how commas vs periods are interpreted during
    number parsing. Please forgive me, or help me fix it :) */
 
+static const char *const textSep = " ,\t";
+
 static int
-_nrrdFormatText_available(void) {
+formatText_available(void) {
 
   return AIR_TRUE;
 }
 
 static int
-_nrrdFormatText_nameLooksLike(const char *fname) {
+formatText_nameLooksLike(const char *fname) {
 
   return (airEndsWith(fname, NRRD_EXT_TEXT) || airEndsWith(fname, ".text")
           || airEndsWith(fname, ".ascii"));
 }
 
 static int /* Biff: maybe:3:AIR_FALSE */
-_nrrdFormatText_fitsInto(const Nrrd *nrrd, const NrrdEncoding *encoding, int useBiff) {
-  static const char me[] = "_nrrdFormatText_fitsInto";
+formatText_fitsInto(const Nrrd *nrrd, const NrrdEncoding *encoding, int useBiff) {
+  static const char me[] = "formatText_fitsInto";
 
   AIR_UNUSED(encoding);
   /* encoding ignored- always ascii */
@@ -58,16 +60,16 @@ _nrrdFormatText_fitsInto(const Nrrd *nrrd, const NrrdEncoding *encoding, int use
 }
 
 static int
-_nrrdFormatText_contentStartsLike(NrrdIoState *nio) {
+formatText_contentStartsLike(NrrdIoState *nio) {
   float oneFloat;
 
   return (NRRD_COMMENT_CHAR == nio->line[0]
-          || airParseStrF(&oneFloat, nio->line, _nrrdTextSep, 1));
+          || airParseStrF(&oneFloat, nio->line, textSep, 1));
 }
 
 static int /* Biff: 1 */
-_nrrdFormatText_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
-  static const char me[] = "_nrrdFormatText_read";
+formatText_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
+  static const char me[] = "formatText_read";
   const char *fs;
   char *errS;
   size_t llen, line, plen, sx, sy, elsz, size[NRRD_DIM_MAX];
@@ -79,7 +81,7 @@ _nrrdFormatText_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
   size_t (*parser)(void *, const char *, const char *, size_t);
   airPtrPtrUnion appu;
 
-  if (!_nrrdFormatText_contentStartsLike(nio)) {
+  if (!formatText_contentStartsLike(nio)) {
     biffAddf(NRRD, "%s: this doesn't look like a %s file", me, nrrdFormatText->name);
     return 1;
   }
@@ -100,8 +102,8 @@ _nrrdFormatText_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
   /* first, we get through comments */
   while (NRRD_COMMENT_CHAR == nio->line[0]) {
     nio->pos = 1;
-    nio->pos += AIR_INT(strspn(nio->line + nio->pos, _nrrdFieldSep));
-    fidx = _nrrdReadNrrdParseField(nio, AIR_FALSE);
+    nio->pos += AIR_INT(strspn(nio->line + nio->pos, nrrd__FieldSep));
+    fidx = nrrd__ReadNrrdParseField(nio, AIR_FALSE);
     /* could we parse anything? */
     if (!fidx) {
       /* being unable to parse a comment as a nrrd field is not
@@ -113,7 +115,7 @@ _nrrdFormatText_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
       goto plain;
     }
     fs = airEnumStr(nrrdField, fidx);
-    if (!_nrrdFieldValidInText[fidx]) {
+    if (!nrrd__FieldValidInText[fidx]) {
       if (nio && nio->verbose >= 1) {
         fprintf(stderr,
                 "(%s: field \"%s\" not allowed in plain text "
@@ -158,7 +160,7 @@ _nrrdFormatText_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
         nrrd->dim = 2;
       }
     }
-    if (_nrrdFieldOnePerAxis[fidx]) {
+    if (nrrd__FieldOnePerAxis[fidx]) {
       gotOnePerAxis = AIR_TRUE;
     }
     nio->seen[fidx] = AIR_TRUE;
@@ -186,14 +188,14 @@ _nrrdFormatText_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
   /* we supposedly have a line of numbers, now see how many there are.
      For the specific purpose of counting numbers, we assume float type;
      but we aren't going to remember these values. */
-  if (!airParseStrF(&oneFloat, nio->line, _nrrdTextSep, 1)) {
+  if (!airParseStrF(&oneFloat, nio->line, textSep, 1)) {
     char stmp[AIR_STRLEN_SMALL + 1];
     biffAddf(NRRD, "%s: couldn't parse a single number on line %s", me,
              airSprintSize_t(stmp, line));
     UNSETTWO;
     return 1;
   }
-  flArr = airArrayNew(NULL, NULL, sizeof(float), _NRRD_TEXT_INCR);
+  flArr = airArrayNew(NULL, NULL, sizeof(float), MY_NRRD_TEXT_INCR);
   if (!flArr) {
     biffAddf(NRRD, "%s: couldn't create array for first line values", me);
     UNSETTWO;
@@ -210,8 +212,7 @@ _nrrdFormatText_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
       UNSETTWO;
       return 1;
     }
-    if (sx
-        > airParseStrF((float *)(flArr->data), nio->line, _nrrdTextSep, AIR_UINT(sx))) {
+    if (sx > airParseStrF((float *)(flArr->data), nio->line, textSep, AIR_UINT(sx))) {
       /* We asked for sx ints and got less.  We know that we successfully
          got one value, so we did succeed in parsing sx-1 values */
       sx--;
@@ -253,7 +254,7 @@ _nrrdFormatText_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
 
   /* now see how many more lines there are */
   appu.c = &data;
-  dataArr = airArrayNew(appu.v, NULL, sx * elsz, _NRRD_TEXT_INCR);
+  dataArr = airArrayNew(appu.v, NULL, sx * elsz, MY_NRRD_TEXT_INCR);
   if (!dataArr) {
     biffAddf(NRRD, "%s: couldn't create data buffer", me);
     UNSETTWO;
@@ -269,7 +270,7 @@ _nrrdFormatText_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
       UNSETTWO;
       return 1;
     }
-    plen = parser(data + sy * sx * elsz, nio->line, _nrrdTextSep, sx);
+    plen = parser(data + sy * sx * elsz, nio->line, textSep, sx);
     if (sx > plen) {
       char stmp[3][AIR_STRLEN_SMALL + 1];
       biffAddf(NRRD, "%s: could only parse %s values (not %s) on line %s", me,
@@ -316,7 +317,7 @@ _nrrdFormatText_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
 }
 
 static int
-_nrrdFormatText_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
+formatText_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
   char cmt[AIR_STRLEN_SMALL + 1], buff[AIR_STRLEN_SMALL + 1];
   size_t cmtSize = AIR_STRLEN_SMALL + 1, buffSize = AIR_STRLEN_SMALL + 1, I, dsz;
   int i, x, y, sx, sy; /* HEY unsigned? */
@@ -332,23 +333,23 @@ _nrrdFormatText_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
   snprintf(cmt, cmtSize, "%c ", NRRD_COMMENT_CHAR);
   if (!nio->bareText) {
     if (1 == nrrd->dim) {
-      _nrrdFprintFieldInfo(file, cmt, nrrd, nio, nrrdField_dimension, AIR_FALSE);
+      nrrd__FprintFieldInfo(file, cmt, nrrd, nio, nrrdField_dimension, AIR_FALSE);
     }
     for (i = 1; i <= NRRD_FIELD_MAX; i++) {
-      if (_nrrdFieldValidInText[i]    /* (nrrdType is now valid) */
+      if (nrrd__FieldValidInText[i]   /* (nrrdType is now valid) */
           && nrrdField_dimension != i /* dimension is handled above */
-          && _nrrdFieldInteresting(nrrd, nio, i)
+          && nrrd__FieldInteresting(nrrd, nio, i)
           && (nrrdField_type != i  /* either not type */
               || moreThanFloat)) { /* or is type, and we should
                                       record non-float type */
-        _nrrdFprintFieldInfo(file, cmt, nrrd, nio, i, AIR_FALSE);
+        nrrd__FprintFieldInfo(file, cmt, nrrd, nio, i, AIR_FALSE);
       }
     }
     if (nrrdKeyValueSize(nrrd)) {
       unsigned int kvi;
       for (kvi = 0; kvi < nrrd->kvpArr->len; kvi++) {
-        _nrrdKeyValueWrite(file, NULL, "#", nrrd->kvp[0 + 2 * kvi],
-                           nrrd->kvp[1 + 2 * kvi]);
+        nrrd__KeyValueWrite(file, NULL, "#", nrrd->kvp[0 + 2 * kvi],
+                            nrrd->kvp[1 + 2 * kvi]);
       }
     }
   }
@@ -382,14 +383,14 @@ _nrrdFormatText_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
   return 0;
 }
 
-const NrrdFormat _nrrdFormatText = {"text",
-                                    AIR_FALSE, /* isImage */
-                                    AIR_TRUE,  /* readable */
-                                    _nrrdFormatText_available,
-                                    _nrrdFormatText_nameLooksLike,
-                                    _nrrdFormatText_fitsInto,
-                                    _nrrdFormatText_contentStartsLike,
-                                    _nrrdFormatText_read,
-                                    _nrrdFormatText_write};
+const NrrdFormat nrrd__FormatText = {"text",
+                                     AIR_FALSE, /* isImage */
+                                     AIR_TRUE,  /* readable */
+                                     formatText_available,
+                                     formatText_nameLooksLike,
+                                     formatText_fitsInto,
+                                     formatText_contentStartsLike,
+                                     formatText_read,
+                                     formatText_write};
 
-const NrrdFormat *const nrrdFormatText = &_nrrdFormatText;
+const NrrdFormat *const nrrdFormatText = &nrrd__FormatText;

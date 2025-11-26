@@ -21,11 +21,11 @@
 #include "privateTen.h"
 
 #define INFO "Modify shape by multiplying eigenvalues by a constant"
-static const char *_tend_evalmultInfoL
-  = (INFO ". The orientation of the tensor is unchanged.");
+static const char *evalmultInfoL = (INFO
+                                    ". The orientation of the tensor is unchanged.");
 
 static int
-tend_evalmultMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+evalmultMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -43,7 +43,7 @@ tend_evalmultMain(int argc, const char **argv, const char *me, const hestParm *h
 
   mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_tend_evalmultInfoL);
+  USAGE_PARSE(evalmultInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
@@ -64,4 +64,4 @@ tend_evalmultMain(int argc, const char **argv, const char *me, const hestParm *h
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(evalmult, INFO);
+MY_TEND_CMD(evalmult, INFO);

@@ -27,7 +27,7 @@
 #define NO_STRING "."
 
 #define INFO "Create a nrrd (or nrrd header) from scratch"
-static const char *_unrrdu_makeInfoL
+static const char *unu_makeInfoL
   = (INFO ".  The data can be in one or more files, or coming from stdin. "
           "This provides an easy way of specifying the information about some "
           "data as to wrap it in a NRRD file, either to pass on for further "
@@ -61,7 +61,7 @@ static const char *_unrrdu_makeInfoL
           "library function that encapsulates the functionality here.");
 
 static int
-unrrdu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+unu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
   int headerOnly;
   hestOptAdd_Flag(&hopt, "h,header", &headerOnly,
@@ -261,7 +261,7 @@ unrrdu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hp
   // Gone in TeemV2: hparm->greedySingleString = AIR_TRUE;
   // Gone in TeemV2: airStrtokQuoting = AIR_TRUE;
   hparm->responseFileEnable = AIR_TRUE;
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_makeInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_makeInfoL);
   airArray *mop = unrrduMopNew(hopt, hparm);
   char *err;
 
@@ -356,7 +356,7 @@ unrrdu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hp
   nrrd->dim = sizeLen;
   nrrdAxisInfoSet_nva(nrrd, nrrdAxisInfoSize, size);
   /* have to simulate having parsed this line for error checking in
-     _nrrdDataFNCheck() to not cause problems */
+     nrrdIoDataFNCheck() to not cause problems */
   nio->seen[nrrdField_sizes] = AIR_TRUE;
   if (nrrdContainsPercentThisAndMore(dataFileNames[0], 'd')) {
     /* trying to do a formatted filename list */
@@ -405,7 +405,7 @@ unrrdu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hp
       nio->dataFN[ii] = airStrdup(dataFileNames[ii]);
     }
   }
-  if (_nrrdDataFNCheck(nio, nrrd, AIR_TRUE)) {
+  if (nrrdIoDataFNCheck(nio, nrrd, AIR_TRUE)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble with input datafiles:\n%s", me, err);
     airMopError(mop);
@@ -654,7 +654,7 @@ unrrdu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hp
     }
     nio->line = NULL;
   }
-  if (_nrrdCheck(nrrd, AIR_FALSE, AIR_TRUE)) {
+  if (nrrdCheckMore(nrrd, AIR_FALSE, AIR_TRUE)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: problems with nrrd as set up:\n%s", me, err);
     airMopError(mop);
@@ -710,11 +710,11 @@ unrrdu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hp
       airArrayLenSet(nio->dataFNArr, 1);
       nio->dataFN[0] = airStrdup(outData);
     }
-    SAVE(out, nrrd, nio);
+    MY_SAVE(out, nrrd, nio);
   }
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(make, INFO);
+MY_UNRRDU_CMD(make, INFO);

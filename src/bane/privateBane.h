@@ -50,7 +50,7 @@ extern "C" {
 typedef unsigned int uint; /* uint is just more concise */
 
 /* hvol.c */
-extern int _baneAxisCheck(baneAxis *axis);
+extern int bane__AxisCheck(baneAxis *axis);
 
 #ifdef __cplusplus
 }

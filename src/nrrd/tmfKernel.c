@@ -37,59 +37,59 @@
  /* ************************************************* */
 
 static double
-_nrrd_TMFBAD_Int(const double *parm) {
+nTMFBAD_Int(const double *parm) {
   AIR_UNUSED(parm);
-  fprintf(stderr, "_nrrd_TMFBAD: Invalid TMF indexing: ef == 0\n");
+  fprintf(stderr, "nTMFBAD: Invalid TMF indexing: ef == 0\n");
   return 0.0;
 }
 
 static double
-_nrrd_TMFBAD_Sup(const double *parm) {
+nTMFBAD_Sup(const double *parm) {
   AIR_UNUSED(parm);
-  fprintf(stderr, "_nrrd_TMFBAD: Invalid TMF indexing: ef == 0\n");
+  fprintf(stderr, "nTMFBAD: Invalid TMF indexing: ef == 0\n");
   return 0.0;
 }
 
 static double
-_nrrd_TMFBAD_1_d(double x, const double *parm) {
+nTMFBAD_1_d(double x, const double *parm) {
   AIR_UNUSED(x);
   AIR_UNUSED(parm);
-  fprintf(stderr, "_nrrd_TMFBAD: Invalid TMF indexing: ef == 0\n");
+  fprintf(stderr, "nTMFBAD: Invalid TMF indexing: ef == 0\n");
   return 0.0;
 }
 
 static float
-_nrrd_TMFBAD_1_f(float x, const double *parm) {
+nTMFBAD_1_f(float x, const double *parm) {
   AIR_UNUSED(x);
   AIR_UNUSED(parm);
-  fprintf(stderr, "_nrrd_TMFBAD: Invalid TMF indexing: ef == 0\n");
+  fprintf(stderr, "nTMFBAD: Invalid TMF indexing: ef == 0\n");
   return 0.0;
 }
 
 static void
-_nrrd_TMFBAD_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMFBAD_N_d(double *f, const double *x, size_t len, const double *parm) {
   AIR_UNUSED(f);
   AIR_UNUSED(x);
   AIR_UNUSED(len);
   AIR_UNUSED(parm);
-  fprintf(stderr, "_nrrd_TMFBAD: Invalid TMF indexing: ef == 0\n");
+  fprintf(stderr, "nTMFBAD: Invalid TMF indexing: ef == 0\n");
 }
 
 static void
-_nrrd_TMFBAD_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMFBAD_N_f(float *f, const float *x, size_t len, const double *parm) {
   AIR_UNUSED(f);
   AIR_UNUSED(x);
   AIR_UNUSED(len);
   AIR_UNUSED(parm);
-  fprintf(stderr, "_nrrd_TMFBAD: Invalid TMF indexing: ef == 0\n");
+  fprintf(stderr, "nTMFBAD: Invalid TMF indexing: ef == 0\n");
 }
 
 static const NrrdKernel
-_nrrdKernel_TMFBAD = {
+nKernel_TMFBAD = {
   "TMFBAD", 1, AIR_FALSE,
-  _nrrd_TMFBAD_Sup, _nrrd_TMFBAD_Int,
-  _nrrd_TMFBAD_1_f, _nrrd_TMFBAD_N_f,
-  _nrrd_TMFBAD_1_d, _nrrd_TMFBAD_N_d
+  nTMFBAD_Sup, nTMFBAD_Int,
+  nTMFBAD_1_f, nTMFBAD_N_f,
+  nTMFBAD_1_d, nTMFBAD_N_d
 };
 #define OVER_3 0.33333333
 #define OVER_6 0.16666666
@@ -788,18 +788,18 @@ _nrrdKernel_TMFBAD = {
 
 /* ------------------------ TMF_dn_cn_1ef --------------------- */
 
-static double _nrrd_TMF_dn_cn_1ef_Int(const double *parm) {
+static double nTMF_dn_cn_1ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_dn_cn_1ef_Sup(const double *parm) {
+static double nTMF_dn_cn_1ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 1;
 }
 
 static double
-_nrrd_TMF_dn_cn_1ef_1_d(double x, const double *parm) {
+nTMF_dn_cn_1ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_cn_1ef */
@@ -810,7 +810,7 @@ _nrrd_TMF_dn_cn_1ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_dn_cn_1ef_1_f(float x, const double *parm) {
+nTMF_dn_cn_1ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_cn_1ef */
@@ -821,7 +821,7 @@ _nrrd_TMF_dn_cn_1ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_dn_cn_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_dn_cn_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -836,7 +836,7 @@ _nrrd_TMF_dn_cn_1ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_dn_cn_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_dn_cn_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -851,28 +851,28 @@ _nrrd_TMF_dn_cn_1ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_dn_cn_1ef = {
+nKernel_TMF_dn_cn_1ef = {
   "TMF_dn_cn_1ef", 1, AIR_FALSE,
-  _nrrd_TMF_dn_cn_1ef_Sup, _nrrd_TMF_dn_cn_1ef_Int,
-  _nrrd_TMF_dn_cn_1ef_1_f,  _nrrd_TMF_dn_cn_1ef_N_f,
-  _nrrd_TMF_dn_cn_1ef_1_d,  _nrrd_TMF_dn_cn_1ef_N_d
+  nTMF_dn_cn_1ef_Sup, nTMF_dn_cn_1ef_Int,
+  nTMF_dn_cn_1ef_1_f,  nTMF_dn_cn_1ef_N_f,
+  nTMF_dn_cn_1ef_1_d,  nTMF_dn_cn_1ef_N_d
 };
 
 
 /* ------------------------ TMF_dn_cn_2ef --------------------- */
 
-static double _nrrd_TMF_dn_cn_2ef_Int(const double *parm) {
+static double nTMF_dn_cn_2ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_dn_cn_2ef_Sup(const double *parm) {
+static double nTMF_dn_cn_2ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 1;
 }
 
 static double
-_nrrd_TMF_dn_cn_2ef_1_d(double x, const double *parm) {
+nTMF_dn_cn_2ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_cn_2ef */
@@ -883,7 +883,7 @@ _nrrd_TMF_dn_cn_2ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_dn_cn_2ef_1_f(float x, const double *parm) {
+nTMF_dn_cn_2ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_cn_2ef */
@@ -894,7 +894,7 @@ _nrrd_TMF_dn_cn_2ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_dn_cn_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_dn_cn_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -909,7 +909,7 @@ _nrrd_TMF_dn_cn_2ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_dn_cn_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_dn_cn_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -924,28 +924,28 @@ _nrrd_TMF_dn_cn_2ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_dn_cn_2ef = {
+nKernel_TMF_dn_cn_2ef = {
   "TMF_dn_cn_2ef", 1, AIR_FALSE,
-  _nrrd_TMF_dn_cn_2ef_Sup, _nrrd_TMF_dn_cn_2ef_Int,
-  _nrrd_TMF_dn_cn_2ef_1_f,  _nrrd_TMF_dn_cn_2ef_N_f,
-  _nrrd_TMF_dn_cn_2ef_1_d,  _nrrd_TMF_dn_cn_2ef_N_d
+  nTMF_dn_cn_2ef_Sup, nTMF_dn_cn_2ef_Int,
+  nTMF_dn_cn_2ef_1_f,  nTMF_dn_cn_2ef_N_f,
+  nTMF_dn_cn_2ef_1_d,  nTMF_dn_cn_2ef_N_d
 };
 
 
 /* ------------------------ TMF_dn_cn_3ef --------------------- */
 
-static double _nrrd_TMF_dn_cn_3ef_Int(const double *parm) {
+static double nTMF_dn_cn_3ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_dn_cn_3ef_Sup(const double *parm) {
+static double nTMF_dn_cn_3ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_dn_cn_3ef_1_d(double x, const double *parm) {
+nTMF_dn_cn_3ef_1_d(double x, const double *parm) {
   int i;
 
 
@@ -956,7 +956,7 @@ _nrrd_TMF_dn_cn_3ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_dn_cn_3ef_1_f(float x, const double *parm) {
+nTMF_dn_cn_3ef_1_f(float x, const double *parm) {
   int i;
 
 
@@ -967,7 +967,7 @@ _nrrd_TMF_dn_cn_3ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_dn_cn_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_dn_cn_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -982,7 +982,7 @@ _nrrd_TMF_dn_cn_3ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_dn_cn_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_dn_cn_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -997,28 +997,28 @@ _nrrd_TMF_dn_cn_3ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_dn_cn_3ef = {
+nKernel_TMF_dn_cn_3ef = {
   "TMF_dn_cn_3ef", 1, AIR_FALSE,
-  _nrrd_TMF_dn_cn_3ef_Sup, _nrrd_TMF_dn_cn_3ef_Int,
-  _nrrd_TMF_dn_cn_3ef_1_f,  _nrrd_TMF_dn_cn_3ef_N_f,
-  _nrrd_TMF_dn_cn_3ef_1_d,  _nrrd_TMF_dn_cn_3ef_N_d
+  nTMF_dn_cn_3ef_Sup, nTMF_dn_cn_3ef_Int,
+  nTMF_dn_cn_3ef_1_f,  nTMF_dn_cn_3ef_N_f,
+  nTMF_dn_cn_3ef_1_d,  nTMF_dn_cn_3ef_N_d
 };
 
 
 /* ------------------------ TMF_dn_cn_4ef --------------------- */
 
-static double _nrrd_TMF_dn_cn_4ef_Int(const double *parm) {
+static double nTMF_dn_cn_4ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_dn_cn_4ef_Sup(const double *parm) {
+static double nTMF_dn_cn_4ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_dn_cn_4ef_1_d(double x, const double *parm) {
+nTMF_dn_cn_4ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_cn_4ef */
@@ -1029,7 +1029,7 @@ _nrrd_TMF_dn_cn_4ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_dn_cn_4ef_1_f(float x, const double *parm) {
+nTMF_dn_cn_4ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_cn_4ef */
@@ -1040,7 +1040,7 @@ _nrrd_TMF_dn_cn_4ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_dn_cn_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_dn_cn_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -1055,7 +1055,7 @@ _nrrd_TMF_dn_cn_4ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_dn_cn_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_dn_cn_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -1070,28 +1070,28 @@ _nrrd_TMF_dn_cn_4ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_dn_cn_4ef = {
+nKernel_TMF_dn_cn_4ef = {
   "TMF_dn_cn_4ef", 1, AIR_FALSE,
-  _nrrd_TMF_dn_cn_4ef_Sup, _nrrd_TMF_dn_cn_4ef_Int,
-  _nrrd_TMF_dn_cn_4ef_1_f,  _nrrd_TMF_dn_cn_4ef_N_f,
-  _nrrd_TMF_dn_cn_4ef_1_d,  _nrrd_TMF_dn_cn_4ef_N_d
+  nTMF_dn_cn_4ef_Sup, nTMF_dn_cn_4ef_Int,
+  nTMF_dn_cn_4ef_1_f,  nTMF_dn_cn_4ef_N_f,
+  nTMF_dn_cn_4ef_1_d,  nTMF_dn_cn_4ef_N_d
 };
 
 
 /* ------------------------ TMF_dn_c0_1ef --------------------- */
 
-static double _nrrd_TMF_dn_c0_1ef_Int(const double *parm) {
+static double nTMF_dn_c0_1ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_dn_c0_1ef_Sup(const double *parm) {
+static double nTMF_dn_c0_1ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 1;
 }
 
 static double
-_nrrd_TMF_dn_c0_1ef_1_d(double x, const double *parm) {
+nTMF_dn_c0_1ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_c0_1ef */
@@ -1102,7 +1102,7 @@ _nrrd_TMF_dn_c0_1ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_dn_c0_1ef_1_f(float x, const double *parm) {
+nTMF_dn_c0_1ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_c0_1ef */
@@ -1113,7 +1113,7 @@ _nrrd_TMF_dn_c0_1ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_dn_c0_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_dn_c0_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -1128,7 +1128,7 @@ _nrrd_TMF_dn_c0_1ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_dn_c0_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_dn_c0_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -1143,28 +1143,28 @@ _nrrd_TMF_dn_c0_1ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_dn_c0_1ef = {
+nKernel_TMF_dn_c0_1ef = {
   "TMF_dn_c0_1ef", 1, AIR_FALSE,
-  _nrrd_TMF_dn_c0_1ef_Sup, _nrrd_TMF_dn_c0_1ef_Int,
-  _nrrd_TMF_dn_c0_1ef_1_f,  _nrrd_TMF_dn_c0_1ef_N_f,
-  _nrrd_TMF_dn_c0_1ef_1_d,  _nrrd_TMF_dn_c0_1ef_N_d
+  nTMF_dn_c0_1ef_Sup, nTMF_dn_c0_1ef_Int,
+  nTMF_dn_c0_1ef_1_f,  nTMF_dn_c0_1ef_N_f,
+  nTMF_dn_c0_1ef_1_d,  nTMF_dn_c0_1ef_N_d
 };
 
 
 /* ------------------------ TMF_dn_c0_2ef --------------------- */
 
-static double _nrrd_TMF_dn_c0_2ef_Int(const double *parm) {
+static double nTMF_dn_c0_2ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_dn_c0_2ef_Sup(const double *parm) {
+static double nTMF_dn_c0_2ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 1;
 }
 
 static double
-_nrrd_TMF_dn_c0_2ef_1_d(double x, const double *parm) {
+nTMF_dn_c0_2ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_c0_2ef */
@@ -1175,7 +1175,7 @@ _nrrd_TMF_dn_c0_2ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_dn_c0_2ef_1_f(float x, const double *parm) {
+nTMF_dn_c0_2ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_c0_2ef */
@@ -1186,7 +1186,7 @@ _nrrd_TMF_dn_c0_2ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_dn_c0_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_dn_c0_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -1201,7 +1201,7 @@ _nrrd_TMF_dn_c0_2ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_dn_c0_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_dn_c0_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -1216,28 +1216,28 @@ _nrrd_TMF_dn_c0_2ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_dn_c0_2ef = {
+nKernel_TMF_dn_c0_2ef = {
   "TMF_dn_c0_2ef", 1, AIR_FALSE,
-  _nrrd_TMF_dn_c0_2ef_Sup, _nrrd_TMF_dn_c0_2ef_Int,
-  _nrrd_TMF_dn_c0_2ef_1_f,  _nrrd_TMF_dn_c0_2ef_N_f,
-  _nrrd_TMF_dn_c0_2ef_1_d,  _nrrd_TMF_dn_c0_2ef_N_d
+  nTMF_dn_c0_2ef_Sup, nTMF_dn_c0_2ef_Int,
+  nTMF_dn_c0_2ef_1_f,  nTMF_dn_c0_2ef_N_f,
+  nTMF_dn_c0_2ef_1_d,  nTMF_dn_c0_2ef_N_d
 };
 
 
 /* ------------------------ TMF_dn_c0_3ef --------------------- */
 
-static double _nrrd_TMF_dn_c0_3ef_Int(const double *parm) {
+static double nTMF_dn_c0_3ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_dn_c0_3ef_Sup(const double *parm) {
+static double nTMF_dn_c0_3ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_dn_c0_3ef_1_d(double x, const double *parm) {
+nTMF_dn_c0_3ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_c0_3ef */
@@ -1248,7 +1248,7 @@ _nrrd_TMF_dn_c0_3ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_dn_c0_3ef_1_f(float x, const double *parm) {
+nTMF_dn_c0_3ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_c0_3ef */
@@ -1259,7 +1259,7 @@ _nrrd_TMF_dn_c0_3ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_dn_c0_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_dn_c0_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -1274,7 +1274,7 @@ _nrrd_TMF_dn_c0_3ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_dn_c0_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_dn_c0_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -1289,28 +1289,28 @@ _nrrd_TMF_dn_c0_3ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_dn_c0_3ef = {
+nKernel_TMF_dn_c0_3ef = {
   "TMF_dn_c0_3ef", 1, AIR_FALSE,
-  _nrrd_TMF_dn_c0_3ef_Sup, _nrrd_TMF_dn_c0_3ef_Int,
-  _nrrd_TMF_dn_c0_3ef_1_f,  _nrrd_TMF_dn_c0_3ef_N_f,
-  _nrrd_TMF_dn_c0_3ef_1_d,  _nrrd_TMF_dn_c0_3ef_N_d
+  nTMF_dn_c0_3ef_Sup, nTMF_dn_c0_3ef_Int,
+  nTMF_dn_c0_3ef_1_f,  nTMF_dn_c0_3ef_N_f,
+  nTMF_dn_c0_3ef_1_d,  nTMF_dn_c0_3ef_N_d
 };
 
 
 /* ------------------------ TMF_dn_c0_4ef --------------------- */
 
-static double _nrrd_TMF_dn_c0_4ef_Int(const double *parm) {
+static double nTMF_dn_c0_4ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_dn_c0_4ef_Sup(const double *parm) {
+static double nTMF_dn_c0_4ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_dn_c0_4ef_1_d(double x, const double *parm) {
+nTMF_dn_c0_4ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_c0_4ef */
@@ -1321,7 +1321,7 @@ _nrrd_TMF_dn_c0_4ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_dn_c0_4ef_1_f(float x, const double *parm) {
+nTMF_dn_c0_4ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_c0_4ef */
@@ -1332,7 +1332,7 @@ _nrrd_TMF_dn_c0_4ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_dn_c0_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_dn_c0_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -1347,7 +1347,7 @@ _nrrd_TMF_dn_c0_4ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_dn_c0_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_dn_c0_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -1362,28 +1362,28 @@ _nrrd_TMF_dn_c0_4ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_dn_c0_4ef = {
+nKernel_TMF_dn_c0_4ef = {
   "TMF_dn_c0_4ef", 1, AIR_FALSE,
-  _nrrd_TMF_dn_c0_4ef_Sup, _nrrd_TMF_dn_c0_4ef_Int,
-  _nrrd_TMF_dn_c0_4ef_1_f,  _nrrd_TMF_dn_c0_4ef_N_f,
-  _nrrd_TMF_dn_c0_4ef_1_d,  _nrrd_TMF_dn_c0_4ef_N_d
+  nTMF_dn_c0_4ef_Sup, nTMF_dn_c0_4ef_Int,
+  nTMF_dn_c0_4ef_1_f,  nTMF_dn_c0_4ef_N_f,
+  nTMF_dn_c0_4ef_1_d,  nTMF_dn_c0_4ef_N_d
 };
 
 
 /* ------------------------ TMF_dn_c1_1ef --------------------- */
 
-static double _nrrd_TMF_dn_c1_1ef_Int(const double *parm) {
+static double nTMF_dn_c1_1ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_dn_c1_1ef_Sup(const double *parm) {
+static double nTMF_dn_c1_1ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 1;
 }
 
 static double
-_nrrd_TMF_dn_c1_1ef_1_d(double x, const double *parm) {
+nTMF_dn_c1_1ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_c1_1ef */
@@ -1394,7 +1394,7 @@ _nrrd_TMF_dn_c1_1ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_dn_c1_1ef_1_f(float x, const double *parm) {
+nTMF_dn_c1_1ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_c1_1ef */
@@ -1405,7 +1405,7 @@ _nrrd_TMF_dn_c1_1ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_dn_c1_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_dn_c1_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -1420,7 +1420,7 @@ _nrrd_TMF_dn_c1_1ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_dn_c1_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_dn_c1_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -1435,28 +1435,28 @@ _nrrd_TMF_dn_c1_1ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_dn_c1_1ef = {
+nKernel_TMF_dn_c1_1ef = {
   "TMF_dn_c1_1ef", 1, AIR_FALSE,
-  _nrrd_TMF_dn_c1_1ef_Sup, _nrrd_TMF_dn_c1_1ef_Int,
-  _nrrd_TMF_dn_c1_1ef_1_f,  _nrrd_TMF_dn_c1_1ef_N_f,
-  _nrrd_TMF_dn_c1_1ef_1_d,  _nrrd_TMF_dn_c1_1ef_N_d
+  nTMF_dn_c1_1ef_Sup, nTMF_dn_c1_1ef_Int,
+  nTMF_dn_c1_1ef_1_f,  nTMF_dn_c1_1ef_N_f,
+  nTMF_dn_c1_1ef_1_d,  nTMF_dn_c1_1ef_N_d
 };
 
 
 /* ------------------------ TMF_dn_c1_2ef --------------------- */
 
-static double _nrrd_TMF_dn_c1_2ef_Int(const double *parm) {
+static double nTMF_dn_c1_2ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_dn_c1_2ef_Sup(const double *parm) {
+static double nTMF_dn_c1_2ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_dn_c1_2ef_1_d(double x, const double *parm) {
+nTMF_dn_c1_2ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_c1_2ef */
@@ -1467,7 +1467,7 @@ _nrrd_TMF_dn_c1_2ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_dn_c1_2ef_1_f(float x, const double *parm) {
+nTMF_dn_c1_2ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_c1_2ef */
@@ -1478,7 +1478,7 @@ _nrrd_TMF_dn_c1_2ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_dn_c1_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_dn_c1_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -1493,7 +1493,7 @@ _nrrd_TMF_dn_c1_2ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_dn_c1_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_dn_c1_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -1508,28 +1508,28 @@ _nrrd_TMF_dn_c1_2ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_dn_c1_2ef = {
+nKernel_TMF_dn_c1_2ef = {
   "TMF_dn_c1_2ef", 1, AIR_FALSE,
-  _nrrd_TMF_dn_c1_2ef_Sup, _nrrd_TMF_dn_c1_2ef_Int,
-  _nrrd_TMF_dn_c1_2ef_1_f,  _nrrd_TMF_dn_c1_2ef_N_f,
-  _nrrd_TMF_dn_c1_2ef_1_d,  _nrrd_TMF_dn_c1_2ef_N_d
+  nTMF_dn_c1_2ef_Sup, nTMF_dn_c1_2ef_Int,
+  nTMF_dn_c1_2ef_1_f,  nTMF_dn_c1_2ef_N_f,
+  nTMF_dn_c1_2ef_1_d,  nTMF_dn_c1_2ef_N_d
 };
 
 
 /* ------------------------ TMF_dn_c1_3ef --------------------- */
 
-static double _nrrd_TMF_dn_c1_3ef_Int(const double *parm) {
+static double nTMF_dn_c1_3ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_dn_c1_3ef_Sup(const double *parm) {
+static double nTMF_dn_c1_3ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_dn_c1_3ef_1_d(double x, const double *parm) {
+nTMF_dn_c1_3ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_c1_3ef */
@@ -1540,7 +1540,7 @@ _nrrd_TMF_dn_c1_3ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_dn_c1_3ef_1_f(float x, const double *parm) {
+nTMF_dn_c1_3ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_c1_3ef */
@@ -1551,7 +1551,7 @@ _nrrd_TMF_dn_c1_3ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_dn_c1_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_dn_c1_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -1566,7 +1566,7 @@ _nrrd_TMF_dn_c1_3ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_dn_c1_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_dn_c1_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -1581,28 +1581,28 @@ _nrrd_TMF_dn_c1_3ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_dn_c1_3ef = {
+nKernel_TMF_dn_c1_3ef = {
   "TMF_dn_c1_3ef", 1, AIR_FALSE,
-  _nrrd_TMF_dn_c1_3ef_Sup, _nrrd_TMF_dn_c1_3ef_Int,
-  _nrrd_TMF_dn_c1_3ef_1_f,  _nrrd_TMF_dn_c1_3ef_N_f,
-  _nrrd_TMF_dn_c1_3ef_1_d,  _nrrd_TMF_dn_c1_3ef_N_d
+  nTMF_dn_c1_3ef_Sup, nTMF_dn_c1_3ef_Int,
+  nTMF_dn_c1_3ef_1_f,  nTMF_dn_c1_3ef_N_f,
+  nTMF_dn_c1_3ef_1_d,  nTMF_dn_c1_3ef_N_d
 };
 
 
 /* ------------------------ TMF_dn_c1_4ef --------------------- */
 
-static double _nrrd_TMF_dn_c1_4ef_Int(const double *parm) {
+static double nTMF_dn_c1_4ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_dn_c1_4ef_Sup(const double *parm) {
+static double nTMF_dn_c1_4ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 3;
 }
 
 static double
-_nrrd_TMF_dn_c1_4ef_1_d(double x, const double *parm) {
+nTMF_dn_c1_4ef_1_d(double x, const double *parm) {
   int i;
 
 
@@ -1613,7 +1613,7 @@ _nrrd_TMF_dn_c1_4ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_dn_c1_4ef_1_f(float x, const double *parm) {
+nTMF_dn_c1_4ef_1_f(float x, const double *parm) {
   int i;
 
 
@@ -1624,7 +1624,7 @@ _nrrd_TMF_dn_c1_4ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_dn_c1_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_dn_c1_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -1639,7 +1639,7 @@ _nrrd_TMF_dn_c1_4ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_dn_c1_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_dn_c1_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -1654,28 +1654,28 @@ _nrrd_TMF_dn_c1_4ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_dn_c1_4ef = {
+nKernel_TMF_dn_c1_4ef = {
   "TMF_dn_c1_4ef", 1, AIR_FALSE,
-  _nrrd_TMF_dn_c1_4ef_Sup, _nrrd_TMF_dn_c1_4ef_Int,
-  _nrrd_TMF_dn_c1_4ef_1_f,  _nrrd_TMF_dn_c1_4ef_N_f,
-  _nrrd_TMF_dn_c1_4ef_1_d,  _nrrd_TMF_dn_c1_4ef_N_d
+  nTMF_dn_c1_4ef_Sup, nTMF_dn_c1_4ef_Int,
+  nTMF_dn_c1_4ef_1_f,  nTMF_dn_c1_4ef_N_f,
+  nTMF_dn_c1_4ef_1_d,  nTMF_dn_c1_4ef_N_d
 };
 
 
 /* ------------------------ TMF_dn_c2_1ef --------------------- */
 
-static double _nrrd_TMF_dn_c2_1ef_Int(const double *parm) {
+static double nTMF_dn_c2_1ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_dn_c2_1ef_Sup(const double *parm) {
+static double nTMF_dn_c2_1ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 1;
 }
 
 static double
-_nrrd_TMF_dn_c2_1ef_1_d(double x, const double *parm) {
+nTMF_dn_c2_1ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_c2_1ef */
@@ -1686,7 +1686,7 @@ _nrrd_TMF_dn_c2_1ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_dn_c2_1ef_1_f(float x, const double *parm) {
+nTMF_dn_c2_1ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_c2_1ef */
@@ -1697,7 +1697,7 @@ _nrrd_TMF_dn_c2_1ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_dn_c2_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_dn_c2_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -1712,7 +1712,7 @@ _nrrd_TMF_dn_c2_1ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_dn_c2_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_dn_c2_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -1727,28 +1727,28 @@ _nrrd_TMF_dn_c2_1ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_dn_c2_1ef = {
+nKernel_TMF_dn_c2_1ef = {
   "TMF_dn_c2_1ef", 1, AIR_FALSE,
-  _nrrd_TMF_dn_c2_1ef_Sup, _nrrd_TMF_dn_c2_1ef_Int,
-  _nrrd_TMF_dn_c2_1ef_1_f,  _nrrd_TMF_dn_c2_1ef_N_f,
-  _nrrd_TMF_dn_c2_1ef_1_d,  _nrrd_TMF_dn_c2_1ef_N_d
+  nTMF_dn_c2_1ef_Sup, nTMF_dn_c2_1ef_Int,
+  nTMF_dn_c2_1ef_1_f,  nTMF_dn_c2_1ef_N_f,
+  nTMF_dn_c2_1ef_1_d,  nTMF_dn_c2_1ef_N_d
 };
 
 
 /* ------------------------ TMF_dn_c2_2ef --------------------- */
 
-static double _nrrd_TMF_dn_c2_2ef_Int(const double *parm) {
+static double nTMF_dn_c2_2ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_dn_c2_2ef_Sup(const double *parm) {
+static double nTMF_dn_c2_2ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_dn_c2_2ef_1_d(double x, const double *parm) {
+nTMF_dn_c2_2ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_c2_2ef */
@@ -1759,7 +1759,7 @@ _nrrd_TMF_dn_c2_2ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_dn_c2_2ef_1_f(float x, const double *parm) {
+nTMF_dn_c2_2ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_c2_2ef */
@@ -1770,7 +1770,7 @@ _nrrd_TMF_dn_c2_2ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_dn_c2_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_dn_c2_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -1785,7 +1785,7 @@ _nrrd_TMF_dn_c2_2ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_dn_c2_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_dn_c2_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -1800,28 +1800,28 @@ _nrrd_TMF_dn_c2_2ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_dn_c2_2ef = {
+nKernel_TMF_dn_c2_2ef = {
   "TMF_dn_c2_2ef", 1, AIR_FALSE,
-  _nrrd_TMF_dn_c2_2ef_Sup, _nrrd_TMF_dn_c2_2ef_Int,
-  _nrrd_TMF_dn_c2_2ef_1_f,  _nrrd_TMF_dn_c2_2ef_N_f,
-  _nrrd_TMF_dn_c2_2ef_1_d,  _nrrd_TMF_dn_c2_2ef_N_d
+  nTMF_dn_c2_2ef_Sup, nTMF_dn_c2_2ef_Int,
+  nTMF_dn_c2_2ef_1_f,  nTMF_dn_c2_2ef_N_f,
+  nTMF_dn_c2_2ef_1_d,  nTMF_dn_c2_2ef_N_d
 };
 
 
 /* ------------------------ TMF_dn_c2_3ef --------------------- */
 
-static double _nrrd_TMF_dn_c2_3ef_Int(const double *parm) {
+static double nTMF_dn_c2_3ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_dn_c2_3ef_Sup(const double *parm) {
+static double nTMF_dn_c2_3ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_dn_c2_3ef_1_d(double x, const double *parm) {
+nTMF_dn_c2_3ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_c2_3ef */
@@ -1832,7 +1832,7 @@ _nrrd_TMF_dn_c2_3ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_dn_c2_3ef_1_f(float x, const double *parm) {
+nTMF_dn_c2_3ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_c2_3ef */
@@ -1843,7 +1843,7 @@ _nrrd_TMF_dn_c2_3ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_dn_c2_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_dn_c2_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -1858,7 +1858,7 @@ _nrrd_TMF_dn_c2_3ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_dn_c2_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_dn_c2_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -1873,28 +1873,28 @@ _nrrd_TMF_dn_c2_3ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_dn_c2_3ef = {
+nKernel_TMF_dn_c2_3ef = {
   "TMF_dn_c2_3ef", 1, AIR_FALSE,
-  _nrrd_TMF_dn_c2_3ef_Sup, _nrrd_TMF_dn_c2_3ef_Int,
-  _nrrd_TMF_dn_c2_3ef_1_f,  _nrrd_TMF_dn_c2_3ef_N_f,
-  _nrrd_TMF_dn_c2_3ef_1_d,  _nrrd_TMF_dn_c2_3ef_N_d
+  nTMF_dn_c2_3ef_Sup, nTMF_dn_c2_3ef_Int,
+  nTMF_dn_c2_3ef_1_f,  nTMF_dn_c2_3ef_N_f,
+  nTMF_dn_c2_3ef_1_d,  nTMF_dn_c2_3ef_N_d
 };
 
 
 /* ------------------------ TMF_dn_c2_4ef --------------------- */
 
-static double _nrrd_TMF_dn_c2_4ef_Int(const double *parm) {
+static double nTMF_dn_c2_4ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_dn_c2_4ef_Sup(const double *parm) {
+static double nTMF_dn_c2_4ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 3;
 }
 
 static double
-_nrrd_TMF_dn_c2_4ef_1_d(double x, const double *parm) {
+nTMF_dn_c2_4ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_c2_4ef */
@@ -1905,7 +1905,7 @@ _nrrd_TMF_dn_c2_4ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_dn_c2_4ef_1_f(float x, const double *parm) {
+nTMF_dn_c2_4ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_c2_4ef */
@@ -1916,7 +1916,7 @@ _nrrd_TMF_dn_c2_4ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_dn_c2_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_dn_c2_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -1931,7 +1931,7 @@ _nrrd_TMF_dn_c2_4ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_dn_c2_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_dn_c2_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -1946,28 +1946,28 @@ _nrrd_TMF_dn_c2_4ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_dn_c2_4ef = {
+nKernel_TMF_dn_c2_4ef = {
   "TMF_dn_c2_4ef", 1, AIR_FALSE,
-  _nrrd_TMF_dn_c2_4ef_Sup, _nrrd_TMF_dn_c2_4ef_Int,
-  _nrrd_TMF_dn_c2_4ef_1_f,  _nrrd_TMF_dn_c2_4ef_N_f,
-  _nrrd_TMF_dn_c2_4ef_1_d,  _nrrd_TMF_dn_c2_4ef_N_d
+  nTMF_dn_c2_4ef_Sup, nTMF_dn_c2_4ef_Int,
+  nTMF_dn_c2_4ef_1_f,  nTMF_dn_c2_4ef_N_f,
+  nTMF_dn_c2_4ef_1_d,  nTMF_dn_c2_4ef_N_d
 };
 
 
 /* ------------------------ TMF_dn_c3_1ef --------------------- */
 
-static double _nrrd_TMF_dn_c3_1ef_Int(const double *parm) {
+static double nTMF_dn_c3_1ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_dn_c3_1ef_Sup(const double *parm) {
+static double nTMF_dn_c3_1ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 1;
 }
 
 static double
-_nrrd_TMF_dn_c3_1ef_1_d(double x, const double *parm) {
+nTMF_dn_c3_1ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_c3_1ef */
@@ -1978,7 +1978,7 @@ _nrrd_TMF_dn_c3_1ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_dn_c3_1ef_1_f(float x, const double *parm) {
+nTMF_dn_c3_1ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_c3_1ef */
@@ -1989,7 +1989,7 @@ _nrrd_TMF_dn_c3_1ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_dn_c3_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_dn_c3_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -2004,7 +2004,7 @@ _nrrd_TMF_dn_c3_1ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_dn_c3_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_dn_c3_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -2019,28 +2019,28 @@ _nrrd_TMF_dn_c3_1ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_dn_c3_1ef = {
+nKernel_TMF_dn_c3_1ef = {
   "TMF_dn_c3_1ef", 1, AIR_FALSE,
-  _nrrd_TMF_dn_c3_1ef_Sup, _nrrd_TMF_dn_c3_1ef_Int,
-  _nrrd_TMF_dn_c3_1ef_1_f,  _nrrd_TMF_dn_c3_1ef_N_f,
-  _nrrd_TMF_dn_c3_1ef_1_d,  _nrrd_TMF_dn_c3_1ef_N_d
+  nTMF_dn_c3_1ef_Sup, nTMF_dn_c3_1ef_Int,
+  nTMF_dn_c3_1ef_1_f,  nTMF_dn_c3_1ef_N_f,
+  nTMF_dn_c3_1ef_1_d,  nTMF_dn_c3_1ef_N_d
 };
 
 
 /* ------------------------ TMF_dn_c3_2ef --------------------- */
 
-static double _nrrd_TMF_dn_c3_2ef_Int(const double *parm) {
+static double nTMF_dn_c3_2ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_dn_c3_2ef_Sup(const double *parm) {
+static double nTMF_dn_c3_2ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_dn_c3_2ef_1_d(double x, const double *parm) {
+nTMF_dn_c3_2ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_c3_2ef */
@@ -2051,7 +2051,7 @@ _nrrd_TMF_dn_c3_2ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_dn_c3_2ef_1_f(float x, const double *parm) {
+nTMF_dn_c3_2ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_c3_2ef */
@@ -2062,7 +2062,7 @@ _nrrd_TMF_dn_c3_2ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_dn_c3_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_dn_c3_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -2077,7 +2077,7 @@ _nrrd_TMF_dn_c3_2ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_dn_c3_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_dn_c3_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -2092,28 +2092,28 @@ _nrrd_TMF_dn_c3_2ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_dn_c3_2ef = {
+nKernel_TMF_dn_c3_2ef = {
   "TMF_dn_c3_2ef", 1, AIR_FALSE,
-  _nrrd_TMF_dn_c3_2ef_Sup, _nrrd_TMF_dn_c3_2ef_Int,
-  _nrrd_TMF_dn_c3_2ef_1_f,  _nrrd_TMF_dn_c3_2ef_N_f,
-  _nrrd_TMF_dn_c3_2ef_1_d,  _nrrd_TMF_dn_c3_2ef_N_d
+  nTMF_dn_c3_2ef_Sup, nTMF_dn_c3_2ef_Int,
+  nTMF_dn_c3_2ef_1_f,  nTMF_dn_c3_2ef_N_f,
+  nTMF_dn_c3_2ef_1_d,  nTMF_dn_c3_2ef_N_d
 };
 
 
 /* ------------------------ TMF_dn_c3_3ef --------------------- */
 
-static double _nrrd_TMF_dn_c3_3ef_Int(const double *parm) {
+static double nTMF_dn_c3_3ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_dn_c3_3ef_Sup(const double *parm) {
+static double nTMF_dn_c3_3ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_dn_c3_3ef_1_d(double x, const double *parm) {
+nTMF_dn_c3_3ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_c3_3ef */
@@ -2124,7 +2124,7 @@ _nrrd_TMF_dn_c3_3ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_dn_c3_3ef_1_f(float x, const double *parm) {
+nTMF_dn_c3_3ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_c3_3ef */
@@ -2135,7 +2135,7 @@ _nrrd_TMF_dn_c3_3ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_dn_c3_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_dn_c3_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -2150,7 +2150,7 @@ _nrrd_TMF_dn_c3_3ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_dn_c3_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_dn_c3_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -2165,28 +2165,28 @@ _nrrd_TMF_dn_c3_3ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_dn_c3_3ef = {
+nKernel_TMF_dn_c3_3ef = {
   "TMF_dn_c3_3ef", 1, AIR_FALSE,
-  _nrrd_TMF_dn_c3_3ef_Sup, _nrrd_TMF_dn_c3_3ef_Int,
-  _nrrd_TMF_dn_c3_3ef_1_f,  _nrrd_TMF_dn_c3_3ef_N_f,
-  _nrrd_TMF_dn_c3_3ef_1_d,  _nrrd_TMF_dn_c3_3ef_N_d
+  nTMF_dn_c3_3ef_Sup, nTMF_dn_c3_3ef_Int,
+  nTMF_dn_c3_3ef_1_f,  nTMF_dn_c3_3ef_N_f,
+  nTMF_dn_c3_3ef_1_d,  nTMF_dn_c3_3ef_N_d
 };
 
 
 /* ------------------------ TMF_dn_c3_4ef --------------------- */
 
-static double _nrrd_TMF_dn_c3_4ef_Int(const double *parm) {
+static double nTMF_dn_c3_4ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_dn_c3_4ef_Sup(const double *parm) {
+static double nTMF_dn_c3_4ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 3;
 }
 
 static double
-_nrrd_TMF_dn_c3_4ef_1_d(double x, const double *parm) {
+nTMF_dn_c3_4ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_c3_4ef */
@@ -2197,7 +2197,7 @@ _nrrd_TMF_dn_c3_4ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_dn_c3_4ef_1_f(float x, const double *parm) {
+nTMF_dn_c3_4ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_dn_c3_4ef */
@@ -2208,7 +2208,7 @@ _nrrd_TMF_dn_c3_4ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_dn_c3_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_dn_c3_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -2223,7 +2223,7 @@ _nrrd_TMF_dn_c3_4ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_dn_c3_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_dn_c3_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -2238,28 +2238,28 @@ _nrrd_TMF_dn_c3_4ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_dn_c3_4ef = {
+nKernel_TMF_dn_c3_4ef = {
   "TMF_dn_c3_4ef", 1, AIR_FALSE,
-  _nrrd_TMF_dn_c3_4ef_Sup, _nrrd_TMF_dn_c3_4ef_Int,
-  _nrrd_TMF_dn_c3_4ef_1_f,  _nrrd_TMF_dn_c3_4ef_N_f,
-  _nrrd_TMF_dn_c3_4ef_1_d,  _nrrd_TMF_dn_c3_4ef_N_d
+  nTMF_dn_c3_4ef_Sup, nTMF_dn_c3_4ef_Int,
+  nTMF_dn_c3_4ef_1_f,  nTMF_dn_c3_4ef_N_f,
+  nTMF_dn_c3_4ef_1_d,  nTMF_dn_c3_4ef_N_d
 };
 
 
 /* ------------------------ TMF_d0_cn_1ef --------------------- */
 
-static double _nrrd_TMF_d0_cn_1ef_Int(const double *parm) {
+static double nTMF_d0_cn_1ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_d0_cn_1ef_Sup(const double *parm) {
+static double nTMF_d0_cn_1ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 1;
 }
 
 static double
-_nrrd_TMF_d0_cn_1ef_1_d(double x, const double *parm) {
+nTMF_d0_cn_1ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_cn_1ef */
@@ -2270,7 +2270,7 @@ _nrrd_TMF_d0_cn_1ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d0_cn_1ef_1_f(float x, const double *parm) {
+nTMF_d0_cn_1ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_cn_1ef */
@@ -2281,7 +2281,7 @@ _nrrd_TMF_d0_cn_1ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d0_cn_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d0_cn_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -2296,7 +2296,7 @@ _nrrd_TMF_d0_cn_1ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d0_cn_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d0_cn_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -2311,28 +2311,28 @@ _nrrd_TMF_d0_cn_1ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d0_cn_1ef = {
+nKernel_TMF_d0_cn_1ef = {
   "TMF_d0_cn_1ef", 1, AIR_FALSE,
-  _nrrd_TMF_d0_cn_1ef_Sup, _nrrd_TMF_d0_cn_1ef_Int,
-  _nrrd_TMF_d0_cn_1ef_1_f,  _nrrd_TMF_d0_cn_1ef_N_f,
-  _nrrd_TMF_d0_cn_1ef_1_d,  _nrrd_TMF_d0_cn_1ef_N_d
+  nTMF_d0_cn_1ef_Sup, nTMF_d0_cn_1ef_Int,
+  nTMF_d0_cn_1ef_1_f,  nTMF_d0_cn_1ef_N_f,
+  nTMF_d0_cn_1ef_1_d,  nTMF_d0_cn_1ef_N_d
 };
 
 
 /* ------------------------ TMF_d0_cn_2ef --------------------- */
 
-static double _nrrd_TMF_d0_cn_2ef_Int(const double *parm) {
+static double nTMF_d0_cn_2ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_d0_cn_2ef_Sup(const double *parm) {
+static double nTMF_d0_cn_2ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 1;
 }
 
 static double
-_nrrd_TMF_d0_cn_2ef_1_d(double x, const double *parm) {
+nTMF_d0_cn_2ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_cn_2ef */
@@ -2343,7 +2343,7 @@ _nrrd_TMF_d0_cn_2ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d0_cn_2ef_1_f(float x, const double *parm) {
+nTMF_d0_cn_2ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_cn_2ef */
@@ -2354,7 +2354,7 @@ _nrrd_TMF_d0_cn_2ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d0_cn_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d0_cn_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -2369,7 +2369,7 @@ _nrrd_TMF_d0_cn_2ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d0_cn_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d0_cn_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -2384,28 +2384,28 @@ _nrrd_TMF_d0_cn_2ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d0_cn_2ef = {
+nKernel_TMF_d0_cn_2ef = {
   "TMF_d0_cn_2ef", 1, AIR_FALSE,
-  _nrrd_TMF_d0_cn_2ef_Sup, _nrrd_TMF_d0_cn_2ef_Int,
-  _nrrd_TMF_d0_cn_2ef_1_f,  _nrrd_TMF_d0_cn_2ef_N_f,
-  _nrrd_TMF_d0_cn_2ef_1_d,  _nrrd_TMF_d0_cn_2ef_N_d
+  nTMF_d0_cn_2ef_Sup, nTMF_d0_cn_2ef_Int,
+  nTMF_d0_cn_2ef_1_f,  nTMF_d0_cn_2ef_N_f,
+  nTMF_d0_cn_2ef_1_d,  nTMF_d0_cn_2ef_N_d
 };
 
 
 /* ------------------------ TMF_d0_cn_3ef --------------------- */
 
-static double _nrrd_TMF_d0_cn_3ef_Int(const double *parm) {
+static double nTMF_d0_cn_3ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_d0_cn_3ef_Sup(const double *parm) {
+static double nTMF_d0_cn_3ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_d0_cn_3ef_1_d(double x, const double *parm) {
+nTMF_d0_cn_3ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_cn_3ef */
@@ -2416,7 +2416,7 @@ _nrrd_TMF_d0_cn_3ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d0_cn_3ef_1_f(float x, const double *parm) {
+nTMF_d0_cn_3ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_cn_3ef */
@@ -2427,7 +2427,7 @@ _nrrd_TMF_d0_cn_3ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d0_cn_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d0_cn_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -2442,7 +2442,7 @@ _nrrd_TMF_d0_cn_3ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d0_cn_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d0_cn_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -2457,28 +2457,28 @@ _nrrd_TMF_d0_cn_3ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d0_cn_3ef = {
+nKernel_TMF_d0_cn_3ef = {
   "TMF_d0_cn_3ef", 1, AIR_FALSE,
-  _nrrd_TMF_d0_cn_3ef_Sup, _nrrd_TMF_d0_cn_3ef_Int,
-  _nrrd_TMF_d0_cn_3ef_1_f,  _nrrd_TMF_d0_cn_3ef_N_f,
-  _nrrd_TMF_d0_cn_3ef_1_d,  _nrrd_TMF_d0_cn_3ef_N_d
+  nTMF_d0_cn_3ef_Sup, nTMF_d0_cn_3ef_Int,
+  nTMF_d0_cn_3ef_1_f,  nTMF_d0_cn_3ef_N_f,
+  nTMF_d0_cn_3ef_1_d,  nTMF_d0_cn_3ef_N_d
 };
 
 
 /* ------------------------ TMF_d0_cn_4ef --------------------- */
 
-static double _nrrd_TMF_d0_cn_4ef_Int(const double *parm) {
+static double nTMF_d0_cn_4ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_d0_cn_4ef_Sup(const double *parm) {
+static double nTMF_d0_cn_4ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_d0_cn_4ef_1_d(double x, const double *parm) {
+nTMF_d0_cn_4ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_cn_4ef */
@@ -2489,7 +2489,7 @@ _nrrd_TMF_d0_cn_4ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d0_cn_4ef_1_f(float x, const double *parm) {
+nTMF_d0_cn_4ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_cn_4ef */
@@ -2500,7 +2500,7 @@ _nrrd_TMF_d0_cn_4ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d0_cn_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d0_cn_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -2515,7 +2515,7 @@ _nrrd_TMF_d0_cn_4ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d0_cn_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d0_cn_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -2530,28 +2530,28 @@ _nrrd_TMF_d0_cn_4ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d0_cn_4ef = {
+nKernel_TMF_d0_cn_4ef = {
   "TMF_d0_cn_4ef", 1, AIR_FALSE,
-  _nrrd_TMF_d0_cn_4ef_Sup, _nrrd_TMF_d0_cn_4ef_Int,
-  _nrrd_TMF_d0_cn_4ef_1_f,  _nrrd_TMF_d0_cn_4ef_N_f,
-  _nrrd_TMF_d0_cn_4ef_1_d,  _nrrd_TMF_d0_cn_4ef_N_d
+  nTMF_d0_cn_4ef_Sup, nTMF_d0_cn_4ef_Int,
+  nTMF_d0_cn_4ef_1_f,  nTMF_d0_cn_4ef_N_f,
+  nTMF_d0_cn_4ef_1_d,  nTMF_d0_cn_4ef_N_d
 };
 
 
 /* ------------------------ TMF_d0_c0_1ef --------------------- */
 
-static double _nrrd_TMF_d0_c0_1ef_Int(const double *parm) {
+static double nTMF_d0_c0_1ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_d0_c0_1ef_Sup(const double *parm) {
+static double nTMF_d0_c0_1ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 1;
 }
 
 static double
-_nrrd_TMF_d0_c0_1ef_1_d(double x, const double *parm) {
+nTMF_d0_c0_1ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_c0_1ef */
@@ -2562,7 +2562,7 @@ _nrrd_TMF_d0_c0_1ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d0_c0_1ef_1_f(float x, const double *parm) {
+nTMF_d0_c0_1ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_c0_1ef */
@@ -2573,7 +2573,7 @@ _nrrd_TMF_d0_c0_1ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d0_c0_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d0_c0_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -2588,7 +2588,7 @@ _nrrd_TMF_d0_c0_1ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d0_c0_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d0_c0_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -2603,28 +2603,28 @@ _nrrd_TMF_d0_c0_1ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d0_c0_1ef = {
+nKernel_TMF_d0_c0_1ef = {
   "TMF_d0_c0_1ef", 1, AIR_FALSE,
-  _nrrd_TMF_d0_c0_1ef_Sup, _nrrd_TMF_d0_c0_1ef_Int,
-  _nrrd_TMF_d0_c0_1ef_1_f,  _nrrd_TMF_d0_c0_1ef_N_f,
-  _nrrd_TMF_d0_c0_1ef_1_d,  _nrrd_TMF_d0_c0_1ef_N_d
+  nTMF_d0_c0_1ef_Sup, nTMF_d0_c0_1ef_Int,
+  nTMF_d0_c0_1ef_1_f,  nTMF_d0_c0_1ef_N_f,
+  nTMF_d0_c0_1ef_1_d,  nTMF_d0_c0_1ef_N_d
 };
 
 
 /* ------------------------ TMF_d0_c0_2ef --------------------- */
 
-static double _nrrd_TMF_d0_c0_2ef_Int(const double *parm) {
+static double nTMF_d0_c0_2ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_d0_c0_2ef_Sup(const double *parm) {
+static double nTMF_d0_c0_2ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 1;
 }
 
 static double
-_nrrd_TMF_d0_c0_2ef_1_d(double x, const double *parm) {
+nTMF_d0_c0_2ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_c0_2ef */
@@ -2635,7 +2635,7 @@ _nrrd_TMF_d0_c0_2ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d0_c0_2ef_1_f(float x, const double *parm) {
+nTMF_d0_c0_2ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_c0_2ef */
@@ -2646,7 +2646,7 @@ _nrrd_TMF_d0_c0_2ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d0_c0_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d0_c0_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -2661,7 +2661,7 @@ _nrrd_TMF_d0_c0_2ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d0_c0_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d0_c0_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -2676,28 +2676,28 @@ _nrrd_TMF_d0_c0_2ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d0_c0_2ef = {
+nKernel_TMF_d0_c0_2ef = {
   "TMF_d0_c0_2ef", 1, AIR_FALSE,
-  _nrrd_TMF_d0_c0_2ef_Sup, _nrrd_TMF_d0_c0_2ef_Int,
-  _nrrd_TMF_d0_c0_2ef_1_f,  _nrrd_TMF_d0_c0_2ef_N_f,
-  _nrrd_TMF_d0_c0_2ef_1_d,  _nrrd_TMF_d0_c0_2ef_N_d
+  nTMF_d0_c0_2ef_Sup, nTMF_d0_c0_2ef_Int,
+  nTMF_d0_c0_2ef_1_f,  nTMF_d0_c0_2ef_N_f,
+  nTMF_d0_c0_2ef_1_d,  nTMF_d0_c0_2ef_N_d
 };
 
 
 /* ------------------------ TMF_d0_c0_3ef --------------------- */
 
-static double _nrrd_TMF_d0_c0_3ef_Int(const double *parm) {
+static double nTMF_d0_c0_3ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_d0_c0_3ef_Sup(const double *parm) {
+static double nTMF_d0_c0_3ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_d0_c0_3ef_1_d(double x, const double *parm) {
+nTMF_d0_c0_3ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_c0_3ef */
@@ -2708,7 +2708,7 @@ _nrrd_TMF_d0_c0_3ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d0_c0_3ef_1_f(float x, const double *parm) {
+nTMF_d0_c0_3ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_c0_3ef */
@@ -2719,7 +2719,7 @@ _nrrd_TMF_d0_c0_3ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d0_c0_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d0_c0_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -2734,7 +2734,7 @@ _nrrd_TMF_d0_c0_3ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d0_c0_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d0_c0_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -2749,28 +2749,28 @@ _nrrd_TMF_d0_c0_3ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d0_c0_3ef = {
+nKernel_TMF_d0_c0_3ef = {
   "TMF_d0_c0_3ef", 1, AIR_FALSE,
-  _nrrd_TMF_d0_c0_3ef_Sup, _nrrd_TMF_d0_c0_3ef_Int,
-  _nrrd_TMF_d0_c0_3ef_1_f,  _nrrd_TMF_d0_c0_3ef_N_f,
-  _nrrd_TMF_d0_c0_3ef_1_d,  _nrrd_TMF_d0_c0_3ef_N_d
+  nTMF_d0_c0_3ef_Sup, nTMF_d0_c0_3ef_Int,
+  nTMF_d0_c0_3ef_1_f,  nTMF_d0_c0_3ef_N_f,
+  nTMF_d0_c0_3ef_1_d,  nTMF_d0_c0_3ef_N_d
 };
 
 
 /* ------------------------ TMF_d0_c0_4ef --------------------- */
 
-static double _nrrd_TMF_d0_c0_4ef_Int(const double *parm) {
+static double nTMF_d0_c0_4ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_d0_c0_4ef_Sup(const double *parm) {
+static double nTMF_d0_c0_4ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_d0_c0_4ef_1_d(double x, const double *parm) {
+nTMF_d0_c0_4ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_c0_4ef */
@@ -2781,7 +2781,7 @@ _nrrd_TMF_d0_c0_4ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d0_c0_4ef_1_f(float x, const double *parm) {
+nTMF_d0_c0_4ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_c0_4ef */
@@ -2792,7 +2792,7 @@ _nrrd_TMF_d0_c0_4ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d0_c0_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d0_c0_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -2807,7 +2807,7 @@ _nrrd_TMF_d0_c0_4ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d0_c0_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d0_c0_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -2822,28 +2822,28 @@ _nrrd_TMF_d0_c0_4ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d0_c0_4ef = {
+nKernel_TMF_d0_c0_4ef = {
   "TMF_d0_c0_4ef", 1, AIR_FALSE,
-  _nrrd_TMF_d0_c0_4ef_Sup, _nrrd_TMF_d0_c0_4ef_Int,
-  _nrrd_TMF_d0_c0_4ef_1_f,  _nrrd_TMF_d0_c0_4ef_N_f,
-  _nrrd_TMF_d0_c0_4ef_1_d,  _nrrd_TMF_d0_c0_4ef_N_d
+  nTMF_d0_c0_4ef_Sup, nTMF_d0_c0_4ef_Int,
+  nTMF_d0_c0_4ef_1_f,  nTMF_d0_c0_4ef_N_f,
+  nTMF_d0_c0_4ef_1_d,  nTMF_d0_c0_4ef_N_d
 };
 
 
 /* ------------------------ TMF_d0_c1_1ef --------------------- */
 
-static double _nrrd_TMF_d0_c1_1ef_Int(const double *parm) {
+static double nTMF_d0_c1_1ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_d0_c1_1ef_Sup(const double *parm) {
+static double nTMF_d0_c1_1ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 1;
 }
 
 static double
-_nrrd_TMF_d0_c1_1ef_1_d(double x, const double *parm) {
+nTMF_d0_c1_1ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_c1_1ef */
@@ -2854,7 +2854,7 @@ _nrrd_TMF_d0_c1_1ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d0_c1_1ef_1_f(float x, const double *parm) {
+nTMF_d0_c1_1ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_c1_1ef */
@@ -2865,7 +2865,7 @@ _nrrd_TMF_d0_c1_1ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d0_c1_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d0_c1_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -2880,7 +2880,7 @@ _nrrd_TMF_d0_c1_1ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d0_c1_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d0_c1_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -2895,28 +2895,28 @@ _nrrd_TMF_d0_c1_1ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d0_c1_1ef = {
+nKernel_TMF_d0_c1_1ef = {
   "TMF_d0_c1_1ef", 1, AIR_FALSE,
-  _nrrd_TMF_d0_c1_1ef_Sup, _nrrd_TMF_d0_c1_1ef_Int,
-  _nrrd_TMF_d0_c1_1ef_1_f,  _nrrd_TMF_d0_c1_1ef_N_f,
-  _nrrd_TMF_d0_c1_1ef_1_d,  _nrrd_TMF_d0_c1_1ef_N_d
+  nTMF_d0_c1_1ef_Sup, nTMF_d0_c1_1ef_Int,
+  nTMF_d0_c1_1ef_1_f,  nTMF_d0_c1_1ef_N_f,
+  nTMF_d0_c1_1ef_1_d,  nTMF_d0_c1_1ef_N_d
 };
 
 
 /* ------------------------ TMF_d0_c1_2ef --------------------- */
 
-static double _nrrd_TMF_d0_c1_2ef_Int(const double *parm) {
+static double nTMF_d0_c1_2ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_d0_c1_2ef_Sup(const double *parm) {
+static double nTMF_d0_c1_2ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_d0_c1_2ef_1_d(double x, const double *parm) {
+nTMF_d0_c1_2ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_c1_2ef */
@@ -2927,7 +2927,7 @@ _nrrd_TMF_d0_c1_2ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d0_c1_2ef_1_f(float x, const double *parm) {
+nTMF_d0_c1_2ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_c1_2ef */
@@ -2938,7 +2938,7 @@ _nrrd_TMF_d0_c1_2ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d0_c1_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d0_c1_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -2953,7 +2953,7 @@ _nrrd_TMF_d0_c1_2ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d0_c1_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d0_c1_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -2968,28 +2968,28 @@ _nrrd_TMF_d0_c1_2ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d0_c1_2ef = {
+nKernel_TMF_d0_c1_2ef = {
   "TMF_d0_c1_2ef", 1, AIR_FALSE,
-  _nrrd_TMF_d0_c1_2ef_Sup, _nrrd_TMF_d0_c1_2ef_Int,
-  _nrrd_TMF_d0_c1_2ef_1_f,  _nrrd_TMF_d0_c1_2ef_N_f,
-  _nrrd_TMF_d0_c1_2ef_1_d,  _nrrd_TMF_d0_c1_2ef_N_d
+  nTMF_d0_c1_2ef_Sup, nTMF_d0_c1_2ef_Int,
+  nTMF_d0_c1_2ef_1_f,  nTMF_d0_c1_2ef_N_f,
+  nTMF_d0_c1_2ef_1_d,  nTMF_d0_c1_2ef_N_d
 };
 
 
 /* ------------------------ TMF_d0_c1_3ef --------------------- */
 
-static double _nrrd_TMF_d0_c1_3ef_Int(const double *parm) {
+static double nTMF_d0_c1_3ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_d0_c1_3ef_Sup(const double *parm) {
+static double nTMF_d0_c1_3ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_d0_c1_3ef_1_d(double x, const double *parm) {
+nTMF_d0_c1_3ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_c1_3ef */
@@ -3000,7 +3000,7 @@ _nrrd_TMF_d0_c1_3ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d0_c1_3ef_1_f(float x, const double *parm) {
+nTMF_d0_c1_3ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_c1_3ef */
@@ -3011,7 +3011,7 @@ _nrrd_TMF_d0_c1_3ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d0_c1_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d0_c1_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -3026,7 +3026,7 @@ _nrrd_TMF_d0_c1_3ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d0_c1_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d0_c1_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -3041,28 +3041,28 @@ _nrrd_TMF_d0_c1_3ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d0_c1_3ef = {
+nKernel_TMF_d0_c1_3ef = {
   "TMF_d0_c1_3ef", 1, AIR_FALSE,
-  _nrrd_TMF_d0_c1_3ef_Sup, _nrrd_TMF_d0_c1_3ef_Int,
-  _nrrd_TMF_d0_c1_3ef_1_f,  _nrrd_TMF_d0_c1_3ef_N_f,
-  _nrrd_TMF_d0_c1_3ef_1_d,  _nrrd_TMF_d0_c1_3ef_N_d
+  nTMF_d0_c1_3ef_Sup, nTMF_d0_c1_3ef_Int,
+  nTMF_d0_c1_3ef_1_f,  nTMF_d0_c1_3ef_N_f,
+  nTMF_d0_c1_3ef_1_d,  nTMF_d0_c1_3ef_N_d
 };
 
 
 /* ------------------------ TMF_d0_c1_4ef --------------------- */
 
-static double _nrrd_TMF_d0_c1_4ef_Int(const double *parm) {
+static double nTMF_d0_c1_4ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_d0_c1_4ef_Sup(const double *parm) {
+static double nTMF_d0_c1_4ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 3;
 }
 
 static double
-_nrrd_TMF_d0_c1_4ef_1_d(double x, const double *parm) {
+nTMF_d0_c1_4ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_c1_4ef */
@@ -3073,7 +3073,7 @@ _nrrd_TMF_d0_c1_4ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d0_c1_4ef_1_f(float x, const double *parm) {
+nTMF_d0_c1_4ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_c1_4ef */
@@ -3084,7 +3084,7 @@ _nrrd_TMF_d0_c1_4ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d0_c1_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d0_c1_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -3099,7 +3099,7 @@ _nrrd_TMF_d0_c1_4ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d0_c1_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d0_c1_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -3114,28 +3114,28 @@ _nrrd_TMF_d0_c1_4ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d0_c1_4ef = {
+nKernel_TMF_d0_c1_4ef = {
   "TMF_d0_c1_4ef", 1, AIR_FALSE,
-  _nrrd_TMF_d0_c1_4ef_Sup, _nrrd_TMF_d0_c1_4ef_Int,
-  _nrrd_TMF_d0_c1_4ef_1_f,  _nrrd_TMF_d0_c1_4ef_N_f,
-  _nrrd_TMF_d0_c1_4ef_1_d,  _nrrd_TMF_d0_c1_4ef_N_d
+  nTMF_d0_c1_4ef_Sup, nTMF_d0_c1_4ef_Int,
+  nTMF_d0_c1_4ef_1_f,  nTMF_d0_c1_4ef_N_f,
+  nTMF_d0_c1_4ef_1_d,  nTMF_d0_c1_4ef_N_d
 };
 
 
 /* ------------------------ TMF_d0_c2_1ef --------------------- */
 
-static double _nrrd_TMF_d0_c2_1ef_Int(const double *parm) {
+static double nTMF_d0_c2_1ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_d0_c2_1ef_Sup(const double *parm) {
+static double nTMF_d0_c2_1ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 1;
 }
 
 static double
-_nrrd_TMF_d0_c2_1ef_1_d(double x, const double *parm) {
+nTMF_d0_c2_1ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_c2_1ef */
@@ -3146,7 +3146,7 @@ _nrrd_TMF_d0_c2_1ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d0_c2_1ef_1_f(float x, const double *parm) {
+nTMF_d0_c2_1ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_c2_1ef */
@@ -3157,7 +3157,7 @@ _nrrd_TMF_d0_c2_1ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d0_c2_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d0_c2_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -3172,7 +3172,7 @@ _nrrd_TMF_d0_c2_1ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d0_c2_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d0_c2_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -3187,28 +3187,28 @@ _nrrd_TMF_d0_c2_1ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d0_c2_1ef = {
+nKernel_TMF_d0_c2_1ef = {
   "TMF_d0_c2_1ef", 1, AIR_FALSE,
-  _nrrd_TMF_d0_c2_1ef_Sup, _nrrd_TMF_d0_c2_1ef_Int,
-  _nrrd_TMF_d0_c2_1ef_1_f,  _nrrd_TMF_d0_c2_1ef_N_f,
-  _nrrd_TMF_d0_c2_1ef_1_d,  _nrrd_TMF_d0_c2_1ef_N_d
+  nTMF_d0_c2_1ef_Sup, nTMF_d0_c2_1ef_Int,
+  nTMF_d0_c2_1ef_1_f,  nTMF_d0_c2_1ef_N_f,
+  nTMF_d0_c2_1ef_1_d,  nTMF_d0_c2_1ef_N_d
 };
 
 
 /* ------------------------ TMF_d0_c2_2ef --------------------- */
 
-static double _nrrd_TMF_d0_c2_2ef_Int(const double *parm) {
+static double nTMF_d0_c2_2ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_d0_c2_2ef_Sup(const double *parm) {
+static double nTMF_d0_c2_2ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_d0_c2_2ef_1_d(double x, const double *parm) {
+nTMF_d0_c2_2ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_c2_2ef */
@@ -3219,7 +3219,7 @@ _nrrd_TMF_d0_c2_2ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d0_c2_2ef_1_f(float x, const double *parm) {
+nTMF_d0_c2_2ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_c2_2ef */
@@ -3230,7 +3230,7 @@ _nrrd_TMF_d0_c2_2ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d0_c2_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d0_c2_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -3245,7 +3245,7 @@ _nrrd_TMF_d0_c2_2ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d0_c2_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d0_c2_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -3260,28 +3260,28 @@ _nrrd_TMF_d0_c2_2ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d0_c2_2ef = {
+nKernel_TMF_d0_c2_2ef = {
   "TMF_d0_c2_2ef", 1, AIR_FALSE,
-  _nrrd_TMF_d0_c2_2ef_Sup, _nrrd_TMF_d0_c2_2ef_Int,
-  _nrrd_TMF_d0_c2_2ef_1_f,  _nrrd_TMF_d0_c2_2ef_N_f,
-  _nrrd_TMF_d0_c2_2ef_1_d,  _nrrd_TMF_d0_c2_2ef_N_d
+  nTMF_d0_c2_2ef_Sup, nTMF_d0_c2_2ef_Int,
+  nTMF_d0_c2_2ef_1_f,  nTMF_d0_c2_2ef_N_f,
+  nTMF_d0_c2_2ef_1_d,  nTMF_d0_c2_2ef_N_d
 };
 
 
 /* ------------------------ TMF_d0_c2_3ef --------------------- */
 
-static double _nrrd_TMF_d0_c2_3ef_Int(const double *parm) {
+static double nTMF_d0_c2_3ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_d0_c2_3ef_Sup(const double *parm) {
+static double nTMF_d0_c2_3ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_d0_c2_3ef_1_d(double x, const double *parm) {
+nTMF_d0_c2_3ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_c2_3ef */
@@ -3292,7 +3292,7 @@ _nrrd_TMF_d0_c2_3ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d0_c2_3ef_1_f(float x, const double *parm) {
+nTMF_d0_c2_3ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_c2_3ef */
@@ -3303,7 +3303,7 @@ _nrrd_TMF_d0_c2_3ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d0_c2_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d0_c2_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -3318,7 +3318,7 @@ _nrrd_TMF_d0_c2_3ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d0_c2_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d0_c2_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -3333,28 +3333,28 @@ _nrrd_TMF_d0_c2_3ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d0_c2_3ef = {
+nKernel_TMF_d0_c2_3ef = {
   "TMF_d0_c2_3ef", 1, AIR_FALSE,
-  _nrrd_TMF_d0_c2_3ef_Sup, _nrrd_TMF_d0_c2_3ef_Int,
-  _nrrd_TMF_d0_c2_3ef_1_f,  _nrrd_TMF_d0_c2_3ef_N_f,
-  _nrrd_TMF_d0_c2_3ef_1_d,  _nrrd_TMF_d0_c2_3ef_N_d
+  nTMF_d0_c2_3ef_Sup, nTMF_d0_c2_3ef_Int,
+  nTMF_d0_c2_3ef_1_f,  nTMF_d0_c2_3ef_N_f,
+  nTMF_d0_c2_3ef_1_d,  nTMF_d0_c2_3ef_N_d
 };
 
 
 /* ------------------------ TMF_d0_c2_4ef --------------------- */
 
-static double _nrrd_TMF_d0_c2_4ef_Int(const double *parm) {
+static double nTMF_d0_c2_4ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_d0_c2_4ef_Sup(const double *parm) {
+static double nTMF_d0_c2_4ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 3;
 }
 
 static double
-_nrrd_TMF_d0_c2_4ef_1_d(double x, const double *parm) {
+nTMF_d0_c2_4ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_c2_4ef */
@@ -3365,7 +3365,7 @@ _nrrd_TMF_d0_c2_4ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d0_c2_4ef_1_f(float x, const double *parm) {
+nTMF_d0_c2_4ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_c2_4ef */
@@ -3376,7 +3376,7 @@ _nrrd_TMF_d0_c2_4ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d0_c2_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d0_c2_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -3391,7 +3391,7 @@ _nrrd_TMF_d0_c2_4ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d0_c2_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d0_c2_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -3406,28 +3406,28 @@ _nrrd_TMF_d0_c2_4ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d0_c2_4ef = {
+nKernel_TMF_d0_c2_4ef = {
   "TMF_d0_c2_4ef", 1, AIR_FALSE,
-  _nrrd_TMF_d0_c2_4ef_Sup, _nrrd_TMF_d0_c2_4ef_Int,
-  _nrrd_TMF_d0_c2_4ef_1_f,  _nrrd_TMF_d0_c2_4ef_N_f,
-  _nrrd_TMF_d0_c2_4ef_1_d,  _nrrd_TMF_d0_c2_4ef_N_d
+  nTMF_d0_c2_4ef_Sup, nTMF_d0_c2_4ef_Int,
+  nTMF_d0_c2_4ef_1_f,  nTMF_d0_c2_4ef_N_f,
+  nTMF_d0_c2_4ef_1_d,  nTMF_d0_c2_4ef_N_d
 };
 
 
 /* ------------------------ TMF_d0_c3_1ef --------------------- */
 
-static double _nrrd_TMF_d0_c3_1ef_Int(const double *parm) {
+static double nTMF_d0_c3_1ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_d0_c3_1ef_Sup(const double *parm) {
+static double nTMF_d0_c3_1ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 1;
 }
 
 static double
-_nrrd_TMF_d0_c3_1ef_1_d(double x, const double *parm) {
+nTMF_d0_c3_1ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_c3_1ef */
@@ -3438,7 +3438,7 @@ _nrrd_TMF_d0_c3_1ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d0_c3_1ef_1_f(float x, const double *parm) {
+nTMF_d0_c3_1ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_c3_1ef */
@@ -3449,7 +3449,7 @@ _nrrd_TMF_d0_c3_1ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d0_c3_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d0_c3_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -3464,7 +3464,7 @@ _nrrd_TMF_d0_c3_1ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d0_c3_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d0_c3_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -3479,28 +3479,28 @@ _nrrd_TMF_d0_c3_1ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d0_c3_1ef = {
+nKernel_TMF_d0_c3_1ef = {
   "TMF_d0_c3_1ef", 1, AIR_FALSE,
-  _nrrd_TMF_d0_c3_1ef_Sup, _nrrd_TMF_d0_c3_1ef_Int,
-  _nrrd_TMF_d0_c3_1ef_1_f,  _nrrd_TMF_d0_c3_1ef_N_f,
-  _nrrd_TMF_d0_c3_1ef_1_d,  _nrrd_TMF_d0_c3_1ef_N_d
+  nTMF_d0_c3_1ef_Sup, nTMF_d0_c3_1ef_Int,
+  nTMF_d0_c3_1ef_1_f,  nTMF_d0_c3_1ef_N_f,
+  nTMF_d0_c3_1ef_1_d,  nTMF_d0_c3_1ef_N_d
 };
 
 
 /* ------------------------ TMF_d0_c3_2ef --------------------- */
 
-static double _nrrd_TMF_d0_c3_2ef_Int(const double *parm) {
+static double nTMF_d0_c3_2ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_d0_c3_2ef_Sup(const double *parm) {
+static double nTMF_d0_c3_2ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_d0_c3_2ef_1_d(double x, const double *parm) {
+nTMF_d0_c3_2ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_c3_2ef */
@@ -3511,7 +3511,7 @@ _nrrd_TMF_d0_c3_2ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d0_c3_2ef_1_f(float x, const double *parm) {
+nTMF_d0_c3_2ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_c3_2ef */
@@ -3522,7 +3522,7 @@ _nrrd_TMF_d0_c3_2ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d0_c3_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d0_c3_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -3537,7 +3537,7 @@ _nrrd_TMF_d0_c3_2ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d0_c3_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d0_c3_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -3552,28 +3552,28 @@ _nrrd_TMF_d0_c3_2ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d0_c3_2ef = {
+nKernel_TMF_d0_c3_2ef = {
   "TMF_d0_c3_2ef", 1, AIR_FALSE,
-  _nrrd_TMF_d0_c3_2ef_Sup, _nrrd_TMF_d0_c3_2ef_Int,
-  _nrrd_TMF_d0_c3_2ef_1_f,  _nrrd_TMF_d0_c3_2ef_N_f,
-  _nrrd_TMF_d0_c3_2ef_1_d,  _nrrd_TMF_d0_c3_2ef_N_d
+  nTMF_d0_c3_2ef_Sup, nTMF_d0_c3_2ef_Int,
+  nTMF_d0_c3_2ef_1_f,  nTMF_d0_c3_2ef_N_f,
+  nTMF_d0_c3_2ef_1_d,  nTMF_d0_c3_2ef_N_d
 };
 
 
 /* ------------------------ TMF_d0_c3_3ef --------------------- */
 
-static double _nrrd_TMF_d0_c3_3ef_Int(const double *parm) {
+static double nTMF_d0_c3_3ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_d0_c3_3ef_Sup(const double *parm) {
+static double nTMF_d0_c3_3ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_d0_c3_3ef_1_d(double x, const double *parm) {
+nTMF_d0_c3_3ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_c3_3ef */
@@ -3584,7 +3584,7 @@ _nrrd_TMF_d0_c3_3ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d0_c3_3ef_1_f(float x, const double *parm) {
+nTMF_d0_c3_3ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_c3_3ef */
@@ -3595,7 +3595,7 @@ _nrrd_TMF_d0_c3_3ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d0_c3_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d0_c3_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -3610,7 +3610,7 @@ _nrrd_TMF_d0_c3_3ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d0_c3_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d0_c3_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -3625,28 +3625,28 @@ _nrrd_TMF_d0_c3_3ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d0_c3_3ef = {
+nKernel_TMF_d0_c3_3ef = {
   "TMF_d0_c3_3ef", 1, AIR_FALSE,
-  _nrrd_TMF_d0_c3_3ef_Sup, _nrrd_TMF_d0_c3_3ef_Int,
-  _nrrd_TMF_d0_c3_3ef_1_f,  _nrrd_TMF_d0_c3_3ef_N_f,
-  _nrrd_TMF_d0_c3_3ef_1_d,  _nrrd_TMF_d0_c3_3ef_N_d
+  nTMF_d0_c3_3ef_Sup, nTMF_d0_c3_3ef_Int,
+  nTMF_d0_c3_3ef_1_f,  nTMF_d0_c3_3ef_N_f,
+  nTMF_d0_c3_3ef_1_d,  nTMF_d0_c3_3ef_N_d
 };
 
 
 /* ------------------------ TMF_d0_c3_4ef --------------------- */
 
-static double _nrrd_TMF_d0_c3_4ef_Int(const double *parm) {
+static double nTMF_d0_c3_4ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 1.0;
 }
 
-static double _nrrd_TMF_d0_c3_4ef_Sup(const double *parm) {
+static double nTMF_d0_c3_4ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 3;
 }
 
 static double
-_nrrd_TMF_d0_c3_4ef_1_d(double x, const double *parm) {
+nTMF_d0_c3_4ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_c3_4ef */
@@ -3657,7 +3657,7 @@ _nrrd_TMF_d0_c3_4ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d0_c3_4ef_1_f(float x, const double *parm) {
+nTMF_d0_c3_4ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d0_c3_4ef */
@@ -3668,7 +3668,7 @@ _nrrd_TMF_d0_c3_4ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d0_c3_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d0_c3_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -3683,7 +3683,7 @@ _nrrd_TMF_d0_c3_4ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d0_c3_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d0_c3_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -3698,28 +3698,28 @@ _nrrd_TMF_d0_c3_4ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d0_c3_4ef = {
+nKernel_TMF_d0_c3_4ef = {
   "TMF_d0_c3_4ef", 1, AIR_FALSE,
-  _nrrd_TMF_d0_c3_4ef_Sup, _nrrd_TMF_d0_c3_4ef_Int,
-  _nrrd_TMF_d0_c3_4ef_1_f,  _nrrd_TMF_d0_c3_4ef_N_f,
-  _nrrd_TMF_d0_c3_4ef_1_d,  _nrrd_TMF_d0_c3_4ef_N_d
+  nTMF_d0_c3_4ef_Sup, nTMF_d0_c3_4ef_Int,
+  nTMF_d0_c3_4ef_1_f,  nTMF_d0_c3_4ef_N_f,
+  nTMF_d0_c3_4ef_1_d,  nTMF_d0_c3_4ef_N_d
 };
 
 
 /* ------------------------ TMF_d1_cn_1ef --------------------- */
 
-static double _nrrd_TMF_d1_cn_1ef_Int(const double *parm) {
+static double nTMF_d1_cn_1ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d1_cn_1ef_Sup(const double *parm) {
+static double nTMF_d1_cn_1ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 1;
 }
 
 static double
-_nrrd_TMF_d1_cn_1ef_1_d(double x, const double *parm) {
+nTMF_d1_cn_1ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d1_cn_1ef */
@@ -3730,7 +3730,7 @@ _nrrd_TMF_d1_cn_1ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d1_cn_1ef_1_f(float x, const double *parm) {
+nTMF_d1_cn_1ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d1_cn_1ef */
@@ -3741,7 +3741,7 @@ _nrrd_TMF_d1_cn_1ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d1_cn_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d1_cn_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -3756,7 +3756,7 @@ _nrrd_TMF_d1_cn_1ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d1_cn_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d1_cn_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -3771,28 +3771,28 @@ _nrrd_TMF_d1_cn_1ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d1_cn_1ef = {
+nKernel_TMF_d1_cn_1ef = {
   "TMF_d1_cn_1ef", 1, AIR_FALSE,
-  _nrrd_TMF_d1_cn_1ef_Sup, _nrrd_TMF_d1_cn_1ef_Int,
-  _nrrd_TMF_d1_cn_1ef_1_f,  _nrrd_TMF_d1_cn_1ef_N_f,
-  _nrrd_TMF_d1_cn_1ef_1_d,  _nrrd_TMF_d1_cn_1ef_N_d
+  nTMF_d1_cn_1ef_Sup, nTMF_d1_cn_1ef_Int,
+  nTMF_d1_cn_1ef_1_f,  nTMF_d1_cn_1ef_N_f,
+  nTMF_d1_cn_1ef_1_d,  nTMF_d1_cn_1ef_N_d
 };
 
 
 /* ------------------------ TMF_d1_cn_2ef --------------------- */
 
-static double _nrrd_TMF_d1_cn_2ef_Int(const double *parm) {
+static double nTMF_d1_cn_2ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d1_cn_2ef_Sup(const double *parm) {
+static double nTMF_d1_cn_2ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_d1_cn_2ef_1_d(double x, const double *parm) {
+nTMF_d1_cn_2ef_1_d(double x, const double *parm) {
   int i;
 
 
@@ -3803,7 +3803,7 @@ _nrrd_TMF_d1_cn_2ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d1_cn_2ef_1_f(float x, const double *parm) {
+nTMF_d1_cn_2ef_1_f(float x, const double *parm) {
   int i;
 
 
@@ -3814,7 +3814,7 @@ _nrrd_TMF_d1_cn_2ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d1_cn_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d1_cn_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -3829,7 +3829,7 @@ _nrrd_TMF_d1_cn_2ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d1_cn_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d1_cn_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -3844,28 +3844,28 @@ _nrrd_TMF_d1_cn_2ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d1_cn_2ef = {
+nKernel_TMF_d1_cn_2ef = {
   "TMF_d1_cn_2ef", 1, AIR_FALSE,
-  _nrrd_TMF_d1_cn_2ef_Sup, _nrrd_TMF_d1_cn_2ef_Int,
-  _nrrd_TMF_d1_cn_2ef_1_f,  _nrrd_TMF_d1_cn_2ef_N_f,
-  _nrrd_TMF_d1_cn_2ef_1_d,  _nrrd_TMF_d1_cn_2ef_N_d
+  nTMF_d1_cn_2ef_Sup, nTMF_d1_cn_2ef_Int,
+  nTMF_d1_cn_2ef_1_f,  nTMF_d1_cn_2ef_N_f,
+  nTMF_d1_cn_2ef_1_d,  nTMF_d1_cn_2ef_N_d
 };
 
 
 /* ------------------------ TMF_d1_cn_3ef --------------------- */
 
-static double _nrrd_TMF_d1_cn_3ef_Int(const double *parm) {
+static double nTMF_d1_cn_3ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d1_cn_3ef_Sup(const double *parm) {
+static double nTMF_d1_cn_3ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_d1_cn_3ef_1_d(double x, const double *parm) {
+nTMF_d1_cn_3ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d1_cn_3ef */
@@ -3876,7 +3876,7 @@ _nrrd_TMF_d1_cn_3ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d1_cn_3ef_1_f(float x, const double *parm) {
+nTMF_d1_cn_3ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d1_cn_3ef */
@@ -3887,7 +3887,7 @@ _nrrd_TMF_d1_cn_3ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d1_cn_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d1_cn_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -3902,7 +3902,7 @@ _nrrd_TMF_d1_cn_3ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d1_cn_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d1_cn_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -3917,28 +3917,28 @@ _nrrd_TMF_d1_cn_3ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d1_cn_3ef = {
+nKernel_TMF_d1_cn_3ef = {
   "TMF_d1_cn_3ef", 1, AIR_FALSE,
-  _nrrd_TMF_d1_cn_3ef_Sup, _nrrd_TMF_d1_cn_3ef_Int,
-  _nrrd_TMF_d1_cn_3ef_1_f,  _nrrd_TMF_d1_cn_3ef_N_f,
-  _nrrd_TMF_d1_cn_3ef_1_d,  _nrrd_TMF_d1_cn_3ef_N_d
+  nTMF_d1_cn_3ef_Sup, nTMF_d1_cn_3ef_Int,
+  nTMF_d1_cn_3ef_1_f,  nTMF_d1_cn_3ef_N_f,
+  nTMF_d1_cn_3ef_1_d,  nTMF_d1_cn_3ef_N_d
 };
 
 
 /* ------------------------ TMF_d1_cn_4ef --------------------- */
 
-static double _nrrd_TMF_d1_cn_4ef_Int(const double *parm) {
+static double nTMF_d1_cn_4ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d1_cn_4ef_Sup(const double *parm) {
+static double nTMF_d1_cn_4ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 3;
 }
 
 static double
-_nrrd_TMF_d1_cn_4ef_1_d(double x, const double *parm) {
+nTMF_d1_cn_4ef_1_d(double x, const double *parm) {
   int i;
 
 
@@ -3949,7 +3949,7 @@ _nrrd_TMF_d1_cn_4ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d1_cn_4ef_1_f(float x, const double *parm) {
+nTMF_d1_cn_4ef_1_f(float x, const double *parm) {
   int i;
 
 
@@ -3960,7 +3960,7 @@ _nrrd_TMF_d1_cn_4ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d1_cn_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d1_cn_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -3975,7 +3975,7 @@ _nrrd_TMF_d1_cn_4ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d1_cn_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d1_cn_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -3990,28 +3990,28 @@ _nrrd_TMF_d1_cn_4ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d1_cn_4ef = {
+nKernel_TMF_d1_cn_4ef = {
   "TMF_d1_cn_4ef", 1, AIR_FALSE,
-  _nrrd_TMF_d1_cn_4ef_Sup, _nrrd_TMF_d1_cn_4ef_Int,
-  _nrrd_TMF_d1_cn_4ef_1_f,  _nrrd_TMF_d1_cn_4ef_N_f,
-  _nrrd_TMF_d1_cn_4ef_1_d,  _nrrd_TMF_d1_cn_4ef_N_d
+  nTMF_d1_cn_4ef_Sup, nTMF_d1_cn_4ef_Int,
+  nTMF_d1_cn_4ef_1_f,  nTMF_d1_cn_4ef_N_f,
+  nTMF_d1_cn_4ef_1_d,  nTMF_d1_cn_4ef_N_d
 };
 
 
 /* ------------------------ TMF_d1_c0_1ef --------------------- */
 
-static double _nrrd_TMF_d1_c0_1ef_Int(const double *parm) {
+static double nTMF_d1_c0_1ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d1_c0_1ef_Sup(const double *parm) {
+static double nTMF_d1_c0_1ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_d1_c0_1ef_1_d(double x, const double *parm) {
+nTMF_d1_c0_1ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d1_c0_1ef */
@@ -4022,7 +4022,7 @@ _nrrd_TMF_d1_c0_1ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d1_c0_1ef_1_f(float x, const double *parm) {
+nTMF_d1_c0_1ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d1_c0_1ef */
@@ -4033,7 +4033,7 @@ _nrrd_TMF_d1_c0_1ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d1_c0_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d1_c0_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -4048,7 +4048,7 @@ _nrrd_TMF_d1_c0_1ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d1_c0_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d1_c0_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -4063,28 +4063,28 @@ _nrrd_TMF_d1_c0_1ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d1_c0_1ef = {
+nKernel_TMF_d1_c0_1ef = {
   "TMF_d1_c0_1ef", 1, AIR_FALSE,
-  _nrrd_TMF_d1_c0_1ef_Sup, _nrrd_TMF_d1_c0_1ef_Int,
-  _nrrd_TMF_d1_c0_1ef_1_f,  _nrrd_TMF_d1_c0_1ef_N_f,
-  _nrrd_TMF_d1_c0_1ef_1_d,  _nrrd_TMF_d1_c0_1ef_N_d
+  nTMF_d1_c0_1ef_Sup, nTMF_d1_c0_1ef_Int,
+  nTMF_d1_c0_1ef_1_f,  nTMF_d1_c0_1ef_N_f,
+  nTMF_d1_c0_1ef_1_d,  nTMF_d1_c0_1ef_N_d
 };
 
 
 /* ------------------------ TMF_d1_c0_2ef --------------------- */
 
-static double _nrrd_TMF_d1_c0_2ef_Int(const double *parm) {
+static double nTMF_d1_c0_2ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d1_c0_2ef_Sup(const double *parm) {
+static double nTMF_d1_c0_2ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_d1_c0_2ef_1_d(double x, const double *parm) {
+nTMF_d1_c0_2ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d1_c0_2ef */
@@ -4095,7 +4095,7 @@ _nrrd_TMF_d1_c0_2ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d1_c0_2ef_1_f(float x, const double *parm) {
+nTMF_d1_c0_2ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d1_c0_2ef */
@@ -4106,7 +4106,7 @@ _nrrd_TMF_d1_c0_2ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d1_c0_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d1_c0_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -4121,7 +4121,7 @@ _nrrd_TMF_d1_c0_2ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d1_c0_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d1_c0_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -4136,28 +4136,28 @@ _nrrd_TMF_d1_c0_2ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d1_c0_2ef = {
+nKernel_TMF_d1_c0_2ef = {
   "TMF_d1_c0_2ef", 1, AIR_FALSE,
-  _nrrd_TMF_d1_c0_2ef_Sup, _nrrd_TMF_d1_c0_2ef_Int,
-  _nrrd_TMF_d1_c0_2ef_1_f,  _nrrd_TMF_d1_c0_2ef_N_f,
-  _nrrd_TMF_d1_c0_2ef_1_d,  _nrrd_TMF_d1_c0_2ef_N_d
+  nTMF_d1_c0_2ef_Sup, nTMF_d1_c0_2ef_Int,
+  nTMF_d1_c0_2ef_1_f,  nTMF_d1_c0_2ef_N_f,
+  nTMF_d1_c0_2ef_1_d,  nTMF_d1_c0_2ef_N_d
 };
 
 
 /* ------------------------ TMF_d1_c0_3ef --------------------- */
 
-static double _nrrd_TMF_d1_c0_3ef_Int(const double *parm) {
+static double nTMF_d1_c0_3ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d1_c0_3ef_Sup(const double *parm) {
+static double nTMF_d1_c0_3ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 3;
 }
 
 static double
-_nrrd_TMF_d1_c0_3ef_1_d(double x, const double *parm) {
+nTMF_d1_c0_3ef_1_d(double x, const double *parm) {
   int i;
 
 
@@ -4168,7 +4168,7 @@ _nrrd_TMF_d1_c0_3ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d1_c0_3ef_1_f(float x, const double *parm) {
+nTMF_d1_c0_3ef_1_f(float x, const double *parm) {
   int i;
 
 
@@ -4179,7 +4179,7 @@ _nrrd_TMF_d1_c0_3ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d1_c0_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d1_c0_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -4194,7 +4194,7 @@ _nrrd_TMF_d1_c0_3ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d1_c0_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d1_c0_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -4209,28 +4209,28 @@ _nrrd_TMF_d1_c0_3ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d1_c0_3ef = {
+nKernel_TMF_d1_c0_3ef = {
   "TMF_d1_c0_3ef", 1, AIR_FALSE,
-  _nrrd_TMF_d1_c0_3ef_Sup, _nrrd_TMF_d1_c0_3ef_Int,
-  _nrrd_TMF_d1_c0_3ef_1_f,  _nrrd_TMF_d1_c0_3ef_N_f,
-  _nrrd_TMF_d1_c0_3ef_1_d,  _nrrd_TMF_d1_c0_3ef_N_d
+  nTMF_d1_c0_3ef_Sup, nTMF_d1_c0_3ef_Int,
+  nTMF_d1_c0_3ef_1_f,  nTMF_d1_c0_3ef_N_f,
+  nTMF_d1_c0_3ef_1_d,  nTMF_d1_c0_3ef_N_d
 };
 
 
 /* ------------------------ TMF_d1_c0_4ef --------------------- */
 
-static double _nrrd_TMF_d1_c0_4ef_Int(const double *parm) {
+static double nTMF_d1_c0_4ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d1_c0_4ef_Sup(const double *parm) {
+static double nTMF_d1_c0_4ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 3;
 }
 
 static double
-_nrrd_TMF_d1_c0_4ef_1_d(double x, const double *parm) {
+nTMF_d1_c0_4ef_1_d(double x, const double *parm) {
   int i;
 
 
@@ -4241,7 +4241,7 @@ _nrrd_TMF_d1_c0_4ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d1_c0_4ef_1_f(float x, const double *parm) {
+nTMF_d1_c0_4ef_1_f(float x, const double *parm) {
   int i;
 
 
@@ -4252,7 +4252,7 @@ _nrrd_TMF_d1_c0_4ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d1_c0_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d1_c0_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -4267,7 +4267,7 @@ _nrrd_TMF_d1_c0_4ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d1_c0_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d1_c0_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -4282,28 +4282,28 @@ _nrrd_TMF_d1_c0_4ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d1_c0_4ef = {
+nKernel_TMF_d1_c0_4ef = {
   "TMF_d1_c0_4ef", 1, AIR_FALSE,
-  _nrrd_TMF_d1_c0_4ef_Sup, _nrrd_TMF_d1_c0_4ef_Int,
-  _nrrd_TMF_d1_c0_4ef_1_f,  _nrrd_TMF_d1_c0_4ef_N_f,
-  _nrrd_TMF_d1_c0_4ef_1_d,  _nrrd_TMF_d1_c0_4ef_N_d
+  nTMF_d1_c0_4ef_Sup, nTMF_d1_c0_4ef_Int,
+  nTMF_d1_c0_4ef_1_f,  nTMF_d1_c0_4ef_N_f,
+  nTMF_d1_c0_4ef_1_d,  nTMF_d1_c0_4ef_N_d
 };
 
 
 /* ------------------------ TMF_d1_c1_1ef --------------------- */
 
-static double _nrrd_TMF_d1_c1_1ef_Int(const double *parm) {
+static double nTMF_d1_c1_1ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d1_c1_1ef_Sup(const double *parm) {
+static double nTMF_d1_c1_1ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_d1_c1_1ef_1_d(double x, const double *parm) {
+nTMF_d1_c1_1ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d1_c1_1ef */
@@ -4314,7 +4314,7 @@ _nrrd_TMF_d1_c1_1ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d1_c1_1ef_1_f(float x, const double *parm) {
+nTMF_d1_c1_1ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d1_c1_1ef */
@@ -4325,7 +4325,7 @@ _nrrd_TMF_d1_c1_1ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d1_c1_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d1_c1_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -4340,7 +4340,7 @@ _nrrd_TMF_d1_c1_1ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d1_c1_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d1_c1_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -4355,28 +4355,28 @@ _nrrd_TMF_d1_c1_1ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d1_c1_1ef = {
+nKernel_TMF_d1_c1_1ef = {
   "TMF_d1_c1_1ef", 1, AIR_FALSE,
-  _nrrd_TMF_d1_c1_1ef_Sup, _nrrd_TMF_d1_c1_1ef_Int,
-  _nrrd_TMF_d1_c1_1ef_1_f,  _nrrd_TMF_d1_c1_1ef_N_f,
-  _nrrd_TMF_d1_c1_1ef_1_d,  _nrrd_TMF_d1_c1_1ef_N_d
+  nTMF_d1_c1_1ef_Sup, nTMF_d1_c1_1ef_Int,
+  nTMF_d1_c1_1ef_1_f,  nTMF_d1_c1_1ef_N_f,
+  nTMF_d1_c1_1ef_1_d,  nTMF_d1_c1_1ef_N_d
 };
 
 
 /* ------------------------ TMF_d1_c1_2ef --------------------- */
 
-static double _nrrd_TMF_d1_c1_2ef_Int(const double *parm) {
+static double nTMF_d1_c1_2ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d1_c1_2ef_Sup(const double *parm) {
+static double nTMF_d1_c1_2ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_d1_c1_2ef_1_d(double x, const double *parm) {
+nTMF_d1_c1_2ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d1_c1_2ef */
@@ -4387,7 +4387,7 @@ _nrrd_TMF_d1_c1_2ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d1_c1_2ef_1_f(float x, const double *parm) {
+nTMF_d1_c1_2ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d1_c1_2ef */
@@ -4398,7 +4398,7 @@ _nrrd_TMF_d1_c1_2ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d1_c1_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d1_c1_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -4413,7 +4413,7 @@ _nrrd_TMF_d1_c1_2ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d1_c1_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d1_c1_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -4428,28 +4428,28 @@ _nrrd_TMF_d1_c1_2ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d1_c1_2ef = {
+nKernel_TMF_d1_c1_2ef = {
   "TMF_d1_c1_2ef", 1, AIR_FALSE,
-  _nrrd_TMF_d1_c1_2ef_Sup, _nrrd_TMF_d1_c1_2ef_Int,
-  _nrrd_TMF_d1_c1_2ef_1_f,  _nrrd_TMF_d1_c1_2ef_N_f,
-  _nrrd_TMF_d1_c1_2ef_1_d,  _nrrd_TMF_d1_c1_2ef_N_d
+  nTMF_d1_c1_2ef_Sup, nTMF_d1_c1_2ef_Int,
+  nTMF_d1_c1_2ef_1_f,  nTMF_d1_c1_2ef_N_f,
+  nTMF_d1_c1_2ef_1_d,  nTMF_d1_c1_2ef_N_d
 };
 
 
 /* ------------------------ TMF_d1_c1_3ef --------------------- */
 
-static double _nrrd_TMF_d1_c1_3ef_Int(const double *parm) {
+static double nTMF_d1_c1_3ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d1_c1_3ef_Sup(const double *parm) {
+static double nTMF_d1_c1_3ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 3;
 }
 
 static double
-_nrrd_TMF_d1_c1_3ef_1_d(double x, const double *parm) {
+nTMF_d1_c1_3ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d1_c1_3ef */
@@ -4460,7 +4460,7 @@ _nrrd_TMF_d1_c1_3ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d1_c1_3ef_1_f(float x, const double *parm) {
+nTMF_d1_c1_3ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d1_c1_3ef */
@@ -4471,7 +4471,7 @@ _nrrd_TMF_d1_c1_3ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d1_c1_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d1_c1_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -4486,7 +4486,7 @@ _nrrd_TMF_d1_c1_3ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d1_c1_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d1_c1_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -4501,28 +4501,28 @@ _nrrd_TMF_d1_c1_3ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d1_c1_3ef = {
+nKernel_TMF_d1_c1_3ef = {
   "TMF_d1_c1_3ef", 1, AIR_FALSE,
-  _nrrd_TMF_d1_c1_3ef_Sup, _nrrd_TMF_d1_c1_3ef_Int,
-  _nrrd_TMF_d1_c1_3ef_1_f,  _nrrd_TMF_d1_c1_3ef_N_f,
-  _nrrd_TMF_d1_c1_3ef_1_d,  _nrrd_TMF_d1_c1_3ef_N_d
+  nTMF_d1_c1_3ef_Sup, nTMF_d1_c1_3ef_Int,
+  nTMF_d1_c1_3ef_1_f,  nTMF_d1_c1_3ef_N_f,
+  nTMF_d1_c1_3ef_1_d,  nTMF_d1_c1_3ef_N_d
 };
 
 
 /* ------------------------ TMF_d1_c1_4ef --------------------- */
 
-static double _nrrd_TMF_d1_c1_4ef_Int(const double *parm) {
+static double nTMF_d1_c1_4ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d1_c1_4ef_Sup(const double *parm) {
+static double nTMF_d1_c1_4ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 3;
 }
 
 static double
-_nrrd_TMF_d1_c1_4ef_1_d(double x, const double *parm) {
+nTMF_d1_c1_4ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d1_c1_4ef */
@@ -4533,7 +4533,7 @@ _nrrd_TMF_d1_c1_4ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d1_c1_4ef_1_f(float x, const double *parm) {
+nTMF_d1_c1_4ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d1_c1_4ef */
@@ -4544,7 +4544,7 @@ _nrrd_TMF_d1_c1_4ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d1_c1_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d1_c1_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -4559,7 +4559,7 @@ _nrrd_TMF_d1_c1_4ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d1_c1_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d1_c1_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -4574,28 +4574,28 @@ _nrrd_TMF_d1_c1_4ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d1_c1_4ef = {
+nKernel_TMF_d1_c1_4ef = {
   "TMF_d1_c1_4ef", 1, AIR_FALSE,
-  _nrrd_TMF_d1_c1_4ef_Sup, _nrrd_TMF_d1_c1_4ef_Int,
-  _nrrd_TMF_d1_c1_4ef_1_f,  _nrrd_TMF_d1_c1_4ef_N_f,
-  _nrrd_TMF_d1_c1_4ef_1_d,  _nrrd_TMF_d1_c1_4ef_N_d
+  nTMF_d1_c1_4ef_Sup, nTMF_d1_c1_4ef_Int,
+  nTMF_d1_c1_4ef_1_f,  nTMF_d1_c1_4ef_N_f,
+  nTMF_d1_c1_4ef_1_d,  nTMF_d1_c1_4ef_N_d
 };
 
 
 /* ------------------------ TMF_d1_c2_1ef --------------------- */
 
-static double _nrrd_TMF_d1_c2_1ef_Int(const double *parm) {
+static double nTMF_d1_c2_1ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d1_c2_1ef_Sup(const double *parm) {
+static double nTMF_d1_c2_1ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_d1_c2_1ef_1_d(double x, const double *parm) {
+nTMF_d1_c2_1ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d1_c2_1ef */
@@ -4606,7 +4606,7 @@ _nrrd_TMF_d1_c2_1ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d1_c2_1ef_1_f(float x, const double *parm) {
+nTMF_d1_c2_1ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d1_c2_1ef */
@@ -4617,7 +4617,7 @@ _nrrd_TMF_d1_c2_1ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d1_c2_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d1_c2_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -4632,7 +4632,7 @@ _nrrd_TMF_d1_c2_1ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d1_c2_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d1_c2_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -4647,28 +4647,28 @@ _nrrd_TMF_d1_c2_1ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d1_c2_1ef = {
+nKernel_TMF_d1_c2_1ef = {
   "TMF_d1_c2_1ef", 1, AIR_FALSE,
-  _nrrd_TMF_d1_c2_1ef_Sup, _nrrd_TMF_d1_c2_1ef_Int,
-  _nrrd_TMF_d1_c2_1ef_1_f,  _nrrd_TMF_d1_c2_1ef_N_f,
-  _nrrd_TMF_d1_c2_1ef_1_d,  _nrrd_TMF_d1_c2_1ef_N_d
+  nTMF_d1_c2_1ef_Sup, nTMF_d1_c2_1ef_Int,
+  nTMF_d1_c2_1ef_1_f,  nTMF_d1_c2_1ef_N_f,
+  nTMF_d1_c2_1ef_1_d,  nTMF_d1_c2_1ef_N_d
 };
 
 
 /* ------------------------ TMF_d1_c2_2ef --------------------- */
 
-static double _nrrd_TMF_d1_c2_2ef_Int(const double *parm) {
+static double nTMF_d1_c2_2ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d1_c2_2ef_Sup(const double *parm) {
+static double nTMF_d1_c2_2ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_d1_c2_2ef_1_d(double x, const double *parm) {
+nTMF_d1_c2_2ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d1_c2_2ef */
@@ -4679,7 +4679,7 @@ _nrrd_TMF_d1_c2_2ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d1_c2_2ef_1_f(float x, const double *parm) {
+nTMF_d1_c2_2ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d1_c2_2ef */
@@ -4690,7 +4690,7 @@ _nrrd_TMF_d1_c2_2ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d1_c2_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d1_c2_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -4705,7 +4705,7 @@ _nrrd_TMF_d1_c2_2ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d1_c2_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d1_c2_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -4720,28 +4720,28 @@ _nrrd_TMF_d1_c2_2ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d1_c2_2ef = {
+nKernel_TMF_d1_c2_2ef = {
   "TMF_d1_c2_2ef", 1, AIR_FALSE,
-  _nrrd_TMF_d1_c2_2ef_Sup, _nrrd_TMF_d1_c2_2ef_Int,
-  _nrrd_TMF_d1_c2_2ef_1_f,  _nrrd_TMF_d1_c2_2ef_N_f,
-  _nrrd_TMF_d1_c2_2ef_1_d,  _nrrd_TMF_d1_c2_2ef_N_d
+  nTMF_d1_c2_2ef_Sup, nTMF_d1_c2_2ef_Int,
+  nTMF_d1_c2_2ef_1_f,  nTMF_d1_c2_2ef_N_f,
+  nTMF_d1_c2_2ef_1_d,  nTMF_d1_c2_2ef_N_d
 };
 
 
 /* ------------------------ TMF_d1_c2_3ef --------------------- */
 
-static double _nrrd_TMF_d1_c2_3ef_Int(const double *parm) {
+static double nTMF_d1_c2_3ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d1_c2_3ef_Sup(const double *parm) {
+static double nTMF_d1_c2_3ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 3;
 }
 
 static double
-_nrrd_TMF_d1_c2_3ef_1_d(double x, const double *parm) {
+nTMF_d1_c2_3ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d1_c2_3ef */
@@ -4752,7 +4752,7 @@ _nrrd_TMF_d1_c2_3ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d1_c2_3ef_1_f(float x, const double *parm) {
+nTMF_d1_c2_3ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d1_c2_3ef */
@@ -4763,7 +4763,7 @@ _nrrd_TMF_d1_c2_3ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d1_c2_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d1_c2_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -4778,7 +4778,7 @@ _nrrd_TMF_d1_c2_3ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d1_c2_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d1_c2_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -4793,28 +4793,28 @@ _nrrd_TMF_d1_c2_3ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d1_c2_3ef = {
+nKernel_TMF_d1_c2_3ef = {
   "TMF_d1_c2_3ef", 1, AIR_FALSE,
-  _nrrd_TMF_d1_c2_3ef_Sup, _nrrd_TMF_d1_c2_3ef_Int,
-  _nrrd_TMF_d1_c2_3ef_1_f,  _nrrd_TMF_d1_c2_3ef_N_f,
-  _nrrd_TMF_d1_c2_3ef_1_d,  _nrrd_TMF_d1_c2_3ef_N_d
+  nTMF_d1_c2_3ef_Sup, nTMF_d1_c2_3ef_Int,
+  nTMF_d1_c2_3ef_1_f,  nTMF_d1_c2_3ef_N_f,
+  nTMF_d1_c2_3ef_1_d,  nTMF_d1_c2_3ef_N_d
 };
 
 
 /* ------------------------ TMF_d1_c2_4ef --------------------- */
 
-static double _nrrd_TMF_d1_c2_4ef_Int(const double *parm) {
+static double nTMF_d1_c2_4ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d1_c2_4ef_Sup(const double *parm) {
+static double nTMF_d1_c2_4ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 3;
 }
 
 static double
-_nrrd_TMF_d1_c2_4ef_1_d(double x, const double *parm) {
+nTMF_d1_c2_4ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d1_c2_4ef */
@@ -4825,7 +4825,7 @@ _nrrd_TMF_d1_c2_4ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d1_c2_4ef_1_f(float x, const double *parm) {
+nTMF_d1_c2_4ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d1_c2_4ef */
@@ -4836,7 +4836,7 @@ _nrrd_TMF_d1_c2_4ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d1_c2_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d1_c2_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -4851,7 +4851,7 @@ _nrrd_TMF_d1_c2_4ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d1_c2_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d1_c2_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -4866,28 +4866,28 @@ _nrrd_TMF_d1_c2_4ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d1_c2_4ef = {
+nKernel_TMF_d1_c2_4ef = {
   "TMF_d1_c2_4ef", 1, AIR_FALSE,
-  _nrrd_TMF_d1_c2_4ef_Sup, _nrrd_TMF_d1_c2_4ef_Int,
-  _nrrd_TMF_d1_c2_4ef_1_f,  _nrrd_TMF_d1_c2_4ef_N_f,
-  _nrrd_TMF_d1_c2_4ef_1_d,  _nrrd_TMF_d1_c2_4ef_N_d
+  nTMF_d1_c2_4ef_Sup, nTMF_d1_c2_4ef_Int,
+  nTMF_d1_c2_4ef_1_f,  nTMF_d1_c2_4ef_N_f,
+  nTMF_d1_c2_4ef_1_d,  nTMF_d1_c2_4ef_N_d
 };
 
 
 /* ------------------------ TMF_d1_c3_1ef --------------------- */
 
-static double _nrrd_TMF_d1_c3_1ef_Int(const double *parm) {
+static double nTMF_d1_c3_1ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d1_c3_1ef_Sup(const double *parm) {
+static double nTMF_d1_c3_1ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_d1_c3_1ef_1_d(double x, const double *parm) {
+nTMF_d1_c3_1ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d1_c3_1ef */
@@ -4898,7 +4898,7 @@ _nrrd_TMF_d1_c3_1ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d1_c3_1ef_1_f(float x, const double *parm) {
+nTMF_d1_c3_1ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d1_c3_1ef */
@@ -4909,7 +4909,7 @@ _nrrd_TMF_d1_c3_1ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d1_c3_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d1_c3_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -4924,7 +4924,7 @@ _nrrd_TMF_d1_c3_1ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d1_c3_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d1_c3_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -4939,28 +4939,28 @@ _nrrd_TMF_d1_c3_1ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d1_c3_1ef = {
+nKernel_TMF_d1_c3_1ef = {
   "TMF_d1_c3_1ef", 1, AIR_FALSE,
-  _nrrd_TMF_d1_c3_1ef_Sup, _nrrd_TMF_d1_c3_1ef_Int,
-  _nrrd_TMF_d1_c3_1ef_1_f,  _nrrd_TMF_d1_c3_1ef_N_f,
-  _nrrd_TMF_d1_c3_1ef_1_d,  _nrrd_TMF_d1_c3_1ef_N_d
+  nTMF_d1_c3_1ef_Sup, nTMF_d1_c3_1ef_Int,
+  nTMF_d1_c3_1ef_1_f,  nTMF_d1_c3_1ef_N_f,
+  nTMF_d1_c3_1ef_1_d,  nTMF_d1_c3_1ef_N_d
 };
 
 
 /* ------------------------ TMF_d1_c3_2ef --------------------- */
 
-static double _nrrd_TMF_d1_c3_2ef_Int(const double *parm) {
+static double nTMF_d1_c3_2ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d1_c3_2ef_Sup(const double *parm) {
+static double nTMF_d1_c3_2ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_d1_c3_2ef_1_d(double x, const double *parm) {
+nTMF_d1_c3_2ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d1_c3_2ef */
@@ -4971,7 +4971,7 @@ _nrrd_TMF_d1_c3_2ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d1_c3_2ef_1_f(float x, const double *parm) {
+nTMF_d1_c3_2ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d1_c3_2ef */
@@ -4982,7 +4982,7 @@ _nrrd_TMF_d1_c3_2ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d1_c3_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d1_c3_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -4997,7 +4997,7 @@ _nrrd_TMF_d1_c3_2ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d1_c3_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d1_c3_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -5012,28 +5012,28 @@ _nrrd_TMF_d1_c3_2ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d1_c3_2ef = {
+nKernel_TMF_d1_c3_2ef = {
   "TMF_d1_c3_2ef", 1, AIR_FALSE,
-  _nrrd_TMF_d1_c3_2ef_Sup, _nrrd_TMF_d1_c3_2ef_Int,
-  _nrrd_TMF_d1_c3_2ef_1_f,  _nrrd_TMF_d1_c3_2ef_N_f,
-  _nrrd_TMF_d1_c3_2ef_1_d,  _nrrd_TMF_d1_c3_2ef_N_d
+  nTMF_d1_c3_2ef_Sup, nTMF_d1_c3_2ef_Int,
+  nTMF_d1_c3_2ef_1_f,  nTMF_d1_c3_2ef_N_f,
+  nTMF_d1_c3_2ef_1_d,  nTMF_d1_c3_2ef_N_d
 };
 
 
 /* ------------------------ TMF_d1_c3_3ef --------------------- */
 
-static double _nrrd_TMF_d1_c3_3ef_Int(const double *parm) {
+static double nTMF_d1_c3_3ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d1_c3_3ef_Sup(const double *parm) {
+static double nTMF_d1_c3_3ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 3;
 }
 
 static double
-_nrrd_TMF_d1_c3_3ef_1_d(double x, const double *parm) {
+nTMF_d1_c3_3ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d1_c3_3ef */
@@ -5044,7 +5044,7 @@ _nrrd_TMF_d1_c3_3ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d1_c3_3ef_1_f(float x, const double *parm) {
+nTMF_d1_c3_3ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d1_c3_3ef */
@@ -5055,7 +5055,7 @@ _nrrd_TMF_d1_c3_3ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d1_c3_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d1_c3_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -5070,7 +5070,7 @@ _nrrd_TMF_d1_c3_3ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d1_c3_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d1_c3_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -5085,28 +5085,28 @@ _nrrd_TMF_d1_c3_3ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d1_c3_3ef = {
+nKernel_TMF_d1_c3_3ef = {
   "TMF_d1_c3_3ef", 1, AIR_FALSE,
-  _nrrd_TMF_d1_c3_3ef_Sup, _nrrd_TMF_d1_c3_3ef_Int,
-  _nrrd_TMF_d1_c3_3ef_1_f,  _nrrd_TMF_d1_c3_3ef_N_f,
-  _nrrd_TMF_d1_c3_3ef_1_d,  _nrrd_TMF_d1_c3_3ef_N_d
+  nTMF_d1_c3_3ef_Sup, nTMF_d1_c3_3ef_Int,
+  nTMF_d1_c3_3ef_1_f,  nTMF_d1_c3_3ef_N_f,
+  nTMF_d1_c3_3ef_1_d,  nTMF_d1_c3_3ef_N_d
 };
 
 
 /* ------------------------ TMF_d1_c3_4ef --------------------- */
 
-static double _nrrd_TMF_d1_c3_4ef_Int(const double *parm) {
+static double nTMF_d1_c3_4ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d1_c3_4ef_Sup(const double *parm) {
+static double nTMF_d1_c3_4ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 3;
 }
 
 static double
-_nrrd_TMF_d1_c3_4ef_1_d(double x, const double *parm) {
+nTMF_d1_c3_4ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d1_c3_4ef */
@@ -5117,7 +5117,7 @@ _nrrd_TMF_d1_c3_4ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d1_c3_4ef_1_f(float x, const double *parm) {
+nTMF_d1_c3_4ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d1_c3_4ef */
@@ -5128,7 +5128,7 @@ _nrrd_TMF_d1_c3_4ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d1_c3_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d1_c3_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -5143,7 +5143,7 @@ _nrrd_TMF_d1_c3_4ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d1_c3_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d1_c3_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -5158,28 +5158,28 @@ _nrrd_TMF_d1_c3_4ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d1_c3_4ef = {
+nKernel_TMF_d1_c3_4ef = {
   "TMF_d1_c3_4ef", 1, AIR_FALSE,
-  _nrrd_TMF_d1_c3_4ef_Sup, _nrrd_TMF_d1_c3_4ef_Int,
-  _nrrd_TMF_d1_c3_4ef_1_f,  _nrrd_TMF_d1_c3_4ef_N_f,
-  _nrrd_TMF_d1_c3_4ef_1_d,  _nrrd_TMF_d1_c3_4ef_N_d
+  nTMF_d1_c3_4ef_Sup, nTMF_d1_c3_4ef_Int,
+  nTMF_d1_c3_4ef_1_f,  nTMF_d1_c3_4ef_N_f,
+  nTMF_d1_c3_4ef_1_d,  nTMF_d1_c3_4ef_N_d
 };
 
 
 /* ------------------------ TMF_d2_cn_1ef --------------------- */
 
-static double _nrrd_TMF_d2_cn_1ef_Int(const double *parm) {
+static double nTMF_d2_cn_1ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d2_cn_1ef_Sup(const double *parm) {
+static double nTMF_d2_cn_1ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_d2_cn_1ef_1_d(double x, const double *parm) {
+nTMF_d2_cn_1ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_cn_1ef */
@@ -5190,7 +5190,7 @@ _nrrd_TMF_d2_cn_1ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d2_cn_1ef_1_f(float x, const double *parm) {
+nTMF_d2_cn_1ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_cn_1ef */
@@ -5201,7 +5201,7 @@ _nrrd_TMF_d2_cn_1ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d2_cn_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d2_cn_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -5216,7 +5216,7 @@ _nrrd_TMF_d2_cn_1ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d2_cn_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d2_cn_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -5231,28 +5231,28 @@ _nrrd_TMF_d2_cn_1ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d2_cn_1ef = {
+nKernel_TMF_d2_cn_1ef = {
   "TMF_d2_cn_1ef", 1, AIR_FALSE,
-  _nrrd_TMF_d2_cn_1ef_Sup, _nrrd_TMF_d2_cn_1ef_Int,
-  _nrrd_TMF_d2_cn_1ef_1_f,  _nrrd_TMF_d2_cn_1ef_N_f,
-  _nrrd_TMF_d2_cn_1ef_1_d,  _nrrd_TMF_d2_cn_1ef_N_d
+  nTMF_d2_cn_1ef_Sup, nTMF_d2_cn_1ef_Int,
+  nTMF_d2_cn_1ef_1_f,  nTMF_d2_cn_1ef_N_f,
+  nTMF_d2_cn_1ef_1_d,  nTMF_d2_cn_1ef_N_d
 };
 
 
 /* ------------------------ TMF_d2_cn_2ef --------------------- */
 
-static double _nrrd_TMF_d2_cn_2ef_Int(const double *parm) {
+static double nTMF_d2_cn_2ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d2_cn_2ef_Sup(const double *parm) {
+static double nTMF_d2_cn_2ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_d2_cn_2ef_1_d(double x, const double *parm) {
+nTMF_d2_cn_2ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_cn_2ef */
@@ -5263,7 +5263,7 @@ _nrrd_TMF_d2_cn_2ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d2_cn_2ef_1_f(float x, const double *parm) {
+nTMF_d2_cn_2ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_cn_2ef */
@@ -5274,7 +5274,7 @@ _nrrd_TMF_d2_cn_2ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d2_cn_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d2_cn_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -5289,7 +5289,7 @@ _nrrd_TMF_d2_cn_2ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d2_cn_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d2_cn_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -5304,28 +5304,28 @@ _nrrd_TMF_d2_cn_2ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d2_cn_2ef = {
+nKernel_TMF_d2_cn_2ef = {
   "TMF_d2_cn_2ef", 1, AIR_FALSE,
-  _nrrd_TMF_d2_cn_2ef_Sup, _nrrd_TMF_d2_cn_2ef_Int,
-  _nrrd_TMF_d2_cn_2ef_1_f,  _nrrd_TMF_d2_cn_2ef_N_f,
-  _nrrd_TMF_d2_cn_2ef_1_d,  _nrrd_TMF_d2_cn_2ef_N_d
+  nTMF_d2_cn_2ef_Sup, nTMF_d2_cn_2ef_Int,
+  nTMF_d2_cn_2ef_1_f,  nTMF_d2_cn_2ef_N_f,
+  nTMF_d2_cn_2ef_1_d,  nTMF_d2_cn_2ef_N_d
 };
 
 
 /* ------------------------ TMF_d2_cn_3ef --------------------- */
 
-static double _nrrd_TMF_d2_cn_3ef_Int(const double *parm) {
+static double nTMF_d2_cn_3ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d2_cn_3ef_Sup(const double *parm) {
+static double nTMF_d2_cn_3ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 3;
 }
 
 static double
-_nrrd_TMF_d2_cn_3ef_1_d(double x, const double *parm) {
+nTMF_d2_cn_3ef_1_d(double x, const double *parm) {
   int i;
 
 
@@ -5336,7 +5336,7 @@ _nrrd_TMF_d2_cn_3ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d2_cn_3ef_1_f(float x, const double *parm) {
+nTMF_d2_cn_3ef_1_f(float x, const double *parm) {
   int i;
 
 
@@ -5347,7 +5347,7 @@ _nrrd_TMF_d2_cn_3ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d2_cn_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d2_cn_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -5362,7 +5362,7 @@ _nrrd_TMF_d2_cn_3ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d2_cn_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d2_cn_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -5377,28 +5377,28 @@ _nrrd_TMF_d2_cn_3ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d2_cn_3ef = {
+nKernel_TMF_d2_cn_3ef = {
   "TMF_d2_cn_3ef", 1, AIR_FALSE,
-  _nrrd_TMF_d2_cn_3ef_Sup, _nrrd_TMF_d2_cn_3ef_Int,
-  _nrrd_TMF_d2_cn_3ef_1_f,  _nrrd_TMF_d2_cn_3ef_N_f,
-  _nrrd_TMF_d2_cn_3ef_1_d,  _nrrd_TMF_d2_cn_3ef_N_d
+  nTMF_d2_cn_3ef_Sup, nTMF_d2_cn_3ef_Int,
+  nTMF_d2_cn_3ef_1_f,  nTMF_d2_cn_3ef_N_f,
+  nTMF_d2_cn_3ef_1_d,  nTMF_d2_cn_3ef_N_d
 };
 
 
 /* ------------------------ TMF_d2_cn_4ef --------------------- */
 
-static double _nrrd_TMF_d2_cn_4ef_Int(const double *parm) {
+static double nTMF_d2_cn_4ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d2_cn_4ef_Sup(const double *parm) {
+static double nTMF_d2_cn_4ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 3;
 }
 
 static double
-_nrrd_TMF_d2_cn_4ef_1_d(double x, const double *parm) {
+nTMF_d2_cn_4ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_cn_4ef */
@@ -5409,7 +5409,7 @@ _nrrd_TMF_d2_cn_4ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d2_cn_4ef_1_f(float x, const double *parm) {
+nTMF_d2_cn_4ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_cn_4ef */
@@ -5420,7 +5420,7 @@ _nrrd_TMF_d2_cn_4ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d2_cn_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d2_cn_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -5435,7 +5435,7 @@ _nrrd_TMF_d2_cn_4ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d2_cn_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d2_cn_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -5450,28 +5450,28 @@ _nrrd_TMF_d2_cn_4ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d2_cn_4ef = {
+nKernel_TMF_d2_cn_4ef = {
   "TMF_d2_cn_4ef", 1, AIR_FALSE,
-  _nrrd_TMF_d2_cn_4ef_Sup, _nrrd_TMF_d2_cn_4ef_Int,
-  _nrrd_TMF_d2_cn_4ef_1_f,  _nrrd_TMF_d2_cn_4ef_N_f,
-  _nrrd_TMF_d2_cn_4ef_1_d,  _nrrd_TMF_d2_cn_4ef_N_d
+  nTMF_d2_cn_4ef_Sup, nTMF_d2_cn_4ef_Int,
+  nTMF_d2_cn_4ef_1_f,  nTMF_d2_cn_4ef_N_f,
+  nTMF_d2_cn_4ef_1_d,  nTMF_d2_cn_4ef_N_d
 };
 
 
 /* ------------------------ TMF_d2_c0_1ef --------------------- */
 
-static double _nrrd_TMF_d2_c0_1ef_Int(const double *parm) {
+static double nTMF_d2_c0_1ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d2_c0_1ef_Sup(const double *parm) {
+static double nTMF_d2_c0_1ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_d2_c0_1ef_1_d(double x, const double *parm) {
+nTMF_d2_c0_1ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_c0_1ef */
@@ -5482,7 +5482,7 @@ _nrrd_TMF_d2_c0_1ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d2_c0_1ef_1_f(float x, const double *parm) {
+nTMF_d2_c0_1ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_c0_1ef */
@@ -5493,7 +5493,7 @@ _nrrd_TMF_d2_c0_1ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d2_c0_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d2_c0_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -5508,7 +5508,7 @@ _nrrd_TMF_d2_c0_1ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d2_c0_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d2_c0_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -5523,28 +5523,28 @@ _nrrd_TMF_d2_c0_1ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d2_c0_1ef = {
+nKernel_TMF_d2_c0_1ef = {
   "TMF_d2_c0_1ef", 1, AIR_FALSE,
-  _nrrd_TMF_d2_c0_1ef_Sup, _nrrd_TMF_d2_c0_1ef_Int,
-  _nrrd_TMF_d2_c0_1ef_1_f,  _nrrd_TMF_d2_c0_1ef_N_f,
-  _nrrd_TMF_d2_c0_1ef_1_d,  _nrrd_TMF_d2_c0_1ef_N_d
+  nTMF_d2_c0_1ef_Sup, nTMF_d2_c0_1ef_Int,
+  nTMF_d2_c0_1ef_1_f,  nTMF_d2_c0_1ef_N_f,
+  nTMF_d2_c0_1ef_1_d,  nTMF_d2_c0_1ef_N_d
 };
 
 
 /* ------------------------ TMF_d2_c0_2ef --------------------- */
 
-static double _nrrd_TMF_d2_c0_2ef_Int(const double *parm) {
+static double nTMF_d2_c0_2ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d2_c0_2ef_Sup(const double *parm) {
+static double nTMF_d2_c0_2ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_d2_c0_2ef_1_d(double x, const double *parm) {
+nTMF_d2_c0_2ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_c0_2ef */
@@ -5555,7 +5555,7 @@ _nrrd_TMF_d2_c0_2ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d2_c0_2ef_1_f(float x, const double *parm) {
+nTMF_d2_c0_2ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_c0_2ef */
@@ -5566,7 +5566,7 @@ _nrrd_TMF_d2_c0_2ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d2_c0_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d2_c0_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -5581,7 +5581,7 @@ _nrrd_TMF_d2_c0_2ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d2_c0_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d2_c0_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -5596,28 +5596,28 @@ _nrrd_TMF_d2_c0_2ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d2_c0_2ef = {
+nKernel_TMF_d2_c0_2ef = {
   "TMF_d2_c0_2ef", 1, AIR_FALSE,
-  _nrrd_TMF_d2_c0_2ef_Sup, _nrrd_TMF_d2_c0_2ef_Int,
-  _nrrd_TMF_d2_c0_2ef_1_f,  _nrrd_TMF_d2_c0_2ef_N_f,
-  _nrrd_TMF_d2_c0_2ef_1_d,  _nrrd_TMF_d2_c0_2ef_N_d
+  nTMF_d2_c0_2ef_Sup, nTMF_d2_c0_2ef_Int,
+  nTMF_d2_c0_2ef_1_f,  nTMF_d2_c0_2ef_N_f,
+  nTMF_d2_c0_2ef_1_d,  nTMF_d2_c0_2ef_N_d
 };
 
 
 /* ------------------------ TMF_d2_c0_3ef --------------------- */
 
-static double _nrrd_TMF_d2_c0_3ef_Int(const double *parm) {
+static double nTMF_d2_c0_3ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d2_c0_3ef_Sup(const double *parm) {
+static double nTMF_d2_c0_3ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 3;
 }
 
 static double
-_nrrd_TMF_d2_c0_3ef_1_d(double x, const double *parm) {
+nTMF_d2_c0_3ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_c0_3ef */
@@ -5628,7 +5628,7 @@ _nrrd_TMF_d2_c0_3ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d2_c0_3ef_1_f(float x, const double *parm) {
+nTMF_d2_c0_3ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_c0_3ef */
@@ -5639,7 +5639,7 @@ _nrrd_TMF_d2_c0_3ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d2_c0_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d2_c0_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -5654,7 +5654,7 @@ _nrrd_TMF_d2_c0_3ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d2_c0_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d2_c0_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -5669,28 +5669,28 @@ _nrrd_TMF_d2_c0_3ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d2_c0_3ef = {
+nKernel_TMF_d2_c0_3ef = {
   "TMF_d2_c0_3ef", 1, AIR_FALSE,
-  _nrrd_TMF_d2_c0_3ef_Sup, _nrrd_TMF_d2_c0_3ef_Int,
-  _nrrd_TMF_d2_c0_3ef_1_f,  _nrrd_TMF_d2_c0_3ef_N_f,
-  _nrrd_TMF_d2_c0_3ef_1_d,  _nrrd_TMF_d2_c0_3ef_N_d
+  nTMF_d2_c0_3ef_Sup, nTMF_d2_c0_3ef_Int,
+  nTMF_d2_c0_3ef_1_f,  nTMF_d2_c0_3ef_N_f,
+  nTMF_d2_c0_3ef_1_d,  nTMF_d2_c0_3ef_N_d
 };
 
 
 /* ------------------------ TMF_d2_c0_4ef --------------------- */
 
-static double _nrrd_TMF_d2_c0_4ef_Int(const double *parm) {
+static double nTMF_d2_c0_4ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d2_c0_4ef_Sup(const double *parm) {
+static double nTMF_d2_c0_4ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 3;
 }
 
 static double
-_nrrd_TMF_d2_c0_4ef_1_d(double x, const double *parm) {
+nTMF_d2_c0_4ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_c0_4ef */
@@ -5701,7 +5701,7 @@ _nrrd_TMF_d2_c0_4ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d2_c0_4ef_1_f(float x, const double *parm) {
+nTMF_d2_c0_4ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_c0_4ef */
@@ -5712,7 +5712,7 @@ _nrrd_TMF_d2_c0_4ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d2_c0_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d2_c0_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -5727,7 +5727,7 @@ _nrrd_TMF_d2_c0_4ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d2_c0_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d2_c0_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -5742,28 +5742,28 @@ _nrrd_TMF_d2_c0_4ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d2_c0_4ef = {
+nKernel_TMF_d2_c0_4ef = {
   "TMF_d2_c0_4ef", 1, AIR_FALSE,
-  _nrrd_TMF_d2_c0_4ef_Sup, _nrrd_TMF_d2_c0_4ef_Int,
-  _nrrd_TMF_d2_c0_4ef_1_f,  _nrrd_TMF_d2_c0_4ef_N_f,
-  _nrrd_TMF_d2_c0_4ef_1_d,  _nrrd_TMF_d2_c0_4ef_N_d
+  nTMF_d2_c0_4ef_Sup, nTMF_d2_c0_4ef_Int,
+  nTMF_d2_c0_4ef_1_f,  nTMF_d2_c0_4ef_N_f,
+  nTMF_d2_c0_4ef_1_d,  nTMF_d2_c0_4ef_N_d
 };
 
 
 /* ------------------------ TMF_d2_c1_1ef --------------------- */
 
-static double _nrrd_TMF_d2_c1_1ef_Int(const double *parm) {
+static double nTMF_d2_c1_1ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d2_c1_1ef_Sup(const double *parm) {
+static double nTMF_d2_c1_1ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_d2_c1_1ef_1_d(double x, const double *parm) {
+nTMF_d2_c1_1ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_c1_1ef */
@@ -5774,7 +5774,7 @@ _nrrd_TMF_d2_c1_1ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d2_c1_1ef_1_f(float x, const double *parm) {
+nTMF_d2_c1_1ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_c1_1ef */
@@ -5785,7 +5785,7 @@ _nrrd_TMF_d2_c1_1ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d2_c1_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d2_c1_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -5800,7 +5800,7 @@ _nrrd_TMF_d2_c1_1ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d2_c1_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d2_c1_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -5815,28 +5815,28 @@ _nrrd_TMF_d2_c1_1ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d2_c1_1ef = {
+nKernel_TMF_d2_c1_1ef = {
   "TMF_d2_c1_1ef", 1, AIR_FALSE,
-  _nrrd_TMF_d2_c1_1ef_Sup, _nrrd_TMF_d2_c1_1ef_Int,
-  _nrrd_TMF_d2_c1_1ef_1_f,  _nrrd_TMF_d2_c1_1ef_N_f,
-  _nrrd_TMF_d2_c1_1ef_1_d,  _nrrd_TMF_d2_c1_1ef_N_d
+  nTMF_d2_c1_1ef_Sup, nTMF_d2_c1_1ef_Int,
+  nTMF_d2_c1_1ef_1_f,  nTMF_d2_c1_1ef_N_f,
+  nTMF_d2_c1_1ef_1_d,  nTMF_d2_c1_1ef_N_d
 };
 
 
 /* ------------------------ TMF_d2_c1_2ef --------------------- */
 
-static double _nrrd_TMF_d2_c1_2ef_Int(const double *parm) {
+static double nTMF_d2_c1_2ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d2_c1_2ef_Sup(const double *parm) {
+static double nTMF_d2_c1_2ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 3;
 }
 
 static double
-_nrrd_TMF_d2_c1_2ef_1_d(double x, const double *parm) {
+nTMF_d2_c1_2ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_c1_2ef */
@@ -5847,7 +5847,7 @@ _nrrd_TMF_d2_c1_2ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d2_c1_2ef_1_f(float x, const double *parm) {
+nTMF_d2_c1_2ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_c1_2ef */
@@ -5858,7 +5858,7 @@ _nrrd_TMF_d2_c1_2ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d2_c1_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d2_c1_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -5873,7 +5873,7 @@ _nrrd_TMF_d2_c1_2ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d2_c1_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d2_c1_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -5888,28 +5888,28 @@ _nrrd_TMF_d2_c1_2ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d2_c1_2ef = {
+nKernel_TMF_d2_c1_2ef = {
   "TMF_d2_c1_2ef", 1, AIR_FALSE,
-  _nrrd_TMF_d2_c1_2ef_Sup, _nrrd_TMF_d2_c1_2ef_Int,
-  _nrrd_TMF_d2_c1_2ef_1_f,  _nrrd_TMF_d2_c1_2ef_N_f,
-  _nrrd_TMF_d2_c1_2ef_1_d,  _nrrd_TMF_d2_c1_2ef_N_d
+  nTMF_d2_c1_2ef_Sup, nTMF_d2_c1_2ef_Int,
+  nTMF_d2_c1_2ef_1_f,  nTMF_d2_c1_2ef_N_f,
+  nTMF_d2_c1_2ef_1_d,  nTMF_d2_c1_2ef_N_d
 };
 
 
 /* ------------------------ TMF_d2_c1_3ef --------------------- */
 
-static double _nrrd_TMF_d2_c1_3ef_Int(const double *parm) {
+static double nTMF_d2_c1_3ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d2_c1_3ef_Sup(const double *parm) {
+static double nTMF_d2_c1_3ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 3;
 }
 
 static double
-_nrrd_TMF_d2_c1_3ef_1_d(double x, const double *parm) {
+nTMF_d2_c1_3ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_c1_3ef */
@@ -5920,7 +5920,7 @@ _nrrd_TMF_d2_c1_3ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d2_c1_3ef_1_f(float x, const double *parm) {
+nTMF_d2_c1_3ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_c1_3ef */
@@ -5931,7 +5931,7 @@ _nrrd_TMF_d2_c1_3ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d2_c1_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d2_c1_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -5946,7 +5946,7 @@ _nrrd_TMF_d2_c1_3ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d2_c1_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d2_c1_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -5961,28 +5961,28 @@ _nrrd_TMF_d2_c1_3ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d2_c1_3ef = {
+nKernel_TMF_d2_c1_3ef = {
   "TMF_d2_c1_3ef", 1, AIR_FALSE,
-  _nrrd_TMF_d2_c1_3ef_Sup, _nrrd_TMF_d2_c1_3ef_Int,
-  _nrrd_TMF_d2_c1_3ef_1_f,  _nrrd_TMF_d2_c1_3ef_N_f,
-  _nrrd_TMF_d2_c1_3ef_1_d,  _nrrd_TMF_d2_c1_3ef_N_d
+  nTMF_d2_c1_3ef_Sup, nTMF_d2_c1_3ef_Int,
+  nTMF_d2_c1_3ef_1_f,  nTMF_d2_c1_3ef_N_f,
+  nTMF_d2_c1_3ef_1_d,  nTMF_d2_c1_3ef_N_d
 };
 
 
 /* ------------------------ TMF_d2_c1_4ef --------------------- */
 
-static double _nrrd_TMF_d2_c1_4ef_Int(const double *parm) {
+static double nTMF_d2_c1_4ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d2_c1_4ef_Sup(const double *parm) {
+static double nTMF_d2_c1_4ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 4;
 }
 
 static double
-_nrrd_TMF_d2_c1_4ef_1_d(double x, const double *parm) {
+nTMF_d2_c1_4ef_1_d(double x, const double *parm) {
   int i;
 
 
@@ -5993,7 +5993,7 @@ _nrrd_TMF_d2_c1_4ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d2_c1_4ef_1_f(float x, const double *parm) {
+nTMF_d2_c1_4ef_1_f(float x, const double *parm) {
   int i;
 
 
@@ -6004,7 +6004,7 @@ _nrrd_TMF_d2_c1_4ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d2_c1_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d2_c1_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -6019,7 +6019,7 @@ _nrrd_TMF_d2_c1_4ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d2_c1_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d2_c1_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -6034,28 +6034,28 @@ _nrrd_TMF_d2_c1_4ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d2_c1_4ef = {
+nKernel_TMF_d2_c1_4ef = {
   "TMF_d2_c1_4ef", 1, AIR_FALSE,
-  _nrrd_TMF_d2_c1_4ef_Sup, _nrrd_TMF_d2_c1_4ef_Int,
-  _nrrd_TMF_d2_c1_4ef_1_f,  _nrrd_TMF_d2_c1_4ef_N_f,
-  _nrrd_TMF_d2_c1_4ef_1_d,  _nrrd_TMF_d2_c1_4ef_N_d
+  nTMF_d2_c1_4ef_Sup, nTMF_d2_c1_4ef_Int,
+  nTMF_d2_c1_4ef_1_f,  nTMF_d2_c1_4ef_N_f,
+  nTMF_d2_c1_4ef_1_d,  nTMF_d2_c1_4ef_N_d
 };
 
 
 /* ------------------------ TMF_d2_c2_1ef --------------------- */
 
-static double _nrrd_TMF_d2_c2_1ef_Int(const double *parm) {
+static double nTMF_d2_c2_1ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d2_c2_1ef_Sup(const double *parm) {
+static double nTMF_d2_c2_1ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_d2_c2_1ef_1_d(double x, const double *parm) {
+nTMF_d2_c2_1ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_c2_1ef */
@@ -6066,7 +6066,7 @@ _nrrd_TMF_d2_c2_1ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d2_c2_1ef_1_f(float x, const double *parm) {
+nTMF_d2_c2_1ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_c2_1ef */
@@ -6077,7 +6077,7 @@ _nrrd_TMF_d2_c2_1ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d2_c2_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d2_c2_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -6092,7 +6092,7 @@ _nrrd_TMF_d2_c2_1ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d2_c2_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d2_c2_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -6107,28 +6107,28 @@ _nrrd_TMF_d2_c2_1ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d2_c2_1ef = {
+nKernel_TMF_d2_c2_1ef = {
   "TMF_d2_c2_1ef", 1, AIR_FALSE,
-  _nrrd_TMF_d2_c2_1ef_Sup, _nrrd_TMF_d2_c2_1ef_Int,
-  _nrrd_TMF_d2_c2_1ef_1_f,  _nrrd_TMF_d2_c2_1ef_N_f,
-  _nrrd_TMF_d2_c2_1ef_1_d,  _nrrd_TMF_d2_c2_1ef_N_d
+  nTMF_d2_c2_1ef_Sup, nTMF_d2_c2_1ef_Int,
+  nTMF_d2_c2_1ef_1_f,  nTMF_d2_c2_1ef_N_f,
+  nTMF_d2_c2_1ef_1_d,  nTMF_d2_c2_1ef_N_d
 };
 
 
 /* ------------------------ TMF_d2_c2_2ef --------------------- */
 
-static double _nrrd_TMF_d2_c2_2ef_Int(const double *parm) {
+static double nTMF_d2_c2_2ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d2_c2_2ef_Sup(const double *parm) {
+static double nTMF_d2_c2_2ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 3;
 }
 
 static double
-_nrrd_TMF_d2_c2_2ef_1_d(double x, const double *parm) {
+nTMF_d2_c2_2ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_c2_2ef */
@@ -6139,7 +6139,7 @@ _nrrd_TMF_d2_c2_2ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d2_c2_2ef_1_f(float x, const double *parm) {
+nTMF_d2_c2_2ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_c2_2ef */
@@ -6150,7 +6150,7 @@ _nrrd_TMF_d2_c2_2ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d2_c2_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d2_c2_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -6165,7 +6165,7 @@ _nrrd_TMF_d2_c2_2ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d2_c2_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d2_c2_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -6180,28 +6180,28 @@ _nrrd_TMF_d2_c2_2ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d2_c2_2ef = {
+nKernel_TMF_d2_c2_2ef = {
   "TMF_d2_c2_2ef", 1, AIR_FALSE,
-  _nrrd_TMF_d2_c2_2ef_Sup, _nrrd_TMF_d2_c2_2ef_Int,
-  _nrrd_TMF_d2_c2_2ef_1_f,  _nrrd_TMF_d2_c2_2ef_N_f,
-  _nrrd_TMF_d2_c2_2ef_1_d,  _nrrd_TMF_d2_c2_2ef_N_d
+  nTMF_d2_c2_2ef_Sup, nTMF_d2_c2_2ef_Int,
+  nTMF_d2_c2_2ef_1_f,  nTMF_d2_c2_2ef_N_f,
+  nTMF_d2_c2_2ef_1_d,  nTMF_d2_c2_2ef_N_d
 };
 
 
 /* ------------------------ TMF_d2_c2_3ef --------------------- */
 
-static double _nrrd_TMF_d2_c2_3ef_Int(const double *parm) {
+static double nTMF_d2_c2_3ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d2_c2_3ef_Sup(const double *parm) {
+static double nTMF_d2_c2_3ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 3;
 }
 
 static double
-_nrrd_TMF_d2_c2_3ef_1_d(double x, const double *parm) {
+nTMF_d2_c2_3ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_c2_3ef */
@@ -6212,7 +6212,7 @@ _nrrd_TMF_d2_c2_3ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d2_c2_3ef_1_f(float x, const double *parm) {
+nTMF_d2_c2_3ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_c2_3ef */
@@ -6223,7 +6223,7 @@ _nrrd_TMF_d2_c2_3ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d2_c2_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d2_c2_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -6238,7 +6238,7 @@ _nrrd_TMF_d2_c2_3ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d2_c2_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d2_c2_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -6253,28 +6253,28 @@ _nrrd_TMF_d2_c2_3ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d2_c2_3ef = {
+nKernel_TMF_d2_c2_3ef = {
   "TMF_d2_c2_3ef", 1, AIR_FALSE,
-  _nrrd_TMF_d2_c2_3ef_Sup, _nrrd_TMF_d2_c2_3ef_Int,
-  _nrrd_TMF_d2_c2_3ef_1_f,  _nrrd_TMF_d2_c2_3ef_N_f,
-  _nrrd_TMF_d2_c2_3ef_1_d,  _nrrd_TMF_d2_c2_3ef_N_d
+  nTMF_d2_c2_3ef_Sup, nTMF_d2_c2_3ef_Int,
+  nTMF_d2_c2_3ef_1_f,  nTMF_d2_c2_3ef_N_f,
+  nTMF_d2_c2_3ef_1_d,  nTMF_d2_c2_3ef_N_d
 };
 
 
 /* ------------------------ TMF_d2_c2_4ef --------------------- */
 
-static double _nrrd_TMF_d2_c2_4ef_Int(const double *parm) {
+static double nTMF_d2_c2_4ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d2_c2_4ef_Sup(const double *parm) {
+static double nTMF_d2_c2_4ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 4;
 }
 
 static double
-_nrrd_TMF_d2_c2_4ef_1_d(double x, const double *parm) {
+nTMF_d2_c2_4ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_c2_4ef */
@@ -6285,7 +6285,7 @@ _nrrd_TMF_d2_c2_4ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d2_c2_4ef_1_f(float x, const double *parm) {
+nTMF_d2_c2_4ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_c2_4ef */
@@ -6296,7 +6296,7 @@ _nrrd_TMF_d2_c2_4ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d2_c2_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d2_c2_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -6311,7 +6311,7 @@ _nrrd_TMF_d2_c2_4ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d2_c2_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d2_c2_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -6326,28 +6326,28 @@ _nrrd_TMF_d2_c2_4ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d2_c2_4ef = {
+nKernel_TMF_d2_c2_4ef = {
   "TMF_d2_c2_4ef", 1, AIR_FALSE,
-  _nrrd_TMF_d2_c2_4ef_Sup, _nrrd_TMF_d2_c2_4ef_Int,
-  _nrrd_TMF_d2_c2_4ef_1_f,  _nrrd_TMF_d2_c2_4ef_N_f,
-  _nrrd_TMF_d2_c2_4ef_1_d,  _nrrd_TMF_d2_c2_4ef_N_d
+  nTMF_d2_c2_4ef_Sup, nTMF_d2_c2_4ef_Int,
+  nTMF_d2_c2_4ef_1_f,  nTMF_d2_c2_4ef_N_f,
+  nTMF_d2_c2_4ef_1_d,  nTMF_d2_c2_4ef_N_d
 };
 
 
 /* ------------------------ TMF_d2_c3_1ef --------------------- */
 
-static double _nrrd_TMF_d2_c3_1ef_Int(const double *parm) {
+static double nTMF_d2_c3_1ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d2_c3_1ef_Sup(const double *parm) {
+static double nTMF_d2_c3_1ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 2;
 }
 
 static double
-_nrrd_TMF_d2_c3_1ef_1_d(double x, const double *parm) {
+nTMF_d2_c3_1ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_c3_1ef */
@@ -6358,7 +6358,7 @@ _nrrd_TMF_d2_c3_1ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d2_c3_1ef_1_f(float x, const double *parm) {
+nTMF_d2_c3_1ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_c3_1ef */
@@ -6369,7 +6369,7 @@ _nrrd_TMF_d2_c3_1ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d2_c3_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d2_c3_1ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -6384,7 +6384,7 @@ _nrrd_TMF_d2_c3_1ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d2_c3_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d2_c3_1ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -6399,28 +6399,28 @@ _nrrd_TMF_d2_c3_1ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d2_c3_1ef = {
+nKernel_TMF_d2_c3_1ef = {
   "TMF_d2_c3_1ef", 1, AIR_FALSE,
-  _nrrd_TMF_d2_c3_1ef_Sup, _nrrd_TMF_d2_c3_1ef_Int,
-  _nrrd_TMF_d2_c3_1ef_1_f,  _nrrd_TMF_d2_c3_1ef_N_f,
-  _nrrd_TMF_d2_c3_1ef_1_d,  _nrrd_TMF_d2_c3_1ef_N_d
+  nTMF_d2_c3_1ef_Sup, nTMF_d2_c3_1ef_Int,
+  nTMF_d2_c3_1ef_1_f,  nTMF_d2_c3_1ef_N_f,
+  nTMF_d2_c3_1ef_1_d,  nTMF_d2_c3_1ef_N_d
 };
 
 
 /* ------------------------ TMF_d2_c3_2ef --------------------- */
 
-static double _nrrd_TMF_d2_c3_2ef_Int(const double *parm) {
+static double nTMF_d2_c3_2ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d2_c3_2ef_Sup(const double *parm) {
+static double nTMF_d2_c3_2ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 3;
 }
 
 static double
-_nrrd_TMF_d2_c3_2ef_1_d(double x, const double *parm) {
+nTMF_d2_c3_2ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_c3_2ef */
@@ -6431,7 +6431,7 @@ _nrrd_TMF_d2_c3_2ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d2_c3_2ef_1_f(float x, const double *parm) {
+nTMF_d2_c3_2ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_c3_2ef */
@@ -6442,7 +6442,7 @@ _nrrd_TMF_d2_c3_2ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d2_c3_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d2_c3_2ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -6457,7 +6457,7 @@ _nrrd_TMF_d2_c3_2ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d2_c3_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d2_c3_2ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -6472,28 +6472,28 @@ _nrrd_TMF_d2_c3_2ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d2_c3_2ef = {
+nKernel_TMF_d2_c3_2ef = {
   "TMF_d2_c3_2ef", 1, AIR_FALSE,
-  _nrrd_TMF_d2_c3_2ef_Sup, _nrrd_TMF_d2_c3_2ef_Int,
-  _nrrd_TMF_d2_c3_2ef_1_f,  _nrrd_TMF_d2_c3_2ef_N_f,
-  _nrrd_TMF_d2_c3_2ef_1_d,  _nrrd_TMF_d2_c3_2ef_N_d
+  nTMF_d2_c3_2ef_Sup, nTMF_d2_c3_2ef_Int,
+  nTMF_d2_c3_2ef_1_f,  nTMF_d2_c3_2ef_N_f,
+  nTMF_d2_c3_2ef_1_d,  nTMF_d2_c3_2ef_N_d
 };
 
 
 /* ------------------------ TMF_d2_c3_3ef --------------------- */
 
-static double _nrrd_TMF_d2_c3_3ef_Int(const double *parm) {
+static double nTMF_d2_c3_3ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d2_c3_3ef_Sup(const double *parm) {
+static double nTMF_d2_c3_3ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 3;
 }
 
 static double
-_nrrd_TMF_d2_c3_3ef_1_d(double x, const double *parm) {
+nTMF_d2_c3_3ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_c3_3ef */
@@ -6504,7 +6504,7 @@ _nrrd_TMF_d2_c3_3ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d2_c3_3ef_1_f(float x, const double *parm) {
+nTMF_d2_c3_3ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_c3_3ef */
@@ -6515,7 +6515,7 @@ _nrrd_TMF_d2_c3_3ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d2_c3_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d2_c3_3ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -6530,7 +6530,7 @@ _nrrd_TMF_d2_c3_3ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d2_c3_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d2_c3_3ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -6545,28 +6545,28 @@ _nrrd_TMF_d2_c3_3ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d2_c3_3ef = {
+nKernel_TMF_d2_c3_3ef = {
   "TMF_d2_c3_3ef", 1, AIR_FALSE,
-  _nrrd_TMF_d2_c3_3ef_Sup, _nrrd_TMF_d2_c3_3ef_Int,
-  _nrrd_TMF_d2_c3_3ef_1_f,  _nrrd_TMF_d2_c3_3ef_N_f,
-  _nrrd_TMF_d2_c3_3ef_1_d,  _nrrd_TMF_d2_c3_3ef_N_d
+  nTMF_d2_c3_3ef_Sup, nTMF_d2_c3_3ef_Int,
+  nTMF_d2_c3_3ef_1_f,  nTMF_d2_c3_3ef_N_f,
+  nTMF_d2_c3_3ef_1_d,  nTMF_d2_c3_3ef_N_d
 };
 
 
 /* ------------------------ TMF_d2_c3_4ef --------------------- */
 
-static double _nrrd_TMF_d2_c3_4ef_Int(const double *parm) {
+static double nTMF_d2_c3_4ef_Int(const double *parm) {
   AIR_UNUSED(parm);
   return 0.0;
 }
 
-static double _nrrd_TMF_d2_c3_4ef_Sup(const double *parm) {
+static double nTMF_d2_c3_4ef_Sup(const double *parm) {
   AIR_UNUSED(parm);
   return 4;
 }
 
 static double
-_nrrd_TMF_d2_c3_4ef_1_d(double x, const double *parm) {
+nTMF_d2_c3_4ef_1_d(double x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_c3_4ef */
@@ -6577,7 +6577,7 @@ _nrrd_TMF_d2_c3_4ef_1_d(double x, const double *parm) {
 }
 
 static float
-_nrrd_TMF_d2_c3_4ef_1_f(float x, const double *parm) {
+nTMF_d2_c3_4ef_1_f(float x, const double *parm) {
   int i;
 
   AIR_UNUSED(parm); /* TMF_d2_c3_4ef */
@@ -6588,7 +6588,7 @@ _nrrd_TMF_d2_c3_4ef_1_f(float x, const double *parm) {
 }
 
 static void
-_nrrd_TMF_d2_c3_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
+nTMF_d2_c3_4ef_N_d(double *f, const double *x, size_t len, const double *parm) {
   double t;
   size_t I;
   int i;
@@ -6603,7 +6603,7 @@ _nrrd_TMF_d2_c3_4ef_N_d(double *f, const double *x, size_t len, const double *pa
 }
 
 static void
-_nrrd_TMF_d2_c3_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
+nTMF_d2_c3_4ef_N_f(float *f, const float *x, size_t len, const double *parm) {
   float t;
   size_t I;
   int i;
@@ -6618,11 +6618,11 @@ _nrrd_TMF_d2_c3_4ef_N_f(float *f, const float *x, size_t len, const double *parm
 }
 
 static const NrrdKernel
-_nrrdKernel_TMF_d2_c3_4ef = {
+nKernel_TMF_d2_c3_4ef = {
   "TMF_d2_c3_4ef", 1, AIR_FALSE,
-  _nrrd_TMF_d2_c3_4ef_Sup, _nrrd_TMF_d2_c3_4ef_Int,
-  _nrrd_TMF_d2_c3_4ef_1_f,  _nrrd_TMF_d2_c3_4ef_N_f,
-  _nrrd_TMF_d2_c3_4ef_1_d,  _nrrd_TMF_d2_c3_4ef_N_d
+  nTMF_d2_c3_4ef_Sup, nTMF_d2_c3_4ef_Int,
+  nTMF_d2_c3_4ef_1_f,  nTMF_d2_c3_4ef_N_f,
+  nTMF_d2_c3_4ef_1_d,  nTMF_d2_c3_4ef_N_d
 };
 
 
@@ -6630,150 +6630,150 @@ const NrrdKernel *const
 nrrdKernelTMF[4][5][5] = {
   {            /* d = n */
     {
-       &_nrrdKernel_TMFBAD,
-       &_nrrdKernel_TMF_dn_cn_1ef,
-       &_nrrdKernel_TMF_dn_cn_2ef,
-       &_nrrdKernel_TMF_dn_cn_3ef,
-       &_nrrdKernel_TMF_dn_cn_4ef,
+       &nKernel_TMFBAD,
+       &nKernel_TMF_dn_cn_1ef,
+       &nKernel_TMF_dn_cn_2ef,
+       &nKernel_TMF_dn_cn_3ef,
+       &nKernel_TMF_dn_cn_4ef,
     },
     {
-       &_nrrdKernel_TMFBAD,
-       &_nrrdKernel_TMF_dn_c0_1ef,
-       &_nrrdKernel_TMF_dn_c0_2ef,
-       &_nrrdKernel_TMF_dn_c0_3ef,
-       &_nrrdKernel_TMF_dn_c0_4ef,
+       &nKernel_TMFBAD,
+       &nKernel_TMF_dn_c0_1ef,
+       &nKernel_TMF_dn_c0_2ef,
+       &nKernel_TMF_dn_c0_3ef,
+       &nKernel_TMF_dn_c0_4ef,
     },
     {
-       &_nrrdKernel_TMFBAD,
-       &_nrrdKernel_TMF_dn_c1_1ef,
-       &_nrrdKernel_TMF_dn_c1_2ef,
-       &_nrrdKernel_TMF_dn_c1_3ef,
-       &_nrrdKernel_TMF_dn_c1_4ef,
+       &nKernel_TMFBAD,
+       &nKernel_TMF_dn_c1_1ef,
+       &nKernel_TMF_dn_c1_2ef,
+       &nKernel_TMF_dn_c1_3ef,
+       &nKernel_TMF_dn_c1_4ef,
     },
     {
-       &_nrrdKernel_TMFBAD,
-       &_nrrdKernel_TMF_dn_c2_1ef,
-       &_nrrdKernel_TMF_dn_c2_2ef,
-       &_nrrdKernel_TMF_dn_c2_3ef,
-       &_nrrdKernel_TMF_dn_c2_4ef,
+       &nKernel_TMFBAD,
+       &nKernel_TMF_dn_c2_1ef,
+       &nKernel_TMF_dn_c2_2ef,
+       &nKernel_TMF_dn_c2_3ef,
+       &nKernel_TMF_dn_c2_4ef,
     },
     {
-       &_nrrdKernel_TMFBAD,
-       &_nrrdKernel_TMF_dn_c3_1ef,
-       &_nrrdKernel_TMF_dn_c3_2ef,
-       &_nrrdKernel_TMF_dn_c3_3ef,
-       &_nrrdKernel_TMF_dn_c3_4ef,
+       &nKernel_TMFBAD,
+       &nKernel_TMF_dn_c3_1ef,
+       &nKernel_TMF_dn_c3_2ef,
+       &nKernel_TMF_dn_c3_3ef,
+       &nKernel_TMF_dn_c3_4ef,
     },
   },
   {            /* d = 0 */
     {
-       &_nrrdKernel_TMFBAD,
-       &_nrrdKernel_TMF_d0_cn_1ef,
-       &_nrrdKernel_TMF_d0_cn_2ef,
-       &_nrrdKernel_TMF_d0_cn_3ef,
-       &_nrrdKernel_TMF_d0_cn_4ef,
+       &nKernel_TMFBAD,
+       &nKernel_TMF_d0_cn_1ef,
+       &nKernel_TMF_d0_cn_2ef,
+       &nKernel_TMF_d0_cn_3ef,
+       &nKernel_TMF_d0_cn_4ef,
     },
     {
-       &_nrrdKernel_TMFBAD,
-       &_nrrdKernel_TMF_d0_c0_1ef,
-       &_nrrdKernel_TMF_d0_c0_2ef,
-       &_nrrdKernel_TMF_d0_c0_3ef,
-       &_nrrdKernel_TMF_d0_c0_4ef,
+       &nKernel_TMFBAD,
+       &nKernel_TMF_d0_c0_1ef,
+       &nKernel_TMF_d0_c0_2ef,
+       &nKernel_TMF_d0_c0_3ef,
+       &nKernel_TMF_d0_c0_4ef,
     },
     {
-       &_nrrdKernel_TMFBAD,
-       &_nrrdKernel_TMF_d0_c1_1ef,
-       &_nrrdKernel_TMF_d0_c1_2ef,
-       &_nrrdKernel_TMF_d0_c1_3ef,
-       &_nrrdKernel_TMF_d0_c1_4ef,
+       &nKernel_TMFBAD,
+       &nKernel_TMF_d0_c1_1ef,
+       &nKernel_TMF_d0_c1_2ef,
+       &nKernel_TMF_d0_c1_3ef,
+       &nKernel_TMF_d0_c1_4ef,
     },
     {
-       &_nrrdKernel_TMFBAD,
-       &_nrrdKernel_TMF_d0_c2_1ef,
-       &_nrrdKernel_TMF_d0_c2_2ef,
-       &_nrrdKernel_TMF_d0_c2_3ef,
-       &_nrrdKernel_TMF_d0_c2_4ef,
+       &nKernel_TMFBAD,
+       &nKernel_TMF_d0_c2_1ef,
+       &nKernel_TMF_d0_c2_2ef,
+       &nKernel_TMF_d0_c2_3ef,
+       &nKernel_TMF_d0_c2_4ef,
     },
     {
-       &_nrrdKernel_TMFBAD,
-       &_nrrdKernel_TMF_d0_c3_1ef,
-       &_nrrdKernel_TMF_d0_c3_2ef,
-       &_nrrdKernel_TMF_d0_c3_3ef,
-       &_nrrdKernel_TMF_d0_c3_4ef,
+       &nKernel_TMFBAD,
+       &nKernel_TMF_d0_c3_1ef,
+       &nKernel_TMF_d0_c3_2ef,
+       &nKernel_TMF_d0_c3_3ef,
+       &nKernel_TMF_d0_c3_4ef,
     },
   },
   {            /* d = 1 */
     {
-       &_nrrdKernel_TMFBAD,
-       &_nrrdKernel_TMF_d1_cn_1ef,
-       &_nrrdKernel_TMF_d1_cn_2ef,
-       &_nrrdKernel_TMF_d1_cn_3ef,
-       &_nrrdKernel_TMF_d1_cn_4ef,
+       &nKernel_TMFBAD,
+       &nKernel_TMF_d1_cn_1ef,
+       &nKernel_TMF_d1_cn_2ef,
+       &nKernel_TMF_d1_cn_3ef,
+       &nKernel_TMF_d1_cn_4ef,
     },
     {
-       &_nrrdKernel_TMFBAD,
-       &_nrrdKernel_TMF_d1_c0_1ef,
-       &_nrrdKernel_TMF_d1_c0_2ef,
-       &_nrrdKernel_TMF_d1_c0_3ef,
-       &_nrrdKernel_TMF_d1_c0_4ef,
+       &nKernel_TMFBAD,
+       &nKernel_TMF_d1_c0_1ef,
+       &nKernel_TMF_d1_c0_2ef,
+       &nKernel_TMF_d1_c0_3ef,
+       &nKernel_TMF_d1_c0_4ef,
     },
     {
-       &_nrrdKernel_TMFBAD,
-       &_nrrdKernel_TMF_d1_c1_1ef,
-       &_nrrdKernel_TMF_d1_c1_2ef,
-       &_nrrdKernel_TMF_d1_c1_3ef,
-       &_nrrdKernel_TMF_d1_c1_4ef,
+       &nKernel_TMFBAD,
+       &nKernel_TMF_d1_c1_1ef,
+       &nKernel_TMF_d1_c1_2ef,
+       &nKernel_TMF_d1_c1_3ef,
+       &nKernel_TMF_d1_c1_4ef,
     },
     {
-       &_nrrdKernel_TMFBAD,
-       &_nrrdKernel_TMF_d1_c2_1ef,
-       &_nrrdKernel_TMF_d1_c2_2ef,
-       &_nrrdKernel_TMF_d1_c2_3ef,
-       &_nrrdKernel_TMF_d1_c2_4ef,
+       &nKernel_TMFBAD,
+       &nKernel_TMF_d1_c2_1ef,
+       &nKernel_TMF_d1_c2_2ef,
+       &nKernel_TMF_d1_c2_3ef,
+       &nKernel_TMF_d1_c2_4ef,
     },
     {
-       &_nrrdKernel_TMFBAD,
-       &_nrrdKernel_TMF_d1_c3_1ef,
-       &_nrrdKernel_TMF_d1_c3_2ef,
-       &_nrrdKernel_TMF_d1_c3_3ef,
-       &_nrrdKernel_TMF_d1_c3_4ef,
+       &nKernel_TMFBAD,
+       &nKernel_TMF_d1_c3_1ef,
+       &nKernel_TMF_d1_c3_2ef,
+       &nKernel_TMF_d1_c3_3ef,
+       &nKernel_TMF_d1_c3_4ef,
     },
   },
   {            /* d = 2 */
     {
-       &_nrrdKernel_TMFBAD,
-       &_nrrdKernel_TMF_d2_cn_1ef,
-       &_nrrdKernel_TMF_d2_cn_2ef,
-       &_nrrdKernel_TMF_d2_cn_3ef,
-       &_nrrdKernel_TMF_d2_cn_4ef,
+       &nKernel_TMFBAD,
+       &nKernel_TMF_d2_cn_1ef,
+       &nKernel_TMF_d2_cn_2ef,
+       &nKernel_TMF_d2_cn_3ef,
+       &nKernel_TMF_d2_cn_4ef,
     },
     {
-       &_nrrdKernel_TMFBAD,
-       &_nrrdKernel_TMF_d2_c0_1ef,
-       &_nrrdKernel_TMF_d2_c0_2ef,
-       &_nrrdKernel_TMF_d2_c0_3ef,
-       &_nrrdKernel_TMF_d2_c0_4ef,
+       &nKernel_TMFBAD,
+       &nKernel_TMF_d2_c0_1ef,
+       &nKernel_TMF_d2_c0_2ef,
+       &nKernel_TMF_d2_c0_3ef,
+       &nKernel_TMF_d2_c0_4ef,
     },
     {
-       &_nrrdKernel_TMFBAD,
-       &_nrrdKernel_TMF_d2_c1_1ef,
-       &_nrrdKernel_TMF_d2_c1_2ef,
-       &_nrrdKernel_TMF_d2_c1_3ef,
-       &_nrrdKernel_TMF_d2_c1_4ef,
+       &nKernel_TMFBAD,
+       &nKernel_TMF_d2_c1_1ef,
+       &nKernel_TMF_d2_c1_2ef,
+       &nKernel_TMF_d2_c1_3ef,
+       &nKernel_TMF_d2_c1_4ef,
     },
     {
-       &_nrrdKernel_TMFBAD,
-       &_nrrdKernel_TMF_d2_c2_1ef,
-       &_nrrdKernel_TMF_d2_c2_2ef,
-       &_nrrdKernel_TMF_d2_c2_3ef,
-       &_nrrdKernel_TMF_d2_c2_4ef,
+       &nKernel_TMFBAD,
+       &nKernel_TMF_d2_c2_1ef,
+       &nKernel_TMF_d2_c2_2ef,
+       &nKernel_TMF_d2_c2_3ef,
+       &nKernel_TMF_d2_c2_4ef,
     },
     {
-       &_nrrdKernel_TMFBAD,
-       &_nrrdKernel_TMF_d2_c3_1ef,
-       &_nrrdKernel_TMF_d2_c3_2ef,
-       &_nrrdKernel_TMF_d2_c3_3ef,
-       &_nrrdKernel_TMF_d2_c3_4ef,
+       &nKernel_TMFBAD,
+       &nKernel_TMF_d2_c3_1ef,
+       &nKernel_TMF_d2_c3_2ef,
+       &nKernel_TMF_d2_c3_3ef,
+       &nKernel_TMF_d2_c3_4ef,
     },
   },
 };

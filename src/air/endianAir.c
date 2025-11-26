@@ -49,36 +49,35 @@ airMyEndian(void) {
 
 /* clang-format off */
 static const char *
-_airEndianStr[] = {
+endianStr[] = {
   "(unknown endian)",
   "little",
   "big"
 };
 
 static const char *
-_airEndianDesc[] = {
+endianDesc[] = {
   "unknown endianness",
   "Intel and compatible",
   "Everyone besides Intel and compatible"
 };
 
 static const int
-_airEndianVal[] = {
+endianVal[] = {
   airEndianUnknown,
   airEndianLittle,
   airEndianBig,
 };
 
 static const airEnum
-_airEndian = {
+endian_ae = {
   "endian",
   2,
-  _airEndianStr, _airEndianVal,
-  _airEndianDesc,
+  endianStr, endianVal,
+  endianDesc,
   NULL, NULL,
   AIR_FALSE
 };
 
-const airEnum *const
-airEndian = &_airEndian;
+const airEnum *const airEndian = &endian_ae;
 /* clang-format on */

@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Condense axis-0 scanlines into \"blocks\""
-static const char *_unrrdu_blockInfoL
+static const char *unu_blockInfoL
   = (INFO
      ". Output nrrd will be of type \"block\": the type for an opaque chunk of "
      "memory.  Block samples can be sliced, cropped, shuffled, permuted, etc., but "
@@ -31,17 +31,17 @@ static const char *_unrrdu_blockInfoL
      "Underlying data is unchanged.");
 
 static int
-unrrdu_blockMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+unu_blockMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
   Nrrd *nin;
   hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-", "input nrrd", nrrdHestNrrdNoTTY);
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for YES some hparm modification)
   hestParm *hparm = hestParmCopy(_hparm);
   hparm->noArgsIsNoProblem = AIR_TRUE; // thanks to nrrdHestNrrdNoTTY
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_blockInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_blockInfoL);
   airArray *mop = unrrduMopNew(hopt, hparm);
   char *err;
 
@@ -55,10 +55,10 @@ unrrdu_blockMain(int argc, const char **argv, const char *me, const hestParm *_h
     return 1;
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD_HIDE(block, INFO);
+MY_UNRRDU_CMD_HIDE(block, INFO);

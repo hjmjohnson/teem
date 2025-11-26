@@ -21,7 +21,7 @@
 #include "privateEcho.h"
 
 static echoPos_t
-_echo_SuperquadX_v(echoPos_t x, echoPos_t y, echoPos_t z, echoPos_t A, echoPos_t B) {
+SuperquadX_v(echoPos_t x, echoPos_t y, echoPos_t z, echoPos_t A, echoPos_t B) {
   echoPos_t xxb, yya, zza;
 
   xxb = pow(x * x, 1 / B);
@@ -31,7 +31,7 @@ _echo_SuperquadX_v(echoPos_t x, echoPos_t y, echoPos_t z, echoPos_t A, echoPos_t
 }
 
 static echoPos_t
-_echo_SuperquadY_v(echoPos_t x, echoPos_t y, echoPos_t z, echoPos_t A, echoPos_t B) {
+SuperquadY_v(echoPos_t x, echoPos_t y, echoPos_t z, echoPos_t A, echoPos_t B) {
   echoPos_t xxa, yyb, zza;
 
   xxa = pow(x * x, 1 / A);
@@ -41,7 +41,7 @@ _echo_SuperquadY_v(echoPos_t x, echoPos_t y, echoPos_t z, echoPos_t A, echoPos_t
 }
 
 static echoPos_t
-_echo_SuperquadZ_v(echoPos_t x, echoPos_t y, echoPos_t z, echoPos_t A, echoPos_t B) {
+SuperquadZ_v(echoPos_t x, echoPos_t y, echoPos_t z, echoPos_t A, echoPos_t B) {
   echoPos_t xxa, yya, zzb;
 
   xxa = pow(x * x, 1 / A);
@@ -53,8 +53,8 @@ _echo_SuperquadZ_v(echoPos_t x, echoPos_t y, echoPos_t z, echoPos_t A, echoPos_t
 /* -------------------------------------------------------- */
 
 static echoPos_t
-_echo_SuperquadX_vg(echoPos_t grad[3], echoPos_t x, echoPos_t y, echoPos_t z,
-                    echoPos_t A, echoPos_t B) {
+SuperquadX_vg(echoPos_t grad[3], echoPos_t x, echoPos_t y, echoPos_t z, echoPos_t A,
+              echoPos_t B) {
   echoPos_t R, xxb, yya, zza;
 
   xxb = pow(x * x, 1 / B);
@@ -66,8 +66,8 @@ _echo_SuperquadX_vg(echoPos_t grad[3], echoPos_t x, echoPos_t y, echoPos_t z,
 }
 
 static echoPos_t
-_echo_SuperquadY_vg(echoPos_t grad[3], echoPos_t x, echoPos_t y, echoPos_t z,
-                    echoPos_t A, echoPos_t B) {
+SuperquadY_vg(echoPos_t grad[3], echoPos_t x, echoPos_t y, echoPos_t z, echoPos_t A,
+              echoPos_t B) {
   echoPos_t R, xxa, yyb, zza;
 
   xxa = pow(x * x, 1 / A);
@@ -79,8 +79,8 @@ _echo_SuperquadY_vg(echoPos_t grad[3], echoPos_t x, echoPos_t y, echoPos_t z,
 }
 
 static echoPos_t
-_echo_SuperquadZ_vg(echoPos_t grad[3], echoPos_t x, echoPos_t y, echoPos_t z,
-                    echoPos_t A, echoPos_t B) {
+SuperquadZ_vg(echoPos_t grad[3], echoPos_t x, echoPos_t y, echoPos_t z, echoPos_t A,
+              echoPos_t B) {
   echoPos_t R, xxa, yya, zzb;
 
   xxa = pow(x * x, 1 / A);
@@ -94,8 +94,8 @@ _echo_SuperquadZ_vg(echoPos_t grad[3], echoPos_t x, echoPos_t y, echoPos_t z,
 /* -------------------------------------------------------- */
 
 static echoPos_t
-_echo_SuperquadX_lvg(echoPos_t grad[3], echoPos_t x, echoPos_t y, echoPos_t z,
-                     echoPos_t A, echoPos_t B) {
+SuperquadX_lvg(echoPos_t grad[3], echoPos_t x, echoPos_t y, echoPos_t z, echoPos_t A,
+               echoPos_t B) {
   echoPos_t R, xxb, yya, zza, larg;
 
   echoPos_t ret;
@@ -112,7 +112,7 @@ _echo_SuperquadX_lvg(echoPos_t grad[3], echoPos_t x, echoPos_t y, echoPos_t z,
   ret = larg > 0 ? log(larg) : ECHO_POS_MIN;
   /*
   if (!( AIR_EXISTS(grad[0]) && AIR_EXISTS(grad[1]) && AIR_EXISTS(grad[2]) )) {
-    fprintf(stderr, "_echo_SuperquadX_lvg: PANIC\n");
+    fprintf(stderr, "SuperquadX_lvg: PANIC\n");
     fprintf(stderr, "x = %g, y = %g, z = %g, A = %g, B = %g\n",
             x, y, z, A, B);
     fprintf(stderr, "pow(%g * %g = %g, 1/%g = %g) = %g\n",
@@ -141,8 +141,8 @@ _echo_SuperquadX_lvg(echoPos_t grad[3], echoPos_t x, echoPos_t y, echoPos_t z,
 }
 
 static echoPos_t
-_echo_SuperquadY_lvg(echoPos_t grad[3], echoPos_t x, echoPos_t y, echoPos_t z,
-                     echoPos_t A, echoPos_t B) {
+SuperquadY_lvg(echoPos_t grad[3], echoPos_t x, echoPos_t y, echoPos_t z, echoPos_t A,
+               echoPos_t B) {
   echoPos_t R, xxa, yyb, zza, larg;
 
   xxa = pow(x * x, 1 / A);
@@ -158,8 +158,8 @@ _echo_SuperquadY_lvg(echoPos_t grad[3], echoPos_t x, echoPos_t y, echoPos_t z,
 }
 
 static echoPos_t
-_echo_SuperquadZ_lvg(echoPos_t grad[3], echoPos_t x, echoPos_t y, echoPos_t z,
-                     echoPos_t A, echoPos_t B) {
+SuperquadZ_lvg(echoPos_t grad[3], echoPos_t x, echoPos_t y, echoPos_t z, echoPos_t A,
+               echoPos_t B) {
   echoPos_t R, xxa, yya, zzb, larg;
 
   echoPos_t ret;
@@ -177,7 +177,7 @@ _echo_SuperquadZ_lvg(echoPos_t grad[3], echoPos_t x, echoPos_t y, echoPos_t z,
   ret = larg > 0 ? log(larg) : ECHO_POS_MIN;
   /*
    * if (!AIR_EXISTS(ret)) {
-   *   fprintf(stderr, "_echo_SuperquadZ_lvg: PANIC\n");
+   *   fprintf(stderr, "SuperquadZ_lvg: PANIC\n");
    *   fprintf(stderr, "x = %g, y = %g, z = %g, A = %g, B = %g\n",
    *           x, y, z, A, B);
    *   fprintf(stderr, "pow(%g*%g = %g, %g) = %g\n",
@@ -195,8 +195,8 @@ _echo_SuperquadZ_lvg(echoPos_t grad[3], echoPos_t x, echoPos_t y, echoPos_t z,
 /* -------------------------------------------------------- */
 
 int /* Biff: (private) nope */
-_echoRayIntx_Superquad(RAYINTX_ARGS(Superquad)) {
-  static const char me[] = "_echoRayIntx_Superquad";
+echo__RayIntx_Superquad(MY_RAYINTX_ARGS(Superquad)) {
+  static const char me[] = "echo__RayIntx_Superquad";
   echoPos_t TT = 0, Tmin, Tmax, t0, t1, t2, t3, v1, v2, diff, tol, saveTmin, Vmin, Vmax,
             VV = 0, dV, dVmin, dVmax, tmp,
             (*v)(echoPos_t, echoPos_t, echoPos_t, echoPos_t, echoPos_t),
@@ -205,31 +205,31 @@ _echoRayIntx_Superquad(RAYINTX_ARGS(Superquad)) {
             from[3], grad[3], pos[3]; /* these two used only by macros */
   int iter;
 
-  if (!_echoRayIntx_CubeSolid(&Tmin, &Tmax, -1 - 2 * ECHO_EPSILON, 1 + 2 * ECHO_EPSILON,
-                              -1 - 2 * ECHO_EPSILON, 1 + 2 * ECHO_EPSILON,
-                              -1 - 2 * ECHO_EPSILON, 1 + 2 * ECHO_EPSILON, ray)) {
+  if (!echo__RayIntx_CubeSolid(&Tmin, &Tmax, -1 - 2 * ECHO_EPSILON, 1 + 2 * ECHO_EPSILON,
+                               -1 - 2 * ECHO_EPSILON, 1 + 2 * ECHO_EPSILON,
+                               -1 - 2 * ECHO_EPSILON, 1 + 2 * ECHO_EPSILON, ray)) {
     return AIR_FALSE;
   }
   switch (obj->axis) {
   case 0:
-    v = _echo_SuperquadX_v;
-    vg = _echo_SuperquadX_vg;
-    lvg = _echo_SuperquadX_lvg;
+    v = SuperquadX_v;
+    vg = SuperquadX_vg;
+    lvg = SuperquadX_lvg;
     break;
   case 1:
-    v = _echo_SuperquadY_v;
-    vg = _echo_SuperquadY_vg;
-    lvg = _echo_SuperquadY_lvg;
+    v = SuperquadY_v;
+    vg = SuperquadY_vg;
+    lvg = SuperquadY_lvg;
     break;
   case 2:
   default:
-    v = _echo_SuperquadZ_v;
-    vg = _echo_SuperquadZ_vg;
-    lvg = _echo_SuperquadZ_lvg;
+    v = SuperquadZ_v;
+    vg = SuperquadZ_vg;
+    lvg = SuperquadZ_lvg;
     break;
   }
   if (tstate->verbose) {
-    fprintf(stderr, "%s%s: Tmin, Tmax = %g, %g, ax = %d\n", _echoDot(tstate->depth), me,
+    fprintf(stderr, "%s%s: Tmin, Tmax = %g, %g, ax = %d\n", echo__Dot(tstate->depth), me,
             Tmin, Tmax, obj->axis);
   }
 
@@ -280,7 +280,7 @@ _echoRayIntx_Superquad(RAYINTX_ARGS(Superquad)) {
   }
   if (tstate->verbose) {
     fprintf(stderr, "%s%s: dVmin = %g, dVmax = %g, Vmin = %g, Vmax = %g\n",
-            _echoDot(tstate->depth), me, dVmin, dVmax, Vmin, Vmax);
+            echo__Dot(tstate->depth), me, dVmin, dVmax, Vmin, Vmax);
   }
 
   /* either the value changed sign, or the derivative changed sign, or
@@ -303,7 +303,7 @@ _echoRayIntx_Superquad(RAYINTX_ARGS(Superquad)) {
               "     t1 = % 31.15f  -> v1 = % 31.15f\n"
               "     t2 = % 31.15f  -> v2 = % 31.15f\n"
               "     t3 = % 31.15f\n",
-              _echoDot(tstate->depth), me, t0, t1, v1, t2, v2, t3);
+              echo__Dot(tstate->depth), me, t0, t1, v1, t2, v2, t3);
     }
     tol = sqrt(ECHO_POS_EPS);
     while ((t3 - t0 > tol * (t1 + t2)) /* still haven't converged */
@@ -323,7 +323,7 @@ _echoRayIntx_Superquad(RAYINTX_ARGS(Superquad)) {
                 "     t1 = % 31.15f  -> v1 = % 31.15f\n"
                 "     t2 = % 31.15f  -> v2 = % 31.15f\n"
                 "     t3 = % 31.15f\n",
-                _echoDot(tstate->depth), me, diff > 0 ? "v1 < v2" : "v1 > v2", t0, t1,
+                echo__Dot(tstate->depth), me, diff > 0 ? "v1 < v2" : "v1 > v2", t0, t1,
                 v1, t2, v2, t3);
       }
     }
@@ -331,7 +331,7 @@ _echoRayIntx_Superquad(RAYINTX_ARGS(Superquad)) {
       /* the minimization stopped, yet both v1 and v2 are still positive,
          so there's no way we can have a root */
       if (tstate->verbose) {
-        fprintf(stderr, "%s%s: minimization found no root\n", _echoDot(tstate->depth),
+        fprintf(stderr, "%s%s: minimization found no root\n", echo__Dot(tstate->depth),
                 me);
       }
       return AIR_FALSE;
@@ -358,7 +358,7 @@ _echoRayIntx_Superquad(RAYINTX_ARGS(Superquad)) {
          && AIR_EXISTS(dV)) {
     if (tstate->verbose) {
       fprintf(stderr, "%s%s: iter = %d: TT = %g, VV = %g, dV = %g\n",
-              _echoDot(tstate->depth), me, iter, TT, VV, dV);
+              echo__Dot(tstate->depth), me, iter, TT, VV, dV);
     }
     TT -= VV / dV;
     if (!AIR_IN_OP(Tmin, TT, Tmax)) {
@@ -385,7 +385,8 @@ _echoRayIntx_Superquad(RAYINTX_ARGS(Superquad)) {
        --> pretend that there was no intersection,
        and HEY this will have to be debugged later */
     if (tstate->verbose) {
-      fprintf(stderr, "%s%s: SORRY, numerical problems!\n", _echoDot(tstate->depth), me);
+      fprintf(stderr, "%s%s: SORRY, numerical problems!\n", echo__Dot(tstate->depth),
+              me);
     }
     return AIR_FALSE;
   }

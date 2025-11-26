@@ -21,14 +21,14 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Sees if two nrrds are different in any way"
-static const char *_unrrdu_diffInfoL
+static const char *unu_diffInfoL
   = (INFO ". Looks through all fields to see if two given nrrds contain the "
           "same information. Or, array meta-data can be excluded, and comparison "
           "only on the data values is done with the -od flag.\n "
           "* Uses nrrdCompare");
 
 static int
-unrrdu_diffMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_diffMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   Nrrd *ninA, *ninB;
   hestOptAdd_1_Other(&hopt, NULL, "ninA", &ninA, NULL, "First input nrrd.",
@@ -50,7 +50,7 @@ unrrdu_diffMain(int argc, const char **argv, const char *me, const hestParm *hpa
                   "Compare data values only, excluding array meta-data");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_diffInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_diffInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -82,4 +82,4 @@ unrrdu_diffMain(int argc, const char **argv, const char *me, const hestParm *hpa
   return exitstat ? ret : 0;
 }
 
-UNRRDU_CMD(diff, INFO);
+MY_UNRRDU_CMD(diff, INFO);

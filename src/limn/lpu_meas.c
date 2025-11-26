@@ -25,7 +25,7 @@ static const char *myinfo = (INFO
                              ". Actually all it can measure is area at this point...");
 
 static int
-limnPu_measMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+lpu_measMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   limnPolyData *pld;
   hestOptAdd_1_Other(&hopt, NULL, "input", &pld, NULL, "input polydata filename",
@@ -60,4 +60,4 @@ limnPu_measMain(int argc, const char **argv, const char *me, const hestParm *hpa
   return 0;
 }
 
-const unrrduCmd limnPu_measCmd = {"meas", INFO, limnPu_measMain, AIR_FALSE};
+const unrrduCmd limnPu_measCmd = {"meas", INFO, lpu_measMain, AIR_FALSE};

@@ -25,7 +25,7 @@ static const char *myinfo
   = (INFO ". Can either specify a range, or a list, or not, until implemented.");
 
 static int
-limnPu_pselMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+lpu_pselMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   uint prange[2];
   hestOptAdd_2_UInt(&hopt, "r", "range", prange, NULL,
@@ -84,4 +84,4 @@ limnPu_pselMain(int argc, const char **argv, const char *me, const hestParm *hpa
   return 0;
 }
 
-const unrrduCmd limnPu_pselCmd = {"psel", INFO, limnPu_pselMain, AIR_FALSE};
+const unrrduCmd limnPu_pselCmd = {"psel", INFO, lpu_pselMain, AIR_FALSE};

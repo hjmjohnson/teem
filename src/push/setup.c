@@ -21,7 +21,7 @@
 #include "privatePush.h"
 
 /*
-** _pushTensorFieldSetup sets:
+** push__TensorFieldSetup sets:
 **** pctx->dimIn
 **** pctx->nten
 **** pctx->ninv
@@ -29,8 +29,8 @@
 ** and checks mask range
 */
 int /* Biff: (private) 1 */
-_pushTensorFieldSetup(pushContext *pctx) {
-  static const char me[] = "_pushTensorFieldSetup";
+push__TensorFieldSetup(pushContext *pctx) {
+  static const char me[] = "push__TensorFieldSetup";
   NrrdRange *nrange;
   airArray *mop;
   Nrrd *ntmp;
@@ -113,12 +113,12 @@ _pushTensorFieldSetup(pushContext *pctx) {
 }
 
 /*
-** _pushGageSetup sets:
+** push__GageSetup sets:
 **** pctx->gctx
 */
 int /* Biff: (private) 1 */
-_pushGageSetup(pushContext *pctx) {
-  static const char me[] = "_pushGageSetup";
+push__GageSetup(pushContext *pctx) {
+  static const char me[] = "push__GageSetup";
   gagePerVolume *mpvl;
   int E;
 
@@ -160,9 +160,9 @@ _pushGageSetup(pushContext *pctx) {
   return 0;
 }
 
-pushTask * /* Biff: (private) NULL */
-_pushTaskNew(pushContext *pctx, int threadIdx) {
-  static const char me[] = "_pushTaskNew";
+static pushTask * /* Biff: NULL */
+taskNew(pushContext *pctx, int threadIdx) {
+  static const char me[] = "taskNew";
   pushTask *task;
 
   task = (pushTask *)calloc(1, sizeof(pushTask));
@@ -208,7 +208,7 @@ _pushTaskNew(pushContext *pctx, int threadIdx) {
 }
 
 pushTask * /* Biff: (private) nope */
-_pushTaskNix(pushTask *task) {
+push__TaskNix(pushTask *task) {
 
   if (task) {
     task->gctx = gageContextNix(task->gctx);
@@ -222,13 +222,13 @@ _pushTaskNix(pushTask *task) {
 }
 
 /*
-** _pushTaskSetup sets:
+** push__TaskSetup sets:
 **** pctx->task
 **** pctx->task[]
 */
 int /* Biff: (private) 1 */
-_pushTaskSetup(pushContext *pctx) {
-  static const char me[] = "_pushTaskSetup";
+push__TaskSetup(pushContext *pctx) {
+  static const char me[] = "push__TaskSetup";
   unsigned int tidx;
 
   pctx->task = (pushTask **)calloc(pctx->threadNum, sizeof(pushTask *));
@@ -240,7 +240,7 @@ _pushTaskSetup(pushContext *pctx) {
     if (pctx->verbose) {
       fprintf(stderr, "%s: creating task %u/%u\n", me, tidx, pctx->threadNum);
     }
-    pctx->task[tidx] = _pushTaskNew(pctx, tidx);
+    pctx->task[tidx] = taskNew(pctx, tidx);
     if (!(pctx->task[tidx])) {
       biffAddf(PUSH, "%s: couldn't allocate task %u", me, tidx);
       return 1;
@@ -250,15 +250,15 @@ _pushTaskSetup(pushContext *pctx) {
 }
 
 /*
-** _pushBinSetup sets:
+** push__BinSetup sets:
 **** pctx->maxDist, pctx->minEval, pctx->maxEval, pctx->maxDet
 **** pctx->binsEdge[], pctx->binNum
 **** pctx->bin
 **** pctx->bin[]
 */
 int /* Biff: (private) 1 */
-_pushBinSetup(pushContext *pctx) {
-  static const char me[] = "_pushBinSetup";
+push__BinSetup(pushContext *pctx) {
+  static const char me[] = "push__BinSetup";
   float eval[3], *tdata;
   unsigned int ii, nn, count;
   double col[3][4], volEdge[3];
@@ -341,7 +341,7 @@ _pushBinSetup(pushContext *pctx) {
 }
 
 /*
-** _pushPointSetup sets:
+** push__PointSetup sets:
 **** pctx->pointNum (in case pctx->npos)
 **
 ** This is only called by the master thread
@@ -350,8 +350,8 @@ _pushBinSetup(pushContext *pctx) {
 ** just before the rebinning
 */
 int /* Biff: (private) 1 */
-_pushPointSetup(pushContext *pctx) {
-  static const char me[] = "_pushPointSetup";
+push__PointSetup(pushContext *pctx) {
+  static const char me[] = "push__PointSetup";
   double (*lup)(const void *v, size_t I), maxDet;
   unsigned int pointIdx;
   pushPoint *point;
@@ -380,7 +380,7 @@ _pushPointSetup(pushContext *pctx) {
                  lup(pctx->npos->data, 0 + 3 * pointIdx),
                  lup(pctx->npos->data, 1 + 3 * pointIdx),
                  lup(pctx->npos->data, 2 + 3 * pointIdx));
-      if (_pushProbe(pctx->task[0], point)) {
+      if (push__Probe(pctx->task[0], point)) {
         biffAddf(PUSH, "%s: probing pointIdx %u of npos", me, pointIdx);
         return 1;
       }
@@ -389,7 +389,7 @@ _pushPointSetup(pushContext *pctx) {
       double posWorld[4];
       ELL_4MV_MUL(posWorld, pctx->gctx->shape->ItoW, posIdxHack[pointIdx]);
       ELL_34V_HOMOG(point->pos, posWorld);
-      _pushProbe(pctx->task[0], point);
+      push__Probe(pctx->task[0], point);
       */
       do {
         double posIdx[4], posWorld[4];
@@ -412,7 +412,7 @@ _pushPointSetup(pushContext *pctx) {
                 posWorld[0], posWorld[1], posWorld[2],
                 point->pos[0], point->pos[1], point->pos[2]);
         */
-        if (_pushProbe(pctx->task[0], point)) {
+        if (push__Probe(pctx->task[0], point)) {
           biffAddf(PUSH, "%s: probing pointIdx %u of world", me, pointIdx);
           return 1;
         }

@@ -74,7 +74,7 @@ limnCameraNix(limnCamera *cam) {
 AIR_MOPPER(limnCameraNix)
 
 static void
-_limnOptsPSDefaults(limnOptsPS *ps) {
+optsPSDefaults(limnOptsPS *ps) {
 
   ps->lineWidth[limnEdgeTypeUnknown] = AIR_NAN;
   ps->lineWidth[limnEdgeTypeBackFacet] = 0.0;
@@ -102,7 +102,7 @@ limnWindowNew(int device) {
     switch (device) {
     case limnDevicePS:
       win->yFlip = 1;
-      _limnOptsPSDefaults(&(win->ps));
+      optsPSDefaults(&(win->ps));
       break;
     }
     win->scale = 72;

@@ -63,25 +63,25 @@ parmSprint(char str[AIR_STRLEN_MED+1], const double *parm) {
   return str;
 }
 
-_TEN_PARM_ALLOC
-_TEN_PARM_RAND
-_TEN_PARM_STEP
-_TEN_PARM_DIST
-_TEN_PARM_COPY
-_TEN_PARM_CONVERT_NOOP
+MY_TEN_PARM_ALLOC
+MY_TEN_PARM_RAND
+MY_TEN_PARM_STEP
+MY_TEN_PARM_DIST
+MY_TEN_PARM_COPY
+MY_TEN_PARM_CONVERT_NOOP
 
-_TEN_SQE
-_TEN_SQE_GRAD_CENTDIFF
-_TEN_SQE_FIT(tenModelBall1Stick)
+MY_TEN_SQE
+MY_TEN_SQE_GRAD_CENTDIFF
+MY_TEN_SQE_FIT(tenModelBall1Stick)
 
-_TEN_NLL
-_TEN_NLL_GRAD_STUB
-_TEN_NLL_FIT_STUB
+MY_TEN_NLL
+MY_TEN_NLL_GRAD_STUB
+MY_TEN_NLL_FIT_STUB
 
 static const tenModel
-_tenModelBall1Stick = {
+modelBall1Stick = {
   TEN_MODEL_STR_BALL1STICK,
-  _TEN_MODEL_FIELDS
+  MY_TEN_MODEL_FIELDS
 };
-const tenModel *const tenModelBall1Stick = &_tenModelBall1Stick;
+const tenModel *const tenModelBall1Stick = &modelBall1Stick;
 /* clang-format on */

@@ -32,7 +32,7 @@
 ** nrrdKernelForwDiff) is a good example of this.
 */
 static void
-_gageFslSet(gageContext *ctx) {
+fslSet(gageContext *ctx) {
   int fr, i;
   double *fslx, *fsly, *fslz;
   double xf, yf, zf;
@@ -73,8 +73,8 @@ _gageFslSet(gageContext *ctx) {
 ** sign of individual weights must be preserved
 */
 static void
-_gageFwDerivRenormalize(gageContext *ctx, int wch) {
-  static const char me[] = "_gageFwDerivRenormalize";
+fwDerivRenormalize(gageContext *ctx, int wch) {
+  static const char me[] = "fwDerivRenormalize";
   double negX, negY, negZ, posX, posY, posZ, fixX, fixY, fixZ,
     *fwX, *fwY, *fwZ;
   int i, fd;
@@ -116,7 +116,7 @@ _gageFwDerivRenormalize(gageContext *ctx, int wch) {
 ** integral of the kernel
 */
 static void
-_gageFwValueRenormalize(gageContext *ctx, int wch) {
+fwValueRenormalize(gageContext *ctx, int wch) {
   double integral, sumX, sumY, sumZ, *fwX, *fwY, *fwZ;
   int i, fd;
 
@@ -140,8 +140,8 @@ _gageFwValueRenormalize(gageContext *ctx, int wch) {
 }
 
 static void
-_gageFwSet(gageContext *ctx, unsigned int sidx, double sfrac) {
-  static const char me[] = "_gageFwSet";
+fwSet(gageContext *ctx, unsigned int sidx, double sfrac) {
+  static const char me[] = "fwSet";
   int kidx;
   unsigned int fd;
 
@@ -157,7 +157,7 @@ _gageFwSet(gageContext *ctx, unsigned int sidx, double sfrac) {
 
   if (ctx->verbose > 2) {
     fprintf(stderr, "%s: filter weights after kernel evaluation:\n", me);
-    _gagePrint_fslw(stderr, ctx);
+    gage__Print_fslw(stderr, ctx);
   }
   if (ctx->parm.renormalize) {
     for (kidx = gageKernelUnknown + 1; kidx < gageKernelLast; kidx++) {
@@ -168,16 +168,16 @@ _gageFwSet(gageContext *ctx, unsigned int sidx, double sfrac) {
       case gageKernel00:
       case gageKernel10:
       case gageKernel20:
-        _gageFwValueRenormalize(ctx, kidx);
+        fwValueRenormalize(ctx, kidx);
         break;
       default:
-        _gageFwDerivRenormalize(ctx, kidx);
+        fwDerivRenormalize(ctx, kidx);
         break;
       }
     }
     if (ctx->verbose > 2) {
       fprintf(stderr, "%s: filter weights after renormalization:\n", me);
-      _gagePrint_fslw(stderr, ctx);
+      gage__Print_fslw(stderr, ctx);
     }
   }
 
@@ -225,7 +225,7 @@ _gageFwSet(gageContext *ctx, unsigned int sidx, double sfrac) {
 }
 
 /*
-** _gageLocationSet
+** gage__LocationSet
 **
 ** updates probe location in general context, and things which
 ** depend on it:
@@ -240,8 +240,8 @@ _gageFwSet(gageContext *ctx, unsigned int sidx, double sfrac) {
 ** ctx->errNum and sprints message into ctx->errStr.
 */
 int /* Biff: (private) nope */
-_gageLocationSet(gageContext *ctx, double xif, double yif, double zif, double sif) {
-  static const char me[] = "_gageLocationSet";
+gage__LocationSet(gageContext *ctx, double xif, double yif, double zif, double sif) {
+  static const char me[] = "gage__LocationSet";
   unsigned int top[3], /* "top" x, y, z: highest valid index in volume */
     idx[4];
   int sdiff; /* computed integral positions in volume */
@@ -271,7 +271,7 @@ _gageLocationSet(gageContext *ctx, double xif, double yif, double zif, double si
                me, xif, yif, zif, airEnumStr(nrrdCenter, ctx->shape->center), min,
                max[0], min, max[1], min, max[2]);
     } else {
-      airStrcpy(ctx->errStr, sizeof(ctx->errStr), _GAGE_NON_ERR_STR);
+      airStrcpy(ctx->errStr, sizeof(ctx->errStr), MY_GAGE_NON_ERR_STR);
     }
     ctx->errNum = gageErrBoundsSpace;
     return 1;
@@ -284,7 +284,7 @@ _gageLocationSet(gageContext *ctx, double xif, double yif, double zif, double si
                  "bounds [0,%u]",
                  me, sif, airEnumStr(nrrdCenter, nrrdCenterNode), ctx->pvlNum - 2);
       } else {
-        airStrcpy(ctx->errStr, sizeof(ctx->errStr), _GAGE_NON_ERR_STR);
+        airStrcpy(ctx->errStr, sizeof(ctx->errStr), MY_GAGE_NON_ERR_STR);
       }
       ctx->errNum = gageErrBoundsStack;
       return 1;
@@ -354,12 +354,12 @@ _gageLocationSet(gageContext *ctx, double xif, double yif, double zif, double si
       || (ctx->parm.stackUse && sdiff && ctx->parm.stackNormalizeDeriv)) {
     /* We don't yet record the scale position in ctx->point because
        that's done below while setting stackFsl and stackFw. So, have
-       to pass stack pos info to _gageFwSet() */
+       to pass stack pos info to fwSet() */
     ELL_3V_COPY(ctx->point.frac, frac);
     /* these may take some time (especially if using renormalization),
        hence the conditional above */
-    _gageFslSet(ctx);
-    _gageFwSet(ctx, idx[3], frac[3]);
+    fslSet(ctx);
+    fwSet(ctx, idx[3], frac[3]);
   }
 
   /* **** compute *stack* fsl and fw ****  */
@@ -413,7 +413,7 @@ _gageLocationSet(gageContext *ctx, double xif, double yif, double zif, double si
                    "can't do stack reconstruction",
                    me);
         } else {
-          airStrcpy(ctx->errStr, sizeof(ctx->errStr), _GAGE_NON_ERR_STR);
+          airStrcpy(ctx->errStr, sizeof(ctx->errStr), MY_GAGE_NON_ERR_STR);
         }
         ctx->errNum = gageErrStackIntegral;
         return 1;
@@ -437,7 +437,7 @@ _gageLocationSet(gageContext *ctx, double xif, double yif, double zif, double si
                    "can't do stack reconstruction",
                    me);
         } else {
-          airStrcpy(ctx->errStr, sizeof(ctx->errStr), _GAGE_NON_ERR_STR);
+          airStrcpy(ctx->errStr, sizeof(ctx->errStr), MY_GAGE_NON_ERR_STR);
         }
         ctx->errNum = gageErrStackIntegral;
         return 1;

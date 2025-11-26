@@ -91,19 +91,19 @@ typedef struct {
 } baggage;
 
 /* extract.c: This one is also needed in textract.c: */
-extern void _seekIdxProbe(seekContext *sctx, baggage *bag, double xi, double yi,
-                          double zi);
+extern void seek__IdxProbe(seekContext *sctx, baggage *bag, double xi, double yi,
+                           double zi);
 
 /* textract.c: Some routines that are also used in descend.c */
-extern void _seekHess2T(double *T, const double *evals, const double *evecs,
-                        const double evalDiffThresh, const char ridge);
-extern void _seekHessder2Tder(double *Tder, const double *hessder, const double *evals,
-                              const double *evecs, const double evalDiffThresh,
-                              const char ridge);
+extern void seek__Hess2T(double *T, const double *evals, const double *evecs,
+                         const double evalDiffThresh, const char ridge);
+extern void seek__Hessder2Tder(double *Tder, const double *hessder, const double *evals,
+                               const double *evecs, const double evalDiffThresh,
+                               const char ridge);
 
-extern int _seekShuffleProbeT(seekContext *sctx, baggage *bag);
+extern int seek__ShuffleProbeT(seekContext *sctx, baggage *bag);
 
-extern int _seekTriangulateT(seekContext *sctx, baggage *bag, limnPolyData *lpld);
+extern int seek__TriangulateT(seekContext *sctx, baggage *bag, limnPolyData *lpld);
 
 #ifdef __cplusplus
 }

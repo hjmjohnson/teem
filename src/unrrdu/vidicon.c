@@ -21,12 +21,12 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Try to create the look of early 80s analog B+W video"
-static const char *_unrrdu_vidiconInfoL
+static const char *unu_vidiconInfoL
   = (INFO ". Does various things, some more justified than others.\n "
           "* (there is no single nrrd function which does all this)");
 
 static int
-unrrdu_vidiconMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+unu_vidiconMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
   Nrrd *nin;
   hestOptAdd_1_Other(&hopt, "i", "input", &nin, NULL,
@@ -70,7 +70,7 @@ unrrdu_vidiconMain(int argc, const char **argv, const char *me, const hestParm *
   // (boilerplate for YES some hparm modification)
   hestParm *hparm = hestParmCopy(_hparm);
   hparm->elideSingleOtherDefault = AIR_FALSE;
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_vidiconInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_vidiconInfoL);
   airArray *mop = unrrduMopNew(hopt, hparm);
   char *err;
 
@@ -230,9 +230,9 @@ unrrdu_vidiconMain(int argc, const char **argv, const char *me, const hestParm *
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   nrrdCopy(nout, nvbase);
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD_HIDE(vidicon, INFO);
+MY_UNRRDU_CMD_HIDE(vidicon, INFO);

@@ -22,7 +22,7 @@
 
 /* clang-format off */
 static const char *
-_limnSplineTypeStr[LIMN_SPLINE_TYPE_MAX+1] = {
+splineTypeStr[LIMN_SPLINE_TYPE_MAX+1] = {
   "(unknown_spline_type)",
   "linear",
   "timewarp",
@@ -32,7 +32,7 @@ _limnSplineTypeStr[LIMN_SPLINE_TYPE_MAX+1] = {
 };
 
 static const char *
-_limnSplineTypeDesc[LIMN_SPLINE_TYPE_MAX+1] = {
+splineTypeDesc[LIMN_SPLINE_TYPE_MAX+1] = {
   "unknown spline type",
   "simple linear interpolation between control points",
   ("pseudo-Hermite spline for warping time to uniform (integral) "
@@ -43,7 +43,7 @@ _limnSplineTypeDesc[LIMN_SPLINE_TYPE_MAX+1] = {
 };
 
 static const char *
-_limnSplineTypeStrEqv[] = {
+splineTypeStrEqv[] = {
   "linear", "lin", "line", "tent",
   "timewarp", "time-warp", "warp",
   "hermite",
@@ -53,7 +53,7 @@ _limnSplineTypeStrEqv[] = {
 };
 
 static const int
-_limnSplineTypeValEqv[] = {
+splineTypeValEqv[] = {
   limnSplineTypeLinear, limnSplineTypeLinear, limnSplineTypeLinear,
       limnSplineTypeLinear,
   limnSplineTypeTimeWarp, limnSplineTypeTimeWarp, limnSplineTypeTimeWarp,
@@ -64,19 +64,18 @@ _limnSplineTypeValEqv[] = {
 };
 
 static const airEnum
-_limnSplineType = {
+splineType_ae = {
   "spline-type",
   LIMN_SPLINE_TYPE_MAX,
-  _limnSplineTypeStr,  NULL,
-  _limnSplineTypeDesc,
-  _limnSplineTypeStrEqv, _limnSplineTypeValEqv,
+  splineTypeStr,  NULL,
+  splineTypeDesc,
+  splineTypeStrEqv, splineTypeValEqv,
   AIR_FALSE
 };
-const airEnum *const
-limnSplineType = &_limnSplineType;
+const airEnum *const limnSplineType = &splineType_ae;
 
 static const char *
-_limnSplineInfoStr[LIMN_SPLINE_INFO_MAX+1] = {
+splineInfoStr[LIMN_SPLINE_INFO_MAX+1] = {
   "(unknown_spline_info)",
   "scalar",
   "2vector",
@@ -87,7 +86,7 @@ _limnSplineInfoStr[LIMN_SPLINE_INFO_MAX+1] = {
 };
 
 static const char *
-_limnSplineInfoDesc[LIMN_SPLINE_INFO_MAX+1] = {
+splineInfoDesc[LIMN_SPLINE_INFO_MAX+1] = {
   "unknown spline info",
   "scalar",
   "2-vector",
@@ -98,7 +97,7 @@ _limnSplineInfoDesc[LIMN_SPLINE_INFO_MAX+1] = {
 };
 
 static const char *
-_limnSplineInfoStrEqv[] = {
+splineInfoStrEqv[] = {
   "scalar", "scale", "s", "t",
   "2-vector", "2vector", "2vec", "2v", "v2", "vec2", "vector2", "vector-2",
   "3-vector", "3vector", "3vec", "3v", "v3", "vec3", "vector3", "vector-3",
@@ -116,7 +115,7 @@ _limnSplineInfoStrEqv[] = {
 #define SIQQ limnSplineInfoQuaternion
 
 static const int
-_limnSplineInfoValEqv[] = {
+splineInfoValEqv[] = {
   SISS, SISS, SISS, SISS,
   SI2V, SI2V, SI2V, SI2V, SI2V, SI2V, SI2V, SI2V,
   SI3V, SI3V, SI3V, SI3V, SI3V, SI3V, SI3V, SI3V,
@@ -126,16 +125,15 @@ _limnSplineInfoValEqv[] = {
 };
 
 static const airEnum
-_limnSplineInfo = {
+splineInfo_ae = {
   "spline-info",
   LIMN_SPLINE_INFO_MAX,
-  _limnSplineInfoStr,  NULL,
-  _limnSplineInfoDesc,
-  _limnSplineInfoStrEqv, _limnSplineInfoValEqv,
+  splineInfoStr,  NULL,
+  splineInfoDesc,
+  splineInfoStrEqv, splineInfoValEqv,
   AIR_FALSE
 };
-const airEnum *const
-limnSplineInfo = &_limnSplineInfo;
+const airEnum *const limnSplineInfo = &splineInfo_ae;
 /* clang-format on */
 
 /*
@@ -364,8 +362,8 @@ limnSplineParse(const char *_str) {
 ** <splineType>[:B,C]
 */
 static int
-_limnHestSplineTypeSpecParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
-  static const char me[] = "_limnHestSplineTypeSpecParse";
+lhSplineTypeSpecParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
+  static const char me[] = "lhSplineTypeSpecParse";
   char *err2;
   limnSplineTypeSpec **specP;
 
@@ -385,20 +383,20 @@ _limnHestSplineTypeSpecParse(void *ptr, const char *str, char err[AIR_STRLEN_HUG
   return 0;
 }
 
-static const hestCB _limnHestSplineTypeSpec = {sizeof(limnSplineTypeSpec *),
-                                               "spline type specification",
-                                               _limnHestSplineTypeSpecParse,
-                                               limnSplineTypeSpecNix_mop};
+static const hestCB lhSplineTypeSpec_hcb = {sizeof(limnSplineTypeSpec *),
+                                            "spline type specification",
+                                            lhSplineTypeSpecParse,
+                                            limnSplineTypeSpecNix_mop};
 
-const hestCB *const limnHestSplineTypeSpec = &_limnHestSplineTypeSpec;
+const hestCB *const limnHestSplineTypeSpec = &lhSplineTypeSpec_hcb;
 
 /*
 ** the spline command-line specification is of the form
 ** <nrrdFileName>:<splineInfo>:<splineType>[:B,C]
 */
 static int
-_limnHestSplineParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
-  static const char me[] = "_limnHestSplineParse";
+lhSplineParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
+  static const char me[] = "lhSplineParse";
   char *err2;
   limnSpline **splineP;
 
@@ -424,7 +422,7 @@ _limnHestSplineParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) 
   return 0;
 }
 
-static const hestCB _limnHestSpline = {sizeof(limnSpline *), "spline specification",
-                                       _limnHestSplineParse, limnSplineNix_mop};
+static const hestCB lhSpline_hcb = {sizeof(limnSpline *), "spline specification",
+                                    lhSplineParse, limnSplineNix_mop};
 
-const hestCB *const limnHestSpline = &_limnHestSpline;
+const hestCB *const limnHestSpline = &lhSpline_hcb;

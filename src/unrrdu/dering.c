@@ -21,11 +21,11 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Ring removal for CT"
-static const char *_unrrdu_deringInfoL = (INFO
-                                          ". Should be considered a work-in-progress. ");
+static const char *unu_deringInfoL = (INFO
+                                      ". Should be considered a work-in-progress. ");
 
 static int
-unrrdu_deringMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+unu_deringMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
   double center[2];
   hestOptAdd_2_Double(&hopt, "c,center", "x y", center, NULL,
@@ -70,14 +70,14 @@ unrrdu_deringMain(int argc, const char **argv, const char *me, const hestParm *_
                       "when using a mask (\"-m\"), the background value to "
                       "lerp with.");
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for YES some hparm modification)
   hestParm *hparm = hestParmCopy(_hparm);
   hparm->elideSingleOtherDefault = AIR_FALSE;
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_deringInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_deringInfoL);
   airArray *mop = unrrduMopNew(hopt, hparm);
   char *err;
 
@@ -136,10 +136,10 @@ unrrdu_deringMain(int argc, const char **argv, const char *me, const hestParm *_
     }
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD_HIDE(dering, INFO);
+MY_UNRRDU_CMD_HIDE(dering, INFO);

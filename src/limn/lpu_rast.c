@@ -24,7 +24,7 @@
 static const char *myinfo = (INFO ". ");
 
 static int
-limnPu_rastMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+lpu_rastMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   double min[3], max[3];
   hestOptAdd_3_Double(&hopt, "min", "min", min, NULL, "bottom corner");
@@ -65,4 +65,4 @@ limnPu_rastMain(int argc, const char **argv, const char *me, const hestParm *hpa
   return 0;
 }
 
-const unrrduCmd limnPu_rastCmd = {"rast", INFO, limnPu_rastMain, AIR_FALSE};
+const unrrduCmd limnPu_rastCmd = {"rast", INFO, lpu_rastMain, AIR_FALSE};

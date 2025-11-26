@@ -21,12 +21,12 @@
 #include "privateTen.h"
 
 #define INFO "Convert between different shape triples"
-static const char *_tend_tconvInfoL
+static const char *tconvInfoL
   = (INFO ".  The triples can be eignvalues, invariants (J, K, R), "
           "and lots of other things.");
 
 static int
-tend_tconvMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+tconvMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -44,7 +44,7 @@ tend_tconvMain(int argc, const char **argv, const char *me, const hestParm *hpar
 
   mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_tend_tconvInfoL);
+  USAGE_PARSE(tconvInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
@@ -65,4 +65,4 @@ tend_tconvMain(int argc, const char **argv, const char *me, const hestParm *hpar
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(tconv, INFO);
+MY_TEND_CMD(tconv, INFO);

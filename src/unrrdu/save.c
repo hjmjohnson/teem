@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Write nrrd with specific format, encoding, or endianness"
-static const char *_unrrdu_saveInfoL
+static const char *unu_saveInfoL
   = (INFO ". Use \"unu\tsave\t-f\tpnm\t|\txv\t-\" to view PPM- or "
           "PGM-compatible nrrds on unix.  EPS output is a EPSF-3.0 file with "
           "BoundingBox and HiResBoundingBox DSC comments, and is suitable for "
@@ -31,7 +31,7 @@ static const char *_unrrdu_saveInfoL
           "* Uses various fields in the NrrdIOState passed to nrrdSave");
 
 static int
-unrrdu_saveMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_saveMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   char fmtInfo[AIR_STRLEN_HUGE + 1];
   char *fmt = fmtInfo;
@@ -89,9 +89,9 @@ unrrdu_saveMain(int argc, const char **argv, const char *me, const hestParm *hpa
                     "Defaults to endianness of this machine",
                     airEndian);
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
   char *outData;
   hestOptAdd_1_String(&hopt, "od,ouputdata", "name", &outData, "",
                       "when saving to a \".nhdr\" file, "
@@ -100,7 +100,7 @@ unrrdu_saveMain(int argc, const char **argv, const char *me, const hestParm *hpa
                       "the same filename base as the header file.");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_saveInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_saveInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -136,10 +136,10 @@ unrrdu_saveMain(int argc, const char **argv, const char *me, const hestParm *hpa
     }
   }
 
-  SAVE(out, nout, nio);
+  MY_SAVE(out, nout, nio);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(save, INFO);
+MY_UNRRDU_CMD(save, INFO);

@@ -25,7 +25,7 @@ const char *const hooverBiffKey = "hoover";
 
 /* clang-format off */
 static const char *
-_hooverErrStr[HOOVER_ERR_MAX+1] = {
+errStr[HOOVER_ERR_MAX+1] = {
   "(unknown_err)",
   "Initialization",
   "RenderBegin",
@@ -40,16 +40,15 @@ _hooverErrStr[HOOVER_ERR_MAX+1] = {
 };
 
 static const airEnum
-_hooverErr = {
+err_ae = {
   "error",
   HOOVER_ERR_MAX,
-  _hooverErrStr, NULL,
+  errStr, NULL,
   NULL,
   NULL, NULL,
   AIR_FALSE
 };
-const airEnum *const
-hooverErr = &_hooverErr;
+const airEnum *const hooverErr = &err_ae;
 /* clang-format on */
 
 /*

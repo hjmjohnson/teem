@@ -21,22 +21,22 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Interchange ordering of two axes"
-static const char *_unrrdu_swapInfoL = (INFO ". Special case of \"unu\tpermute\".\n "
-                                             "* Uses nrrdAxesSwap");
+static const char *unu_swapInfoL = (INFO ". Special case of \"unu\tpermute\".\n "
+                                         "* Uses nrrdAxesSwap");
 
 static int
-unrrdu_swapMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_swapMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   uint ax[2];
   hestOptAdd_2_UInt(&hopt, "a,axis", "axisA axisB", ax, NULL,
                     "the two axes to switch (0-based numbering)");
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_swapInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_swapInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -49,10 +49,10 @@ unrrdu_swapMain(int argc, const char **argv, const char *me, const hestParm *hpa
     return 1;
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(swap, INFO);
+MY_UNRRDU_CMD(swap, INFO);

@@ -54,7 +54,7 @@ extern "C" {
 typedef unsigned int uint; /* uint is just more concise */
 
 /* miscAir.c */
-extern double _airSanityHelper(double val);
+extern double air__SanityHelper(double val);
 
 #ifdef __cplusplus
 }

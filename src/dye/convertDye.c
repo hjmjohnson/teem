@@ -30,15 +30,15 @@
 ** never got transposed at the same time that matrices in Teem
 ** were switched from column-major to row-major ordering
 */
-static const float dyeRGBtoXYZMatx[9] = {0.412453f, 0.357580f, 0.180423f,
-                                         0.212671f, 0.715160f, 0.072169f,
-                                         0.019334f, 0.119193f, 0.950227f};
-static const float dyeXYZtoRGBMatx[9] = {3.240479f,  -1.537150f, -0.498535f,
-                                         -0.969256f, 1.875992f,  0.041556f,
-                                         0.055648f,  -0.204043f, 1.057311f};
+static const float RGBtoXYZMatx[9] = {0.412453f, 0.357580f, 0.180423f,
+                                      0.212671f, 0.715160f, 0.072169f,
+                                      0.019334f, 0.119193f, 0.950227f};
+static const float XYZtoRGBMatx[9] = {3.240479f,  -1.537150f, -0.498535f,
+                                      -0.969256f, 1.875992f,  0.041556f,
+                                      0.055648f,  -0.204043f, 1.057311f};
 
 /* summing the rows of the RGBtoXYZ matrix to get X_n, Y_n, Z_n */
-static const float dyeWhiteXYZ_n[3] = {0.950456f, 1.0f, 1.088754f};
+static const float WhiteXYZ_n[3] = {0.950456f, 1.0f, 1.088754f};
 /* so  x = X/(X+Y+Z) = 0.312731268 and
    and y = Y/(X+Y+Z) = 0..32903287;
    then http://en.wikipedia.org/wiki/Illuminant_D65
@@ -48,7 +48,7 @@ static const float dyeWhiteXYZ_n[3] = {0.950456f, 1.0f, 1.088754f};
    u'_n = 4X_n / (X_n + 15Y_n + 3Z_n)
    v'_n = 9Y_n / (X_n + 15Y_n + 3Z_n)
 */
-static const float dyeWhiteuvp_n[2] = {0.197839f, 0.468342f};
+static const float Whiteuvp_n[2] = {0.197839f, 0.468342f};
 
 void
 dyeRGBtoHSV(float *H, float *S, float *V, float R, float G, float B) {
@@ -215,7 +215,7 @@ dyeRGBtoXYZ(float *X, float *Y, float *Z, float R, float G, float B) {
   float in[3], out[3];
 
   ELL_3V_SET(in, R, G, B);
-  ELL_3MV_MUL(out, dyeRGBtoXYZMatx, in);
+  ELL_3MV_MUL(out, RGBtoXYZMatx, in);
   ELL_3V_GET(*X, *Y, *Z, out);
   return;
 }
@@ -225,18 +225,18 @@ dyeXYZtoRGB(float *R, float *G, float *B, float X, float Y, float Z) {
   float in[3], out[3];
 
   ELL_3V_SET(in, X, Y, Z);
-  ELL_3MV_MUL(out, dyeXYZtoRGBMatx, in);
+  ELL_3MV_MUL(out, XYZtoRGBMatx, in);
   ELL_3V_GET(*R, *G, *B, out);
   return;
 }
 
 static float
-dyeLcbrt(float t) {
+Lcbrt(float t) {
   return AIR_FLOAT(t > 0.008856 ? airCbrt(t) : 7.787 * t + 16.0 / 116.0);
 }
 
 static float
-dyeLcubed(float t) {
+Lcubed(float t) {
   return (t > 0.206893 ? t * t * t : (t - 16.0f / 116.0f) / 7.787f);
 }
 
@@ -244,24 +244,24 @@ void
 dyeXYZtoLAB(float *L, float *A, float *B, float X, float Y, float Z) {
   float Xnorm, Ynorm, Znorm;
 
-  Xnorm = X / dyeWhiteXYZ_n[0];
-  Ynorm = Y / dyeWhiteXYZ_n[1];
-  Znorm = Z / dyeWhiteXYZ_n[2];
-  *L = 116.0f * dyeLcbrt(Ynorm) - 16.0f;
-  *A = 500.0f * (dyeLcbrt(Xnorm) - dyeLcbrt(Ynorm));
-  *B = 200.0f * (dyeLcbrt(Ynorm) - dyeLcbrt(Znorm));
+  Xnorm = X / WhiteXYZ_n[0];
+  Ynorm = Y / WhiteXYZ_n[1];
+  Znorm = Z / WhiteXYZ_n[2];
+  *L = 116.0f * Lcbrt(Ynorm) - 16.0f;
+  *A = 500.0f * (Lcbrt(Xnorm) - Lcbrt(Ynorm));
+  *B = 200.0f * (Lcbrt(Ynorm) - Lcbrt(Znorm));
 }
 
 void
 dyeXYZtoLUV(float *L, float *U, float *V, float X, float Y, float Z) {
   float Ynorm, up, vp;
 
-  Ynorm = Y / dyeWhiteXYZ_n[1];
-  *L = 116.0f * dyeLcbrt(Ynorm) - 16.0f;
+  Ynorm = Y / WhiteXYZ_n[1];
+  *L = 116.0f * Lcbrt(Ynorm) - 16.0f;
   up = 4.0f * X / (X + 15.0f * Y + 3.0f * Z);
   vp = 9.0f * Y / (X + 15.0f * Y + 3.0f * Z);
-  *U = 13.0f * (*L) * (up - dyeWhiteuvp_n[0]);
-  *V = 13.0f * (*L) * (vp - dyeWhiteuvp_n[1]);
+  *U = 13.0f * (*L) * (up - Whiteuvp_n[0]);
+  *V = 13.0f * (*L) * (vp - Whiteuvp_n[1]);
 }
 
 void
@@ -269,9 +269,9 @@ dyeLABtoXYZ(float *X, float *Y, float *Z, float L, float A, float B) {
   float YnormCbrt;
 
   YnormCbrt = (16 + L) / 116;
-  *X = dyeWhiteXYZ_n[0] * dyeLcubed(YnormCbrt + A / 500);
-  *Y = dyeWhiteXYZ_n[1] * dyeLcubed(YnormCbrt);
-  *Z = dyeWhiteXYZ_n[2] * dyeLcubed(YnormCbrt - B / 200);
+  *X = WhiteXYZ_n[0] * Lcubed(YnormCbrt + A / 500);
+  *Y = WhiteXYZ_n[1] * Lcubed(YnormCbrt);
+  *Z = WhiteXYZ_n[2] * Lcubed(YnormCbrt - B / 200);
   return;
 }
 
@@ -280,9 +280,9 @@ dyeLUVtoXYZ(float *X, float *Y, float *Z, float L, float U, float V) {
   float up, vp, YnormCbrt;
 
   YnormCbrt = (16 + L) / 116;
-  up = U / (13 * L) + dyeWhiteuvp_n[0];
-  vp = V / (13 * L) + dyeWhiteuvp_n[1];
-  *Y = dyeWhiteXYZ_n[1] * dyeLcubed(YnormCbrt);
+  up = U / (13 * L) + Whiteuvp_n[0];
+  vp = V / (13 * L) + Whiteuvp_n[1];
+  *Y = WhiteXYZ_n[1] * Lcubed(YnormCbrt);
   *X = -9 * (*Y) * up / ((up - 4) * vp - up * vp);
   *Z = (9 * (*Y) - 15 * vp * (*Y) - vp * (*X)) / (3 * vp);
   return;
@@ -305,20 +305,20 @@ dyeLCHtoLAB(float *Lp, float *A, float *B, float L, float C, float H) {
 }
 
 void
-dyeXYZtoLCH(float *_L, float *C, float *H, float X, float Y, float Z) {
-  float L, A, B;
-  dyeXYZtoLAB(&L, &A, &B, X, Y, Z);
-  dyeLABtoLCH(_L, C, H, L, A, B);
+dyeXYZtoLCH(float *ll_, float *cc, float *hh, float xx, float yy, float zz) {
+  float ll, aa, bb;
+  dyeXYZtoLAB(&ll, &aa, &bb, xx, yy, zz);
+  dyeLABtoLCH(ll_, cc, hh, ll, aa, bb);
 }
 void
-dyeLCHtoXYZ(float *X, float *Y, float *Z, float _L, float C, float H) {
-  float L, A, B;
-  dyeLCHtoLAB(&L, &A, &B, _L, C, H);
-  dyeLABtoXYZ(X, Y, Z, L, A, B);
+dyeLCHtoXYZ(float *xx, float *yy, float *zz, float ll_, float cc, float hh) {
+  float ll, aa, bb;
+  dyeLCHtoLAB(&ll, &aa, &bb, ll_, cc, hh);
+  dyeLABtoXYZ(xx, yy, zz, ll, aa, bb);
 }
 
 static void
-dyeIdentity(float *A, float *B, float *C, float a, float b, float c) {
+identity(float *A, float *B, float *C, float a, float b, float c) {
   *A = a;
   *B = b;
   *C = c;
@@ -329,13 +329,13 @@ dyeIdentity(float *A, float *B, float *C, float a, float b, float c) {
 dyeConverter const dyeSimpleConvert[DYE_MAX_SPACE+1][DYE_MAX_SPACE+1] =
 {
   {NULL,          NULL,          NULL,          NULL,          NULL,          NULL,          NULL,          NULL},
-  {NULL,          dyeIdentity,   NULL,          dyeHSVtoRGB,   NULL,          NULL,          NULL,          NULL},
-  {NULL,          NULL,          dyeIdentity,   dyeHSLtoRGB,   NULL,          NULL,          NULL,          NULL},
-  {NULL,          dyeRGBtoHSV,   dyeRGBtoHSL,   dyeIdentity,   dyeRGBtoXYZ,   NULL,          NULL,          NULL},
-  {NULL,          NULL,          NULL,          dyeXYZtoRGB,   dyeIdentity,   dyeXYZtoLAB,   dyeXYZtoLUV,   dyeXYZtoLCH},
-  {NULL,          NULL,          NULL,          NULL,          dyeLABtoXYZ,   dyeIdentity,   NULL,          dyeLABtoLCH},
-  {NULL,          NULL,          NULL,          NULL,          dyeLUVtoXYZ,   NULL,          dyeIdentity,   NULL},
-  {NULL,          NULL,          NULL,          NULL,          dyeLCHtoXYZ,   dyeLCHtoLAB,   NULL,          dyeIdentity},
+  {NULL,          identity,      NULL,          dyeHSVtoRGB,   NULL,          NULL,          NULL,          NULL},
+  {NULL,          NULL,          identity,      dyeHSLtoRGB,   NULL,          NULL,          NULL,          NULL},
+  {NULL,          dyeRGBtoHSV,   dyeRGBtoHSL,   identity,      dyeRGBtoXYZ,   NULL,          NULL,          NULL},
+  {NULL,          NULL,          NULL,          dyeXYZtoRGB,   identity,      dyeXYZtoLAB,   dyeXYZtoLUV,   dyeXYZtoLCH},
+  {NULL,          NULL,          NULL,          NULL,          dyeLABtoXYZ,   identity,      NULL,          dyeLABtoLCH},
+  {NULL,          NULL,          NULL,          NULL,          dyeLUVtoXYZ,   NULL,          identity,      NULL},
+  {NULL,          NULL,          NULL,          NULL,          dyeLCHtoXYZ,   dyeLCHtoLAB,   NULL,          identity},
 };
 /* clang-format on */
 

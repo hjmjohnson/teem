@@ -21,7 +21,7 @@
 #include "privateAir.h"
 
 /* clang-format off */
-static const char *_airFPClass_Str[AIR_FP_MAX+1] = {
+static const char *fpClass_Str[AIR_FP_MAX+1] = {
   "(unknown_class)",
   "nan",
   "pinf",
@@ -34,7 +34,7 @@ static const char *_airFPClass_Str[AIR_FP_MAX+1] = {
   "nzero",
 };
 
-static const char *_airFPClass_Desc[AIR_FP_MAX+1] = {
+static const char *fpClass_Desc[AIR_FP_MAX+1] = {
   "unknown_class",
   "(quiet) nan",
   "positive infinity",
@@ -47,7 +47,7 @@ static const char *_airFPClass_Desc[AIR_FP_MAX+1] = {
   "negative zero",
 };
 
-static const char *_airFPClass_StrEqv[] = {
+static const char *fpClass_StrEqv[] = {
   "nan", "qnan",
   "pinf", "posinf", "+inf", "inf",
   "ninf", "neginf", "-inf",
@@ -60,7 +60,7 @@ static const char *_airFPClass_StrEqv[] = {
   "",
 };
 
-static const int _airFPClass_ValEqv[] = {
+static const int fpClass_ValEqv[] = {
   airFP_NAN, airFP_NAN,
   airFP_POS_INF, airFP_POS_INF, airFP_POS_INF, airFP_POS_INF,
   airFP_NEG_INF, airFP_NEG_INF, airFP_NEG_INF,
@@ -72,15 +72,15 @@ static const int _airFPClass_ValEqv[] = {
   airFP_NEG_ZERO, airFP_NEG_ZERO, airFP_NEG_ZERO,
 };
 
-static const airEnum _airFPClass_ae = {"FP_class",
-                                        AIR_FP_MAX,
-                                        _airFPClass_Str,
-                                        NULL,
-                                        _airFPClass_Desc,
-                                        _airFPClass_StrEqv,
-                                        _airFPClass_ValEqv,
-                                        AIR_FALSE};
-const airEnum *const airFPClass_ae = &_airFPClass_ae;
+static const airEnum fpClass_ae = {"FP_class",
+                                   AIR_FP_MAX,
+                                   fpClass_Str,
+                                   NULL,
+                                   fpClass_Desc,
+                                   fpClass_StrEqv,
+                                   fpClass_ValEqv,
+                                   AIR_FALSE};
+const airEnum *const airFPClass_ae = &fpClass_ae;
 /* clang-format on */
 
 /*
@@ -129,31 +129,31 @@ to start now.  So airFloatQNaN turned into airFloatQNaN and airFloatSNaN was dro
 */
 /* #if TEEM_QNANHIBIT == 1 ... (no more) */
 /* const unsigned int airMyQNaNHiBit = 1; (no more) */
-#define _QNANHIBIT 1 /* just for this file */
+#define QNAN_HI_BIT 1 /* just for this file */
 const airFloat airFloatNaN = {0x7fffffff};
 
 const airFloat airFloatPosInf = {0x7f800000};
 const airFloat airFloatNegInf = {0xff800000}; /* why does solaris whine? */
 
 /*
-** these shouldn't be needed, but here they are if need be:
-
-in this file:
-const airFloat airFloatMax = {0x7f7fffff};
-const airFloat airFloatMin = {0x00800000};
-const airDouble airDoubleMax = {AIR_ULLONG(0x7fefffffffffffff)};
-const airDouble airDoubleMin = {AIR_ULLONG(0x0010000000000000)};
-
-in air.h:
-extern air_export const airFloat airFloatMax;
-extern air_export const airFloat airFloatMin;
-extern air_export const airDouble airDoubleMax;
-extern air_export const airDouble airDoubleMin;
-#define AIR_FLT_MIN (airFloatMin.f)
-#define AIR_FLT_MAX (airFloatMax.f)
-#define AIR_DBL_MIN (airDoubleMin.d)
-#define AIR_DBL_MAX (airDoubleMax.d)
-*/
+ * these shouldn't be needed, but here they are if need be:
+ *
+ * in this file:
+ * const airFloat airFloatMax = {0x7f7fffff};
+ * const airFloat airFloatMin = {0x00800000};
+ * const airDouble airDoubleMax = {AIR_ULLONG(0x7fefffffffffffff)};
+ * const airDouble airDoubleMin = {AIR_ULLONG(0x0010000000000000)};
+ *
+ * in air.h:
+ * extern air_export const airFloat airFloatMax;
+ * extern air_export const airFloat airFloatMin;
+ * extern air_export const airDouble airDoubleMax;
+ * extern air_export const airDouble airDoubleMin;
+ * #define AIR_FLT_MIN (airFloatMin.f)
+ * #define AIR_FLT_MAX (airFloatMax.f)
+ * #define AIR_DBL_MIN (airDoubleMin.d)
+ * #define AIR_DBL_MAX (airDoubleMax.d)
+ */
 
 #define PARTSHIFT_F(sign, expo, mant)                                                   \
   (((sign & 1u) << (8 + 23)) |        /* */                                             \
@@ -235,7 +235,7 @@ airFPGen_f(int cls) {
   switch (cls) {
   case airFP_NAN:
     /* (no separate handling of signalling NaN) */
-    SET_SEM(0, 0xff, (_QNANHIBIT << 22) | 0x3fffff);
+    SET_SEM(0, 0xff, (QNAN_HI_BIT << 22) | 0x3fffff);
     break;
   case airFP_POS_INF:
     SET_SEM(0, 0xff, 0);
@@ -293,8 +293,8 @@ airFPGen_d(int cls) {
   switch (cls) {
   case airFP_NAN:
     /* (no separate handling of signalling NaN) */
-    /* sgn: anything, mant anything non-zero with high bit _QNANHIBIT */
-    SET_SEM(0, 0x7ff, (_QNANHIBIT << 19) | 0x7ffff, 0xffffffff);
+    /* sgn: anything, mant anything non-zero with high bit QNAN_HI_BIT */
+    SET_SEM(0, 0x7ff, (QNAN_HI_BIT << 19) | 0x7ffff, 0xffffffff);
     break;
   case airFP_POS_INF:
     SET_SEM(0, 0x7ff, 0, 0);

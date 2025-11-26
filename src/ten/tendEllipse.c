@@ -21,12 +21,11 @@
 #include "privateTen.h"
 
 #define INFO "Generate postscript renderings of 2D glyphs"
-static const char *_tend_ellipseInfoL = (INFO ".  Not much to look at here.");
+static const char *ellipseInfoL = (INFO ".  Not much to look at here.");
 
 static int
-tend_ellipseDoit(FILE *file, Nrrd *nten, Nrrd *npos, Nrrd *nstn, float min[2],
-                 float max[2], float gscale, float dotRad, float lineWidth,
-                 float cthresh, int invert) {
+ellipseDoit(FILE *file, Nrrd *nten, Nrrd *npos, Nrrd *nstn, float min[2], float max[2],
+            float gscale, float dotRad, float lineWidth, float cthresh, int invert) {
   size_t sx = 0, sy = 0, ti, nt;
   int x, y, vi, *sdata;
   double aspect, minX, minY, maxX, maxY, conf, Dxx, Dxy, Dyy, px, py, spx, spy;
@@ -199,7 +198,7 @@ tend_ellipseDoit(FILE *file, Nrrd *nten, Nrrd *npos, Nrrd *nstn, float min[2],
 }
 
 static int
-tend_ellipseMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+ellipseMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr;
@@ -240,7 +239,7 @@ tend_ellipseMain(int argc, const char **argv, const char *me, const hestParm *hp
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output PostScript file");
 
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_JUSTPARSE(_tend_ellipseInfoL);
+  USAGE_JUSTPARSE(ellipseInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   if (npos) {
@@ -282,10 +281,10 @@ tend_ellipseMain(int argc, const char **argv, const char *me, const hestParm *hp
   }
   airMopAdd(mop, fout, airFclose_mop, airMopAlways);
 
-  tend_ellipseDoit(fout, nten, npos, nstn, min, max, gscale, dotRad, lineWidth, cthresh,
-                   invert);
+  ellipseDoit(fout, nten, npos, nstn, min, max, gscale, dotRad, lineWidth, cthresh,
+              invert);
 
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(ellipse, INFO);
+MY_TEND_CMD(ellipse, INFO);

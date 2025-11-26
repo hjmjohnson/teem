@@ -136,13 +136,13 @@ nrrdTypeMax[NRRD_TYPE_MAX+1] = {
 };
 
 /*
-** _nrrdFieldValidInImage[]
+** nrrd__FieldValidInImage[]
 **
 ** these fields are valid embedded in PNM and PNG comments
 ** This does NOT include the fields who's values are constrained
 ** by the image format (and in the case of PNM, magic) itself.
 */
-const int _nrrdFieldValidInImage[NRRD_FIELD_MAX + 1] = {
+const int nrrd__FieldValidInImage[NRRD_FIELD_MAX + 1] = {
   0, /* nrrdField_unknown */
   1, /* nrrdField_comment */
   1, /* nrrdField_content */
@@ -179,11 +179,11 @@ const int _nrrdFieldValidInImage[NRRD_FIELD_MAX + 1] = {
 };
 
 /*
-** _nrrdFieldOnePerAxis
+** nrrd__FieldOnePerAxis
 **
 ** whether or not you need one value per axis, like labels and spacings
 */
-const int _nrrdFieldOnePerAxis[NRRD_FIELD_MAX + 1] = {
+const int nrrd__FieldOnePerAxis[NRRD_FIELD_MAX + 1] = {
   0, /* nrrdField_unknown */
   0, /* nrrdField_comment */
   0, /* nrrdField_content */
@@ -220,13 +220,13 @@ const int _nrrdFieldOnePerAxis[NRRD_FIELD_MAX + 1] = {
 };
 
 /*
-** _nrrdFieldValidInText[]
+** nrrd__FieldValidInText[]
 **
 ** these fields are valid embedded in plain text comments
 ** This does NOT include the fields who's values are constrained
 ** the plain text format itself.
 */
-const int _nrrdFieldValidInText[NRRD_FIELD_MAX + 1] = {
+const int nrrd__FieldValidInText[NRRD_FIELD_MAX + 1] = {
   0, /* nrrdField_unknown */
   1, /* nrrdField_comment */
   1, /* nrrdField_content */
@@ -272,12 +272,12 @@ const int _nrrdFieldValidInText[NRRD_FIELD_MAX + 1] = {
 };
 
 /*
-** _nrrdFieldRequired[]
+** nrrd__FieldRequired[]
 **
 ** regardless of whether its a nrrd, PNM, or plain text, these things
 ** need to be conveyed, either explicity or implicitly
 */
-const int _nrrdFieldRequired[NRRD_FIELD_MAX + 1] = {
+const int nrrd__FieldRequired[NRRD_FIELD_MAX + 1] = {
   0, /* "Ernesto \"Che\" Guevara" */
   0, /* "#" */
   0, /* nrrdField_content */

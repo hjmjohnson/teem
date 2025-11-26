@@ -106,8 +106,8 @@ nrrdIterValue(NrrdIter *iter) {
       if (iter->left) {
         iter->left -= 1;
       } else {
-        iter->data = (char *)(_NRRD_ITER_NRRD(iter)->data);
-        iter->left = nrrdElementNumber(_NRRD_ITER_NRRD(iter)) - 1;
+        iter->data = (char *)(MY_NRRD_ITER_NRRD(iter)->data);
+        iter->left = nrrdElementNumber(MY_NRRD_ITER_NRRD(iter)) - 1;
       }
     }
   }
@@ -128,8 +128,8 @@ nrrdIterContent(NrrdIter *iter) {
 
   ret = NULL;
   if (iter) {
-    if (_NRRD_ITER_NRRD(iter)) {
-      ret = _nrrdContentGet(_NRRD_ITER_NRRD(iter));
+    if (MY_NRRD_ITER_NRRD(iter)) {
+      ret = nrrd__ContentGet(MY_NRRD_ITER_NRRD(iter));
     } else {
       /* (using TeemV2 airSinglePrintf) */
       airSinglePrintf(NULL, buff, buffSize, "%lg", iter->val);

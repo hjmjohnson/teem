@@ -41,24 +41,24 @@ be losslessly saved, or should it silently transform things?
 On disk, delimited by the NRRD_COMMENT_CHAR ('#') and the
 end of the line, but the format spec doesn't address any escaping.
 Input comments processed via:
-  nrrd/formatNrrd.c/_nrrdFormatNRRD_read()
-  --> nrrd/parseNrrd.c/_nrrdReadNrrdParse_comment()
+  nrrd/formatNrrd.c/formatNRRD_read()
+  --> nrrd/parseNrrd.c/nrrd__ReadNrrdParse_comment()
       --> nrrd/comment.c/nrrdCommentAdd()
            --> air/string.c/airOneLinify()
 On write, output comments processed via:
-  nrrd/formatNrrd.c/_nrrdFormatNRRD_write()
+  nrrd/formatNrrd.c/formatNRRD_write()
   --> air/string.c/airOneLinify()
 ==> There is no escaping of anything: white-space is compressed into
 a single ' '.  Probably justified justified given format spec.
 
 ** Content: On disk, finished with the end of line.  No mention
 of escaping in the format spec. Input content processed via:
-  nrrd/formatNrrd.c/_nrrdFormatNRRD_read()
-  --> nrrd/parseNrrd.c/_nrrdReadNrrdParse_content()
+  nrrd/formatNrrd.c/formatNRRD_read()
+  --> nrrd/parseNrrd.c/nrrd__ReadNrrdParse_content()
       which does NO processing, just airStrdup
 On write, output content processed via:
-  nrrd/formatNrrd.c/_nrrdFormatNRRD_write()
-  --> nrrd/write.c/_nrrdSprintFieldInfo()  (maybe via _nrrdFprintFieldInfo())
+  nrrd/formatNrrd.c/formatNRRD_write()
+  --> nrrd/write.c/nrrd__SprintFieldInfo()  (maybe via nrrd__FprintFieldInfo())
       --> air/string.c/airOneLinify()
 ==> not only is there no escaping, but there's some assymmetry in the
 use of airOneLinify.  If information is being encoded in the number of
@@ -68,16 +68,16 @@ output.  Still, there's no chance of writing a broken file.
 ** key/value pairs: The keys and values are separated by ":=", and the
 format spec says (string) "\n" means (character) '\n' and "\\" means '\\'.
 On input, both keys and values processed via:
-  nrrd/formatNrrd.c/_nrrdFormatNRRD_read()
-  --> nrrd/parseNrrd.c/_nrrdReadNrrdParse_keyvalue()
+  nrrd/formatNrrd.c/formatNRRD_read()
+  --> nrrd/parseNrrd.c/nrrd__ReadNrrdParse_keyvalue()
      --> air/string.c/airUnescape(), which deals with "\n" and "\\" ONLY
          (not quotes, not other whitespace), and then
      --> nrrd/keyvalue.c/nrrdKeyValueAdd(),
          which only does an airStrdup
 On output, keys and values processed via
-  nrrd/formatNrrd.c/_nrrdFormatNRRD_write()
-  --> nrrd/keyvalue.c/_nrrdKeyValueWrite()
-      --> nrrd/keyvalue.c/_nrrdWriteEscaped()
+  nrrd/formatNrrd.c/formatNRRD_write()
+  --> nrrd/keyvalue.c/nrrd__KeyValueWrite()
+      --> nrrd/keyvalue.c/nrrd__WriteEscaped()
         which is invoked to escape \n and \,
         and (NOTE!) to convert all other whitespace to ' '
 Aside from the file format spec, the nrrd *library* does not really have
@@ -90,15 +90,15 @@ hence the new handling of converting other whitespace to ' '.
 Format spec is very specific for labels, and implies units are the same:
 "Within each label, double quotes may be included by escaping them
 (\"), but no other form of escaping is supported".  On input:
-  nrrd/formatNrrd.c/_nrrdFormatNRRD_read()
-  --> nrrd/parseNrrd.c/_nrrdReadNrrdParse_labels()
-                    or _nrrdReadNrrdParse_units()
-      --> nrrd/parseNrrd.c/_nrrdGetQuotedString()
+  nrrd/formatNrrd.c/formatNRRD_read()
+  --> nrrd/parseNrrd.c/nrrd__ReadNrrdParse_labels()
+                    or nrrd__ReadNrrdParse_units()
+      --> nrrd/parseNrrd.c/getQuotedString()
           which does the work of unescaping \"
 On output:
-  nrrd/formatNrrd.c/_nrrdFormatNRRD_write()
-  --> nrrd/write.c/_nrrdSprintFieldInfo()  (maybe via _nrrdFprintFieldInfo())
-      --> nrrd/keyvalue.c/_nrrdWriteEscaped()
+  nrrd/formatNrrd.c/formatNRRD_write()
+  --> nrrd/write.c/nrrd__SprintFieldInfo()  (maybe via nrrd__FprintFieldInfo())
+      --> nrrd/keyvalue.c/nrrd__WriteEscaped()
         which is invoked to escape ",
         and (NOTE!) to convert all other whitespace to ' '
 Same concern above about characters that when written would generate a
@@ -108,24 +108,24 @@ bad NRRD file, but which are not documented as escape-able in label or unit
 the same a per-axis field, like units).  Format is sadly silent on issue of
 escaping for these; so we might as well treat them like labels & units
 units. On input:
-  nrrd/formatNrrd.c/_nrrdFormatNRRD_read()
-  --> nrrd/parseNrrd.c/_nrrdReadNrrdParse_space_units
-      --> nrrd/parseNrrd.c/_nrrdGetQuotedString()
+  nrrd/formatNrrd.c/formatNRRD_read()
+  --> nrrd/parseNrrd.c/nrrd__ReadNrrdParse_space_units
+      --> nrrd/parseNrrd.c/getQuotedString()
           which does the work of unescaping \"
 On output:
-  nrrd/formatNrrd.c/_nrrdFormatNRRD_write()
-  --> nrrd/write.c/_nrrdSprintFieldInfo()  (maybe via _nrrdFprintFieldInfo())
-      --> nrrd/keyvalue.c/_nrrdWriteEscaped()
+  nrrd/formatNrrd.c/formatNRRD_write()
+  --> nrrd/write.c/nrrd__SprintFieldInfo()  (maybe via nrrd__FprintFieldInfo())
+      --> nrrd/keyvalue.c/nrrd__WriteEscaped()
         which is invoked to escape ",
         and (NOTE!) to convert all other whitespace to ' '
 
 ** sample units: like content and comments, not a quoted string. On input:
-  nrrd/formatNrrd.c/_nrrdFormatNRRD_read()
-  --> nrrd/parseNrrd.c/_nrrdReadNrrdParse_sample_units()
+  nrrd/formatNrrd.c/formatNRRD_read()
+  --> nrrd/parseNrrd.c/nrrd__ReadNrrdParse_sample_units()
       which does nothing except a strdup
 On output:
-  nrrd/formatNrrd.c/_nrrdFormatNRRD_write()
-  --> nrrd/write.c/_nrrdSprintFieldInfo()  (maybe via _nrrdFprintFieldInfo())
+  nrrd/formatNrrd.c/formatNRRD_write()
+  --> nrrd/write.c/nrrd__SprintFieldInfo()  (maybe via nrrd__FprintFieldInfo())
       --> air/string.c/airOneLinify()
 
 ****
@@ -140,11 +140,11 @@ On output:
 #define MAGIC5 "NRRD0005"
 #define MAGIC6 "NRRD0006"
 
-const char *const _nrrdFormatURLLine0 = "Complete NRRD file format specification at:";
-const char *const _nrrdFormatURLLine1 = "http://teem.sourceforge.net/nrrd/format.html";
+const char *const nrrd__FormatURLLine0 = "Complete NRRD file format specification at:";
+const char *const nrrd__FormatURLLine1 = "http://teem.sourceforge.net/nrrd/format.html";
 
 static void
-nrrdIoStateDataFileIterBegin(NrrdIoState *nio) {
+ioStateDataFileIterBegin(NrrdIoState *nio) {
 
   nio->dataFNIndex = 0;
   return;
@@ -157,7 +157,7 @@ nrrdIoStateDataFileIterBegin(NrrdIoState *nio) {
 ** else str[1] != ':'
 ** if str[0] = '/', its a normal full path, return false
 */
-#define _NEED_PATH(str) (strcmp("-", (str)) && ':' != (str)[1] && '/' != (str)[0])
+#define NEED_PATH(str) (strcmp("-", (str)) && ':' != (str)[1] && '/' != (str)[0])
 
 /*
 ** this is responsible for the header-relative path processing
@@ -168,8 +168,8 @@ nrrdIoStateDataFileIterBegin(NrrdIoState *nio) {
 ** NOTE: this should work okay with nio->headerStringRead, I think ...
 */
 static int /* Biff: 1 */
-nrrdIoStateDataFileIterNext(FILE **fileP, NrrdIoState *nio, int reading) {
-  static const char me[] = "nrrdIoStateDataFileIterNext";
+nioStateDataFileIterNext(FILE **fileP, NrrdIoState *nio, int reading) {
+  static const char me[] = "nioStateDataFileIterNext";
   char *fname = NULL;
   size_t fnameSize;
   int ii, needPath;
@@ -185,17 +185,17 @@ nrrdIoStateDataFileIterNext(FILE **fileP, NrrdIoState *nio, int reading) {
     airMopError(mop);
     return 1;
   }
-  if (!_nrrdDataFNNumber(nio)) {
+  if (!nrrdIoDataFNNumber(nio)) {
     biffAddf(NRRD, "%s: there appear to be zero datafiles!", me);
     airMopError(mop);
     return 1;
   }
 
-  if (nio->dataFNIndex >= _nrrdDataFNNumber(nio)) {
+  if (nio->dataFNIndex >= nrrdIoDataFNNumber(nio)) {
     /* there is no next data file, but we don't make that an error
        (though as of Tue Oct  2 22:53:14 CDT 2012, GLK can't remember
        why this condition would ever occur) */
-    nio->dataFNIndex = _nrrdDataFNNumber(nio);
+    nio->dataFNIndex = nrrdIoDataFNNumber(nio);
     airMopOkay(mop);
     *fileP = NULL;
     return 0;
@@ -206,12 +206,12 @@ nrrdIoStateDataFileIterNext(FILE **fileP, NrrdIoState *nio, int reading) {
     needPath = AIR_FALSE;
     maxl = 0;
     if (nio->dataFNFormat) {
-      needPath = _NEED_PATH(nio->dataFNFormat);
+      needPath = NEED_PATH(nio->dataFNFormat);
       /* assuming 10-digit integers is plenty big */
       maxl = 10 + strlen(nio->dataFNFormat);
     } else {
       for (fi = 0; fi < nio->dataFNArr->len; fi++) {
-        needPath |= _NEED_PATH(nio->dataFN[fi]);
+        needPath |= NEED_PATH(nio->dataFN[fi]);
         maxl = AIR_MAX(maxl, strlen(nio->dataFN[fi]));
       }
     }
@@ -243,7 +243,7 @@ nrrdIoStateDataFileIterNext(FILE **fileP, NrrdIoState *nio, int reading) {
       }
       num += 1;
     }
-    if (_NEED_PATH(nio->dataFNFormat)) {
+    if (NEED_PATH(nio->dataFNFormat)) {
       char *fn = fname;
       size_t fns = fnameSize;
       SN_COPY(fn, fns, nio->path);
@@ -257,19 +257,20 @@ nrrdIoStateDataFileIterNext(FILE **fileP, NrrdIoState *nio, int reading) {
     /* ---------------------------------------------------------- */
     /* ------------------- LIST or single ----------------------- */
     /* ---------------------------------------------------------- */
-    if (_NEED_PATH(nio->dataFN[nio->dataFNIndex])) {
+    if (NEED_PATH(nio->dataFN[nio->dataFNIndex])) {
       snprintf(fname, fnameSize, "%s/%s", nio->path, nio->dataFN[nio->dataFNIndex]);
     } else {
       airStrcpy(fname, fnameSize, nio->dataFN[nio->dataFNIndex]);
     }
   }
+#undef NEED_PATH
   /* else data file is attached */
 
   if (nio->dataFNFormat || nio->dataFNArr->len) {
     *fileP = airFopen(fname, reading ? stdin : stdout, reading ? "rb" : "wb");
     if (!(*fileP)) {
       biffAddf(NRRD, "%s: couldn't open \"%s\" (data file %u of %u) for %s", me, fname,
-               nio->dataFNIndex + 1, _nrrdDataFNNumber(nio),
+               nio->dataFNIndex + 1, nrrdIoDataFNNumber(nio),
                reading ? "reading" : "writing");
       airMopError(mop);
       return 1;
@@ -296,21 +297,21 @@ nrrdIoStateDataFileIterNext(FILE **fileP, NrrdIoState *nio, int reading) {
 ** output file
 */
 int /* Biff: (private) nope */
-_nrrdFormatNRRD_whichVersion(const Nrrd *nrrd, NrrdIoState *nio) {
+nrrd__FormatNRRD_whichVersion(const Nrrd *nrrd, NrrdIoState *nio) {
   int ret;
 
   if (nrrdEncodingZRL == nio->encoding || nrrdSpaceRightUp == nrrd->space
       || nrrdSpaceRightDown == nrrd->space) {
     ret = 6;
-  } else if (_nrrdFieldInteresting(nrrd, nio, nrrdField_measurement_frame)) {
+  } else if (nrrd__FieldInteresting(nrrd, nio, nrrdField_measurement_frame)) {
     ret = 5;
-  } else if (_nrrdFieldInteresting(nrrd, nio, nrrdField_thicknesses)
-             || _nrrdFieldInteresting(nrrd, nio, nrrdField_space)
-             || _nrrdFieldInteresting(nrrd, nio, nrrdField_space_dimension)
-             || _nrrdFieldInteresting(nrrd, nio, nrrdField_sample_units)
+  } else if (nrrd__FieldInteresting(nrrd, nio, nrrdField_thicknesses)
+             || nrrd__FieldInteresting(nrrd, nio, nrrdField_space)
+             || nrrd__FieldInteresting(nrrd, nio, nrrdField_space_dimension)
+             || nrrd__FieldInteresting(nrrd, nio, nrrdField_sample_units)
              || airStrlen(nio->dataFNFormat) || nio->dataFNArr->len > 1) {
     ret = 4;
-  } else if (_nrrdFieldInteresting(nrrd, nio, nrrdField_kinds)) {
+  } else if (nrrd__FieldInteresting(nrrd, nio, nrrdField_kinds)) {
     ret = 3;
   } else if (nrrdKeyValueSize(nrrd)) {
     ret = 2;
@@ -321,20 +322,20 @@ _nrrdFormatNRRD_whichVersion(const Nrrd *nrrd, NrrdIoState *nio) {
 }
 
 static int
-_nrrdFormatNRRD_available(void) {
+formatNRRD_available(void) {
 
   return AIR_TRUE;
 }
 
 static int
-_nrrdFormatNRRD_nameLooksLike(const char *filename) {
+formatNRRD_nameLooksLike(const char *filename) {
 
   return (airEndsWith(filename, NRRD_EXT_NRRD) || airEndsWith(filename, NRRD_EXT_NHDR));
 }
 
 static int /* Biff: maybe:3:AIR_FALSE */
-_nrrdFormatNRRD_fitsInto(const Nrrd *nrrd, const NrrdEncoding *encoding, int useBiff) {
-  static const char me[] = "_nrrdFormatNRRD_fitsInto";
+formatNRRD_fitsInto(const Nrrd *nrrd, const NrrdEncoding *encoding, int useBiff) {
+  static const char me[] = "formatNRRD_fitsInto";
 
   if (!(nrrd && encoding)) {
     biffMaybeAddf(useBiff, NRRD, "%s: got NULL nrrd (%p) or encoding (%p)", me,
@@ -347,7 +348,7 @@ _nrrdFormatNRRD_fitsInto(const Nrrd *nrrd, const NrrdEncoding *encoding, int use
 }
 
 static int
-_nrrdFormatNRRD_contentStartsLike(NrrdIoState *nio) {
+formatNRRD_contentStartsLike(NrrdIoState *nio) {
 
   return (!strcmp(MAGIC0, nio->line) || !strcmp(MAGIC1, nio->line)
           || !strcmp(MAGIC2, nio->line) || !strcmp(MAGIC3, nio->line)
@@ -356,7 +357,7 @@ _nrrdFormatNRRD_contentStartsLike(NrrdIoState *nio) {
 }
 
 /*
-** _nrrdHeaderCheck()
+** nrrd__HeaderCheck()
 **
 ** minimal consistency checks on relationship between fields of nrrd,
 ** only to be used after the headers is parsed, and before the data is
@@ -368,13 +369,13 @@ _nrrdFormatNRRD_contentStartsLike(NrrdIoState *nio) {
 **
 */
 int /* Biff: (private) 1 */
-_nrrdHeaderCheck(Nrrd *nrrd, NrrdIoState *nio, int checkSeen) {
-  static const char me[] = "_nrrdHeaderCheck";
+nrrd__HeaderCheck(Nrrd *nrrd, NrrdIoState *nio, int checkSeen) {
+  static const char me[] = "nrrd__HeaderCheck";
   int i;
 
   if (checkSeen) {
     for (i = 1; i <= NRRD_FIELD_MAX; i++) {
-      if (_nrrdFieldRequired[i] && !nio->seen[i]) {
+      if (nrrd__FieldRequired[i] && !nio->seen[i]) {
         biffAddf(NRRD, "%s: didn't see required field: %s", me,
                  airEnumStr(nrrdField, i));
         return 1;
@@ -391,7 +392,7 @@ _nrrdHeaderCheck(Nrrd *nrrd, NrrdIoState *nio, int checkSeen) {
     biffAddf(NRRD, "%s: nrrd reports zero element size!", me);
     return 1;
   }
-  /* _nrrdReadNrrdParse_sizes() checks axis[i].size, which completely
+  /* nrrd__ReadNrrdParse_sizes() checks axis[i].size, which completely
      determines the return of nrrdElementNumber() */
   if (airEndianUnknown == nio->endian && nio->encoding->endianMatters
       && 1 != nrrdElementSize(nrrd)) {
@@ -403,7 +404,7 @@ _nrrdHeaderCheck(Nrrd *nrrd, NrrdIoState *nio, int checkSeen) {
 
   /* we don't really try to enforce consistency with the
      min/max/center/size information on each axis, other than the
-     value checking done by the _nrrdReadNrrdParse_* functions,
+     value checking done by the nrrd__ReadNrrdParse_* functions,
      because we only really care that we know each axis size.  Past
      that, if the user messes it up, its not really our problem ... */
 
@@ -420,8 +421,8 @@ _nrrdHeaderCheck(Nrrd *nrrd, NrrdIoState *nio, int checkSeen) {
 ** do the work of reading in datafiles, without any header parsing
 */
 static int /* Biff: 1 */
-_nrrdFormatNRRD_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
-  static const char me[] = "_nrrdFormatNRRD_read";
+formatNRRD_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
+  static const char me[] = "formatNRRD_read";
   /* Dynamically allocated for space reasons. */
   int ret;
   size_t llen, valsPerPiece;
@@ -429,14 +430,14 @@ _nrrdFormatNRRD_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
   FILE *dataFile = NULL;
 
   /* record where the header is being read from for the sake of
-     nrrdIoStateDataFileIterNext() */
+     nioStateDataFileIterNext() */
   nio->headerFile = file;
 
   /* GLK forgets the context in which file might be reasonably NULL
      but on Fri Sep 23 09:48:41 EDT 2005 this was "if (file) { ..." */
   /* nio->headerStringRead is NULL whenever IO from string is not being done */
   if (file || nio->headerStringRead) {
-    if (!_nrrdFormatNRRD_contentStartsLike(nio)) {
+    if (!formatNRRD_contentStartsLike(nio)) {
       biffAddf(NRRD, "%s: this doesn't look like a %s file", me, nrrdFormatNRRD->name);
       return 1;
     }
@@ -453,7 +454,7 @@ _nrrdFormatNRRD_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
       }
       if (llen > 1) {
         char *nioLineSave = NULL;
-        ret = _nrrdReadNrrdParseField(nio, AIR_TRUE);
+        ret = nrrd__ReadNrrdParseField(nio, AIR_TRUE);
         if (nio && nio->verbose > 3) {
           printf("%s: parsed field %d = %s\n", me, ret, airEnumStr(nrrdField, ret));
         }
@@ -474,7 +475,7 @@ _nrrdFormatNRRD_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
             ... Extra whitespace after the field descriptor and before the line
             termination is ignored.
         (One nitpick: this can't mean all " \t\n\r\v\f" whitespace;
-        so probably it just just means " \t" aka _nrrdFieldSep)
+        so probably it just just means " \t" aka nrrd__FieldSep)
         BUT WOW the code does not actually done this (at least not the code as it
         arrives to us in 2025). So what to do. Rather than do the right-trim within every
         nrrdFieldInfoParse[field]() function, we do it here. But, should we do it on
@@ -488,7 +489,7 @@ _nrrdFormatNRRD_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
             && ret != nrrdField_data_file) {
           char *info = nio->line + nio->pos;
           char *last = info + strlen(info) - 1;
-          while (last > info && _nrrdCharIsFieldSep(last[0])) {
+          while (last > info && nrrd__CharIsFieldSep(last[0])) {
             last--;
           }
           /* stopped when `last` hit non-fieldsep char; back off */
@@ -502,7 +503,7 @@ _nrrdFormatNRRD_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
           }
         }
         /* We need this nioLineSave because *IF* the field ret is nrrdField_data_file,
-           then parseNrrd.c/_nrrdReadNrrdParse_data_file() is going to re-use nio->line,
+           then parseNrrd.c/nrrd__ReadNrrdParse_data_file() is going to re-use nio->line,
            which means that the error message below will print garbage */
         if (nrrdField_data_file == ret) {
           nioLineSave = airStrdup(nio->line + nio->pos);
@@ -536,7 +537,7 @@ _nrrdFormatNRRD_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
       return 1;
     }
   }
-  if (_nrrdHeaderCheck(nrrd, nio, !!file)) {
+  if (nrrd__HeaderCheck(nrrd, nio, !!file)) {
     biffAddf(NRRD, "%s: %s", me,
              (llen ? "finished reading header, but there were problems"
                    : "hit EOF before seeing a complete valid header"));
@@ -545,9 +546,9 @@ _nrrdFormatNRRD_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
 
   /* we seemed to have read in a valid header; now allocate the memory.
      For directIO-compatible allocation we need to get the first datafile */
-  nrrdIoStateDataFileIterBegin(nio);
+  ioStateDataFileIterBegin(nio);
   /* NOTE: if nio->headerStringRead, this may set dataFile to NULL */
-  if (nrrdIoStateDataFileIterNext(&dataFile, nio, AIR_TRUE)) {
+  if (nioStateDataFileIterNext(&dataFile, nio, AIR_TRUE)) {
     biffAddf(NRRD, "%s: couldn't open the first datafile", me);
     return 1;
   }
@@ -555,7 +556,7 @@ _nrrdFormatNRRD_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
     nrrd->data = NULL;
     data = NULL;
   } else {
-    if (_nrrdCalloc(nrrd, nio)) {
+    if (nrrd__Calloc(nrrd, nio)) {
       biffAddf(NRRD, "%s: couldn't allocate memory for data", me);
       return 1;
     }
@@ -566,7 +567,7 @@ _nrrdFormatNRRD_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
   /* NOTE: you have to open dataFile even in the case of skipData, because
      caller might have set keepNrrdDataFileOpen, in which case you need to
      do any line or byte skipping if it is specified */
-  valsPerPiece = nrrdElementNumber(nrrd) / _nrrdDataFNNumber(nio);
+  valsPerPiece = nrrdElementNumber(nrrd) / nrrdIoDataFNNumber(nio);
   while (dataFile) {
     /* ---------------- skip, if need be */
     if (nrrdLineSkip(dataFile, nio)) {
@@ -587,8 +588,8 @@ _nrrdFormatNRRD_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
           return 1;
         }
         /* wow, the meaning of nio->dataFNIndex is a little confusing */
-        if (_nrrdByteSkipSkip(dataFile, nrrd, nio,
-                              nio->dataFSkip[nio->dataFNIndex - 1])) {
+        if (nrrd__ByteSkipSkip(dataFile, nrrd, nio,
+                               nio->dataFSkip[nio->dataFNIndex - 1])) {
           biffAddf(NRRD, "%s: couldn't skip %ld bytes on for list line %u", me,
                    nio->dataFSkip[nio->dataFNIndex - 1], nio->dataFNIndex - 1);
           return 1;
@@ -618,7 +619,7 @@ _nrrdFormatNRRD_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
       fprintf(stderr, "done)\n");
     }
     /* ---------------- go to next data file */
-    if (nio->keepNrrdDataFileOpen && _nrrdDataFNNumber(nio) == 1) {
+    if (nio->keepNrrdDataFileOpen && nrrdIoDataFNNumber(nio) == 1) {
       nio->dataFile = dataFile;
     } else {
       if (dataFile != nio->headerFile) {
@@ -626,7 +627,7 @@ _nrrdFormatNRRD_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
       }
     }
     data += valsPerPiece * nrrdElementSize(nrrd);
-    if (nrrdIoStateDataFileIterNext(&dataFile, nio, AIR_TRUE)) {
+    if (nioStateDataFileIterNext(&dataFile, nio, AIR_TRUE)) {
       biffAddf(NRRD, "%s: couldn't get the next datafile", me);
       return 1;
     }
@@ -653,8 +654,8 @@ _nrrdFormatNRRD_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
 }
 
 static int /* Biff: 1 */
-_nrrdFormatNRRD_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
-  static const char me[] = "_nrrdFormatNRRD_write";
+formatNRRD_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
+  static const char me[] = "formatNRRD_write";
   char *strptr = NULL, *hsw;
   size_t hswSize;
   int ii;
@@ -682,12 +683,12 @@ _nrrdFormatNRRD_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
   }
 
   /* record where the header is being written to for the sake of
-     nrrdIoStateDataFileIterNext(). This may be NULL if
+     nioStateDataFileIterNext(). This may be NULL if
      nio->headerStringWrite is non-NULL */
   nio->headerFile = file;
 
   /* we have to make sure that the data filename information is set
-     (if needed), so that it can be printed by _nrrdFprintFieldInfo */
+     (if needed), so that it can be printed by nrrd__FprintFieldInfo */
   if (nio->detachedHeader && !nio->dataFNFormat && 0 == nio->dataFNArr->len) {
     char *tmp;
     size_t tmpSize;
@@ -697,7 +698,7 @@ _nrrdFormatNRRD_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
     /* NOTE: whether or not nio->skipData, we have to contrive a filename to
        say in the "data file" field, which is stored in nio->dataFN[0],
        because the data filename will be "interesting", according to
-       _nrrdFieldInteresting() */
+       nrrd__FieldInteresting() */
     /* NOTE: Fri Feb  4 01:42:20 EST 2005 the way this is now set up, having
        a name in dataFN[0] will trump the name implied by nio->{path,base},
        which is a useful way for the user to explicitly set the output
@@ -742,13 +743,13 @@ _nrrdFormatNRRD_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
      these variables are set to NULL,0 otherwise */
   /* The magic is in fact the first thing to be written */
   if (file) {
-    fprintf(file, "%s%04d\n", MGIC, _nrrdFormatNRRD_whichVersion(nrrd, nio));
+    fprintf(file, "%s%04d\n", MGIC, nrrd__FormatNRRD_whichVersion(nrrd, nio));
     hsw = NULL;
     hswSize = 0;
   } else if (nio->headerStringWrite) {
     hsw = nio->headerStringWrite;
     hswSize = nio->headerStrlen + 1;
-    snprintf(hsw, hswSize, "%s%04d\n", MGIC, _nrrdFormatNRRD_whichVersion(nrrd, nio));
+    snprintf(hsw, hswSize, "%s%04d\n", MGIC, nrrd__FormatNRRD_whichVersion(nrrd, nio));
     SN_INCR(hsw, hswSize);
   } else {
     nio->headerStrlen = AIR_UINT(strlen(MGIC) + strlen("0000")) + 1;
@@ -759,29 +760,29 @@ _nrrdFormatNRRD_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
   /* write the advertisement about where to get the file format */
   if (!nio->skipFormatURL) {
     if (file) {
-      fprintf(file, "# %s\n", _nrrdFormatURLLine0);
-      fprintf(file, "# %s\n", _nrrdFormatURLLine1);
+      fprintf(file, "# %s\n", nrrd__FormatURLLine0);
+      fprintf(file, "# %s\n", nrrd__FormatURLLine1);
     } else if (nio->headerStringWrite) {
-      snprintf(hsw, hswSize, "# %s\n", _nrrdFormatURLLine0);
+      snprintf(hsw, hswSize, "# %s\n", nrrd__FormatURLLine0);
       SN_INCR(hsw, hswSize);
-      snprintf(hsw, hswSize, "# %s\n", _nrrdFormatURLLine1);
+      snprintf(hsw, hswSize, "# %s\n", nrrd__FormatURLLine1);
       SN_INCR(hsw, hswSize);
     } else {
       /* this is the required length for the snprintf'ing happening above */
       nio->headerStrlen += AIR_UINT(2 * strlen("# \n") /* */
-                                    + strlen(_nrrdFormatURLLine0)
-                                    + strlen(_nrrdFormatURLLine1));
+                                    + strlen(nrrd__FormatURLLine0)
+                                    + strlen(nrrd__FormatURLLine1));
     }
   }
 
   /* this is where the majority of the header printing happens */
   for (ii = 1; ii <= NRRD_FIELD_MAX; ii++) {
-    if (_nrrdFieldInteresting(nrrd, nio, ii)) {
+    if (nrrd__FieldInteresting(nrrd, nio, ii)) {
       if (file) {
-        _nrrdFprintFieldInfo(file, "", nrrd, nio, ii, AIR_FALSE);
+        nrrd__FprintFieldInfo(file, "", nrrd, nio, ii, AIR_FALSE);
       } else if (nio->headerStringWrite) {
         /* with each call strptr points to a newly allocated string */
-        _nrrdSprintFieldInfo(&strptr, "", nrrd, nio, ii, AIR_FALSE);
+        nrrd__SprintFieldInfo(&strptr, "", nrrd, nio, ii, AIR_FALSE);
         if (strptr) {
           snprintf(hsw, hswSize, "%s\n", strptr);
           SN_INCR(hsw, hswSize);
@@ -789,7 +790,7 @@ _nrrdFormatNRRD_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
           strptr = NULL;
         }
       } else {
-        _nrrdSprintFieldInfo(&strptr, "", nrrd, nio, ii, AIR_FALSE);
+        nrrd__SprintFieldInfo(&strptr, "", nrrd, nio, ii, AIR_FALSE);
         if (strptr) {
           nio->headerStrlen += AIR_UINT(strlen(strptr) + strlen("\n"));
           free(strptr);
@@ -823,14 +824,14 @@ _nrrdFormatNRRD_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
   }
   for (jj = 0; jj < nrrd->kvpArr->len; jj++) {
     int kvret;
-    /* keyvalue.c/_nrrdKeyValueWrite() itself does write final '\n' */
+    /* keyvalue.c/nrrd__KeyValueWrite() itself does write final '\n' */
     if (file) {
-      kvret = _nrrdKeyValueWrite(file, NULL, NULL, nrrd->kvp[0 + 2 * jj],
-                                 nrrd->kvp[1 + 2 * jj]);
+      kvret = nrrd__KeyValueWrite(file, NULL, NULL, nrrd->kvp[0 + 2 * jj],
+                                  nrrd->kvp[1 + 2 * jj]);
     } else {
       /* a pity that we're -- twice -- allocating and then freeing `strptr` */
-      kvret = _nrrdKeyValueWrite(NULL, &strptr, NULL, nrrd->kvp[0 + 2 * jj],
-                                 nrrd->kvp[1 + 2 * jj]);
+      kvret = nrrd__KeyValueWrite(NULL, &strptr, NULL, nrrd->kvp[0 + 2 * jj],
+                                  nrrd->kvp[1 + 2 * jj]);
       if (!kvret && strptr) {
         if (nio->headerStringWrite) {
           SN_COPY(hsw, hswSize, strptr);
@@ -851,20 +852,20 @@ _nrrdFormatNRRD_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
   }
 
   if (file) {
-    if (!(nio->detachedHeader || _nrrdDataFNNumber(nio) > 1)) {
+    if (!(nio->detachedHeader || nrrdIoDataFNNumber(nio) > 1)) {
       fprintf(file, "\n");
     }
   }
 
   if (file && !nio->skipData) {
-    nrrdIoStateDataFileIterBegin(nio);
-    if (nrrdIoStateDataFileIterNext(&dataFile, nio, AIR_FALSE)) {
+    ioStateDataFileIterBegin(nio);
+    if (nioStateDataFileIterNext(&dataFile, nio, AIR_FALSE)) {
       biffAddf(NRRD, "%s: couldn't write the first datafile", me);
       airMopError(mop);
       return 1;
     }
 
-    valsPerPiece = nrrdElementNumber(nrrd) / _nrrdDataFNNumber(nio);
+    valsPerPiece = nrrdElementNumber(nrrd) / nrrdIoDataFNNumber(nio);
     data = (char *)nrrd->data;
     do {
       /* ---------------- write data */
@@ -888,7 +889,7 @@ _nrrdFormatNRRD_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
         dataFile = airFclose(dataFile);
       }
       data += valsPerPiece * nrrdElementSize(nrrd);
-      if (nrrdIoStateDataFileIterNext(&dataFile, nio, AIR_TRUE)) {
+      if (nioStateDataFileIterNext(&dataFile, nio, AIR_TRUE)) {
         biffAddf(NRRD, "%s: couldn't get the next datafile", me);
         airMopError(mop);
         return 1;
@@ -900,14 +901,14 @@ _nrrdFormatNRRD_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
   return 0;
 }
 
-const NrrdFormat _nrrdFormatNRRD = {"NRRD",
-                                    AIR_FALSE, /* isImage */
-                                    AIR_TRUE,  /* readable */
-                                    _nrrdFormatNRRD_available,
-                                    _nrrdFormatNRRD_nameLooksLike,
-                                    _nrrdFormatNRRD_fitsInto,
-                                    _nrrdFormatNRRD_contentStartsLike,
-                                    _nrrdFormatNRRD_read,
-                                    _nrrdFormatNRRD_write};
+const NrrdFormat nrrd__FormatNRRD = {"NRRD",
+                                     AIR_FALSE, /* isImage */
+                                     AIR_TRUE,  /* readable */
+                                     formatNRRD_available,
+                                     formatNRRD_nameLooksLike,
+                                     formatNRRD_fitsInto,
+                                     formatNRRD_contentStartsLike,
+                                     formatNRRD_read,
+                                     formatNRRD_write};
 
-const NrrdFormat *const nrrdFormatNRRD = &_nrrdFormatNRRD;
+const NrrdFormat *const nrrdFormatNRRD = &nrrd__FormatNRRD;

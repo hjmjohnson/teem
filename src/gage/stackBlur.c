@@ -22,7 +22,7 @@
 
 /* clang-format off */
 static const char *
-_gageSigmaSamplingStr[] = {
+sigmaSamplingStr[] = {
   "(unknown_sampling)",
   "unisig", /* "uniform-sigma", */
   "unitau", /* "uniform-tau", */
@@ -30,7 +30,7 @@ _gageSigmaSamplingStr[] = {
 };
 
 static const char *
-_gageSigmaSamplingDesc[] = {
+sigmaSamplingDesc[] = {
   "unknown sampling",
   "uniform samples along sigma",
   "uniform samples along Lindeberg's tau",
@@ -38,7 +38,7 @@ _gageSigmaSamplingDesc[] = {
 };
 
 static const char *
-_gageSigmaSamplingStrEqv[] = {
+sigmaSamplingStrEqv[] = {
   "uniform-sigma", "unisigma", "unisig",
   "uniform-tau", "unitau",
   "optimal-3d-l2l2", "optimal-l2l2", "optil2",
@@ -46,7 +46,7 @@ _gageSigmaSamplingStrEqv[] = {
 };
 
 static const int
-_gageSigmaSamplingValEqv[] = {
+sigmaSamplingValEqv[] = {
   gageSigmaSamplingUniformSigma, gageSigmaSamplingUniformSigma,
   /* */ gageSigmaSamplingUniformSigma,
   gageSigmaSamplingUniformTau, gageSigmaSamplingUniformTau,
@@ -55,16 +55,15 @@ _gageSigmaSamplingValEqv[] = {
 };
 
 static const airEnum
-_gageSigmaSampling_enum = {
+sigmaSampling_ae = {
   "sigma sampling strategy",
   GAGE_SIGMA_SAMPLING_MAX,
-  _gageSigmaSamplingStr, NULL,
-  _gageSigmaSamplingDesc,
-  _gageSigmaSamplingStrEqv, _gageSigmaSamplingValEqv,
+  sigmaSamplingStr, NULL,
+  sigmaSamplingDesc,
+  sigmaSamplingStrEqv, sigmaSamplingValEqv,
   AIR_FALSE
 };
-const airEnum *const
-gageSigmaSampling = &_gageSigmaSampling_enum;
+const airEnum *const gageSigmaSampling = &sigmaSampling_ae;
 /* clang-format on */
 
 void
@@ -893,9 +892,9 @@ gageStackBlurParmSprint(char str[AIR_STRLEN_LARGE + 1],
 }
 
 static int
-_gageHestStackBlurParmParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
+ghStackBlurParmParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
   gageStackBlurParm **sbp;
-  static const char me[] = "_gageHestStackBlurParmParse";
+  static const char me[] = "ghStackBlurParmParse";
   char *nerr;
 
   if (!(ptr && str)) {
@@ -923,17 +922,17 @@ _gageHestStackBlurParmParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE
   return 0;
 }
 
-static const hestCB _gageHestStackBlurParm = {sizeof(gageStackBlurParm *),
-                                              "stack blur specification",
-                                              _gageHestStackBlurParmParse,
-                                              gageStackBlurParmNix_mop};
+static const hestCB ghStackBlurParm_hcb = {sizeof(gageStackBlurParm *),
+                                           "stack blur specification",
+                                           ghStackBlurParmParse,
+                                           gageStackBlurParmNix_mop};
 
-const hestCB *const gageHestStackBlurParm = &_gageHestStackBlurParm;
+const hestCB *const gageHestStackBlurParm = &ghStackBlurParm_hcb;
 
 static int /* Biff: 1 */
-_checkNrrd(Nrrd *const nblur[], const Nrrd *const ncheck[], unsigned int blNum,
-           int checking, const Nrrd *nin, const gageKind *kind) {
-  static const char me[] = "_checkNrrd";
+checkNrrd(Nrrd *const nblur[], const Nrrd *const ncheck[], unsigned int blNum,
+          int checking, const Nrrd *nin, const gageKind *kind) {
+  static const char me[] = "checkNrrd";
   unsigned int blIdx;
 
   for (blIdx = 0; blIdx < blNum; blIdx++) {
@@ -961,7 +960,7 @@ _checkNrrd(Nrrd *const nblur[], const Nrrd *const ncheck[], unsigned int blNum,
 
 /* clang-format off */
 static const char
-_blurKey[KVP_NUM][AIR_STRLEN_LARGE+1] = {/*  0  */ "gageStackBlur",
+blurKey[KVP_NUM][AIR_STRLEN_LARGE+1] = {/*  0  */ "gageStackBlur",
                                        /*  1  */ "cksum",
                                        /*  2  */ "scale",
                                        /*  3  */ "kernel",
@@ -980,9 +979,9 @@ typedef struct {
 } blurVal_t;
 
 static blurVal_t * /* Biff: NULL */
-_blurValAlloc(airArray *mop, gageStackBlurParm *sbp, NrrdKernelSpec *kssb,
-              const Nrrd *nin, int spatialBlurred) {
-  static const char me[] = "_blurValAlloc";
+blurValAlloc(airArray *mop, gageStackBlurParm *sbp, NrrdKernelSpec *kssb,
+             const Nrrd *nin, int spatialBlurred) {
+  static const char me[] = "blurValAlloc";
   blurVal_t *blurVal;
   unsigned int blIdx, cksum;
 
@@ -1017,9 +1016,9 @@ _blurValAlloc(airArray *mop, gageStackBlurParm *sbp, NrrdKernelSpec *kssb,
 ** precision, the FFT can produce very low amplitude noise.
 */
 static int /* Biff: 1 */
-_stackBlurDiscreteGaussFFT(Nrrd *const nblur[], gageStackBlurParm *sbp, const Nrrd *nin,
-                           const gageKind *kind) {
-  static const char me[] = "_stackBlurDiscreteGaussFFT";
+stackBlurDiscreteGaussFFT(Nrrd *const nblur[], gageStackBlurParm *sbp, const Nrrd *nin,
+                          const gageKind *kind) {
+  static const char me[] = "stackBlurDiscreteGaussFFT";
   size_t sizeAll[NRRD_DIM_MAX], *size, ii, xi, yi, zi, nn;
   Nrrd *ninC, /* complex version of input, same as input type */
     *ninFT,   /* FT of input, type double */
@@ -1196,9 +1195,9 @@ _stackBlurDiscreteGaussFFT(Nrrd *const nblur[], gageStackBlurParm *sbp, const Nr
 }
 
 static int /* Biff: 1 */
-_stackBlurSpatial(Nrrd *const nblur[], gageStackBlurParm *sbp, NrrdKernelSpec *kssb,
-                  const Nrrd *nin, const gageKind *kind) {
-  static const char me[] = "_stackBlurSpatial";
+stackBlurSpatial(Nrrd *const nblur[], gageStackBlurParm *sbp, NrrdKernelSpec *kssb,
+                 const Nrrd *nin, const gageKind *kind) {
+  static const char me[] = "stackBlurSpatial";
   NrrdResampleContext *rsmc;
   Nrrd *niter;
   unsigned int axi, blIdx;
@@ -1402,7 +1401,7 @@ gageStackBlur(Nrrd *const nblur[], gageStackBlurParm *sbp, const Nrrd *nin,
     biffAddf(GAGE, "%s: problem with parms", me);
     return 1;
   }
-  if (_checkNrrd(nblur, NULL, sbp->num, AIR_FALSE, nin, kind)) {
+  if (checkNrrd(nblur, NULL, sbp->num, AIR_FALSE, nin, kind)) {
     biffAddf(GAGE, "%s: problem with input ", me);
     return 1;
   }
@@ -1414,7 +1413,7 @@ gageStackBlur(Nrrd *const nblur[], gageStackBlurParm *sbp, const Nrrd *nin,
              && nrrdKernelDiscreteGaussian == sbp->kspec->kernel);
   if (fftable && nrrdFFTWEnabled) {
     /* go directly to FFT-based blurring */
-    if (_stackBlurDiscreteGaussFFT(nblur, sbp, nin, kind)) {
+    if (stackBlurDiscreteGaussFFT(nblur, sbp, nin, kind)) {
       biffAddf(GAGE, "%s: trouble with frequency-space blurring", me);
       airMopError(mop);
       return 1;
@@ -1440,7 +1439,7 @@ gageStackBlur(Nrrd *const nblur[], gageStackBlurParm *sbp, const Nrrd *nin,
                 me, sbp->needSpatialBlur ? "yes" : "no", bstr, kstr);
       }
     }
-    if (_stackBlurSpatial(nblur, sbp, kssb, nin, kind)) {
+    if (stackBlurSpatial(nblur, sbp, kssb, nin, kind)) {
       biffAddf(GAGE, "%s: trouble with spatial-domain blurring", me);
       airMopError(mop);
       return 1;
@@ -1448,7 +1447,7 @@ gageStackBlur(Nrrd *const nblur[], gageStackBlurParm *sbp, const Nrrd *nin,
     spatialBlurred = AIR_TRUE;
   }
   /* add the KVPs to document how these were blurred */
-  if (!(blurVal = _blurValAlloc(mop, sbp, kssb, nin, spatialBlurred))) {
+  if (!(blurVal = blurValAlloc(mop, sbp, kssb, nin, spatialBlurred))) {
     biffAddf(GAGE, "%s: problem getting KVP buffer", me);
     airMopError(mop);
     return 1;
@@ -1458,14 +1457,14 @@ gageStackBlur(Nrrd *const nblur[], gageStackBlurParm *sbp, const Nrrd *nin,
     for (kvpIdx = 0; kvpIdx < KVP_NUM; kvpIdx++) {
       if (KVP_DGGSM_IDX != kvpIdx) {
         if (!E)
-          E |= nrrdKeyValueAdd(nblur[blIdx], _blurKey[kvpIdx],
+          E |= nrrdKeyValueAdd(nblur[blIdx], blurKey[kvpIdx],
                                blurVal[blIdx].val[kvpIdx]);
       } else {
         /* only need to save dgGoodSigmaMax if it was spatially blurred
            with the discrete gaussian kernel */
         if (spatialBlurred && nrrdKernelDiscreteGaussian == kssb->kernel) {
           if (!E)
-            E |= nrrdKeyValueAdd(nblur[blIdx], _blurKey[kvpIdx],
+            E |= nrrdKeyValueAdd(nblur[blIdx], blurKey[kvpIdx],
                                  blurVal[blIdx].val[kvpIdx]);
         }
       }
@@ -1505,9 +1504,9 @@ gageStackBlurCheck(const Nrrd *const nblur[], gageStackBlurParm *sbp, const Nrrd
   kssb = nrrdKernelSpecCopy(sbp->kspec);
   airMopAdd(mop, kssb, nrrdKernelSpecNix_mop, airMopAlways);
   if (gageStackBlurParmCheck(sbp)
-      || _checkNrrd(NULL, nblur, sbp->num, AIR_TRUE, nin, kind)
-      || (!(blurVal = _blurValAlloc(mop, sbp, kssb, nin,
-                                    (sbp->needSpatialBlur ? AIR_TRUE : AIR_FALSE))))) {
+      || checkNrrd(NULL, nblur, sbp->num, AIR_TRUE, nin, kind)
+      || (!(blurVal = blurValAlloc(mop, sbp, kssb, nin,
+                                   (sbp->needSpatialBlur ? AIR_TRUE : AIR_FALSE))))) {
     biffAddf(GAGE, "%s: problem", me);
     airMopError(mop);
     return 1;
@@ -1541,11 +1540,11 @@ gageStackBlurCheck(const Nrrd *const nblur[], gageStackBlurParm *sbp, const Nrrd
     /* see if the KVPs are there with the required values */
     for (kvpIdx = 0; kvpIdx < KVP_NUM; kvpIdx++) {
       char *tmpval;
-      tmpval = nrrdKeyValueGet(nblur[blIdx], _blurKey[kvpIdx]);
+      tmpval = nrrdKeyValueGet(nblur[blIdx], blurKey[kvpIdx]);
       airMopAdd(mop, tmpval, airFree, airMopAlways);
       if (KVP_DGGSM_IDX != kvpIdx) {
         if (!tmpval) {
-          biffAddf(GAGE, "%s: didn't see key \"%s\" in nblur[%u]", me, _blurKey[kvpIdx],
+          biffAddf(GAGE, "%s: didn't see key \"%s\" in nblur[%u]", me, blurKey[kvpIdx],
                    blIdx);
           airMopError(mop);
           return 1;
@@ -1561,7 +1560,7 @@ gageStackBlurCheck(const Nrrd *const nblur[], gageStackBlurParm *sbp, const Nrrd
         }
         if (strcmp(tmpval, blurVal[blIdx].val[kvpIdx])) {
           biffAddf(GAGE, "%s: found key[%s] \"%s\" != wanted \"%s\"", me,
-                   _blurKey[kvpIdx], tmpval, blurVal[blIdx].val[kvpIdx]);
+                   blurKey[kvpIdx], tmpval, blurVal[blIdx].val[kvpIdx]);
           airMopError(mop);
           return 1;
         }
@@ -1578,7 +1577,7 @@ gageStackBlurCheck(const Nrrd *const nblur[], gageStackBlurParm *sbp, const Nrrd
              and we do need spatial blurring, so we compare them */
           if (strcmp(tmpval, blurVal[blIdx].val[kvpIdx])) {
             biffAddf(GAGE, "%s: found key[%s] \"%s\" != wanted \"%s\"", me,
-                     _blurKey[kvpIdx], tmpval, blurVal[blIdx].val[kvpIdx]);
+                     blurKey[kvpIdx], tmpval, blurVal[blIdx].val[kvpIdx]);
             /* HEY: a change in the discrete Gaussian cut-off will result
                in a recomputation of the blurrings, even with FFT-based
                blurring, though cut-off is completely moot then */

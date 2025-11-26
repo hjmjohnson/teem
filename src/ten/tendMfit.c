@@ -21,10 +21,10 @@
 #include "privateTen.h"
 
 #define INFO "Estimate models from a set of DW images"
-static const char *_tend_mfitInfoL = (INFO ". More docs here.");
+static const char *mfitInfoL = (INFO ". More docs here.");
 
 static int
-tend_mfitMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+mfitMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -86,7 +86,7 @@ tend_mfitMain(int argc, const char **argv, const char *me, const hestParm *hparm
 
   mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_JUSTPARSE(_tend_mfitInfoL);
+  USAGE_JUSTPARSE(mfitInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nterr = NULL;
@@ -130,4 +130,4 @@ tend_mfitMain(int argc, const char **argv, const char *me, const hestParm *hparm
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(mfit, INFO);
+MY_TEND_CMD(mfit, INFO);

@@ -50,23 +50,21 @@ extern "C" {
 typedef unsigned int uint; /* uint is just more concise */
 
 /* defaultsPush.c */
-extern int _pushVerbose;
+extern int push__Verbose;
 
 /* binning.c */
-extern pushBin *_pushBinLocate(pushContext *pctx, double *pos);
-extern void _pushBinPointAdd(pushContext *pctx, pushBin *bin, pushPoint *point);
+extern void push__BinPointAdd(pushContext *pctx, pushBin *bin, pushPoint *point);
 
 /* setup.c */
-extern pushTask *_pushTaskNew(pushContext *pctx, int threadIdx);
-extern pushTask *_pushTaskNix(pushTask *task);
-extern int _pushTensorFieldSetup(pushContext *pctx);
-extern int _pushGageSetup(pushContext *pctx);
-extern int _pushTaskSetup(pushContext *pctx);
-extern int _pushBinSetup(pushContext *pctx);
-extern int _pushPointSetup(pushContext *pctx);
+extern pushTask *push__TaskNix(pushTask *task);
+extern int push__TensorFieldSetup(pushContext *pctx);
+extern int push__GageSetup(pushContext *pctx);
+extern int push__TaskSetup(pushContext *pctx);
+extern int push__BinSetup(pushContext *pctx);
+extern int push__PointSetup(pushContext *pctx);
 
 /* action.c */
-extern int _pushProbe(pushTask *task, pushPoint *point);
+extern int push__Probe(pushTask *task, pushPoint *point);
 
 #ifdef __cplusplus
 }

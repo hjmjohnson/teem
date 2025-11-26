@@ -20,8 +20,8 @@
 #include "limn.h"
 
 static void
-_limnSplineIntervalFind_Unknown(int *ii, double *ff, limnSpline *spline, double tt) {
-  static const char me[] = "_limnSplineIntervalFind_Unknown";
+splineIntervalFind_Unknown(int *ii, double *ff, limnSpline *spline, double tt) {
+  static const char me[] = "splineIntervalFind_Unknown";
 
   AIR_UNUSED(ii);
   AIR_UNUSED(ff);
@@ -32,7 +32,7 @@ _limnSplineIntervalFind_Unknown(int *ii, double *ff, limnSpline *spline, double 
 }
 
 static void
-_limnSplineIntervalFind_NonWarp(int *ii, double *ff, limnSpline *spline, double tt) {
+splineIntervalFind_NonWarp(int *ii, double *ff, limnSpline *spline, double tt) {
   int N; /* HEY should be unsigned */
 
   N = AIR_INT(spline->ncpt->axis[2].size + (spline->loop ? 1 : 0));
@@ -43,7 +43,7 @@ _limnSplineIntervalFind_NonWarp(int *ii, double *ff, limnSpline *spline, double 
 }
 
 static void
-_limnSplineIntervalFind_Warp(int *ii, double *ff, limnSpline *spline, double tt) {
+splineIntervalFind_Warp(int *ii, double *ff, limnSpline *spline, double tt) {
   int N;
 
   N = AIR_INT(spline->ncpt->axis[2].size); /* HEY should be unsigned */
@@ -62,15 +62,14 @@ _limnSplineIntervalFind_Warp(int *ii, double *ff, limnSpline *spline, double tt)
   return;
 }
 
-typedef void (*_limnSplineIntervalFind_t)(int *, double *, limnSpline *, double);
-static const _limnSplineIntervalFind_t _limnSplineIntervalFind[LIMN_SPLINE_TYPE_MAX + 1]
-  = {_limnSplineIntervalFind_Unknown, _limnSplineIntervalFind_NonWarp,
-     _limnSplineIntervalFind_Warp,    _limnSplineIntervalFind_NonWarp,
-     _limnSplineIntervalFind_NonWarp, _limnSplineIntervalFind_NonWarp};
+typedef void (*splineIntervalFind_t)(int *, double *, limnSpline *, double);
+static const splineIntervalFind_t splineIntervalFind[LIMN_SPLINE_TYPE_MAX + 1]
+  = {splineIntervalFind_Unknown, splineIntervalFind_NonWarp, splineIntervalFind_Warp,
+     splineIntervalFind_NonWarp, splineIntervalFind_NonWarp, splineIntervalFind_NonWarp};
 
 static void
-_limnSplineWeightsFind_Unknown(double *wght, limnSpline *spline, double f) {
-  static const char me[] = "_limnSplineWeights_Unknown";
+splineWeightsFind_Unknown(double *wght, limnSpline *spline, double f) {
+  static const char me[] = "splineWeights_Unknown";
 
   AIR_UNUSED(wght);
   AIR_UNUSED(spline);
@@ -80,7 +79,7 @@ _limnSplineWeightsFind_Unknown(double *wght, limnSpline *spline, double f) {
 }
 
 static void
-_limnSplineWeightsFind_Linear(double *wght, limnSpline *spline, double f) {
+splineWeightsFind_Linear(double *wght, limnSpline *spline, double f) {
 
   AIR_UNUSED(spline);
   ELL_4V_SET(wght, 0, 1 - f, f, 0);
@@ -92,7 +91,7 @@ _limnSplineWeightsFind_Linear(double *wght, limnSpline *spline, double f) {
 }
 
 static void
-_limnSplineWeightsFind_Hermite(double *wght, limnSpline *spline, double f) {
+splineWeightsFind_Hermite(double *wght, limnSpline *spline, double f) {
   double f3, f2;
 
   AIR_UNUSED(spline);
@@ -102,7 +101,7 @@ _limnSplineWeightsFind_Hermite(double *wght, limnSpline *spline, double f) {
 }
 
 static void
-_limnSplineWeightsFind_CubicBezier(double *wght, limnSpline *spline, double f) {
+splineWeightsFind_CubicBezier(double *wght, limnSpline *spline, double f) {
   double g;
 
   AIR_UNUSED(spline);
@@ -112,7 +111,7 @@ _limnSplineWeightsFind_CubicBezier(double *wght, limnSpline *spline, double f) {
 }
 
 /* lifted from nrrd/kernel.c */
-#define _BCCUBIC(x, B, C)                                                               \
+#define BCCUBIC(x, B, C)                                                                \
   ((x) >= 2.0                                                                           \
      ? 0                                                                                \
      : ((x) >= 1.0                                                                      \
@@ -121,7 +120,7 @@ _limnSplineWeightsFind_CubicBezier(double *wght, limnSpline *spline, double f) {
           : ((2 - 3 * B / 2 - C) * (x) - 3 + 2 * B + C) * (x) * (x) + 1 - B / 3))
 
 static void
-_limnSplineWeightsFind_BC(double *wght, limnSpline *spline, double f) {
+splineWeightsFind_BC(double *wght, limnSpline *spline, double f) {
   double B, C, f0, f1, f2, f3;
 
   B = spline->B;
@@ -131,23 +130,23 @@ _limnSplineWeightsFind_BC(double *wght, limnSpline *spline, double f) {
   f2 = AIR_ABS(f - 1);
   f3 = AIR_ABS(f - 2);
   ELL_4V_SET(wght,
-             _BCCUBIC(f0, B, C),
-             _BCCUBIC(f1, B, C),
-             _BCCUBIC(f2, B, C),
-             _BCCUBIC(f3, B, C));
+             BCCUBIC(f0, B, C),
+             BCCUBIC(f1, B, C),
+             BCCUBIC(f2, B, C),
+             BCCUBIC(f3, B, C));
   return;
 }
 
-typedef void (*_limnSplineWeightsFind_t)(double *, limnSpline *, double);
+typedef void (*splineWeightsFind_t)(double *, limnSpline *, double);
 
-static const _limnSplineWeightsFind_t _limnSplineWeightsFind[LIMN_SPLINE_TYPE_MAX + 1]
-  = {_limnSplineWeightsFind_Unknown, _limnSplineWeightsFind_Linear,
-     _limnSplineWeightsFind_Hermite, /* TimeWarp */
-     _limnSplineWeightsFind_Hermite, _limnSplineWeightsFind_CubicBezier,
-     _limnSplineWeightsFind_BC};
+static const splineWeightsFind_t splineWeightsFind[LIMN_SPLINE_TYPE_MAX + 1]
+  = {splineWeightsFind_Unknown, splineWeightsFind_Linear,
+     splineWeightsFind_Hermite, /* TimeWarp */
+     splineWeightsFind_Hermite, splineWeightsFind_CubicBezier,
+     splineWeightsFind_BC};
 
 static void
-_limnSplineIndexFind(int *idx, limnSpline *spline, int ii) {
+splineIndexFind(int *idx, limnSpline *spline, int ii) {
   int N, ti[4];
 
   N = AIR_INT(spline->ncpt->axis[2].size); /* should be unsigned */
@@ -185,8 +184,8 @@ _limnSplineIndexFind(int *idx, limnSpline *spline, int ii) {
 }
 
 static void
-_limnSplineFinish_Unknown(double *out, limnSpline *spline, int ii, double *wght) {
-  static const char me[] = "_limnSplineFinish_Unknown";
+splineFinish_Unknown(double *out, limnSpline *spline, int ii, double *wght) {
+  static const char me[] = "splineFinish_Unknown";
 
   AIR_UNUSED(out);
   AIR_UNUSED(spline);
@@ -198,26 +197,26 @@ _limnSplineFinish_Unknown(double *out, limnSpline *spline, int ii, double *wght)
 
 /* clang-format off */
 static void
-_limnSplineFinish_Scalar(double *out, limnSpline *spline,
+splineFinish_Scalar(double *out, limnSpline *spline,
                          int ii, double *wght) {
   int idx[4];
   double *cpt;
 
   cpt = (double*)(spline->ncpt->data);
-  _limnSplineIndexFind(idx, spline, ii);
+  splineIndexFind(idx, spline, ii);
   *out = (  wght[0]*cpt[idx[0]] + wght[1]*cpt[idx[1]]
           + wght[2]*cpt[idx[2]] + wght[3]*cpt[idx[3]]);
   return;
 }
 
 static void
-_limnSplineFinish_2Vec(double *out, limnSpline *spline,
+splineFinish_2Vec(double *out, limnSpline *spline,
                        int ii, double *wght) {
   int idx[4];
   double *cpt;
 
   cpt = (double*)(spline->ncpt->data);
-  _limnSplineIndexFind(idx, spline, ii);
+  splineIndexFind(idx, spline, ii);
   out[0] = (  wght[0]*cpt[0 + 2*idx[0]] + wght[1]*cpt[0 + 2*idx[1]]
             + wght[2]*cpt[0 + 2*idx[2]] + wght[3]*cpt[0 + 2*idx[3]]);
   out[1] = (  wght[0]*cpt[1 + 2*idx[0]] + wght[1]*cpt[1 + 2*idx[1]]
@@ -226,13 +225,13 @@ _limnSplineFinish_2Vec(double *out, limnSpline *spline,
 }
 
 static void
-_limnSplineFinish_3Vec(double *out, limnSpline *spline,
+splineFinish_3Vec(double *out, limnSpline *spline,
                        int ii, double *wght) {
   int idx[4];
   double *cpt;
 
   cpt = (double*)(spline->ncpt->data);
-  _limnSplineIndexFind(idx, spline, ii);
+  splineIndexFind(idx, spline, ii);
   out[0] = (  wght[0]*cpt[0 + 3*idx[0]] + wght[1]*cpt[0 + 3*idx[1]]
             + wght[2]*cpt[0 + 3*idx[2]] + wght[3]*cpt[0 + 3*idx[3]]);
   out[1] = (  wght[0]*cpt[1 + 3*idx[0]] + wght[1]*cpt[1 + 3*idx[1]]
@@ -243,25 +242,25 @@ _limnSplineFinish_3Vec(double *out, limnSpline *spline,
 }
 
 static void
-_limnSplineFinish_Normal(double *out, limnSpline *spline,
+splineFinish_Normal(double *out, limnSpline *spline,
                          int ii, double *wght) {
 
   AIR_UNUSED(out);
   AIR_UNUSED(spline);
   AIR_UNUSED(ii);
   AIR_UNUSED(wght);
-  fprintf(stderr, "%s: NOT IMPLEMENTED\n", "_limnSplineFinish_Normal");
+  fprintf(stderr, "%s: NOT IMPLEMENTED\n", "splineFinish_Normal");
   return;
 }
 
 static void
-_limnSplineFinish_4Vec(double *out, limnSpline *spline,
+splineFinish_4Vec(double *out, limnSpline *spline,
                        int ii, double *wght) {
   int idx[4];
   double *cpt;
 
   cpt = (double*)(spline->ncpt->data);
-  _limnSplineIndexFind(idx, spline, ii);
+  splineIndexFind(idx, spline, ii);
   out[0] = (  wght[0]*cpt[0 + 4*idx[0]] + wght[1]*cpt[0 + 4*idx[1]]
             + wght[2]*cpt[0 + 4*idx[2]] + wght[3]*cpt[0 + 4*idx[3]]);
   out[1] = (  wght[0]*cpt[1 + 4*idx[0]] + wght[1]*cpt[1 + 4*idx[1]]
@@ -277,13 +276,13 @@ _limnSplineFinish_4Vec(double *out, limnSpline *spline,
 ** HEY: I have no idea whether Hermite splines work with this
 */
 static void
-_limnSplineFinish_Quaternion(double *out, limnSpline *spline,
+splineFinish_Quaternion(double *out, limnSpline *spline,
                              int ii, double *wght) {
   int idx[4];
   double *cpt;
 
   cpt = (double*)(spline->ncpt->data);
-  _limnSplineIndexFind(idx, spline, ii);
+  splineIndexFind(idx, spline, ii);
   ell_q_avg4_d(out, NULL,
                cpt + 4*idx[0], cpt + 4*idx[1],
                cpt + 4*idx[2], cpt + 4*idx[3],
@@ -291,16 +290,16 @@ _limnSplineFinish_Quaternion(double *out, limnSpline *spline,
   return;
 }
 
-typedef void (*_limnSplineFinish_t)(double *, limnSpline *, int, double *);
-static const _limnSplineFinish_t
-_limnSplineFinish[LIMN_SPLINE_INFO_MAX+1] = {
-  _limnSplineFinish_Unknown,
-  _limnSplineFinish_Scalar,
-  _limnSplineFinish_2Vec,
-  _limnSplineFinish_3Vec,
-  _limnSplineFinish_Normal,
-  _limnSplineFinish_4Vec,
-  _limnSplineFinish_Quaternion
+typedef void (*splineFinish_t)(double *, limnSpline *, int, double *);
+static const splineFinish_t
+splineFinish[LIMN_SPLINE_INFO_MAX+1] = {
+  splineFinish_Unknown,
+  splineFinish_Scalar,
+  splineFinish_2Vec,
+  splineFinish_3Vec,
+  splineFinish_Normal,
+  splineFinish_4Vec,
+  splineFinish_Quaternion
 };
 /* clang-format on */
 
@@ -310,9 +309,9 @@ limnSplineEvaluate(double *out, limnSpline *spline, double tt) {
   double ff, wght[4];
 
   if (out && spline) {
-    _limnSplineIntervalFind[spline->type](&ii, &ff, spline, tt);
-    _limnSplineWeightsFind[spline->type](wght, spline, ff);
-    _limnSplineFinish[spline->info](out, spline, ii, wght);
+    splineIntervalFind[spline->type](&ii, &ff, spline, tt);
+    splineWeightsFind[spline->type](wght, spline, ff);
+    splineFinish[spline->info](out, spline, ii, wght);
   }
   return;
 }

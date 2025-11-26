@@ -67,9 +67,8 @@ AIR_MOPPER(limnPolyDataNix)
 ** doesn't set pld->xyzwNum, only the per-attribute xxxNum variables
 */
 static int /* Biff: 1 */
-_limnPolyDataInfoAlloc(limnPolyData *pld, unsigned int infoBitFlag,
-                       unsigned int vertNum) {
-  static const char me[] = "_limnPolyDataInfoAlloc";
+polyDataInfoAlloc(limnPolyData *pld, unsigned int infoBitFlag, unsigned int vertNum) {
+  static const char me[] = "polyDataInfoAlloc";
 
   if (vertNum != pld->rgbaNum && ((1 << limnPolyDataInfoRGBA) & infoBitFlag)) {
     pld->rgba = (unsigned char *)airFree(pld->rgba);
@@ -167,7 +166,7 @@ limnPolyDataAlloc(limnPolyData *pld,
     }
     pld->xyzwNum = vertNum;
   }
-  if (_limnPolyDataInfoAlloc(pld, infoBitFlag, vertNum)) {
+  if (polyDataInfoAlloc(pld, infoBitFlag, vertNum)) {
     biffAddf(LIMN, "%s: couldn't allocate info", me);
     return 1;
   }
@@ -398,8 +397,8 @@ limnPolyDataPolygonNumber(const limnPolyData *pld) {
 }
 
 static int /* Biff: 1 */
-limnPolyDataVertexNormals_(limnPolyData *pld, int nonorient) {
-  static const char me[] = "limnPolyDataVertexNormals_";
+lpdVertexNormals(limnPolyData *pld, int nonorient) {
+  static const char me[] = "lpdVertexNormals";
   unsigned int infoBitFlag, primIdx, triIdx, normIdx, baseVertIdx;
   double len, *matrix = NULL;
   airArray *mop;
@@ -524,13 +523,13 @@ limnPolyDataVertexNormals_(limnPolyData *pld, int nonorient) {
 
 int /* Biff: nope */
 limnPolyDataVertexNormals(limnPolyData *pld) {
-  return limnPolyDataVertexNormals_(pld, 0);
+  return lpdVertexNormals(pld, 0);
 }
 
 /* counterpart for non-orientable surfaces */
 int /* Biff: nope */
 limnPolyDataVertexNormalsNO(limnPolyData *pld) {
-  return limnPolyDataVertexNormals_(pld, 1);
+  return lpdVertexNormals(pld, 1);
 }
 
 unsigned int /* Biff: nope */

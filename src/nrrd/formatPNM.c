@@ -26,20 +26,20 @@
 #define MAGIC_P2 "P2"
 
 static int
-_nrrdFormatPNM_available(void) {
+formatPNM_available(void) {
 
   return AIR_TRUE;
 }
 
 static int
-_nrrdFormatPNM_nameLooksLike(const char *filename) {
+formatPNM_nameLooksLike(const char *filename) {
 
   return (airEndsWith(filename, NRRD_EXT_PGM) || airEndsWith(filename, NRRD_EXT_PPM));
 }
 
 static int /* Biff: maybe:3:AIR_FALSE */
-_nrrdFormatPNM_fitsInto(const Nrrd *nrrd, const NrrdEncoding *encoding, int useBiff) {
-  static const char me[] = "_nrrdFormatPNM_fitsInto";
+formatPNM_fitsInto(const Nrrd *nrrd, const NrrdEncoding *encoding, int useBiff) {
+  static const char me[] = "formatPNM_fitsInto";
   int ret;
 
   if (!(nrrd && encoding)) {
@@ -82,21 +82,21 @@ _nrrdFormatPNM_fitsInto(const Nrrd *nrrd, const NrrdEncoding *encoding, int useB
 }
 
 static int
-_nrrdFormatPNM_contentStartsLike(NrrdIoState *nio) {
+formatPNM_contentStartsLike(NrrdIoState *nio) {
 
   return (!strcmp(MAGIC_P6, nio->line) || !strcmp(MAGIC_P5, nio->line)
           || !strcmp(MAGIC_P3, nio->line) || !strcmp(MAGIC_P2, nio->line));
 }
 
 static int /* Biff: 1 */
-_nrrdFormatPNM_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
-  static const char me[] = "_nrrdFormatPNM_read";
+formatPNM_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
+  static const char me[] = "formatPNM_read";
   const char *fs;
   char *perr;
   int color, got, want, ret, val[5], sx, sy, max, magic;
   size_t ii, llen;
 
-  if (!_nrrdFormatPNM_contentStartsLike(nio)) {
+  if (!formatPNM_contentStartsLike(nio)) {
     biffAddf(NRRD, "%s: this doesn't look like a %s file", me, nrrdFormatPNM->name);
     return 1;
   }
@@ -162,8 +162,8 @@ _nrrdFormatPNM_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
       }
       /* else this PNM comment is trying to tell us something */
       nio->pos = AIR_INT(strlen(NRRD_PNM_COMMENT));
-      nio->pos += AIR_INT(strspn(nio->line + nio->pos, _nrrdFieldSep));
-      ret = _nrrdReadNrrdParseField(nio, AIR_FALSE);
+      nio->pos += AIR_INT(strspn(nio->line + nio->pos, nrrd__FieldSep));
+      ret = nrrd__ReadNrrdParseField(nio, AIR_FALSE);
       if (!ret) {
         if (nio && nio->verbose >= 1) {
           fprintf(stderr, "(%s: unparsable field \"%s\" --> plain comment)\n", me,
@@ -176,7 +176,7 @@ _nrrdFormatPNM_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
         goto plain;
       }
       fs = airEnumStr(nrrdField, ret);
-      if (!_nrrdFieldValidInImage[ret]) {
+      if (!nrrd__FieldValidInImage[ret]) {
         if (nio && nio->verbose >= 1) {
           fprintf(stderr,
                   "(%s: field \"%s\" (not allowed in PNM) "
@@ -253,7 +253,7 @@ _nrrdFormatPNM_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
     nrrdAxisInfoSet_va(nrrd, nrrdAxisInfoSize, AIR_SIZE_T(sx), AIR_SIZE_T(sy));
   }
   if (!nio->skipData) {
-    if (_nrrdCalloc(nrrd, nio)) {
+    if (nrrd__Calloc(nrrd, nio)) {
       biffAddf(NRRD, "%s: couldn't allocate memory for data", me);
       return 1;
     }
@@ -269,8 +269,8 @@ _nrrdFormatPNM_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
 }
 
 static int /* Biff: 1 */
-_nrrdFormatPNM_write(FILE *file, const Nrrd *_nrrd, NrrdIoState *nio) {
-  static const char me[] = "_nrrdFormatPNM_write";
+formatPNM_write(FILE *file, const Nrrd *nrrd__, NrrdIoState *nio) {
+  static const char me[] = "formatPNM_write";
   int color, sx, sy, magic, fi;
   unsigned int ci;
   Nrrd *nrrd;
@@ -278,7 +278,7 @@ _nrrdFormatPNM_write(FILE *file, const Nrrd *_nrrd, NrrdIoState *nio) {
 
   mop = airMopNew();
   airMopAdd(mop, nrrd = nrrdNew(), nrrdNuke_mop, airMopAlways);
-  if (nrrdCopy(nrrd, _nrrd)) {
+  if (nrrdCopy(nrrd, nrrd__)) {
     biffAddf(NRRD, "%s: couldn't make private copy", me);
     airMopError(mop);
     return 1;
@@ -304,10 +304,10 @@ _nrrdFormatPNM_write(FILE *file, const Nrrd *_nrrd, NrrdIoState *nio) {
   fprintf(file, "P%d\n", magic);
   fprintf(file, "%d %d\n", sx, sy);
   for (fi = nrrdField_unknown + 1; fi < nrrdField_last; fi++) {
-    if (_nrrdFieldValidInImage[fi] && _nrrdFieldInteresting(nrrd, nio, fi)) {
+    if (nrrd__FieldValidInImage[fi] && nrrd__FieldInteresting(nrrd, nio, fi)) {
       /* dropAxis0 is always AIR_FALSE because of code
          above to delete a stub axis 0 */
-      _nrrdFprintFieldInfo(file, NRRD_PNM_COMMENT, nrrd, nio, fi, AIR_FALSE);
+      nrrd__FprintFieldInfo(file, NRRD_PNM_COMMENT, nrrd, nio, fi, AIR_FALSE);
     }
   }
   for (ci = 0; ci < nrrd->cmtArr->len; ci++) {
@@ -327,14 +327,14 @@ _nrrdFormatPNM_write(FILE *file, const Nrrd *_nrrd, NrrdIoState *nio) {
   return 0;
 }
 
-const NrrdFormat _nrrdFormatPNM = {"PNM",
-                                   AIR_TRUE, /* isImage */
-                                   AIR_TRUE, /* readable */
-                                   _nrrdFormatPNM_available,
-                                   _nrrdFormatPNM_nameLooksLike,
-                                   _nrrdFormatPNM_fitsInto,
-                                   _nrrdFormatPNM_contentStartsLike,
-                                   _nrrdFormatPNM_read,
-                                   _nrrdFormatPNM_write};
+const NrrdFormat nrrd__FormatPNM = {"PNM",
+                                    AIR_TRUE, /* isImage */
+                                    AIR_TRUE, /* readable */
+                                    formatPNM_available,
+                                    formatPNM_nameLooksLike,
+                                    formatPNM_fitsInto,
+                                    formatPNM_contentStartsLike,
+                                    formatPNM_read,
+                                    formatPNM_write};
 
-const NrrdFormat *const nrrdFormatPNM = &_nrrdFormatPNM;
+const NrrdFormat *const nrrdFormatPNM = &nrrd__FormatPNM;

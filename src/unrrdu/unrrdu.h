@@ -132,7 +132,7 @@ enum {
 // flotsam.c
 UNRRDU_EXPORT const int unrrduPresent;
 UNRRDU_EXPORT const char *const unrrduBiffKey;
-UNRRDU_EXPORT int unrrdQuietQuitTest(const char *parseErrStr, const hestOpt *errOpt);
+UNRRDU_EXPORT int unrrduQuietQuitTest(const char *parseErrStr, const hestOpt *errOpt);
 // these globals are unu-specific
 UNRRDU_EXPORT int unrrduDefaultImplicitLutRmapRescale;
 UNRRDU_EXPORT const char *const unrrduEnvVarDefaultImplicitLutRmapRescale;

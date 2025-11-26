@@ -21,7 +21,7 @@
 #include "privateGage.h"
 
 void
-_gageSclIv3Print(FILE *file, gageContext *ctx, gagePerVolume *pvl) {
+gage__SclIv3Print(FILE *file, gageContext *ctx, gagePerVolume *pvl) {
   double *iv3;
   int i, fd;
 

@@ -99,7 +99,7 @@ enum {
 // flotsam.c
 extern const int unrrduPresent;
 extern const char *const unrrduBiffKey;
-extern int unrrdQuietQuitTest(const char *parseErrStr, const hestOpt *errOpt);
+extern int unrrduQuietQuitTest(const char *parseErrStr, const hestOpt *errOpt);
 // these globals are unu-specific
 extern int unrrduDefaultImplicitLutRmapRescale;
 extern const char *const unrrduEnvVarDefaultImplicitLutRmapRescale;

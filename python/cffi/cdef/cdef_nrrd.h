@@ -956,7 +956,7 @@ extern void nrrdDescribeMore(FILE *file, const Nrrd *nrrd, const char *pfx,
                                   const char *sepStr, unsigned int sepWidth);
 extern void nrrdDescribe(FILE *file, const Nrrd *nrrd);
 extern int nrrdCheck(const Nrrd *nrrd);
-extern int _nrrdCheck(const Nrrd *nrrd, int checkData, int useBiff);
+extern int nrrdCheckMore(const Nrrd *nrrd, int checkData, int useBiff);
 extern size_t nrrdElementSize(const Nrrd *nrrd);
 extern size_t nrrdElementNumber(const Nrrd *nrrd);
 extern int nrrdSanity(void);
@@ -1028,9 +1028,9 @@ extern const NrrdEncoding *const nrrdEncodingArray[NRRD_ENCODING_TYPE_MAX + 1];
 extern int (*const nrrdFieldInfoParse[NRRD_FIELD_MAX + 1])(FILE *file, Nrrd *nrrd,
                                                                 NrrdIoState *nio,
                                                                 int useBiff);
-extern unsigned int _nrrdDataFNNumber(NrrdIoState *nio);
+extern unsigned int nrrdIoDataFNNumber(NrrdIoState *nio);
 extern int nrrdContainsPercentThisAndMore(const char *str, char thss);
-extern int _nrrdDataFNCheck(NrrdIoState *nio, Nrrd *nrrd, int useBiff);
+extern int nrrdIoDataFNCheck(NrrdIoState *nio, Nrrd *nrrd, int useBiff);
 /* ---- BEGIN non-NrrdIO */
 extern int nrrdSpaceVectorParse(double dir[NRRD_SPACE_DIM_MAX], const char *str,
                                      unsigned int spaceDim, int useBiff);

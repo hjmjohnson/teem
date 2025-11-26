@@ -21,33 +21,33 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Replace a sub-region with a different nrrd"
-static const char *_unrrdu_insetInfoL
-  = (INFO ". This functions as the opposite of \"crop\".\n "
-          "* Uses nrrdInset");
+static const char *unu_insetInfoL = (INFO
+                                     ". This functions as the opposite of \"crop\".\n "
+                                     "* Uses nrrdInset");
 
 static int
-unrrdu_insetMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_insetMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   long int *minOff;
   uint minLen;
-  OPT_ADD_BOUND("min,minimum", 1, minOff, NULL,
-                "coordinates of where to locate sub-volume within "
-                "input nrrd.\n "
-                "\b\bo <int> gives 0-based index\n "
-                "\b\bo M, M+<int>, M-<int> give index relative "
-                "to the last sample on the axis (M == #samples-1).",
-                minLen);
+  MY_OPT_ADD_BOUND("min,minimum", 1, minOff, NULL,
+                   "coordinates of where to locate sub-volume within "
+                   "input nrrd.\n "
+                   "\b\bo <int> gives 0-based index\n "
+                   "\b\bo M, M+<int>, M-<int> give index relative "
+                   "to the last sample on the axis (M == #samples-1).",
+                   minLen);
   Nrrd *nsub = NULL;
   hestOptAdd_1_Other(&hopt, "s,subset", "nsub", &nsub, NULL,
                      "sub-region nrrd.  This the data to be inset in \"nin\"",
                      nrrdHestNrrdNoTTY);
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_insetInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_insetInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -77,10 +77,10 @@ unrrdu_insetMain(int argc, const char **argv, const char *me, const hestParm *hp
     return 1;
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(inset, INFO);
+MY_UNRRDU_CMD(inset, INFO);

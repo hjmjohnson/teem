@@ -21,7 +21,7 @@
 
 /* clang-format off */
 static const char *
-_limnSpaceStr[LIMN_SPACE_MAX+1] = {
+spaceStr[LIMN_SPACE_MAX+1] = {
   "(unknown space)",
   "world",
   "view",
@@ -30,21 +30,20 @@ _limnSpaceStr[LIMN_SPACE_MAX+1] = {
 };
 
 static const airEnum
-_limnSpace = {
+space_ae = {
   "limn space",
   LIMN_SPACE_MAX,
-  _limnSpaceStr, NULL,
+  spaceStr, NULL,
   NULL,
   NULL, NULL,
   AIR_FALSE
 };
-const airEnum *const
-limnSpace = &_limnSpace;
+const airEnum *const limnSpace = &space_ae;
 
 /* ------------------------------------------------------------ */
 
 static const char *
-_limnPolyDataInfoStr[LIMN_POLY_DATA_INFO_MAX+1] = {
+polyDataInfoStr[LIMN_POLY_DATA_INFO_MAX+1] = {
   "(unknown info)",
   "rgba",
   "norm",
@@ -53,21 +52,20 @@ _limnPolyDataInfoStr[LIMN_POLY_DATA_INFO_MAX+1] = {
 };
 
 static const airEnum
-_limnPolyDataInfo = {
+polyDataInfo_ae = {
   "limn polydata info",
   LIMN_POLY_DATA_INFO_MAX,
-  _limnPolyDataInfoStr, NULL,
+  polyDataInfoStr, NULL,
   NULL,
   NULL, NULL,
   AIR_FALSE
 };
-const airEnum *const
-limnPolyDataInfo = &_limnPolyDataInfo;
+const airEnum *const limnPolyDataInfo = &polyDataInfo_ae;
 
 /* ------------------------------------------------------------ */
 
 static const char *
-_limnCameraPathTrackStr[] = {
+cameraPathTrackStr[] = {
   "(unknown limnCameraPathTrack)",
   "from",
   "at",
@@ -75,7 +73,7 @@ _limnCameraPathTrackStr[] = {
 };
 
 static const char *
-_limnCameraPathTrackDesc[] = {
+cameraPathTrackDesc[] = {
   "unknown limnCameraPathTrack",
   "track through eye points, quaternions for camera orientation",
   "track through look-at points, quaternions for camera orientation",
@@ -83,7 +81,7 @@ _limnCameraPathTrackDesc[] = {
 };
 
 static const char *
-_limnCameraPathTrackStrEqv[] = {
+cameraPathTrackStrEqv[] = {
   "from", "fr",
   "at", "look-at", "lookat",
   "both",
@@ -91,28 +89,27 @@ _limnCameraPathTrackStrEqv[] = {
 };
 
 static const int
-_limnCameraPathTrackValEqv[] = {
+cameraPathTrackValEqv[] = {
   limnCameraPathTrackFrom, limnCameraPathTrackFrom,
   limnCameraPathTrackAt, limnCameraPathTrackAt, limnCameraPathTrackAt,
   limnCameraPathTrackBoth
 };
 
 static const airEnum
-_limnCameraPathTrack = {
+cameraPathTrack_ae = {
   "limnCameraPathTrack",
   LIMN_CAMERA_PATH_TRACK_MAX,
-  _limnCameraPathTrackStr, NULL,
-  _limnCameraPathTrackDesc,
-  _limnCameraPathTrackStrEqv, _limnCameraPathTrackValEqv,
+  cameraPathTrackStr, NULL,
+  cameraPathTrackDesc,
+  cameraPathTrackStrEqv, cameraPathTrackValEqv,
   AIR_FALSE
 };
-const airEnum *const
-limnCameraPathTrack = &_limnCameraPathTrack;
+const airEnum *const limnCameraPathTrack = &cameraPathTrack_ae;
 
 /* ------------------------------------------------------------ */
 
 static const char *
-_limnPrimitiveStr[] = {
+primitiveStr[] = {
   "(unknown limnPrimitive)",
   "noop",
   "triangles",
@@ -124,7 +121,7 @@ _limnPrimitiveStr[] = {
 };
 
 static const char *
-_limnPrimitiveDesc[] = {
+primitiveDesc[] = {
   "unknown limnPrimitive",
   "no-op",
   "triangle soup",
@@ -136,7 +133,7 @@ _limnPrimitiveDesc[] = {
 };
 
 static const char *
-_limnPrimitiveStrEqv[] = {
+primitiveStrEqv[] = {
   "noop",
   "triangles",
   "tristrip",
@@ -148,7 +145,7 @@ _limnPrimitiveStrEqv[] = {
 };
 
 static const int
-_limnPrimitiveValEqv[] = {
+primitiveValEqv[] = {
   limnPrimitiveNoop,
   limnPrimitiveTriangles,
   limnPrimitiveTriangleStrip,
@@ -159,14 +156,13 @@ _limnPrimitiveValEqv[] = {
 };
 
 static const airEnum
-_limnPrimitive = {
+primitive_ae = {
   "limnPrimitive",
   LIMN_PRIMITIVE_MAX,
-  _limnPrimitiveStr, NULL,
-  _limnPrimitiveDesc,
-  _limnPrimitiveStrEqv, _limnPrimitiveValEqv,
+  primitiveStr, NULL,
+  primitiveDesc,
+  primitiveStrEqv, primitiveValEqv,
   AIR_FALSE
 };
-const airEnum *const
-limnPrimitive = &_limnPrimitive;
+const airEnum *const limnPrimitive = &primitive_ae;
 /* clang-format on */

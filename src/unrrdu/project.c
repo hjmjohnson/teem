@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Collapse scanlines to scalars along some axis"
-static const char *_unrrdu_projectInfoL
+static const char *unu_projectInfoL
   = (INFO ". The scanline is reduced to a single scalar by "
           "\"measuring\" all the values in the scanline "
           "with some measure.  The output nrrd has dimension "
@@ -36,7 +36,7 @@ static const char *_unrrdu_projectInfoL
           "* Uses nrrdProject, and nrrdJoin if multiple measures");
 
 static int
-unrrdu_projectMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_projectMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   uint *axis, axisLen;
   hestOptAdd_Nv_UInt(&hopt, "a,axis", "axis", 1, -1, &axis, NULL,
@@ -55,7 +55,7 @@ unrrdu_projectMain(int argc, const char **argv, const char *me, const hestParm *
                      "the output type is determined auto-magically",
                      &unrrduHestMaybeTypeCB);
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char **out;
   uint outLen;
   hestOptAdd_Nv_String(&hopt, "o,output", "nout", 1, -1, &out, "-",
@@ -64,7 +64,7 @@ unrrdu_projectMain(int argc, const char **argv, const char *me, const hestParm *
                        &outLen);
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_projectInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_projectInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -119,11 +119,11 @@ unrrdu_projectMain(int argc, const char **argv, const char *me, const hestParm *
         return 1;
       }
     }
-    SAVE(out[outIdx], nout, NULL);
+    MY_SAVE(out[outIdx], nout, NULL);
   }
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(project, INFO);
+MY_UNRRDU_CMD(project, INFO);

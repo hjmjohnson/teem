@@ -24,7 +24,7 @@
 static const char *myinfo = (INFO ", and then sorts primitive according to area.");
 
 static int
-limnPu_ccfindMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+lpu_ccfindMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   limnPolyData *pld;
   hestOptAdd_1_Other(&hopt, NULL, "input", &pld, NULL, "input polydata filename",
@@ -53,4 +53,4 @@ limnPu_ccfindMain(int argc, const char **argv, const char *me, const hestParm *h
   return 0;
 }
 
-const unrrduCmd limnPu_ccfindCmd = {"ccfind", INFO, limnPu_ccfindMain, AIR_FALSE};
+const unrrduCmd limnPu_ccfindCmd = {"ccfind", INFO, lpu_ccfindMain, AIR_FALSE};

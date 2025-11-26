@@ -21,12 +21,12 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Draws ASCII-art box plots"
-static const char *_unrrdu_aabplotInfoL
+static const char *unu_aabplotInfoL
   = (INFO ".  Because why not.\n "
           "* (uses nrrd, but no Nrrd function has this functionality)");
 
 static int
-unrrdu_aabplotMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_aabplotMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   uint plen;
   hestOptAdd_1_UInt(&hopt, "l", "len", &plen, "78", "number of characters in box plot");
@@ -38,7 +38,7 @@ unrrdu_aabplotMain(int argc, const char **argv, const char *me, const hestParm *
   hestOptAdd_1_Bool(&hopt, "rs", "show", &rshow, "false", "show range above plots");
   hestOptAdd_1_Bool(&hopt, "ms", "show", &medshow, "false", "print the median value");
   Nrrd *_nin;
-  OPT_ADD_NIN(_nin, "input nrrd");
+  MY_OPT_ADD_NIN(_nin, "input nrrd");
   Nrrd *_nsingle;
   hestOptAdd_1_Other(&hopt, "s", "single", &_nsingle, "",
                      "if given a 1D nrrd here that matches the number of "
@@ -47,7 +47,7 @@ unrrdu_aabplotMain(int argc, const char **argv, const char *me, const hestParm *
                      nrrdHestNrrdNoTTY);
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_aabplotInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_aabplotInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -191,4 +191,4 @@ unrrdu_aabplotMain(int argc, const char **argv, const char *me, const hestParm *
   return 0;
 }
 
-UNRRDU_CMD_HIDE(aabplot, INFO);
+MY_UNRRDU_CMD_HIDE(aabplot, INFO);

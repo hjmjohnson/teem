@@ -125,7 +125,7 @@ miteThreadBegin(miteThread **mttP, miteRender *mrr, miteUser *muu, int whichThre
   (*mttP)->samples = 0;
   (*mttP)->verbose = 0;
   (*mttP)->skip = 0;
-  (*mttP)->_normal = _miteAnswerPointer(*mttP, mrr->normalSpec);
+  (*mttP)->_normal = mite__AnswerPointer(*mttP, mrr->normalSpec);
 
   /* set up shading answers */
   switch (mrr->shadeSpec->method) {
@@ -133,13 +133,13 @@ miteThreadBegin(miteThread **mttP, miteRender *mrr, miteUser *muu, int whichThre
     /* nothing to do */
     break;
   case miteShadeMethodPhong:
-    (*mttP)->shadeVec0 = _miteAnswerPointer(*mttP, mrr->shadeSpec->vec0);
+    (*mttP)->shadeVec0 = mite__AnswerPointer(*mttP, mrr->shadeSpec->vec0);
     break;
   case miteShadeMethodLitTen:
-    (*mttP)->shadeVec0 = _miteAnswerPointer(*mttP, mrr->shadeSpec->vec0);
-    (*mttP)->shadeVec1 = _miteAnswerPointer(*mttP, mrr->shadeSpec->vec1);
-    (*mttP)->shadeScl0 = _miteAnswerPointer(*mttP, mrr->shadeSpec->scl0);
-    (*mttP)->shadeScl1 = _miteAnswerPointer(*mttP, mrr->shadeSpec->scl1);
+    (*mttP)->shadeVec0 = mite__AnswerPointer(*mttP, mrr->shadeSpec->vec0);
+    (*mttP)->shadeVec1 = mite__AnswerPointer(*mttP, mrr->shadeSpec->vec1);
+    (*mttP)->shadeScl0 = mite__AnswerPointer(*mttP, mrr->shadeSpec->scl0);
+    (*mttP)->shadeScl1 = mite__AnswerPointer(*mttP, mrr->shadeSpec->scl1);
     break;
   default:
     biffAddf(MITE, "%s: shade method %d not implemented!", me, mrr->shadeSpec->method);
@@ -147,7 +147,7 @@ miteThreadBegin(miteThread **mttP, miteRender *mrr, miteUser *muu, int whichThre
     break;
   }
 
-  if (_miteStageSet(*mttP, mrr)) {
+  if (mite__StageSet(*mttP, mrr)) {
     biffAddf(MITE, "%s: trouble setting up stage array", me);
     return 1;
   }

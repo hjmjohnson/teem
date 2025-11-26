@@ -21,13 +21,13 @@
 #include "privateTen.h"
 
 #define INFO "Create DT volume from confidence and eigensystem"
-static const char *_tend_makeInfoL
+static const char *makeInfoL
   = (INFO ".  The input is in the form of three nrrds, one for confidence "
           "values (3D), one for eigenvalues (4D, three evals per voxel), and "
           "one for eigenvectors (4D, nine evec components per voxel).");
 
 static int
-tend_makeMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+makeMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -42,7 +42,7 @@ tend_makeMain(int argc, const char **argv, const char *me, const hestParm *hparm
 
   mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_JUSTPARSE(_tend_makeInfoL);
+  USAGE_JUSTPARSE(makeInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
@@ -64,4 +64,4 @@ tend_makeMain(int argc, const char **argv, const char *me, const hestParm *hparm
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(make, INFO);
+MY_TEND_CMD(make, INFO);

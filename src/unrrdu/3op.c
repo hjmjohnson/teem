@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Ternary operation on three nrrds or constants"
-static const char *_unrrdu_3opInfoL
+static const char *unu_3opInfoL
   = (INFO ". Can have one, two, or three nrrds, but not zero. "
           "Use \"-\" for an operand to signify "
           "a nrrd to be read from stdin (a pipe).  Note, however, "
@@ -29,7 +29,7 @@ static const char *_unrrdu_3opInfoL
           "* Uses nrrdArithIterTernaryOp or (with -w) nrrdArithIterTernaryOpSelect");
 
 static int
-unrrdu_3opMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_3opMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   int op;
   hestOptAdd_1_Enum(&hopt, NULL, "operator", &op, NULL,
@@ -82,10 +82,10 @@ unrrdu_3opMain(int argc, const char **argv, const char *me, const hestParm *hpar
                    "shape of the output nrrd. By default (not using this option), "
                    "the first non-constant argument is used. ");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_3opInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_3opInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -135,10 +135,10 @@ unrrdu_3opMain(int argc, const char **argv, const char *me, const hestParm *hpar
     return 1;
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(3op, INFO);
+MY_UNRRDU_CMD(3op, INFO);

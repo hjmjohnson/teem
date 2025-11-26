@@ -21,7 +21,7 @@
 #include "privateTen.h"
 
 #define INFO "Register diffusion-weighted echo-planar images"
-static const char *_tend_epiregInfoL
+static const char *epiregInfoL
   = (INFO ". This registration corrects the shear, scale, and translate along "
           "the phase encoding direction (assumed to be the Y (second) axis of "
           "the image) caused by eddy currents from the diffusion-encoding "
@@ -33,7 +33,7 @@ static const char *_tend_epiregInfoL
           "chosen kernel, with the separate DWIs stacked along axis 0.");
 
 static int
-tend_epiregMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+epiregMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
 
   Nrrd **nin;
@@ -112,7 +112,7 @@ tend_epiregMain(int argc, const char **argv, const char *me, const hestParm *hpa
   char *perr;
   airArray *mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_JUSTPARSE(_tend_epiregInfoL);
+  USAGE_JUSTPARSE(epiregInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
   char *err;
   Nrrd *ngrad;
@@ -207,4 +207,4 @@ tend_epiregMain(int argc, const char **argv, const char *me, const hestParm *hpa
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(epireg, INFO);
+MY_TEND_CMD(epireg, INFO);

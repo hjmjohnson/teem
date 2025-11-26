@@ -21,15 +21,15 @@
 #include "privateNrrd.h"
 
 static int
-_nrrdEncodingZRL_available(void) {
+encodingZRL_available(void) {
 
   return AIR_TRUE;
 }
 
 static int /* Biff: 1 */
-_nrrdEncodingZRL_read(FILE *file, void *data, size_t elementNum, Nrrd *nrrd,
-                      NrrdIoState *nio) {
-  static const char me[] = "_nrrdEncodingZRL_read";
+encodingZRL_read(FILE *file, void *data, size_t elementNum, Nrrd *nrrd,
+                 NrrdIoState *nio) {
+  static const char me[] = "encodingZRL_read";
   /* assume output buffer has been initialized to all zeros */
   unsigned char *output_buffer = (unsigned char *)data;
   size_t toread = elementNum * nrrdElementSize(nrrd);
@@ -68,9 +68,9 @@ _nrrdEncodingZRL_read(FILE *file, void *data, size_t elementNum, Nrrd *nrrd,
 }
 
 static int /* Biff: 0 */
-_nrrdEncodingZRL_write(FILE *file, const void *data, size_t elementNum, const Nrrd *nrrd,
-                       NrrdIoState *nio) {
-  static const char me[] = "_nrrdEncodingZRL_write";
+encodingZRL_write(FILE *file, const void *data, size_t elementNum, const Nrrd *nrrd,
+                  NrrdIoState *nio) {
+  static const char me[] = "encodingZRL_write";
 
   AIR_UNUSED(file);
   AIR_UNUSED(data);
@@ -82,7 +82,7 @@ _nrrdEncodingZRL_write(FILE *file, const void *data, size_t elementNum, const Nr
   return 0;
 }
 
-const NrrdEncoding _nrrdEncodingZRL
+const NrrdEncoding nrrd__EncodingZRL
   = {"zrl",     /* name */
      "zrl",     /* suffix */
      AIR_TRUE,  /* endianMatters */
@@ -97,8 +97,8 @@ const NrrdEncoding _nrrdEncodingZRL
                    certainly *outside* the compression.  Thus we claim
                    ignorance about how ZRL is a compression, so that byte
                    skipping can be used. */
-     _nrrdEncodingZRL_available,
-     _nrrdEncodingZRL_read,
-     _nrrdEncodingZRL_write};
+     encodingZRL_available,
+     encodingZRL_read,
+     encodingZRL_write};
 
-const NrrdEncoding *const nrrdEncodingZRL = &_nrrdEncodingZRL;
+const NrrdEncoding *const nrrdEncodingZRL = &nrrd__EncodingZRL;

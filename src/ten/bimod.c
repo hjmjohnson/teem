@@ -56,8 +56,8 @@ tenEMBimodalParmNix(tenEMBimodalParm *biparm) {
 AIR_MOPPER(tenEMBimodalParmNix)
 
 static int /* Biff: 1 */
-_tenEMBimodalInit(tenEMBimodalParm *biparm, const Nrrd *_nhisto) {
-  static const char me[] = "_tenEMBimodalInit";
+EMBimodalInit(tenEMBimodalParm *biparm, const Nrrd *_nhisto) {
+  static const char me[] = "EMBimodalInit";
   unsigned int i, median;
   Nrrd *nhisto;
   double medianD, sum;
@@ -160,7 +160,7 @@ _tenEMBimodalBoost(double *pp1P, double *pp2P, double b) {
 ** material 1 and 2, stored in pp1 and pp2
 */
 static void
-_tenEMBimodalPP(tenEMBimodalParm *biparm) {
+EMBimodalPP(tenEMBimodalParm *biparm) {
   unsigned int i;
   double g1, g2, pp1, pp2, f1, min;
 
@@ -192,7 +192,7 @@ _tenEMBimodalPP(tenEMBimodalParm *biparm) {
 }
 
 static double
-_tenEMBimodalNewFraction1(tenEMBimodalParm *biparm) {
+EMBimodalNewFraction1(tenEMBimodalParm *biparm) {
   unsigned int i;
   double pp1, pp2, h, sum1, sum2;
 
@@ -208,7 +208,7 @@ _tenEMBimodalNewFraction1(tenEMBimodalParm *biparm) {
 }
 
 static void
-_tenEMBimodalNewMean(double *m1P, double *m2P, tenEMBimodalParm *biparm) {
+EMBimodalNewMean(double *m1P, double *m2P, tenEMBimodalParm *biparm) {
   unsigned int i;
   double pp1, pp2, h, sum1, isum1, sum2, isum2;
 
@@ -227,8 +227,8 @@ _tenEMBimodalNewMean(double *m1P, double *m2P, tenEMBimodalParm *biparm) {
 }
 
 static void
-_tenEMBimodalNewSigma(double *s1P, double *s2P, double m1, double m2,
-                      tenEMBimodalParm *biparm) {
+EMBimodalNewSigma(double *s1P, double *s2P, double m1, double m2,
+                  tenEMBimodalParm *biparm) {
   unsigned int i;
   double pp1, pp2, h, sum1, isum1, sum2, isum2;
 
@@ -247,7 +247,7 @@ _tenEMBimodalNewSigma(double *s1P, double *s2P, double m1, double m2,
 }
 
 static void
-_tenEMBimodalSaveImage(tenEMBimodalParm *biparm) {
+EMBimodalSaveImage(tenEMBimodalParm *biparm) {
   Nrrd *nh = nrrdNew();
   Nrrd *nm = nrrdNew();
   Nrrd *nhi = nrrdNew();
@@ -280,8 +280,8 @@ _tenEMBimodalSaveImage(tenEMBimodalParm *biparm) {
 }
 
 static int
-_tenEMBimodalIterate(tenEMBimodalParm *biparm) {
-  static const char me[] = "_tenEMBimodalIterate";
+EMBimodalIterate(tenEMBimodalParm *biparm) {
+  static const char me[] = "EMBimodalIterate";
   double om1, os1, om2, os2, of1, m1, s1, m2, s2, f1;
 
   /* copy old values */
@@ -292,12 +292,12 @@ _tenEMBimodalIterate(tenEMBimodalParm *biparm) {
   os2 = biparm->stdv2;
 
   /* find new values, and calculate delta */
-  _tenEMBimodalPP(biparm);
-  f1 = _tenEMBimodalNewFraction1(biparm);
+  EMBimodalPP(biparm);
+  f1 = EMBimodalNewFraction1(biparm);
   /*   if (1 == biparm->stage) { */
-  _tenEMBimodalNewMean(&m1, &m2, biparm);
+  EMBimodalNewMean(&m1, &m2, biparm);
   /*   } */
-  _tenEMBimodalNewSigma(&s1, &s2, m1, m2, biparm);
+  EMBimodalNewSigma(&s1, &s2, m1, m2, biparm);
 
   biparm->delta = ((fabs(m1 - om1) + fabs(m2 - om2) + fabs(s1 - os1) + fabs(s2 - os2))
                      / biparm->N
@@ -317,14 +317,14 @@ _tenEMBimodalIterate(tenEMBimodalParm *biparm) {
     fprintf(stderr, "  f1 = %g ; delta = %g\n", f1, biparm->delta);
   }
   if (biparm->verbose > 1) {
-    _tenEMBimodalSaveImage(biparm);
+    EMBimodalSaveImage(biparm);
   }
   return 0;
 }
 
 static int /* Biff: 1 */
-_tenEMBimodalConfThresh(tenEMBimodalParm *biparm) {
-  static const char me[] = "_tenEMBimodalConfThresh";
+EMBimodalConfThresh(tenEMBimodalParm *biparm) {
+  static const char me[] = "EMBimodalConfThresh";
   double m1, s1, m2, s2, f1, f2, A, B, C, D, t1, t2;
 
   biparm->confidence = ((biparm->mean2 - biparm->mean1)
@@ -368,8 +368,8 @@ _tenEMBimodalConfThresh(tenEMBimodalParm *biparm) {
 }
 
 static int /* Biff: 1 */
-_tenEMBimodalCheck(tenEMBimodalParm *biparm) {
-  static const char me[] = "_tenEMBimodalCheck";
+EMBimodalCheck(tenEMBimodalParm *biparm) {
+  static const char me[] = "EMBimodalCheck";
 
   if (!(biparm->confidence > biparm->minConfidence)) {
     biffAddf(TEN, "%s: confidence %g went below threshold %g", me, biparm->confidence,
@@ -416,7 +416,7 @@ tenEMBimodal(tenEMBimodalParm *biparm, const Nrrd *_nhisto) {
     return 1;
   }
 
-  if (_tenEMBimodalInit(biparm, _nhisto)) {
+  if (EMBimodalInit(biparm, _nhisto)) {
     biffAddf(TEN, "%s: trouble initializing parameters", me);
     return 1;
   }
@@ -426,8 +426,8 @@ tenEMBimodal(tenEMBimodalParm *biparm, const Nrrd *_nhisto) {
   for (biparm->stage = 1; biparm->stage <= (biparm->twoStage ? 2 : 1); biparm->stage++) {
     for (_iter = 0; biparm->iteration <= biparm->maxIteration;
          biparm->iteration++, _iter++) {
-      if (_tenEMBimodalIterate(biparm) /* sets delta */
-          || _tenEMBimodalConfThresh(biparm) || _tenEMBimodalCheck(biparm)) {
+      if (EMBimodalIterate(biparm) /* sets delta */
+          || EMBimodalConfThresh(biparm) || EMBimodalCheck(biparm)) {
         biffAddf(TEN, "%s: problem with fitting (iter=%u)", me, biparm->iteration);
         return 1;
       }

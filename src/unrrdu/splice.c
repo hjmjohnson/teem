@@ -21,15 +21,15 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Replace a slice with a different nrrd"
-static const char *_unrrdu_spliceInfoL
+static const char *unu_spliceInfoL
   = (INFO ". This is functionally the opposite of \"slice\".\n "
           "* Uses nrrdSplice");
 
 static int
-unrrdu_spliceMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_spliceMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   uint axis;
-  OPT_ADD_AXIS(axis, "axis to splice along");
+  MY_OPT_ADD_AXIS(axis, "axis to splice along");
   long int _pos[2];
   hestOptAdd_1_Other(&hopt, "p,position", "pos", _pos, NULL,
                      "position to splice at:\n "
@@ -42,13 +42,13 @@ unrrdu_spliceMain(int argc, const char **argv, const char *me, const hestParm *h
                      "slice nrrd.  This is the slice to insert into \"nin\"",
                      nrrdHestNrrdNoTTY);
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd.  This is the nrrd into which the slice is "
-                   "inserted");
+  MY_OPT_ADD_NIN(nin, "input nrrd.  This is the nrrd into which the slice is "
+                      "inserted");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_spliceInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_spliceInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -71,10 +71,10 @@ unrrdu_spliceMain(int argc, const char **argv, const char *me, const hestParm *h
     return 1;
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(splice, INFO);
+MY_UNRRDU_CMD(splice, INFO);

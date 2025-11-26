@@ -43,14 +43,14 @@ airEnumUnknown(const airEnum *enm) {
 }
 
 /*
-** _airEnumIndex()
+** enumIndex()
 **
 ** given an enum "enm" and value "val", return the index into enm->str[]
 ** and enm->desc[] which correspond to that value.  To be safe, when
 ** given an invalid enum value, we return zero.
 */
 static unsigned int
-_airEnumIndex(const airEnum *enm, int val) {
+enumIndex(const airEnum *enm, int val) {
   unsigned int ii, ret;
 
   ret = 0;
@@ -76,14 +76,14 @@ _airEnumIndex(const airEnum *enm, int val) {
 int
 airEnumValCheck(const airEnum *enm, int val) {
 
-  return (0 == _airEnumIndex(enm, val));
+  return (0 == enumIndex(enm, val));
 }
 
 const char *
 airEnumStr(const airEnum *enm, int val) {
   unsigned int idx;
 
-  idx = _airEnumIndex(enm, val);
+  idx = enumIndex(enm, val);
   return enm->str[idx];
 }
 
@@ -91,7 +91,7 @@ const char *
 airEnumDesc(const airEnum *enm, int val) {
   unsigned int idx;
 
-  idx = _airEnumIndex(enm, val);
+  idx = enumIndex(enm, val);
   return enm->desc[idx];
 }
 
@@ -186,7 +186,7 @@ airEnumFmtDesc(const airEnum *enm, int val, int canon, const char *fmt) {
   if (!enm->sense) {
     airToLower(ident);
   }
-  desc = enm->desc[_airEnumIndex(enm, val)];
+  desc = enm->desc[enumIndex(enm, val)];
   bsize = airStrlen(fmt) + airStrlen(ident) + airStrlen(desc) + 1;
   buff = AIR_CALLOC(bsize, char);
   if (buff) {
@@ -197,7 +197,7 @@ airEnumFmtDesc(const airEnum *enm, int val, int canon, const char *fmt) {
 }
 
 static void
-_enumPrintVal(FILE *file, const airEnum *enm, int ii) {
+enumPrintVal(FILE *file, const airEnum *enm, int ii) {
 
   if (enm->desc) {
     fprintf(file, "desc: %s\n", enm->desc[ii]);
@@ -239,7 +239,7 @@ airEnumPrint(FILE *file, const airEnum *enm) {
     for (ii = 1; ii <= AIR_INT(enm->M); ii++) {
       fprintf(file, "--- (%d) %d: \"%s\" == \"%s\"\n", ii, enm->val[ii], enm->str[ii],
               airEnumStr(enm, enm->val[ii]));
-      _enumPrintVal(file, enm, ii);
+      enumPrintVal(file, enm, ii);
     }
   } else {
     /* enm->val NULL */
@@ -247,7 +247,7 @@ airEnumPrint(FILE *file, const airEnum *enm) {
     fprintf(file, "--- 0: \"%s\"\n", enm->str[0]);
     for (ii = 1; ii <= AIR_INT(enm->M); ii++) {
       fprintf(file, "--- %d: %s == %s\n", ii, enm->str[ii], airEnumStr(enm, ii));
-      _enumPrintVal(file, enm, ii);
+      enumPrintVal(file, enm, ii);
     }
   }
   return;

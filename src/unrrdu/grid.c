@@ -124,7 +124,7 @@ gridGen(Nrrd *nout, int typeOut, const Nrrd *nin, int psz, int psg) {
 }
 
 #define INFO "Describe image sample locations"
-static const char *_unrrdu_gridInfoL
+static const char *unu_gridInfoL
   = (INFO ". For a N-D grid, the output is (by default) "
           "a 2-D M-by-S array of grid sample "
           "locations, where M is the space dimension of the oriented grid, and S "
@@ -139,7 +139,7 @@ static const char *_unrrdu_gridInfoL
           "* (not based on any particular nrrd function)");
 
 static int
-unrrdu_gridMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+unu_gridMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
   /* we parse filename, not Nrrd since we always want to skipData */
   char *inS;
@@ -155,14 +155,14 @@ unrrdu_gridMain(int argc, const char **argv, const char *me, const hestParm *_hp
                   "(overrides -ps) generate a 2D array that represents "
                   "the sampling grid in the way that \"gprobe -pg\" understands");
   int typeOut;
-  OPT_ADD_TYPE(typeOut, "type of output", "double");
+  MY_OPT_ADD_TYPE(typeOut, "type of output", "double");
   char *outS;
-  OPT_ADD_NOUT(outS, "output nrrd");
+  MY_OPT_ADD_NOUT(outS, "output nrrd");
 
   // (boilerplate for YES some hparm modification)
   hestParm *hparm = hestParmCopy(_hparm);
   hparm->noArgsIsNoProblem = AIR_TRUE; // thanks to nrrdHestNrrdNoTTY
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_gridInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_gridInfoL);
   airArray *mop = unrrduMopNew(hopt, hparm);
   char *err;
 
@@ -196,10 +196,10 @@ unrrdu_gridMain(int argc, const char **argv, const char *me, const hestParm *_hp
     return 1;
   }
 
-  SAVE(outS, nout, NULL);
+  MY_SAVE(outS, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(grid, INFO);
+MY_UNRRDU_CMD(grid, INFO);

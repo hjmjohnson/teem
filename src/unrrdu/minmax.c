@@ -21,15 +21,14 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Print out min and max values in one or more nrrds"
-static const char *_unrrdu_minmaxInfoL
+static const char *unu_minmaxInfoL
   = (INFO ". Unlike other commands, this doesn't produce a nrrd.  It only "
           "prints to standard out the min and max values found in the input nrrd(s), "
           "and it also indicates if there are non-existent values.\n "
           "* Uses nrrdRangeNewSet");
 
 static int /* Biff: 1 */
-unrrdu_minmaxDoit(const char *me, char *inS, int blind8BitRange, int singleLine,
-                  FILE *fout) {
+minmaxDoit(const char *me, char *inS, int blind8BitRange, int singleLine, FILE *fout) {
   if (!strcmp("-", inS) && isatty(STDIN_FILENO)) {
     biffAddf(me, "declining to try reading Nrrd from stdin as tty (terminal)");
     return 1;
@@ -76,7 +75,7 @@ unrrdu_minmaxDoit(const char *me, char *inS, int blind8BitRange, int singleLine,
 }
 
 static int
-unrrdu_minmaxMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+unu_minmaxMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
 #define B8DEF "false"
   int blind8BitRange;
@@ -106,7 +105,7 @@ unrrdu_minmaxMain(int argc, const char **argv, const char *me, const hestParm *_
   // (boilerplate for YES some hparm modification)
   hestParm *hparm = hestParmCopy(_hparm);
   hparm->noArgsIsNoProblem = AIR_TRUE; // thanks to nrrdHestNrrdNoTTY
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_minmaxInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_minmaxInfoL);
   airArray *mop = unrrduMopNew(hopt, hparm);
   char *err;
 
@@ -120,7 +119,7 @@ unrrdu_minmaxMain(int argc, const char **argv, const char *me, const hestParm *_
         fprintf(stdout, "==> %s <==\n", inS[ni]);
       }
     }
-    if (unrrdu_minmaxDoit(me, inS[ni], blind8BitRange, singleLine, stdout)) {
+    if (minmaxDoit(me, inS[ni], blind8BitRange, singleLine, stdout)) {
       airMopAdd(mop, err = biffGetDone(me), airFree, airMopAlways);
       fprintf(stderr, "%s: trouble with \"%s\":\n%s", me, inS[ni], err);
       /* continue working on the remaining files */
@@ -147,4 +146,4 @@ unrrdu_minmaxMain(int argc, const char **argv, const char *me, const hestParm *_
   return 0;
 }
 
-UNRRDU_CMD(minmax, INFO);
+MY_UNRRDU_CMD(minmax, INFO);

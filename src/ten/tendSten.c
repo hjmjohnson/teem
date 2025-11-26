@@ -21,11 +21,11 @@
 #include "privateTen.h"
 
 #define INFO "Calculate structure tensors from a scalar field"
-static const char *_tend_stenInfoL
+static const char *stenInfoL
   = (INFO ".  Not a diffusion tensor, but it is symmetric and positive-definate.");
 
 static int
-tend_stenMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+stenMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -50,7 +50,7 @@ tend_stenMain(int argc, const char **argv, const char *me, const hestParm *hparm
 
   mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_tend_stenInfoL);
+  USAGE_PARSE(stenInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
@@ -73,4 +73,4 @@ tend_stenMain(int argc, const char **argv, const char *me, const hestParm *hparm
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(sten, INFO);
+MY_TEND_CMD(sten, INFO);

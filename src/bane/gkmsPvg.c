@@ -22,7 +22,7 @@
 #include <assert.h>
 
 /* clang-format off */
-static const float _baneGkmsDonData[] = {
+static const float donData[] = {
       0 /* AIR_NEG_INF */ , 0, 0, 0,
       0 /* AIR_NAN */ , 0, 0, 0,
       0 /* AIR_POS_INF */ , 0, 0, 0,
@@ -55,8 +55,8 @@ static const float _baneGkmsDonData[] = {
 /* clang-format on */
 
 static Nrrd * /* Biff: NULL */
-_baneGkmsDonNew(int invert) {
-  static const char me[] = "_baneGkmsDonNew";
+gkmsDonNew(int invert) {
+  static const char me[] = "gkmsDonNew";
   Nrrd *ret;
   float *data;
 
@@ -66,7 +66,7 @@ _baneGkmsDonNew(int invert) {
     return NULL;
   }
   data = (float *)ret->data;
-  memcpy(data, _baneGkmsDonData, 4 * 23 * sizeof(float));
+  memcpy(data, donData, 4 * 23 * sizeof(float));
   data[0 + 4 * 0] = AIR_NEG_INF;
   data[0 + 4 * 1] = AIR_NAN;
   data[0 + 4 * 2] = AIR_POS_INF;
@@ -109,7 +109,7 @@ pvgMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   Nrrd *ndon, *nposA, *nposB, *npvg;
-  airMopAdd(mop, ndon = _baneGkmsDonNew(invert), nrrdNuke_mop, airMopAlways);
+  airMopAdd(mop, ndon = gkmsDonNew(invert), nrrdNuke_mop, airMopAlways);
   airMopAdd(mop, nposA = nrrdNew(), nrrdNuke_mop, airMopAlways);
   airMopAdd(mop, nposB = nrrdNew(), nrrdNuke_mop, airMopAlways);
   airMopAdd(mop, npvg = nrrdNew(), nrrdNuke_mop, airMopAlways);

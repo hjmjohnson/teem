@@ -1039,7 +1039,7 @@ NRRD_EXPORT void nrrdDescribeMore(FILE *file, const Nrrd *nrrd, const char *pfx,
                                   const char *sepStr, unsigned int sepWidth);
 NRRD_EXPORT void nrrdDescribe(FILE *file, const Nrrd *nrrd);
 NRRD_EXPORT int nrrdCheck(const Nrrd *nrrd);
-NRRD_EXPORT int _nrrdCheck(const Nrrd *nrrd, int checkData, int useBiff);
+NRRD_EXPORT int nrrdCheckMore(const Nrrd *nrrd, int checkData, int useBiff);
 NRRD_EXPORT size_t nrrdElementSize(const Nrrd *nrrd);
 NRRD_EXPORT size_t nrrdElementNumber(const Nrrd *nrrd);
 NRRD_EXPORT int nrrdSanity(void);
@@ -1117,9 +1117,9 @@ NRRD_EXPORT const NrrdEncoding *const nrrdEncodingArray[NRRD_ENCODING_TYPE_MAX +
 NRRD_EXPORT int (*const nrrdFieldInfoParse[NRRD_FIELD_MAX + 1])(FILE *file, Nrrd *nrrd,
                                                                 NrrdIoState *nio,
                                                                 int useBiff);
-NRRD_EXPORT unsigned int _nrrdDataFNNumber(NrrdIoState *nio);
+NRRD_EXPORT unsigned int nrrdIoDataFNNumber(NrrdIoState *nio);
 NRRD_EXPORT int nrrdContainsPercentThisAndMore(const char *str, char thss);
-NRRD_EXPORT int _nrrdDataFNCheck(NrrdIoState *nio, Nrrd *nrrd, int useBiff);
+NRRD_EXPORT int nrrdIoDataFNCheck(NrrdIoState *nio, Nrrd *nrrd, int useBiff);
 /* ---- BEGIN non-NrrdIO */
 NRRD_EXPORT int nrrdSpaceVectorParse(double dir[NRRD_SPACE_DIM_MAX], const char *str,
                                      unsigned int spaceDim, int useBiff);

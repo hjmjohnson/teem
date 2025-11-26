@@ -21,13 +21,13 @@
 #include "privateTen.h"
 
 #define INFO "Generate barycentric histograms of anisotropy"
-static const char *_tend_anhistInfoL
+static const char *anhistInfoL
   = (INFO ".  The barycentric space used is either one of Westin's "
           "triple of spherical, linear, and planar anisotropy.  The bin "
           "counts in the histogram are weighted by the confidence value.");
 
 static int
-tend_anhistMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+anhistMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -56,7 +56,7 @@ tend_anhistMain(int argc, const char **argv, const char *me, const hestParm *hpa
 
   mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_tend_anhistInfoL);
+  USAGE_PARSE(anhistInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
@@ -78,4 +78,4 @@ tend_anhistMain(int argc, const char **argv, const char *me, const hestParm *hpa
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(anhist, INFO);
+MY_TEND_CMD(anhist, INFO);

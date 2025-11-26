@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Create joint histogram of two or more nrrds"
-static const char *_unrrdu_jhistoInfoL
+static const char *unu_jhistoInfoL
   = (INFO ". Each axis of the output corresponds to one of the "
           "input nrrds, and each bin in the output records the "
           "number of corresponding positions in the inputs with "
@@ -30,7 +30,7 @@ static const char *_unrrdu_jhistoInfoL
           "* Uses nrrdHistoJoint");
 
 static int
-unrrdu_jhistoMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_jhistoMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   size_t *bin;
   uint binLen;
@@ -56,11 +56,11 @@ unrrdu_jhistoMain(int argc, const char **argv, const char *me, const hestParm *h
                        "axis i; use \"nan\" to represent highest value present ",
                        &maxLen);
   int type;
-  OPT_ADD_TYPE(type,
-               "type to use for output (the type used to store hit "
-               "counts in the joint histogram).  Clamping is done on hit "
-               "counts so that they never overflow a fixed-point type",
-               "uint");
+  MY_OPT_ADD_TYPE(type,
+                  "type to use for output (the type used to store hit "
+                  "counts in the joint histogram).  Clamping is done on hit "
+                  "counts so that they never overflow a fixed-point type",
+                  "uint");
   Nrrd **nin;
   uint ninLen;
   hestOptAdd_Nv_Other(&hopt, "i,input", "nin0 [nin1]", 1, -1, &nin, "-",
@@ -71,10 +71,10 @@ unrrdu_jhistoMain(int argc, const char **argv, const char *me, const hestParm *h
   hestOptAdd_1_UInt(&hopt, "a,axis", "axis", &diceax, "0",
                     "axis to slice along when working with single nrrd. ");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_jhistoInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_jhistoInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -176,10 +176,10 @@ unrrdu_jhistoMain(int argc, const char **argv, const char *me, const hestParm *h
     return 1;
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(jhisto, INFO);
+MY_UNRRDU_CMD(jhisto, INFO);

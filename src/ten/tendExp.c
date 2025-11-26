@@ -21,11 +21,10 @@
 #include "privateTen.h"
 
 #define INFO "Calculates exp() of the tensor"
-static const char *_tend_expInfoL = (INFO
-                                     ", which is based on exp() of the eigenvalues.");
+static const char *expInfoL = (INFO ", which is based on exp() of the eigenvalues.");
 
 static int
-tend_expMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+expMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -40,7 +39,7 @@ tend_expMain(int argc, const char **argv, const char *me, const hestParm *hparm)
 
   mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_tend_expInfoL);
+  USAGE_PARSE(expInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
@@ -61,4 +60,4 @@ tend_expMain(int argc, const char **argv, const char *me, const hestParm *hparm)
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(exp, INFO);
+MY_TEND_CMD(exp, INFO);

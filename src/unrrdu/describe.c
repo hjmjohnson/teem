@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Describe Nrrd struct created by reading file(s)"
-static const char *_unrrdu_describeInfoL
+static const char *unu_describeInfoL
   = (INFO ". This will actually nrrdLoad from the named file(s) (in NRRD or other "
           "format), which is useful for debugging the relationship between the "
           "file contents and the Nrrd struct created by reading it. In contrast, "
@@ -31,8 +31,8 @@ static const char *_unrrdu_describeInfoL
           "* Uses nrrdDescribeMore");
 
 static int /* Biff: 1 */
-unrrdu_describeDoit(const char *me, char *fname, int skipData, int showPtrs,
-                    int elideNonExist, const char *sepStr, unsigned int sepWidth) {
+describeDoit(const char *me, char *fname, int skipData, int showPtrs, int elideNonExist,
+             const char *sepStr, unsigned int sepWidth) {
   if (!strcmp("-", fname) && isatty(STDIN_FILENO)) {
     biffAddf(me, "declining to try reading Nrrd from stdin as tty (terminal)");
     return 1;
@@ -59,8 +59,7 @@ unrrdu_describeDoit(const char *me, char *fname, int skipData, int showPtrs,
 }
 
 static int
-unrrdu_describeMain(int argc, const char **argv, const char *me,
-                    const hestParm *_hparm) {
+unu_describeMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
   int skipData;
   hestOptAdd_Flag(&hopt,
@@ -90,7 +89,7 @@ unrrdu_describeMain(int argc, const char **argv, const char *me,
   // (boilerplate for YES some hparm modification)
   hestParm *hparm = hestParmCopy(_hparm);
   hparm->noArgsIsNoProblem = AIR_TRUE; // thanks to nrrdHestNrrdNoTTY
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_describeInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_describeInfoL);
   airArray *mop = unrrduMopNew(hopt, hparm);
   char *err;
 
@@ -100,8 +99,7 @@ unrrdu_describeMain(int argc, const char **argv, const char *me,
     if (inLen > 1) {
       fprintf(stdout, "==> %s <==\n", inS[ni]);
     }
-    if (unrrdu_describeDoit(me, inS[ni], skipData, showPtr, elideNonExist, sepStr,
-                            sepWidth)) {
+    if (describeDoit(me, inS[ni], skipData, showPtr, elideNonExist, sepStr, sepWidth)) {
       airMopAdd(mop, err = biffGetDone(me), airFree, airMopAlways);
       fprintf(stderr, "%s: trouble with \"%s\":\n%s", me, inS[ni], err);
       /* continue working on the remaining files */
@@ -126,4 +124,4 @@ unrrdu_describeMain(int argc, const char **argv, const char *me,
   return 0;
 }
 
-UNRRDU_CMD(describe, INFO);
+MY_UNRRDU_CMD(describe, INFO);

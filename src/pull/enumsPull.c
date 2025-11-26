@@ -24,28 +24,27 @@
 /* --------------------------------------------------------- */
 
 static const char *
-_pullSourceStr[] = {
+sourceStr[] = {
   "(unknown pullSource)",
   "gage",
   "prop"
 };
 
 static const airEnum
-_pullSource = {
+source_ae = {
   "pullSource",
   PULL_SOURCE_MAX,
-  _pullSourceStr, NULL,
+  sourceStr, NULL,
   NULL,
   NULL, NULL,
   AIR_FALSE
 };
-const airEnum *const
-pullSource = &_pullSource;
+const airEnum *const pullSource = &source_ae;
 
 /* --------------------------------------------------------- */
 
 static const char *
-_pullInfoStr[] = {
+infoStr[] = {
   "(unknown pullInfo)",
   "ten",
   "teni",
@@ -73,7 +72,7 @@ _pullInfoStr[] = {
 };
 
 static const int
-_pullInfoVal[] = {
+infoVal[] = {
   pullInfoUnknown,
   pullInfoTensor,             /* [7] tensor here */
   pullInfoTensorInverse,      /* [7] inverse of tensor here */
@@ -101,7 +100,7 @@ _pullInfoVal[] = {
 };
 
 static const char *
-_pullInfoStrEqv[] = {
+infoStrEqv[] = {
   "ten",
   "teni",
   "hess",
@@ -129,7 +128,7 @@ _pullInfoStrEqv[] = {
 };
 
 static const int
-_pullInfoValEqv[] = {
+infoValEqv[] = {
   pullInfoTensor,
   pullInfoTensorInverse,
   pullInfoHessian,
@@ -156,21 +155,20 @@ _pullInfoValEqv[] = {
 };
 
 static const airEnum
-_pullInfo = {
+info_ae = {
   "pullInfo",
   PULL_INFO_MAX,
-  _pullInfoStr, _pullInfoVal,
+  infoStr, infoVal,
   NULL,
-  _pullInfoStrEqv, _pullInfoValEqv,
+  infoStrEqv, infoValEqv,
   AIR_FALSE
 };
-const airEnum *const
-pullInfo = &_pullInfo;
+const airEnum *const pullInfo = &info_ae;
 
 /* --------------------------------------------------------- */
 
 static const char *
-_pullPropStr[] = {
+propStr[] = {
   "(unknown_prop)",
   "idtag",            /* pullPropIdtag */
   "idcc",             /* pullPropIdCC */
@@ -192,21 +190,20 @@ _pullPropStr[] = {
 };
 
 static const airEnum
-_pullProp = {
+prop_ae = {
   "pullProp",
   PULL_PROP_MAX,
-  _pullPropStr, NULL,
+  propStr, NULL,
   NULL,
   NULL, NULL,
   AIR_FALSE
 };
-const airEnum *const
-pullProp = &_pullProp;
+const airEnum *const pullProp = &prop_ae;
 
 /* --------------------------------------------------------- */
 
 static const char *
-_pullProcessModeStr[] = {
+processModeStr[] = {
   "(unknown_mode)",
   "descent",
   "nlearn",
@@ -215,20 +212,19 @@ _pullProcessModeStr[] = {
 };
 
 static const airEnum
-_pullProcessMode = {
+processMode_ae = {
   "process mode",
   PULL_PROCESS_MODE_MAX,
-  _pullProcessModeStr,  NULL,
+  processModeStr,  NULL,
   NULL, NULL, NULL,
   AIR_FALSE
 };
-const airEnum *const
-pullProcessMode = &_pullProcessMode;
+const airEnum *const pullProcessMode = &processMode_ae;
 
 /* --------------------------------------------------------- */
 
 static const char *
-_pullTraceStopStr[] = {
+traceStopStr[] = {
   "(unknown_trace_stop)",
   "speeding",
   "constrfail",
@@ -240,20 +236,19 @@ _pullTraceStopStr[] = {
 };
 
 static const airEnum
-_pullTraceStop = {
+traceStop_ae = {
   "trace stop",
   PULL_TRACE_STOP_MAX,
-  _pullTraceStopStr,  NULL,
+  traceStopStr,  NULL,
   NULL, NULL, NULL,
   AIR_FALSE
 };
-const airEnum *const
-pullTraceStop = &_pullTraceStop;
+const airEnum *const pullTraceStop = &traceStop_ae;
 
 /* --------------------------------------------------------- */
 
 static const char *
-_pullInitMethodStr[] = {
+initMethodStr[] = {
   "(unknown_init_method)",
   "random",
   "halton",
@@ -262,20 +257,19 @@ _pullInitMethodStr[] = {
 };
 
 static const airEnum
-_pullInitMethod = {
+initMethod_ae = {
   "init method",
   PULL_INIT_METHOD_MAX,
-  _pullInitMethodStr,  NULL,
+  initMethodStr,  NULL,
   NULL, NULL, NULL,
   AIR_FALSE
 };
-const airEnum *const
-pullInitMethod = &_pullInitMethod;
+const airEnum *const pullInitMethod = &initMethod_ae;
 
 /* --------------------------------------------------------- */
 
 static const char *
-_pullCountStr[] = {
+countStr[] = {
   "(unknown_countable)",
   "descent",
   "teststep",
@@ -294,20 +288,19 @@ _pullCountStr[] = {
 };
 
 static const airEnum
-_pullCount = {
+count_ae = {
   "countable",
   PULL_COUNT_MAX,
-  _pullCountStr,  NULL,
+  countStr,  NULL,
   NULL, NULL, NULL,
   AIR_FALSE
 };
-const airEnum *const
-pullCount = &_pullCount;
+const airEnum *const pullCount = &count_ae;
 
 /* --------------------------------------------------------- */
 
 static const char *
-_pullConstraintFailStr[PULL_CONSTRAINT_FAIL_MAX+1] = {
+constraintFailStr[PULL_CONSTRAINT_FAIL_MAX+1] = {
   "(unknown or no contraint fail)",
   "needed Hessian 0 (A)",
   "needed Hessian 0 (B)",
@@ -319,14 +312,13 @@ _pullConstraintFailStr[PULL_CONSTRAINT_FAIL_MAX+1] = {
 };
 
 static const airEnum
-_pullConstraintFail = {
+constraintFail_ae = {
   "constraint fail",
   PULL_CONSTRAINT_FAIL_MAX,
-  _pullConstraintFailStr, NULL,
+  constraintFailStr, NULL,
   NULL, NULL, NULL,
   AIR_FALSE
 };
-const airEnum *const
-pullConstraintFail = &_pullConstraintFail;
+const airEnum *const pullConstraintFail = &constraintFail_ae;
 
 /* clang-format on */

@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Map nrrd through one *regular* univariate map (\"colormap\")"
-static const char *_unrrdu_rmapInfoL
+static const char *unu_rmapInfoL
   = (INFO ". A map is regular if the control points are evenly "
           "spaced along the domain, and hence their position isn't "
           "explicitly represented in the map; the axis min, axis "
@@ -34,11 +34,11 @@ static const char *_unrrdu_rmapInfoL
           "either case, the output is the result of linearly "
           "interpolating between map points, either scalar values "
           "(\"grayscale\"), or scanlines along axis 0 "
-          "(\"color\").\n " UNRRDU_DILRR_INFO("rmap") /* */
+          "(\"color\").\n " MY_UNRRDU_DILRR_INFO("rmap") /* */
      "* Uses nrrdApply1DRegMap");
 
 static int
-unrrdu_rmapMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_rmapMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   Nrrd *nmap;
   hestOptAdd_1_Other(&hopt, "m,map", "map", &nmap, NULL,
@@ -78,12 +78,12 @@ unrrdu_rmapMain(int argc, const char **argv, const char *me, const hestParm *hpa
                      "is the map's type",
                      &unrrduHestMaybeTypeCB);
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_rmapInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_rmapInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -114,10 +114,10 @@ unrrdu_rmapMain(int argc, const char **argv, const char *me, const hestParm *hpa
     return 1;
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(rmap, INFO);
+MY_UNRRDU_CMD(rmap, INFO);

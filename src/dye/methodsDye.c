@@ -44,7 +44,7 @@ and was bewildered why it wasn't there already. That chronology explains why thi
 airEnum isn't used more widely within dye. */
 
 static const char *
-_dyeSpaceDesc[DYE_MAX_SPACE+1] = {
+spaceDesc[DYE_MAX_SPACE+1] = {
   "unknown colorspace",
   "single hexcone",
   "double hexcone",
@@ -56,7 +56,7 @@ _dyeSpaceDesc[DYE_MAX_SPACE+1] = {
 };
 
 static const airEnum
-_dyeSpace = {
+space_aenum = {
   "colorspace",
   DYE_MAX_SPACE,
   /* that we need this cast is a sign that the airEnum could perhaps to have more
@@ -64,12 +64,11 @@ _dyeSpace = {
     have "const char *const *str" or "const char *const *const str"?  Hmmm */
   AIR_CAST(const char **, dyeSpaceToStr),
   NULL,
-  _dyeSpaceDesc,
+  spaceDesc,
   NULL, NULL,
   AIR_FALSE
 };
-const airEnum *const
-dyeSpace = &_dyeSpace;
+const airEnum *const dyeSpace = &space_aenum;
 /* clang-format on */
 
 /*

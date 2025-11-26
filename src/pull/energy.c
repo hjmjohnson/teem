@@ -22,7 +22,7 @@
 
 /* clang-format off */
 static const char *
-_pullInterTypeStr[PULL_INTER_TYPE_MAX+1] = {
+interTypeStr[PULL_INTER_TYPE_MAX+1] = {
   "(unknown_inter)",
   "justR",
   "univariate",
@@ -31,7 +31,7 @@ _pullInterTypeStr[PULL_INTER_TYPE_MAX+1] = {
 };
 
 static const char *
-_pullInterTypeStrEqv[] = {
+interTypeStrEqv[] = {
   "r", "justr",
   "univariate", "univar", "uni",
   "separable", "separ", "sep",
@@ -40,7 +40,7 @@ _pullInterTypeStrEqv[] = {
 };
 
 static const int
-_pullInterTypeValEqv[] = {
+interTypeValEqv[] = {
   pullInterTypeJustR, pullInterTypeJustR,
   pullInterTypeUnivariate, pullInterTypeUnivariate, pullInterTypeUnivariate,
   pullInterTypeSeparable, pullInterTypeSeparable, pullInterTypeSeparable,
@@ -48,16 +48,15 @@ _pullInterTypeValEqv[] = {
 };
 
 static const airEnum
-_pullInterType = {
+interType_ae = {
   "interaction type",
   PULL_INTER_TYPE_MAX,
-  _pullInterTypeStr,  NULL,
+  interTypeStr,  NULL,
   NULL,
-  _pullInterTypeStrEqv, _pullInterTypeValEqv,
+  interTypeStrEqv, interTypeValEqv,
   AIR_FALSE
 };
-const airEnum *const
-pullInterType = &_pullInterType;
+const airEnum *const pullInterType = &interType_ae;
 
 #define SPRING    "spring"
 #define GAUSS     "gauss"
@@ -74,7 +73,7 @@ pullInterType = &_pullInterType;
 #define BPARAB    "bparab"
 
 static const char *
-_pullEnergyTypeStr[PULL_ENERGY_TYPE_MAX+1] = {
+energyTypeStr[PULL_ENERGY_TYPE_MAX+1] = {
   "(unknown_energy)",
   SPRING,
   GAUSS,
@@ -92,7 +91,7 @@ _pullEnergyTypeStr[PULL_ENERGY_TYPE_MAX+1] = {
 };
 
 static const char *
-_pullEnergyTypeDesc[PULL_ENERGY_TYPE_MAX+1] = {
+energyTypeDesc[PULL_ENERGY_TYPE_MAX+1] = {
   "unknown_energy",
   "Hooke's law-based potential, with a tunable region of attraction",
   "Gaussian potential",
@@ -110,20 +109,19 @@ _pullEnergyTypeDesc[PULL_ENERGY_TYPE_MAX+1] = {
 };
 
 static const airEnum
-_pullEnergyType = {
+energyType_ae = {
   "energy",
   PULL_ENERGY_TYPE_MAX,
-  _pullEnergyTypeStr,  NULL,
-  _pullEnergyTypeDesc,
+  energyTypeStr,  NULL,
+  energyTypeDesc,
   NULL, NULL,
   AIR_FALSE
 };
-const airEnum *const
-pullEnergyType = &_pullEnergyType;
+const airEnum *const pullEnergyType = &energyType_ae;
 /* clang-format on */
 
 static double
-_pullEnergyNoWell(double *wx, const double *parm) {
+energyNoWell(double *wx, const double *parm) {
 
   AIR_UNUSED(wx);
   AIR_UNUSED(parm);
@@ -135,8 +133,8 @@ _pullEnergyNoWell(double *wx, const double *parm) {
 ** ----------------------------------------------------------------
 */
 static double
-_pullEnergyUnknownEval(double *denr, double dist, const double *parm) {
-  static const char me[] = "_pullEnergyUnknownEval";
+energyUnknownEval(double *denr, double dist, const double *parm) {
+  static const char me[] = "energyUnknownEval";
 
   AIR_UNUSED(dist);
   AIR_UNUSED(parm);
@@ -145,9 +143,8 @@ _pullEnergyUnknownEval(double *denr, double dist, const double *parm) {
   return AIR_NAN;
 }
 
-static const pullEnergy _pullEnergyUnknown = {"unknown", 0, _pullEnergyNoWell,
-                                              _pullEnergyUnknownEval};
-const pullEnergy *const pullEnergyUnknown = &_pullEnergyUnknown;
+static const pullEnergy energyUnknown = {"unknown", 0, energyNoWell, energyUnknownEval};
+const pullEnergy *const pullEnergyUnknown = &energyUnknown;
 
 /* ----------------------------------------------------------------
 ** ------------------------------ SPRING --------------------------
@@ -160,8 +157,8 @@ const pullEnergy *const pullEnergyUnknown = &_pullEnergyUnknown;
 ** learned: "1/2" is not 0.5 !!!!!
 */
 static double
-_pullEnergySpringEval(double *denr, double dist, const double *parm) {
-  /* static const char me[] = "_pullEnergySpringEval"; */
+energySpringEval(double *denr, double dist, const double *parm) {
+  /* static const char me[] = "energySpringEval"; */
   double enr, xx, pull;
 
   pull = parm[0];
@@ -190,16 +187,15 @@ _pullEnergySpringEval(double *denr, double dist, const double *parm) {
 
 /* currently unused
 static int
-_pullEnergySpringWell(const double *parm) {
+energySpringWell(const double *parm) {
 
   return (parm[0] > 0.0);
 }
 */
 
-static const pullEnergy _pullEnergySpring = {SPRING, 1,
-                                             _pullEnergyNoWell, /* HEY: is this true? */
-                                             _pullEnergySpringEval};
-const pullEnergy *const pullEnergySpring = &_pullEnergySpring;
+static const pullEnergy energySpring = {SPRING, 1, energyNoWell, /* HEY: is this true? */
+                                        energySpringEval};
+const pullEnergy *const pullEnergySpring = &energySpring;
 
 /* ----------------------------------------------------------------
 ** ------------------------------ GAUSS --------------------------
@@ -207,22 +203,21 @@ const pullEnergy *const pullEnergySpring = &_pullEnergySpring;
 ** 0 parms: for simplicity we're now always cutting off at 4 sigmas
 */
 /* HEY: copied from teem/src/nrrd/kernel.c */
-#define _GAUSS(x, sig, cut) (x >= sig * cut ? 0 : exp(-x * x / (2.0 * sig * sig)))
+#define GAUSS_EVAL(x, sig, cut) (x >= sig * cut ? 0 : exp(-x * x / (2.0 * sig * sig)))
 
-#define _DGAUSS(x, sig, cut)                                                            \
+#define DGAUSS_EVAL(x, sig, cut)                                                        \
   (x >= sig * cut ? 0 : -exp(-x * x / (2.0 * sig * sig)) * (x / (sig * sig)))
 
 static double
-_pullEnergyGaussEval(double *denr, double dist, const double *parm) {
+energyGaussEval(double *denr, double dist, const double *parm) {
 
   AIR_UNUSED(parm);
-  *denr = _DGAUSS(dist, 0.25, 4);
-  return _GAUSS(dist, 0.25, 4);
+  *denr = DGAUSS_EVAL(dist, 0.25, 4);
+  return GAUSS_EVAL(dist, 0.25, 4);
 }
 
-static const pullEnergy _pullEnergyGauss = {GAUSS, 0, _pullEnergyNoWell,
-                                            _pullEnergyGaussEval};
-const pullEnergy *const pullEnergyGauss = &_pullEnergyGauss;
+static const pullEnergy energyGauss = {GAUSS, 0, energyNoWell, energyGaussEval};
+const pullEnergy *const pullEnergyGauss = &energyGauss;
 
 /* ----------------------------------------------------------------
 ** ------------------------------ BSPLN --------------------------
@@ -251,7 +246,7 @@ const pullEnergy *const pullEnergyGauss = &_pullEnergyGauss;
   }
 
 static double
-_pullEnergyBsplnEval(double *denr, double dist, const double *parm) {
+energyBsplnEval(double *denr, double dist, const double *parm) {
   double tmp, ret;
 
   AIR_UNUSED(parm);
@@ -262,9 +257,8 @@ _pullEnergyBsplnEval(double *denr, double dist, const double *parm) {
   return ret;
 }
 
-static const pullEnergy _pullEnergyBspln = {BSPLN, 0, _pullEnergyNoWell,
-                                            _pullEnergyBsplnEval};
-const pullEnergy *const pullEnergyBspln = &_pullEnergyBspln;
+static const pullEnergy energyBspln = {BSPLN, 0, energyNoWell, energyBsplnEval};
+const pullEnergy *const pullEnergyBspln = &energyBspln;
 
 /* ----------------------------------------------------------------
 ** ------------------------------ BUTTER --------------------------
@@ -273,7 +267,7 @@ const pullEnergy *const pullEnergyBspln = &_pullEnergyBspln;
 */
 
 static double
-_pullEnergyButterworthEval(double *denr, double x, const double *parm) {
+energyButterworthEval(double *denr, double x, const double *parm) {
   int n;
   double cut, denom, enr;
 
@@ -285,9 +279,9 @@ _pullEnergyButterworthEval(double *denr, double x, const double *parm) {
   return enr;
 }
 
-static const pullEnergy _pullEnergyButterworth = {BUTTER, 2, _pullEnergyNoWell,
-                                                  _pullEnergyButterworthEval};
-const pullEnergy *const pullEnergyButterworth = &_pullEnergyButterworth;
+static const pullEnergy energyButterworth = {BUTTER, 2, energyNoWell,
+                                             energyButterworthEval};
+const pullEnergy *const pullEnergyButterworth = &energyButterworth;
 
 /* ----------------------------------------------------------------
 ** ------------------------------ COTAN ---------------------------
@@ -295,7 +289,7 @@ const pullEnergy *const pullEnergyButterworth = &_pullEnergyButterworth;
 ** 0 parms!
 */
 static double
-_pullEnergyCotanEval(double *denr, double dist, const double *parm) {
+energyCotanEval(double *denr, double dist, const double *parm) {
   double pot, cc, enr;
 
   AIR_UNUSED(parm);
@@ -306,9 +300,8 @@ _pullEnergyCotanEval(double *denr, double dist, const double *parm) {
   return enr;
 }
 
-static const pullEnergy _pullEnergyCotan = {COTAN, 0, _pullEnergyNoWell,
-                                            _pullEnergyCotanEval};
-const pullEnergy *const pullEnergyCotan = &_pullEnergyCotan;
+static const pullEnergy energyCotan = {COTAN, 0, energyNoWell, energyCotanEval};
+const pullEnergy *const pullEnergyCotan = &energyCotan;
 
 /* ----------------------------------------------------------------
 ** ------------------------------ CUBIC ---------------------------
@@ -316,7 +309,7 @@ const pullEnergy *const pullEnergyCotan = &_pullEnergyCotan;
 ** 0 parms!
 */
 static double
-_pullEnergyCubicEval(double *denr, double dist, const double *parm) {
+energyCubicEval(double *denr, double dist, const double *parm) {
   double omr, enr;
 
   AIR_UNUSED(parm);
@@ -330,9 +323,8 @@ _pullEnergyCubicEval(double *denr, double dist, const double *parm) {
   return enr;
 }
 
-static const pullEnergy _pullEnergyCubic = {CUBIC, 0, _pullEnergyNoWell,
-                                            _pullEnergyCubicEval};
-const pullEnergy *const pullEnergyCubic = &_pullEnergyCubic;
+static const pullEnergy energyCubic = {CUBIC, 0, energyNoWell, energyCubicEval};
+const pullEnergy *const pullEnergyCubic = &energyCubic;
 
 /* ----------------------------------------------------------------
 ** ----------------------------- QUARTIC --------------------------
@@ -340,7 +332,7 @@ const pullEnergy *const pullEnergyCubic = &_pullEnergyCubic;
 ** 0 parms!
 */
 static double
-_pullEnergyQuarticEval(double *denr, double dist, const double *parm) {
+energyQuarticEval(double *denr, double dist, const double *parm) {
   double omr, enr;
 
   AIR_UNUSED(parm);
@@ -354,9 +346,8 @@ _pullEnergyQuarticEval(double *denr, double dist, const double *parm) {
   return enr;
 }
 
-static const pullEnergy _pullEnergyQuartic = {QUARTIC, 0, _pullEnergyNoWell,
-                                              _pullEnergyQuarticEval};
-const pullEnergy *const pullEnergyQuartic = &_pullEnergyQuartic;
+static const pullEnergy energyQuartic = {QUARTIC, 0, energyNoWell, energyQuarticEval};
+const pullEnergy *const pullEnergyQuartic = &energyQuartic;
 
 /* ----------------------------------------------------------------
 ** ------------------ tunable piece-wise cubic --------------------
@@ -364,7 +355,7 @@ const pullEnergy *const pullEnergyQuartic = &_pullEnergyQuartic;
 ** 2 parm: wellX, wellY
 */
 static double
-_pullEnergyCubicWellEval(double *denr, double x, const double *parm) {
+energyCubicWellEval(double *denr, double x, const double *parm) {
   double a, b, c, d, e, wx, wy, enr;
 
   wx = parm[0];
@@ -390,15 +381,15 @@ _pullEnergyCubicWellEval(double *denr, double x, const double *parm) {
 }
 
 static double
-_pullEnergyCubicWellWell(double *wx, const double *parm) {
+energyCubicWellWell(double *wx, const double *parm) {
 
   *wx = parm[0];
   return AIR_MIN(0.0, parm[1]);
 }
 
-static const pullEnergy _pullEnergyCubicWell = {CWELL, 2, _pullEnergyCubicWellWell,
-                                                _pullEnergyCubicWellEval};
-const pullEnergy *const pullEnergyCubicWell = &_pullEnergyCubicWell;
+static const pullEnergy energyCubicWell = {CWELL, 2, energyCubicWellWell,
+                                           energyCubicWellEval};
+const pullEnergy *const pullEnergyCubicWell = &energyCubicWell;
 
 /* ----------------------------------------------------------------
 ** --------------- better tunable piece-wise cubic ----------------
@@ -406,7 +397,7 @@ const pullEnergy *const pullEnergyCubicWell = &_pullEnergyCubicWell;
 ** 2 parm: wellX, wellY
 */
 static double
-_pullEnergyBetterCubicWellEval(double *denr, double x, const double *parm) {
+energyBetterCubicWellEval(double *denr, double x, const double *parm) {
   double a, b, c, d, e, f, g, wx, wy, xmo, xmoo, xmooo, enr;
 
   /* HEY: it would be good if there was a place to store these
@@ -438,15 +429,15 @@ _pullEnergyBetterCubicWellEval(double *denr, double x, const double *parm) {
 }
 
 static double
-_pullEnergyBetterCubicWellWell(double *wx, const double *parm) {
+energyBetterCubicWellWell(double *wx, const double *parm) {
 
   *wx = parm[0];
   return AIR_MIN(0.0, parm[1]);
 }
 
-static const pullEnergy _pullEnergyBetterCubicWell
-  = {BWELL, 2, _pullEnergyBetterCubicWellWell, _pullEnergyBetterCubicWellEval};
-const pullEnergy *const pullEnergyBetterCubicWell = &_pullEnergyBetterCubicWell;
+static const pullEnergy energyBetterCubicWell = {BWELL, 2, energyBetterCubicWellWell,
+                                                 energyBetterCubicWellEval};
+const pullEnergy *const pullEnergyBetterCubicWell = &energyBetterCubicWell;
 
 /* ----------------------------------------------------------------
 ** ----------------- tunable single quartic well ------------------
@@ -454,7 +445,7 @@ const pullEnergy *const pullEnergyBetterCubicWell = &_pullEnergyBetterCubicWell;
 ** 1 parm: well radius
 */
 static double
-_pullEnergyQuarticWellEval(double *denr, double x, const double *parm) {
+energyQuarticWellEval(double *denr, double x, const double *parm) {
   double a, b, c, d, w, enr;
 
   w = parm[0];
@@ -468,7 +459,7 @@ _pullEnergyQuarticWellEval(double *denr, double x, const double *parm) {
 }
 
 static double
-_pullEnergyQuarticWellWell(double *wx, const double *parm) {
+energyQuarticWellWell(double *wx, const double *parm) {
   double t;
 
   *wx = parm[0];
@@ -476,9 +467,9 @@ _pullEnergyQuarticWellWell(double *wx, const double *parm) {
   return t * t * t * t / (4 * (*wx) - 1);
 }
 
-static const pullEnergy _pullEnergyQuarticWell = {QWELL, 1, _pullEnergyQuarticWellWell,
-                                                  _pullEnergyQuarticWellEval};
-const pullEnergy *const pullEnergyQuarticWell = &_pullEnergyQuarticWell;
+static const pullEnergy energyQuarticWell = {QWELL, 1, energyQuarticWellWell,
+                                             energyQuarticWellEval};
+const pullEnergy *const pullEnergyQuarticWell = &energyQuarticWell;
 
 /* ----------------------------------------------------------------
 ** ------------------ tunable single heptic well ------------------
@@ -486,7 +477,7 @@ const pullEnergy *const pullEnergyQuarticWell = &_pullEnergyQuarticWell;
 ** 1 parm: well radius
 */
 static double
-_pullEnergyHepticWellEval(double *denr, double x, const double *parm) {
+energyHepticWellEval(double *denr, double x, const double *parm) {
   double a, b, c, d, e, f, g, w, enr;
 
   w = parm[0];
@@ -505,7 +496,7 @@ _pullEnergyHepticWellEval(double *denr, double x, const double *parm) {
 }
 
 static double
-_pullEnergyHepticWellWell(double *wx, const double *parm) {
+energyHepticWellWell(double *wx, const double *parm) {
   double t;
 
   *wx = parm[0];
@@ -513,9 +504,9 @@ _pullEnergyHepticWellWell(double *wx, const double *parm) {
   return t * t * t * t * t * t * t / (7 * (*wx) - 1);
 }
 
-static const pullEnergy _pullEnergyHepticWell = {HWELL, 1, _pullEnergyHepticWellWell,
-                                                 _pullEnergyHepticWellEval};
-const pullEnergy *const pullEnergyHepticWell = &_pullEnergyHepticWell;
+static const pullEnergy energyHepticWell = {HWELL, 1, energyHepticWellWell,
+                                            energyHepticWellEval};
+const pullEnergy *const pullEnergyHepticWell = &energyHepticWell;
 
 /* ----------------------------------------------------------------
 ** ------------------------------- ZERO ---------------------------
@@ -523,7 +514,7 @@ const pullEnergy *const pullEnergyHepticWell = &_pullEnergyHepticWell;
 ** 0 parms:
 */
 static double
-_pullEnergyZeroEval(double *denr, double dist, const double *parm) {
+energyZeroEval(double *denr, double dist, const double *parm) {
 
   AIR_UNUSED(dist);
   AIR_UNUSED(parm);
@@ -531,9 +522,8 @@ _pullEnergyZeroEval(double *denr, double dist, const double *parm) {
   return 0;
 }
 
-static const pullEnergy _pullEnergyZero = {ZERO, 0, _pullEnergyNoWell,
-                                           _pullEnergyZeroEval};
-const pullEnergy *const pullEnergyZero = &_pullEnergyZero;
+static const pullEnergy energyZero = {ZERO, 0, energyNoWell, energyZeroEval};
+const pullEnergy *const pullEnergyZero = &energyZero;
 
 /* ----------------------------------------------------------------
 ** ------------------------------- BPARAB -------------------------
@@ -542,17 +532,17 @@ const pullEnergy *const pullEnergyZero = &_pullEnergyZero;
 ** parm[2] is a shift (probably negative) on the parabola
 */
 static double
-_pullEnergyBParabEval(double *denr, double x, const double *parm) {
+energyBParabEval(double *denr, double x, const double *parm) {
   double ben, dben;
 
-  ben = _pullEnergyButterworthEval(&dben, x, parm);
+  ben = energyButterworthEval(&dben, x, parm);
   *denr = 2 * x * ben + x * x * dben;
   return (x * x + parm[2]) * ben;
 }
 
-static const pullEnergy _pullEnergyButterworthParabola = {BPARAB, 3, _pullEnergyNoWell,
-                                                          _pullEnergyBParabEval};
-const pullEnergy *const pullEnergyButterworthParabola = &_pullEnergyButterworthParabola;
+static const pullEnergy energyButterworthParabola = {BPARAB, 3, energyNoWell,
+                                                     energyBParabEval};
+const pullEnergy *const pullEnergyButterworthParabola = &energyButterworthParabola;
 
 /* ----------------------------------------------------------------
 ** ----------------------------------------------------------------
@@ -560,20 +550,20 @@ const pullEnergy *const pullEnergyButterworthParabola = &_pullEnergyButterworthP
 */
 
 const pullEnergy *const pullEnergyAll[PULL_ENERGY_TYPE_MAX + 1] = {
-  &_pullEnergyUnknown,            /* 0 */
-  &_pullEnergySpring,             /* 1 */
-  &_pullEnergyGauss,              /* 2 */
-  &_pullEnergyBspln,              /* 3 */
-  &_pullEnergyButterworth,        /* 4 */
-  &_pullEnergyCotan,              /* 5 */
-  &_pullEnergyCubic,              /* 6 */
-  &_pullEnergyQuartic,            /* 7 */
-  &_pullEnergyCubicWell,          /* 8 */
-  &_pullEnergyBetterCubicWell,    /* 9 */
-  &_pullEnergyQuarticWell,        /* 10 */
-  &_pullEnergyHepticWell,         /* 11 */
-  &_pullEnergyZero,               /* 12 */
-  &_pullEnergyButterworthParabola /* 13 */
+  &energyUnknown,            /* 0 */
+  &energySpring,             /* 1 */
+  &energyGauss,              /* 2 */
+  &energyBspln,              /* 3 */
+  &energyButterworth,        /* 4 */
+  &energyCotan,              /* 5 */
+  &energyCubic,              /* 6 */
+  &energyQuartic,            /* 7 */
+  &energyCubicWell,          /* 8 */
+  &energyBetterCubicWell,    /* 9 */
+  &energyQuarticWell,        /* 10 */
+  &energyHepticWell,         /* 11 */
+  &energyZero,               /* 12 */
+  &energyButterworthParabola /* 13 */
 };
 
 pullEnergySpec * /* Biff: nope */
@@ -728,8 +718,8 @@ pullEnergySpecParse(pullEnergySpec *ensp, const char *_str) {
 }
 
 static int
-_pullHestEnergyParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
-  static const char me[] = "_pullHestForceParse";
+phEnergyParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
+  static const char me[] = "phEnergyParse";
   pullEnergySpec **enspP;
   char *perr;
 
@@ -748,8 +738,7 @@ _pullHestEnergyParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) 
   return 0;
 }
 
-static const hestCB _pullHestEnergySpec = {sizeof(pullEnergySpec *),
-                                           "energy specification", _pullHestEnergyParse,
-                                           pullEnergySpecNix_mop};
+static const hestCB phEnergySpec_hcb = {sizeof(pullEnergySpec *), "energy specification",
+                                        phEnergyParse, pullEnergySpecNix_mop};
 
-const hestCB *const pullHestEnergySpec = &_pullHestEnergySpec;
+const hestCB *const pullHestEnergySpec = &phEnergySpec_hcb;

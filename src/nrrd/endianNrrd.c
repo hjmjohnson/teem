@@ -20,7 +20,7 @@
 #include "nrrd.h"
 
 static void
-_nrrdSwap16Endian(void *_data, size_t N) {
+swap16Endian(void *_data, size_t N) {
   unsigned short *data, dd, fix, mask;
   size_t I;
 
@@ -39,7 +39,7 @@ _nrrdSwap16Endian(void *_data, size_t N) {
 }
 
 static void
-_nrrdSwap32Endian(void *_data, size_t N) {
+swap32Endian(void *_data, size_t N) {
   unsigned int *data, dd, fix, mask;
   size_t I;
 
@@ -61,7 +61,7 @@ _nrrdSwap32Endian(void *_data, size_t N) {
 }
 
 static void
-_nrrdSwap64Endian(void *_data, size_t N) {
+swap64Endian(void *_data, size_t N) {
   airULLong *data, dd, fix, mask;
   size_t I;
 
@@ -87,15 +87,15 @@ _nrrdSwap64Endian(void *_data, size_t N) {
 }
 
 static void
-_nrrdNoopEndian(void *data, size_t N) {
+noopEndian(void *data, size_t N) {
   AIR_UNUSED(data);
   AIR_UNUSED(N);
   return;
 }
 
 static void
-_nrrdBlockEndian(void *data, size_t N) {
-  static const char me[] = "_nrrdBlockEndian";
+blockEndian(void *data, size_t N) {
+  static const char me[] = "blockEndian";
 
   AIR_UNUSED(data);
   AIR_UNUSED(N);
@@ -103,26 +103,26 @@ _nrrdBlockEndian(void *data, size_t N) {
           airEnumStr(nrrdType, nrrdTypeBlock));
 }
 
-static void (*_nrrdSwapEndian[])(void *, size_t) = {
-  _nrrdNoopEndian,   /*  0: nobody knows! */
-  _nrrdNoopEndian,   /*  1:   signed 1-byte integer */
-  _nrrdNoopEndian,   /*  2: unsigned 1-byte integer */
-  _nrrdSwap16Endian, /*  3:   signed 2-byte integer */
-  _nrrdSwap16Endian, /*  4: unsigned 2-byte integer */
-  _nrrdSwap32Endian, /*  5:   signed 4-byte integer */
-  _nrrdSwap32Endian, /*  6: unsigned 4-byte integer */
-  _nrrdSwap64Endian, /*  7:   signed 8-byte integer */
-  _nrrdSwap64Endian, /*  8: unsigned 8-byte integer */
-  _nrrdSwap32Endian, /*  9:          4-byte floating point */
-  _nrrdSwap64Endian, /* 10:          8-byte floating point */
-  _nrrdBlockEndian   /* 11: size user defined at run time */
+static void (*swapEndian[])(void *, size_t) = {
+  noopEndian,   /*  0: nobody knows! */
+  noopEndian,   /*  1:   signed 1-byte integer */
+  noopEndian,   /*  2: unsigned 1-byte integer */
+  swap16Endian, /*  3:   signed 2-byte integer */
+  swap16Endian, /*  4: unsigned 2-byte integer */
+  swap32Endian, /*  5:   signed 4-byte integer */
+  swap32Endian, /*  6: unsigned 4-byte integer */
+  swap64Endian, /*  7:   signed 8-byte integer */
+  swap64Endian, /*  8: unsigned 8-byte integer */
+  swap32Endian, /*  9:          4-byte floating point */
+  swap64Endian, /* 10:          8-byte floating point */
+  blockEndian   /* 11: size user defined at run time */
 };
 
 void
 nrrdSwapEndian(Nrrd *nrrd) {
 
   if (nrrd && nrrd->data && !airEnumValCheck(nrrdType, nrrd->type)) {
-    _nrrdSwapEndian[nrrd->type](nrrd->data, nrrdElementNumber(nrrd));
+    swapEndian[nrrd->type](nrrd->data, nrrdElementNumber(nrrd));
   }
   return;
 }

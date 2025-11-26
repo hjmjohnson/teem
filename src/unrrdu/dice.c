@@ -21,19 +21,19 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Save all slices along one axis into separate files"
-static const char *_unrrdu_diceInfoL
+static const char *unu_diceInfoL
   = (INFO ". Calls \"unu slice\" for each position "
           "along the indicated axis, and saves out a different "
           "file for each sample along that axis.\n "
           "* Uses repeated calls to nrrdSlice and nrrdSave");
 
 static int
-unrrdu_diceMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_diceMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   uint axis;
-  OPT_ADD_AXIS(axis, "axis to slice along");
+  MY_OPT_ADD_AXIS(axis, "axis to slice along");
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   uint start;
   hestOptAdd_1_UInt(&hopt, "s,start", "start", &start, "0",
                     "integer value to start numbering with");
@@ -59,7 +59,7 @@ unrrdu_diceMain(int argc, const char **argv, const char *me, const hestParm *hpa
                       "with \"/\".");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_diceInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_diceInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -157,4 +157,4 @@ unrrdu_diceMain(int argc, const char **argv, const char *me, const hestParm *hpa
   return 0;
 }
 
-UNRRDU_CMD(dice, INFO);
+MY_UNRRDU_CMD(dice, INFO);

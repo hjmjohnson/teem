@@ -21,12 +21,12 @@
 #include "privateTen.h"
 
 #define INFO "Compute volume of shape triples"
-static const char *_tend_tripleInfoL
+static const char *tripleInfoL
   = (INFO ".  The triple can be eignvalues, invariants (J, K, R), "
           "and lots of other things.");
 
 static int
-tend_tripleMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+tripleMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -43,7 +43,7 @@ tend_tripleMain(int argc, const char **argv, const char *me, const hestParm *hpa
 
   mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_tend_tripleInfoL);
+  USAGE_PARSE(tripleInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
@@ -64,4 +64,4 @@ tend_tripleMain(int argc, const char **argv, const char *me, const hestParm *hpa
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(triple, INFO);
+MY_TEND_CMD(triple, INFO);

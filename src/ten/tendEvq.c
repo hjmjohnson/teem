@@ -21,7 +21,7 @@
 #include "privateTen.h"
 
 #define INFO "Quantize directions of diffusion"
-static const char *_tend_evqInfoL
+static const char *evqInfoL
   = (INFO
      ". Because VTK doesn't do multi-dimensional colormaps (circa year 2000), we "
      "have to quantize directions of diffusion (usually just the principal eigenvector) "
@@ -31,7 +31,7 @@ static const char *_tend_evqInfoL
      "anisotropy metric.");
 
 static int
-tend_evqMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+evqMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -60,7 +60,7 @@ tend_evqMain(int argc, const char **argv, const char *me, const hestParm *hparm)
 
   mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_tend_evqInfoL);
+  USAGE_PARSE(evqInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
@@ -82,4 +82,4 @@ tend_evqMain(int argc, const char **argv, const char *me, const hestParm *hparm)
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(evq, INFO);
+MY_TEND_CMD(evq, INFO);

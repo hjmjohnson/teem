@@ -278,7 +278,7 @@ nrrdCrop(Nrrd *nout, const Nrrd *nin, size_t *min, size_t *max) {
     nrrdAxisInfoPosRange(&(nout->axis[ai].min), &(nout->axis[ai].max), nin, ai,
                          AIR_CAST(double, min[ai]), AIR_CAST(double, max[ai]));
     /* do the safe thing first */
-    nout->axis[ai].kind = _nrrdKindAltered(nin->axis[ai].kind, AIR_FALSE);
+    nout->axis[ai].kind = nrrd__KindAltered(nin->axis[ai].kind, AIR_FALSE);
     /* try cleverness */
     if (!nrrdStateKindNoop) {
       if (nout->axis[ai].size == nin->axis[ai].size) {

@@ -155,7 +155,7 @@ echoSceneNew(void) {
 }
 
 void
-_echoSceneLightAdd(echoScene *scene, echoObject *obj) {
+echo__SceneLightAdd(echoScene *scene, echoObject *obj) {
   unsigned int idx;
 
   for (idx = 0; idx < scene->lightArr->len; idx++) {
@@ -170,7 +170,7 @@ _echoSceneLightAdd(echoScene *scene, echoObject *obj) {
 }
 
 void
-_echoSceneNrrdAdd(echoScene *scene, Nrrd *nrrd) {
+echo__SceneNrrdAdd(echoScene *scene, Nrrd *nrrd) {
   unsigned int idx;
 
   for (idx = 0; idx < scene->nrrdArr->len; idx++) {

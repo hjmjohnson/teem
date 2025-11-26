@@ -21,7 +21,7 @@
 #include "privateTen.h"
 
 #define INFO "Simulate DW images from a tensor field"
-static const char *_tend_simInfoL
+static const char *simInfoL
   = (INFO ".  The output will be in the same form as the input to \"tend estim\". "
           "The B-matrices (\"-B\") can be the output from \"tend bmat\", or the "
           "gradients can be given directly (\"-g\"); one of these is required. "
@@ -32,7 +32,7 @@ static const char *_tend_simInfoL
           "measurement frame. ");
 
 static int
-tend_simMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+simMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -76,7 +76,7 @@ tend_simMain(int argc, const char **argv, const char *me, const hestParm *_hparm
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output image (floating point)");
 
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_tend_simInfoL);
+  USAGE_PARSE(simInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
@@ -150,4 +150,4 @@ tend_simMain(int argc, const char **argv, const char *me, const hestParm *_hparm
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(sim, INFO);
+MY_TEND_CMD(sim, INFO);

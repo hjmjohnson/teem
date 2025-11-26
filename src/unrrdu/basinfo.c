@@ -21,14 +21,14 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Modify whole-array attributes (not per-axis)"
-static const char *_unrrdu_basinfoInfoL
+static const char *unu_basinfoInfoL
   = (INFO ", which is called \"basic info\" in Nrrd terminology. "
           "The only attributes which are set are those for which command-line "
           "options are given.\n "
           "* Uses no particular function; just sets fields in the Nrrd");
 
 static int
-unrrdu_basinfoMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_basinfoMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   /* no point in invoking this if no options are used, so even though every option has a
      default, we refrain from setting hparm->noArgsIsNoProblem */
@@ -69,12 +69,12 @@ unrrdu_basinfoMain(int argc, const char **argv, const char *me, const hestParm *
                                      "is built upon by many nrrd function to record a "
                                      "history of operations");
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_basinfoInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_basinfoInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -188,10 +188,10 @@ unrrdu_basinfoMain(int argc, const char **argv, const char *me, const hestParm *
     nrrdKeyValueClear(nout);
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(basinfo, INFO);
+MY_UNRRDU_CMD(basinfo, INFO);

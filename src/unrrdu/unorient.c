@@ -21,12 +21,11 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Make image orientation be axis-aligned"
-static const char *_unrrdu_unorientInfoL = (INFO ". Does various tricks.\n "
-                                                 "* Uses nrrdOrientationReduce");
+static const char *unu_unorientInfoL = (INFO ". Does various tricks.\n "
+                                             "* Uses nrrdOrientationReduce");
 
 static int
-unrrdu_unorientMain(int argc, const char **argv, const char *me,
-                    const hestParm *_hparm) {
+unu_unorientMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
   /*
    * with new nrrdHestNrrdNoTTY, can let "-" be default input as normal; no more need
@@ -48,12 +47,12 @@ unrrdu_unorientMain(int argc, const char **argv, const char *me,
   hestOptAdd_Flag(&hopt, "smfo", &setMinsFromOrigin,
                   "set some axis mins based on space origin (hack)");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for YES some hparm modification)
   hestParm *hparm = hestParmCopy(_hparm);
   hparm->noArgsIsNoProblem = AIR_TRUE; // thanks to nrrdHestNrrdNoTTY
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_unorientInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_unorientInfoL);
   airArray *mop = unrrduMopNew(hopt, hparm);
   char *err;
 
@@ -66,10 +65,10 @@ unrrdu_unorientMain(int argc, const char **argv, const char *me,
     return 1;
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(unorient, INFO);
+MY_UNRRDU_CMD(unorient, INFO);

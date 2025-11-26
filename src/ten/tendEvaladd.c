@@ -21,13 +21,13 @@
 #include "privateTen.h"
 
 #define INFO "Modify shape by adding a constant to all eigenvalues"
-static const char *_tend_evaladdInfoL
+static const char *evaladdInfoL
   = (INFO ". The orientation of the tensor is unchanged.  Note that unlike "
           "\"tend anscale\", this operation can completely change the shape "
           "of the tensor.");
 
 static int
-tend_evaladdMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+evaladdMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -44,7 +44,7 @@ tend_evaladdMain(int argc, const char **argv, const char *me, const hestParm *hp
 
   mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_tend_evaladdInfoL);
+  USAGE_PARSE(evaladdInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
@@ -65,4 +65,4 @@ tend_evaladdMain(int argc, const char **argv, const char *me, const hestParm *hp
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(evaladd, INFO);
+MY_TEND_CMD(evaladd, INFO);

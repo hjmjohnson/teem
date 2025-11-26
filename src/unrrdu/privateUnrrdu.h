@@ -70,10 +70,10 @@ extern "C" {
 
 typedef unsigned int uint; /* uint is just more concise */
 
-#define UNRRDU_DILRR "UNRRDU_DEFAULT_IMPLICIT_LUT_RMAP_RESCALE"
+#define MY_UNRRDU_DILRR "UNRRDU_DEFAULT_IMPLICIT_LUT_RMAP_RESCALE"
 
-#define UNRRDU_DILRR_INFO(WUT)                                                          \
-  "You can set the " UNRRDU_DILRR " environment variable to "                           \
+#define MY_UNRRDU_DILRR_INFO(WUT)                                                       \
+  "You can set the " MY_UNRRDU_DILRR " environment variable to "                        \
   "control whether, with the \"-r\" option is not used, to rescale "                    \
   "data values to the domain of a " WUT " with an implicit domain "                     \
   "(by default rescaling does happen in this case).\n "
@@ -97,11 +97,11 @@ of the source files for the various unu commands are responsible for setting the
 (at compile-time) of their associated unrrduCmd.
 
 We use three macros to automate this somewhat:
-UNRRDU_DECLARE: declares unrrdu_xxxCmd as an extern unrrduCmd
-                (defined in xxx.c), used later in this header file.
-UNRRDU_LIST:    the address of unrrdu_xxxCmd, for listing in the array of
-                unrrduCmd structs in the (compile-time) definition of
-                unrrduCmdList[].  This is used in flotsam.c.
+MY_UNRRDU_DECLARE: declares unrrdu_xxxCmd as an extern unrrduCmd
+                   (defined in xxx.c), used later in this header file.
+MY_UNRRDU_LIST:    the address of unrrdu_xxxCmd, for listing in the array of
+                   unrrduCmd structs in the (compile-time) definition of
+                   unrrduCmdList[].  This is used in flotsam.c.
 
 Then, to facilitate running these macros on each of the different commands, there is a
 UNRRDU_MAP macro which is used to essentially map the two macros above over the list of
@@ -113,9 +113,9 @@ unu commands.  Functional programming meets the C pre-processor.  Therefore:
 **  That's it.
 **********************************************************
 */
-#define UNRRDU_DECLARE(C) UNRRDU_EXPORT const unrrduCmd unrrdu_##C##Cmd;
-#define UNRRDU_LIST(C)    &unrrdu_##C##Cmd,
-#define UNRRDU_MAP(F)                                                                   \
+#define MY_UNRRDU_DECLARE(C) UNRRDU_EXPORT const unrrduCmd unrrdu_##C##Cmd;
+#define MY_UNRRDU_LIST(C)    &unrrdu_##C##Cmd,
+#define MY_UNRRDU_MAP(F)                                                                \
   F(about)                                                                              \
   F(built)                                                                              \
   F(env)                                                                                \
@@ -196,19 +196,19 @@ unu commands.  Functional programming meets the C pre-processor.  Therefore:
 /* xxx.c */
 /* Declare the extern unrrduCmds unrrdu_xxxCmd, for all xxx.  These are
    defined in as many different source files as there are commands. */
-UNRRDU_MAP(UNRRDU_DECLARE)
+MY_UNRRDU_MAP(MY_UNRRDU_DECLARE)
 
 /*
-******** UNRRDU_CMD
+******** MY_UNRRDU_CMD
 **
 ** This is used at the very end of the various command sources
 ** ("xxx.c") to simplify defining a unrrduCmd.  "name" should just be
 ** the command, UNQUOTED, such as flip or slice.
 */
-#define UNRRDU_CMD(name, info)                                                          \
-  const unrrduCmd unrrdu_##name##Cmd = {#name, info, unrrdu_##name##Main, AIR_FALSE}
-#define UNRRDU_CMD_HIDE(name, info)                                                     \
-  const unrrduCmd unrrdu_##name##Cmd = {#name, info, unrrdu_##name##Main, AIR_TRUE}
+#define MY_UNRRDU_CMD(name, info)                                                       \
+  const unrrduCmd unrrdu_##name##Cmd = {#name, info, unu_##name##Main, AIR_FALSE}
+#define MY_UNRRDU_CMD_HIDE(name, info)                                                  \
+  const unrrduCmd unrrdu_##name##Cmd = {#name, info, unu_##name##Main, AIR_TRUE}
 
 /*
 ** OPT_ADD_XXX
@@ -221,27 +221,27 @@ UNRRDU_MAP(UNRRDU_DECLARE)
 ** is given before each macro.
 */
 /* Nrrd *var */
-#define OPT_ADD_NIN(var, desc)                                                          \
+#define MY_OPT_ADD_NIN(var, desc)                                                       \
   hestOptAdd_1_Other(&hopt, "i,input", "nin", &(var), "-", desc, nrrdHestNrrdNoTTY)
 
 /* char *var */
-#define OPT_ADD_NOUT(var, desc)                                                         \
+#define MY_OPT_ADD_NOUT(var, desc)                                                      \
   hestOptAdd_1_String(&hopt, "o,output", "nout", &(var), "-", desc)
 
 /* unsigned int var */
-#define OPT_ADD_AXIS(var, desc)                                                         \
+#define MY_OPT_ADD_AXIS(var, desc)                                                      \
   hestOptAdd_1_UInt(&hopt, "a,axis", "axis", &(var), NULL, desc)
 
 /* int *var; int saw */
-#define OPT_ADD_BOUND(name, needmin, var, deflt, desc, saw)                             \
+#define MY_OPT_ADD_BOUND(name, needmin, var, deflt, desc, saw)                          \
   hestOptAdd_Nv_Other(&hopt, name, "pos0", needmin, -1, &(var), deflt, desc, &(saw),    \
                       &unrrduHestPosCB)
 
 /* int var */
-#define OPT_ADD_TYPE(var, desc, dflt)                                                   \
+#define MY_OPT_ADD_TYPE(var, desc, dflt)                                                \
   hestOptAdd_1_Enum(&hopt, "t,type", "type", &(var), dflt, desc, nrrdType)
 
-#define SAVE(outS, nout, io)                                                            \
+#define MY_SAVE(outS, nout, io)                                                         \
   if (nrrdSave((outS), (nout), (io))) {                                                 \
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);                     \
     fprintf(stderr, "%s: error saving nrrd to \"%s\":\n%s\n", me, (outS), err);         \

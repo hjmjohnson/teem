@@ -22,12 +22,12 @@
 
 /* clang-format off */
 /*
-** _gageSclTable
+** sclTable
 **
 ** the static array of item information for the scalar kind.
 */
 static gageItemEntry
-_gageSclTable[GAGE_SCL_ITEM_MAX+1] = {
+sclTable[GAGE_SCL_ITEM_MAX+1] = {
   /* enum value        len,deriv,  prereqs,                                 parent item,  parent index,  needData */
   {gageSclUnknown,       0,  0,  {0},                                            0,               0,   AIR_FALSE},
   {gageSclValue,         1,  0,  {0},                                            0,               0,   AIR_FALSE},
@@ -69,7 +69,7 @@ _gageSclTable[GAGE_SCL_ITEM_MAX+1] = {
 };
 
 static const char *
-_gageSclStr[] = {
+sclStr[] = {
   "(unknown gageScl)",
   "value",
   "gradient vector",
@@ -110,7 +110,7 @@ _gageSclStr[] = {
 };
 
 static const char *
-_gageSclDesc[] = {
+sclDesc[] = {
   "unknown gageScl query",
   "reconstructed scalar data value",
   "gradient vector, un-normalized",
@@ -151,7 +151,7 @@ _gageSclDesc[] = {
 };
 
 static int
-_gageSclVal[] = {
+sclVal[] = {
   gageSclUnknown,
   gageSclValue,
   gageSclGradVec,
@@ -229,7 +229,7 @@ _gageSclVal[] = {
 #define GS_HM  gageSclHessMode
 
 static const char *
-_gageSclStrEqv[] = {
+sclStrEqv[] = {
   "v", "val", "value",
   "gv", "gvec", "gradvec", "grad vec", "gradient vector",
   "gm", "gmag", "gradmag", "grad mag", "gradient magnitude",
@@ -271,7 +271,7 @@ _gageSclStrEqv[] = {
 };
 
 static const int
-_gageSclValEqv[] = {
+sclValEqv[] = {
   GS_V, GS_V, GS_V,
   GS_GV, GS_GV, GS_GV, GS_GV, GS_GV,
   GS_GM, GS_GM, GS_GM, GS_GM, GS_GM,
@@ -311,38 +311,36 @@ _gageSclValEqv[] = {
 };
 
 static const airEnum
-_gageScl = {
+scl_ae = {
   "gageScl",
   GAGE_SCL_ITEM_MAX,
-  _gageSclStr, _gageSclVal,
-  _gageSclDesc,
-  _gageSclStrEqv, _gageSclValEqv,
+  sclStr, sclVal,
+  sclDesc,
+  sclStrEqv, sclValEqv,
   AIR_FALSE
 };
-const airEnum *const
-gageScl = &_gageScl;
+const airEnum *const gageScl = &scl_ae;
 
 static gageKind
-_gageKindScl = {
+scl_gk = {
   AIR_FALSE, /* statically allocated */
   "scalar",
-  &_gageScl,
+  &scl_ae,
   0, /* baseDim */
   1, /* valLen */
   GAGE_SCL_ITEM_MAX,
-  _gageSclTable,
-  _gageSclIv3Print,
-  _gageSclFilter,
-  _gageSclAnswer,
+  sclTable,
+  gage__SclIv3Print,
+  gage__SclFilter,
+  gage__SclAnswer,
   NULL, NULL, NULL, NULL,
   NULL
 };
-gageKind *const
-gageKindScl = &_gageKindScl;
+gageKind *const gageKindScl = &scl_gk;
 
 static const gageItemPack
-_gageItemPackSclValue = {
-  &_gageKindScl,
+itemPackSclValue_aenum = {
+  &scl_gk,
   {gageSclUnknown,
    gageSclValue,
    gageSclGradVec,
@@ -358,5 +356,5 @@ _gageItemPackSclValue = {
 };
 
 const gageItemPack *const
-gageItemPackSclValue = &_gageItemPackSclValue;
+gageItemPackSclValue = &itemPackSclValue_aenum;
 /* clang-format on */

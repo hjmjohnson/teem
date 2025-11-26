@@ -23,7 +23,7 @@
 #define TEN_FIBER_INCR 512
 
 /*
-** _tenFiberProbe
+** fiberProbe
 **
 ** The job here is to probe at (world space) "wPos" and then set:
 **   tfx->fiberTen
@@ -42,13 +42,13 @@
 ** Errors from gage are indicated by *gageRet, which includes leaving
 ** the domain of the volume, which is used to terminate fibers.
 **
-** Our use of tfx->seedEvec (shared with _tenFiberAlign), as well as that
+** Our use of tfx->seedEvec (shared with fiberAlign), as well as that
 ** of tfx->lastDir and tfx->lastDirSet, could stand to have further
 ** debugging and documentation ...
 */
 static int /* Biff: 1 */
-_tenFiberProbe(tenFiberContext *tfx, int *gageRet, double wPos[3], int seedProbe) {
-  static const char me[] = "_tenFiberProbe";
+fiberProbe(tenFiberContext *tfx, int *gageRet, double wPos[3], int seedProbe) {
+  static const char me[] = "fiberProbe";
   double iPos[3];
   int ret = 0;
   double tens2[2][7];
@@ -197,8 +197,8 @@ _tenFiberProbe(tenFiberContext *tfx, int *gageRet, double wPos[3], int seedProbe
 }
 
 static int
-_tenFiberStopCheck(tenFiberContext *tfx) {
-  static const char me[] = "_tenFiberStopCheck";
+fiberStopCheck(tenFiberContext *tfx) {
+  static const char me[] = "fiberStopCheck";
 
   if (tfx->numSteps[tfx->halfIdx] >= TEN_FIBER_NUM_STEPS_MAX) {
     fprintf(stderr, "%s: numSteps[%d] exceeded sanity check value of %d!!\n", me,
@@ -246,8 +246,8 @@ _tenFiberStopCheck(tenFiberContext *tfx) {
 }
 
 static void
-_tenFiberAlign(tenFiberContext *tfx, double vec[3]) {
-  static const char me[] = "_tenFiberAlign";
+fiberAlign(tenFiberContext *tfx, double vec[3]) {
+  static const char me[] = "fiberAlign";
   double scale, dot;
 
   if (tfx->verbose > 2) {
@@ -287,7 +287,7 @@ _tenFiberAlign(tenFiberContext *tfx, double vec[3]) {
 ** parm[2]: "d": parabolic blend between parm[1]-parm[2] and parm[1]+parm[2]
 */
 static void
-_tenFiberAnisoSpeed(double *step, double xx, double parm[3]) {
+fiberAnisoSpeed(double *step, double xx, double parm[3]) {
   double aa, dd, tt, yy;
 
   tt = parm[1];
@@ -302,33 +302,33 @@ _tenFiberAnisoSpeed(double *step, double xx, double parm[3]) {
 /*
 ** -------------------------------------------------------------------
 ** -------------------------------------------------------------------
-** The _tenFiberStep_* routines are responsible for putting a step into
+** The fiberStep_* routines are responsible for putting a step into
 ** the given step[] vector.  Without anisoStepSize, this should be
 ** UNIT LENGTH, with anisoStepSize, its scaled by that anisotropy measure
 */
 static void
-_tenFiberStep_Evec(tenFiberContext *tfx, double step[3]) {
+fiberStep_Evec(tenFiberContext *tfx, double step[3]) {
 
   /* fiberEvec points to the correct gage answer based on fiberType */
   ELL_3V_COPY(step, tfx->fiberEvec + 3 * 0);
-  _tenFiberAlign(tfx, step);
+  fiberAlign(tfx, step);
   if (tfx->anisoSpeedType) {
-    _tenFiberAnisoSpeed(step, tfx->fiberAnisoSpeed, tfx->anisoSpeedFunc);
+    fiberAnisoSpeed(step, tfx->fiberAnisoSpeed, tfx->anisoSpeedFunc);
   }
 }
 
 static void
-_tenFiberStep_TensorLine(tenFiberContext *tfx, double step[3]) {
+fiberStep_TensorLine(tenFiberContext *tfx, double step[3]) {
   double cl, evec0[3], vout[3], vin[3], len;
 
   ELL_3V_COPY(evec0, tfx->fiberEvec + 3 * 0);
-  _tenFiberAlign(tfx, evec0);
+  fiberAlign(tfx, evec0);
 
   if (tfx->lastDirSet) {
     ELL_3V_COPY(vin, tfx->lastDir);
     TEN_T3V_MUL(vout, tfx->fiberTen, tfx->lastDir);
     ELL_3V_NORM(vout, vout, len);
-    _tenFiberAlign(tfx, vout); /* HEY: is this needed? */
+    fiberAlign(tfx, vout); /* HEY: is this needed? */
   } else {
     ELL_3V_COPY(vin, evec0);
     ELL_3V_COPY(vout, evec0);
@@ -339,16 +339,16 @@ _tenFiberStep_TensorLine(tenFiberContext *tfx, double step[3]) {
 
   ELL_3V_SCALE_ADD3(step, cl, evec0, (1 - cl) * (1 - tfx->wPunct), vin,
                     (1 - cl) * tfx->wPunct, vout);
-  /* _tenFiberAlign(tfx, step); */
+  /* fiberAlign(tfx, step); */
   ELL_3V_NORM(step, step, len);
   if (tfx->anisoSpeedType) {
-    _tenFiberAnisoSpeed(step, tfx->fiberAnisoSpeed, tfx->anisoSpeedFunc);
+    fiberAnisoSpeed(step, tfx->fiberAnisoSpeed, tfx->anisoSpeedFunc);
   }
 }
 
 static void
-_tenFiberStep_PureLine(tenFiberContext *tfx, double step[3]) {
-  static const char me[] = "_tenFiberStep_PureLine";
+fiberStep_PureLine(tenFiberContext *tfx, double step[3]) {
+  static const char me[] = "fiberStep_PureLine";
 
   AIR_UNUSED(tfx);
   AIR_UNUSED(step);
@@ -356,54 +356,54 @@ _tenFiberStep_PureLine(tenFiberContext *tfx, double step[3]) {
 }
 
 static void
-_tenFiberStep_Zhukov(tenFiberContext *tfx, double step[3]) {
-  static const char me[] = "_tenFiberStep_Zhukov";
+fiberStep_Zhukov(tenFiberContext *tfx, double step[3]) {
+  static const char me[] = "fiberStep_Zhukov";
 
   AIR_UNUSED(tfx);
   AIR_UNUSED(step);
   fprintf(stderr, "%s: sorry, unimplemented!\n", me);
 }
 
-static void (*const _tenFiberStep[TEN_FIBER_TYPE_MAX + 1])(tenFiberContext *, double *)
+static void (*const fiberStep[TEN_FIBER_TYPE_MAX + 1])(tenFiberContext *, double *)
   = {NULL,
-     _tenFiberStep_Evec,
-     _tenFiberStep_Evec,
-     _tenFiberStep_Evec,
-     _tenFiberStep_TensorLine,
-     _tenFiberStep_PureLine,
-     _tenFiberStep_Zhukov};
+     fiberStep_Evec,
+     fiberStep_Evec,
+     fiberStep_Evec,
+     fiberStep_TensorLine,
+     fiberStep_PureLine,
+     fiberStep_Zhukov};
 
 /*
 ** -------------------------------------------------------------------
 ** -------------------------------------------------------------------
-** The _tenFiberIntegrate_* routines must assume that
-** _tenFiberProbe(tfx, tfx->wPos, AIR_FALSE) has just been called
+** The fiberIntegrate_* routines must assume that
+** fiberProbe(tfx, tfx->wPos, AIR_FALSE) has just been called
 */
 
 static int
-_tenFiberIntegrate_Euler(tenFiberContext *tfx, double forwDir[3]) {
+fiberIntegrate_Euler(tenFiberContext *tfx, double forwDir[3]) {
 
-  _tenFiberStep[tfx->fiberType](tfx, forwDir);
+  fiberStep[tfx->fiberType](tfx, forwDir);
   ELL_3V_SCALE(forwDir, tfx->stepSize, forwDir);
   return 0;
 }
 
 static int
-_tenFiberIntegrate_Midpoint(tenFiberContext *tfx, double forwDir[3]) {
+fiberIntegrate_Midpoint(tenFiberContext *tfx, double forwDir[3]) {
   double loc[3], half[3];
   int gret;
 
-  _tenFiberStep[tfx->fiberType](tfx, half);
+  fiberStep[tfx->fiberType](tfx, half);
   ELL_3V_SCALE_ADD2(loc, 1, tfx->wPos, 0.5 * tfx->stepSize, half);
-  _tenFiberProbe(tfx, &gret, loc, AIR_FALSE);
+  fiberProbe(tfx, &gret, loc, AIR_FALSE);
   if (gret) return 1;
-  _tenFiberStep[tfx->fiberType](tfx, forwDir);
+  fiberStep[tfx->fiberType](tfx, forwDir);
   ELL_3V_SCALE(forwDir, tfx->stepSize, forwDir);
   return 0;
 }
 
 static int
-_tenFiberIntegrate_RK4(tenFiberContext *tfx, double forwDir[3]) {
+fiberIntegrate_RK4(tenFiberContext *tfx, double forwDir[3]) {
   double loc[3], k1[3], k2[3], k3[3], k4[3], c1, c2, c3, c4, h;
   int gret;
 
@@ -413,19 +413,19 @@ _tenFiberIntegrate_RK4(tenFiberContext *tfx, double forwDir[3]) {
   c3 = h / 3.0;
   c4 = h / 6.0;
 
-  _tenFiberStep[tfx->fiberType](tfx, k1);
+  fiberStep[tfx->fiberType](tfx, k1);
   ELL_3V_SCALE_ADD2(loc, 1, tfx->wPos, 0.5 * h, k1);
-  _tenFiberProbe(tfx, &gret, loc, AIR_FALSE);
+  fiberProbe(tfx, &gret, loc, AIR_FALSE);
   if (gret) return 1;
-  _tenFiberStep[tfx->fiberType](tfx, k2);
+  fiberStep[tfx->fiberType](tfx, k2);
   ELL_3V_SCALE_ADD2(loc, 1, tfx->wPos, 0.5 * h, k2);
-  _tenFiberProbe(tfx, &gret, loc, AIR_FALSE);
+  fiberProbe(tfx, &gret, loc, AIR_FALSE);
   if (gret) return 1;
-  _tenFiberStep[tfx->fiberType](tfx, k3);
+  fiberStep[tfx->fiberType](tfx, k3);
   ELL_3V_SCALE_ADD2(loc, 1, tfx->wPos, h, k3);
-  _tenFiberProbe(tfx, &gret, loc, AIR_FALSE);
+  fiberProbe(tfx, &gret, loc, AIR_FALSE);
   if (gret) return 1;
-  _tenFiberStep[tfx->fiberType](tfx, k4);
+  fiberStep[tfx->fiberType](tfx, k4);
 
   ELL_3V_SET(forwDir,
              c1 * k1[0] + c2 * k2[0] + c3 * k3[0] + c4 * k4[0],
@@ -435,20 +435,19 @@ _tenFiberIntegrate_RK4(tenFiberContext *tfx, double forwDir[3]) {
   return 0;
 }
 
-static int (*const _tenFiberIntegrate[TEN_FIBER_INTG_MAX + 1])(tenFiberContext *tfx,
-                                                               double *)
-  = {NULL, _tenFiberIntegrate_Euler, _tenFiberIntegrate_Midpoint,
-     _tenFiberIntegrate_RK4};
+static int (*const fiberIntegrate[TEN_FIBER_INTG_MAX + 1])(tenFiberContext *tfx,
+                                                           double *)
+  = {NULL, fiberIntegrate_Euler, fiberIntegrate_Midpoint, fiberIntegrate_RK4};
 
 /*
 ** modified body of previous tenFiberTraceSet, in order to
 ** permit passing the nval for storing desired probed values
 */
 static int /* Biff: 1 */
-_fiberTraceSet(tenFiberContext *tfx, Nrrd *nval, Nrrd *nfiber, double *buff,
-               unsigned int halfBuffLen, unsigned int *startIdxP, unsigned int *endIdxP,
-               double seed[3]) {
-  static const char me[] = "_fiberTraceSet";
+fiberTraceSet(tenFiberContext *tfx, Nrrd *nval, Nrrd *nfiber, double *buff,
+              unsigned int halfBuffLen, unsigned int *startIdxP, unsigned int *endIdxP,
+              double seed[3]) {
+  static const char me[] = "fiberTraceSet";
   airArray *fptsArr[2], /* airArrays of backward (0) and forward (1)
                            fiber points */
     *pansArr[2];        /* airArrays of backward (0) and forward (1)
@@ -520,13 +519,13 @@ _fiberTraceSet(tenFiberContext *tfx, Nrrd *nval, Nrrd *nfiber, double *buff,
   } else {
     ELL_3V_COPY(tmp, seed);
   }
-  if (_tenFiberProbe(tfx, &gret, tmp, AIR_TRUE)) {
-    biffAddf(TEN, "%s: first _tenFiberProbe failed", me);
+  if (fiberProbe(tfx, &gret, tmp, AIR_TRUE)) {
+    biffAddf(TEN, "%s: first fiberProbe failed", me);
     return 1;
   }
   if (gret) {
     if (gageErrBoundsSpace != tfx->gtx->errNum) {
-      biffAddf(TEN, "%s: gage problem on first _tenFiberProbe: %s (%d)", me,
+      biffAddf(TEN, "%s: gage problem on first fiberProbe: %s (%d)", me,
                tfx->gtx->errStr, tfx->gtx->errNum);
       return 1;
     } else {
@@ -549,7 +548,7 @@ _fiberTraceSet(tenFiberContext *tfx, Nrrd *nval, Nrrd *nfiber, double *buff,
   /* have to fake out the possible radius check, since at this point
      there is no radius of curvature; this will always pass */
   tfx->radius = DBL_MAX;
-  if ((whyStop = _tenFiberStopCheck(tfx))) {
+  if ((whyStop = fiberStopCheck(tfx))) {
     /* stopped immediately at seed point, but that's not an error */
     tfx->whyNowhere = whyStop;
     if (nval) {
@@ -604,12 +603,12 @@ _fiberTraceSet(tenFiberContext *tfx, Nrrd *nval, Nrrd *nfiber, double *buff,
       ELL_3V_COPY(tfx->wPos, seed);
     }
     /* have to initially pass the possible radius check in
-       _tenFiberStopCheck(); this will always pass */
+       fiberStopCheck(); this will always pass */
     tfx->radius = DBL_MAX;
     ELL_3V_SET(tfx->lastDir, 0, 0, 0);
     tfx->lastDirSet = AIR_FALSE;
     for (tfx->numSteps[tfx->halfIdx] = 0; AIR_TRUE; tfx->numSteps[tfx->halfIdx]++) {
-      _tenFiberProbe(tfx, &gret, tfx->wPos, AIR_FALSE);
+      fiberProbe(tfx, &gret, tfx->wPos, AIR_FALSE);
       if (gret) {
         /* even if gageProbe had an error OTHER than going out of bounds,
            we're not going to report it any differently here, alas */
@@ -620,7 +619,7 @@ _fiberTraceSet(tenFiberContext *tfx, Nrrd *nval, Nrrd *nfiber, double *buff,
         */
         break;
       }
-      if ((whyStop = _tenFiberStopCheck(tfx))) {
+      if ((whyStop = fiberStopCheck(tfx))) {
         if (tenFiberStopNumSteps == whyStop) {
           /* we stopped along this direction because
              tfx->numSteps[tfx->halfIdx] exceeded tfx->maxNumSteps.
@@ -669,7 +668,7 @@ _fiberTraceSet(tenFiberContext *tfx, Nrrd *nval, Nrrd *nfiber, double *buff,
         buffIdx += !tfx->halfIdx ? -1 : 1;
       }
       /* forwDir is set by this to point to the next fiber point */
-      if (_tenFiberIntegrate[tfx->intg](tfx, forwDir)) {
+      if (fiberIntegrate[tfx->intg](tfx, forwDir)) {
         tfx->whyStop[tfx->halfIdx] = tenFiberStopBounds;
         /*
         fprintf(stderr, "!%s: C tfx->whyStop[%d] = %s\n", me, tfx->halfIdx,
@@ -820,7 +819,7 @@ _fiberTraceSet(tenFiberContext *tfx, Nrrd *nval, Nrrd *nfiber, double *buff,
 ** for seedpoints and when fiber vertices are saved out, respectively.
 **
 ** As of Sun Aug  1 20:40:55 CDT 2010 this is just a wrapper around
-** _fiberTraceSet; this may change in the future.
+** fiberTraceSet; this may change in the future.
 */
 int /* Biff: 1 */
 tenFiberTraceSet(tenFiberContext *tfx, Nrrd *nfiber, double *buff,
@@ -828,7 +827,7 @@ tenFiberTraceSet(tenFiberContext *tfx, Nrrd *nfiber, double *buff,
                  unsigned int *endIdxP, double seed[3]) {
   static const char me[] = "tenFiberTraceSet";
 
-  if (_fiberTraceSet(tfx, NULL, nfiber, buff, halfBuffLen, startIdxP, endIdxP, seed)) {
+  if (fiberTraceSet(tfx, NULL, nfiber, buff, halfBuffLen, startIdxP, endIdxP, seed)) {
     biffAddf(TEN, "%s: problem", me);
     return 1;
   }
@@ -846,7 +845,7 @@ int /* Biff: 1 */
 tenFiberTrace(tenFiberContext *tfx, Nrrd *nfiber, double seed[3]) {
   static const char me[] = "tenFiberTrace";
 
-  if (_fiberTraceSet(tfx, NULL, nfiber, NULL, 0, NULL, NULL, seed)) {
+  if (fiberTraceSet(tfx, NULL, nfiber, NULL, 0, NULL, NULL, seed)) {
     biffAddf(TEN, "%s: problem computing tract", me);
     return 1;
   }
@@ -929,8 +928,8 @@ tenFiberSingleTrace(tenFiberContext *tfx, tenFiberSingle *tfbs, double seed[3],
   /* set tfbs->nvert */
   /* no harm in setting this even when there are no multiple fibers */
   tfx->ten2Which = which;
-  if (_fiberTraceSet(tfx, (tfx->fiberProbeItem ? tfbs->nval : NULL), tfbs->nvert, NULL,
-                     0, NULL, NULL, seed)) {
+  if (fiberTraceSet(tfx, (tfx->fiberProbeItem ? tfbs->nval : NULL), tfbs->nvert, NULL, 0,
+                    NULL, NULL, seed)) {
     biffAddf(TEN, "%s: problem computing tract", me);
     return 1;
   }
@@ -983,8 +982,8 @@ tenFiberMultiNew(void) {
 }
 
 static int /* Biff: 1 */
-tenFiberMultiCheck(airArray *arr) {
-  static const char me[] = "tenFiberMultiCheck";
+fiberMultiCheck(airArray *arr) {
+  static const char me[] = "fiberMultiCheck";
 
   if (!arr) {
     biffAddf(TEN, "%s: got NULL pointer", me);
@@ -1033,7 +1032,7 @@ tenFiberMultiTrace(tenFiberContext *tfx, tenFiberMulti *tfml, const Nrrd *_nseed
     biffAddf(TEN, "%s: got NULL pointer", me);
     return 1;
   }
-  if (tenFiberMultiCheck(tfml->fiberArr)) {
+  if (fiberMultiCheck(tfml->fiberArr)) {
     biffAddf(TEN, "%s: problem with fiber array", me);
     return 1;
   }
@@ -1115,9 +1114,9 @@ tenFiberMultiTrace(tenFiberContext *tfx, tenFiberMulti *tfml, const Nrrd *_nseed
 }
 
 static int /* Biff: 1 */
-_fiberMultiExtract(tenFiberContext *tfx, Nrrd *nval, limnPolyData *lpld,
-                   tenFiberMulti *tfml) {
-  static const char me[] = "_fiberMultiExtract";
+fiberMultiExtract(tenFiberContext *tfx, Nrrd *nval, limnPolyData *lpld,
+                  tenFiberMulti *tfml) {
+  static const char me[] = "fiberMultiExtract";
   unsigned int seedIdx, vertTotalNum, fiberNum, fiberIdx, vertTotalIdx, pansLen, pvNum;
   double *valOut;
 
@@ -1125,7 +1124,7 @@ _fiberMultiExtract(tenFiberContext *tfx, Nrrd *nval, limnPolyData *lpld,
     biffAddf(TEN, "%s: got NULL pointer", me);
     return 1;
   }
-  if (tenFiberMultiCheck(tfml->fiberArr)) {
+  if (fiberMultiCheck(tfml->fiberArr)) {
     biffAddf(TEN, "%s: problem with fiber array", me);
     return 1;
   }
@@ -1244,7 +1243,7 @@ int /* Biff: 1 */
 tenFiberMultiPolyData(tenFiberContext *tfx, limnPolyData *lpld, tenFiberMulti *tfml) {
   static const char me[] = "tenFiberMultiPolyData";
 
-  if (_fiberMultiExtract(tfx, NULL, lpld, tfml)) {
+  if (fiberMultiExtract(tfx, NULL, lpld, tfml)) {
     biffAddf(TEN, "%s: problem", me);
     return 1;
   }
@@ -1255,7 +1254,7 @@ int /* Biff: 1 */
 tenFiberMultiProbeVals(tenFiberContext *tfx, Nrrd *nval, tenFiberMulti *tfml) {
   static const char me[] = "tenFiberMultiProbeVals";
 
-  if (_fiberMultiExtract(tfx, nval, NULL, tfml)) {
+  if (fiberMultiExtract(tfx, nval, NULL, tfml)) {
     biffAddf(TEN, "%s: problem", me);
     return 1;
   }

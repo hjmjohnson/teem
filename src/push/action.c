@@ -21,7 +21,7 @@
 #include "privatePush.h"
 
 static unsigned int
-_pushPointTotal(pushContext *pctx) {
+pointTotal(pushContext *pctx) {
   unsigned int binIdx, pointNum;
   pushBin *bin;
 
@@ -34,8 +34,8 @@ _pushPointTotal(pushContext *pctx) {
 }
 
 int /* Biff: (private) 1 */
-_pushProbe(pushTask *task, pushPoint *point) {
-  static const char me[] = "_pushProbe";
+push__Probe(pushTask *task, pushPoint *point) {
+  static const char me[] = "push__Probe";
   double posWorld[4], posIdx[4];
 
   ELL_3V_COPY(posWorld, point->pos);
@@ -74,7 +74,7 @@ pushOutputGet(Nrrd *nPosOut, Nrrd *nTenOut, Nrrd *nEnrOut, pushContext *pctx) {
   pushBin *bin;
   pushPoint *point;
 
-  pointNum = _pushPointTotal(pctx);
+  pointNum = pointTotal(pctx);
   E = AIR_FALSE;
   if (nPosOut) {
     E |= nrrdMaybeAlloc_va(nPosOut, nrrdTypeFloat, 2, AIR_SIZE_T(3),
@@ -118,16 +118,16 @@ pushOutputGet(Nrrd *nPosOut, Nrrd *nTenOut, Nrrd *nEnrOut, pushContext *pctx) {
 }
 
 static int /* Biff: 1 */
-_pushPairwiseEnergy(pushTask *task, double *enrP, double frc[3], pushEnergySpec *ensp,
-                    pushPoint *myPoint, pushPoint *herPoint, double YY[3], double iscl) {
-  static const char me[] = "_pushPairwiseEnergy";
+pairwiseEnergy(pushTask *task, double *enrP, double frc[3], pushEnergySpec *ensp,
+               pushPoint *myPoint, pushPoint *herPoint, double YY[3], double iscl) {
+  static const char me[] = "pairwiseEnergy";
   double inv[7], XX[3], nXX[3], rr, mag, WW[3];
 
   if (task->pctx->midPntSmp) {
     pushPoint _tmpPoint;
     double det;
     ELL_3V_SCALE_ADD2(_tmpPoint.pos, 0.5, myPoint->pos, 0.5, herPoint->pos);
-    if (_pushProbe(task, &_tmpPoint)) {
+    if (push__Probe(task, &_tmpPoint)) {
       biffAddf(PUSH, "%s: at midpoint of %u and %u", me, myPoint->ttaagg,
                herPoint->ttaagg);
       *enrP = AIR_NAN;
@@ -195,8 +195,8 @@ pushBinProcess(pushTask *task, unsigned int myBinIdx) {
             /* too far away to interact */
             continue;
           }
-          if (_pushPairwiseEnergy(task, &enr, frc, task->pctx->ensp, myPoint, herPoint,
-                                  diff, iscl)) {
+          if (pairwiseEnergy(task, &enr, frc, task->pctx->ensp, myPoint, herPoint, diff,
+                             iscl)) {
             biffAddf(PUSH, "%s: between points %u and %u, A", me, myPoint->ttaagg,
                      herPoint->ttaagg);
             return 1;
@@ -227,8 +227,8 @@ pushBinProcess(pushTask *task, unsigned int myBinIdx) {
       for (neighIdx = 0; neighIdx < myPoint->neighArr->len; neighIdx++) {
         herPoint = myPoint->neigh[neighIdx];
         ELL_3V_SUB(diff, herPoint->pos, myPoint->pos);
-        if (_pushPairwiseEnergy(task, &enr, frc, task->pctx->ensp, myPoint, herPoint,
-                                diff, iscl)) {
+        if (pairwiseEnergy(task, &enr, frc, task->pctx->ensp, myPoint, herPoint, diff,
+                           iscl)) {
           biffAddf(PUSH, "%s: between points %u and %u, B", me, myPoint->ttaagg,
                    herPoint->ttaagg);
           return 1;
@@ -362,7 +362,7 @@ pushBinProcess(pushTask *task, unsigned int myBinIdx) {
     }
     if (1.0 <= task->pctx->probeProb
         || airDrandMT_r(task->rng) <= task->pctx->probeProb) {
-      if (_pushProbe(task, myPoint)) {
+      if (push__Probe(task, myPoint)) {
         biffAddf(PUSH, "%s: probing at new field pos", me);
         return 1;
       }

@@ -46,7 +46,7 @@ limnObjectRender(limnObject *obj, limnCamera *cam, limnWindow *win) {
 }
 
 static void
-_limnPSPreamble(limnObject *obj, limnCamera *cam, limnWindow *win) {
+psPreamble(limnObject *obj, limnCamera *cam, limnWindow *win) {
 
   AIR_UNUSED(obj);
   AIR_UNUSED(cam);
@@ -84,7 +84,7 @@ _limnPSPreamble(limnObject *obj, limnCamera *cam, limnWindow *win) {
 }
 
 static void
-_limnPSEpilogue(limnObject *obj, limnCamera *cam, limnWindow *win) {
+psEpilogue(limnObject *obj, limnCamera *cam, limnWindow *win) {
 
   AIR_UNUSED(obj);
   AIR_UNUSED(cam);
@@ -97,9 +97,9 @@ _limnPSEpilogue(limnObject *obj, limnCamera *cam, limnWindow *win) {
 }
 
 static void
-_limnPSDrawFace(limnObject *obj, limnFace *face, limnCamera *cam, Nrrd *nmap,
-                limnWindow *win) {
-  /* static const char me[] = "_limnPSDrawFace"; */
+psDrawFace(limnObject *obj, limnFace *face, limnCamera *cam, Nrrd *nmap,
+           limnWindow *win) {
+  /* static const char me[] = "psDrawFace"; */
   unsigned int vii;
   limnVertex *vert;
   limnLook *look;
@@ -145,7 +145,7 @@ _limnPSDrawFace(limnObject *obj, limnFace *face, limnCamera *cam, Nrrd *nmap,
 }
 
 static void
-_limnPSDrawEdge(limnObject *obj, limnEdge *edge, limnCamera *cam, limnWindow *win) {
+psDrawEdge(limnObject *obj, limnEdge *edge, limnCamera *cam, limnWindow *win) {
   limnVertex *vert0, *vert1;
   float R, G, B;
 
@@ -207,7 +207,7 @@ limnObjectPSDraw(limnObject *obj, limnCamera *cam, Nrrd *nmap, limnWindow *win) 
 
   limnObjectDepthSortParts(obj);
 
-  _limnPSPreamble(obj, cam, win);
+  psPreamble(obj, cam, win);
 
   for (partIdx = 0; partIdx < obj->partNum; partIdx++) {
     part = obj->part[partIdx];
@@ -237,11 +237,11 @@ limnObjectPSDraw(limnObject *obj, limnCamera *cam, Nrrd *nmap, limnWindow *win) 
       widthTmp = win->ps.lineWidth[e->type];
       fprintf(win->file, "%g setgray\n", 1 - win->ps.bg[0]);
       win->ps.edgeWidth[e->type] = 8;
-      _limnPSDrawEdge(obj, r, e, cam, win);
+      psDrawEdge(obj, r, e, cam, win);
       fprintf(win->file, "%g %g %g RGB\n",
               r->rgba[0], r->rgba[1], r->rgba[2]);
       win->ps.edgeWidth[e->visible] = 4;
-      _limnPSDrawEdge(obj, r, e, cam, win);
+      psDrawEdge(obj, r, e, cam, win);
       win->ps.edgeWidth[e->visible] = widthTmp;
       */
     } else {
@@ -260,7 +260,7 @@ limnObjectPSDraw(limnObject *obj, limnCamera *cam, Nrrd *nmap, limnWindow *win) 
           ELL_3V_SCALE(face->worldNormal, -1, face->worldNormal);
         }
         if (!win->ps.wireFrame && face->visible) {
-          _limnPSDrawFace(obj, face, cam, nmap, win);
+          psDrawFace(obj, face, cam, nmap, win);
         }
       }
 
@@ -291,12 +291,12 @@ limnObjectPSDraw(limnObject *obj, limnCamera *cam, Nrrd *nmap, limnWindow *win) 
                                                       : limnEdgeTypeBackFacet);
           }
         }
-        _limnPSDrawEdge(obj, edge, cam, win);
+        psDrawEdge(obj, edge, cam, win);
       }
     }
   }
 
-  _limnPSEpilogue(obj, cam, win);
+  psEpilogue(obj, cam, win);
 
   return 0;
 }
@@ -333,7 +333,7 @@ limnObjectPSDrawConcave(limnObject *obj, limnCamera *cam, Nrrd *nmap, limnWindow
 
   limnObjectDepthSortFaces(obj);
 
-  _limnPSPreamble(obj, cam, win);
+  psPreamble(obj, cam, win);
 
   /* set every face's visibility */
   for (faceIdx = 0; faceIdx < obj->faceNum; faceIdx++) {
@@ -381,19 +381,19 @@ limnObjectPSDrawConcave(limnObject *obj, limnCamera *cam, Nrrd *nmap, limnWindow
       continue;
     }
     if (!win->ps.wireFrame) {
-      _limnPSDrawFace(obj, face, cam, nmap, win);
+      psDrawFace(obj, face, cam, nmap, win);
     }
     /* draw those edges around the face that won't be seen again by
        future faces in the depth-first traversal */
     for (eii = 0; eii < face->sideNum; eii++) {
       edge = obj->edge + face->edgeIdx[eii];
       if (limnEdgeTypeContour == edge->type) {
-        _limnPSDrawEdge(obj, edge, cam, win);
+        psDrawEdge(obj, edge, cam, win);
       } else if (limnEdgeTypeFrontCrease == edge->type
                  || limnEdgeTypeFrontFacet == edge->type) {
         if (edge->once) {
           /* its been seen once already, okay to draw */
-          _limnPSDrawEdge(obj, edge, cam, win);
+          psDrawEdge(obj, edge, cam, win);
           edge->once = AIR_FALSE;
         } else {
           /* we're the first to see it, and we're not the last, don't draw */
@@ -403,7 +403,7 @@ limnObjectPSDrawConcave(limnObject *obj, limnCamera *cam, Nrrd *nmap, limnWindow
     }
   }
 
-  _limnPSEpilogue(obj, cam, win);
+  psEpilogue(obj, cam, win);
 
   return 0;
 }

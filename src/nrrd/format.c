@@ -40,7 +40,7 @@
 */
 
 static int
-_nrrdFormatUnknown_available(void) {
+formatUnknown_available(void) {
 
   /* insert code here */
 
@@ -48,7 +48,7 @@ _nrrdFormatUnknown_available(void) {
 }
 
 static int
-_nrrdFormatUnknown_nameLooksLike(const char *filename) {
+formatUnknown_nameLooksLike(const char *filename) {
 
   /* insert code here */
   AIR_UNUSED(filename);
@@ -57,9 +57,8 @@ _nrrdFormatUnknown_nameLooksLike(const char *filename) {
 }
 
 static int /* Biff: maybe:3:AIR_FALSE */
-_nrrdFormatUnknown_fitsInto(const Nrrd *nrrd, const NrrdEncoding *encoding,
-                            int useBiff) {
-  static const char me[] = "_nrrdFormatUnknown_fitsInto";
+formatUnknown_fitsInto(const Nrrd *nrrd, const NrrdEncoding *encoding, int useBiff) {
+  static const char me[] = "formatUnknown_fitsInto";
 
   if (!(nrrd && encoding)) {
     biffMaybeAddf(useBiff, NRRD, "%s: got NULL nrrd (%p) or encoding (%p)", me,
@@ -73,7 +72,7 @@ _nrrdFormatUnknown_fitsInto(const Nrrd *nrrd, const NrrdEncoding *encoding,
 }
 
 static int
-_nrrdFormatUnknown_contentStartsLike(NrrdIoState *nio) {
+formatUnknown_contentStartsLike(NrrdIoState *nio) {
 
   /* insert code here */
   AIR_UNUSED(nio);
@@ -82,8 +81,8 @@ _nrrdFormatUnknown_contentStartsLike(NrrdIoState *nio) {
 }
 
 static int /* Biff: 1 */
-_nrrdFormatUnknown_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
-  static const char me[] = "_nrrdFormatUnknown_read";
+formatUnknown_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
+  static const char me[] = "formatUnknown_read";
 
   /* insert code here, and remove error handling below */
   AIR_UNUSED(file);
@@ -95,8 +94,8 @@ _nrrdFormatUnknown_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
 }
 
 static int /* Biff: 1 */
-_nrrdFormatUnknown_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
-  static const char me[] = "_nrrdFormatUnknown_write";
+formatUnknown_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
+  static const char me[] = "formatUnknown_write";
 
   /* insert code here, and remove error handling below */
   AIR_UNUSED(file);
@@ -107,24 +106,24 @@ _nrrdFormatUnknown_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
   return 1;
 }
 
-static const NrrdFormat _nrrdFormatUnknown = {"unknown",
-                                              AIR_FALSE, /* isImage */
-                                              AIR_TRUE,  /* readable */
-                                              _nrrdFormatUnknown_available,
-                                              _nrrdFormatUnknown_nameLooksLike,
-                                              _nrrdFormatUnknown_fitsInto,
-                                              _nrrdFormatUnknown_contentStartsLike,
-                                              _nrrdFormatUnknown_read,
-                                              _nrrdFormatUnknown_write};
+static const NrrdFormat formatUnknown = {"unknown",
+                                         AIR_FALSE, /* isImage */
+                                         AIR_TRUE,  /* readable */
+                                         formatUnknown_available,
+                                         formatUnknown_nameLooksLike,
+                                         formatUnknown_fitsInto,
+                                         formatUnknown_contentStartsLike,
+                                         formatUnknown_read,
+                                         formatUnknown_write};
 
-const NrrdFormat *const nrrdFormatUnknown = &_nrrdFormatUnknown;
+const NrrdFormat *const nrrdFormatUnknown = &formatUnknown;
 
 const NrrdFormat *const nrrdFormatArray[NRRD_FORMAT_TYPE_MAX + 1] = {
-  &_nrrdFormatUnknown, /* */
-  &_nrrdFormatNRRD,    /* */
-  &_nrrdFormatPNM,     /* */
-  &_nrrdFormatPNG,     /* */
-  &_nrrdFormatVTK,     /* */
-  &_nrrdFormatText,    /* */
-  &_nrrdFormatEPS      /* */
+  &formatUnknown,    /* */
+  &nrrd__FormatNRRD, /* */
+  &nrrd__FormatPNM,  /* */
+  &nrrd__FormatPNG,  /* */
+  &nrrd__FormatVTK,  /* */
+  &nrrd__FormatText, /* */
+  &nrrd__FormatEPS   /* */
 };

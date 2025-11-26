@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Normalizes array orientation and meta-data"
-static const char *_unrrdu_dnormInfoL
+static const char *unu_dnormInfoL
   = (INFO ". Forces information about kind and orientation into "
           "a consistent form, and nixes various other fields. This was "
           "originally created as a utility for the Diderot project "
@@ -31,7 +31,7 @@ static const char *_unrrdu_dnormInfoL
           "* Uses nrrdMetaDataNormalize");
 
 static int
-unrrdu_dnormMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+unu_dnormMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
   int headerOnly;
   hestOptAdd_Flag(&hopt, "h,header", &headerOnly,
@@ -60,12 +60,12 @@ unrrdu_dnormMain(int argc, const char **argv, const char *me, const hestParm *_h
   hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-",
                      "input image. By default reads from stdin", nrrdHestNrrdNoTTY);
   char *outS;
-  OPT_ADD_NOUT(outS, "output filename");
+  MY_OPT_ADD_NOUT(outS, "output filename");
 
   // (boilerplate for YES some hparm modification)
   hestParm *hparm = hestParmCopy(_hparm);
   hparm->noArgsIsNoProblem = AIR_TRUE; // thanks to nrrdHestNrrdNoTTY
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_dnormInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_dnormInfoL);
   airArray *mop = unrrduMopNew(hopt, hparm);
   char *err;
 
@@ -112,4 +112,4 @@ unrrdu_dnormMain(int argc, const char **argv, const char *me, const hestParm *_h
   return 0;
 }
 
-UNRRDU_CMD(dnorm, INFO);
+MY_UNRRDU_CMD(dnorm, INFO);

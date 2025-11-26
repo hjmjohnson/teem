@@ -24,8 +24,8 @@
 ** because the pullContext keeps an array of bins (not pointers to them)
 ** we have Init and Done functions (not New and Nix)
 */
-void
-_pullBinInit(pullBin *bin) {
+static void
+binInit(pullBin *bin) {
 
   bin->point = NULL;
   bin->pointNum = 0;
@@ -37,8 +37,8 @@ _pullBinInit(pullBin *bin) {
 /*
 ** bins own the points they contain- so this frees them
 */
-void
-_pullBinDone(pullBin *bin) {
+static void
+binDone(pullBin *bin) {
   unsigned int idx;
 
   for (idx = 0; idx < bin->pointNum; idx++) {
@@ -50,8 +50,8 @@ _pullBinDone(pullBin *bin) {
 }
 
 static int /* Biff: 1 */
-_pullBinNeighborSet(pullContext *pctx, pullBin *bin) {
-  static const char me[] = "_pullBinNeighborSet";
+binNeighborSet(pullContext *pctx, pullBin *bin) {
+  static const char me[] = "binNeighborSet";
   unsigned int neiIdx, neiNum, be[4], binIdx;
   unsigned int xi, yi, zi, si, xx, yy, zz, ss, xmax, ymax, zmax, smax;
   pullBin *nei[3 * 3 * 3 * 3];
@@ -101,9 +101,9 @@ _pullBinNeighborSet(pullContext *pctx, pullBin *bin) {
 ** bins on boundary now extend to infinity; so the only time this
 ** returns NULL (indicating error) is for non-existent positions
 */
-pullBin * /* Biff: (private) NULL */
-_pullBinLocate(pullContext *pctx, double *posWorld) {
-  static const char me[] = "_pullBinLocate";
+static pullBin * /* Biff: NULL */
+binLocate(pullContext *pctx, double *posWorld) {
+  static const char me[] = "binLocate";
   unsigned int axi, eidx[4], binIdx;
 
   if (!ELL_4V_EXISTS(posWorld)) {
@@ -134,8 +134,8 @@ _pullBinLocate(pullContext *pctx, double *posWorld) {
 ** this makes the bin the owner of the point
 */
 static int /* Biff: 1 */
-_pullBinPointAdd(pullContext *pctx, pullBin *bin, pullPoint *point) {
-  static const char me[] = "_pullBinPointAdd";
+binPointAdd(pullContext *pctx, pullBin *bin, pullPoint *point) {
+  static const char me[] = "binPointAdd";
   int pntI;
   pullPtrPtrUnion pppu;
 
@@ -143,7 +143,7 @@ _pullBinPointAdd(pullContext *pctx, pullBin *bin, pullPoint *point) {
   if (!(bin->pointArr)) {
     pppu.points = &(bin->point);
     bin->pointArr = airArrayNew(pppu.v, &(bin->pointNum), sizeof(pullPoint *),
-                                _PULL_BIN_INCR);
+                                MY_PULL_BIN_INCR);
     if (!(bin->pointArr)) {
       biffAddf(PULL, "%s: couldn't create point array", me);
       return 1;
@@ -151,7 +151,7 @@ _pullBinPointAdd(pullContext *pctx, pullBin *bin, pullPoint *point) {
   }
   if (!(bin->neighBin)) {
     /* set up neighbor bin vector if not done so already */
-    if (_pullBinNeighborSet(pctx, bin)) {
+    if (binNeighborSet(pctx, bin)) {
       biffAddf(PULL, "%s: couldn't initialize neighbor bins", me);
       return 1;
     }
@@ -165,8 +165,8 @@ _pullBinPointAdd(pullContext *pctx, pullBin *bin, pullPoint *point) {
 ** the bin loses track of the point, caller responsible for ownership,
 ** even though caller never identifies it by pointer, which is weird
 */
-void
-_pullBinPointRemove(pullContext *pctx, pullBin *bin, int loseIdx) {
+static void
+binPointRemove(pullContext *pctx, pullBin *bin, int loseIdx) {
 
   AIR_UNUSED(pctx);
   bin->point[loseIdx] = bin->point[bin->pointNum - 1];
@@ -185,14 +185,14 @@ pullBinsPointAdd(pullContext *pctx, pullPoint *point, pullBin **binP) {
   if (binP) {
     *binP = NULL;
   }
-  if (!(bin = _pullBinLocate(pctx, point->pos))) {
+  if (!(bin = binLocate(pctx, point->pos))) {
     biffAddf(PULL, "%s: can't locate point %p %u", me, AIR_VOIDP(point), point->idtag);
     return 1;
   }
   if (binP) {
     *binP = bin;
   }
-  if (_pullBinPointAdd(pctx, bin, point)) {
+  if (binPointAdd(pctx, bin, point)) {
     biffAddf(PULL, "%s: trouble adding point %p %u", me, AIR_VOIDP(point), point->idtag);
     return 1;
   }
@@ -215,7 +215,7 @@ pullBinsPointMaybeAdd(pullContext *pctx, pullPoint *point,
     biffAddf(PULL, "%s: got NULL pointer", me);
     return 1;
   }
-  if (!(bin = _pullBinLocate(pctx, point->pos))) {
+  if (!(bin = binLocate(pctx, point->pos))) {
     biffAddf(PULL, "%s: can't locate point %p %u", me, AIR_VOIDP(point), point->idtag);
     return 1;
   }
@@ -230,13 +230,13 @@ pullBinsPointMaybeAdd(pullContext *pctx, pullPoint *point,
       ELL_3V_SCALE(diff, 1 / pctx->sysParm.radiusSpace, diff);
       diff[3] /= pctx->sysParm.radiusScale;
       len = ELL_4V_LEN(diff);
-      if (len < _PULL_BINNING_MAYBE_ADD_THRESH) {
+      if (len < MY_PULL_BINNING_MAYBE_ADD_THRESH) {
         okay = AIR_FALSE;
         break;
       }
     }
     if (okay) {
-      if (_pullBinPointAdd(pctx, bin, point)) {
+      if (binPointAdd(pctx, bin, point)) {
         biffAddf(PULL, "%s: trouble adding point %p %u", me, AIR_VOIDP(point),
                  point->idtag);
         return 1;
@@ -246,7 +246,7 @@ pullBinsPointMaybeAdd(pullContext *pctx, pullPoint *point,
       *added = AIR_FALSE;
     }
   } else {
-    if (_pullBinPointAdd(pctx, bin, point)) {
+    if (binPointAdd(pctx, bin, point)) {
       biffAddf(PULL, "%s: trouble adding point %p %u", me, AIR_VOIDP(point),
                point->idtag);
       return 1;
@@ -257,8 +257,8 @@ pullBinsPointMaybeAdd(pullContext *pctx, pullPoint *point,
 }
 
 int /* Biff: (private) 1 */
-_pullBinSetup(pullContext *pctx) {
-  static const char me[] = "_pullBinSetup";
+pull__BinSetup(pullContext *pctx) {
+  static const char me[] = "pull__BinSetup";
   unsigned ii;
   double volEdge[4], width;
 
@@ -331,7 +331,7 @@ _pullBinSetup(pullContext *pctx) {
     printf("%s: done allocating. Initializing . . . \n", me);
   }
   for (ii = 0; ii < pctx->binNum; ii++) {
-    _pullBinInit(pctx->bin + ii);
+    binInit(pctx->bin + ii);
   }
   if (pctx->verbose) {
     printf("%s: done initializing.\n", me);
@@ -348,11 +348,11 @@ _pullBinSetup(pullContext *pctx) {
 }
 
 void
-_pullBinFinish(pullContext *pctx) {
+pull__BinFinish(pullContext *pctx) {
   unsigned int ii;
 
   for (ii = 0; ii < pctx->binNum; ii++) {
-    _pullBinDone(pctx->bin + ii);
+    binDone(pctx->bin + ii);
   }
   pctx->bin = (pullBin *)airFree(pctx->bin);
   ELL_4V_SET(pctx->binsEdge, 0, 0, 0, 0);
@@ -369,14 +369,14 @@ _pullBinFinish(pullContext *pctx) {
 ** does *not* have to be thread-safe in any way
 */
 int /* Biff: (private) 1 */
-_pullIterFinishDescent(pullContext *pctx) {
-  static const char me[] = "_pullIterFinishDescent";
+pull__IterFinishDescent(pullContext *pctx) {
+  static const char me[] = "pull__IterFinishDescent";
   unsigned int oldBinIdx, pointIdx, taskIdx, runIdx, pointNum;
   pullBin *oldBin;
   pullPoint *point;
   int added;
 
-  _pullNixTheNixed(pctx);
+  pull__NixTheNixed(pctx);
 
   pctx->stuckNum = 0;
   for (taskIdx = 0; taskIdx < pctx->threadNum; taskIdx++) {
@@ -409,7 +409,7 @@ _pullIterFinishDescent(pullContext *pctx) {
       /* tricky: we can't traverse bin->point[], because of how it is
          re-ordered on point removal, so we always grab point[0] */
       pctx->tmpPointPtr[runIdx++] = oldBin->point[0];
-      _pullBinPointRemove(pctx, oldBin, 0);
+      binPointRemove(pctx, oldBin, 0);
     }
   }
   airShuffle_r(pctx->task[0]->rng, pctx->tmpPointPerm, pointNum,

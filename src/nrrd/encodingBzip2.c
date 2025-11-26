@@ -21,11 +21,21 @@
 #include "privateNrrd.h"
 
 #ifdef TEEM_BZIP2
+#  if defined(__clang__)
+#    pragma clang diagnostic push
+#    pragma clang diagnostic ignored "-Wreserved-identifier"
+/*   because bzlib.h's "#define _BZLIB_H" has reserved identifier _BZLIB_H */
+#  endif
 #  include <bzlib.h>
+#  if defined(__clang__)
+#    pragma clang diagnostic pop
+#  endif
 #endif
 
+// your code for which the warning gets suppressed
+
 static int
-_nrrdEncodingBzip2_available(void) {
+encodingBzip2_available(void) {
 
 #ifdef TEEM_BZIP2
   return AIR_TRUE;
@@ -35,9 +45,8 @@ _nrrdEncodingBzip2_available(void) {
 }
 
 static int /* Biff: 1 */
-_nrrdEncodingBzip2_read(FILE *file, void *_data, size_t elNum, Nrrd *nrrd,
-                        NrrdIoState *nio) {
-  static const char me[] = "_nrrdEncodingBzip2_read";
+encodingBzip2_read(FILE *file, void *_data, size_t elNum, Nrrd *nrrd, NrrdIoState *nio) {
+  static const char me[] = "encodingBzip2_read";
 #ifdef TEEM_BZIP2
   size_t data_size, total_read, block_size;
   int read, bzerror = BZ_OK;
@@ -151,9 +160,9 @@ typedef union {
 } ptrAlias;
 
 static int /* Biff: 1 */
-_nrrdEncodingBzip2_write(FILE *file, const void *_data, size_t elNum, const Nrrd *nrrd,
-                         NrrdIoState *nio) {
-  static const char me[] = "_nrrdEncodingBzip2_write";
+encodingBzip2_write(FILE *file, const void *_data, size_t elNum, const Nrrd *nrrd,
+                    NrrdIoState *nio) {
+  static const char me[] = "encodingBzip2_write";
 #ifdef TEEM_BZIP2
   size_t data_size, total_written, block_size;
   int bs, bzerror = BZ_OK;
@@ -243,12 +252,12 @@ _nrrdEncodingBzip2_write(FILE *file, const void *_data, size_t elNum, const Nrrd
 #endif
 }
 
-const NrrdEncoding _nrrdEncodingBzip2 = {"bzip2",   /* name */
-                                         "raw.bz2", /* suffix */
-                                         AIR_TRUE,  /* endianMatters */
-                                         AIR_TRUE,  /* isCompression */
-                                         _nrrdEncodingBzip2_available,
-                                         _nrrdEncodingBzip2_read,
-                                         _nrrdEncodingBzip2_write};
+const NrrdEncoding nrrd__EncodingBzip2 = {"bzip2",   /* name */
+                                          "raw.bz2", /* suffix */
+                                          AIR_TRUE,  /* endianMatters */
+                                          AIR_TRUE,  /* isCompression */
+                                          encodingBzip2_available,
+                                          encodingBzip2_read,
+                                          encodingBzip2_write};
 
-const NrrdEncoding *const nrrdEncodingBzip2 = &_nrrdEncodingBzip2;
+const NrrdEncoding *const nrrdEncodingBzip2 = &nrrd__EncodingBzip2;

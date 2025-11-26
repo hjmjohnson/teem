@@ -22,7 +22,7 @@
 #include <teem/moss.h>
 
 #define INFO "(I)mage (L)inear Trans(X-->K)forms."
-static const char *_unrrdu_ilkInfoL
+static const char *unu_ilkInfoL
   = (INFO ". Applies homogeneous coordinate transforms to a given *2D* "
           "(possibly multi-channel) image, using the given kernel for resampling. "
           "This started as the \"ilk\" stand-alone tool, but was moved into unu "
@@ -228,7 +228,7 @@ ilkGo(airArray *mop, Nrrd *nout, Nrrd *nin, mossSampler *msp, int bound,
 }
 
 static int
-unrrdu_ilkMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_ilkMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   double *origInfo;
   hestOptAdd_1_Other(&hopt, "0", "origin", &origInfo, "p:0,0",
@@ -308,10 +308,10 @@ unrrdu_ilkMain(int argc, const char **argv, const char *me, const hestParm *hpar
   hestOptAdd_1_Other(&hopt, "i,input", "image", &nin, "-", "input 2D image",
                      nrrdHestNrrdNoTTY);
   char *outS;
-  OPT_ADD_NOUT(outS, "output image");
+  MY_OPT_ADD_NOUT(outS, "output image");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_ilkInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_ilkInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -361,10 +361,10 @@ unrrdu_ilkMain(int argc, const char **argv, const char *me, const hestParm *hpar
     airMopError(mop);
     return 1;
   }
-  SAVE(outS, nout, NULL);
+  MY_SAVE(outS, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(ilk, INFO);
+MY_UNRRDU_CMD(ilk, INFO);

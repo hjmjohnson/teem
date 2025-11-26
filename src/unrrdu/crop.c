@@ -21,11 +21,11 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Crop along each axis to make a smaller nrrd"
-static const char *_unrrdu_cropInfoL = (INFO ".\n "
-                                             "* Uses nrrdCrop");
+static const char *unu_cropInfoL = (INFO ".\n "
+                                         "* Uses nrrdCrop");
 
 static int
-unrrdu_cropMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_cropMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   /* one might think this is a candidate for hparm->noArgsIsNoProblem, but really
   the "-b" option is an alternative to -min,-max: it is not the case that neither
@@ -33,18 +33,18 @@ unrrdu_cropMain(int argc, const char **argv, const char *me, const hestParm *hpa
   both -min and -max, must be set"; maybe for TeemV3! */
   long int *minOff, *maxOff;
   uint minLen, maxLen;
-  OPT_ADD_BOUND("min,minimum", 0, minOff, "0",
-                "low corner of bounding box.\n "
-                "\b\bo <int> gives 0-based index\n "
-                "\b\bo M, M+<int>, M-<int> give index relative "
-                "to the last sample on the axis (M == #samples-1).",
-                minLen);
-  OPT_ADD_BOUND("max,maximum", 0, maxOff, "0",
-                "high corner of bounding box.  "
-                "Besides the specification styles described above, "
-                "there's also:\n "
-                "\b\bo m+<int> give index relative to minimum.",
-                maxLen);
+  MY_OPT_ADD_BOUND("min,minimum", 0, minOff, "0",
+                   "low corner of bounding box.\n "
+                   "\b\bo <int> gives 0-based index\n "
+                   "\b\bo M, M+<int>, M-<int> give index relative "
+                   "to the last sample on the axis (M == #samples-1).",
+                   minLen);
+  MY_OPT_ADD_BOUND("max,maximum", 0, maxOff, "0",
+                   "high corner of bounding box.  "
+                   "Besides the specification styles described above, "
+                   "there's also:\n "
+                   "\b\bo m+<int> give index relative to minimum.",
+                   maxLen);
   Nrrd *_nbounds;
   hestOptAdd_1_Other(&hopt, "b,bounds", "filename", &_nbounds, "",
                      "a filename given here overrides the -min and -max "
@@ -55,12 +55,12 @@ unrrdu_cropMain(int argc, const char **argv, const char *me, const hestParm *hpa
                      "supported in the bounds file.",
                      nrrdHestNrrdNoTTY);
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_cropInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_cropInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -137,10 +137,10 @@ unrrdu_cropMain(int argc, const char **argv, const char *me, const hestParm *hpa
     return 1;
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(crop, INFO);
+MY_UNRRDU_CMD(crop, INFO);

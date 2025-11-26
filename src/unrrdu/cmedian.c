@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Cheap histogram-based median/mode filtering"
-static const char *_unrrdu_cmedianInfoL
+static const char *unu_cmedianInfoL
   = (INFO ". Only works on 1, 2, or 3 dimensions.  The window "
           "over which filtering is done is always square, and "
           "only a simplistic weighting scheme is available. "
@@ -35,7 +35,7 @@ static const char *_unrrdu_cmedianInfoL
           "case of \"-c\"");
 
 static int
-unrrdu_cmedianMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+unu_cmedianMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
   uint radius;
   hestOptAdd_1_UInt(&hopt, "r,radius", "radius", &radius, "1",
@@ -77,12 +77,12 @@ unrrdu_cmedianMain(int argc, const char **argv, const char *me, const hestParm *
   hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-", "input nrrd",
                      nrrdHestNrrdNoTTY);
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for YES some hparm modification)
   hestParm *hparm = hestParmCopy(_hparm);
   hparm->noArgsIsNoProblem = AIR_TRUE; // thanks to nrrdHestNrrdNoTTY
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_cmedianInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_cmedianInfoL);
   airArray *mop = unrrduMopNew(hopt, hparm);
   char *err;
 
@@ -138,10 +138,10 @@ unrrdu_cmedianMain(int argc, const char **argv, const char *me, const hestParm *
     }
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(cmedian, INFO);
+MY_UNRRDU_CMD(cmedian, INFO);

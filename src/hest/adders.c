@@ -99,7 +99,7 @@ hestOptAdd_Flag(hestOpt **hoptP, const char *flag, int *valueP, const char *info
 which follow these naming conventions:
 
 DCL_ = declaration (for the header file)
-IMP- = implementation (for this file)
+IMP_ = implementation (for this file)
 DEF_ = definition = declaration + implementation
 _T_ = simple scalar types
 _E_ = airEnum
@@ -122,19 +122,19 @@ _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1
 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1
 */
 
-/* "_1v_" functions (declared via _DCL_T_0) are for a single variadic parm opt (kind 4),
-    "_1_" functions (declared via _DCL_T_1) are for a single fixed parm opt (kind 2)
+/* "_1v_" functions (declared via SUB_DCL_T_0) are for single variadic parm opt (kind 4),
+    "_1_" functions (declared via SUB_DCL_T_1) are for single fixed parm opt (kind 2)
 */
-#define _DCL_T_0(ATYP, CTYP)                                                            \
+#define SUB_DCL_T_0(ATYP, CTYP)                                                         \
   unsigned int hestOptAdd_1v_##ATYP(hestOpt **hoptP, const char *flag,                  \
                                     const char *name, CTYP *valueP, const char *dflt,   \
                                     const char *info)
-#define _DCL_T_1(ATYP, CTYP)                                                            \
+#define SUB_DCL_T_1(ATYP, CTYP)                                                         \
   unsigned int hestOptAdd_1_##ATYP(hestOpt **hoptP, const char *flag, /* */             \
                                    const char *name, CTYP *valueP, const char *dflt,    \
                                    const char *info)
-/* DCL_T_1(M) chooses between _DCL_T_0 and _DCL_T_1 */
-#define DCL_T_1(M, ATYP, CTYP) CONC(_DCL_T, M)(ATYP, CTYP)
+/* DCL_T_1(M) chooses between SUB_DCL_T_0 and SUB_DCL_T_1 */
+#define DCL_T_1(M, ATYP, CTYP) CONC(SUB_DCL_T, M)(ATYP, CTYP)
 /* IMP_T_1(M) passes M as minimum # parms;
    M=0 --> kind 4
    M=1 --> kind 2; max # parms is 1 for both  */
@@ -146,15 +146,15 @@ _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1
   }
 #define DEF_T_1(M, ATYP, CTYP) DCL_T_1(M, ATYP, CTYP) IMP_T_1(M, ATYP, CTYP)
 /* copy-pasta for Enum -------------- */
-#define _DCL_E_0                                                                        \
+#define SUB_DCL_E_0                                                                     \
   unsigned int hestOptAdd_1v_Enum(hestOpt **hoptP, const char *flag, /* */              \
                                   const char *name, int *valueP, const char *dflt,      \
                                   const char *info, const airEnum *enm)
-#define _DCL_E_1                                                                        \
+#define SUB_DCL_E_1                                                                     \
   unsigned int hestOptAdd_1_Enum(hestOpt **hoptP, const char *flag, /* */               \
                                  const char *name, int *valueP, const char *dflt,       \
                                  const char *info, const airEnum *enm)
-#define DCL_E_1(M) CONC(_DCL_E, M)
+#define DCL_E_1(M) CONC(SUB_DCL_E, M)
 #define IMP_E_1(M)                                                                      \
   {                                                                                     \
     return hestOptAdd_nva(hoptP, flag, name, airTypeEnum, M, 1, /* */                   \
@@ -163,15 +163,15 @@ _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1 _1
   }
 #define DEF_E_1(M) DCL_E_1(M) IMP_E_1(M)
 /* copy-pasta for Other -------------- */
-#define _DCL_O_0                                                                        \
+#define SUB_DCL_O_0                                                                     \
   unsigned int hestOptAdd_1v_Other(hestOpt **hoptP, const char *flag, /* */             \
                                    const char *name, void *valueP, const char *dflt,    \
                                    const char *info, const hestCB *CB)
-#define _DCL_O_1                                                                        \
+#define SUB_DCL_O_1                                                                     \
   unsigned int hestOptAdd_1_Other(hestOpt **hoptP, const char *flag, /* */              \
                                   const char *name, void *valueP, const char *dflt,     \
                                   const char *info, const hestCB *CB)
-#define DCL_O_1(M) CONC(_DCL_O, M)
+#define DCL_O_1(M) CONC(SUB_DCL_O, M)
 #define IMP_O_1(M)                                                                      \
   {                                                                                     \
     return hestOptAdd_nva(hoptP, flag, name, airTypeOther, M, 1, /* */                  \
@@ -334,29 +334,30 @@ LETS_GET_THIS_PARTY_STARTED(DEF)
 
 /* Macro for making a string out of whatever something has been #define'd to
    https://gcc.gnu.org/onlinedocs/cpp/Stringizing.html */
-#define __STR(name) #name
-#define _STR(name)  __STR(name)
+#define SUB_STR(name)   #name
+#define STRINGIZE(name) SUB_STR(name)
 
 /* for generating body of hestOptAddDeclsPrint;
 NOTE assuming the local variable FILE *ff */
 #define PRINT_T_1(M, ATYP, CTYP)                                                        \
-  fprintf(ff, "HEST_EXPORT " _STR(DCL_T_1(M, ATYP, CTYP)) ";\n");
-#define PRINT_E_1(M) fprintf(ff, "HEST_EXPORT " _STR(DCL_E_1(M)) ";\n");
-#define PRINT_O_1(M) fprintf(ff, "HEST_EXPORT " _STR(DCL_O_1(M)) ";\n");
+  fprintf(ff, "HEST_EXPORT " STRINGIZE(DCL_T_1(M, ATYP, CTYP)) ";\n");
+#define PRINT_E_1(M) fprintf(ff, "HEST_EXPORT " STRINGIZE(DCL_E_1(M)) ";\n");
+#define PRINT_O_1(M) fprintf(ff, "HEST_EXPORT " STRINGIZE(DCL_O_1(M)) ";\n");
 #define PRINT_T_M(M, ATYP, CTYP)                                                        \
-  fprintf(ff, "HEST_EXPORT " _STR(DCL_T_M(M, ATYP, CTYP)) ";\n");
-#define PRINT_E_M(M) fprintf(ff, "HEST_EXPORT " _STR(DCL_E_M(M)) ";\n");
-#define PRINT_O_M(M) fprintf(ff, "HEST_EXPORT " _STR(DCL_O_M(M)) ";\n");
+  fprintf(ff, "HEST_EXPORT " STRINGIZE(DCL_T_M(M, ATYP, CTYP)) ";\n");
+#define PRINT_E_M(M) fprintf(ff, "HEST_EXPORT " STRINGIZE(DCL_E_M(M)) ";\n");
+#define PRINT_O_M(M) fprintf(ff, "HEST_EXPORT " STRINGIZE(DCL_O_M(M)) ";\n");
 #define PRINT_T_N(_, ATYP, CTYP)                                                        \
-  fprintf(ff, "HEST_EXPORT " _STR(DCL_T_N(_, ATYP, CTYP)) ";\n");
-#define PRINT_E_N(_) fprintf(ff, "HEST_EXPORT " _STR(DCL_E_N(_)) ";\n");
-#define PRINT_O_N(_) fprintf(ff, "HEST_EXPORT " _STR(DCL_O_N(_)) ";\n");
+  fprintf(ff, "HEST_EXPORT " STRINGIZE(DCL_T_N(_, ATYP, CTYP)) ";\n");
+#define PRINT_E_N(_) fprintf(ff, "HEST_EXPORT " STRINGIZE(DCL_E_N(_)) ";\n");
+#define PRINT_O_N(_) fprintf(ff, "HEST_EXPORT " STRINGIZE(DCL_O_N(_)) ";\n");
 #define PRINT_T_V(_, ATYP, CTYP)                                                        \
-  fprintf(ff, "HEST_EXPORT " _STR(DCL_T_V(_, ATYP, CTYP)) ";\n");
-#define PRINT_E_V(_) fprintf(ff, "HEST_EXPORT " _STR(DCL_E_V(_)) ";\n");
-#define PRINT_O_V(_) fprintf(ff, "HEST_EXPORT " _STR(DCL_O_V(_)) ";\n");
+  fprintf(ff, "HEST_EXPORT " STRINGIZE(DCL_T_V(_, ATYP, CTYP)) ";\n");
+#define PRINT_E_V(_) fprintf(ff, "HEST_EXPORT " STRINGIZE(DCL_E_V(_)) ";\n");
+#define PRINT_O_V(_) fprintf(ff, "HEST_EXPORT " STRINGIZE(DCL_O_V(_)) ";\n");
 
-/* prints declarations (for hest.h) for everything defined by macros above */
+/* Prints declarations (for hest.h) for everything defined by macros above
+   Used in test/decls.c */
 void
 hestOptAddDeclsPrint(FILE *ff) {
   /* the flag is the one case not handled by macro expansion */

@@ -21,10 +21,10 @@
 #include "privateTen.h"
 
 #define INFO "Slice 3D tensors to get slab/image of 3D/2D  tensors"
-static const char *_tend_sliceInfoL = (INFO ". ");
+static const char *sliceInfoL = (INFO ". ");
 
 static int
-tend_sliceMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+sliceMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -44,7 +44,7 @@ tend_sliceMain(int argc, const char **argv, const char *me, const hestParm *hpar
 
   mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_tend_sliceInfoL);
+  USAGE_PARSE(sliceInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
   airMopAdd(mop, nout = nrrdNew(), nrrdNuke_mop, airMopAlways);
 
@@ -64,4 +64,4 @@ tend_sliceMain(int argc, const char **argv, const char *me, const hestParm *hpar
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(slice, INFO);
+MY_TEND_CMD(slice, INFO);

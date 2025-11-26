@@ -21,21 +21,21 @@
 #include "privateNrrd.h"
 
 /*
-** learned: if you have globals, such as _nrrdCC_verb, which are
+** learned: if you have globals, such as nrrd__CC_verb, which are
 ** defined and declared here, but which are NOT initialized, then
 ** C++ apps which are linking against Teem will have problems!!!
 ** This was first seen on the mac.
 ** (much later) but these don't need to be globals!
 */
-static int _nrrdCC_verb = 0;
-static const int _nrrdCC_EqvIncr
+static int nrrd__CC_verb = 0;
+static const int nrrd__CC_EqvIncr
   = 10000; /* HEY: this has to be big so that ccfind is not stuck constantly
  re-allocating the eqv array. This is will be one of the best places to test the new
  multiplicative reallocation strategy, planned for Teem 2 */
 
 static int
-_nrrdCCFind_1(Nrrd *nout, unsigned int *numid, const Nrrd *nin) {
-  /* static const char me[] = "_nrrdCCFind_1"; */
+nCCFind_1(Nrrd *nout, unsigned int *numid, const Nrrd *nin) {
+  /* static const char me[] = "nCCFind_1"; */
   unsigned int sx, I, id, lval, val, *out, (*lup)(const void *, size_t);
 
   lup = nrrdUILookup[nin->type];
@@ -73,9 +73,9 @@ _nrrdCCFind_1(Nrrd *nout, unsigned int *numid, const Nrrd *nin) {
  * Also, constraints in how we're called ensure that `nin` is some unsigned integer type.
  */
 static int
-_nrrdCCFind_2(Nrrd *nout, unsigned int *numid, airArray *eqvArr, const Nrrd *nin,
-              unsigned int conny) {
-  static const char me[] = "_nrrdCCFind_2";
+nCCFind_2(Nrrd *nout, unsigned int *numid, airArray *eqvArr, const Nrrd *nin,
+          unsigned int conny) {
+  static const char me[] = "nCCFind_2";
   double vl = 0,                  /* value from data at center */
     pvl[5] = {0, 0, 0, 0, 0};     /* cache of previous values */
   unsigned int id,                /* CC ID to assign at center  */
@@ -116,7 +116,7 @@ _nrrdCCFind_2(Nrrd *nout, unsigned int *numid, airArray *eqvArr, const Nrrd *nin
   for (unsigned int yi = 0; yi < sy; yi++) {
     for (unsigned int xi = 0; xi < sx; xi++) {
       unsigned int midx; /* index (into pvl, pid) of match with center pixel */
-      if (_nrrdCC_verb) {
+      if (nrrd__CC_verb) {
         fprintf(stderr, "%s(%u,%u) -----------\n", me, xi, yi);
       }
       /* clang-format off */
@@ -157,7 +157,7 @@ _nrrdCCFind_2(Nrrd *nout, unsigned int *numid, airArray *eqvArr, const Nrrd *nin
         id = *numid;
         (*numid)++;
       }
-      if (_nrrdCC_verb) {
+      if (nrrd__CC_verb) {
         fprintf(stderr, "%s: pvl: %g %g %g %g (vl = %g)\n", me, pvl[1], pvl[2], pvl[3],
                 pvl[4], vl);
         fprintf(stderr, "        pid: %u %u %u %u\n", pid[1], pid[2], pid[3], pid[4]);
@@ -185,9 +185,9 @@ _nrrdCCFind_2(Nrrd *nout, unsigned int *numid, airArray *eqvArr, const Nrrd *nin
  *          v Z            as above, 0 index not used, so it can mean unknown/unset
  */
 static int
-_nrrdCCFind_3(Nrrd *nout, unsigned int *numid, airArray *eqvArr, const Nrrd *nin,
-              unsigned int conny) {
-  /* static const char me[] = "_nrrdCCFind_3" ; */
+nCCFind_3(Nrrd *nout, unsigned int *numid, airArray *eqvArr, const Nrrd *nin,
+          unsigned int conny) {
+  /* static const char me[] = "nCCFind_3" ; */
   double pvl[14] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, vl = 0;
   unsigned int id, *out, (*lup)(const void *, size_t),
     pid[14] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -271,9 +271,9 @@ _nrrdCCFind_3(Nrrd *nout, unsigned int *numid, airArray *eqvArr, const Nrrd *nin
 }
 
 static int /* Biff: 1 */
-_nrrdCCFind_N(Nrrd *nout, unsigned int *numid, airArray *eqvArr, const Nrrd *nin,
-              unsigned int conny) {
-  static const char me[] = "_nrrdCCFind_N";
+nCCFind_N(Nrrd *nout, unsigned int *numid, airArray *eqvArr, const Nrrd *nin,
+          unsigned int conny) {
+  static const char me[] = "nCCFind_N";
 
   AIR_UNUSED(nout);
   AIR_UNUSED(numid);
@@ -361,21 +361,21 @@ nrrdCCFind(Nrrd *nout, Nrrd **nvalP, const Nrrd *nin, int type, unsigned int con
 
   mop = airMopNew();
   airMopAdd(mop, nfpid, nrrdNuke_mop, airMopAlways);
-  eqvArr = airArrayNew(NULL, NULL, 2 * sizeof(unsigned int), _nrrdCC_EqvIncr);
+  eqvArr = airArrayNew(NULL, NULL, 2 * sizeof(unsigned int), nrrd__CC_EqvIncr);
   airMopAdd(mop, eqvArr, airArrayNuke_mop, airMopAlways);
   int ret = 0;
   switch (nin->dim) {
   case 1:
-    ret = _nrrdCCFind_1(nfpid, &numid, nin);
+    ret = nCCFind_1(nfpid, &numid, nin);
     break;
   case 2:
-    ret = _nrrdCCFind_2(nfpid, &numid, eqvArr, nin, conny);
+    ret = nCCFind_2(nfpid, &numid, eqvArr, nin, conny);
     break;
   case 3:
-    ret = _nrrdCCFind_3(nfpid, &numid, eqvArr, nin, conny);
+    ret = nCCFind_3(nfpid, &numid, eqvArr, nin, conny);
     break;
   default:
-    ret = _nrrdCCFind_N(nfpid, &numid, eqvArr, nin, conny);
+    ret = nCCFind_N(nfpid, &numid, eqvArr, nin, conny);
     break;
   }
   if (ret) {
@@ -451,7 +451,7 @@ nrrdCCFind(Nrrd *nout, Nrrd **nvalP, const Nrrd *nin, int type, unsigned int con
 }
 
 static int
-_nrrdCCAdj_1(unsigned char *out, unsigned int numid, const Nrrd *nin) {
+nCCAdj_1(unsigned char *out, unsigned int numid, const Nrrd *nin) {
 
   AIR_UNUSED(out);
   AIR_UNUSED(numid);
@@ -461,8 +461,7 @@ _nrrdCCAdj_1(unsigned char *out, unsigned int numid, const Nrrd *nin) {
 
 /* For the `Adj` adjacency functions, nin is an array of integral CC IDs */
 static int
-_nrrdCCAdj_2(unsigned char *out, unsigned int numid, const Nrrd *nin,
-             unsigned int conny) {
+nCCAdj_2(unsigned char *out, unsigned int numid, const Nrrd *nin, unsigned int conny) {
   unsigned int (*lup)(const void *, size_t), sx, sy,
     id = UINT_MAX, pid[5] = {0, 0, 0, 0, 0},
     noVal = UINT_MAX; /* for GET_V_2: different (we hope) from any CC ID */
@@ -501,8 +500,7 @@ _nrrdCCAdj_2(unsigned char *out, unsigned int numid, const Nrrd *nin,
 }
 
 static int
-_nrrdCCAdj_3(unsigned char *out, unsigned int numid, const Nrrd *nin,
-             unsigned int conny) {
+nCCAdj_3(unsigned char *out, unsigned int numid, const Nrrd *nin, unsigned int conny) {
   unsigned int (*lup)(const void *, size_t), sx, sy, sz,
     id = UINT_MAX, pid[14] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
     noVal = UINT_MAX; /* for GET_V_2: different (we hope) from any CC ID */
@@ -560,9 +558,8 @@ _nrrdCCAdj_3(unsigned char *out, unsigned int numid, const Nrrd *nin,
 }
 
 static int /* Biff: 1 */
-_nrrdCCAdj_N(unsigned char *out, unsigned int numid, const Nrrd *nin,
-             unsigned int conny) {
-  static const char me[] = "_nrrdCCAdj_N";
+nCCAdj_N(unsigned char *out, unsigned int numid, const Nrrd *nin, unsigned int conny) {
+  static const char me[] = "nCCAdj_N";
 
   AIR_UNUSED(out);
   AIR_UNUSED(numid);
@@ -604,16 +601,16 @@ nrrdCCAdjacency(Nrrd *nout, const Nrrd *nin, unsigned int conny) {
 
   switch (nin->dim) {
   case 1:
-    ret = _nrrdCCAdj_1(out, maxid + 1, nin);
+    ret = nCCAdj_1(out, maxid + 1, nin);
     break;
   case 2:
-    ret = _nrrdCCAdj_2(out, maxid + 1, nin, conny);
+    ret = nCCAdj_2(out, maxid + 1, nin, conny);
     break;
   case 3:
-    ret = _nrrdCCAdj_3(out, maxid + 1, nin, conny);
+    ret = nCCAdj_3(out, maxid + 1, nin, conny);
     break;
   default:
-    ret = _nrrdCCAdj_N(out, maxid + 1, nin, conny);
+    ret = nCCAdj_N(out, maxid + 1, nin, conny);
     break;
   }
   if (ret) {

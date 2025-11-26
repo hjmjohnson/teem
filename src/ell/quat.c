@@ -44,7 +44,7 @@
 ** should be stable.  It *IS* necessary, since it accomplishes
 ** division by w, x, y, or z, whichever's squared magnitude is biggest
 */
-#define _ELL_M_TO_Q(type, i0, i1, i2, i3, i4, i5, i6, i7, i8)                           \
+#define M_TO_Q(type, i0, i1, i2, i3, i4, i5, i6, i7, i8)                                \
   type s[4], wx, wy, wz, xy, xz, yz, len;                                               \
   int mi;                                                                               \
                                                                                         \
@@ -78,27 +78,27 @@
 
 void
 ell_3m_to_q_f(float q[4], const float m[9]) {
-  _ELL_M_TO_Q(float, 0, 1, 2, 3, 4, 5, 6, 7, 8);
+  M_TO_Q(float, 0, 1, 2, 3, 4, 5, 6, 7, 8);
   len = AIR_FLOAT(ELL_4V_LEN(q));
   ELL_4V_SCALE(q, 1.0f / len, q);
 }
 
 void
 ell_3m_to_q_d(double q[4], const double m[9]) {
-  _ELL_M_TO_Q(double, 0, 1, 2, 3, 4, 5, 6, 7, 8);
+  M_TO_Q(double, 0, 1, 2, 3, 4, 5, 6, 7, 8);
   ELL_4V_NORM(q, q, len);
 }
 
 void
 ell_4m_to_q_f(float q[4], const float m[16]) {
-  _ELL_M_TO_Q(float, 0, 1, 2, 4, 5, 6, 8, 9, 10);
+  M_TO_Q(float, 0, 1, 2, 4, 5, 6, 8, 9, 10);
   len = AIR_FLOAT(ELL_4V_LEN(q));
   ELL_4V_SCALE(q, 1.0f / len, q);
 }
 
 void
 ell_4m_to_q_d(double q[4], const double m[16]) {
-  _ELL_M_TO_Q(double, 0, 1, 2, 4, 5, 6, 8, 9, 10);
+  M_TO_Q(double, 0, 1, 2, 4, 5, 6, 8, 9, 10);
   ELL_4V_NORM(q, q, len);
 }
 
@@ -111,7 +111,7 @@ ell_4m_to_q_d(double q[4], const double m[16]) {
 ** See NOTE below about the non-use of ELL_4V_NORM(u, q, w)
 */
 /* clang-format off */
-#define _ELL_Q_TO_3M(type)           \
+#define Q_TO_3M(type)         \
   ELL_4V_GET(w, x, y, z, u);         \
   ELL_3V_SET(m+0,                    \
              w*w + x*x - y*y - z*z,  \
@@ -132,14 +132,14 @@ ell_q_to_3m_f(float m[9], const float q[4]) {
   float u[4], w = 0.0, x = 0.0, y = 0.0, z = 0.0;
   w = AIR_FLOAT(ELL_4V_LEN(q));
   ELL_4V_SCALE(u, 1.0f / w, q);
-  _ELL_Q_TO_3M(float);
+  Q_TO_3M(float);
 }
 
 void
 ell_q_to_3m_d(double m[9], const double q[4]) {
   double u[4], w = 0.0, x = 0.0, y = 0.0, z = 0.0;
   ELL_4V_NORM(u, q, w);
-  _ELL_Q_TO_3M(double);
+  Q_TO_3M(double);
 }
 
 /*
@@ -148,7 +148,7 @@ ell_q_to_3m_d(double m[9], const double q[4]) {
 ** double->float converstion.  Macros are indeed problematic . . .
 */
 /* clang-format off */
-#define _ELL_Q_TO_4M(type)           \
+#define Q_TO_4M(type)         \
   ELL_4V_GET(w, x, y, z, u);         \
   ELL_4V_SET(m+0,                    \
              w*w + x*x - y*y - z*z,  \
@@ -173,14 +173,14 @@ ell_q_to_4m_f(float m[16], const float q[4]) {
   float u[4], w = 0.0, x = 0.0, y = 0.0, z = 0.0;
   w = AIR_FLOAT(ELL_3V_LEN(q));
   ELL_4V_SCALE(u, 1.0f / w, q);
-  _ELL_Q_TO_4M(float);
+  Q_TO_4M(float);
 }
 
 void
 ell_q_to_4m_d(double m[16], const double q[4]) {
   double u[4], w = 0.0, x = 0.0, y = 0.0, z = 0.0;
   ELL_4V_NORM(u, q, w);
-  _ELL_Q_TO_4M(double);
+  Q_TO_4M(double);
 }
 
 /*
@@ -192,7 +192,7 @@ ell_q_to_4m_d(double m[16], const double q[4]) {
 ** HEY: there are two instances here of non-use of ELL_3V_NORM
 ** to avoid warnings about precision loss with type conversion
 */
-#define _ELL_Q_TO_AA(type)                                                              \
+#define Q_TO_AA(type)                                                                   \
   type len, angle;                                                                      \
                                                                                         \
   len = AIR_CAST(type, ELL_3V_LEN(q + 1));                                              \
@@ -208,19 +208,19 @@ ell_q_to_4m_d(double m[16], const double q[4]) {
 
 float /* Biff: nope */
 ell_q_to_aa_f(float axis[3], const float q[4]) {
-  _ELL_Q_TO_AA(float);
+  Q_TO_AA(float);
 }
 
 double /* Biff: nope */
 ell_q_to_aa_d(double axis[3], const double q[4]) {
-  _ELL_Q_TO_AA(double);
+  Q_TO_AA(double);
 }
 
 /*
 ** note: assuming that axis is unit length, this produces a
 ** a unit length quaternion
 */
-#define _ELL_AA_TO_Q(type)                                                              \
+#define AA_TO_Q(type)                                                                   \
   type sa;                                                                              \
                                                                                         \
   sa = AIR_CAST(type, sin(angle / 2));                                                  \
@@ -229,12 +229,12 @@ ell_q_to_aa_d(double axis[3], const double q[4]) {
 
 void
 ell_aa_to_q_f(float q[4], const float angle, const float axis[3]) {
-  _ELL_AA_TO_Q(float);
+  AA_TO_Q(float);
 }
 
 void
 ell_aa_to_q_d(double q[4], const double angle, const double axis[3]) {
-  _ELL_AA_TO_Q(double);
+  AA_TO_Q(double);
 }
 
 float /* Biff: nope */
@@ -375,7 +375,7 @@ ell_q_log_d(double q2[4], const double q1[4]) {
 ** NOTE: one non-use of ELL_3V_NORM to avoid warnings about
 ** precision loss from type conversion
 */
-#define _ELL_Q_EXP(type)                                                                \
+#define Q_EXP(type)                                                                     \
   type ea, b, sb, axis[3], tmp;                                                         \
                                                                                         \
   ea = AIR_CAST(type, exp(q1[0]));                                                      \
@@ -393,12 +393,12 @@ ell_q_log_d(double q2[4], const double q1[4]) {
 
 void
 ell_q_exp_f(float q2[4], const float q1[4]) {
-  _ELL_Q_EXP(float);
+  Q_EXP(float);
 }
 
 void
 ell_q_exp_d(double q2[4], const double q1[4]) {
-  _ELL_Q_EXP(double);
+  Q_EXP(double);
 }
 
 void
@@ -428,7 +428,7 @@ ell_q_pow_d(double q2[4], const double q1[4], const double p) {
 ** in which an explicit normalization is required.  There is
 ** a divide here (in ELL_Q_INV), but there's no sqrt().
 */
-#define _ELL_Q3V_ROT(type)                                                              \
+#define Q3V_ROT(type)                                                                   \
   type n, a[4], b[4], c[4];                                                             \
                                                                                         \
   ELL_4V_SET(a, 0, v1[0], v1[1], v1[2]);                                                \
@@ -439,12 +439,12 @@ ell_q_pow_d(double q2[4], const double q1[4], const double p) {
 
 void
 ell_q_3v_rotate_f(float v2[3], const float q[4], const float v1[3]) {
-  _ELL_Q3V_ROT(float);
+  Q3V_ROT(float);
 }
 
 void
 ell_q_3v_rotate_d(double v2[3], const double q[4], const double v1[3]) {
-  _ELL_Q3V_ROT(double);
+  Q3V_ROT(double);
 }
 
 /*
@@ -453,13 +453,13 @@ ell_q_3v_rotate_d(double v2[3], const double q[4], const double v1[3]) {
 */
 void
 ell_q_4v_rotate_f(float v2[4], const float q[4], const float v1[4]) {
-  _ELL_Q3V_ROT(float);
+  Q3V_ROT(float);
   v2[3] = v1[3];
 }
 
 void
 ell_q_4v_rotate_d(double v2[4], const double q[4], const double v1[4]) {
-  _ELL_Q3V_ROT(double);
+  Q3V_ROT(double);
   v2[3] = v1[3];
 }
 

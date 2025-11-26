@@ -207,7 +207,7 @@ ell_2m_eigensolve_d(double eval[2], double evec[4], const double m[4]) {
 }
 
 static void
-_ell_align3_d(double v[9]) {
+e_align3_d(double v[9]) {
   double d0, d1, d2;
   int Mi, ai, bi;
 
@@ -234,7 +234,7 @@ _ell_align3_d(double v[9]) {
 ** vectors unchanged.
 */
 static void
-_ell_3m_enforce_orthogonality(double v[9]) {
+e_3m_enforce_orthogonality(double v[9]) {
   double d00, d10, d11, d20, d21, d22, scl, tv[3];
 
   d00 = ELL_3V_DOT(v + 3 * 0, v + 3 * 0);
@@ -257,7 +257,7 @@ _ell_3m_enforce_orthogonality(double v[9]) {
 ** cross product of v+3*0 and v+3*1
 */
 static void
-_ell_3m_make_right_handed_d(double v[9]) {
+e_3m_make_right_handed_d(double v[9]) {
   double x[3];
 
   ELL_3V_CROSS(x, v + 3 * 0, v + 3 * 1);
@@ -304,7 +304,7 @@ ell_3m_1d_nullspace_d(double ans[3], const double _n[9]) {
   ELL_3V_CROSS(t + 3, n + 0, n + 6);
   ELL_3V_CROSS(t + 6, n + 3, n + 6);
   /* lop A */
-  _ell_align3_d(t);
+  e_align3_d(t);
   /* lop B */
   /* add them up (longer, hence more accurate, should dominate) */
   ELL_3V_ADD3(ans, t + 0, t + 3, t + 6);
@@ -329,7 +329,7 @@ ell_3m_2d_nullspace_d(double ans0[3], double ans1[3], const double _n[9]) {
   double n[9], tmp[3], norm;
 
   ELL_3M_TRANSPOSE(n, _n);
-  _ell_align3_d(n);
+  e_align3_d(n);
   ELL_3V_ADD3(tmp, n + 0, n + 3, n + 6);
   ELL_3V_NORM(tmp, tmp, norm);
 
@@ -403,7 +403,7 @@ ell_3m_eigenvalues_d(double _eval[3], const double _m[9], const int newton) {
 ** it's a weird function because eval is modified!
 */
 static void
-_ell_3m_evecs_d(double evec[9], double eval[3], int roots, const double m[9]) {
+e_3m_evecs_d(double evec[9], double eval[3], int roots, const double m[9]) {
   double n[9], e0 = 0, e1 = 0.0, e2 = 0.0, t /* , tmpv[3] */;
 
   ELL_3V_GET(e0, e1, e2, eval);
@@ -426,8 +426,8 @@ _ell_3m_evecs_d(double evec[9], double eval[3], int roots, const double m[9]) {
     ell_3m_1d_nullspace_d(evec + 3, n);
     ELL_3M_DIAG_SET(n, m[0] - e2, m[4] - e2, m[8] - e2);
     ell_3m_1d_nullspace_d(evec + 6, n);
-    _ell_3m_enforce_orthogonality(evec);
-    _ell_3m_make_right_handed_d(evec);
+    e_3m_enforce_orthogonality(evec);
+    e_3m_make_right_handed_d(evec);
     ELL_3V_SET(eval, e0, e1, e2);
     break;
   case ell_cubic_root_single_double:
@@ -445,8 +445,8 @@ _ell_3m_evecs_d(double evec[9], double eval[3], int roots, const double m[9]) {
       ELL_3M_DIAG_SET(n, m[0] - e2, m[4] - e2, m[8] - e2);
       ell_3m_1d_nullspace_d(evec + 6, n);
     }
-    _ell_3m_enforce_orthogonality(evec);
-    _ell_3m_make_right_handed_d(evec);
+    e_3m_enforce_orthogonality(evec);
+    e_3m_make_right_handed_d(evec);
     ELL_3V_SET(eval, e0, e1, e2);
     break;
   case ell_cubic_root_triple:
@@ -513,7 +513,7 @@ ell_3m_eigensolve_d(double eval[3], double evec[9], const double m[9],
     } */
 
   roots = ell_3m_eigenvalues_d(eval, m, newton);
-  _ell_3m_evecs_d(evec, eval, roots, m);
+  e_3m_evecs_d(evec, eval, roots, m);
 
   return roots;
 }
@@ -575,7 +575,7 @@ ell_3m2sub_eigenvalues_d(double eval[3], const double _m[9]) {
 }
 
 static void
-_ell_22v_enforce_orthogonality(double uu[2], double _vv[2]) {
+e_22v_enforce_orthogonality(double uu[2], double _vv[2]) {
   double dot, vv[2], len;
 
   dot = ELL_2V_DOT(uu, _vv);
@@ -589,9 +589,9 @@ _ell_22v_enforce_orthogonality(double uu[2], double _vv[2]) {
 ** ell_3m2sub_eigenvalues_d(m)
 */
 static void
-_ell_3m2sub_evecs_d(double evec[9], double eval[3], int roots, const double m[9]) {
+e_3m2sub_evecs_d(double evec[9], double eval[3], int roots, const double m[9]) {
   double n[4];
-  static const char me[] = "_ell_3m2sub_evecs_d";
+  static const char me[] = "e_3m2sub_evecs_d";
 
   if (ell_cubic_root_three == roots) {
     /* set off-diagonal entries once */
@@ -607,7 +607,7 @@ _ell_3m2sub_evecs_d(double evec[9], double eval[3], int roots, const double m[9]
     n[3] = m[4] - eval[1];
     ell_2m_1d_nullspace_d(evec + 3 * 1, n);
     (evec + 3 * 1)[2] = 0;
-    _ell_22v_enforce_orthogonality(evec + 3 * 0, evec + 3 * 1);
+    e_22v_enforce_orthogonality(evec + 3 * 0, evec + 3 * 1);
     /* make right-handed */
     ELL_3V_CROSS(evec + 3 * 2, evec + 3 * 0, evec + 3 * 1);
   } else if (ell_cubic_root_single_double == roots) {
@@ -636,7 +636,7 @@ ell_3m2sub_eigensolve_d(double eval[3], double evec[9], const double m[9]) {
   int roots;
 
   roots = ell_3m2sub_eigenvalues_d(eval, m);
-  _ell_3m2sub_evecs_d(evec, eval, roots, m);
+  e_3m2sub_evecs_d(evec, eval, roots, m);
 
   return roots;
 }
@@ -672,7 +672,7 @@ ell_3m_svd_d(double uu[9], double sval[3], double vv[9], const double mat[9],
   sval[2] = sqrt(eval[2]);
   ELL_3M_TRANSPOSE(uu, evec);
   ELL_3M_MUL(msqr, trn, mat);
-  _ell_3m_evecs_d(vv, eval, roots, msqr);
+  e_3m_evecs_d(vv, eval, roots, msqr);
 
   return roots;
 }
@@ -683,7 +683,7 @@ ell_3m_svd_d(double uu[9], double sval[3], double vv[9], const double mat[9],
 ** implementation . . . (fabs vs. AIR_ABS() made no difference)
 */
 static void
-_maxI_sum_find(unsigned int maxI[2], double *sumon, double *sumoff, double mat[6][6]) {
+e_sum_find(unsigned int maxI[2], double *sumon, double *sumoff, double mat[6][6]) {
   double maxm, tmp;
   unsigned int rrI, ccI;
 
@@ -727,7 +727,7 @@ _maxI_sum_find(unsigned int maxI[2], double *sumon, double *sumoff, double mat[6
 }
 
 static int
-_compar(const void *A_void, const void *B_void) {
+e_compar(const void *A_void, const void *B_void) {
   const double *A, *B;
   A = AIR_CAST(const double *, A_void);
   B = AIR_CAST(const double *, B_void);
@@ -795,7 +795,7 @@ ell_6ms_eigensolve_d(double eval[6], double _evec[36], const double sym[21],
   }
   */
   maxI[0] = maxI[1] = UINT_MAX; /* quiet warnings about using maxI unset */
-  _maxI_sum_find(maxI, &sumon, &sumoff, mat[0]);
+  e_sum_find(maxI, &sumon, &sumoff, mat[0]);
   cur = 1; /* fake out anticipating first line of loop */
   /* iter = 0; */
   while (sumoff / sumon > eps) {
@@ -874,7 +874,7 @@ ell_6ms_eigensolve_d(double eval[6], double _evec[36], const double sym[21],
       }
     }
 
-    _maxI_sum_find(maxI, &sumon, &sumoff, mat[1 - cur]);
+    e_sum_find(maxI, &sumon, &sumoff, mat[1 - cur]);
 
     /*
     fprintf(stderr, "!%s(%u): m = [", me, iter);
@@ -896,7 +896,7 @@ ell_6ms_eigensolve_d(double eval[6], double _evec[36], const double sym[21],
     evtmp[0 + 2 * ccI] = mat[1 - cur][ccI][ccI];
     evtmp[1 + 2 * ccI] = ccI;
   }
-  qsort(evtmp, 6, 2 * sizeof(double), _compar);
+  qsort(evtmp, 6, 2 * sizeof(double), e_compar);
 
   /* copy out solution */
   for (ccI = 0; ccI < 6; ccI++) {

@@ -21,11 +21,10 @@
 #include "privateTen.h"
 
 #define INFO "Modify shape by raising eigenvalues to some power"
-static const char *_tend_evalpowInfoL
-  = (INFO ". The orientation of the tensor is unchanged.");
+static const char *evalpowInfoL = (INFO ". The orientation of the tensor is unchanged.");
 
 static int
-tend_evalpowMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+evalpowMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -43,7 +42,7 @@ tend_evalpowMain(int argc, const char **argv, const char *me, const hestParm *hp
 
   mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_tend_evalpowInfoL);
+  USAGE_PARSE(evalpowInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
@@ -64,4 +63,4 @@ tend_evalpowMain(int argc, const char **argv, const char *me, const hestParm *hp
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(evalpow, INFO);
+MY_TEND_CMD(evalpow, INFO);

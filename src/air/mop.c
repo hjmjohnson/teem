@@ -52,12 +52,12 @@ airMopSub() and airMopUnMem were created
 
 */
 
-#define AIR_MOP_INCR 10
+#define MOP_INCR 10
 
 airArray *
 airMopNew(void) {
 
-  return airArrayNew(NULL, NULL, sizeof(airMop), AIR_MOP_INCR);
+  return airArrayNew(NULL, NULL, sizeof(airMop), MOP_INCR);
 }
 
 /*
@@ -163,7 +163,7 @@ airMopUnMem(airArray *arr, void *_ptrP) {
 }
 
 static void *
-_airMopPrint(void *_str) {
+mopPrint(void *_str) {
   char *str;
 
   str = (char *)_str;
@@ -181,11 +181,11 @@ airMopPrint(airArray *arr, const void *_str, int when) {
 
   copy = airStrdup(AIR_CAST(const char *, _str));
   airMopAdd(arr, copy, airFree, airMopAlways);
-  airMopAdd(arr, copy, _airMopPrint, when);
+  airMopAdd(arr, copy, mopPrint, when);
   return;
 }
 
-static const char _airMopWhenStr[4][128] = {
+static const char mopWhenStr[4][128] = {
   " never",
   " error",
   "  okay",
@@ -222,7 +222,7 @@ airMopDebug(airArray *arr) {
         continue;
       }
       /* else */
-      printf("%s: ", _airMopWhenStr[mops[ii].when]);
+      printf("%s: ", mopWhenStr[mops[ii].when]);
       if (airFree == mops[ii].mop) {
         printf("airFree(0x%p)\n", AIR_VOIDP(mops[ii].ptr));
         continue;
@@ -231,8 +231,8 @@ airMopDebug(airArray *arr) {
         printf("airSetNull(0x%p)\n", AIR_VOIDP(mops[ii].ptr));
         continue;
       }
-      if (_airMopPrint == mops[ii].mop) {
-        printf("_airMopPrint(\"%s\" == 0x%p)\n", AIR_CAST(char *, mops[ii].ptr),
+      if (mopPrint == mops[ii].mop) {
+        printf("mopPrint(\"%s\" == 0x%p)\n", AIR_CAST(char *, mops[ii].ptr),
                AIR_VOIDP(mops[ii].ptr));
         continue;
       }

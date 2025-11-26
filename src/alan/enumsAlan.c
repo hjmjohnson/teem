@@ -21,7 +21,7 @@
 
 /* clang-format off */
 static const char *
-_alanStopStr[ALAN_STOP_MAX+1] = {
+aStopStr[ALAN_STOP_MAX+1] = {
   "(unknown_stop)",
   "not",
   "iter",
@@ -31,7 +31,7 @@ _alanStopStr[ALAN_STOP_MAX+1] = {
 };
 
 static const char *
-_alanStopDesc[ALAN_STOP_MAX+1] = {
+aStopDesc[ALAN_STOP_MAX+1] = {
   "unknown_stop",
   "there is no reason to stop",
   "hit the maximum number of iterations",
@@ -41,14 +41,13 @@ _alanStopDesc[ALAN_STOP_MAX+1] = {
 };
 
 static const airEnum
-_alanStop = {
+aStop_ae = {
   "stop",
   ALAN_STOP_MAX,
-  _alanStopStr,  NULL,
-  _alanStopDesc,
+  aStopStr,  NULL,
+  aStopDesc,
   NULL, NULL,
   AIR_FALSE
 };
-const airEnum *const
-alanStop = &_alanStop;
+const airEnum *const alanStop = &aStop_ae;
 /* clang-format on */

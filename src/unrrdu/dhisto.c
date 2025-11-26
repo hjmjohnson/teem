@@ -21,13 +21,13 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Create image of 1-D value histogram"
-static const char *_unrrdu_dhistoInfoL
+static const char *unu_dhistoInfoL
   = (INFO
      ". With \"-nolog\", this becomes a quick & dirty way of plotting a function.\n "
      "* Uses nrrdHistoDraw");
 
 static int
-unrrdu_dhistoMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_dhistoMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   uint size;
   hestOptAdd_1_UInt(&hopt, "h,height", "height", &size, NULL,
@@ -47,12 +47,12 @@ unrrdu_dhistoMain(int argc, const char **argv, const char *me, const hestParm *h
                       "not using this option (the default), the actual maximum bin "
                       "count is used");
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_dhistoInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_dhistoInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -66,10 +66,10 @@ unrrdu_dhistoMain(int argc, const char **argv, const char *me, const hestParm *h
     return 1;
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(dhisto, INFO);
+MY_UNRRDU_CMD(dhisto, INFO);

@@ -21,13 +21,13 @@
 #include "privateTen.h"
 
 #define INFO "Modify shape by clamping eigenvalues in some range"
-static const char *_tend_evalclampInfoL
+static const char *evalclampInfoL
   = (INFO ". The orientation of the tensor is unchanged.  Note that unlike "
           "\"tend anscale\", this operation can completely change the shape "
           "of the tensor.");
 
 static int
-tend_evalclampMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+evalclampMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -51,7 +51,7 @@ tend_evalclampMain(int argc, const char **argv, const char *me, const hestParm *
 
   mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_tend_evalclampInfoL);
+  USAGE_PARSE(evalclampInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
@@ -72,4 +72,4 @@ tend_evalclampMain(int argc, const char **argv, const char *me, const hestParm *
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(evalclamp, INFO);
+MY_TEND_CMD(evalclamp, INFO);

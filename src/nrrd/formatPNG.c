@@ -28,7 +28,7 @@
 #define MAGIC "\211PNG"
 
 static int
-_nrrdFormatPNG_available(void) {
+formatPNG_available(void) {
 
 #ifdef TEEM_PNG
   return AIR_TRUE;
@@ -38,14 +38,14 @@ _nrrdFormatPNG_available(void) {
 }
 
 static int
-_nrrdFormatPNG_nameLooksLike(const char *filename) {
+formatPNG_nameLooksLike(const char *filename) {
 
   return airEndsWith(filename, NRRD_EXT_PNG);
 }
 
 static int /* Biff: maybe:3:AIR_FALSE */
-_nrrdFormatPNG_fitsInto(const Nrrd *nrrd, const NrrdEncoding *encoding, int useBiff) {
-  static const char me[] = "_nrrdFormatPNG_fitsInto";
+formatPNG_fitsInto(const Nrrd *nrrd, const NrrdEncoding *encoding, int useBiff) {
+  static const char me[] = "formatPNG_fitsInto";
 
 #if !TEEM_PNG /* ------------------------------------------- */
 
@@ -96,7 +96,7 @@ _nrrdFormatPNG_fitsInto(const Nrrd *nrrd, const NrrdEncoding *encoding, int useB
 }
 
 static int
-_nrrdFormatPNG_contentStartsLike(NrrdIoState *nio) {
+formatPNG_contentStartsLike(NrrdIoState *nio) {
 
   return !strcmp(MAGIC, nio->line);
 }
@@ -104,8 +104,8 @@ _nrrdFormatPNG_contentStartsLike(NrrdIoState *nio) {
 #if TEEM_PNG
 /* this is a rare function that legit uses biff, but has void return */
 static void
-_nrrdErrorHandlerPNG(png_structp png, png_const_charp message) {
-  static const char me[] = "_nrrdErrorHandlerPNG";
+errorHandlerPNG(png_structp png, png_const_charp message) {
+  static const char me[] = "errorHandlerPNG";
   /* add PNG error message to biff */
   biffAddf(NRRD, "%s: PNG error: %s", me, message);
   /* longjmp back to the setjmp, return 1 */
@@ -115,8 +115,8 @@ _nrrdErrorHandlerPNG(png_structp png, png_const_charp message) {
 /* this is a rare function that uses biff, but has void return,
   but HEY is what warning ever actually printed?  hmmm */
 static void
-_nrrdWarningHandlerPNG(png_structp png, png_const_charp message) {
-  static const char me[] = "_nrrdWarningHandlerPNG";
+warningHandlerPNG(png_structp png, png_const_charp message) {
+  static const char me[] = "warningHandlerPNG";
   AIR_UNUSED(png);
   /* add the png warning message to biff */
   biffAddf(NRRD, "%s: PNG warning: %s", me, message);
@@ -127,20 +127,20 @@ _nrrdWarningHandlerPNG(png_structp png, png_const_charp message) {
    to make sure we can mix VC6 libpng with VC7 Teem */
 #  ifdef _WIN32
 static void
-_nrrdReadDataPNG(png_structp png, png_bytep data, png_size_t len) {
+nrrd__ReadDataPNG(png_structp png, png_bytep data, png_size_t len) {
   png_size_t read;
   read = (png_size_t)fread(data, (png_size_t)1, len, (FILE *)png_get_io_ptr(png));
   if (read != len) png_error(png, "file read error");
 }
 static void
-_nrrdWriteDataPNG(png_structp png, png_bytep data, png_size_t len) {
+nrrd__WriteDataPNG(png_structp png, png_bytep data, png_size_t len) {
   png_size_t written;
   written = fwrite(data, 1, len, (FILE *)png_get_io_ptr(png));
   if (written != len) png_error(png, "file write error");
 }
 
 static void
-_nrrdFlushDataPNG(png_structp png) {
+nrrd__FlushDataPNG(png_structp png) {
   FILE *io_ptr = png_get_io_ptr(png);
   if (io_ptr != NULL) fflush(io_ptr);
 }
@@ -148,8 +148,8 @@ _nrrdFlushDataPNG(png_structp png) {
 #endif   /* TEEM_PNG */
 
 static int /* Biff: 1 */
-_nrrdFormatPNG_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
-  static const char me[] = "_nrrdFormatPNG_read";
+formatPNG_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
+  static const char me[] = "formatPNG_read";
 #if TEEM_PNG
   png_structp png;
   png_infop info;
@@ -164,15 +164,15 @@ _nrrdFormatPNG_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
 
   AIR_UNUSED(file);
   AIR_UNUSED(nrrd);
-  if (!_nrrdFormatPNG_contentStartsLike(nio)) {
+  if (!formatPNG_contentStartsLike(nio)) {
     biffAddf(NRRD, "%s: this doesn't look like a %s file", me, nrrdFormatPNG->name);
     return 1;
   }
 
 #if TEEM_PNG
   /* create png struct with the error handlers above */
-  png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, _nrrdErrorHandlerPNG,
-                               _nrrdWarningHandlerPNG);
+  png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, errorHandlerPNG,
+                               warningHandlerPNG);
   if (png == NULL) {
     biffAddf(NRRD,
              "%s: failed to create PNG read struct "
@@ -196,7 +196,7 @@ _nrrdFormatPNG_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
   }
   /* initialize png I/O */
 #  ifdef _WIN32
-  png_set_read_fn(png, (png_voidp)file, _nrrdReadDataPNG);
+  png_set_read_fn(png, (png_voidp)file, nrrd__ReadDataPNG);
 #  else
   png_init_io(png, file);
 #  endif
@@ -356,14 +356,14 @@ _nrrdFormatPNG_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
          nrrdOneLine */
       nio->line = (char *)airFree(nio->line);
       nio->line = airStrdup(txt[i].text);
-      ret = _nrrdReadNrrdParseField(nio, AIR_FALSE);
+      ret = nrrd__ReadNrrdParseField(nio, AIR_FALSE);
       if (ret) {
         const char *fs = airEnumStr(nrrdField, ret);
         if (nrrdField_comment == ret) {
           ret = 0;
           goto plain;
         }
-        if (!_nrrdFieldValidInImage[ret]) {
+        if (!nrrd__FieldValidInImage[ret]) {
           if (nio && nio->verbose >= 1) {
             fprintf(stderr,
                     "(%s: field \"%s\" (not allowed in PNG) "
@@ -426,8 +426,8 @@ _nrrdFormatPNG_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
 }
 
 static int /* Biff: 1 */
-_nrrdFormatPNG_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
-  static const char me[] = "_nrrdFormatPNG_write";
+formatPNG_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
+  static const char me[] = "formatPNG_write";
 #if TEEM_PNG
   int fi, depth, type;
   unsigned int jj, numtxt, txtidx;
@@ -440,8 +440,8 @@ _nrrdFormatPNG_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
 
   /* no need to check type and format, done in FitsInFormat */
   /* create png struct with the error handlers above */
-  png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, _nrrdErrorHandlerPNG,
-                                _nrrdWarningHandlerPNG);
+  png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, errorHandlerPNG,
+                                warningHandlerPNG);
   if (png == NULL) {
     biffAddf(NRRD,
              "%s: failed to create PNG write struct (compiled with "
@@ -465,7 +465,7 @@ _nrrdFormatPNG_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
   }
   /* initialize png I/O */
 #  ifdef _WIN32
-  png_set_write_fn(png, file, _nrrdWriteDataPNG, _nrrdFlushDataPNG);
+  png_set_write_fn(png, file, nrrd__WriteDataPNG, nrrd__FlushDataPNG);
 #  else
   png_init_io(png, file);
 #  endif
@@ -520,7 +520,7 @@ _nrrdFormatPNG_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
   /* calculate numtxt and allocate txt[] array */
   numtxt = 0;
   for (fi = nrrdField_unknown + 1; fi < nrrdField_last; fi++) {
-    if (_nrrdFieldValidInImage[fi] && _nrrdFieldInteresting(nrrd, nio, fi)) {
+    if (nrrd__FieldValidInImage[fi] && nrrd__FieldInteresting(nrrd, nio, fi)) {
       numtxt++;
     }
   }
@@ -546,11 +546,11 @@ _nrrdFormatPNG_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
     /* add nrrd fields to the text chunk */
     txtidx = 0;
     for (fi = nrrdField_unknown + 1; fi < nrrdField_last; fi++) {
-      if (_nrrdFieldValidInImage[fi] && _nrrdFieldInteresting(nrrd, nio, fi)) {
+      if (nrrd__FieldValidInImage[fi] && nrrd__FieldInteresting(nrrd, nio, fi)) {
         txt[txtidx].key = airStrdup(NRRD_PNG_FIELD_KEY);
         txt[txtidx].compression = PNG_TEXT_COMPRESSION_NONE;
-        _nrrdSprintFieldInfo(&(txt[txtidx].text), "", nrrd, nio, fi,
-                             (3 == nrrd->dim && 1 == nrrd->axis[0].size));
+        nrrd__SprintFieldInfo(&(txt[txtidx].text), "", nrrd, nio, fi,
+                              (3 == nrrd->dim && 1 == nrrd->axis[0].size));
         txtidx++;
       }
     }
@@ -621,14 +621,14 @@ _nrrdFormatPNG_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
 #endif
 }
 
-const NrrdFormat _nrrdFormatPNG = {"PNG",
-                                   AIR_TRUE, /* isImage */
-                                   AIR_TRUE, /* readable */
-                                   _nrrdFormatPNG_available,
-                                   _nrrdFormatPNG_nameLooksLike,
-                                   _nrrdFormatPNG_fitsInto,
-                                   _nrrdFormatPNG_contentStartsLike,
-                                   _nrrdFormatPNG_read,
-                                   _nrrdFormatPNG_write};
+const NrrdFormat nrrd__FormatPNG = {"PNG",
+                                    AIR_TRUE, /* isImage */
+                                    AIR_TRUE, /* readable */
+                                    formatPNG_available,
+                                    formatPNG_nameLooksLike,
+                                    formatPNG_fitsInto,
+                                    formatPNG_contentStartsLike,
+                                    formatPNG_read,
+                                    formatPNG_write};
 
-const NrrdFormat *const nrrdFormatPNG = &_nrrdFormatPNG;
+const NrrdFormat *const nrrdFormatPNG = &nrrd__FormatPNG;

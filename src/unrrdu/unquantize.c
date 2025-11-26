@@ -21,15 +21,14 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Recover floating point values from quantized data"
-static const char *_unrrdu_unquantizeInfoL
+static const char *unu_unquantizeInfoL
   = (INFO ". Uses the oldMin and oldMax fields in the Nrrd of quantized values "
           "to regenerate approximate versions of the original unquantized values. "
           "Can also override these with \"-min\" and \"-max\".\n "
           "* Uses nrrdUnquantize");
 
 static int
-unrrdu_unquantizeMain(int argc, const char **argv, const char *me,
-                      const hestParm *_hparm) {
+unu_unquantizeMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
   /*
    * with new nrrdHestNrrdNoTTY, can let "-" be default input as normal; no more need
@@ -55,12 +54,12 @@ unrrdu_unquantizeMain(int argc, const char **argv, const char *me,
   int dbl;
   hestOptAdd_Flag(&hopt, "double", &dbl, "Use double for output type, instead of float");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for YES some hparm modification)
   hestParm *hparm = hestParmCopy(_hparm);
   hparm->noArgsIsNoProblem = AIR_TRUE; // thanks to nrrdHestNrrdNoTTY
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_unquantizeInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_unquantizeInfoL);
   airArray *mop = unrrduMopNew(hopt, hparm);
   char *err;
 
@@ -75,10 +74,10 @@ unrrdu_unquantizeMain(int argc, const char **argv, const char *me,
     return 1;
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(unquantize, INFO);
+MY_UNRRDU_CMD(unquantize, INFO);

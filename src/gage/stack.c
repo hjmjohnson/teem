@@ -193,15 +193,15 @@ gageStackPerVolumeAttach(gageContext *ctx, gagePerVolume *pvlBase,
 }
 
 /*
-** _gageStackBaseIv3Fill
+** gage__StackBaseIv3Fill
 **
 ** after the individual iv3's in the stack have been filled, this does
 ** the across-stack filtering to fill the iv3 of pvl[pvlNum-1] (the
 ** "base" pvl)
 */
 int /* Biff: (private) nope */
-_gageStackBaseIv3Fill(gageContext *ctx) {
-  static const char me[] = "_gageStackBaseIv3Fill";
+gage__StackBaseIv3Fill(gageContext *ctx) {
+  static const char me[] = "gage__StackBaseIv3Fill";
   unsigned int fd, pvlIdx, cacheIdx, cacheLen, baseIdx, valLen;
 
   fd = 2 * ctx->radius;
@@ -232,7 +232,7 @@ _gageStackBaseIv3Fill(gageContext *ctx) {
        desired scale location */
     for (pvlIdx = 0; pvlIdx < ctx->pvlNum - 1; pvlIdx++) {
       if (ctx->stackFw[pvlIdx]) {
-        /* has to be non-zero somewhere, since _gageLocationSet()
+        /* has to be non-zero somewhere, since gage__LocationSet()
            gives an error if there aren't non-zero stackFw[i] */
         break;
       }
@@ -402,12 +402,12 @@ gageStackProbe(gageContext *ctx, double xi, double yi, double zi, double stackId
       snprintf(ctx->errStr, sizeof(ctx->errStr),
                "%s: can't probe stack without parm.stackUse", me);
     } else {
-      airStrcpy(ctx->errStr, sizeof(ctx->errStr), _GAGE_NON_ERR_STR);
+      airStrcpy(ctx->errStr, sizeof(ctx->errStr), MY_GAGE_NON_ERR_STR);
     }
     ctx->errNum = gageErrStackUnused;
     return 1;
   }
-  return _gageProbe(ctx, xi, yi, zi, stackIdx);
+  return gage__Probe(ctx, xi, yi, zi, stackIdx);
 }
 
 int /* Biff: nope */
@@ -430,12 +430,12 @@ gageStackProbeSpace(gageContext *ctx, double xx, double yy, double zz, double ss
       snprintf(ctx->errStr, sizeof(ctx->errStr),
                "%s: can't probe stack without parm.stackUse", me);
     } else {
-      airStrcpy(ctx->errStr, sizeof(ctx->errStr), _GAGE_NON_ERR_STR);
+      airStrcpy(ctx->errStr, sizeof(ctx->errStr), MY_GAGE_NON_ERR_STR);
     }
     ctx->errNum = gageErrStackUnused;
     return 1;
   }
-  ret = _gageProbeSpace(ctx, xx, yy, zz, ss, indexSpace, clamp);
+  ret = gage__ProbeSpace(ctx, xx, yy, zz, ss, indexSpace, clamp);
   /* fprintf(stderr, "!%s: returning %d\n", me, ret); */
   return ret;
 }

@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Affine (lerp) mapping on 5 nrrds or constants"
-static const char *_unrrdu_affineInfoL
+static const char *unu_affineInfoL
   = (INFO ". All the 5 arguments can be either nrrds or single "
           "floating-point values.  When all args are single values, this "
           "is subsuming the functionality of the previous stand-alone "
@@ -32,7 +32,7 @@ static const char *_unrrdu_affineInfoL
           "* Uses nrrdArithAffine or nrrdArithIterAffine");
 
 static int
-unrrdu_affineMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_affineMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   NrrdIter *minIn, *in, *maxIn, *minOut, *maxOut;
   hestOptAdd_1_Other(&hopt, NULL, "minIn", &minIn, NULL,
@@ -55,10 +55,10 @@ unrrdu_affineMain(int argc, const char **argv, const char *me, const hestParm *h
   hestOptAdd_1_Bool(&hopt, "clamp", "bool", &clamp, "false",
                     "clamp output values to specified output range");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_affineInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_affineInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -114,11 +114,11 @@ unrrdu_affineMain(int argc, const char **argv, const char *me, const hestParm *h
       airMopError(mop);
       return 1;
     }
-    SAVE(out, nout, NULL);
+    MY_SAVE(out, nout, NULL);
   }
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(affine, INFO);
+MY_UNRRDU_CMD(affine, INFO);

@@ -350,7 +350,7 @@ AIR_MOPPER(nrrdIoStateNix)
 /* ------------------------------------------------------------ */
 
 static void
-_nrrdResampleInfoInit(NrrdResampleInfo *info) {
+resampleInfoInit(NrrdResampleInfo *info) {
   unsigned int ii, dd;
 
   for (dd = 0; dd < NRRD_DIM_MAX; dd++) {
@@ -377,7 +377,7 @@ nrrdResampleInfoNew(void) {
   info = (NrrdResampleInfo *)(calloc(1, sizeof(NrrdResampleInfo)));
   if (info) {
     /* explicitly sets pointers to NULL */
-    _nrrdResampleInfoInit(info);
+    resampleInfoInit(info);
   }
   return info;
 }
@@ -660,7 +660,7 @@ nrrdInit(Nrrd *nrrd) {
   if (nrrd) {
     nrrdBasicInfoInit(nrrd, NRRD_BASIC_INFO_NONE);
     for (ii = 0; ii < NRRD_DIM_MAX; ii++) {
-      _nrrdAxisInfoInit(nrrd->axis + ii);
+      nrrd__AxisInfoInit(nrrd->axis + ii);
     }
   }
   return;
@@ -686,7 +686,7 @@ nrrdNew(void) {
      guaranteed to do that.  */
   nrrd->data = NULL;
   for (ii = 0; ii < NRRD_DIM_MAX; ii++) {
-    _nrrdAxisInfoNewInit(nrrd->axis + ii);
+    nrrd__AxisInfoNewInit(nrrd->axis + ii);
   }
   for (ii = 0; ii < NRRD_SPACE_DIM_MAX; ii++) {
     nrrd->spaceUnits[ii] = NULL;
@@ -732,7 +732,7 @@ nrrdNix(Nrrd *nrrd) {
 
   if (nrrd) {
     for (ii = 0; ii < NRRD_DIM_MAX; ii++) {
-      _nrrdAxisInfoInit(&(nrrd->axis[ii]));
+      nrrd__AxisInfoInit(&(nrrd->axis[ii]));
     }
     for (ii = 0; ii < NRRD_SPACE_DIM_MAX; ii++) {
       nrrd->spaceUnits[ii] = (char *)airFree(nrrd->spaceUnits[ii]);
@@ -788,8 +788,8 @@ AIR_MOPPER(nrrdNuke)
 /* ------------------------------------------------------------ */
 
 int /* Biff: (private) maybe:3:1 */
-_nrrdSizeCheck(const size_t *size, unsigned int dim, int useBiff) {
-  static const char me[] = "_nrrdSizeCheck";
+nrrd__SizeCheck(const size_t *size, unsigned int dim, int useBiff) {
+  static const char me[] = "nrrd__SizeCheck";
   size_t num, pre;
   unsigned int ai;
 
@@ -834,7 +834,7 @@ nrrdWrap_nva(Nrrd *nrrd, void *data, int type, unsigned int dim, const size_t *s
   nrrd->data = data;
   nrrd->type = type;
   nrrd->dim = dim;
-  if (_nrrdSizeCheck(size, dim, AIR_TRUE)) {
+  if (nrrd__SizeCheck(size, dim, AIR_TRUE)) {
     biffAddf(NRRD, "%s:", me);
     return 1;
   }
@@ -876,7 +876,7 @@ nrrdWrap_va(Nrrd *nrrd, void *data, int type, unsigned int dim, ...) {
 
 /*
 void
-_nrrdTraverse(Nrrd *nrrd) {
+nrrd__Traverse(Nrrd *nrrd) {
   char *test, tval;
   size_t I, N;
   int S;
@@ -892,8 +892,8 @@ _nrrdTraverse(Nrrd *nrrd) {
 */
 
 int /* Biff: (private) 1 */
-_nrrdCopy(Nrrd *nout, const Nrrd *nin, int bitflag) {
-  static const char me[] = "_nrrdCopy";
+nrrd__Copy(Nrrd *nout, const Nrrd *nin, int bitflag) {
+  static const char me[] = "nrrd__Copy";
   size_t size[NRRD_DIM_MAX];
 
   if (!(nin && nout)) {
@@ -949,7 +949,7 @@ int /* Biff: 1 */
 nrrdCopy(Nrrd *nout, const Nrrd *nin) {
   static const char me[] = "nrrdCopy";
 
-  if (_nrrdCopy(nout, nin, NRRD_BASIC_INFO_NONE)) {
+  if (nrrd__Copy(nout, nin, NRRD_BASIC_INFO_NONE)) {
     biffAddf(NRRD, "%s:", me);
     return 1;
   }
@@ -1048,7 +1048,7 @@ nrrdAlloc_va(Nrrd *nrrd, int type, unsigned int dim, ...) {
 }
 
 /*
-** _nrrdMaybeAllocMaybeZero_nva
+** nrrd__MaybeAllocMaybeZero_nva
 **
 ** New implementation of nrrdMaybeAlloc_nva, but now with ability
 ** to control whether or not to zero out when re-allocation wasn't needed
@@ -1057,9 +1057,9 @@ nrrdAlloc_va(Nrrd *nrrd, int type, unsigned int dim, ...) {
 ** think of a name that wasn't silly
 */
 int /* Biff: (private) 1 */
-_nrrdMaybeAllocMaybeZero_nva(Nrrd *nrrd, int type, unsigned int dim, const size_t *size,
-                             int zeroWhenNoAlloc) {
-  static const char me[] = "_nrrdMaybeAllocMaybeZero_nva";
+nrrd__MaybeAllocMaybeZero_nva(Nrrd *nrrd, int type, unsigned int dim, const size_t *size,
+                              int zeroWhenNoAlloc) {
+  static const char me[] = "nrrd__MaybeAllocMaybeZero_nva";
   size_t sizeWant, sizeHave, numWant, elementSizeWant;
   int need;
   unsigned int ai;
@@ -1087,7 +1087,7 @@ _nrrdMaybeAllocMaybeZero_nva(Nrrd *nrrd, int type, unsigned int dim, const size_
   } else {
     elementSizeWant = nrrdTypeSize[type];
   }
-  if (_nrrdSizeCheck(size, dim, AIR_TRUE)) {
+  if (nrrd__SizeCheck(size, dim, AIR_TRUE)) {
     biffAddf(NRRD, "%s:", me);
     return 1;
   }
@@ -1137,7 +1137,7 @@ _nrrdMaybeAllocMaybeZero_nva(Nrrd *nrrd, int type, unsigned int dim, const size_
 /*
 ******** nrrdMaybeAlloc_nva
 **
-** NOTE: this is now just a wrapper around _nrrdMaybeAllocMaybeZero_nva;
+** NOTE: this is now just a wrapper around nrrd__MaybeAllocMaybeZero_nva;
 ** below info referred to original implementation.
 **
 ** calls nrrdAlloc_nva if the requested space is different than
@@ -1149,7 +1149,7 @@ int /* Biff: 1 */
 nrrdMaybeAlloc_nva(Nrrd *nrrd, int type, unsigned int dim, const size_t *size) {
   static const char me[] = "nrrdMaybeAlloc_nva";
 
-  if (_nrrdMaybeAllocMaybeZero_nva(nrrd, type, dim, size, AIR_TRUE)) {
+  if (nrrd__MaybeAllocMaybeZero_nva(nrrd, type, dim, size, AIR_TRUE)) {
     biffAddf(NRRD, "%s: trouble", me);
     return 1;
   }
@@ -1320,7 +1320,7 @@ nrrdCompare(const Nrrd *ninA, const Nrrd *ninB, int onlyData, double epsilon,
   }
 
 #define DOUBLE_COMPARE(VAL, STR)                                                        \
-  *differ = _nrrdDblcmp(ninA->VAL, ninB->VAL);                                          \
+  *differ = nrrd__Dblcmp(ninA->VAL, ninB->VAL);                                         \
   if (*differ) {                                                                        \
     if (explain) {                                                                      \
       snprintf(explain, AIR_STRLEN_LARGE + 1, "ninA->%s %.17g %s ninB->%s %.17g", STR,  \

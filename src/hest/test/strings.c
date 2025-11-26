@@ -21,8 +21,6 @@
 
 char *me;
 
-extern void _airCloPrintStr(FILE *f, int indent, int already, int width, char *_str);
-
 int
 main(void) {
   char line[1025];

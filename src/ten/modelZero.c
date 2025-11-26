@@ -92,7 +92,7 @@ parmConvert(double *parmDst, const double *parmSrc,
   return 0;
 }
 
-_TEN_SQE
+MY_TEN_SQE
 
 static void
 sqeGrad(double *grad, const double *parm0,
@@ -107,10 +107,10 @@ sqeGrad(double *grad, const double *parm0,
   AIR_UNUSED(knownB0);
 }
 
-_TEN_SQE_FIT(tenModelZero)
+MY_TEN_SQE_FIT(tenModelZero)
 
-_TEN_NLL
-_TEN_NLL_GRAD_STUB
+MY_TEN_NLL
+MY_TEN_NLL_GRAD_STUB
 
 static double
 nllFit(double *parm, const tenExperSpec *espec,
@@ -127,9 +127,9 @@ nllFit(double *parm, const tenExperSpec *espec,
 }
 
 static const tenModel
-_tenModelZero = {
+modelZero = {
   TEN_MODEL_STR_ZERO,
-  _TEN_MODEL_FIELDS
+  MY_TEN_MODEL_FIELDS
 };
-const tenModel *const tenModelZero = &_tenModelZero;
+const tenModel *const tenModelZero = &modelZero;
 /* clang-format on */

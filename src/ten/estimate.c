@@ -35,8 +35,8 @@ http://www.mathworks.com/access/helpdesk/help/toolbox/curvefit/ch_fitt5.html#405
 /* ---------------------------------------------- */
 
 static int /* Biff: 1 */
-_tenGaussian(double *retP, double m, double t, double s) {
-  static const char me[] = "_tenGaussian";
+gaussianEval(double *retP, double m, double t, double s) {
+  static const char me[] = "gaussianEval";
   double diff, earg, den;
 
   if (!retP) {
@@ -59,11 +59,11 @@ _tenGaussian(double *retP, double m, double t, double s) {
 }
 
 static int /* Biff: 1 */
-_tenRicianTrue(double *retP,
-               double m /* measured */,
-               double t /* truth */,
-               double s /* sigma */) {
-  static const char me[] = "_tenRicianTrue";
+ricianTrue(double *retP,
+           double m /* measured */,
+           double t /* truth */,
+           double s /* sigma */) {
+  static const char me[] = "ricianTrue";
   double mos, moss, mos2, tos2, tos, ss, earg, barg;
 
   if (!retP) {
@@ -94,8 +94,8 @@ _tenRicianTrue(double *retP,
 }
 
 static int /* Biff: 1 */
-_tenRicianSafe(double *retP, double m, double t, double s) {
-  static const char me[] = "_tenRicianSafe";
+ricianSafe(double *retP, double m, double t, double s) {
+  static const char me[] = "ricianSafe";
   double diff, ric, gau, neer = 10, faar = 20;
   int E;
 
@@ -107,13 +107,13 @@ _tenRicianSafe(double *retP, double m, double t, double s) {
   diff = AIR_ABS(m - t) / s;
   E = 0;
   if (diff < neer) {
-    if (!E) E |= _tenRicianTrue(retP, m, t, s);
+    if (!E) E |= ricianTrue(retP, m, t, s);
   } else if (diff < faar) {
-    if (!E) E |= _tenRicianTrue(&ric, m, t, s);
-    if (!E) E |= _tenGaussian(&gau, m, t, s);
+    if (!E) E |= ricianTrue(&ric, m, t, s);
+    if (!E) E |= gaussianEval(&gau, m, t, s);
     if (!E) *retP = AIR_AFFINE(neer, diff, faar, ric, gau);
   } else {
-    if (!E) E |= _tenGaussian(retP, m, t, s);
+    if (!E) E |= gaussianEval(retP, m, t, s);
   }
   if (E) {
     biffAddf(TEN, "%s: failed with m=%g, t=%g, s=%g -> diff=%g", me, m, t, s, diff);
@@ -124,11 +124,11 @@ _tenRicianSafe(double *retP, double m, double t, double s) {
 }
 
 static int /* Biff: 1 */
-_tenRician(double *retP,
+ricianEval(double *retP,
            double m /* measured */,
            double t /* truth */,
            double s /* sigma */) {
-  static const char me[] = "_tenRician";
+  static const char me[] = "ricianEval";
   double tos, ric, gau, loSignal = 4.0, hiSignal = 8.0;
   int E;
 
@@ -145,13 +145,13 @@ _tenRician(double *retP,
   tos = t / s;
   E = 0;
   if (tos < loSignal) {
-    if (!E) E |= _tenRicianSafe(retP, m, t, s);
+    if (!E) E |= ricianSafe(retP, m, t, s);
   } else if (tos < hiSignal) {
-    if (!E) E |= _tenRicianSafe(&ric, m, t, s);
-    if (!E) E |= _tenGaussian(&gau, m, t, s);
+    if (!E) E |= ricianSafe(&ric, m, t, s);
+    if (!E) E |= gaussianEval(&gau, m, t, s);
     if (!E) *retP = AIR_AFFINE(loSignal, tos, hiSignal, ric, gau);
   } else {
-    if (!E) E |= _tenGaussian(retP, m, t, s);
+    if (!E) E |= gaussianEval(retP, m, t, s);
   }
   if (E) {
     biffAddf(TEN, "%s: failed with m=%g, t=%g, s=%g -> tos=%g", me, m, t, s, tos);
@@ -178,7 +178,7 @@ enum {
 };
 
 static void
-_tenEstimateOutputInit(tenEstimateContext *tec) {
+estimateOutputInit(tenEstimateContext *tec) {
 
   tec->estimatedB0 = AIR_NAN;
   TEN_T_SET(tec->ten, AIR_NAN, AIR_NAN, AIR_NAN, AIR_NAN, AIR_NAN, AIR_NAN, AIR_NAN);
@@ -236,7 +236,7 @@ tenEstimateContextNew(void) {
     tec->dwiTmp = NULL;
     tec->dwi = NULL;
     tec->skipLut = NULL;
-    _tenEstimateOutputInit(tec);
+    estimateOutputInit(tec);
   }
   return tec;
 }
@@ -481,7 +481,7 @@ tenEstimateThresholdFind(double *threshP, unsigned char *isB0, Nrrd *nin4d) {
       }
     }
   }
-  if (_tenEpiRegThresholdFind(threshP, ndwi, dwiNum, AIR_FALSE, 1.5)) {
+  if (ten__EpiRegThresholdFind(threshP, ndwi, dwiNum, AIR_FALSE, 1.5)) {
     biffAddf(TEN, "%s: trouble finding thresh", me);
     airMopError(mop);
     return 1;
@@ -512,8 +512,8 @@ tenEstimateThresholdSet(tenEstimateContext *tec, double thresh, double soft) {
 }
 
 static int /* Biff: 1 */
-_tenEstimateCheck(tenEstimateContext *tec) {
-  static const char me[] = "_tenEstimateCheck";
+estimateCheck(tenEstimateContext *tec) {
+  static const char me[] = "estimateCheck";
 
   if (!tec) {
     biffAddf(TEN, "%s: got NULL pointer", me);
@@ -557,8 +557,8 @@ _tenEstimateCheck(tenEstimateContext *tec) {
 ** dwiNum does not include the skipped images
 */
 static int /* Biff: 1 */
-_tenEstimateNumUpdate(tenEstimateContext *tec) {
-  static const char me[] = "_tenEstimateNumUpdate";
+estimateNumUpdate(tenEstimateContext *tec) {
+  static const char me[] = "estimateNumUpdate";
   unsigned int newAllNum, newDwiNum, allIdx, skipListIdx, skipIdx, skipDo, skipNotNum;
   double (*lup)(const void *, size_t), gg[3], bb[6];
 
@@ -653,8 +653,8 @@ _tenEstimateNumUpdate(tenEstimateContext *tec) {
 }
 
 static int /* Biff: 1 */
-_tenEstimateAllAllocUpdate(tenEstimateContext *tec) {
-  static const char me[] = "_tenEstimateAllAllocUpdate";
+estimateAllAllocUpdate(tenEstimateContext *tec) {
+  static const char me[] = "estimateAllAllocUpdate";
 
   if (tec->flag[flagAllNum]) {
     airFree(tec->all);
@@ -671,8 +671,8 @@ _tenEstimateAllAllocUpdate(tenEstimateContext *tec) {
 }
 
 static int /* Biff: 1 */
-_tenEstimateDwiAllocUpdate(tenEstimateContext *tec) {
-  static const char me[] = "_tenEstimateDwiAllocUpdate";
+estimateDwiAllocUpdate(tenEstimateContext *tec) {
+  static const char me[] = "estimateDwiAllocUpdate";
   size_t size[2];
   int E;
 
@@ -703,8 +703,8 @@ _tenEstimateDwiAllocUpdate(tenEstimateContext *tec) {
 }
 
 static int
-_tenEstimateAllSetUpdate(tenEstimateContext *tec) {
-  /* static const char me[] = "_tenEstimateAllSetUpdate"; */
+estimateAllSetUpdate(tenEstimateContext *tec) {
+  /* static const char me[] = "estimateAllSetUpdate"; */
   /* unsigned int skipListIdx, skipIdx, skip, dwiIdx */;
 
   if (tec->flag[flagAllAlloc] || tec->flag[flagDwiNum]) {
@@ -713,8 +713,8 @@ _tenEstimateAllSetUpdate(tenEstimateContext *tec) {
 }
 
 static int
-_tenEstimateDwiSetUpdate(tenEstimateContext *tec) {
-  /* static const char me[] = "_tenEstimateDwiSetUpdate"; */
+estimateDwiSetUpdate(tenEstimateContext *tec) {
+  /* static const char me[] = "estimateDwiSetUpdate"; */
   double (*lup)(const void *, size_t I), gg[3], *bmat;
   unsigned int allIdx, bmIdx;
 
@@ -756,8 +756,8 @@ _tenEstimateDwiSetUpdate(tenEstimateContext *tec) {
 }
 
 static int
-_tenEstimateWghtUpdate(tenEstimateContext *tec) {
-  /* static const char me[] = "_tenEstimateWghtUpdate"; */
+estimateWghtUpdate(tenEstimateContext *tec) {
+  /* static const char me[] = "estimateWghtUpdate"; */
   unsigned int dwiIdx;
   double *wght;
 
@@ -776,8 +776,8 @@ _tenEstimateWghtUpdate(tenEstimateContext *tec) {
 }
 
 static int /* Biff: 1 */
-_tenEstimateEmatUpdate(tenEstimateContext *tec) {
-  static const char me[] = "_tenEstimateEmatUpdate";
+estimateEmatUpdate(tenEstimateContext *tec) {
+  static const char me[] = "estimateEmatUpdate";
 
   if (tec->flag[flagDwiSet] || tec->flag[flagWght]) {
 
@@ -803,14 +803,14 @@ tenEstimateUpdate(tenEstimateContext *tec) {
   int EE;
 
   EE = 0;
-  if (!EE) EE |= _tenEstimateCheck(tec);
-  if (!EE) EE |= _tenEstimateNumUpdate(tec);
-  if (!EE) EE |= _tenEstimateAllAllocUpdate(tec);
-  if (!EE) EE |= _tenEstimateDwiAllocUpdate(tec);
-  if (!EE) EE |= _tenEstimateAllSetUpdate(tec);
-  if (!EE) EE |= _tenEstimateDwiSetUpdate(tec);
-  if (!EE) EE |= _tenEstimateWghtUpdate(tec);
-  if (!EE) EE |= _tenEstimateEmatUpdate(tec);
+  if (!EE) EE |= estimateCheck(tec);
+  if (!EE) EE |= estimateNumUpdate(tec);
+  if (!EE) EE |= estimateAllAllocUpdate(tec);
+  if (!EE) EE |= estimateDwiAllocUpdate(tec);
+  if (!EE) EE |= estimateAllSetUpdate(tec);
+  if (!EE) EE |= estimateDwiSetUpdate(tec);
+  if (!EE) EE |= estimateWghtUpdate(tec);
+  if (!EE) EE |= estimateEmatUpdate(tec);
   if (EE) {
     biffAddf(TEN, "%s: problem updating", me);
     return 1;
@@ -827,7 +827,7 @@ tenEstimateUpdate(tenEstimateContext *tec) {
 ** tec->conf (from tec->mdwi)
 */
 static void
-_tenEstimateValuesSet(tenEstimateContext *tec) {
+estimateValuesSet(tenEstimateContext *tec) {
   unsigned int allIdx, dwiIdx, B0Num;
   double normSum;
 
@@ -871,7 +871,7 @@ _tenEstimateValuesSet(tenEstimateContext *tec) {
 ** ASSUMES THAT dwiTmp[] has been stuff with all values simulated from model
 */
 static double
-_tenEstimateErrorDwi(tenEstimateContext *tec) {
+estimateErrorDwi(tenEstimateContext *tec) {
   unsigned int dwiIdx;
   double err, diff;
 
@@ -891,7 +891,7 @@ _tenEstimateErrorDwi(tenEstimateContext *tec) {
   return sqrt(err);
 }
 static double
-_tenEstimateErrorLogDwi(tenEstimateContext *tec) {
+estimateErrorLogDwi(tenEstimateContext *tec) {
   unsigned int dwiIdx;
   double err, diff;
 
@@ -911,9 +911,9 @@ _tenEstimateErrorLogDwi(tenEstimateContext *tec) {
 ** and sets of all of them, regardless of estimateB0
 */
 static int /* Biff: 1 */
-_tenEstimate1TensorSimulateSingle(tenEstimateContext *tec, double sigma, double bValue,
-                                  double B0, const double ten[7]) {
-  static const char me[] = "_tenEstimate1TensorSimulateSingle";
+estimate1TensorSimulateSingle(tenEstimateContext *tec, double sigma, double bValue,
+                              double B0, const double ten[7]) {
+  static const char me[] = "estimate1TensorSimulateSingle";
   unsigned int dwiIdx, jj;
   double nr, ni, vv;
   const double *bmat;
@@ -984,7 +984,7 @@ tenEstimate1TensorSimulateSingle_f(tenEstimateContext *tec, float *simval, float
   }
 
   TEN_T_COPY(ten, _ten);
-  if (_tenEstimate1TensorSimulateSingle(tec, sigma, bValue, B0, ten)) {
+  if (estimate1TensorSimulateSingle(tec, sigma, bValue, B0, ten)) {
     biffAddf(TEN, "%s: ", me);
     return 1;
   }
@@ -1015,7 +1015,7 @@ tenEstimate1TensorSimulateSingle_d(tenEstimateContext *tec, double *simval, doub
     return 1;
   }
 
-  if (_tenEstimate1TensorSimulateSingle(tec, sigma, bValue, B0, ten)) {
+  if (estimate1TensorSimulateSingle(tec, sigma, bValue, B0, ten)) {
     biffAddf(TEN, "%s: ", me);
     return 1;
   }
@@ -1049,7 +1049,7 @@ tenEstimate1TensorSimulateVolume(tenEstimateContext *tec, Nrrd *ndwi, double sig
     return 1;
   }
   /* this should have been done by update(), but why not */
-  if (_tenEstimateCheck(tec)) {
+  if (estimateCheck(tec)) {
     biffAddf(TEN, "%s: problem in given context", me);
     return 1;
   }
@@ -1165,8 +1165,8 @@ tenEstimate1TensorSimulateVolume(tenEstimateContext *tec, Nrrd *ndwi, double sig
 ** tec->B0, if tec->estimateB0
 */
 static int /* Biff: 1 */
-_tenEstimate1Tensor_LLS(tenEstimateContext *tec) {
-  static const char me[] = "_tenEstimate1Tensor_LLS";
+estimate1Tensor_LLS(tenEstimateContext *tec) {
+  static const char me[] = "estimate1Tensor_LLS";
   double *emat, tmp, logB0;
   unsigned int ii, jj;
 
@@ -1224,8 +1224,8 @@ _tenEstimate1Tensor_LLS(tenEstimateContext *tec) {
 }
 
 static int /* Biff: 1 */
-_tenEstimate1Tensor_WLS(tenEstimateContext *tec) {
-  static const char me[] = "_tenEstimate1Tensor_WLS";
+estimate1Tensor_WLS(tenEstimateContext *tec) {
+  static const char me[] = "estimate1Tensor_WLS";
   unsigned int dwiIdx, iter;
   double *wght, dwi, sum;
 
@@ -1256,7 +1256,7 @@ _tenEstimate1Tensor_WLS(tenEstimateContext *tec) {
   nrrdSave("bmat.txt", tec->nbmat, NULL);
   nrrdSave("emat.txt", tec->nemat, NULL);
   */
-  if (_tenEstimate1Tensor_LLS(tec)) {
+  if (estimate1Tensor_LLS(tec)) {
     biffAddf(TEN, "%s: initial weighted LLS failed", me);
     return 1;
   }
@@ -1269,10 +1269,10 @@ _tenEstimate1Tensor_WLS(tenEstimateContext *tec) {
             tec->ten[1], tec->ten[2], tec->ten[3],
             tec->ten[4], tec->ten[5], tec->ten[6]);
     */
-    if (_tenEstimate1TensorSimulateSingle(tec, 0.0, tec->bValue,
-                                          (tec->estimateB0 ? tec->estimatedB0
-                                                           : tec->knownB0),
-                                          tec->ten)) {
+    if (estimate1TensorSimulateSingle(tec, 0.0, tec->bValue,
+                                      (tec->estimateB0 ? tec->estimatedB0
+                                                       : tec->knownB0),
+                                      tec->ten)) {
       biffAddf(TEN, "%s: iter %u", me, iter);
       return 1;
     }
@@ -1291,20 +1291,20 @@ _tenEstimate1Tensor_WLS(tenEstimateContext *tec) {
                 iter);
       return 1;
     }
-    _tenEstimate1Tensor_LLS(tec);
+    estimate1Tensor_LLS(tec);
   }
 
   return 0;
 }
 
 static int /* Biff: 1 */
-_tenEstimate1TensorGradient(tenEstimateContext *tec, double *gradB0P, double gradTen[7],
-                            double B0, double ten[7], double epsilon,
-                            int (*gradientCB)(tenEstimateContext *tec, double *gradB0P,
-                                              double gTen[7], double B0, double ten[7]),
-                            int (*badnessCB)(tenEstimateContext *tec, double *badP,
-                                             double B0, double ten[7])) {
-  static const char me[] = "_tenEstimate1TensorGradient";
+estimate1TensorGradient(tenEstimateContext *tec, double *gradB0P, double gradTen[7],
+                        double B0, double ten[7], double epsilon,
+                        int (*gradientCB)(tenEstimateContext *tec, double *gradB0P,
+                                          double gTen[7], double B0, double ten[7]),
+                        int (*badnessCB)(tenEstimateContext *tec, double *badP,
+                                         double B0, double ten[7])) {
+  static const char me[] = "estimate1TensorGradient";
   double forwTen[7], backTen[7], forwBad, backBad;
   unsigned int ti;
 
@@ -1339,24 +1339,24 @@ _tenEstimate1TensorGradient(tenEstimateContext *tec, double *gradB0P, double gra
 }
 
 static int /* Biff: 1 */
-_tenEstimate1TensorDescent(tenEstimateContext *tec,
-                           int (*gradientCB)(tenEstimateContext *tec,
-                                             double *gradB0,
-                                             double gradTen[7],
-                                             double B0,
-                                             double ten[7]),
-                           int (*badnessCB)(tenEstimateContext *tec,
-                                            double *badP,
-                                            double B0,
-                                            double ten[7])) {
-  static const char me[] = "_tenEstimate1TensorDescent";
+estimate1TensorDescent(tenEstimateContext *tec,
+                       int (*gradientCB)(tenEstimateContext *tec,
+                                         double *gradB0,
+                                         double gradTen[7],
+                                         double B0,
+                                         double ten[7]),
+                       int (*badnessCB)(tenEstimateContext *tec,
+                                        double *badP,
+                                        double B0,
+                                        double ten[7])) {
+  static const char me[] = "estimate1TensorDescent";
   double currB0, lastB0, currTen[7], lastTen[7], gradB0 = AIR_NAN, gradTen[7], epsilon,
                                                  stepSize, badInit, bad, badDelta,
                                                  stepSizeMin = 0.00000000001, badLast;
   unsigned int iter, iterMax = 100000;
 
   /* start with WLS fit since its probably close */
-  _tenEstimate1Tensor_WLS(tec);
+  estimate1Tensor_WLS(tec);
   if (tec->verbose) {
     fprintf(stderr, "%s: WLS gave %g %g %g    %g %g    %g\n", me, tec->ten[1],
             tec->ten[2], tec->ten[3], tec->ten[4], tec->ten[5], tec->ten[6]);
@@ -1375,9 +1375,9 @@ _tenEstimate1TensorDescent(tenEstimateContext *tec,
 
   epsilon = 0.0000001;
 newepsilon:
-  if (_tenEstimate1TensorGradient(tec, &gradB0, gradTen,
-                                  (tec->estimateB0 ? tec->estimatedB0 : tec->knownB0),
-                                  tec->ten, epsilon, gradientCB, badnessCB)) {
+  if (estimate1TensorGradient(tec, &gradB0, gradTen,
+                              (tec->estimateB0 ? tec->estimatedB0 : tec->knownB0),
+                              tec->ten, epsilon, gradientCB, badnessCB)) {
     biffAddf(TEN, "%s: problem getting initial gradient", me);
     return 1;
   }
@@ -1430,8 +1430,8 @@ newepsilon:
     TEN_T_COPY(lastTen, currTen);
     lastB0 = currB0;
     if (0 == (iter % 3)) {
-      if (_tenEstimate1TensorGradient(tec, &gradB0, gradTen, currB0, currTen,
-                                      stepSize / 5, gradientCB, badnessCB)
+      if (estimate1TensorGradient(tec, &gradB0, gradTen, currB0, currTen, stepSize / 5,
+                                  gradientCB, badnessCB)
           || !AIR_EXISTS(gradB0)) {
         biffAddf(TEN, "%s[%u]: problem getting iter grad", me, iter);
         return 1;
@@ -1503,15 +1503,15 @@ _tenEstimate1Tensor_GradientNLS(tenEstimateContext *tec, double *gradB0P,
 }
 #endif
 static int /* Biff: 1 */
-_tenEstimate1Tensor_BadnessNLS(tenEstimateContext *tec, double *retP, double currB0,
-                               double currTen[7]) {
-  static const char me[] = "_tenEstimate1Tensor_BadnessNLS";
+estimate1Tensor_BadnessNLS(tenEstimateContext *tec, double *retP, double currB0,
+                           double currTen[7]) {
+  static const char me[] = "estimate1Tensor_BadnessNLS";
 
   if (!(retP && tec)) {
     biffAddf(TEN, "%s: got NULL pointer", me);
     return 1;
   }
-  if (_tenEstimate1TensorSimulateSingle(tec, 0.0, tec->bValue, currB0, currTen)) {
+  if (estimate1TensorSimulateSingle(tec, 0.0, tec->bValue, currB0, currTen)) {
     biffAddf(TEN, "%s: ", me);
     return 1;
   }
@@ -1523,7 +1523,7 @@ _tenEstimate1Tensor_BadnessNLS(tenEstimateContext *tec, double *retP, double cur
     }
     fprintf(stderr, "\n");
   }
-  *retP = _tenEstimateErrorDwi(tec);
+  *retP = estimateErrorDwi(tec);
   if (tec->verbose > 2) {
     fprintf(stderr, "!%s: badness(%g, (%g) %g %g %g   %g %g  %g) = %g\n", me, currB0,
             currTen[0], currTen[1], currTen[2], currTen[3], currTen[4], currTen[5],
@@ -1533,14 +1533,14 @@ _tenEstimate1Tensor_BadnessNLS(tenEstimateContext *tec, double *retP, double cur
 }
 
 static int /* Biff: 1 */
-_tenEstimate1Tensor_NLS(tenEstimateContext *tec) {
-  static const char me[] = "_tenEstimate1Tensor_NLS";
+estimate1Tensor_NLS(tenEstimateContext *tec) {
+  static const char me[] = "estimate1Tensor_NLS";
 
-  if (_tenEstimate1TensorDescent(tec,
-                                 NULL
-                                 /* _tenEstimate1Tensor_GradientNLS */
-                                 ,
-                                 _tenEstimate1Tensor_BadnessNLS)) {
+  if (estimate1TensorDescent(tec,
+                             NULL
+                             /* _tenEstimate1Tensor_GradientNLS */
+                             ,
+                             estimate1Tensor_BadnessNLS)) {
     biffAddf(TEN, "%s: ", me);
     return 1;
   }
@@ -1611,9 +1611,9 @@ _tenEstimate1Tensor_GradientMLE(tenEstimateContext *tec, double *gradB0P,
 }
 #endif
 static int /* Biff: 1 */
-_tenEstimate1Tensor_BadnessMLE(tenEstimateContext *tec, double *retP, double currB0,
-                               double curt[7]) {
-  static const char me[] = "_tenEstimate1Tensor_BadnessMLE";
+estimate1Tensor_BadnessMLE(tenEstimateContext *tec, double *retP, double currB0,
+                           double curt[7]) {
+  static const char me[] = "estimate1Tensor_BadnessMLE";
   unsigned int dwiIdx;
   double *bmat, sum, rice, logrice = 0, mesdwi = 0, simdwi = 0, dot = 0;
   int E;
@@ -1625,7 +1625,7 @@ _tenEstimate1Tensor_BadnessMLE(tenEstimateContext *tec, double *retP, double cur
     dot = ELL_6V_DOT(bmat, curt + 1);
     simdwi = currB0 * exp(-(tec->bValue) * dot);
     mesdwi = tec->dwi[dwiIdx];
-    if (!E) E |= _tenRician(&rice, mesdwi, simdwi, tec->sigma);
+    if (!E) E |= ricianEval(&rice, mesdwi, simdwi, tec->sigma);
     if (!E) E |= !AIR_EXISTS(rice);
     if (!E) logrice = log(rice + DBL_MIN);
     if (!E) sum += logrice;
@@ -1653,10 +1653,10 @@ _tenEstimate1Tensor_BadnessMLE(tenEstimateContext *tec, double *retP, double cur
 }
 
 static int /* Biff: 1 */
-_tenEstimate1Tensor_MLE(tenEstimateContext *tec) {
-  static const char me[] = "_tenEstimate1Tensor_MLE";
+estimate1Tensor_MLE(tenEstimateContext *tec) {
+  static const char me[] = "estimate1Tensor_MLE";
 
-  if (_tenEstimate1TensorDescent(tec, NULL, _tenEstimate1Tensor_BadnessMLE)) {
+  if (estimate1TensorDescent(tec, NULL, estimate1Tensor_BadnessMLE)) {
     biffAddf(TEN, "%s: ", me);
     return 1;
   }
@@ -1673,27 +1673,27 @@ _tenEstimate1Tensor_MLE(tenEstimateContext *tec) {
 ** tec->likelihoodDwi, if tec->recordLikelihoodDwi
 */
 static int /* Biff: 1 */
-_tenEstimate1TensorSingle(tenEstimateContext *tec) {
-  static const char me[] = "_tenEstimate1TensorSingle";
+estimate1TensorSingle(tenEstimateContext *tec) {
+  static const char me[] = "estimate1TensorSingle";
   double time0, B0;
   int E;
 
-  _tenEstimateOutputInit(tec);
+  estimateOutputInit(tec);
   time0 = tec->recordTime ? airTime() : 0;
-  _tenEstimateValuesSet(tec);
+  estimateValuesSet(tec);
   tec->ten[0] = tec->conf;
   switch (tec->estimate1Method) {
   case tenEstimate1MethodLLS:
-    E = _tenEstimate1Tensor_LLS(tec);
+    E = estimate1Tensor_LLS(tec);
     break;
   case tenEstimate1MethodWLS:
-    E = _tenEstimate1Tensor_WLS(tec);
+    E = estimate1Tensor_WLS(tec);
     break;
   case tenEstimate1MethodNLS:
-    E = _tenEstimate1Tensor_NLS(tec);
+    E = estimate1Tensor_NLS(tec);
     break;
   case tenEstimate1MethodMLE:
-    E = _tenEstimate1Tensor_MLE(tec);
+    E = estimate1Tensor_MLE(tec);
     break;
   default:
     biffAddf(TEN, "%s: estimation method %d unimplemented", me, tec->estimate1Method);
@@ -1720,15 +1720,15 @@ _tenEstimate1TensorSingle(tenEstimateContext *tec) {
 
   if (tec->recordErrorDwi || tec->recordErrorLogDwi) {
     B0 = tec->estimateB0 ? tec->estimatedB0 : tec->knownB0;
-    if (_tenEstimate1TensorSimulateSingle(tec, 0.0, tec->bValue, B0, tec->ten)) {
+    if (estimate1TensorSimulateSingle(tec, 0.0, tec->bValue, B0, tec->ten)) {
       biffAddf(TEN, "%s: simulation failed", me);
       return 1;
     }
     if (tec->recordErrorDwi) {
-      tec->errorDwi = _tenEstimateErrorDwi(tec);
+      tec->errorDwi = estimateErrorDwi(tec);
     }
     if (tec->recordErrorLogDwi) {
-      tec->errorLogDwi = _tenEstimateErrorLogDwi(tec);
+      tec->errorLogDwi = estimateErrorLogDwi(tec);
     }
   }
 
@@ -1752,7 +1752,7 @@ tenEstimate1TensorSingle_f(tenEstimateContext *tec, float ten[7], const float *a
   fprintf(stderr, "!%s(%u): B0 = %g,%g\n", me, __LINE__,
           tec->knownB0, tec->estimatedB0);
   */
-  if (_tenEstimate1TensorSingle(tec)) {
+  if (estimate1TensorSingle(tec)) {
     biffAddf(TEN, "%s: ", me);
     return 1;
   }
@@ -1789,7 +1789,7 @@ tenEstimate1TensorSingle_d(tenEstimateContext *tec, double ten[7], const double 
             airEnumStr(tenEstimate1Method, tec->estimate1Method), tec->estimateB0,
             tec->valueMin);
   }
-  if (_tenEstimate1TensorSingle(tec)) {
+  if (estimate1TensorSingle(tec)) {
     biffAddf(TEN, "%s: ", me);
     return 1;
   }
@@ -1821,7 +1821,7 @@ tenEstimate1TensorVolume4D(tenEstimateContext *tec, Nrrd *nten, Nrrd **nB0P,
   Nrrd *nval;
   for (valIdx=0; valIdx<NUM; valIdx++) {
     arg = AIR_AFFINE(0, valIdx, NUM-1, minVal, maxVal);
-    if (_tenRician(val + valIdx, arg, 1, 1)) {
+    if (ricianEval(val + valIdx, arg, 1, 1)) {
       biffAddf(TEN, "%s: you are out of luck", me);
       return 1;
     }

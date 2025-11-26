@@ -22,12 +22,20 @@
 #include "ten.h"
 #include "privateTen.h"
 #ifdef TEEM_LEVMAR
+#  if defined(__clang__)
+#    pragma clang diagnostic push
+#    pragma clang diagnostic ignored "-Wreserved-identifier"
+/*   because levmar.h's "#define _LEVMAR_H_" has reserved identifier _LEVMAR_H_ */
+#  endif
 #  include <levmar.h>
+#  if defined(__clang__)
+#    pragma clang diagnostic pop
+#  endif
 #endif
 
 #ifdef TEEM_LEVMAR
 #  define INFO "Demonstrates using levmar "
-static const char *_tend_lmdemoInfoL
+static const char *lmdemoInfoL
   = (INFO " https://users.ics.forth.gr/~lourakis/levmar/ implementation of "
           "Levenberg-Marquardt (LM), with an example of fitting a polynomial "
           "to noisy data.  Also demonstrates the new airJSFRand way of generating "
@@ -37,7 +45,7 @@ static const char *_tend_lmdemoInfoL
 // which makes writing C a little less annoying
 #else
 #  define INFO "(no LEVMAR => cannot run) Demo of levmar"
-static const char *_tend_lmdemoInfoL
+static const char *lmdemoInfoL
   = (INFO ". Because this Teem was built withOUT the "
           "https://users.ics.forth.gr/~lourakis/levmar/ implementation of "
           "Levenberg-Marquardt (LM), this demo does not do anything useful. Try "
@@ -351,7 +359,7 @@ levmarCall(Nrrd *ndata, int ajac, int itmax,
 }
 
 static int
-tend_lmdemoMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+lmdemoMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -428,8 +436,8 @@ tend_lmdemoMain(int argc, const char **argv, const char *me, const hestParm *hpa
 
   airArray *mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE(_tend_lmdemoInfoL);
-  JUSTPARSE(_tend_lmdemoInfoL);
+  USAGE(lmdemoInfoL);
+  JUSTPARSE(lmdemoInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
   if (!(bag->N >= 1)) {
     fprintf(stderr, "%s: Need at least N=1 datapoint, not N=%u\n", me, bag->N);
@@ -504,4 +512,4 @@ tend_lmdemoMain(int argc, const char **argv, const char *me, const hestParm *hpa
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(lmdemo, INFO);
+MY_TEND_CMD(lmdemo, INFO);

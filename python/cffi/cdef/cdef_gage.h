@@ -731,12 +731,12 @@ typedef struct gageKind_t {
                                       can come in different sizes, but
                                       because it needs to be a modified
                                       version of the compile-time table */
-  void (*iv3Print)(FILE *,         /* such as _gageSclIv3Print() */
+  void (*iv3Print)(FILE *,         /* such as gage__SclIv3Print() */
                    gageContext *,
                    gagePerVolume *),
-    (*filter)(gageContext *, /* such as _gageSclFilter() */
+    (*filter)(gageContext *, /* such as gage__SclFilter() */
               gagePerVolume *),
-    (*answer)(gageContext *, /* such as _gageSclAnswer() */
+    (*answer)(gageContext *, /* such as gage__SclAnswer() */
               gagePerVolume *),
     /* for allocating, copying, updating, and nixing the pervolume->data */
     /* pvlDataNew and pvlDataCopy can use biff, but:

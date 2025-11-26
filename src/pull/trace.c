@@ -109,10 +109,10 @@ pullTraceStability(double *spcStab,
 }
 
 static int /* Biff: 1 */
-_pullConstrTanSlap(pullContext *pctx, pullPoint *point, double tlen,
-                   /* input+output */ double toff[3],
-                   /* output */ int *constrFailP) {
-  static const char me[] = "_pullConstrTanSlap";
+constrTanSlap(pullContext *pctx, pullPoint *point, double tlen,
+              /* input+output */ double toff[3],
+              /* output */ int *constrFailP) {
+  static const char me[] = "constrTanSlap";
   double pos0[4], tt;
 
   if (!(pctx && point && toff && constrFailP)) {
@@ -130,7 +130,7 @@ _pullConstrTanSlap(pullContext *pctx, pullPoint *point, double tlen,
   ELL_4V_COPY(pos0, point->pos); /* pos0[3] should stay put; will test at end */
 
   ELL_3V_SCALE_ADD2(point->pos, 1, pos0, tlen, toff);
-  if (_pullConstraintSatisfy(pctx->task[0], point, 0 /* travmax */, constrFailP)) {
+  if (pull__ConstraintSatisfy(pctx->task[0], point, 0 /* travmax */, constrFailP)) {
     biffAddf(PULL, "%s: trouble", me);
     ELL_4V_COPY(point->pos, pos0);
     return 1;
@@ -149,19 +149,19 @@ _pullConstrTanSlap(pullContext *pctx, pullPoint *point, double tlen,
 }
 
 static int /* Biff: 1 */
-_pullConstrOrientFind(pullContext *pctx, pullPoint *point,
-                      int normalfind, /* find normal two 2D surface,
-                                         else find tangent to 1D curve */
-                      double tlen,
-                      const double tdir0[3], /* if non-NULL, try using this direction */
-                      /* output */
-                      double dir[3], int *constrFailP) {
-  static const char me[] = "_pullConstrOrientFind";
+constrOrientFind(pullContext *pctx, pullPoint *point,
+                 int normalfind, /* find normal two 2D surface,
+                                    else find tangent to 1D curve */
+                 double tlen,
+                 const double tdir0[3], /* if non-NULL, try using this direction */
+                 /* output */
+                 double dir[3], int *constrFailP) {
+  static const char me[] = "constrOrientFind";
   double tt;
 
 #define SLAP(LEN, DIR)                                                                  \
   /* fprintf(stderr, "!%s: SLAP %g %g %g -->", me, (DIR)[0], (DIR)[1], (DIR)[2]); */    \
-  if (_pullConstrTanSlap(pctx, point, (LEN), (DIR), constrFailP)) {                     \
+  if (constrTanSlap(pctx, point, (LEN), (DIR), constrFailP)) {                          \
     biffAddf(PULL, "%s: looking for tangent, starting with (%g,%g,%g)", me, (DIR)[0],   \
              (DIR)[1], (DIR)[2]);                                                       \
     return 1;                                                                           \
@@ -267,7 +267,7 @@ pullTraceSet(pullContext *pctx, pullTrace *pts, int recordStrength, double scale
     biffAddf(PULL, "%s: given context doesn't have constraint set", me);
     return 1;
   }
-  pts->fdim = _pullConstraintDim(pctx);
+  pts->fdim = pull__ConstraintDim(pctx);
   if (0 > pts->fdim) {
     biffAddf(PULL, "%s: couldn't learn dimension of feature", me);
     return 1;
@@ -326,9 +326,9 @@ pullTraceSet(pullContext *pctx, pullTrace *pts, int recordStrength, double scale
   }
   */
   /* The termination of the trace due to low stablity is handled here
-     (or could be), not by _pullConstraintSatisfy, so we set 0 for the
-     travelMax arg of _pullConstraintSatisfy (no travel limit) */
-  if (_pullConstraintSatisfy(pctx->task[0], point, 0 /* travmax */, &constrFail)) {
+     (or could be), not by pull__ConstraintSatisfy, so we set 0 for the
+     travelMax arg of pull__ConstraintSatisfy (no travel limit) */
+  if (pull__ConstraintSatisfy(pctx->task[0], point, 0 /* travmax */, &constrFail)) {
     biffAddf(PULL, "%s: constraint sat on seed point", me);
     airMopError(mop);
     return 1;
@@ -369,11 +369,11 @@ pullTraceSet(pullContext *pctx, pullTrace *pts, int recordStrength, double scale
              *pctx->voxelSizeSpace
              /* if used, the effect of this this last (unprincipled) factor
                 is gradually increase the test distance with scale
-                *(1 + gageTauOfSig(_pullSigma(pctx, point->pos))) */ );
+                *(1 + gageTauOfSig(pull__Sigma(pctx, point->pos))) */ );
     ELL_4V_COPY(pos0, point->pos);
 
-    if (_pullConstrOrientFind(pctx, point, pts->fdim == 2, polen,
-                              NULL /* no initial guess */, porin, &cf)) {
+    if (constrOrientFind(pctx, point, pts->fdim == 2, polen, NULL /* no initial guess */,
+                         porin, &cf)) {
       biffAddf(PULL, "%s: trying to find orientation at seed", me);
       airMopError(mop);
       return 1;
@@ -469,7 +469,7 @@ pullTraceSet(pullContext *pctx, pullTrace *pts, int recordStrength, double scale
               point->idtag, point->pos[0], point->pos[1],
               point->pos[2], point->pos[3]);
       */
-      if (_pullConstraintSatisfy(pctx->task[0], point, 0 /* travmax */, &constrFail)) {
+      if (pull__ConstraintSatisfy(pctx->task[0], point, 0 /* travmax */, &constrFail)) {
         biffAddf(PULL, "%s: dir %u, step %u", me, dirIdx, step);
         airMopError(mop);
         return 1;
@@ -500,8 +500,8 @@ pullTraceSet(pullContext *pctx, pullTrace *pts, int recordStrength, double scale
         return 1;
       }
       if (pts->fdim && orientTestLen) {
-        if (_pullConstrOrientFind(pctx, point, pts->fdim == 2, polen, porin, porin,
-                                  &constrFail)) {
+        if (constrOrientFind(pctx, point, pts->fdim == 2, polen, porin, porin,
+                             &constrFail)) {
           biffAddf(PULL, "%s: at dir %u, step %u", me, dirIdx, step);
           airMopError(mop);
           return 1;
@@ -658,7 +658,7 @@ pullTraceMultiNew(void) {
     ret->trace = NULL;
     ret->traceNum = 0;
     ret->traceArr = airArrayNew((bbu.trace = &(ret->trace), bbu.v), &(ret->traceNum),
-                                sizeof(pullTrace *), _PULL_TRACE_MULTI_INCR);
+                                sizeof(pullTrace *), MY_PULL_TRACE_MULTI_INCR);
     airArrayPointerCB(ret->traceArr,
                       NULL, /* because we get handed pullTrace structs
                                that have already been allocated

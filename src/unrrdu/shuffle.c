@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Permute slices along one axis"
-static const char *_unrrdu_shuffleInfoL
+static const char *unu_shuffleInfoL
   = (INFO ". Slices along one axis are re-arranged as units "
           "according to the given permutation (or its inverse). "
           "The permutation tells which old slice to put at each "
@@ -34,7 +34,7 @@ static const char *_unrrdu_shuffleInfoL
           "* Uses nrrdShuffle");
 
 static int
-unrrdu_shuffleMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+unu_shuffleMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
   uint *perm, permLen;
   hestOptAdd_Nv_UInt(&hopt, "p,permute", "slc0 slc1", 1, -1, &perm, NULL,
@@ -42,16 +42,16 @@ unrrdu_shuffleMain(int argc, const char **argv, const char *me, const hestParm *
   int inverse;
   hestOptAdd_Flag(&hopt, "inv,inverse", &inverse, "use inverse of given permutation");
   uint axis;
-  OPT_ADD_AXIS(axis, "axis to shuffle along");
+  MY_OPT_ADD_AXIS(axis, "axis to shuffle along");
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for YES some hparm modification)
   hestParm *hparm = hestParmCopy(_hparm);
   hparm->responseFileEnable = AIR_TRUE; // to read long permutations from a file
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_shuffleInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_shuffleInfoL);
   airArray *mop = unrrduMopNew(hopt, hparm);
   char *err;
 
@@ -97,10 +97,10 @@ unrrdu_shuffleMain(int argc, const char **argv, const char *me, const hestParm *
     return 1;
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(shuffle, INFO);
+MY_UNRRDU_CMD(shuffle, INFO);

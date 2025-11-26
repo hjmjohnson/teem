@@ -131,7 +131,7 @@ nrrdSplice(Nrrd *nout, const Nrrd *nin, const Nrrd *nslice, unsigned int axis,
     dest += rowLen;
   }
 
-  sliceCont = _nrrdContentGet(nslice);
+  sliceCont = nrrd__ContentGet(nslice);
   if (nrrdContentSet_va(nout, func, nin, "%s,%d,%s", sliceCont, axis,
                         airSprintSize_t(stmp[0], pos))) {
     biffAddf(NRRD, "%s:", me);
@@ -249,7 +249,7 @@ nrrdInset(Nrrd *nout, const Nrrd *nin, const Nrrd *nsub, const size_t *min) {
     SN_PRINTF(bb, bbSize, "%s%zu", (ai ? "," : ""), min[ai]);
   }
   SN_COPY(bb, bbSize, "]");
-  char *subCont = _nrrdContentGet(nsub);
+  char *subCont = nrrd__ContentGet(nsub);
   if (nrrdContentSet_va(nout, func, nin, "%s,%s", subCont, buff1)) {
     biffAddf(NRRD, "%s:", me);
     free(subCont);
@@ -418,7 +418,7 @@ nrrdPad_va(Nrrd *nout, const Nrrd *nin, const ptrdiff_t *min, const ptrdiff_t *m
       /* nothing changed along this axis; the kind should be preserved */
       nout->axis[ai].kind = nin->axis[ai].kind;
     } else {
-      nout->axis[ai].kind = _nrrdKindAltered(nin->axis[ai].kind, AIR_FALSE);
+      nout->axis[ai].kind = nrrd__KindAltered(nin->axis[ai].kind, AIR_FALSE);
     }
   }
   char buff1[NRRD_DIM_MAX * AIR_STRLEN_SMALL + 1], buff2[AIR_STRLEN_MED + 1];

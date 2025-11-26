@@ -58,43 +58,43 @@ typedef unsigned int uint; /* uint is just more concise */
 */
 
 /* the what to put in gctx->errStr when !generateErrStr */
-#define _GAGE_NON_ERR_STR "(error)"
+#define MY_GAGE_NON_ERR_STR "(error)"
 
 /* shape.c */
-extern int _gageShapeSet(const gageContext *ctx, gageShape *shape, const Nrrd *nin,
-                         unsigned int baseDim);
+extern int gage__ShapeSet(const gageContext *ctx, gageShape *shape, const Nrrd *nin,
+                          unsigned int baseDim);
 
 /* ctx.c */
-extern int _gageProbe(gageContext *ctx, double xi, double yi, double zi,
-                      double stackIdx);
-extern int _gageProbeSpace(gageContext *ctx, double xx, double yy, double zz, double ss,
-                           int indexSpace, int clamp);
+extern int gage__Probe(gageContext *ctx, double xi, double yi, double zi,
+                       double stackIdx);
+extern int gage__ProbeSpace(gageContext *ctx, double xx, double yy, double zz, double ss,
+                            int indexSpace, int clamp);
 
 /* pvl.c */
-extern gagePerVolume *_gagePerVolumeCopy(gagePerVolume *pvl, unsigned int fd);
-extern double *_gageAnswerPointer(const gageContext *ctx, gagePerVolume *pvl, int item);
+extern gagePerVolume *gage__PerVolumeCopy(gagePerVolume *pvl, unsigned int fd);
+extern double *gage__AnswerPointer(const gageContext *ctx, gagePerVolume *pvl, int item);
 
 /* print.c */
-extern void _gagePrint_off(FILE *, gageContext *ctx);
-extern void _gagePrint_fslw(FILE *, gageContext *ctx);
+// extern void gage__Print_off(FILE *, gageContext *ctx); (apparently unused)
+extern void gage__Print_fslw(FILE *, gageContext *ctx);
 
 /* filter.c */
-extern int _gageLocationSet(gageContext *ctx, double x, double y, double z, double s);
+extern int gage__LocationSet(gageContext *ctx, double x, double y, double z, double s);
 
 /* stack.c */
-extern int _gageStackBaseIv3Fill(gageContext *ctx);
+extern int gage__StackBaseIv3Fill(gageContext *ctx);
 
 /* sclprint.c */
-extern void _gageSclIv3Print(FILE *, gageContext *ctx, gagePerVolume *pvl);
+extern void gage__SclIv3Print(FILE *, gageContext *ctx, gagePerVolume *pvl);
 
 /* sclfilter.c */
-extern void _gageSclFilter(gageContext *ctx, gagePerVolume *pvl);
+extern void gage__SclFilter(gageContext *ctx, gagePerVolume *pvl);
 
 /* sclanswer.c */
-extern void _gageSclAnswer(gageContext *ctx, gagePerVolume *pvl);
+extern void gage__SclAnswer(gageContext *ctx, gagePerVolume *pvl);
 
 /* vecprint.c */
-extern void _gageVecIv3Print(FILE *, gageContext *ctx, gagePerVolume *pvl);
+extern void gage__VecIv3Print(FILE *, gageContext *ctx, gagePerVolume *pvl);
 
 #ifdef __cplusplus
 }

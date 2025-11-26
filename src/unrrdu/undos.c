@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Converts DOS text files to normal, and more"
-static const char *_unrrdu_undosInfoL
+static const char *unu_undosInfoL
   = (INFO ". The characters involved are:\n *\t\t\t\t\t\t\t"
           "       carraige return = CR = '\\r' = 0x0d = decimal 13 = octal 015\n "
           "* \"new line\" = line feed = LF = '\\n' = 0x0a = decimal 10 = octal 012\n "
@@ -250,7 +250,7 @@ undosConvert(const char *me, const char *name, int reverse, int mac, int quiet,
 }
 
 static int
-unrrdu_undosMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_undosMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   int reverse;
   hestOptAdd_Flag(&hopt, "r", &reverse,
@@ -282,7 +282,7 @@ unrrdu_undosMain(int argc, const char **argv, const char *me, const hestParm *hp
                        &lenName);
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_undosInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_undosInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   // char *err;
 
@@ -294,7 +294,7 @@ unrrdu_undosMain(int argc, const char **argv, const char *me, const hestParm *hp
   return 0;
 }
 
-UNRRDU_CMD_HIDE(undos, INFO);
+MY_UNRRDU_CMD_HIDE(undos, INFO);
 
 #if 0 /* this is the program used for testing */
 #  include <stdio.h>

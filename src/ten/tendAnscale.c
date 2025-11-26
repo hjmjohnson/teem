@@ -21,7 +21,7 @@
 #include "privateTen.h"
 
 #define INFO "Scale the anisotropic component of the tensors"
-static const char *_tend_anscaleInfoL
+static const char *anscaleInfoL
   = (INFO ". This maintains the isotropic component of the tensor, and fixes "
           "either the trace or determinant, "
           "while scaling up (or down) the \"deviatoric\" component "
@@ -29,7 +29,7 @@ static const char *_tend_anscaleInfoL
           "tensors.");
 
 static int
-tend_anscaleMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+anscaleMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -54,7 +54,7 @@ tend_anscaleMain(int argc, const char **argv, const char *me, const hestParm *hp
 
   mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_tend_anscaleInfoL);
+  USAGE_PARSE(anscaleInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
@@ -75,4 +75,4 @@ tend_anscaleMain(int argc, const char **argv, const char *me, const hestParm *hp
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(anscale, INFO);
+MY_TEND_CMD(anscale, INFO);

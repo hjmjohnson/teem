@@ -150,8 +150,8 @@ nullspace2(double reta[3], double retb[3], const double r0[3], const double r1[3
 **
 */
 int
-evals(double eval[3], const double _M00, const double _M01, const double _M02,
-      const double _M11, const double _M12, const double _M22) {
+evals(double eval[3], const double M00_, const double M01_, const double M02_,
+      const double M11_, const double M12_, const double M22_) {
 
 #include "teigen-evals-A.c"
 
@@ -161,8 +161,8 @@ evals(double eval[3], const double _M00, const double _M01, const double _M02,
 }
 
 int
-evals_evecs(double eval[3], double evec[9], const double _M00, const double _M01,
-            const double _M02, const double _M11, const double _M12, const double _M22) {
+evals_evecs(double eval[3], double evec[9], const double M00_, const double M01_,
+            const double M02_, const double M11_, const double M12_, const double M22_) {
   double r0[3], r1[3], r2[3], crs[3], len, dot;
 
   double mean, norm, rnorm, Q, R, QQQ, D, theta, M00, M01, M02, M11, M12, M22;
@@ -170,12 +170,12 @@ evals_evecs(double eval[3], double evec[9], const double _M00, const double _M01
   int roots;
 
   /* copy the given matrix elements */
-  M00 = _M00;
-  M01 = _M01;
-  M02 = _M02;
-  M11 = _M11;
-  M12 = _M12;
-  M22 = _M22;
+  M00 = M00_;
+  M01 = M01_;
+  M02 = M02_;
+  M11 = M11_;
+  M12 = M12_;
+  M22 = M22_;
 
   /*
   ** subtract out the eigenvalue mean (will add back to evals later);

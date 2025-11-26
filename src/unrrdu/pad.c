@@ -21,26 +21,26 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Pad along each axis to make a bigger nrrd"
-static const char *_unrrdu_padInfoL = (INFO ".\n "
-                                            "* Uses nrrdPad_nva");
+static const char *unu_padInfoL = (INFO ".\n "
+                                        "* Uses nrrdPad_nva");
 
 static int
-unrrdu_padMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_padMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   long int *minOff, *maxOff;
   uint minLen, maxLen;
-  OPT_ADD_BOUND("min,minimum", 1, minOff, NULL,
-                "low corner of bounding box.\n "
-                "\b\bo <int> gives 0-based index\n "
-                "\b\bo M, M+<int>, M-<int> give index relative "
-                "to the last sample on the axis (M == #samples-1).",
-                minLen);
-  OPT_ADD_BOUND("max,maximum", 1, maxOff, NULL,
-                "high corner of bounding box.  "
-                "Besides the specification styles described above, "
-                "there's also:\n "
-                "\b\bo m+<int> give index relative to minimum.",
-                maxLen);
+  MY_OPT_ADD_BOUND("min,minimum", 1, minOff, NULL,
+                   "low corner of bounding box.\n "
+                   "\b\bo <int> gives 0-based index\n "
+                   "\b\bo M, M+<int>, M-<int> give index relative "
+                   "to the last sample on the axis (M == #samples-1).",
+                   minLen);
+  MY_OPT_ADD_BOUND("max,maximum", 1, maxOff, NULL,
+                   "high corner of bounding box.  "
+                   "Besides the specification styles described above, "
+                   "there's also:\n "
+                   "\b\bo m+<int> give index relative to minimum.",
+                   maxLen);
   int bb;
   hestOptAdd_1_Enum(&hopt, "b,boundary", "behavior", &bb, "bleed",
                     "How to handle samples beyond the input bounds:\n "
@@ -53,12 +53,12 @@ unrrdu_padMain(int argc, const char **argv, const char *me, const hestParm *hpar
   hestOptAdd_1_Double(&hopt, "v,value", "val", &padVal, "0.0",
                       "for \"pad\" boundary behavior, pad with this value");
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_padInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_padInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -100,10 +100,10 @@ unrrdu_padMain(int argc, const char **argv, const char *me, const hestParm *hpar
     return 1;
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(pad, INFO);
+MY_UNRRDU_CMD(pad, INFO);

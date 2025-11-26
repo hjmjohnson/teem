@@ -52,9 +52,9 @@ extern "C" {
 typedef unsigned int uint; /* uint is just more concise */
 
 /*
- * This private header was created because the _biffMsgAddVL and _biffMsgMoveVL functions
- * are only used within in the biff sources. They take a va_list, which is unusual, and
- * (currently) used for no other public functions in Teem.
+ * This private header was created because the biff__MsgAddVL and biff__MsgMoveVL
+ * functions are only used within in the biff sources. They take a va_list, which is
+ * unusual, and (currently) used for no other public functions in Teem.
  *
  * Furthermore, pre-1.13 release it became apparent that nothing else in Teem (outside of
  * biff) was using any biffMsg anything, so these were also all moved into here.
@@ -79,15 +79,15 @@ typedef struct {
 } biffMsg;
 
 /* biffmsg.c */
-extern const biffMsg *const _biffMsgNoop;
-extern void _biffMsgAddVL(biffMsg *msg, const char *errfmt, va_list args);
-extern void _biffMsgMoveVL(biffMsg *dest, biffMsg *src, const char *errfmt,
-                           va_list args);
+extern const biffMsg *const biff__MsgNoop;
+extern void biff__MsgAddVL(biffMsg *msg, const char *errfmt, va_list args);
+extern void biff__MsgMoveVL(biffMsg *dest, biffMsg *src, const char *errfmt,
+                            va_list args);
 
-extern biffMsg *_biffMsgNew(const char *key);
-extern biffMsg *_biffMsgNix(biffMsg *msg);
-extern void _biffMsgAdd(biffMsg *msg, const char *err);
-extern void _biffMsgMove(biffMsg *dest, biffMsg *src, const char *err);
+extern biffMsg *biff__MsgNew(const char *key);
+extern biffMsg *biff__MsgNix(biffMsg *msg);
+extern void biff__MsgAdd(biffMsg *msg, const char *err);
+extern void biff__MsgMove(biffMsg *dest, biffMsg *src, const char *err);
 
 #ifdef __cplusplus
 }

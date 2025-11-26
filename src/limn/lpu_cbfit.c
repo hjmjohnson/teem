@@ -74,7 +74,7 @@ pathPrint(const char *me, const limnCbfPath *path) {
 }
 
 static int
-limnPu_cbfitMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+lpu_cbfitMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   // making mop early since we want hest to parse fields of fctx
   airArray *mop = airMopNew();
@@ -447,4 +447,4 @@ limnPu_cbfitMain(int argc, const char **argv, const char *me, const hestParm *hp
   return 0;
 }
 
-const unrrduCmd limnPu_cbfitCmd = {"cbfit", INFO, limnPu_cbfitMain, AIR_FALSE};
+const unrrduCmd limnPu_cbfitCmd = {"cbfit", INFO, lpu_cbfitMain, AIR_FALSE};

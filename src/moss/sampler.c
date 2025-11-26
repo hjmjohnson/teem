@@ -20,6 +20,11 @@
 #include "moss.h"
 #include "privateMoss.h"
 
+#define SIZE_X(img)                                                                     \
+  AIR_INT((3 == (img)->dim ? (img)->axis[1].size : (img)->axis[0].size))
+#define SIZE_Y(img)                                                                     \
+  AIR_INT((3 == (img)->dim ? (img)->axis[2].size : (img)->axis[1].size))
+
 int /* Biff: 1 */
 mossSamplerImageSet(mossSampler *smplr, const Nrrd *image, int boundary,
                     const double *bg) {
@@ -203,8 +208,8 @@ mossSamplerSample(double *val, mossSampler *smplr, double xPos, double yPos) {
   }
 
   /* set {x,y}Idx, set {x,y}Fslw to sample locations */
-  sx = MOSS_SX(smplr->image);
-  sy = MOSS_SY(smplr->image);
+  sx = SIZE_X(smplr->image);
+  sy = SIZE_Y(smplr->image);
   xi = (int)floor(xPos);
   yi = (int)floor(yPos);
   xf = xPos - xi;

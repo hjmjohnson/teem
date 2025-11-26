@@ -76,7 +76,7 @@ nrrdKeyValueIndex(const Nrrd *nrrd, char **keyP, char **valueP, unsigned int ki)
 }
 
 static unsigned int
-_kvpIdxFind(const Nrrd *nrrd, const char *key, int *found) {
+kvpIdxFind(const Nrrd *nrrd, const char *key, int *found) {
   unsigned int nk, ki, ret;
 
   nk = nrrd->kvpArr->len;
@@ -122,7 +122,7 @@ nrrdKeyValueErase(Nrrd *nrrd, const char *key) {
     /* got NULL pointer */
     return 1;
   }
-  ki = _kvpIdxFind(nrrd, key, &found);
+  ki = kvpIdxFind(nrrd, key, &found);
   if (!found) {
     return 0;
   }
@@ -161,7 +161,7 @@ nrrdKeyValueAdd(Nrrd *nrrd, const char *key, const char *value) {
     /* reject empty keys */
     return 1;
   }
-  ki = _kvpIdxFind(nrrd, key, &found);
+  ki = kvpIdxFind(nrrd, key, &found);
   if (found) {
     /* over-writing value for an existing key, so have to free old value */
     airFree(nrrd->kvp[1 + 2 * ki]);
@@ -193,7 +193,7 @@ nrrdKeyValueGet(const Nrrd *nrrd, const char *key) {
     /* got NULL pointer */
     return NULL;
   }
-  ki = _kvpIdxFind(nrrd, key, &found);
+  ki = kvpIdxFind(nrrd, key, &found);
   if (found) {
     if (nrrdStateKeyValueReturnInternalPointers) {
       ret = nrrd->kvp[1 + 2 * ki];
@@ -219,9 +219,9 @@ nrrdKeyValueGet(const Nrrd *nrrd, const char *key) {
 ** accident of history that this function is in this file
 */
 void
-_nrrdWriteEscaped(FILE *file, char *_dst, size_t _dstSize, const char *str,
-                  const char *toescape, const char *tospace) {
-  /* static const char me[] = "_nrrdWriteEscaped"; */
+nrrd__WriteEscaped(FILE *file, char *_dst, size_t _dstSize, const char *str,
+                   const char *toescape, const char *tospace) {
+  /* static const char me[] = "nrrd__WriteEscaped"; */
   size_t ci, dstSize, gslen; /* given strlen */
   char *dst = _dst;
   gslen = strlen(str);
@@ -269,15 +269,15 @@ _nrrdWriteEscaped(FILE *file, char *_dst, size_t _dstSize, const char *str,
 }
 
 /*
- * _nrrdKeyValueWrite
+ * nrrd__KeyValueWrite
  *
  * writes a given `key` and `value`
  * (starting with the given `prefix` (if non-NULL) and ending with "\n")
  * to given `file` OR to given (newly allocated) `*stringP`
  */
 int /* Biff: (private) nope */
-_nrrdKeyValueWrite(FILE *file, char **stringP, const char *prefix, const char *key,
-                   const char *value) {
+nrrd__KeyValueWrite(FILE *file, char **stringP, const char *prefix, const char *key,
+                    const char *value) {
   size_t stringSize = 0;
   char *string = NULL;
 
@@ -305,15 +305,16 @@ _nrrdKeyValueWrite(FILE *file, char **stringP, const char *prefix, const char *k
     }
   }
   if (file) {
-    _nrrdWriteEscaped(file, NULL, 0, key, "\n\\", _NRRD_WHITESPACE_NOTAB);
+    nrrd__WriteEscaped(file, NULL, 0, key, "\n\\", MY_NRRD_WHITESPACE_NOTAB);
     fprintf(file, ":=");
-    _nrrdWriteEscaped(file, NULL, 0, value, "\n\\", _NRRD_WHITESPACE_NOTAB);
+    nrrd__WriteEscaped(file, NULL, 0, value, "\n\\", MY_NRRD_WHITESPACE_NOTAB);
     fprintf(file, "\n");
   } else {
-    _nrrdWriteEscaped(NULL, string, stringSize, key, "\n\\", _NRRD_WHITESPACE_NOTAB);
+    nrrd__WriteEscaped(NULL, string, stringSize, key, "\n\\", MY_NRRD_WHITESPACE_NOTAB);
     SN_INCR(string, stringSize);
     SN_COPY(string, stringSize, ":=");
-    _nrrdWriteEscaped(NULL, string, stringSize, value, "\n\\", _NRRD_WHITESPACE_NOTAB);
+    nrrd__WriteEscaped(NULL, string, stringSize, value, "\n\\",
+                       MY_NRRD_WHITESPACE_NOTAB);
     SN_INCR(string, stringSize);
     SN_COPY(string, stringSize, "\n");
   }

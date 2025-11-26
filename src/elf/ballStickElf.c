@@ -19,7 +19,15 @@
 /* clang-format off */
 
 #ifdef TEEM_LEVMAR
+#  if defined(__clang__)
+#    pragma clang diagnostic push
+#    pragma clang diagnostic ignored "-Wreserved-identifier"
+/*   because levmar.h has "#define _LEVMAR_H_" */
+#  endif
 #  include <levmar.h>
+#  if defined(__clang__)
+#    pragma clang diagnostic pop
+#  endif
 #endif
 
 /* Routines for estimating the ball-and-multi-stick model from single-shell
@@ -200,7 +208,7 @@ elfBallStickPredict_f(elfBallStickParms *parms, float *odf,
  * pp[7]: VF3 pp[8]: theta3 pp[9]: phi3
  * one-/two-stick-models may only use a subset of these */
 static void
-_levmarBallStickCB(double *pp, double *xx, int mm, int nn, void *_data) {
+levmarBallStickCB(double *pp, double *xx, int mm, int nn, void *_data) {
   int ii, maxk=(mm-1)/3;
   elfSingleShellDWI *data = (elfSingleShellDWI *) _data;
   float *egrad;
@@ -240,7 +248,7 @@ _levmarBallStickCB(double *pp, double *xx, int mm, int nn, void *_data) {
 }
 
 static void
-_levmarBallStickJacCB(double *p, double *jac, int m, int n, void *_data) {
+levmarBallStickJacCB(double *p, double *jac, int m, int n, void *_data) {
   elfSingleShellDWI *data = (elfSingleShellDWI *) _data;
   float *egrad;
   double *j;
@@ -371,14 +379,14 @@ elfBallStickOptimize_f(elfBallStickParms *parms,
     }
   }
 
-  lmret = dlevmar_der(_levmarBallStickCB,_levmarBallStickJacCB,
+  lmret = dlevmar_der(levmarBallStickCB,levmarBallStickJacCB,
                       lmparms, dwis,
                       parmct, dwi->dwino, maxitr, opts, info,
                       NULL, NULL, (void*)dwi);
   if (lmret==-1 && (int)info[6]==4) {
     /* try again with larger mu */
     opts[0]*=10;
-    lmret = dlevmar_der(_levmarBallStickCB,_levmarBallStickJacCB,
+    lmret = dlevmar_der(levmarBallStickCB,levmarBallStickJacCB,
                         lmparms, dwis,
                         parmct, dwi->dwino, maxitr, opts, info,
                         NULL, NULL, (void*)dwi);

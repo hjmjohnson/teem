@@ -27,10 +27,10 @@
 ** how are force/energy along scale handled differently than in space?
 */
 
-#define __IF_DEBUG if (0)
+#define IF_DEBUG if (0)
 
 static double
-_pointDistSqrd(pullContext *pctx, pullPoint *AA, pullPoint *BB) {
+pointDistSqrd(pullContext *pctx, pullPoint *AA, pullPoint *BB) {
   double diff[4];
   ELL_4V_SUB(diff, AA->pos, BB->pos);
   ELL_3V_SCALE(diff, 1 / pctx->sysParm.radiusSpace, diff);
@@ -44,8 +44,8 @@ _pointDistSqrd(pullContext *pctx, pullPoint *AA, pullPoint *BB) {
 ** and returns the number of such points.
 */
 static unsigned int
-_neighBinPoints(pullTask *task, pullBin *bin, pullPoint *point, double distTest) {
-  static const char me[] = "_neighBinPoints";
+neighBinPoints(pullTask *task, pullBin *bin, pullPoint *point, double distTest) {
+  static const char me[] = "neighBinPoints";
   unsigned int nn, herPointIdx, herBinIdx;
   pullBin *herBin;
   pullPoint *herPoint;
@@ -61,10 +61,10 @@ _neighBinPoints(pullTask *task, pullBin *bin, pullPoint *point, double distTest)
       */
       /* can't interact with myself, or anything nixed */
       if (point != herPoint && !(herPoint->status & PULL_STATUS_NIXME_BIT)) {
-        if (distTest && _pointDistSqrd(task->pctx, point, herPoint) > distTest) {
+        if (distTest && pointDistSqrd(task->pctx, point, herPoint) > distTest) {
           continue;
         }
-        if (nn + 1 < _PULL_NEIGH_MAXNUM) {
+        if (nn + 1 < MY_PULL_NEIGH_MAXNUM) {
           task->neighPoint[nn++] = herPoint;
           /*
           printf("%s(%u): neighPoint[%u] = %u\n",
@@ -72,7 +72,7 @@ _neighBinPoints(pullTask *task, pullBin *bin, pullPoint *point, double distTest)
           */
         } else {
           fprintf(stderr, "%s: hit max# (%u) poss. neighbors (from bins)\n", me,
-                  _PULL_NEIGH_MAXNUM);
+                  MY_PULL_NEIGH_MAXNUM);
         }
       }
     }
@@ -82,14 +82,14 @@ _neighBinPoints(pullTask *task, pullBin *bin, pullPoint *point, double distTest)
   for (herPointIdx = 0; herPointIdx < task->addPointNum; herPointIdx++) {
     herPoint = task->addPoint[herPointIdx];
     if (point != herPoint) {
-      if (distTest && _pointDistSqrd(task->pctx, point, herPoint) > distTest) {
+      if (distTest && pointDistSqrd(task->pctx, point, herPoint) > distTest) {
         continue;
       }
-      if (nn + 1 < _PULL_NEIGH_MAXNUM) {
+      if (nn + 1 < MY_PULL_NEIGH_MAXNUM) {
         task->neighPoint[nn++] = herPoint;
       } else {
         fprintf(stderr, "%s: hit max# (%u) poss neighs (add queue len %u)\n", me,
-                _PULL_NEIGH_MAXNUM, task->addPointNum);
+                MY_PULL_NEIGH_MAXNUM, task->addPointNum);
       }
     }
   }
@@ -106,10 +106,10 @@ _neighBinPoints(pullTask *task, pullBin *bin, pullPoint *point, double distTest)
 ** the energy at this point, rather than for learning how to move it
 */
 double /* Biff: (private) nope */
-_pullEnergyInterParticle(pullContext *pctx, pullPoint *me, const pullPoint *she,
-                         double spaceDist, double scaleDist,
-                         /* output */
-                         double egrad[4]) {
+pull__EnergyInterParticle(pullContext *pctx, pullPoint *me, const pullPoint *she,
+                          double spaceDist, double scaleDist,
+                          /* output */
+                          double egrad[4]) {
   char meme[] = "pullEnergyInterParticle";
   double diff[4], spaceRad, scaleRad, rr, ss, uu, beta, en, den, enR, denR, enS, denS,
     enWR, enWS, denWR, denWS, *parmR, *parmS, *parmW,
@@ -165,7 +165,7 @@ _pullEnergyInterParticle(pullContext *pctx, pullPoint *me, const pullPoint *she,
   evalS = pctx->energySpecS->energy->eval;
   switch (pctx->interType) {
   case pullInterTypeJustR:
-    /* _pullVolumeSetup makes sure that
+    /* pull__VolumeSetup makes sure that
        !pctx->haveScale iff pullInterTypeJustR == pctx->interType */
     en = evalR(&denR, rr, parmR);
     if (egrad) {
@@ -267,7 +267,7 @@ pullEnergyPlot(pullContext *pctx, Nrrd *nplot, double xx, double yy, double zz,
       rr = _rr * pctx->sysParm.radiusSpace;
       ELL_3V_SCALE(she->pos, rr, dir);
       she->pos[3] = ss;
-      enr = _pullEnergyInterParticle(pctx, mee, she, AIR_ABS(rr), AIR_ABS(ss), egrad);
+      enr = pull__EnergyInterParticle(pctx, mee, she, AIR_ABS(rr), AIR_ABS(ss), egrad);
       plot[0] = enr;
       plot[1] = ELL_3V_DOT(egrad, dir);
       plot[2] = egrad[3];
@@ -299,10 +299,10 @@ pullEnergyPlot(pullContext *pctx, Nrrd *nplot, double xx, double yy, double zz,
 ** (12)  (13)  (14)  9=15
 */
 double /* Biff: (private) nope */
-_pullEnergyFromPoints(pullTask *task, pullBin *bin, pullPoint *point,
-                      /* output */
-                      double egradSum[4]) {
-  static const char me[] = "_pullEnergyFromPoints";
+pull__EnergyFromPoints(pullTask *task, pullBin *bin, pullPoint *point,
+                       /* output */
+                       double egradSum[4]) {
+  static const char me[] = "pull__EnergyFromPoints";
   double energySum, spaDistSqMax; /* modeWghtSum */
   int nlist,               /* we enable the re-use of neighbor lists between inters, or,
                               at system start, creation of neighbor lists */
@@ -364,14 +364,14 @@ _pullEnergyFromPoints(pullTask *task, pullBin *bin, pullPoint *point,
   if (ntrue) {
     /* this finds the over-inclusive set of all possible interacting
        points, based on bin membership as well the task's add queue */
-    nnum = _neighBinPoints(task, bin, point, 1.0);
+    nnum = neighBinPoints(task, bin, point, 1.0);
     if (nlist) {
       airArrayLenSet(point->neighPointArr, 0);
     }
   } else {
     /* (nlist true) this iter we re-use this point's existing neighbor
        list, copying it into the the task's neighbor list to simulate
-       the action of _neighBinPoints() */
+       the action of neighBinPoints() */
     nnum = point->neighPointNum;
     for (nidx = 0; nidx < nnum; nidx++) {
       task->neighPoint[nidx] = point->neighPoint[nidx];
@@ -437,8 +437,8 @@ _pullEnergyFromPoints(pullTask *task, pullBin *bin, pullPoint *point,
     spaDist = sqrt(spaDistSq);
     /* we pass spaDist to avoid recomputing sqrt(), and sclDist for
        stupid consistency  */
-    enr = _pullEnergyInterParticle(task->pctx, point, herPoint, spaDist, sclDist,
-                                   egradSum ? egrad : NULL);
+    enr = pull__EnergyInterParticle(task->pctx, point, herPoint, spaDist, sclDist,
+                                    egradSum ? egrad : NULL);
 #if 0
     /* sanity checking on energy derivatives */
     if (enr && egradSum) {
@@ -450,7 +450,7 @@ _pullEnergyFromPoints(pullTask *task, pullBin *bin, pullPoint *point,
         for (pan=0; pan<=1; pan++) {
           point->pos[cord] = _pos[cord] + (!pan ? -1 : +1)*eps;
           ELL_4V_SUB(tdf, point->pos, herPoint->pos);
-          ee[pan] = _pullEnergyInterParticle(task->pctx, point, herPoint,
+          ee[pan] = pull__EnergyInterParticle(task->pctx, point, herPoint,
                                              ELL_3V_LEN(tdf), AIR_ABS(tdf[3]), NULL);
         }
         point->pos[cord] = _pos[cord];
@@ -580,10 +580,10 @@ _pullEnergyFromPoints(pullTask *task, pullBin *bin, pullPoint *point,
 }
 
 static double
-_energyFromImage(pullTask *task, pullPoint *point,
-                 /* output */
-                 double egradSum[4]) {
-  static const char me[] = "_energyFromImage";
+energyFromImage(pullTask *task, pullPoint *point,
+                /* output */
+                double egradSum[4]) {
+  static const char me[] = "energyFromImage";
   double energy, grad3[3], _gamma;
   int probed;
 
@@ -633,7 +633,7 @@ _energyFromImage(pullTask *task, pullPoint *point,
          back differences, but this is probably not the bottleneck */
       sign = 2 * AIR_INT(airRandInt_r(task->rng, 2)) - 1;
       deltaScale = task->pctx->bboxMax[3] - task->pctx->bboxMin[3];
-      deltaScale *= sign * _PULL_STRENGTH_ENERGY_DELTA_SCALE;
+      deltaScale *= sign * MY_PULL_STRENGTH_ENERGY_DELTA_SCALE;
       scl1 = (point->pos[3] += deltaScale);
       pullProbe(task, point); /* *not* MAYBEPROBE */
       str1 = pullPointScalar(task->pctx, point, pullInfoStrength, NULL, NULL);
@@ -685,7 +685,7 @@ _energyFromImage(pullTask *task, pullPoint *point,
 
 /*
 ** NOTE that the "egrad" being non-NULL has consequences for what gets
-** computed in _energyFromImage and _pullEnergyFromPoints:
+** computed in energyFromImage and pull__EnergyFromPoints:
 **
 ** NULL "egrad": we're simply learning the energy (and want to know it
 ** as truthfully as possible) for the sake of inspecting system state
@@ -693,21 +693,21 @@ _energyFromImage(pullTask *task, pullPoint *point,
 ** non-NULL "egrad": we're learning the current energy, but the real point
 ** is to determine how to move the point to lower energy
 **
-** the ignoreImage flag is a hack, to allow _pullPointProcessAdding to
+** the ignoreImage flag is a hack, to allow pull__PointProcessAdding to
 ** do descent on a new point according to other points, but not the
 ** image.
 */
 double /* Biff: (private) nope */
-_pullPointEnergyTotal(pullTask *task, pullBin *bin, pullPoint *point, int ignoreImage,
-                      /* output */
-                      double egrad[4]) {
-  static const char me[] = "_pullPointEnergyTotal";
+pull__PointEnergyTotal(pullTask *task, pullBin *bin, pullPoint *point, int ignoreImage,
+                       /* output */
+                       double egrad[4]) {
+  static const char me[] = "pull__PointEnergyTotal";
   double enrIm, enrPt, egradIm[4], egradPt[4], energy;
 
   ELL_4V_SET(egradIm, 0, 0, 0, 0);
   ELL_4V_SET(egradPt, 0, 0, 0, 0);
   if (!(ignoreImage || 1.0 == task->pctx->sysParm.alpha)) {
-    enrIm = _energyFromImage(task, point, egrad ? egradIm : NULL);
+    enrIm = energyFromImage(task, point, egrad ? egradIm : NULL);
     task->pctx->count[pullCountEnergyFromImage] += 1;
     if (egrad) {
       task->pctx->count[pullCountForceFromImage] += 1;
@@ -716,7 +716,7 @@ _pullPointEnergyTotal(pullTask *task, pullBin *bin, pullPoint *point, int ignore
     enrIm = 0;
   }
   if (task->pctx->sysParm.alpha > 0.0) {
-    enrPt = _pullEnergyFromPoints(task, bin, point, egrad ? egradPt : NULL);
+    enrPt = pull__EnergyFromPoints(task, bin, point, egrad ? egradPt : NULL);
     task->pctx->count[pullCountEnergyFromPoints] += 1;
     if (egrad) {
       task->pctx->count[pullCountForceFromPoints] += 1;
@@ -773,15 +773,15 @@ _pullPointEnergyTotal(pullTask *task, pullBin *bin, pullPoint *point, int ignore
 ** they aren't allowed to move very far in scale, either, which
 ** is a little weird, but probably okay.
 */
-double /* Biff: (private) nope */
-_pullDistLimit(pullTask *task, pullPoint *point) {
+static double /* Biff: nope */
+distLimitCalc(pullTask *task, pullPoint *point) {
   double ret;
 
   if (point->neighDistMean == 0 /* no known neighbors from last iter */
       || pullEnergyZero == task->pctx->energySpecR->energy) {
     ret = 1;
   } else {
-    ret = _PULL_DIST_CAP_RSNORM * point->neighDistMean;
+    ret = MY_PULL_DIST_CAP_RSNORM * point->neighDistMean;
   }
   /* HEY: maybe task->pctx->voxelSizeSpace or voxelSizeScale should
      be considered here? */
@@ -792,9 +792,9 @@ _pullDistLimit(pullTask *task, pullPoint *point) {
 ** here is where the energy gradient is converted into force
 */
 int /* Biff: (private) 1 */
-_pullPointProcessDescent(pullTask *task, pullBin *bin, pullPoint *point,
-                         int ignoreImage) {
-  static const char me[] = "_pullPointProcessDescent";
+pull__PointProcessDescent(pullTask *task, pullBin *bin, pullPoint *point,
+                          int ignoreImage) {
+  static const char me[] = "pull__PointProcessDescent";
   double energyOld, energyNew, egrad[4], force[4], posOld[4];
   int stepBad, giveUp, hailMary;
 
@@ -810,7 +810,7 @@ _pullPointProcessDescent(pullTask *task, pullBin *bin, pullPoint *point,
   }
 
   /* learn the energy at old location, and the energy gradient */
-  energyOld = _pullPointEnergyTotal(task, bin, point, ignoreImage, egrad);
+  energyOld = pull__PointEnergyTotal(task, bin, point, ignoreImage, egrad);
   ELL_4V_SCALE(force, -1, egrad);
   if (!(AIR_EXISTS(energyOld) && ELL_4V_EXISTS(force))) {
     biffAddf(PULL, "%s: point %u non-exist energy or force", me, point->idtag);
@@ -829,10 +829,10 @@ _pullPointProcessDescent(pullTask *task, pullBin *bin, pullPoint *point,
     /* this particle has no reason to go anywhere; BUT we still have to
        enforce constraint if we have one */
     int constrFail = 0;
-    __IF_DEBUG { fprintf(stderr, "!%s: point %u unforced ...\n", me, point->idtag); }
+    IF_DEBUG { fprintf(stderr, "!%s: point %u unforced ...\n", me, point->idtag); }
     if (task->pctx->constraint) {
-      if (_pullConstraintSatisfy(task, point, 100.0 * _PULL_CONSTRAINT_TRAVEL_MAX,
-                                 &constrFail)) {
+      if (pull__ConstraintSatisfy(task, point, 100.0 * MY_PULL_CONSTRAINT_TRAVEL_MAX,
+                                  &constrFail)) {
         biffAddf(PULL, "%s: trouble", me);
         return 1;
       }
@@ -865,7 +865,7 @@ _pullPointProcessDescent(pullTask *task, pullBin *bin, pullPoint *point,
     /* we have a constraint, so do something to get the force more
        tangential to the constraint manifold (only in the spatial axes) */
     double proj[9], pfrc[3];
-    _pullConstraintTangent(task, point, proj);
+    pull__ConstraintTangent(task, point, proj);
     ELL_3MV_MUL(pfrc, proj, force);
     ELL_3V_COPY(force, pfrc);
     /* force[3] untouched */
@@ -886,7 +886,7 @@ _pullPointProcessDescent(pullTask *task, pullBin *bin, pullPoint *point,
     double capvec[4], spcLen, sclLen, max, distLimit;
 
     /* limits based on distLimit in rs-normalized space */
-    distLimit = _pullDistLimit(task, point);
+    distLimit = distLimitCalc(task, point);
     ELL_4V_SCALE(capvec, point->stepEnergy, force);
     spcLen = ELL_3V_LEN(capvec) / task->pctx->sysParm.radiusSpace;
     sclLen = AIR_ABS(capvec[3]) / task->pctx->sysParm.radiusScale;
@@ -903,8 +903,8 @@ _pullPointProcessDescent(pullTask *task, pullBin *bin, pullPoint *point,
     } else {
       max = spcLen;
     }
-    if (max > _PULL_DIST_CAP_VOXEL) {
-      point->stepEnergy *= _PULL_DIST_CAP_VOXEL / max;
+    if (max > MY_PULL_DIST_CAP_VOXEL) {
+      point->stepEnergy *= MY_PULL_DIST_CAP_VOXEL / max;
     }
   }
   /*
@@ -915,8 +915,8 @@ _pullPointProcessDescent(pullTask *task, pullBin *bin, pullPoint *point,
   /* turn off stuck bit, will turn it on again if needed */
   point->status &= ~PULL_STATUS_STUCK_BIT;
   ELL_4V_COPY(posOld, point->pos);
-  _pullPointHistInit(point);
-  _pullPointHistAdd(point, pullCondOld, AIR_NAN);
+  pull__PointHistInit(point);
+  pull__PointHistAdd(point, pullCondOld, AIR_NAN);
   /* try steps along force until we succcessfully lower energy */
   hailMary = AIR_FALSE;
   do {
@@ -937,10 +937,10 @@ _pullPointProcessDescent(pullTask *task, pullBin *bin, pullPoint *point,
                                 task->pctx->bboxMax[3]);
     }
     task->pctx->count[pullCountTestStep] += 1;
-    _pullPointHistAdd(point, pullCondEnergyTry, AIR_NAN);
+    pull__PointHistAdd(point, pullCondEnergyTry, AIR_NAN);
     if (task->pctx->constraint) {
-      if (_pullConstraintSatisfy(task, point, _PULL_CONSTRAINT_TRAVEL_MAX,
-                                 &constrFail)) {
+      if (pull__ConstraintSatisfy(task, point, MY_PULL_CONSTRAINT_TRAVEL_MAX,
+                                  &constrFail)) {
         biffAddf(PULL, "%s: trouble", me);
         return 1;
       }
@@ -958,7 +958,7 @@ _pullPointProcessDescent(pullTask *task, pullBin *bin, pullPoint *point,
     if (constrFail) {
       energyNew = AIR_NAN;
     } else {
-      energyNew = _pullPointEnergyTotal(task, bin, point, ignoreImage, NULL);
+      energyNew = pull__PointEnergyTotal(task, bin, point, ignoreImage, NULL);
     }
     energyIncr = energyNew > (energyOld + task->pctx->sysParm.energyIncreasePermit);
     /*
@@ -971,9 +971,9 @@ _pullPointProcessDescent(pullTask *task, pullBin *bin, pullPoint *point,
     if (stepBad) {
       point->stepEnergy *= task->pctx->sysParm.backStepScale;
       if (constrFail) {
-        _pullPointHistAdd(point, pullCondConstraintFail, AIR_NAN);
+        pull__PointHistAdd(point, pullCondConstraintFail, AIR_NAN);
       } else {
-        _pullPointHistAdd(point, pullCondEnergyBad, AIR_NAN);
+        pull__PointHistAdd(point, pullCondEnergyBad, AIR_NAN);
       }
       /* you have a problem if you had a non-trivial force, but you can't
          ever seem to take a small enough step to reduce energy */
@@ -1006,15 +1006,15 @@ _pullPointProcessDescent(pullTask *task, pullBin *bin, pullPoint *point,
              it, twice for good measure, so that things may be better next
              time around */
           if (task->pctx->constraint) {
-            if (_pullConstraintSatisfy(task, point, _PULL_CONSTRAINT_TRAVEL_MAX,
-                                       &constrFail)
-                || _pullConstraintSatisfy(task, point, _PULL_CONSTRAINT_TRAVEL_MAX,
-                                          &constrFail)) {
+            if (pull__ConstraintSatisfy(task, point, MY_PULL_CONSTRAINT_TRAVEL_MAX,
+                                        &constrFail)
+                || pull__ConstraintSatisfy(task, point, MY_PULL_CONSTRAINT_TRAVEL_MAX,
+                                           &constrFail)) {
               biffAddf(PULL, "%s: trouble", me);
               return 1;
             }
           }
-          energyNew = _pullPointEnergyTotal(task, bin, point, ignoreImage, NULL);
+          energyNew = pull__PointEnergyTotal(task, bin, point, ignoreImage, NULL);
           point->stepEnergy = task->pctx->sysParm.stepInitial;
           point->status |= PULL_STATUS_STUCK_BIT;
           point->stuckIterNum += 1;
@@ -1035,7 +1035,7 @@ _pullPointProcessDescent(pullTask *task, pullBin *bin, pullPoint *point,
            point->pos[0], point->pos[1], point->pos[2], point->pos[3]);
   }
   */
-  _pullPointHistAdd(point, pullCondNew, AIR_NAN);
+  pull__PointHistAdd(point, pullCondNew, AIR_NAN);
   ELL_4V_COPY(point->force, force);
 
   /* not recorded for the sake of this function, but for system accounting */
@@ -1060,8 +1060,8 @@ _pullPointProcessDescent(pullTask *task, pullBin *bin, pullPoint *point,
 }
 
 static int /* Biff: 1 */
-_pullPointProcess(pullTask *task, pullBin *bin, pullPoint *point) {
-  static const char me[] = "_pullPointProcess";
+pointProcess(pullTask *task, pullBin *bin, pullPoint *point) {
+  static const char me[] = "pointProcess";
   int E;
 
   /*
@@ -1071,19 +1071,19 @@ _pullPointProcess(pullTask *task, pullBin *bin, pullPoint *point) {
   E = 0;
   switch (task->processMode) {
   case pullProcessModeDescent:
-    E = _pullPointProcessDescent(task, bin, point, AIR_FALSE
-                                 /* !task->pctx->haveScale ignoreImage */);
+    E = pull__PointProcessDescent(task, bin, point, AIR_FALSE
+                                  /* !task->pctx->haveScale ignoreImage */);
     break;
   case pullProcessModeNeighLearn:
-    E = _pullPointProcessNeighLearn(task, bin, point);
+    E = pull__PointProcessNeighLearn(task, bin, point);
     break;
   case pullProcessModeAdding:
     if (!task->pctx->flag.noAdd) {
-      E = _pullPointProcessAdding(task, bin, point);
+      E = pull__PointProcessAdding(task, bin, point);
     }
     break;
   case pullProcessModeNixing:
-    E = _pullPointProcessNixing(task, bin, point);
+    E = pull__PointProcessNixing(task, bin, point);
     break;
   default:
     biffAddf(PULL, "%s: process mode %d unrecognized", me, task->processMode);
@@ -1113,7 +1113,7 @@ pullBinProcess(pullTask *task, unsigned int myBinIdx) {
   myBin = task->pctx->bin + myBinIdx;
   for (myPointIdx = 0; myPointIdx < myBin->pointNum; myPointIdx++) {
     pullPoint *point;
-    if (task->pctx->verbose > 1 && task->pctx->pointNum > _PULL_PROGRESS_POINT_NUM_MIN
+    if (task->pctx->verbose > 1 && task->pctx->pointNum > MY_PULL_PROGRESS_POINT_NUM_MIN
         && !task->pctx->flag.binSingle && task->pctx->progressBinMod
         && 0 == myBinIdx % task->pctx->progressBinMod) {
       printf(".");
@@ -1125,7 +1125,7 @@ pullBinProcess(pullTask *task, unsigned int myBinIdx) {
              airEnumStr(pullProcessMode, task->processMode), myBinIdx, myPointIdx,
              point->idtag);
     }
-    if (_pullPointProcess(task, myBin, point)) {
+    if (pointProcess(task, myBin, point)) {
       biffAddf(PULL, "%s: on point %u of bin %u\n", me, myPointIdx, myBinIdx);
       return 1;
     }
@@ -1199,7 +1199,7 @@ pullGammaLearn(pullContext *pctx) {
   task = pctx->task[0];
   pointIdx = 0;
   deltaScale = pctx->bboxMax[3] - pctx->bboxMin[3];
-  deltaScale *= _PULL_STRENGTH_ENERGY_DELTA_SCALE;
+  deltaScale *= MY_PULL_STRENGTH_ENERGY_DELTA_SCALE;
   for (binIdx = 0; binIdx < pctx->binNum; binIdx++) {
     unsigned int pidx;
     bin = pctx->bin + binIdx;

@@ -29,9 +29,8 @@ CFFI, within its many limitations, specifically lacking a C pre-processor
 ** and even the individual eigenvalues
 **
 ** keep in sync:
-** aniso.c: _tenAnisoEval_X_f(), _tenAnisoEval_f[]
-** aniso.c: _tenAnisoTen_X_d(), _tenAnisoTen_d[]
-** aniso.c: tenAnisoCalc_f()
+** aniso.c: anisoEval_X_f(), tenAnisoEvalArray_f[]
+** aniso.c: anisoTen_X_d(), tenAnisoTenArray_d[]
 ** enumsTen.c: tenAniso
 */
 enum {
@@ -1303,13 +1302,13 @@ extern int tenEstimate1TensorVolume4D(tenEstimateContext *tec, Nrrd *nten,
 extern tenEstimateContext *tenEstimateContextNix(tenEstimateContext *tec);
 extern void *tenEstimateContextNix_mop(void *);
 /* aniso.c */
-extern float (*const _tenAnisoEval_f[TEN_ANISO_MAX + 1])(const float eval[3]);
+extern float (*const tenAnisoEvalArray_f[TEN_ANISO_MAX + 1])(const float eval[3]);
 extern float tenAnisoEval_f(const float eval[3], int aniso);
-extern double (*const _tenAnisoEval_d[TEN_ANISO_MAX + 1])(const double eval[3]);
+extern double (*const tenAnisoEvalArray_d[TEN_ANISO_MAX + 1])(const double eval[3]);
 extern double tenAnisoEval_d(const double eval[3], int aniso);
-extern float (*const _tenAnisoTen_f[TEN_ANISO_MAX + 1])(const float ten[7]);
+extern float (*const tenAnisoTenArray_f[TEN_ANISO_MAX + 1])(const float ten[7]);
 extern float tenAnisoTen_f(const float ten[7], int aniso);
-extern double (*const _tenAnisoTen_d[TEN_ANISO_MAX + 1])(const double ten[7]);
+extern double (*const tenAnisoTenArray_d[TEN_ANISO_MAX + 1])(const double ten[7]);
 extern double tenAnisoTen_d(const double ten[7], int aniso);
 extern int tenAnisoPlot(Nrrd *nout, int aniso, unsigned int res, int hflip,
                             int whole, int nanout);
@@ -1330,7 +1329,6 @@ extern short tenEvqSingle_f(float vec[3], float scl);
 extern int tenEvqVolume(Nrrd *nout, const Nrrd *nin, int which, int aniso,
                             int scaleByAniso);
 extern int tenBMatrixCheck(const Nrrd *nbmat, int type, unsigned int minnum);
-extern int _tenFindValley(double *valP, const Nrrd *nhist, double tweak, int save);
 /* fiberMethods.c */
 extern void tenFiberSingleInit(tenFiberSingle *tfbs);
 extern void tenFiberSingleDone(tenFiberSingle *tfbs);

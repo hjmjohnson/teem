@@ -21,7 +21,7 @@
 #include "privateTen.h"
 
 #define INFO "Converts masked non-redundant tensor images to redundant"
-static const char *_tend_expandInfoL
+static const char *expandInfoL
   = (INFO ". For images of 3D tensors, this converts from a 7-value tensor "
           "starting with the confidence/mask value "
           "(conf, Dxx, Dxy, Dxz, Dyy, Dyz, Dzz) to "
@@ -32,7 +32,7 @@ static const char *_tend_expandInfoL
           "(conf, Dxx, Dxy, Dyy) to (Dxx, Dxy, Dxy, Dyy). ");
 
 static int
-tend_expandMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+expandMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -66,7 +66,7 @@ tend_expandMain(int argc, const char **argv, const char *me, const hestParm *hpa
 
   mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_tend_expandInfoL);
+  USAGE_PARSE(expandInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
@@ -105,4 +105,4 @@ tend_expandMain(int argc, const char **argv, const char *me, const hestParm *hpa
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(expand, INFO);
+MY_TEND_CMD(expand, INFO);

@@ -271,9 +271,9 @@ tenGradientMeasure(double *pot, double *minAngle, double *minEdge, const Nrrd *n
 ** "Sampler" app can profile this
 */
 static int
-_tenGradientUpdate(double *meanVel, double *edgeMin, Nrrd *npos, double edge,
-                   tenGradientParm *tgparm) {
-  /* static const char me[] = "_tenGradientUpdate"; */
+gradientUpdate(double *meanVel, double *edgeMin, Nrrd *npos, double edge,
+               tenGradientParm *tgparm) {
+  /* static const char me[] = "gradientUpdate"; */
   double *pos, newpos[3], grad[3], ngrad[3], dir[3], len, rep, step, diff[3], limit,
     expo;
   int num, ii, jj, E;
@@ -512,7 +512,7 @@ tenGradientDistribute(Nrrd *nout, const Nrrd *nin, tenGradientParm *tgparm) {
     int E;
     do {
       double edgeMin;
-      E = _tenGradientUpdate(&meanVelocity, &edgeMin, npos[newIdx], edge, tgparm);
+      E = gradientUpdate(&meanVelocity, &edgeMin, npos[newIdx], edge, tgparm);
       if (E) {
         if (edgeShrink > tgparm->maxEdgeShrink) {
           biffAddf(TEN, "%s: %u > %u edge shrinks (%g), update still failed", me,

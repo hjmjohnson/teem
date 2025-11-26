@@ -43,14 +43,14 @@ typedef void (*tenTripleConverter)(double dst[3], const double src[3]);
 #define MU3 (mu[2])
 
 static void
-_iden(double dst[3], const double src[3]) {
+iden(double dst[3], const double src[3]) {
   ELL_3V_COPY(dst, src);
   return;
 }
 
 /* in the function names below, the format is _<dst>_<src>() */
 static void
-_mu_ev(double mu[3], const double ev[3]) {
+mu_ev(double mu[3], const double ev[3]) {
   double mm;
 
   mm = mu[0] = (ev[0] + ev[1] + ev[2]) / 3;
@@ -63,26 +63,26 @@ _mu_ev(double mu[3], const double ev[3]) {
         / 3;
 }
 
-static double _xyzmat[] = {2 / SQRT6,  -1 / SQRT6, -1 / SQRT6, 0,        1 / SQRT2,
-                           -1 / SQRT2, 1 / SQRT3,  1 / SQRT3,  1 / SQRT3};
+static double xyzmat[] = {2 / SQRT6,  -1 / SQRT6, -1 / SQRT6, 0,        1 / SQRT2,
+                          -1 / SQRT2, 1 / SQRT3,  1 / SQRT3,  1 / SQRT3};
 
 static void
-_xyz_ev(double xyz[3], const double _ev[3]) {
+xyz_ev(double xyz[3], const double _ev[3]) {
   double ev[3], tmp;
 
   ELL_3V_COPY(ev, _ev);
   ELL_SORT3(ev[0], ev[1], ev[2], tmp);
-  ELL_3MV_MUL(xyz, _xyzmat, ev);
+  ELL_3MV_MUL(xyz, xyzmat, ev);
 }
 
 static void
-_ev_xyz(double ev[3], const double xyz[3]) {
+ev_xyz(double ev[3], const double xyz[3]) {
 
-  ELL_3MV_TMUL(ev, _xyzmat, xyz);
+  ELL_3MV_TMUL(ev, xyzmat, xyz);
 }
 
 static void
-_j_ev(double j[3], const double ev[3]) {
+j_ev(double j[3], const double ev[3]) {
 
   J1 = ev[0] + ev[1] + ev[2];
   J2 = ev[0] * ev[1] + ev[0] * ev[2] + ev[1] * ev[2];
@@ -90,7 +90,7 @@ _j_ev(double j[3], const double ev[3]) {
 }
 
 static void
-_k_mu(double k[3], const double mu[3]) {
+k_mu(double k[3], const double mu[3]) {
   double stdv;
 
   K1 = 3 * MU1;
@@ -100,10 +100,10 @@ _k_mu(double k[3], const double mu[3]) {
 }
 
 static void
-_r_ev(double r[3], const double ev[3]) {
+r_ev(double r[3], const double ev[3]) {
   double mu[3], stdv;
 
-  _mu_ev(mu, ev);
+  mu_ev(mu, ev);
   R1 = sqrt(ev[0] * ev[0] + ev[1] * ev[1] + ev[2] * ev[2]);
   stdv = sqrt(MU2);
   R2 = R1 ? (3 / SQRT2) * stdv / R1 : 0;
@@ -111,7 +111,7 @@ _r_ev(double r[3], const double ev[3]) {
 }
 
 static void
-_r_mu(double r[3], const double mu[3]) {
+r_mu(double r[3], const double mu[3]) {
   double stdv;
 
   R1 = sqrt(3 * (MU1 * MU1 + MU2));
@@ -121,7 +121,7 @@ _r_mu(double r[3], const double mu[3]) {
 }
 
 static void
-_ev_wp(double ev[3], const double wp[3]) {
+ev_wp(double ev[3], const double wp[3]) {
 
   ev[0] = wp[0] + wp[1] * cos(wp[2]);
   ev[1] = wp[0] + wp[1] * cos(wp[2] - 2 * AIR_PI / 3);
@@ -129,7 +129,7 @@ _ev_wp(double ev[3], const double wp[3]) {
 }
 
 static void
-_wp_mu(double wp[3], const double mu[3]) {
+wp_mu(double wp[3], const double mu[3]) {
   double stdv, mode;
 
   wp[0] = MU1;
@@ -141,7 +141,7 @@ _wp_mu(double wp[3], const double mu[3]) {
 }
 
 static void
-_mu_j(double mu[3], const double j[3]) {
+mu_j(double mu[3], const double j[3]) {
 
   MU1 = J1 / 3;
   MU2 = 2 * (J1 * J1 - 3 * J2) / 9;
@@ -149,18 +149,18 @@ _mu_j(double mu[3], const double j[3]) {
 }
 
 static void
-_r_j(double r[3], const double j[3]) {
+r_j(double r[3], const double j[3]) {
   double mu[3], stdv;
 
   R1 = sqrt(J1 * J1 - 2 * J2);
   R2 = sqrt(J1 * J1 - 3 * J2) / R1;
-  _mu_j(mu, j);
+  mu_j(mu, j);
   stdv = sqrt(MU2);
   R3 = stdv ? SQRT2 * MU3 / (stdv * stdv * stdv) : 0;
 }
 
 static void
-_k_r(double k[3], const double r[3]) {
+k_r(double k[3], const double r[3]) {
 
   K1 = R1 * sqrt(3 - 2 * R2 * R2);
   K2 = (SQRT2 / SQRT3) * R1 * R2;
@@ -180,7 +180,7 @@ _j_r(double j[3], const double r[3]) {
 */
 
 static void
-_wp_k(double wp[3], const double k[3]) {
+wp_k(double wp[3], const double k[3]) {
 
   wp[0] = K1 / 3;
   wp[1] = (SQRT2 / SQRT3) * K2;
@@ -188,7 +188,7 @@ _wp_k(double wp[3], const double k[3]) {
 }
 
 static void
-_k_wp(double k[3], const double wp[3]) {
+k_wp(double k[3], const double wp[3]) {
 
   K1 = 3 * wp[0];
   K2 = (SQRT3 / SQRT2) * wp[1];
@@ -196,7 +196,7 @@ _k_wp(double k[3], const double wp[3]) {
 }
 
 static void
-_rtz_xyz(double rThZ[3], const double XYZ[3]) {
+rtz_xyz(double rThZ[3], const double XYZ[3]) {
 
   rThZ[0] = sqrt(XYZ[0] * XYZ[0] + XYZ[1] * XYZ[1]);
   rThZ[1] = atan2(XYZ[1], XYZ[0]);
@@ -204,7 +204,7 @@ _rtz_xyz(double rThZ[3], const double XYZ[3]) {
 }
 
 static void
-_rtp_xyz(double RThPh[3], const double XYZ[3]) {
+rtp_xyz(double RThPh[3], const double XYZ[3]) {
 
   RThPh[0] = sqrt(XYZ[0] * XYZ[0] + XYZ[1] * XYZ[1] + XYZ[2] * XYZ[2]);
   RThPh[1] = atan2(XYZ[1], XYZ[0]);
@@ -212,7 +212,7 @@ _rtp_xyz(double RThPh[3], const double XYZ[3]) {
 }
 
 static void
-_xyz_rtz(double XYZ[3], const double rThZ[3]) {
+xyz_rtz(double XYZ[3], const double rThZ[3]) {
 
   XYZ[0] = rThZ[0] * cos(rThZ[1]);
   XYZ[1] = rThZ[0] * sin(rThZ[1]);
@@ -220,7 +220,7 @@ _xyz_rtz(double XYZ[3], const double rThZ[3]) {
 }
 
 static void
-_xyz_rtp(double XYZ[3], const double RThPh[3]) {
+xyz_rtp(double XYZ[3], const double RThPh[3]) {
 
   XYZ[0] = RThPh[0] * cos(RThPh[1]) * sin(RThPh[2]);
   XYZ[1] = RThPh[0] * sin(RThPh[1]) * sin(RThPh[2]);
@@ -228,7 +228,7 @@ _xyz_rtp(double XYZ[3], const double RThPh[3]) {
 }
 
 static void
-_rtz_k(double rThZ[3], const double k[3]) {
+rtz_k(double rThZ[3], const double k[3]) {
 
   rThZ[0] = K2;
   rThZ[1] = acos(AIR_CLAMP(-1, K3, 1)) / 3;
@@ -236,7 +236,7 @@ _rtz_k(double rThZ[3], const double k[3]) {
 }
 
 static void
-_k_rtz(double k[3], const double rThZ[3]) {
+k_rtz(double k[3], const double rThZ[3]) {
 
   K1 = SQRT3 * rThZ[2];
   K2 = rThZ[0];
@@ -244,7 +244,7 @@ _k_rtz(double k[3], const double rThZ[3]) {
 }
 
 static void
-_rtp_r(double RThPh[3], const double r[3]) {
+rtp_r(double RThPh[3], const double r[3]) {
 
   RThPh[0] = R1;
   RThPh[1] = acos(AIR_CLAMP(-1, R3, 1)) / 3;
@@ -252,7 +252,7 @@ _rtp_r(double RThPh[3], const double r[3]) {
 }
 
 static void
-_r_rtp(double r[3], const double RThPh[3]) {
+r_rtp(double r[3], const double RThPh[3]) {
 
   R1 = RThPh[0];
   R2 = sin(RThPh[2]) * SQRT3 / SQRT2;
@@ -260,7 +260,7 @@ _r_rtp(double r[3], const double RThPh[3]) {
 }
 
 static void
-_wp_rtz(double wp[3], const double rThZ[3]) {
+wp_rtz(double wp[3], const double rThZ[3]) {
 
   wp[0] = rThZ[2] / SQRT3;
   wp[1] = (SQRT2 / SQRT3) * rThZ[0];
@@ -268,7 +268,7 @@ _wp_rtz(double wp[3], const double rThZ[3]) {
 }
 
 static void
-_rtz_wp(double rThZ[3], const double wp[3]) {
+rtz_wp(double rThZ[3], const double wp[3]) {
 
   rThZ[0] = (SQRT3 / SQRT2) * wp[1];
   rThZ[1] = wp[2];
@@ -276,49 +276,49 @@ _rtz_wp(double rThZ[3], const double wp[3]) {
 }
 
 #define CONVERT1(dst, mid, src)                                                         \
-  static void _##dst##_##src(double dst[3], const double src[3]) {                      \
+  static void dst##_##src(double dst[3], const double src[3]) {                         \
     double mid[3];                                                                      \
-    _##mid##_##src(mid, src);                                                           \
-    _##dst##_##mid(dst, mid);                                                           \
+    mid##_##src(mid, src);                                                              \
+    dst##_##mid(dst, mid);                                                              \
   }
 
 #define CONVERT2(dst, mdB, mdA, src)                                                    \
-  static void _##dst##_##src(double dst[3], const double src[3]) {                      \
+  static void dst##_##src(double dst[3], const double src[3]) {                         \
     double mdA[3], mdB[3];                                                              \
-    _##mdA##_##src(mdA, src);                                                           \
-    _##mdB##_##mdA(mdB, mdA);                                                           \
-    _##dst##_##mdB(dst, mdB);                                                           \
+    mdA##_##src(mdA, src);                                                              \
+    mdB##_##mdA(mdB, mdA);                                                              \
+    dst##_##mdB(dst, mdB);                                                              \
   }
 
-CONVERT1(ev, xyz, rtz) /* _ev_rtz */
-CONVERT1(rtz, xyz, ev) /* _rtz_ev */
-CONVERT1(ev, xyz, rtp) /* _ev_rtp */
-CONVERT1(rtp, xyz, ev) /* _rtp_ev */
+CONVERT1(ev, xyz, rtz) /* ev_rtz */
+CONVERT1(rtz, xyz, ev) /* rtz_ev */
+CONVERT1(ev, xyz, rtp) /* ev_rtp */
+CONVERT1(rtp, xyz, ev) /* rtp_ev */
 
-CONVERT1(k, mu, ev)  /* _k_ev */
-CONVERT1(wp, mu, ev) /* _wp_ev */
+CONVERT1(k, mu, ev)  /* k_ev */
+CONVERT1(wp, mu, ev) /* wp_ev */
 
-CONVERT1(ev, wp, mu) /* _ev_mu */
+CONVERT1(ev, wp, mu) /* ev_mu */
 
-CONVERT2(ev, wp, mu, j) /* _ev_j */
-CONVERT1(ev, wp, k)     /* _ev_k */
+CONVERT2(ev, wp, mu, j) /* ev_j */
+CONVERT1(ev, wp, k)     /* ev_k */
 
-CONVERT2(ev, xyz, rtp, r) /* _ev_r */
+CONVERT2(ev, xyz, rtp, r) /* ev_r */
 
 /* clang-format off */
 static tenTripleConverter
-_convert[TEN_TRIPLE_TYPE_MAX+1][TEN_TRIPLE_TYPE_MAX+1] = {
+convert[TEN_TRIPLE_TYPE_MAX+1][TEN_TRIPLE_TYPE_MAX+1] = {
   {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL},
-  /* DEST:    SRC:  ev      mu      xyz       rtz       rtp       J      K       R       WP */
-  /* ev */  {NULL, _iden,   _ev_mu, _ev_xyz,  _ev_rtz,  _ev_rtp,  _ev_j, _ev_k,  _ev_r,  _ev_wp},
-  /* mu */  {NULL, _mu_ev,  _iden,  NULL,     NULL,     NULL,     _mu_j, NULL,   NULL,   NULL},
-  /* xyz */ {NULL, _xyz_ev, NULL,   _iden,    _xyz_rtz, _xyz_rtp, NULL,  NULL,   NULL,   NULL},
-  /* rtz */ {NULL, _rtz_ev, NULL,   _rtz_xyz, _iden,    NULL,     NULL,  _rtz_k, NULL,   _rtz_wp},
-  /* rtp */ {NULL, _rtp_ev, NULL,   _rtp_xyz, NULL,     _iden,    NULL,  NULL,   _rtp_r, NULL},
-  /* J */   {NULL, _j_ev,   NULL,   NULL,     NULL,     NULL,     _iden, NULL,   NULL,   NULL},
-  /* K */   {NULL, _k_ev,   _k_mu,  NULL,     _k_rtz,   NULL,     NULL,  _iden,  _k_r,   _k_wp},
-  /* R */   {NULL, _r_ev,   _r_mu,  NULL,     NULL,     _r_rtp,   _r_j,  NULL,   _iden,  NULL},
-  /* WP */  {NULL, _wp_ev,  _wp_mu, NULL,     _wp_rtz,  NULL,     NULL,  _wp_k,   NULL,  _iden}};
+  /* DEST:    SRC:  ev      mu      xyz     rtz     rtp       J      K       R      WP */
+  /* ev */  {NULL, iden,   ev_mu, ev_xyz,  ev_rtz,  ev_rtp,  ev_j,  ev_k,   ev_r,  ev_wp},
+  /* mu */  {NULL, mu_ev,  iden,  NULL,     NULL,   NULL,    mu_j,  NULL,   NULL,  NULL},
+  /* xyz */ {NULL, xyz_ev, NULL,  iden,    xyz_rtz, xyz_rtp, NULL,  NULL,   NULL,  NULL},
+  /* rtz */ {NULL, rtz_ev, NULL,  rtz_xyz, iden,    NULL,    NULL,  rtz_k,  NULL,  rtz_wp},
+  /* rtp */ {NULL, rtp_ev, NULL,  rtp_xyz, NULL,    iden,    NULL,  NULL,   rtp_r, NULL},
+  /* J */   {NULL, j_ev,   NULL,  NULL,    NULL,    NULL,    iden,  NULL,   NULL,  NULL},
+  /* K */   {NULL, k_ev,   k_mu,  NULL,    k_rtz,   NULL,    NULL,  iden,   k_r,   k_wp},
+  /* R */   {NULL, r_ev,   r_mu,  NULL,    NULL,    r_rtp,   r_j,   NULL,   iden,  NULL},
+  /* WP */  {NULL, wp_ev,  wp_mu, NULL,    wp_rtz,  NULL,    NULL,  wp_k,   NULL,  iden}};
 /* clang-format on */
 
 void
@@ -334,15 +334,15 @@ tenTripleConvertSingle_d(double dst[3], int dstType, const double src[3],
     return;
   }
 
-  if (_convert[dstType][srcType]) {
+  if (convert[dstType][srcType]) {
     /* we have a direct converter */
-    _convert[dstType][srcType](dst, src);
+    convert[dstType][srcType](dst, src);
     direct = AIR_TRUE;
   } else {
     double eval[3];
     /* else, for lack of anything clever, we convert via evals */
-    _convert[tenTripleTypeEigenvalue][srcType](eval, src);
-    _convert[dstType][tenTripleTypeEigenvalue](dst, eval);
+    convert[tenTripleTypeEigenvalue][srcType](eval, src);
+    convert[dstType][tenTripleTypeEigenvalue](dst, eval);
     direct = AIR_FALSE;
   }
 
@@ -388,9 +388,9 @@ tenTripleCalcSingle_d(double dst[3], int ttype, double ten[7]) {
     tenTripleConvertSingle_d(dst, ttype, eval, tenTripleTypeEigenvalue);
     break;
   case tenTripleTypeR:
-    dst[0] = sqrt(_tenAnisoTen_d[tenAniso_S](ten));
-    dst[1] = _tenAnisoTen_d[tenAniso_FA](ten);
-    dst[2] = _tenAnisoTen_d[tenAniso_Mode](ten);
+    dst[0] = sqrt(tenAnisoTenArray_d[tenAniso_S](ten));
+    dst[1] = tenAnisoTenArray_d[tenAniso_FA](ten);
+    dst[2] = tenAnisoTenArray_d[tenAniso_Mode](ten);
     break;
   default:
     /* what on earth? */

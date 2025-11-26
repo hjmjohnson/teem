@@ -21,7 +21,7 @@
 #include "privateTen.h"
 
 #define INFO "Graph anisotropy metric in barycentric coords"
-static const char *_tend_anplotInfoL
+static const char *anplotInfoL
   = (INFO ".  The metrics all vary from 0.0 to 1.0, and will be sampled "
           "in the lower right half of the image.  The plane on which they are "
           "sampled is a surface of constant trace.  You may want to use "
@@ -32,7 +32,7 @@ static const char *_tend_anplotInfoL
           "triangle.");
 
 static int
-tend_anplotMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+anplotMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -61,7 +61,7 @@ tend_anplotMain(int argc, const char **argv, const char *me, const hestParm *hpa
 
   mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_JUSTPARSE(_tend_anplotInfoL);
+  USAGE_JUSTPARSE(anplotInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
@@ -83,4 +83,4 @@ tend_anplotMain(int argc, const char **argv, const char *me, const hestParm *hpa
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(anplot, INFO);
+MY_TEND_CMD(anplot, INFO);

@@ -699,7 +699,7 @@ seekDescendToRidge(double *coord,
       ELL_3M_LERP(H, newcoord[0], Hleft, Hright);
       ell_3m_eigensolve_d(evals, evecs, H, AIR_TRUE);
 
-      _seekHess2T(T,evals,evecs,evalDiffThresh,ridge);
+      seek__Hess2T(T,evals,evecs,evalDiffThresh,ridge);
 
       ELL_3V_LERP(gfrontleft, newcoord[2], gbfl, gtfl);
       ELL_3V_LERP(gbackleft, newcoord[2], gbbl, gtbl);
@@ -740,7 +740,7 @@ seekDescendToRidge(double *coord,
     /* compute a new optgrad from derivatives of T and g */
     ELL_3V_SUB(gder, gright, gleft); /* x dir */
     ELL_3M_SUB(Hder, Hright, Hleft);
-    _seekHessder2Tder(Tder, Hder, evals, evecs, evalDiffThresh, ridge);
+    seek__Hessder2Tder(Tder, Hder, evals, evecs, evalDiffThresh, ridge);
 
     ell_3mv_mul_d(Tpg,Tder,g);
     ell_3mv_mul_d(Tgp,T,gder);
@@ -751,7 +751,7 @@ seekDescendToRidge(double *coord,
     ELL_3M_LERP(Hfront, coord[0], Hfrontleft, Hfrontright);
     ELL_3M_LERP(Hback, coord[0], Hbackleft, Hbackright);
     ELL_3M_SUB(Hder, Hback, Hfront); /* y dir */
-    _seekHessder2Tder(Tder, Hder, evals, evecs, evalDiffThresh, ridge);
+    seek__Hessder2Tder(Tder, Hder, evals, evecs, evalDiffThresh, ridge);
 
     ELL_3V_LERP(gfront, coord[0], gfrontleft, gfrontright);
     ELL_3V_LERP(gback, coord[0], gbackleft, gbackright);
@@ -770,7 +770,7 @@ seekDescendToRidge(double *coord,
     ELL_3M_LERP(Htop, coord[0], Htopleft, Htopright);
     ELL_3M_LERP(Hbot, coord[0], Hbotleft, Hbotright);
     ELL_3M_SUB(Hder, Htop, Hbot); /* z dir */
-    _seekHessder2Tder(Tder, Hder, evals, evecs, evalDiffThresh, ridge);
+    seek__Hessder2Tder(Tder, Hder, evals, evecs, evalDiffThresh, ridge);
 
     ELL_3V_LERP(gtopleft, coord[1], gtfl, gtbl);
     ELL_3V_LERP(gtopright, coord[1], gtfr, gtbr);

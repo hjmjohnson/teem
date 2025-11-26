@@ -21,14 +21,14 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Compute 32-bit CRC of nrrd data (same as via \"cksum\")"
-static const char *_unrrdu_cksumInfoL
+static const char *unu_cksumInfoL
   = (INFO ". Unlike other commands, this doesn't produce a nrrd.  It only "
           "prints to standard out the CRC and byte counts for the input nrrd(s), "
           "seeking to emulate the formatting of cksum output.\n "
           "* Uses nrrdCRC32");
 
 static int /* Biff: 1 */
-unrrdu_cksumDoit(const char *me, char *inS, int endian, int printendian, FILE *fout) {
+cksumDoit(const char *me, char *inS, int endian, int printendian, FILE *fout) {
   if (!strcmp("-", inS) && isatty(STDIN_FILENO)) {
     biffAddf(me, "declining to try reading Nrrd from stdin as tty (terminal)");
     return 1;
@@ -53,7 +53,7 @@ unrrdu_cksumDoit(const char *me, char *inS, int endian, int printendian, FILE *f
 }
 
 static int
-unrrdu_cksumMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+unu_cksumMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
   int endian;
   hestOptAdd_1_Enum(&hopt, "en,endian", "end", &endian,
@@ -77,14 +77,14 @@ unrrdu_cksumMain(int argc, const char **argv, const char *me, const hestParm *_h
   // (boilerplate for YES some hparm modification)
   hestParm *hparm = hestParmCopy(_hparm);
   hparm->noArgsIsNoProblem = AIR_TRUE; // thanks to isatty() above
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_cksumInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_cksumInfoL);
   airArray *mop = unrrduMopNew(hopt, hparm);
   char *err;
 
   /* HEY "okay" logic copied from head.c */
   int okay = AIR_FALSE;
   for (uint ni = 0; ni < ninLen; ni++) {
-    if (unrrdu_cksumDoit(me, inS[ni], endian, printend, stdout)) {
+    if (cksumDoit(me, inS[ni], endian, printend, stdout)) {
       airMopAdd(mop, err = biffGetDone(me), airFree, airMopAlways);
       fprintf(stderr, "%s: trouble with \"%s\":\n%s", me, inS[ni], err);
       /* continue working on the remaining files */
@@ -105,4 +105,4 @@ unrrdu_cksumMain(int argc, const char **argv, const char *me, const hestParm *_h
   return 0;
 }
 
-UNRRDU_CMD(cksum, INFO);
+MY_UNRRDU_CMD(cksum, INFO);

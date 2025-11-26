@@ -386,8 +386,8 @@ tenInterpN_d(double tenOut[7], const double *tenIn, const double *wght, unsigned
         ww = wght ? wght[ii] : 1.0 / num;
         cc += ww * (tenIn + 7 * ii)[0];
       }
-      if (_tenQGLInterpNEval(eval, tip->eval, wght, num, ptype, tip)
-          || _tenQGLInterpNEvec(evec, tip->evec, wght, num, tip)) {
+      if (ten__QGLInterpNEval(eval, tip->eval, wght, num, ptype, tip)
+          || ten__QGLInterpNEvec(evec, tip->evec, wght, num, tip)) {
         biffAddf(TEN, "%s: trouble computing", me);
         TEN_T_COPY(tenOut, tenErr);
         return 1;
@@ -422,9 +422,9 @@ tenInterpN_d(double tenOut[7], const double *tenIn, const double *wght, unsigned
 }
 
 static int /* Biff: 1 */
-_tenInterpGeoLoxRelaxOne(Nrrd *nodata, Nrrd *ntdata, Nrrd *nigrtdata, unsigned int ii,
-                         int rotnoop, double scl, tenInterpParm *tip) {
-  static const char me[] = "_tenInterpGeoLoxRelaxOne";
+interpGeoLoxRelaxOne(Nrrd *nodata, Nrrd *ntdata, Nrrd *nigrtdata, unsigned int ii,
+                     int rotnoop, double scl, tenInterpParm *tip) {
+  static const char me[] = "interpGeoLoxRelaxOne";
   double *tdata, *odata, *igrtdata, *tt[5], *igrt[5][6], d02[7], d24[7], len02, len24,
     tmp, tng[7], correct, update[7];
   unsigned int jj;
@@ -524,8 +524,8 @@ _tenInterpGeoLoxRelaxOne(Nrrd *nodata, Nrrd *ntdata, Nrrd *nigrtdata, unsigned i
 }
 
 static void
-_tenInterpGeoLoxIGRT(double *igrt, double *ten, int useK, int rotNoop, double minnorm) {
-  /* static const char me[] = "_tenInterpGeoLoxIGRT"; */
+interpGeoLoxIGRT(double *igrt, double *ten, int useK, int rotNoop, double minnorm) {
+  /* static const char me[] = "interpGeoLoxIGRT"; */
   double eval[3], evec[9];
 
   if (useK) {
@@ -578,7 +578,7 @@ tenInterpPathLength(Nrrd *ntt, int doubleVerts, int fancy, int shape) {
       unsigned int lo, hi;
 
       TEN_T_LERP(mean, 0.5, tenA, tenB);
-      _tenInterpGeoLoxIGRT(igrt, mean, AIR_FALSE, AIR_FALSE, 0.0);
+      interpGeoLoxIGRT(igrt, mean, AIR_FALSE, AIR_FALSE, 0.0);
       if (shape) {
         lo = 0;
         hi = 2;
@@ -600,8 +600,8 @@ tenInterpPathLength(Nrrd *ntt, int doubleVerts, int fancy, int shape) {
 }
 
 static double
-_tenPathSpacingEqualize(Nrrd *nout, Nrrd *nin) {
-  /* static const char me[] = "_tenPathSpacingEqualize"; */
+pathSpacingEqualize(Nrrd *nout, Nrrd *nin) {
+  /* static const char me[] = "pathSpacingEqualize"; */
   double *in, *out, len, diff[7], lenTotal, /* total length of input */
     lenStep, /* correct length on input polyline between output vertices */
     lenHere, /* length of segment associated with current input index */
@@ -669,10 +669,10 @@ _tenPathSpacingEqualize(Nrrd *nout, Nrrd *nin) {
 }
 
 static int /* Biff: 1 */
-_tenInterpGeoLoxPolyLine(Nrrd *ngeod, unsigned int *numIter, const double tenA[7],
-                         const double tenB[7], unsigned int NN, int useK, int rotnoop,
-                         tenInterpParm *tip) {
-  static const char me[] = "_tenInterpGeoLoxPolyLine";
+interpGeoLoxPolyLine(Nrrd *ngeod, unsigned int *numIter, const double tenA[7],
+                     const double tenB[7], unsigned int NN, int useK, int rotnoop,
+                     tenInterpParm *tip) {
+  static const char me[] = "interpGeoLoxPolyLine";
   Nrrd *nigrt, *ntt, *nss, *nsub;
   double *igrt, *geod, *tt, len, newlen;
   unsigned int ii;
@@ -715,8 +715,7 @@ _tenInterpGeoLoxPolyLine(Nrrd *ngeod, unsigned int *numIter, const double tenA[7
     NrrdResampleContext *rsmc;
     double kparm[NRRD_KERNEL_PARM_MAXNUM] = {1.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0};
     /* recurse and find geodesic with smaller number of vertices */
-    if (_tenInterpGeoLoxPolyLine(nsub, &subIter, tenA, tenB, NN / 2, useK, rotnoop,
-                                 tip)) {
+    if (interpGeoLoxPolyLine(nsub, &subIter, tenA, tenB, NN / 2, useK, rotnoop, tip)) {
       biffAddf(TEN, "%s: problem with recursive call", me);
       airMopError(mop);
       return 1;
@@ -748,7 +747,7 @@ _tenInterpGeoLoxPolyLine(Nrrd *ngeod, unsigned int *numIter, const double tenA[7
     }
   }
   for (ii = 0; ii <= 2 * NN; ii++) {
-    _tenInterpGeoLoxIGRT(igrt + 7 * 6 * ii, tt + 7 * ii, useK, rotnoop, tip->minNorm);
+    interpGeoLoxIGRT(igrt + 7 * 6 * ii, tt + 7 * ii, useK, rotnoop, tip->minNorm);
   }
   nrrdCopy(nss, ntt);
 
@@ -772,16 +771,16 @@ _tenInterpGeoLoxPolyLine(Nrrd *ngeod, unsigned int *numIter, const double tenA[7
     for (ii = lo; ii != hi; ii += dd) {
       double sclHack;
       sclHack = ii * 4.0 / NN - ii * ii * 4.0 / NN / NN;
-      if (_tenInterpGeoLoxRelaxOne(nss, ntt, nigrt, ii, rotnoop, sclHack * tip->convStep,
-                                   tip)) {
+      if (interpGeoLoxRelaxOne(nss, ntt, nigrt, ii, rotnoop, sclHack * tip->convStep,
+                               tip)) {
         biffAddf(TEN, "%s: problem on vert %u, iter %u\n", me, ii, *numIter);
         return 1;
       }
     }
-    newlen = _tenPathSpacingEqualize(ntt, nss);
+    newlen = pathSpacingEqualize(ntt, nss);
     /* try doing this less often */
     for (ii = 0; ii <= 2 * NN; ii++) {
-      _tenInterpGeoLoxIGRT(igrt + 7 * 6 * ii, tt + 7 * ii, useK, rotnoop, tip->minNorm);
+      interpGeoLoxIGRT(igrt + 7 * 6 * ii, tt + 7 * ii, useK, rotnoop, tip->minNorm);
     }
     *numIter += 1;
   } while ((0 == tip->maxIter || *numIter < tip->maxIter)
@@ -855,7 +854,7 @@ tenInterpTwoDiscrete_d(Nrrd *nout, const double tenA[7], const double tenB[7], i
     useK = (tenInterpTypeGeoLoxK == ptype || tenInterpTypeLoxK == ptype);
     rotnoop = (tenInterpTypeGeoLoxK == ptype || tenInterpTypeGeoLoxR == ptype);
     fprintf(stderr, "!%s: useK = %d, rotnoop = %d\n", me, useK, rotnoop);
-    if (_tenInterpGeoLoxPolyLine(nout, &numIter, tenA, tenB, num, useK, rotnoop, tip)) {
+    if (interpGeoLoxPolyLine(nout, &numIter, tenA, tenB, num, useK, rotnoop, tip)) {
       biffAddf(TEN, "%s: trouble finding path", me);
       airMopError(mop);
       return 1;

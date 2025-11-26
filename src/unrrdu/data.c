@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Write data segment of a nrrd file"
-static const char *_unrrdu_dataInfoL
+static const char *unu_dataInfoL
   = (INFO ".  The value of this is to pass the data segment in isolation to a "
           "stand-alone decoder, in case this Teem build lacks an optional "
           "data encoding required for a given nrrd file.  Caveats: "
@@ -38,13 +38,13 @@ static const char *_unrrdu_dataInfoL
           "true in the NrrdIoState nio.");
 
 static int
-unrrdu_dataMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_dataMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   char *inS = NULL;
   hestOptAdd_1_String(&hopt, NULL, "nin", &inS, NULL, "input nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_dataInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_dataInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -61,7 +61,7 @@ unrrdu_dataMain(int argc, const char **argv, const char *me, const hestParm *hpa
     airMopError(mop);
     return 1;
   }
-  if (_nrrdDataFNNumber(nio) > 1) {
+  if (nrrdIoDataFNNumber(nio) > 1) {
     fprintf(stderr,
             "%s: sorry, currently can't operate with multiple "
             "detached datafiles\n",
@@ -90,4 +90,4 @@ unrrdu_dataMain(int argc, const char **argv, const char *me, const hestParm *hpa
   return 0;
 }
 
-UNRRDU_CMD(data, INFO);
+MY_UNRRDU_CMD(data, INFO);

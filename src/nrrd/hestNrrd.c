@@ -23,7 +23,7 @@
 /* ---------------------------- Nrrd ----------------------------- */
 
 /*
-_nrrdHestNrrdParseOkTTY() and _nrrdHestNrrdParseNoTTY ()
+nhNrrdParseOkTTY() and nhNrrdParseNoTTY ()
 
 Converts a filename into a nrrd for the sake of hest.
 There is no HestMaybeNrrdParse because this already does that:
@@ -64,10 +64,10 @@ parserBoth(void *ptr,
       airMopError(mop);
       *nrrdP = NULL;
       /* THIS is where the sneaky EOF-indicating parse return comes from.
-         it is based looking for _nrrdReadHitEOF in the biff error string
+         it is based looking for nrrd__ReadHitEOF in the biff error string
          we just got from biffGetDone(NRRD) (and copied into given `err` buffer);
          if we see that EOF-indicating error message return 2, else 1. */
-      return (strstr(err, _nrrdReadHitEOF) ? 2 : 1);
+      return (strstr(err, nrrd__ReadHitEOF) ? 2 : 1);
     }
     airMopOkay(mop);
   }
@@ -81,34 +81,29 @@ parserOkTTY(void *ptr, const char *filename, char err[AIR_STRLEN_HUGE + 1]) {
   return parserBoth(ptr,
                     filename,
                     err,
-                    "_nrrdHestNrrdParse", /* mimic old name */
+                    "parserOkTTY",
                     AIR_FALSE /* not disallowing TTY */);
 }
 
 static int
 parserNoTTY(void *ptr, const char *filename, char err[AIR_STRLEN_HUGE + 1]) {
-  return parserBoth(ptr,
-                    filename,
-                    err,
-                    "_nrrdHestNrrdParse(NoTTY)",
-                    AIR_TRUE /* yes disallow TTY */);
+  return parserBoth(ptr, filename, err, "parserNoTTY", AIR_TRUE /* yes disallow TTY */);
 }
 
-static const hestCB _nrrdHestNrrd = {sizeof(Nrrd *), "Nrrd", parserOkTTY, nrrdNuke_mop};
+static const hestCB nTty1_hcb = {sizeof(Nrrd *), "Nrrd", parserOkTTY, nrrdNuke_mop};
 
-const hestCB *const nrrdHestNrrd = &_nrrdHestNrrd;
+const hestCB *const nrrdHestNrrd = &nTty1_hcb;
 
-static const hestCB _nrrdHestNrrdNoTTY = {sizeof(Nrrd *), "Nrrd", parserNoTTY,
-                                          nrrdNuke_mop};
+static const hestCB nTty0_hcb = {sizeof(Nrrd *), "Nrrd", parserNoTTY, nrrdNuke_mop};
 
-const hestCB *const nrrdHestNrrdNoTTY = &_nrrdHestNrrdNoTTY;
+const hestCB *const nrrdHestNrrdNoTTY = &nTty0_hcb;
 
 /* ------------------------ NrrdKernelSpec -------------------------- */
 
 static int
-_nrrdHestKernelSpecParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
+nhKernelSpecParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
   NrrdKernelSpec **ksP;
-  static const char me[] = "_nrrdHestKernelSpecParse";
+  static const char me[] = "nhKernelSpecParse";
   char *nerr;
 
   if (!(ptr && str)) {
@@ -126,19 +121,17 @@ _nrrdHestKernelSpecParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 
   return 0;
 }
 
-static const hestCB _nrrdHestKernelSpec = {sizeof(NrrdKernelSpec *),
-                                           "kernel specification",
-                                           _nrrdHestKernelSpecParse,
-                                           nrrdKernelSpecNix_mop};
+static const hestCB kernelSpec_hcb = {sizeof(NrrdKernelSpec *), "kernel specification",
+                                      nhKernelSpecParse, nrrdKernelSpecNix_mop};
 
-const hestCB *const nrrdHestKernelSpec = &_nrrdHestKernelSpec;
+const hestCB *const nrrdHestKernelSpec = &kernelSpec_hcb;
 
 /* ------------------------ NrrdBoundarySpec -------------------------- */
 
 static int
-_nrrdHestBoundarySpecParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
+nhBoundarySpecParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
   NrrdBoundarySpec **bsp;
-  static const char me[] = "_nrrdHestBoundarySpecParse";
+  static const char me[] = "nhBoundarySpecParse";
   char *nerr;
 
   if (!(ptr && str)) {
@@ -157,17 +150,16 @@ _nrrdHestBoundarySpecParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE 
   return 0;
 }
 
-static const hestCB _nrrdHestBoundarySpec = {sizeof(NrrdBoundarySpec *),
-                                             "boundary specification",
-                                             _nrrdHestBoundarySpecParse,
-                                             nrrdBoundarySpecNix_mop};
+static const hestCB boundarySpec_hcb = {sizeof(NrrdBoundarySpec *),
+                                        "boundary specification", nhBoundarySpecParse,
+                                        nrrdBoundarySpecNix_mop};
 
-const hestCB *const nrrdHestBoundarySpec = &_nrrdHestBoundarySpec;
+const hestCB *const nrrdHestBoundarySpec = &boundarySpec_hcb;
 
 /* --------------------------- NrrdIter ----------------------------- */
 
 static int
-_nrrdLooksLikeANumber(const char *str) {
+looksLikeANumber(const char *str) {
   /* 0: -+                (no restriction, but that's a little daft)
      1: 0123456789        n > 0
      2: .                 0 <= n <= 1
@@ -218,8 +210,8 @@ _nrrdLooksLikeANumber(const char *str) {
 }
 
 static int
-_nrrdHestIterParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
-  static const char me[] = "_nrrdHestIterParse";
+nhIterParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
+  static const char me[] = "nhIterParse";
   char *nerr;
   Nrrd *nrrd;
   NrrdIter **iterP;
@@ -266,12 +258,12 @@ _nrrdHestIterParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
       airStrcpy(err, ASP1_H, nerr);
       airMopError(mop);
       /* COPY of sneaky EOF-indicating parse return in parserBoth() above */
-      return (strstr(err, _nrrdReadHitEOF) ? 2 : 1);
+      return (strstr(err, nrrd__ReadHitEOF) ? 2 : 1);
     } else {
       /* fopen() failed, so it probably wasn't meant to be a filename */
       free(biffGetDone(NRRD));
       ret = airSingleSscanf(str, "%lf", &val);
-      if (_nrrdLooksLikeANumber(str)
+      if (looksLikeANumber(str)
           || (1 == ret
               && (!AIR_EXISTS(val) || AIR_ABS(AIR_PI - val) < 0.0001
                   || AIR_ABS(-AIR_PI - val) < 0.0001))) {
@@ -309,7 +301,7 @@ _nrrdHestIterParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
   return 0;
 }
 
-static const hestCB _nrrdHestIter = {sizeof(NrrdIter *), "nrrd/value",
-                                     _nrrdHestIterParse, nrrdIterNix_mop};
+static const hestCB iter_hcb = {sizeof(NrrdIter *), "nrrd/value", nhIterParse,
+                                nrrdIterNix_mop};
 
-const hestCB *const nrrdHestIter = &_nrrdHestIter;
+const hestCB *const nrrdHestIter = &iter_hcb;

@@ -20,7 +20,7 @@
 #include "air.h"
 
 static void
-_airLenSet(airArray *a, unsigned int len) {
+lenSet(airArray *a, unsigned int len) {
 
   a->len = len;
   /* printf("    HEY: len = %d\n", a->len); */
@@ -32,7 +32,7 @@ _airLenSet(airArray *a, unsigned int len) {
 }
 
 static void
-_airSetData(airArray *a, void *data) {
+setData(airArray *a, void *data) {
 
   a->data = data;
   if (a->dataP) {
@@ -72,9 +72,9 @@ airArrayNew(void **dataP, unsigned int *lenP, size_t unit, unsigned int incr) {
   }
 
   a->dataP = dataP;
-  _airSetData(a, NULL);
+  setData(a, NULL);
   a->lenP = lenP;
-  _airLenSet(a, 0);
+  lenSet(a, 0);
   a->incr = incr;
   a->unit = unit;
   a->noReallocWhenSmaller = AIR_FALSE;
@@ -161,14 +161,14 @@ airArrayLenPreSet(airArray *a, unsigned int newlen) {
       */
       if (!newdata) {
         free(a->data);
-        _airSetData(a, NULL);
+        setData(a, NULL);
         return;
       }
       if (a->data) {
         memcpy(newdata, a->data, AIR_MIN(a->len * a->unit, newsize * a->incr * a->unit));
         free(a->data);
       }
-      _airSetData(a, newdata);
+      setData(a, newdata);
       a->size = newsize;
     }
     a->noReallocWhenSmaller = AIR_TRUE;
@@ -233,7 +233,7 @@ airArrayLenSet(airArray *a, unsigned int newlen) {
         newdata = calloc(newsize * a->incr, a->unit);
         if (!newdata) {
           free(a->data);
-          _airSetData(a, NULL);
+          setData(a, NULL);
           return;
         }
         sztocpy = AIR_MIN(a->len * a->unit, newsize * a->incr * a->unit);
@@ -242,13 +242,13 @@ airArrayLenSet(airArray *a, unsigned int newlen) {
           memcpy(newdata, a->data, sztocpy);
           free(a->data);
         }
-        _airSetData(a, newdata);
+        setData(a, newdata);
         a->size = newsize;
       }
     } else {
       /* array should be zero-length */
       free(a->data);
-      _airSetData(a, NULL);
+      setData(a, NULL);
       a->size = newsize;
     }
   }
@@ -266,7 +266,7 @@ airArrayLenSet(airArray *a, unsigned int newlen) {
       }
     }
   }
-  _airLenSet(a, newlen);
+  lenSet(a, newlen);
 
   return;
 }

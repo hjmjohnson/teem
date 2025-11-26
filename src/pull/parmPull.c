@@ -23,7 +23,7 @@
 /* the Init() functions are up here for easier reference */
 
 void
-_pullIterParmInit(pullIterParm *iterParm) {
+pull__IterParmInit(pullIterParm *iterParm) {
 
   iterParm->min = 0;
   iterParm->max = 0;
@@ -38,7 +38,7 @@ _pullIterParmInit(pullIterParm *iterParm) {
 }
 
 void
-_pullSysParmInit(pullSysParm *sysParm) {
+pull__SysParmInit(pullSysParm *sysParm) {
 
   sysParm->alpha = 0.5;
   sysParm->beta = 0.5;
@@ -62,7 +62,7 @@ _pullSysParmInit(pullSysParm *sysParm) {
 }
 
 void
-_pullFlagInit(pullFlag *flag) {
+pull__FlagInit(pullFlag *flag) {
 
   flag->permuteOnRebin = AIR_FALSE;
   flag->noPopCntlWithZeroAlpha = AIR_FALSE;
@@ -87,12 +87,12 @@ _pullFlagInit(pullFlag *flag) {
 }
 
 int /* Biff: (private) 1 */
-_pullIterParmCheck(pullIterParm *iterParm) {
-  static const char me[] = "_pullIterParmCheck";
+pull__IterParmCheck(pullIterParm *iterParm) {
+  static const char me[] = "pull__IterParmCheck";
 
   if (!(1 <= iterParm->constraintMax && iterParm->constraintMax <= 500)) {
     biffAddf(PULL, "%s: iterParm->constraintMax %u not in range [1,%u]", me,
-             iterParm->constraintMax, _PULL_CONSTRAINT_ITER_MAX);
+             iterParm->constraintMax, MY_PULL_CONSTRAINT_ITER_MAX);
     return 1;
   }
   return 0;
@@ -159,8 +159,8 @@ pullIterParmSet(pullContext *pctx, int which, unsigned int pval) {
   }
 
 int /* Biff: (private) 1 */
-_pullSysParmCheck(pullSysParm *sysParm) {
-  static const char me[] = "_pullSysParmCheck";
+pull__SysParmCheck(pullSysParm *sysParm) {
+  static const char me[] = "pull__SysParmCheck";
 
   /* these reality-check bounds are somewhat arbitrary */
   CHECK(alpha, 0.0, 1.0);

@@ -24,7 +24,7 @@
 static const char *myinfo = (INFO ". ");
 
 static int
-limnPu_vertsMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+lpu_vertsMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   limnPolyData *pld;
   hestOptAdd_1_Other(&hopt, NULL, "input", &pld, NULL, "input polydata filename",
@@ -52,4 +52,4 @@ limnPu_vertsMain(int argc, const char **argv, const char *me, const hestParm *hp
   return 0;
 }
 
-const unrrduCmd limnPu_vertsCmd = {"verts", INFO, limnPu_vertsMain, AIR_FALSE};
+const unrrduCmd limnPu_vertsCmd = {"verts", INFO, lpu_vertsMain, AIR_FALSE};

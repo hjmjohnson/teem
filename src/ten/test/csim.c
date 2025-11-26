@@ -100,9 +100,9 @@ csimDo(double tm[7], double tcov[21], double rm[3], double rv[3], Nrrd *ntbuff,
   ELL_3V_SET(rm, 0, 0, 0);
   for (II = 0; II < NN; II++) {
     TEN_T_INCR(tm, tbuff);
-    rm[0] += sqrt(_tenAnisoTen_d[tenAniso_S](tbuff));
-    rm[1] += _tenAnisoTen_d[tenAniso_FA](tbuff);
-    rm[2] += _tenAnisoTen_d[tenAniso_Mode](tbuff);
+    rm[0] += sqrt(tenAnisoTenArray_d[tenAniso_S](tbuff));
+    rm[1] += tenAnisoTenArray_d[tenAniso_FA](tbuff);
+    rm[2] += tenAnisoTenArray_d[tenAniso_Mode](tbuff);
     tbuff += 7;
   }
   rm[0] /= NN;
@@ -118,9 +118,9 @@ csimDo(double tm[7], double tcov[21], double rm[3], double rv[3], Nrrd *ntbuff,
   tbuff = AIR_CAST(double *, ntbuff->data);
   for (II = 0; II < NN; II++) {
     double r[3];
-    r[0] = sqrt(_tenAnisoTen_d[tenAniso_S](tbuff));
-    r[1] = _tenAnisoTen_d[tenAniso_FA](tbuff);
-    r[2] = _tenAnisoTen_d[tenAniso_Mode](tbuff);
+    r[0] = sqrt(tenAnisoTenArray_d[tenAniso_S](tbuff));
+    r[1] = tenAnisoTenArray_d[tenAniso_FA](tbuff);
+    r[2] = tenAnisoTenArray_d[tenAniso_Mode](tbuff);
     cc = 0;
     rv[0] += (r[0] - rm[0]) * (r[0] - rm[0]) / (NN - 1);
     rv[1] += (r[1] - rm[1]) * (r[1] - rm[1]) / (NN - 1);

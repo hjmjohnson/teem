@@ -41,7 +41,7 @@ nrrdCommentAdd(Nrrd *nrrd, const char *_str) {
     /* we don't bother adding comments with no length */
     return 0;
   }
-  if (!strcmp(_str, _nrrdFormatURLLine0) || !strcmp(_str, _nrrdFormatURLLine1)) {
+  if (!strcmp(_str, nrrd__FormatURLLine0) || !strcmp(_str, nrrd__FormatURLLine1)) {
     /* sneaky hack: don't store the format URL comment lines */
     return 0;
   }

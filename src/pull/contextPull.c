@@ -30,10 +30,10 @@ pullContextNew(void) {
     return NULL;
   }
 
-  _pullInitParmInit(&(pctx->initParm));
-  _pullIterParmInit(&(pctx->iterParm));
-  _pullSysParmInit(&(pctx->sysParm));
-  _pullFlagInit(&(pctx->flag));
+  pull__InitParmInit(&(pctx->initParm));
+  pull__IterParmInit(&(pctx->iterParm));
+  pull__SysParmInit(&(pctx->sysParm));
+  pull__FlagInit(&(pctx->flag));
   pctx->verbose = 0;
   pctx->threadNum = 1;
   pctx->rngSeed = 42;
@@ -134,8 +134,8 @@ pullContextNix(pullContext *pctx) {
 AIR_MOPPER(pullContextNix)
 
 static int /* Biff: 1 */
-_pullMiscParmCheck(pullContext *pctx) {
-  static const char me[] = "_pullMiscParmCheck";
+miscParmCheck(pullContext *pctx) {
+  static const char me[] = "miscParmCheck";
   double denr;
 
   if (!(AIR_IN_CL(1, pctx->threadNum, PULL_THREAD_MAXNUM))) {
@@ -179,8 +179,8 @@ _pullMiscParmCheck(pullContext *pctx) {
 }
 
 int /* Biff: (private) 1 */
-_pullContextCheck(pullContext *pctx) {
-  static const char me[] = "_pullContextCheck";
+pull__ContextCheck(pullContext *pctx) {
+  static const char me[] = "pull__ContextCheck";
   unsigned int ii, ccount;
   int gotIspec, gotConstr;
   const pullInfoSpec *lthr, *strn;
@@ -189,8 +189,8 @@ _pullContextCheck(pullContext *pctx) {
     biffAddf(PULL, "%s: got NULL pointer", me);
     return 1;
   }
-  if (_pullInitParmCheck(&(pctx->initParm)) || _pullIterParmCheck(&(pctx->iterParm))
-      || _pullSysParmCheck(&(pctx->sysParm)) || _pullMiscParmCheck(pctx)) {
+  if (pull__InitParmCheck(&(pctx->initParm)) || pull__IterParmCheck(&(pctx->iterParm))
+      || pull__SysParmCheck(&(pctx->sysParm)) || miscParmCheck(pctx)) {
     biffAddf(PULL, "%s: problem with parameters", me);
     return 1;
   }

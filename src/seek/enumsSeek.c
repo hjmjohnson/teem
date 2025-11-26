@@ -23,7 +23,7 @@ const char *const seekBiffKey = "seek";
 
 /* clang-format off */
 static const char *
-_seekTypeStr[SEEK_TYPE_MAX+1] = {
+typeStr[SEEK_TYPE_MAX+1] = {
   "(unknown_feature)",
   "isocontour",
   "ridge surface",
@@ -39,7 +39,7 @@ _seekTypeStr[SEEK_TYPE_MAX+1] = {
 };
 
 static const char *
-_seekTypeDesc[SEEK_TYPE_MAX+1] = {
+typeDesc[SEEK_TYPE_MAX+1] = {
   "unknown_feature",
   "standard marching cubes surface",
   "ridge surface",
@@ -55,7 +55,7 @@ _seekTypeDesc[SEEK_TYPE_MAX+1] = {
 };
 
 static const char *
-_seekTypeStrEqv[] = {
+typeStrEqv[] = {
   "isocontour",
   "ridge surface", "ridgesurface", "rs",
   "valley surface", "valleysurface", "vs",
@@ -71,7 +71,7 @@ _seekTypeStrEqv[] = {
 };
 
 static const int
-_seekTypeValEqv[] = {
+typeValEqv[] = {
   seekTypeIsocontour,
   seekTypeRidgeSurface, seekTypeRidgeSurface, seekTypeRidgeSurface,
   seekTypeValleySurface, seekTypeValleySurface, seekTypeValleySurface,
@@ -86,14 +86,13 @@ _seekTypeValEqv[] = {
 };
 
 static const airEnum
-_seekType = {
+type_ae = {
   "format",
   SEEK_TYPE_MAX,
-  _seekTypeStr,  NULL,
-  _seekTypeDesc,
-  _seekTypeStrEqv, _seekTypeValEqv,
+  typeStr,  NULL,
+  typeDesc,
+  typeStrEqv, typeValEqv,
   AIR_FALSE
 };
-const airEnum *const
-seekType = &_seekType;
+const airEnum *const seekType = &type_ae;
 /* clang-format on */

@@ -69,7 +69,7 @@ nrrdSimpleResample(Nrrd *nout, const Nrrd *nin, const NrrdKernel *kernel,
     if (samples) {
       info->samples[ai] = samples[ai];
     } else {
-      center = _nrrdCenter(nin->axis[ai].center);
+      center = nrrd__Center(nin->axis[ai].center);
       if (nrrdCenterCell == center) {
         info->samples[ai] = (size_t)(nin->axis[ai].size * scalings[ai]);
       } else {
@@ -85,7 +85,7 @@ nrrdSimpleResample(Nrrd *nout, const Nrrd *nin, const NrrdKernel *kernel,
          function had previously been setting per-axis min/max in
          *input* when it hasn't been already set */
       double spacing;
-      center = _nrrdCenter2(nin->axis[ai].center, nrrdDefaultCenter);
+      center = nrrd__Center2(nin->axis[ai].center, nrrdDefaultCenter);
       spacing = nin->axis[ai].spacing;
       if (!AIR_EXISTS(spacing)) spacing = 1 /* Gone in TeemV2: nrrdDefaultSpacing */;
       if (nrrdCenterCell == center) {
@@ -102,7 +102,7 @@ nrrdSimpleResample(Nrrd *nout, const Nrrd *nin, const NrrdKernel *kernel,
     info->min[ai] = axmin;
     info->max[ai] = axmax;
   }
-  /* we go with the defaults (enstated by _nrrdResampleInfoInit())
+  /* we go with the defaults (enstated by resampleInfoInit())
      for all the remaining fields */
 
   if (nrrdSpatialResample(nout, nin, info)) {
@@ -115,15 +115,15 @@ nrrdSimpleResample(Nrrd *nout, const Nrrd *nin, const NrrdKernel *kernel,
 }
 
 /*
-** _nrrdResampleCheckInfo()
+** resampleCheckInfo()
 **
 ** checks validity of given NrrdResampleInfo *info:
 ** - all required parameters exist
 ** - both min[d] and max[d] for all axes d
 */
 static int /* Biff: 1 */
-_nrrdResampleCheckInfo(const Nrrd *nin, const NrrdResampleInfo *info) {
-  static const char me[] = "_nrrdResampleCheckInfo";
+resampleCheckInfo(const Nrrd *nin, const NrrdResampleInfo *info) {
+  static const char me[] = "resampleCheckInfo";
   int center;
   unsigned int minsmp;
   char stmp[2][AIR_STRLEN_SMALL + 1];
@@ -169,7 +169,7 @@ _nrrdResampleCheckInfo(const Nrrd *nin, const NrrdResampleInfo *info) {
         return 1;
       }
     }
-    center = _nrrdCenter(nin->axis[axi].center);
+    center = nrrd__Center(nin->axis[axi].center);
     minsmp = nrrdCenterCell == center ? 1 : 2;
     if (!(nin->axis[axi].size >= minsmp && info->samples[axi] >= minsmp)) {
       biffAddf(NRRD,
@@ -185,21 +185,21 @@ _nrrdResampleCheckInfo(const Nrrd *nin, const NrrdResampleInfo *info) {
 }
 
 /*
-** _nrrdResampleComputePermute()
+** resampleComputePermute()
 **
 ** figures out information related to how the axes in a nrrd are
 ** permuted during resampling: permute, topRax, botRax, passes, ax[][], sz[][]
 */
 static void
-_nrrdResampleComputePermute(unsigned int permute[],
-                            unsigned int ax[NRRD_DIM_MAX][NRRD_DIM_MAX],
-                            size_t sz[NRRD_DIM_MAX][NRRD_DIM_MAX],
-                            int *topRax,
-                            int *botRax,
-                            unsigned int *passes,
-                            const Nrrd *nin,
-                            const NrrdResampleInfo *info) {
-  /* static const char me[] = "_nrrdResampleComputePermute"; */
+resampleComputePermute(unsigned int permute[],
+                       unsigned int ax[NRRD_DIM_MAX][NRRD_DIM_MAX],
+                       size_t sz[NRRD_DIM_MAX][NRRD_DIM_MAX],
+                       int *topRax,
+                       int *botRax,
+                       unsigned int *passes,
+                       const Nrrd *nin,
+                       const NrrdResampleInfo *info) {
+  /* static const char me[] = "resampleComputePermute"; */
   unsigned int bi, ai, pi;
 
   /* what are the first (top) and last (bottom) axes being resampled? */
@@ -274,7 +274,7 @@ _nrrdResampleComputePermute(unsigned int permute[],
 }
 
 /*
-** _nrrdResampleMakeWeightIndex()
+** resampleMakeWeightIndex()
 **
 ** _allocate_ and fill the arrays of indices and weights that are
 ** needed to process all the scanlines along a given axis; also
@@ -285,10 +285,9 @@ _nrrdResampleComputePermute(unsigned int permute[],
 ** for resampling this axis, or 0 if there was an error.
 */
 static int /* Biff: 0 */
-_nrrdResampleMakeWeightIndex(nrrdResample_t **weightP, int **indexP, double *ratioP,
-                             const Nrrd *nin, const NrrdResampleInfo *info,
-                             unsigned int ai) {
-  static const char me[] = "_nrrdResampleMakeWeightIndex";
+resampleMakeWeightIndex(nrrdResample_t **weightP, int **indexP, double *ratioP,
+                        const Nrrd *nin, const NrrdResampleInfo *info, unsigned int ai) {
+  static const char me[] = "resampleMakeWeightIndex";
   int sizeIn, sizeOut, center, dotLen, halfLen, *indx, base, idx;
   nrrdResample_t minIn, maxIn, minOut, maxOut, spcIn, spcOut, ratio, support, integral,
     pos, idxD, wght;
@@ -304,7 +303,7 @@ _nrrdResampleMakeWeightIndex(nrrdResample_t **weightP, int **indexP, double *rat
     return 0;
   }
 
-  center = _nrrdCenter(nin->axis[ai].center);
+  center = nrrd__Center(nin->axis[ai].center);
   sizeIn = AIR_INT(nin->axis[ai].size);
   sizeOut = AIR_INT(info->samples[ai]);
   minIn = AIR_CAST(nrrdResample_t, nin->axis[ai].min);
@@ -592,12 +591,12 @@ nrrdSpatialResample(Nrrd *nout, const Nrrd *nin, const NrrdResampleInfo *info) {
   typeIn = nin->type;
   typeOut = nrrdTypeDefault == info->type ? typeIn : info->type;
 
-  if (_nrrdResampleCheckInfo(nin, info)) {
+  if (resampleCheckInfo(nin, info)) {
     biffAddf(NRRD, "%s: problem with arguments", me);
     return 1;
   }
 
-  _nrrdResampleComputePermute(permute, ax, sz, &topRax, &botRax, &passes, nin, info);
+  resampleComputePermute(permute, ax, sz, &topRax, &botRax, &passes, nin, info);
   topLax = topRax ? 0 : 1;
 
   /* not sure where else to put this:
@@ -607,7 +606,7 @@ nrrdSpatialResample(Nrrd *nout, const Nrrd *nin, const NrrdResampleInfo *info) {
      nrrdDefaultCenter could always change. */
   for (ai = 0; ai < nin->dim; ai++) {
     if (info->kernel[ai]) {
-      nout->axis[ai].center = _nrrdCenter(nin->axis[ai].center);
+      nout->axis[ai].center = nrrd__Center(nin->axis[ai].center);
     }
   }
 
@@ -742,7 +741,7 @@ nrrdSpatialResample(Nrrd *nout, const Nrrd *nin, const NrrdResampleInfo *info) {
     airMopAdd(mop, inVec, airFree, airMopAlways);
     inVec[sizeIn] = AIR_CAST(nrrdResample_t, info->padValue);
 
-    dotLen = _nrrdResampleMakeWeightIndex(&weight, &indx, &ratio, nin, info, ai);
+    dotLen = resampleMakeWeightIndex(&weight, &indx, &ratio, nin, info, ai);
     if (!dotLen) {
       biffAddf(NRRD, "%s: trouble creating weight and index vector arrays", me);
       airMopError(mop);
@@ -858,10 +857,10 @@ nrrdSpatialResample(Nrrd *nout, const Nrrd *nin, const NrrdResampleInfo *info) {
         before there were space directions, so min/max are always
         set, regardless of whethere there are incoming space directions
         which then disallows output space directions on the same axes
-      _nrrdSpaceVecScale(nout->axis[ai].spaceDirection,
+      nrrd__SpaceVecScale(nout->axis[ai].spaceDirection,
                          1.0/ratios[ai], nin->axis[ai].spaceDirection);
       */
-      nout->axis[ai].kind = _nrrdKindAltered(nin->axis[ai].kind, AIR_TRUE);
+      nout->axis[ai].kind = nrrd__KindAltered(nin->axis[ai].kind, AIR_TRUE);
     } else {
       /* this axis remains untouched */
       nout->axis[ai].min = nin->axis[ai].min;

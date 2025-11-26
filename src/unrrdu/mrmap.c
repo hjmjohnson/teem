@@ -21,16 +21,16 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Map nrrd through a whole nrrd of regular univariate maps"
-static const char *_unrrdu_mrmapInfoL
+static const char *unu_mrmapInfoL
   = (INFO ", one map per sample in input. The \"mrmap\" nrrd has the same dimensional "
           "constraints as the \"mlut\" nrrd for \"unu mlut\".  This functionality "
           "is a generalization of \"unu 3op lerp\": it allows you to lerp through "
           "multiple nrrds, instead of just two.\n " /* */
-     UNRRDU_DILRR_INFO("mrmap")                     /* */
+     MY_UNRRDU_DILRR_INFO("mrmap")                  /* */
      "* Uses nrrdApplyMulti1DRegMap");
 
 static int
-unrrdu_mrmapMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_mrmapMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   Nrrd **_nmmap;
   uint _nmmapLen;
@@ -74,12 +74,12 @@ unrrdu_mrmapMain(int argc, const char **argv, const char *me, const hestParm *hp
                      "is the map's type",
                      &unrrduHestMaybeTypeCB);
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_mrmapInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_mrmapInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -140,10 +140,10 @@ unrrdu_mrmapMain(int argc, const char **argv, const char *me, const hestParm *hp
     return 1;
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(mrmap, INFO);
+MY_UNRRDU_CMD(mrmap, INFO);

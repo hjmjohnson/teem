@@ -78,12 +78,12 @@ clampRoundConvert(Nrrd *nout, const Nrrd *nin, int type, int doClamp, int roundD
     /* call the appropriate converter */
     num = nrrdElementNumber(nin);
     if (roundDir) {
-      _nrrdCastClampRound[nout->type][nin->type](nout->data, nin->data, num, doClamp,
-                                                 roundDir);
+      nrrd__CastClampRound[nout->type][nin->type](nout->data, nin->data, num, doClamp,
+                                                  roundDir);
     } else if (doClamp) {
-      _nrrdClampConv[nout->type][nin->type](nout->data, nin->data, num);
+      nrrd__ClampConv[nout->type][nin->type](nout->data, nin->data, num);
     } else {
-      _nrrdConv[nout->type][nin->type](nout->data, nin->data, num);
+      nrrd__Conv[nout->type][nin->type](nout->data, nin->data, num);
     }
     nout->blockSize = 0;
 
@@ -316,7 +316,7 @@ nrrdQuantize(Nrrd *nout, const Nrrd *nin, const NrrdRange *_range, unsigned int 
 }
 
 /*
-** _nrrdTypeNumberOfValues[]
+** typeNumberOfValues[]
 **
 ** only meaningful for integral values, and only correct for
 ** 32-bit values; tells the number of different integral values that
@@ -327,7 +327,7 @@ nrrdQuantize(Nrrd *nout, const Nrrd *nin, const NrrdRange *_range, unsigned int 
 ** for the array is questionable, and the implementation below
 ** should be re-evaluated.
 */
-static const double _nrrdTypeNumberOfValues[NRRD_TYPE_MAX + 1] = {
+static const double typeNumberOfValues[NRRD_TYPE_MAX + 1] = {
   0,                           /* unknown */
   UCHAR_MAX + 1,               /* char */
   UCHAR_MAX + 1,               /* unsigned char */
@@ -401,7 +401,7 @@ nrrdUnquantize(Nrrd *nout, const Nrrd *nin, int type) {
     return 1;
   }
   minIn = nrrdTypeMin[nin->type];
-  numValIn = _nrrdTypeNumberOfValues[nin->type];
+  numValIn = typeNumberOfValues[nin->type];
   if (AIR_EXISTS(nin->oldMin) && AIR_EXISTS(nin->oldMax)) {
     minOut = nin->oldMin;
     maxOut = nin->oldMax;
@@ -453,13 +453,13 @@ nrrdUnquantize(Nrrd *nout, const Nrrd *nin, int type) {
 }
 
 /*
-** _nrrdHistoEqCompare()
+** histoEqCompare()
 **
 ** used by nrrdHistoEq in smart mode to sort the "steady" array
 ** in _descending_ order
 */
 static int
-_nrrdHistoEqCompare(const void *a, const void *b) {
+histoEqCompare(const void *a, const void *b) {
 
   return *((const unsigned int *)b) - *((const unsigned int *)a);
 }
@@ -604,7 +604,7 @@ nrrdHistoEq(Nrrd *nout, const Nrrd *nin, Nrrd **nmapP, unsigned int bins,
       }
     }
     /* now sort the steady array */
-    qsort(steady, bins, 2 * sizeof(unsigned int), _nrrdHistoEqCompare);
+    qsort(steady, bins, 2 * sizeof(unsigned int), histoEqCompare);
     /* we ignore some of the bins according to "smart" arg */
     for (bii = 0; bii < smart; bii++) {
       respect[steady[1 + 2 * bii]] = 0;

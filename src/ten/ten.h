@@ -63,9 +63,8 @@ extern "C" {
 ** and even the individual eigenvalues
 **
 ** keep in sync:
-** aniso.c: _tenAnisoEval_X_f(), _tenAnisoEval_f[]
-** aniso.c: _tenAnisoTen_X_d(), _tenAnisoTen_d[]
-** aniso.c: tenAnisoCalc_f()
+** aniso.c: anisoEval_X_f(), tenAnisoEvalArray_f[]
+** aniso.c: anisoTen_X_d(), tenAnisoTenArray_d[]
 ** enumsTen.c: tenAniso
 */
 enum {
@@ -1445,14 +1444,14 @@ TEN_EXPORT tenEstimateContext *tenEstimateContextNix(tenEstimateContext *tec);
 TEN_EXPORT void *tenEstimateContextNix_mop(void *);
 
 /* aniso.c */
-TEN_EXPORT float (*const _tenAnisoEval_f[TEN_ANISO_MAX + 1])(const float eval[3]);
+TEN_EXPORT float (*const tenAnisoEvalArray_f[TEN_ANISO_MAX + 1])(const float eval[3]);
 TEN_EXPORT float tenAnisoEval_f(const float eval[3], int aniso);
-TEN_EXPORT double (*const _tenAnisoEval_d[TEN_ANISO_MAX + 1])(const double eval[3]);
+TEN_EXPORT double (*const tenAnisoEvalArray_d[TEN_ANISO_MAX + 1])(const double eval[3]);
 TEN_EXPORT double tenAnisoEval_d(const double eval[3], int aniso);
 
-TEN_EXPORT float (*const _tenAnisoTen_f[TEN_ANISO_MAX + 1])(const float ten[7]);
+TEN_EXPORT float (*const tenAnisoTenArray_f[TEN_ANISO_MAX + 1])(const float ten[7]);
 TEN_EXPORT float tenAnisoTen_f(const float ten[7], int aniso);
-TEN_EXPORT double (*const _tenAnisoTen_d[TEN_ANISO_MAX + 1])(const double ten[7]);
+TEN_EXPORT double (*const tenAnisoTenArray_d[TEN_ANISO_MAX + 1])(const double ten[7]);
 TEN_EXPORT double tenAnisoTen_d(const double ten[7], int aniso);
 
 TEN_EXPORT int tenAnisoPlot(Nrrd *nout, int aniso, unsigned int res, int hflip,
@@ -1475,7 +1474,6 @@ TEN_EXPORT short tenEvqSingle_f(float vec[3], float scl);
 TEN_EXPORT int tenEvqVolume(Nrrd *nout, const Nrrd *nin, int which, int aniso,
                             int scaleByAniso);
 TEN_EXPORT int tenBMatrixCheck(const Nrrd *nbmat, int type, unsigned int minnum);
-TEN_EXPORT int _tenFindValley(double *valP, const Nrrd *nhist, double tweak, int save);
 
 /* fiberMethods.c */
 TEN_EXPORT void tenFiberSingleInit(tenFiberSingle *tfbs);

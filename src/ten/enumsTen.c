@@ -24,7 +24,7 @@
 /* -------------------------------------------------------------- */
 
 static const char *
-_tenAnisoStr[TEN_ANISO_MAX+1] = {
+anisoStr[TEN_ANISO_MAX+1] = {
   "(unknown aniso)",
   "Conf",
   "Cl1",
@@ -58,21 +58,20 @@ _tenAnisoStr[TEN_ANISO_MAX+1] = {
 };
 
 static const airEnum
-_tenAniso = {
+aniso_ae = {
   "anisotropy metric",
   TEN_ANISO_MAX,
-  _tenAnisoStr,  NULL,
+  anisoStr,  NULL,
   NULL,
   NULL, NULL,
   AIR_FALSE
 };
-const airEnum *const
-tenAniso = &_tenAniso;
+const airEnum *const tenAniso = &aniso_ae;
 
 /* --------------------------------------------------------------------- */
 
 static const char *
-_tenInterpTypeStr[TEN_INTERP_TYPE_MAX+1] = {
+interpTypeStr[TEN_INTERP_TYPE_MAX+1] = {
   "(unknown interp type)",
   "lin",
   "loglin",
@@ -88,7 +87,7 @@ _tenInterpTypeStr[TEN_INTERP_TYPE_MAX+1] = {
 };
 
 static const char *
-_tenInterpTypeStrEqv[] = {
+interpTypeStrEqv[] = {
   "lin", "linear", "lerp",
   "loglin", "loglinear", "loglerp",
   "affinv",
@@ -104,7 +103,7 @@ _tenInterpTypeStrEqv[] = {
 };
 
 static const int
-_tenInterpTypeValEqv[] = {
+interpTypeValEqv[] = {
   tenInterpTypeLinear, tenInterpTypeLinear, tenInterpTypeLinear,
   tenInterpTypeLogLinear, tenInterpTypeLogLinear, tenInterpTypeLogLinear,
   tenInterpTypeAffineInvariant,
@@ -119,21 +118,20 @@ _tenInterpTypeValEqv[] = {
 };
 
 static const airEnum
-_tenInterpType = {
+interpType_ae = {
   "interp type",
   TEN_INTERP_TYPE_MAX,
-  _tenInterpTypeStr, NULL,
+  interpTypeStr, NULL,
   NULL,
-  _tenInterpTypeStrEqv, _tenInterpTypeValEqv,
+  interpTypeStrEqv, interpTypeValEqv,
   AIR_FALSE
 };
-const airEnum *const
-tenInterpType = &_tenInterpType;
+const airEnum *const tenInterpType = &interpType_ae;
 
 /* --------------------------------------------------------------------- */
 
 static const char *
-_tenGageStr[] = {
+tgStr[] = {
   "(unknown tenGage)",
 
   "tensor",
@@ -376,7 +374,7 @@ _tenGageStr[] = {
 };
 
 static const char *
-_tenGageDesc[] = {
+tgDesc[] = {
   "(unknown tenGage item)",
   "tensor",
   "confidence",
@@ -589,7 +587,7 @@ _tenGageDesc[] = {
 };
 
 static const int
-_tenGageVal[] = {
+tgVal[] = {
   tenGageUnknown,
   tenGageTensor,        /* "t", the reconstructed tensor: GT[7] */
   tenGageConfidence,    /* "c", first of seven tensor values: GT[1] */
@@ -801,7 +799,7 @@ _tenGageVal[] = {
 };
 
 static const char *
-_tenGageStrEqv[] = {
+tgStrEqv[] = {
   "t", "ten", "tensor",
   "c", "conf", "confidence",
   "tr", "trace",
@@ -1020,7 +1018,7 @@ _tenGageStrEqv[] = {
 };
 
 static const int
-_tenGageValEqv[] = {
+tgValEqv[] = {
   tenGageTensor, tenGageTensor, tenGageTensor,
   tenGageConfidence, tenGageConfidence, tenGageConfidence,
   tenGageTrace, tenGageTrace,
@@ -1243,21 +1241,20 @@ _tenGageValEqv[] = {
 };
 
 const airEnum /* not static since need its address to compile tenGageKind */
-_tenGage = {
+ten__Gage_ae = {
   "tenGage",
   TEN_GAGE_ITEM_MAX,
-  _tenGageStr, _tenGageVal,
-  _tenGageDesc,
-  _tenGageStrEqv, _tenGageValEqv,
+  tgStr, tgVal,
+  tgDesc,
+  tgStrEqv, tgValEqv,
   AIR_FALSE
 };
-const airEnum *const
-tenGage = &_tenGage;
+const airEnum *const tenGage = &ten__Gage_ae;
 
 /* --------------------------------------------------------------------- */
 
 static const char *
-_tenFiberTypeStr[] = {
+fiberTypeStr[] = {
   "(unknown tenFiberType)",
   "evec0",
   "evec1",
@@ -1268,7 +1265,7 @@ _tenFiberTypeStr[] = {
 };
 
 static const char *
-_tenFiberTypeDesc[] = {
+fiberTypeDesc[] = {
   "unknown tenFiber type",
   "simply follow principal eigenvector",
   "follow medium eigenvector",
@@ -1279,7 +1276,7 @@ _tenFiberTypeDesc[] = {
 };
 
 static const char *
-_tenFiberTypeStrEqv[] = {
+fiberTypeStrEqv[] = {
   "ev0", "evec0",
   "ev1", "evec1",
   "ev2", "evec2",
@@ -1290,7 +1287,7 @@ _tenFiberTypeStrEqv[] = {
 };
 
 static const int
-_tenFiberTypeValEqv[] = {
+fiberTypeValEqv[] = {
   tenFiberTypeEvec0, tenFiberTypeEvec0,
   tenFiberTypeEvec1, tenFiberTypeEvec1,
   tenFiberTypeEvec2, tenFiberTypeEvec2,
@@ -1300,21 +1297,21 @@ _tenFiberTypeValEqv[] = {
 };
 
 static const airEnum
-_tenFiberType = {
+fiberType = {
   "tenFiberType",
   TEN_FIBER_TYPE_MAX,
-  _tenFiberTypeStr, NULL,
-  _tenFiberTypeDesc,
-  _tenFiberTypeStrEqv, _tenFiberTypeValEqv,
+  fiberTypeStr, NULL,
+  fiberTypeDesc,
+  fiberTypeStrEqv, fiberTypeValEqv,
   AIR_FALSE
 };
 const airEnum *const
-tenFiberType = &_tenFiberType;
+tenFiberType = &fiberType;
 
 /* --------------------------------------------------------------------- */
 
 static const char *
-_tenDwiFiberTypeStr[] = {
+dwiFiberTypeStr[] = {
   "(unknown tenDwiFiberType)",
   "1evec0",
   "2evec0",
@@ -1322,7 +1319,7 @@ _tenDwiFiberTypeStr[] = {
 };
 
 static const char *
-_tenDwiFiberTypeDesc[] = {
+dwiFiberTypeDesc[] = {
   "unknown tenDwiFiber type",
   "single tensor evec0-based",
   "two-tensor evec0-based",
@@ -1330,7 +1327,7 @@ _tenDwiFiberTypeDesc[] = {
 };
 
 static const char *
-_tenDwiFiberTypeStrEqv[] = {
+dwiFiberTypeStrEqv[] = {
   "1evec0", "1e0",
   "2evec0", "2e0",
   "12BlendEvec0", "12be0",
@@ -1338,28 +1335,27 @@ _tenDwiFiberTypeStrEqv[] = {
 };
 
 static const int
-_tenDwiFiberTypeValEqv[] = {
+dwiFiberTypeValEqv[] = {
   tenDwiFiberType1Evec0, tenDwiFiberType1Evec0,
   tenDwiFiberType2Evec0, tenDwiFiberType2Evec0,
   tenDwiFiberType12BlendEvec0, tenDwiFiberType12BlendEvec0
 };
 
 static const airEnum
-_tenDwiFiberType = {
+dwiFiberType_ae = {
   "tenDwiFiberType",
   TEN_DWI_FIBER_TYPE_MAX,
-  _tenDwiFiberTypeStr, NULL,
-  _tenDwiFiberTypeDesc,
-  _tenDwiFiberTypeStrEqv, _tenDwiFiberTypeValEqv,
+  dwiFiberTypeStr, NULL,
+  dwiFiberTypeDesc,
+  dwiFiberTypeStrEqv, dwiFiberTypeValEqv,
   AIR_FALSE
 };
-const airEnum *const
-tenDwiFiberType = &_tenDwiFiberType;
+const airEnum *const tenDwiFiberType = &dwiFiberType_ae;
 
 /* ----------------------------------------------------------------------- */
 
 static const char *
-_tenFiberStopStr[] = {
+fiberStopStr[] = {
   "(unknown tenFiberStop)",
   "aniso",
   "length",
@@ -1374,7 +1370,7 @@ _tenFiberStopStr[] = {
 };
 
 static const char *
-_tenFiberStopStrEqv[] = {
+fiberStopStrEqv[] = {
   "aniso",
   "length", "len",
   "steps",
@@ -1389,7 +1385,7 @@ _tenFiberStopStrEqv[] = {
 };
 
 static const int
-_tenFiberStopValEqv[] = {
+fiberStopValEqv[] = {
   tenFiberStopAniso,
   tenFiberStopLength, tenFiberStopLength,
   tenFiberStopNumSteps,
@@ -1403,7 +1399,7 @@ _tenFiberStopValEqv[] = {
 };
 
 static const char *
-_tenFiberStopDesc[] = {
+fiberStopDesc[] = {
   "unknown tenFiber stop",
   "anisotropy went below threshold",
   "fiber length exceeded normalcy bounds",
@@ -1418,21 +1414,20 @@ _tenFiberStopDesc[] = {
 };
 
 static const airEnum
-_tenFiberStop = {
+fiberStop_ae = {
   "fiber stopping criteria",
   TEN_FIBER_STOP_MAX,
-  _tenFiberStopStr, NULL,
-  _tenFiberStopDesc,
-  _tenFiberStopStrEqv, _tenFiberStopValEqv,
+  fiberStopStr, NULL,
+  fiberStopDesc,
+  fiberStopStrEqv, fiberStopValEqv,
   AIR_FALSE
 };
-const airEnum *const
-tenFiberStop = &_tenFiberStop;
+const airEnum *const tenFiberStop = &fiberStop_ae;
 
 /* ----------------------------------------------------------------------- */
 
 static const char *
-_tenFiberIntgStr[] = {
+fiberIntgStr[] = {
   "(unknown tenFiberIntg)",
   "euler",
   "midpoint",
@@ -1440,7 +1435,7 @@ _tenFiberIntgStr[] = {
 };
 
 static const char *
-_tenFiberIntgStrEqv[] = {
+fiberIntgStrEqv[] = {
   "euler",
   "midpoint", "rk2",
   "rk4",
@@ -1448,14 +1443,14 @@ _tenFiberIntgStrEqv[] = {
 };
 
 static const int
-_tenFiberIntgValEqv[] = {
+fiberIntgValEqv[] = {
   tenFiberIntgEuler,
   tenFiberIntgMidpoint, tenFiberIntgMidpoint,
   tenFiberIntgRK4
 };
 
 static const char *
-_tenFiberIntgDesc[] = {
+fiberIntgDesc[] = {
   "unknown tenFiber intg",
   "plain Euler",
   "midpoint method, 2nd order Runge-Kutta",
@@ -1463,21 +1458,20 @@ _tenFiberIntgDesc[] = {
 };
 
 static const airEnum
-_tenFiberIntg = {
+fiberIntg_ae = {
   "fiber integration method",
   TEN_FIBER_INTG_MAX,
-  _tenFiberIntgStr, NULL,
-  _tenFiberIntgDesc,
-  _tenFiberIntgStrEqv, _tenFiberIntgValEqv,
+  fiberIntgStr, NULL,
+  fiberIntgDesc,
+  fiberIntgStrEqv, fiberIntgValEqv,
   AIR_FALSE
 };
-const airEnum *const
-tenFiberIntg = &_tenFiberIntg;
+const airEnum *const tenFiberIntg = &fiberIntg_ae;
 
 /* ----------------------------------------------------------------------- */
 
 static const char *
-_tenGlyphTypeStr[] = {
+glyphTypeStr[] = {
   "(unknown tenGlyphType)",
   "box",
   "sphere",
@@ -1493,7 +1487,7 @@ _tenGlyphTypeStr[] = {
 #define SQD tenGlyphTypeSuperquad
 
 static const char *
-_tenGlyphTypeStrEqv[] = {
+glyphTypeStrEqv[] = {
   "b", "box",
   "s", "sph", "sphere",
   "c", "cyl", "cylind", "cylinder",
@@ -1504,7 +1498,7 @@ _tenGlyphTypeStrEqv[] = {
 };
 
 static const int
-_tenGlyphTypeValEqv[] = {
+glyphTypeValEqv[] = {
   BOX, BOX,
   SPH, SPH, SPH,
   CYL, CYL, CYL, CYL,
@@ -1514,7 +1508,7 @@ _tenGlyphTypeValEqv[] = {
 };
 
 static const char *
-_tenGlyphTypeDesc[] = {
+glyphTypeDesc[] = {
   "unknown tenGlyph type",
   "box/cube (rectangular prisms)",
   "sphere (ellipsoids)",
@@ -1525,21 +1519,20 @@ _tenGlyphTypeDesc[] = {
 };
 
 static const airEnum
-_tenGlyphType = {
+glyphType_ae = {
   "tenGlyphType",
   TEN_GLYPH_TYPE_MAX,
-  _tenGlyphTypeStr, NULL,
-  _tenGlyphTypeDesc,
-  _tenGlyphTypeStrEqv, _tenGlyphTypeValEqv,
+  glyphTypeStr, NULL,
+  glyphTypeDesc,
+  glyphTypeStrEqv, glyphTypeValEqv,
   AIR_FALSE
 };
-const airEnum *const
-tenGlyphType = &_tenGlyphType;
+const airEnum *const tenGlyphType = &glyphType_ae;
 
 /* ---------------------------------------------- */
 
 static const char *
-_tenEstimate1MethodStr[] = {
+estimate1MethodStr[] = {
   "(unknown tenEstimate1Method)",
   "LLS",
   "WLS",
@@ -1548,7 +1541,7 @@ _tenEstimate1MethodStr[] = {
 };
 
 static const char *
-_tenEstimate1MethodDesc[] = {
+estimate1MethodDesc[] = {
   "unknown tenEstimate1Method",
   "linear least-squares fit of log(DWI)",
   "weighted least-squares fit of log(DWI)",
@@ -1557,49 +1550,47 @@ _tenEstimate1MethodDesc[] = {
 };
 
 static const airEnum
-_tenEstimate1Method = {
+estimate1Method_ae = {
   "single-tensor-estimation",
   TEN_ESTIMATE_1_METHOD_MAX,
-  _tenEstimate1MethodStr, NULL,
-  _tenEstimate1MethodDesc,
+  estimate1MethodStr, NULL,
+  estimate1MethodDesc,
   NULL, NULL,
   AIR_FALSE
 };
-const airEnum *const
-tenEstimate1Method= &_tenEstimate1Method;
+const airEnum *const tenEstimate1Method= &estimate1Method_ae;
 
 /* ---------------------------------------------- */
 
 static const char *
-_tenEstimate2MethodStr[] = {
+estimate2MethodStr[] = {
   "(unknown tenEstimate2Method)",
   "QSegLLS",
   "Peled"
 };
 
 static const char *
-_tenEstimate2MethodDesc[] = {
+estimate2MethodDesc[] = {
   "unknown tenEstimate2Method",
   "Q-ball segmentation",
   "Peled"
 };
 
 static const airEnum
-_tenEstimate2Method = {
+estimate2Method_ae = {
   "two-tensor-estimation",
   TEN_ESTIMATE_2_METHOD_MAX,
-  _tenEstimate2MethodStr, NULL,
-  _tenEstimate2MethodDesc,
+  estimate2MethodStr, NULL,
+  estimate2MethodDesc,
   NULL, NULL,
   AIR_FALSE
 };
-const airEnum *const
-tenEstimate2Method= &_tenEstimate2Method;
+const airEnum *const tenEstimate2Method= &estimate2Method_ae;
 
 /* ---------------------------------------------- */
 
 static const char *
-_tenTripleTypeStr[] = {
+tripleTypeStr[] = {
   "(unknown tenTriple)",
   "eigenvalue",
   "moment",
@@ -1613,7 +1604,7 @@ _tenTripleTypeStr[] = {
 };
 
 static const char *
-_tenTripleTypeDesc[] = {
+tripleTypeDesc[] = {
   "unknown tenTriple",
   "eigenvalues sorted in descending order",
   "central moments (mu1,mu2,mu3)",
@@ -1627,7 +1618,7 @@ _tenTripleTypeDesc[] = {
 };
 
 static const char *
-_tenTripleTypeStrEqv[] = {
+tripleTypeStrEqv[] = {
   "eigenvalue", "eval", "ev",
   "moment", "mu",
   "XYZ",
@@ -1641,7 +1632,7 @@ _tenTripleTypeStrEqv[] = {
 };
 
 static const int
-_tenTripleTypeValEqv[] = {
+tripleTypeValEqv[] = {
   tenTripleTypeEigenvalue, tenTripleTypeEigenvalue, tenTripleTypeEigenvalue,
   tenTripleTypeMoment, tenTripleTypeMoment,
   tenTripleTypeXYZ,
@@ -1654,14 +1645,13 @@ _tenTripleTypeValEqv[] = {
 };
 
 static const airEnum
-_tenTripleType = {
+tripleType_ae = {
   "tenTripleType",
   TEN_TRIPLE_TYPE_MAX,
-  _tenTripleTypeStr, NULL,
-  _tenTripleTypeDesc,
-  _tenTripleTypeStrEqv, _tenTripleTypeValEqv,
+  tripleTypeStr, NULL,
+  tripleTypeDesc,
+  tripleTypeStrEqv, tripleTypeValEqv,
   AIR_FALSE
 };
-const airEnum *const
-tenTripleType = &_tenTripleType;
+const airEnum *const tenTripleType = &tripleType_ae;
 /* clang-format on */

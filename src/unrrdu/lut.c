@@ -21,17 +21,17 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Map nrrd through one univariate lookup table"
-static const char *_unrrdu_lutInfoL
+static const char *unu_lutInfoL
   = (INFO " (itself represented as a nrrd). The lookup table "
           "can be 1D, in which case the output "
           "has the same dimension as the input, or 2D, in which case "
           "the output has one more dimension than the input, and each "
           "value is mapped to a scanline (along axis 0) from the "
-          "lookup table.\n " UNRRDU_DILRR_INFO("lut") /* */
+          "lookup table.\n " MY_UNRRDU_DILRR_INFO("lut") /* */
      "* Uses nrrdApply1DLut");
 
 static int
-unrrdu_lutMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_lutMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   Nrrd *nlut;
   hestOptAdd_1_Other(&hopt, "m,map", "lut", &nlut, NULL,
@@ -72,12 +72,12 @@ unrrdu_lutMain(int argc, const char **argv, const char *me, const hestParm *hpar
                      "is the lut's type",
                      &unrrduHestMaybeTypeCB);
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_lutInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_lutInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -117,10 +117,10 @@ unrrdu_lutMain(int argc, const char **argv, const char *me, const hestParm *hpar
     return 1;
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(lut, INFO);
+MY_UNRRDU_CMD(lut, INFO);

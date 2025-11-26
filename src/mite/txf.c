@@ -29,7 +29,7 @@ const char *const miteRangeChar /* [MITE_RANGE_NUM + 1] */ = "ARGBEadsp";
 
 /* clang-format off */
 static const char *
-_miteStageOpStr[] = {
+stageOpStr[] = {
   "(unknown miteStageOp)",
   "min",
   "max",
@@ -38,7 +38,7 @@ _miteStageOpStr[] = {
 };
 
 static const int
-_miteStageOpVal[] = {
+stageOpVal[] = {
   miteStageOpUnknown,
   miteStageOpMin,
   miteStageOpMax,
@@ -47,7 +47,7 @@ _miteStageOpVal[] = {
 };
 
 static const char *
-_miteStageOpStrEqv[] = {
+stageOpStrEqv[] = {
   "min",
   "max",
   "add", "+",
@@ -56,7 +56,7 @@ _miteStageOpStrEqv[] = {
 };
 
 static const int
-_miteStageOpValEqv[] = {
+stageOpValEqv[] = {
   miteStageOpMin,
   miteStageOpMax,
   miteStageOpAdd, miteStageOpAdd,
@@ -64,16 +64,15 @@ _miteStageOpValEqv[] = {
 };
 
 static const airEnum
-_miteStageOp = {
+stageOp_ae = {
   "miteStageOp",
   MITE_STAGE_OP_MAX,
-  _miteStageOpStr, _miteStageOpVal,
+  stageOpStr, stageOpVal,
   NULL,
-  _miteStageOpStrEqv, _miteStageOpValEqv,
+  stageOpStrEqv, stageOpValEqv,
   AIR_FALSE
 };
-const airEnum *const
-miteStageOp = &_miteStageOp;
+const airEnum *const miteStageOp = &stageOp_ae;
 /* clang-format on */
 
 /*
@@ -398,8 +397,8 @@ miteQueryAdd(gageQuery queryScl, gageQuery queryVec, gageQuery queryTen,
 }
 
 static int /* Biff: 1 */
-_miteNtxfCopy(miteRender *mrr, miteUser *muu) {
-  static const char me[] = "_miteNtxfCopy";
+nxfCopy(miteRender *mrr, miteUser *muu) {
+  static const char me[] = "nxfCopy";
   unsigned int ni;
   int E;
 
@@ -446,13 +445,13 @@ _miteNtxfCopy(miteRender *mrr, miteUser *muu) {
 }
 
 int /* Biff: (private) 1 */
-_miteNtxfAlphaAdjust(miteRender *mrr, miteUser *muu) {
-  static const char me[] = "_miteNtxfAlphaAdjust";
+mite__NtxfAlphaAdjust(miteRender *mrr, miteUser *muu) {
+  static const char me[] = "mite__NtxfAlphaAdjust";
   unsigned int ni, ei, ri, nnum, rnum;
   Nrrd *ntxf;
   mite_t *data, alpha, frac;
 
-  if (_miteNtxfCopy(mrr, muu)) {
+  if (nxfCopy(mrr, muu)) {
     biffAddf(MITE, "%s: trouble copying/converting transfer functions", me);
     return 1;
   }
@@ -479,7 +478,7 @@ _miteNtxfAlphaAdjust(miteRender *mrr, miteUser *muu) {
 }
 
 static int
-_miteStageNum(miteRender *mrr) {
+stageCount(miteRender *mrr) {
   unsigned int num, ni;
 
   num = 0;
@@ -490,7 +489,7 @@ _miteStageNum(miteRender *mrr) {
 }
 
 static void
-_miteStageInit(miteStage *stage) {
+stageInit(miteStage *stage) {
   int rii;
 
   stage->val = NULL;
@@ -508,8 +507,8 @@ _miteStageInit(miteStage *stage) {
 }
 
 double * /* Biff: (private) nope */
-_miteAnswerPointer(miteThread *mtt, gageItemSpec *isp) {
-  static const char me[] = "_miteAnswerPointer";
+mite__AnswerPointer(miteThread *mtt, gageItemSpec *isp) {
+  static const char me[] = "mite__AnswerPointer";
   double *ret;
 
   if (!isp->kind) {
@@ -536,13 +535,13 @@ _miteAnswerPointer(miteThread *mtt, gageItemSpec *isp) {
 }
 
 /*
-** _miteStageSet
+** mite__StageSet
 **
 ** ALLOCATES and initializes stage array in a miteThread
 */
 int /* Biff: (private) 1 */
-_miteStageSet(miteThread *mtt, miteRender *mrr) {
-  static const char me[] = "_miteStageSet";
+mite__StageSet(miteThread *mtt, miteRender *mrr) {
+  static const char me[] = "mite__StageSet";
   char *value;
   unsigned int ni, di, stageIdx, rii, stageNum, ilog2;
   Nrrd *ntxf;
@@ -550,7 +549,7 @@ _miteStageSet(miteThread *mtt, miteRender *mrr) {
   gageItemSpec isp;
   char rc;
 
-  stageNum = _miteStageNum(mrr);
+  stageNum = stageCount(mrr);
   /* fprintf(stderr, "!%s: stageNum = %d\n", me, stageNum); */
   mtt->stage = AIR_CALLOC(stageNum, miteStage);
   if (!mtt->stage) {
@@ -564,9 +563,9 @@ _miteStageSet(miteThread *mtt, miteRender *mrr) {
     ntxf = mrr->ntxf[ni];
     for (di = ntxf->dim - 1; di >= 1; di--) {
       stage = mtt->stage + stageIdx;
-      _miteStageInit(stage);
+      stageInit(stage);
       miteVariableParse(&isp, ntxf->axis[di].label);
-      stage->val = _miteAnswerPointer(mtt, &isp);
+      stage->val = mite__AnswerPointer(mtt, &isp);
       stage->label = ntxf->axis[di].label;
       /*
       fprintf(stderr, "!%s: ans=%p + offset[%d]=%d == %p\n", me,
@@ -642,7 +641,7 @@ _miteStageSet(miteThread *mtt, miteRender *mrr) {
           rc = ntxf->axis[0].label[rii];
           stage->rangeIdx[rii] = AIR_INT(strchr(miteRangeChar, rc) - miteRangeChar);
           /*
-          fprintf(stderr, "!%s: range: %c -> %d\n", "_miteStageSet",
+          fprintf(stderr, "!%s: range: %c -> %d\n", "mite__StageSet",
                   ntxf->axis[0].label[rii], stage->rangeIdx[rii]);
           */
         }
@@ -654,8 +653,8 @@ _miteStageSet(miteThread *mtt, miteRender *mrr) {
 }
 
 void
-_miteStageRun(miteThread *mtt, miteUser *muu) {
-  static const char me[] = "_miteStageRun";
+mite__StageRun(miteThread *mtt, miteUser *muu) {
+  static const char me[] = "mite__StageRun";
   unsigned int stageIdx, ri, rii, txfIdx, finalIdx;
   miteStage *stage;
   mite_t *rangeData;

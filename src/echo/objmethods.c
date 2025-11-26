@@ -21,7 +21,7 @@
 #include "privateEcho.h"
 
 #define NEW_TMPL(TYPE, BODY)                                                            \
-  static echo##TYPE *_echo##TYPE##_new(void) {                                          \
+  static echo##TYPE *TYPE##_new(void) {                                                 \
     echo##TYPE *obj;                                                                    \
                                                                                         \
     obj = (echo##TYPE *)calloc(1, sizeof(echo##TYPE));                                  \
@@ -33,7 +33,7 @@
   }
 
 #define NIX_TMPL(TYPE, BODY)                                                            \
-  static echo##TYPE *_echo##TYPE##_nix(echo##TYPE *obj) {                               \
+  static echo##TYPE *TYPE##_nix(echo##TYPE *obj) {                                      \
     int dummy = 0;                                                                      \
                                                                                         \
     if (obj) {                                                                          \
@@ -46,7 +46,7 @@
   }
 
 static void
-_echoMatterInit(echoObject *obj) {
+MatterInit(echoObject *obj) {
 
   obj->matter = echoMatterUnknown;
   ELL_4V_SET(obj->rgba, 0, 0, 0, 0);
@@ -54,29 +54,28 @@ _echoMatterInit(echoObject *obj) {
   obj->ntext = NULL;
 }
 
-NEW_TMPL(Sphere, _echoMatterInit(OBJECT(obj)); ELL_3V_SET(obj->pos, 0, 0, 0);
-         obj->rad = 1.0;)
+NEW_TMPL(Sphere, MatterInit(OBJECT(obj)); ELL_3V_SET(obj->pos, 0, 0, 0); obj->rad = 1.0;)
 
-NEW_TMPL(Cylinder, _echoMatterInit(OBJECT(obj)); obj->axis = 2;)
+NEW_TMPL(Cylinder, MatterInit(OBJECT(obj)); obj->axis = 2;)
 
-NEW_TMPL(Superquad, _echoMatterInit(OBJECT(obj)); obj->axis = 2; obj->A = obj->B = 1;)
+NEW_TMPL(Superquad, MatterInit(OBJECT(obj)); obj->axis = 2; obj->A = obj->B = 1;)
 
-NEW_TMPL(Cube, _echoMatterInit(OBJECT(obj));)
+NEW_TMPL(Cube, MatterInit(OBJECT(obj));)
 
-NEW_TMPL(Triangle, _echoMatterInit(OBJECT(obj)); ELL_3V_SET(obj->vert[0], 0, 0, 0);
+NEW_TMPL(Triangle, MatterInit(OBJECT(obj)); ELL_3V_SET(obj->vert[0], 0, 0, 0);
          ELL_3V_SET(obj->vert[1], 0, 0, 0); ELL_3V_SET(obj->vert[2], 0, 0, 0);)
 
-NEW_TMPL(Rectangle, _echoMatterInit(OBJECT(obj)); ELL_3V_SET(obj->origin, 0, 0, 0);
+NEW_TMPL(Rectangle, MatterInit(OBJECT(obj)); ELL_3V_SET(obj->origin, 0, 0, 0);
          ELL_3V_SET(obj->edge0, 0, 0, 0); ELL_3V_SET(obj->edge1, 0, 0, 0);)
 
-NEW_TMPL(TriMesh, _echoMatterInit(OBJECT(obj)); ELL_3V_SET(obj->meanvert, 0, 0, 0);
+NEW_TMPL(TriMesh, MatterInit(OBJECT(obj)); ELL_3V_SET(obj->meanvert, 0, 0, 0);
          ELL_3V_SET(obj->min, ECHO_POS_MAX, ECHO_POS_MAX, ECHO_POS_MAX);
          ELL_3V_SET(obj->max, ECHO_POS_MIN, ECHO_POS_MIN, ECHO_POS_MIN);
          obj->numV = obj->numF = 0; obj->pos = NULL; obj->vert = NULL;)
 NIX_TMPL(TriMesh, obj->pos = (echoPos_t *)airFree(obj->pos);
          obj->vert = (int *)airFree(obj->vert);)
 
-NEW_TMPL(Isosurface, _echoMatterInit(OBJECT(obj)); obj->volume = NULL; obj->value = 0.0;
+NEW_TMPL(Isosurface, MatterInit(OBJECT(obj)); obj->volume = NULL; obj->value = 0.0;
          /* ??? */
 )
 
@@ -99,19 +98,13 @@ NIX_TMPL(List, airArrayNuke(obj->objArr);)
 NEW_TMPL(Instance, ELL_4M_IDENTITY_SET(obj->M); ELL_4M_IDENTITY_SET(obj->Mi);
          obj->obj = NULL;)
 
-static echoObject *(*_echoObjectNew[ECHO_TYPE_NUM])(void)
-  = {(echoObject * (*)(void)) _echoSphere_new,
-     (echoObject * (*)(void)) _echoCylinder_new,
-     (echoObject * (*)(void)) _echoSuperquad_new,
-     (echoObject * (*)(void)) _echoCube_new,
-     (echoObject * (*)(void)) _echoTriangle_new,
-     (echoObject * (*)(void)) _echoRectangle_new,
-     (echoObject * (*)(void)) _echoTriMesh_new,
-     (echoObject * (*)(void)) _echoIsosurface_new,
-     (echoObject * (*)(void)) _echoAABBox_new,
-     (echoObject * (*)(void)) _echoSplit_new,
-     (echoObject * (*)(void)) _echoList_new,
-     (echoObject * (*)(void)) _echoInstance_new};
+static echoObject *(*ObjectNew[ECHO_TYPE_NUM])(void)
+  = {(echoObject * (*)(void)) Sphere_new,    (echoObject * (*)(void)) Cylinder_new,
+     (echoObject * (*)(void)) Superquad_new, (echoObject * (*)(void)) Cube_new,
+     (echoObject * (*)(void)) Triangle_new,  (echoObject * (*)(void)) Rectangle_new,
+     (echoObject * (*)(void)) TriMesh_new,   (echoObject * (*)(void)) Isosurface_new,
+     (echoObject * (*)(void)) AABBox_new,    (echoObject * (*)(void)) Split_new,
+     (echoObject * (*)(void)) List_new,      (echoObject * (*)(void)) Instance_new};
 
 echoObject * /* Biff: nope */
 echoObjectNew(echoScene *scene, signed char type) {
@@ -119,7 +112,7 @@ echoObjectNew(echoScene *scene, signed char type) {
   int idx;
 
   if (scene && AIR_IN_OP(echoTypeUnknown, type, echoTypeLast)) {
-    ret = _echoObjectNew[type]();
+    ret = ObjectNew[type]();
     idx = airArrayLenIncr(scene->catArr, 1);
     scene->cat[idx] = ret;
   }
@@ -137,26 +130,26 @@ echoObjectAdd(echoScene *scene, echoObject *obj) {
   return 0;
 }
 
-static echoObject *(*_echoObjectNix[ECHO_TYPE_NUM])(echoObject *) = {
-  (echoObject * (*)(echoObject *)) airFree,        /* echoTypeSphere */
-  (echoObject *(*)(echoObject *))airFree,          /* echoTypeCylinder */
-  (echoObject *(*)(echoObject *))airFree,          /* echoTypeSuperquad */
-  (echoObject *(*)(echoObject *))airFree,          /* echoTypeCube */
-  (echoObject *(*)(echoObject *))airFree,          /* echoTypeTriangle */
-  (echoObject *(*)(echoObject *))airFree,          /* echoTypeRectangle */
-  (echoObject *(*)(echoObject *))_echoTriMesh_nix, /* echoTypeTriMesh */
-  (echoObject *(*)(echoObject *))airFree,          /* echoTypeIsosurface */
-  (echoObject *(*)(echoObject *))airFree,          /* echoTypeAABBox */
-  (echoObject *(*)(echoObject *))airFree,          /* echoTypeSplit */
-  (echoObject *(*)(echoObject *))_echoList_nix,    /* echoTypeList */
-  (echoObject *(*)(echoObject *))airFree           /* echoTypeInstance */
+static echoObject *(*ObjectNix[ECHO_TYPE_NUM])(echoObject *) = {
+  (echoObject * (*)(echoObject *)) airFree,   /* echoTypeSphere */
+  (echoObject *(*)(echoObject *))airFree,     /* echoTypeCylinder */
+  (echoObject *(*)(echoObject *))airFree,     /* echoTypeSuperquad */
+  (echoObject *(*)(echoObject *))airFree,     /* echoTypeCube */
+  (echoObject *(*)(echoObject *))airFree,     /* echoTypeTriangle */
+  (echoObject *(*)(echoObject *))airFree,     /* echoTypeRectangle */
+  (echoObject *(*)(echoObject *))TriMesh_nix, /* echoTypeTriMesh */
+  (echoObject *(*)(echoObject *))airFree,     /* echoTypeIsosurface */
+  (echoObject *(*)(echoObject *))airFree,     /* echoTypeAABBox */
+  (echoObject *(*)(echoObject *))airFree,     /* echoTypeSplit */
+  (echoObject *(*)(echoObject *))List_nix,    /* echoTypeList */
+  (echoObject *(*)(echoObject *))airFree      /* echoTypeInstance */
 };
 
 echoObject * /* Biff: nope */
 echoObjectNix(echoObject *obj) {
 
   if (obj) {
-    _echoObjectNix[obj->type](obj);
+    ObjectNix[obj->type](obj);
   }
   return NULL;
 }

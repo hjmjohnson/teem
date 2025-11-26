@@ -35,7 +35,7 @@ probeIso(pullTask *task, pullPoint *point, unsigned int iter, int cond,
   static const char me[] = "probeIso";
 
   ELL_3V_COPY(point->pos, pos);  / * NB: not touching point->pos[3] * /
-  _pullPointHistAdd(point, cond, AIR_NAN);
+  pull__PointHistAdd(point, cond, AIR_NAN);
   if (pullProbe(task, point)) {
     biffAddf(PULL, "%s: on iter %u", me, iter);
     return 1;
@@ -114,7 +114,7 @@ constraintSatIso(pullTask *task, pullPoint *point, double stepMax, double constr
     step = step > 0 ? AIR_MIN(stepMax, step) : AIR_MAX(-stepMax, step);
     ELL_3V_SCALE_INCR(point->pos, hack * step, dir);
     PROBE(val, aval, grad);
-    _pullPointHistAdd(point, pullCondConstraintSatA, val);
+    pull__PointHistAdd(point, pullCondConstraintSatA, val);
     if (aval <= state[0]) {                      /* we're no further from the root */
       if (AIR_ABS(step) < stepMax * constrEps) { /* HEY stepMax*constrEps vs constrEps */
         /* we have converged! */
@@ -180,7 +180,7 @@ constraintSatLapl(pullTask *task, pullPoint *point, double stepMax, double const
     sgn = airSgn(val); /* lapl < 0 => downhill; lapl > 0 => uphill */
     ELL_3V_SCALE_INCR(point->pos, sgn * step, dir);
     PROBEG(val, grad);
-    _pullPointHistAdd(point, pullCondConstraintSatA, val);
+    pull__PointHistAdd(point, pullCondConstraintSatA, val);
     if (val * valLast < 0) {
       /* laplacian has changed sign; stop looking */
       break;
@@ -207,7 +207,7 @@ constraintSatLapl(pullTask *task, pullPoint *point, double stepMax, double const
     s = AIR_AFFINE(fa, 0, fb, a, b);
     ELL_3V_LERP(point->pos, s, posOld, posNew);
     PROBE(fs);
-    _pullPointHistAdd(point, pullCondConstraintSatB, 0.0);
+    pull__PointHistAdd(point, pullCondConstraintSatB, 0.0);
     if (0 == fs) {
       /* exactly nailed the zero, we're done. This actually happens! */
       printf("!%s: b lapl == 0!\n", me);
@@ -391,7 +391,7 @@ constraintSatHght(pullTask *task, pullPoint *point, int tang1Use, int tang2Use,
             task->pctx->voxelSizeSpace, constrEps);
   }
   PROBE(val, grad, hess, posproj, negproj);
-  _pullPointHistAdd(point, pullCondOld, val);
+  pull__PointHistAdd(point, pullCondOld, val);
   if (DEBUG) {
     PRINT("initial probe");
   }
@@ -470,7 +470,7 @@ constraintSatHght(pullTask *task, pullPoint *point, int tang1Use, int tang2Use,
         fprintf(stderr, "       (moved %g)\n", ELL_3V_LEN(_tmpv));
       }
       PROBE(val, grad, hess, posproj, negproj);
-      _pullPointHistAdd(point, pullCondConstraintSatA, val);
+      pull__PointHistAdd(point, pullCondConstraintSatA, val);
       if (DEBUG) {
         fprintf(stderr, "  (+) probed at (%g,%g,%g,%g)\n", point->pos[0], point->pos[1],
                 point->pos[2], point->pos[3]);
@@ -562,7 +562,7 @@ constraintSatHght(pullTask *task, pullPoint *point, int tang1Use, int tang2Use,
         fprintf(stderr, "       (moved %g)\n", ELL_3V_LEN(_tmpv));
       }
       PROBE(val, grad, hess, posproj, negproj);
-      _pullPointHistAdd(point, pullCondConstraintSatB, val);
+      pull__PointHistAdd(point, pullCondConstraintSatB, val);
       if (DEBUG) {
         fprintf(stderr, "  (-) probed at (%g,%g,%g,%g)\n", point->pos[0], point->pos[1],
                 point->pos[2], point->pos[3]);
@@ -601,9 +601,9 @@ constraintSatHght(pullTask *task, pullPoint *point, int tang1Use, int tang2Use,
   } else {
     *constrFailP = AIR_FALSE;
   }
-  _pullPointHistAdd(point,
-                    (*constrFailP ? pullCondConstraintFail : pullCondConstraintSuccess),
-                    AIR_NAN);
+  pull__PointHistAdd(point,
+                     (*constrFailP ? pullCondConstraintFail : pullCondConstraintSuccess),
+                     AIR_NAN);
   if (DEBUG) {
     printf("!%s: Finished %s: %s (%d)\n", me, *constrFailP ? "with failure" : "OK",
            *constrFailP ? airEnumStr(pullConstraintFail, *constrFailP) : "",
@@ -617,7 +617,7 @@ constraintSatHght(pullTask *task, pullPoint *point, int tang1Use, int tang2Use,
 #undef RESTORE
 
 double /* Biff: (private) nope */
-_pullSigma(const pullContext *pctx, const double pos[4]) {
+pull__Sigma(const pullContext *pctx, const double pos[4]) {
   double ret = 0;
 
   if (pos && pos[3]) {
@@ -634,10 +634,10 @@ _pullSigma(const pullContext *pctx, const double pos[4]) {
 ** This uses biff, but only for showstopper problems
 */
 int /* Biff: (private) 1 */
-_pullConstraintSatisfy(pullTask *task, pullPoint *point, double travelMax,
-                       /* output */
-                       int *constrFailP) {
-  static const char me[] = "_pullConstraintSatisfy";
+pull__ConstraintSatisfy(pullTask *task, pullPoint *point, double travelMax,
+                        /* output */
+                        int *constrFailP) {
+  static const char me[] = "pull__ConstraintSatisfy";
   double stepMax, constrEps;
   unsigned int iterMax;
   double pos3Orig[3], pos3Diff[3], travel;
@@ -647,7 +647,7 @@ _pullConstraintSatisfy(pullTask *task, pullPoint *point, double travelMax,
   stepMax = 10 * task->pctx->voxelSizeSpace;
   iterMax = task->pctx->iterParm.constraintMax;
   constrEps = task->pctx->voxelSizeSpace * task->pctx->sysParm.constraintStepMin;
-  /*           * (1 + 0.2*_pullSigma(task->pctx, point->pos)); */
+  /*           * (1 + 0.2*pull__Sigma(task->pctx, point->pos)); */
   if (DEBUG) {
     fprintf(stderr, "!%s(%u): hi ==== %g %g %g, stepMax = %g, iterMax = %u\n", me,
             point->idtag, point->pos[0], point->pos[1], point->pos[2], stepMax, iterMax);
@@ -726,7 +726,7 @@ _pullConstraintSatisfy(pullTask *task, pullPoint *point, double travelMax,
 #undef NORMALIZE
 
 /*
-** _pullConstraintTangent
+** pull__ConstraintTangent
 **
 ** eigenvectors (with non-zero eigenvalues) of output proj are
 ** (hopefully) approximate tangents to the manifold to which particles
@@ -737,9 +737,9 @@ _pullConstraintSatisfy(pullTask *task, pullPoint *point, double travelMax,
 ** this can assume that probe() has just been called
 */
 void
-_pullConstraintTangent(pullTask *task, pullPoint *point,
-                       /* output */
-                       double proj[9]) {
+pull__ConstraintTangent(pullTask *task, pullPoint *point,
+                        /* output */
+                        double proj[9]) {
   double vec[4], nvec[3], outer[9], len, posproj[9], negproj[9];
 
   ELL_3M_IDENTITY_SET(proj); /* NOTE: we are starting with identity . . . */
@@ -783,8 +783,8 @@ _pullConstraintTangent(pullTask *task, pullPoint *point,
 ** a -1 return value represents a biff-able error
 */
 int /* Biff: (private) -1 */
-_pullConstraintDim(const pullContext *pctx) {
-  static const char me[] = "_pullConstraintDim";
+pull__ConstraintDim(const pullContext *pctx) {
+  static const char me[] = "pull__ConstraintDim";
   int ret, t1, t2, nt1, nt2;
 
   switch (pctx->constraint) {

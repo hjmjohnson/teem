@@ -21,7 +21,7 @@
 #include "privateTen.h"
 
 #define INFO "Calculate B-matrix given gradient directions"
-static const char *_tend_bmatInfoL
+static const char *bmatInfoL
   = (INFO ", assuming no diffusion weighting from the other imaging gradients. "
           "The input is a 3-by-N array of floats or doubles, each row being "
           "one of the gradient directions used for diffusion-weighted imaging. "
@@ -34,7 +34,7 @@ static const char *_tend_bmatInfoL
           "elements NOT pre-multiplied by 2.");
 
 static int
-tend_bmatMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+bmatMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -49,7 +49,7 @@ tend_bmatMain(int argc, const char **argv, const char *me, const hestParm *hparm
 
   mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_JUSTPARSE(_tend_bmatInfoL);
+  USAGE_JUSTPARSE(bmatInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
   nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
@@ -70,4 +70,4 @@ tend_bmatMain(int argc, const char **argv, const char *me, const hestParm *hparm
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(bmat, INFO);
+MY_TEND_CMD(bmat, INFO);

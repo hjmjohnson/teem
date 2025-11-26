@@ -73,6 +73,7 @@ typedef unsigned int uint; /* uint is just more concise */
 #  define ECHO_POS_EPS    DBL_EPSILON
 #endif
 
+// Yes, these break the convention of starting with MY_
 #define OBJECT(obj)    ((echoObject *)obj)
 #define SPLIT(obj)     ((echoSplit *)obj)
 #define LIST(obj)      ((echoList *)obj)
@@ -85,38 +86,29 @@ typedef unsigned int uint; /* uint is just more concise */
 #define TRIANGLE(obj)  ((echoTriangle *)obj)
 #define INSTANCE(obj)  ((echoInstance *)obj)
 
-#define _ECHO_REFLECT(refl, norm, view, tmp)                                            \
+#define MY_ECHO_REFLECT(refl, norm, view, tmp)                                          \
   (tmp) = 2 * ELL_3V_DOT((view), (norm));                                               \
   ELL_3V_SCALE_ADD2((refl), -1.0, (view), (tmp), (norm))
 
-#define ECHO_NEW(TYPE) (echoObject##TYPE *)echoNew(echoObject##Type)
-
 /* methodsEcho.c */
-extern void _echoSceneLightAdd(echoScene *scene, echoObject *obj);
-extern void _echoSceneNrrdAdd(echoScene *scene, Nrrd *nrrd);
+extern void echo__SceneLightAdd(echoScene *scene, echoObject *obj);
+extern void echo__SceneNrrdAdd(echoScene *scene, Nrrd *nrrd);
 
 /* intx.c */
-#define RAYINTX_ARGS(TYPE)                                                              \
+#define MY_RAYINTX_ARGS(TYPE)                                                           \
   echoIntx *intx, echoRay *ray, echo##TYPE *obj, echoRTParm *parm,                      \
     echoThreadState *tstate
-typedef int (*_echoRayIntx_t)(RAYINTX_ARGS(Object));
-typedef void (*_echoRayIntxUV_t)(echoIntx *intx);
-extern const _echoRayIntxUV_t _echoRayIntxUV[/* object type idx */];
-extern int _echoRayIntx_CubeSolid(echoPos_t *tminP, echoPos_t *tmaxP, echoPos_t xmin,
-                                  echoPos_t xmax, echoPos_t ymin, echoPos_t ymax,
-                                  echoPos_t zmin, echoPos_t zmax, echoRay *ray);
+typedef void (*echo__RayIntxUV_t)(echoIntx *intx);
+extern const echo__RayIntxUV_t echo__RayIntxUV[/* object type idx */];
+extern int echo__RayIntx_CubeSolid(echoPos_t *tminP, echoPos_t *tmaxP, echoPos_t xmin,
+                                   echoPos_t xmax, echoPos_t ymin, echoPos_t ymax,
+                                   echoPos_t zmin, echoPos_t zmax, echoRay *ray);
 
 /* sqd.c */
-extern int _echoRayIntx_Superquad(RAYINTX_ARGS(Superquad));
+extern int echo__RayIntx_Superquad(MY_RAYINTX_ARGS(Superquad));
 
 /* color.c */
-extern char _echoBuff[AIR_STRLEN_SMALL + 1];
-extern char *_echoDot(uint depth);
-#define INTXCOLOR_ARGS                                                                  \
-  echoCol_t rgba[4], echoIntx *intx, echoScene *scene, echoRTParm *parm,                \
-    echoThreadState *tstate
-typedef void (*_echoIntxColor_t)(INTXCOLOR_ARGS);
-extern _echoIntxColor_t const _echoIntxColor[/* matter idx */];
+extern char *echo__Dot(uint depth);
 
 #ifdef __cplusplus
 }

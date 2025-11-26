@@ -22,7 +22,7 @@
 
 /* clang-format off */
 static const char *
-_gage2VecStr[] = {
+g2VecStr[] = {
   "(unknown gage2Vec)",
   "vector",
   "vector0",
@@ -31,7 +31,7 @@ _gage2VecStr[] = {
 };
 
 static const char *
-_gage2VecDesc[] = {
+g2VecDesc[] = {
   "unknown gage2Vec query",
   "component-wise-interpolated vector",
   "vector[0]",
@@ -40,7 +40,7 @@ _gage2VecDesc[] = {
 };
 
 static const int
-_gage2VecVal[] = {
+g2VecVal[] = {
   gage2VecUnknown,
   gage2VecVector,
   gage2VecVector0,
@@ -54,7 +54,7 @@ _gage2VecVal[] = {
 #define GV_L   gage2VecLength
 
 static const char *
-_gage2VecStrEqv[] = {
+g2VecStrEqv[] = {
   "v", "vector", "vec",
   "v0", "vector0", "vec0",
   "v1", "vector1", "vec1",
@@ -63,7 +63,7 @@ _gage2VecStrEqv[] = {
 };
 
 static const int
-_gage2VecValEqv[] = {
+g2VecValEqv[] = {
   GV_V, GV_V, GV_V,
   GV_V0, GV_V0, GV_V0,
   GV_V1, GV_V1, GV_V1,
@@ -71,19 +71,18 @@ _gage2VecValEqv[] = {
 };
 
 static const airEnum
-_gage2Vec = {
+g2Vec_ae = {
   "gage2Vec",
   GAGE_2VEC_ITEM_MAX,
-  _gage2VecStr, _gage2VecVal,
-  _gage2VecDesc,
-  _gage2VecStrEqv, _gage2VecValEqv,
+  g2VecStr, g2VecVal,
+  g2VecDesc,
+  g2VecStrEqv, g2VecValEqv,
   AIR_FALSE
 };
-const airEnum *const
-gage2Vec = &_gage2Vec;
+const airEnum *const gage2Vec = &g2Vec_ae;
 
 static gageItemEntry
-_gage2VecTable[GAGE_2VEC_ITEM_MAX+1] = {
+g2VecTable[GAGE_2VEC_ITEM_MAX+1] = {
   /* enum value         len, deriv, prereqs,                                                  parent item, parent index, needData */
   {gage2VecUnknown,        0,  0,   {0},                                                                0,      0,       AIR_FALSE},
   {gage2VecVector,         2,  0,   {0},                                                                0,      0,       AIR_FALSE},
@@ -93,8 +92,8 @@ _gage2VecTable[GAGE_2VEC_ITEM_MAX+1] = {
 };
 
 static void
-_gage2VecFilter(gageContext *ctx, gagePerVolume *pvl) {
-  static const char me[] = "_gage2VecFilter";
+g2VecFilter(gageContext *ctx, gagePerVolume *pvl) {
+  static const char me[] = "g2VecFilter";
   double *fw00, *fw11, *fw22, *vec;
   int fd;
   gageScl3PFilter_t *filter[5] = {NULL, gageScl3PFilter2, gageScl3PFilter4,
@@ -137,8 +136,8 @@ _gage2VecFilter(gageContext *ctx, gagePerVolume *pvl) {
 }
 
 static void
-_gage2VecAnswer(gageContext *ctx, gagePerVolume *pvl) {
-  /* static const char me[] = "_gage2VecAnswer"; */
+g2VecAnswer(gageContext *ctx, gagePerVolume *pvl) {
+  /* static const char me[] = "g2VecAnswer"; */
   double *vecAns;
   /* int asw; */
 
@@ -164,28 +163,27 @@ _gage2VecAnswer(gageContext *ctx, gagePerVolume *pvl) {
 }
 
 static void
-_gage2VecIv3Print (FILE *file, gageContext *ctx, gagePerVolume *pvl) {
+g2VecIv3Print (FILE *file, gageContext *ctx, gagePerVolume *pvl) {
 
   AIR_UNUSED(ctx);
   AIR_UNUSED(pvl);
-  fprintf(file, "_gage2VecIv3Print() not implemented\n");
+  fprintf(file, "g2VecIv3Print() not implemented\n");
 }
 
 static gageKind
-_gageKind2Vec = {
+twovec_gk = {
   AIR_FALSE, /* statically allocated */
   "2vector",
-  &_gage2Vec,
+  &g2Vec_ae,
   1, /* baseDim */
   2, /* valLen */
   GAGE_2VEC_ITEM_MAX,
-  _gage2VecTable,
-  _gage2VecIv3Print,
-  _gage2VecFilter,
-  _gage2VecAnswer,
+  g2VecTable,
+  g2VecIv3Print,
+  g2VecFilter,
+  g2VecAnswer,
   NULL, NULL, NULL, NULL,
   NULL
 };
-gageKind *const
-gageKind2Vec = &_gageKind2Vec;
+gageKind *const gageKind2Vec = &twovec_gk;
 /* clang-format on */

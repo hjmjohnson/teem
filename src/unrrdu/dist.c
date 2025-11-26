@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Euclidean distance transform"
-static const char *_unrrdu_distInfoL
+static const char *unu_distInfoL
   = (INFO ". Based on \"Distance Transforms of Sampled Functions\" by "
           "Pedro F. Felzenszwalb and Daniel P. Huttenlocher, "
           "Cornell Computing and Information Science TR2004-1963. "
@@ -32,7 +32,7 @@ static const char *_unrrdu_distInfoL
           "* Uses nrrdDistanceL2 or nrrdDistanceL2Signed");
 
 static int
-unrrdu_distMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_distMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   double thresh, bias;
   hestOptAdd_1_Double(&hopt, "th,thresh", "val", &thresh, NULL,
@@ -52,12 +52,12 @@ unrrdu_distMain(int argc, const char **argv, const char *me, const hestParm *hpa
                   "By default (not using this option), values above threshold "
                   "are considered interior. ");
   Nrrd *nin;
-  OPT_ADD_NIN(nin, "input nrrd");
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for no hparm modification)
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_distInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_distInfoL);
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
@@ -89,10 +89,10 @@ unrrdu_distMain(int argc, const char **argv, const char *me, const hestParm *hpa
     return 1;
   }
 
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(dist, INFO);
+MY_UNRRDU_CMD(dist, INFO);

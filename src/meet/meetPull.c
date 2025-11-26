@@ -246,8 +246,8 @@ meetPullVolParse(meetPullVol *mpv, const char *_str) {
 }
 
 static int
-meetHestPullVolParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
-  static const char me[] = "meetHestPullVolParse";
+mhPullVolParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
+  static const char me[] = "mhPullVolParse";
   meetPullVol *mpv, **mpvP;
   airArray *mop;
 
@@ -305,14 +305,14 @@ meetPullVolNix(meetPullVol *mpv) {
 }
 AIR_MOPPER(meetPullVolNix)
 
-static const hestCB _meetHestPullVol = {
+static const hestCB mhPullVol_hcb = {
   sizeof(meetPullVol *),
   "meetPullVol",
-  meetHestPullVolParse,
+  mhPullVolParse,
   meetPullVolNix_mop,
 };
 
-const hestCB *const meetHestPullVol = &_meetHestPullVol;
+const hestCB *const meetHestPullVol = &mhPullVol_hcb;
 
 /*
 ******** meetPullVolLeechable
@@ -391,7 +391,7 @@ meetPullVolLeechable(const meetPullVol *lchr, const meetPullVol *orig, int *can,
 }
 
 static void
-meetPullVolLeech(meetPullVol *vol, const meetPullVol *volPrev) {
+pullVolLeech(meetPullVol *vol, const meetPullVol *volPrev) {
 
   if (vol && volPrev) {
     vol->nin = volPrev->nin;
@@ -505,7 +505,7 @@ meetPullVolLoadMulti(meetPullVol **mpv, unsigned int mpvNum, char *cachePath,
         return 1;
       }
       if (leechable) {
-        meetPullVolLeech(vol, mpv[pvi]);
+        pullVolLeech(vol, mpv[pvi]);
         break; /* prevent a chain of leeching */
       } else {
         if (verbose) {
@@ -745,8 +745,8 @@ meetPullInfoParse(meetPullInfo *minf, const char *_str) {
 }
 
 static int
-meetHestPullInfoParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
-  static const char me[] = "meetHestPullInfoParse";
+mhPullInfoParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
+  static const char me[] = "mhPullInfoParse";
   airArray *mop;
   meetPullInfo **minfP, *minf;
 
@@ -770,10 +770,10 @@ meetHestPullInfoParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1])
   return 0;
 }
 
-static const hestCB _meetHestPullInfo = {sizeof(meetPullInfo *), "meetPullInfo",
-                                         meetHestPullInfoParse, meetPullInfoNix_mop};
+static const hestCB mhPullInfo_hcb = {sizeof(meetPullInfo *), "meetPullInfo",
+                                      mhPullInfoParse, meetPullInfoNix_mop};
 
-const hestCB *const meetHestPullInfo = &_meetHestPullInfo;
+const hestCB *const meetHestPullInfo = &mhPullInfo_hcb;
 
 int /* Biff: 1 */
 meetPullInfoAddMulti(pullContext *pctx, meetPullInfo **minf, unsigned int minfNum) {

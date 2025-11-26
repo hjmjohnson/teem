@@ -82,13 +82,13 @@ pullVolumeNix(pullVolume *vol) {
 ** ...................
 */
 static int /* Biff: 1 */
-_pullVolumeSet(const pullContext *pctx, int taskCopy, pullVolume *vol,
-               const gageKind *kind, int verbose, const char *name,
-               const Nrrd *ninSingle, const Nrrd *const *ninScale, double *scalePos,
-               unsigned int ninNum, int scaleDerivNorm, double scaleDerivNormBias,
-               const NrrdKernelSpec *ksp00, const NrrdKernelSpec *ksp11,
-               const NrrdKernelSpec *ksp22, const NrrdKernelSpec *kspSS) {
-  static const char me[] = "_pullVolumeSet";
+volumeSet(const pullContext *pctx, int taskCopy, pullVolume *vol, const gageKind *kind,
+          int verbose, const char *name, const Nrrd *ninSingle,
+          const Nrrd *const *ninScale, double *scalePos, unsigned int ninNum,
+          int scaleDerivNorm, double scaleDerivNormBias, const NrrdKernelSpec *ksp00,
+          const NrrdKernelSpec *ksp11, const NrrdKernelSpec *ksp22,
+          const NrrdKernelSpec *kspSS) {
+  static const char me[] = "volumeSet";
   int E;
   unsigned int vi;
 
@@ -214,8 +214,8 @@ pullVolumeSingleAdd(pullContext *pctx, const gageKind *kind, char *name, const N
   pullVolume *vol;
 
   vol = pullVolumeNew();
-  if (_pullVolumeSet(pctx, AIR_FALSE /* taskCopy */, vol, kind, pctx->verbose, name, nin,
-                     NULL, NULL, 0, AIR_FALSE, 0.0, ksp00, ksp11, ksp22, NULL)) {
+  if (volumeSet(pctx, AIR_FALSE /* taskCopy */, vol, kind, pctx->verbose, name, nin,
+                NULL, NULL, 0, AIR_FALSE, 0.0, ksp00, ksp11, ksp22, NULL)) {
     biffAddf(PULL, "%s: trouble", me);
     return 1;
   }
@@ -250,9 +250,9 @@ pullVolumeStackAdd(pullContext *pctx,
   pullVolume *vol;
 
   vol = pullVolumeNew();
-  if (_pullVolumeSet(pctx, AIR_FALSE /* taskCopy */, vol, kind, pctx->verbose, name, nin,
-                     ninSS, scalePos, ninNum, scaleDerivNorm, scaleDerivNormBias, ksp00,
-                     ksp11, ksp22, kspSS)) {
+  if (volumeSet(pctx, AIR_FALSE /* taskCopy */, vol, kind, pctx->verbose, name, nin,
+                ninSS, scalePos, ninNum, scaleDerivNorm, scaleDerivNormBias, ksp00,
+                ksp11, ksp22, kspSS)) {
     biffAddf(PULL, "%s: trouble", me);
     return 1;
   }
@@ -266,22 +266,21 @@ pullVolumeStackAdd(pullContext *pctx,
 ** this is only used to create pullVolumes for the pullTasks
 */
 pullVolume * /* Biff: (private) NULL */
-_pullVolumeCopy(const pullContext *pctx, const pullVolume *volOrig) {
-  static const char me[] = "_pullVolumeCopy";
+pull__VolumeCopy(const pullContext *pctx, const pullVolume *volOrig) {
+  static const char me[] = "pull__VolumeCopy";
   pullVolume *volNew;
 
   volNew = pullVolumeNew();
-  if (_pullVolumeSet(pctx, AIR_TRUE /* taskCopy */, volNew, volOrig->kind,
-                     volOrig->verbose, volOrig->name, volOrig->ninSingle,
-                     volOrig->ninScale, volOrig->scalePos, volOrig->scaleNum,
-                     volOrig->scaleDerivNorm, volOrig->scaleDerivNormBias,
-                     volOrig->ksp00, volOrig->ksp11, volOrig->ksp22, volOrig->kspSS)) {
+  if (volumeSet(pctx, AIR_TRUE /* taskCopy */, volNew, volOrig->kind, volOrig->verbose,
+                volOrig->name, volOrig->ninSingle, volOrig->ninScale, volOrig->scalePos,
+                volOrig->scaleNum, volOrig->scaleDerivNorm, volOrig->scaleDerivNormBias,
+                volOrig->ksp00, volOrig->ksp11, volOrig->ksp22, volOrig->kspSS)) {
     biffAddf(PULL, "%s: trouble creating new volume", me);
     return NULL;
   }
   volNew->seedOnly = volOrig->seedOnly;
   volNew->forSeedPreThresh = volOrig->forSeedPreThresh;
-  /* _pullVolumeSet just created a new (per-task) gageContext, and
+  /* volumeSet just created a new (per-task) gageContext, and
      it will not learn the items from the info specs, so we have to
      add query here */
   if (gageQuerySet(volNew->gctx, volNew->gpvl, volOrig->gpvl->query)
@@ -293,7 +292,7 @@ _pullVolumeCopy(const pullContext *pctx, const pullVolume *volOrig) {
 }
 
 int /* Biff: (private) nope */
-_pullInsideBBox(pullContext *pctx, double pos[4]) {
+pull__InsideBBox(pullContext *pctx, double pos[4]) {
 
   return (AIR_IN_CL(pctx->bboxMin[0], pos[0], pctx->bboxMax[0])
           && AIR_IN_CL(pctx->bboxMin[1], pos[1], pctx->bboxMax[1])
@@ -309,8 +308,8 @@ _pullInsideBBox(pullContext *pctx, double pos[4]) {
 ** pctx->bboxMax  (same)
 */
 int /* Biff: (private) 1 */
-_pullVolumeSetup(pullContext *pctx) {
-  static const char me[] = "_pullVolumeSetup";
+pull__VolumeSetup(pullContext *pctx) {
+  static const char me[] = "pull__VolumeSetup";
   unsigned int ii, numScale;
 
   /* first see if there are any gage problems */
@@ -445,8 +444,8 @@ _pullVolumeSetup(pullContext *pctx) {
 ** uses biff, returns UINT_MAX in case of error
 */
 unsigned int /* Biff: (private) UINT_MAX */
-_pullVolumeIndex(const pullContext *pctx, const char *volName) {
-  static const char me[] = "_pullVolumeIndex";
+pull__VolumeIndex(const pullContext *pctx, const char *volName) {
+  static const char me[] = "pull__VolumeIndex";
   unsigned int vi;
 
   if (!(pctx && volName)) {
@@ -474,7 +473,7 @@ pullVolumeLookup(const pullContext *pctx, const char *volName) {
   static const char me[] = "pullVolumeLookup";
   unsigned int vi;
 
-  vi = _pullVolumeIndex(pctx, volName);
+  vi = pull__VolumeIndex(pctx, volName);
   if (UINT_MAX == vi) {
     biffAddf(PULL, "%s: trouble looking up \"%s\"", me, volName);
     return NULL;

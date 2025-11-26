@@ -21,13 +21,13 @@
 #include "privateTen.h"
 
 #define INFO "Generate a pretty synthetic DT volume"
-static const char *_tend_satinInfoL
+static const char *satinInfoL
   = (INFO ".  The surface of a sphere or torus is covered with either linear or "
           "planar anisotropic tensors, or somewhere in between.");
 
 static void
-tend_satinSphereEigen(float *eval, float *evec, float x, float y, float z, float parm,
-                      float mina, float maxa, float thick, float bnd, float evsc) {
+satinSphereEigen(float *eval, float *evec, float x, float y, float z, float parm,
+                 float mina, float maxa, float thick, float bnd, float evsc) {
   float aniso, bound1, bound2, r, norm, tmp[3];
 
   r = AIR_FLOAT(sqrt(x * x + y * y + z * z));
@@ -63,8 +63,8 @@ tend_satinSphereEigen(float *eval, float *evec, float x, float y, float z, float
 }
 
 static void
-tend_satinTorusEigen(float *eval, float *evec, float x, float y, float z, float parm,
-                     float mina, float maxa, float thick, float bnd, float evsc) {
+satinTorusEigen(float *eval, float *evec, float x, float y, float z, float parm,
+                float mina, float maxa, float thick, float bnd, float evsc) {
   float bound, R, r, norm, out[3], up[3], aniso;
 
   thick *= 2;
@@ -104,10 +104,9 @@ tend_satinTorusEigen(float *eval, float *evec, float x, float y, float z, float 
 }
 
 static int /* Biff: 1 */
-tend_satinGen(Nrrd *nout, float parm, float mina, float maxa, unsigned int wsize,
-              float thick, float scaling, float bnd, float bndRm, float evsc,
-              int torus) {
-  static const char me[] = "tend_satinGen";
+satinGen(Nrrd *nout, float parm, float mina, float maxa, unsigned int wsize, float thick,
+         float scaling, float bnd, float bndRm, float evsc, int torus) {
+  static const char me[] = "satinGen";
   Nrrd *nconf, *neval, *nevec;
   float *conf, *eval, *evec;
   size_t xi, yi, zi, size[3];
@@ -147,13 +146,13 @@ tend_satinGen(Nrrd *nout, float parm, float mina, float maxa, unsigned int wsize
         if (torus) {
           float aff;
           aff = AIR_FLOAT(AIR_AFFINE(0, yi, size[1] - 1, 0, 1));
-          tend_satinTorusEigen(eval, evec, x, y, z, parm, mina, maxa, thick,
-                               bnd + bndRm * aff, evsc);
+          satinTorusEigen(eval, evec, x, y, z, parm, mina, maxa, thick,
+                          bnd + bndRm * aff, evsc);
         } else {
           float aff;
           aff = AIR_FLOAT(AIR_AFFINE(0, yi, size[1] - 1, 0, 1));
-          tend_satinSphereEigen(eval, evec, x, y, z, parm, mina, maxa, thick,
-                                bnd + bndRm * aff, evsc);
+          satinSphereEigen(eval, evec, x, y, z, parm, mina, maxa, thick,
+                           bnd + bndRm * aff, evsc);
         }
         conf += 1;
         eval += 3;
@@ -178,7 +177,7 @@ tend_satinGen(Nrrd *nout, float parm, float mina, float maxa, unsigned int wsize
 }
 
 static int
-tend_satinMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+satinMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -226,14 +225,13 @@ tend_satinMain(int argc, const char **argv, const char *me, const hestParm *hpar
 
   mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_JUSTPARSE(_tend_satinInfoL);
+  USAGE_JUSTPARSE(satinInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
-  if (tend_satinGen(nout, parm, mina, maxa, wsize, thick, scaling, bnd, bndRm, evsc,
-                    torus)) {
+  if (satinGen(nout, parm, mina, maxa, wsize, thick, scaling, bnd, bndRm, evsc, torus)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble making volume:\n%s\n", me, err);
     airMopError(mop);
@@ -301,5 +299,4 @@ tend_satinMain(int argc, const char **argv, const char *me, const hestParm *hpar
   airMopOkay(mop);
   return 0;
 }
-/* TEND_CMD(satin, INFO); */
-const unrrduCmd tend_satinCmd = {"satin", INFO, tend_satinMain, AIR_FALSE};
+MY_TEND_CMD(satin, INFO);

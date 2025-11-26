@@ -21,12 +21,11 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Remap CC values down to lowest contiguous values"
-static const char *_unrrdu_ccsettleInfoL = (INFO ".\n "
-                                                 "* Uses nrrdCCSettle");
+static const char *unu_ccsettleInfoL = (INFO ".\n "
+                                             "* Uses nrrdCCSettle");
 
 static int
-unrrdu_ccsettleMain(int argc, const char **argv, const char *me,
-                    const hestParm *_hparm) {
+unu_ccsettleMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
   Nrrd *nin;
   hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-",
@@ -37,12 +36,12 @@ unrrdu_ccsettleMain(int argc, const char **argv, const char *me,
                       "from new (settled) values to old values, in the form of a "
                       "1-D lookup table");
   char *out;
-  OPT_ADD_NOUT(out, "output nrrd");
+  MY_OPT_ADD_NOUT(out, "output nrrd");
 
   // (boilerplate for YES some hparm modification)
   hestParm *hparm = hestParmCopy(_hparm);
   hparm->noArgsIsNoProblem = AIR_TRUE; // thanks to nrrdHestNrrdNoTTY
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_ccsettleInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_ccsettleInfoL);
   airArray *mop = unrrduMopNew(hopt, hparm);
   char *err;
 
@@ -59,12 +58,12 @@ unrrdu_ccsettleMain(int argc, const char **argv, const char *me,
   }
 
   if (airStrlen(valS)) {
-    SAVE(valS, nval, NULL);
+    MY_SAVE(valS, nval, NULL);
   }
-  SAVE(out, nout, NULL);
+  MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
   return 0;
 }
 
-UNRRDU_CMD(ccsettle, INFO);
+MY_UNRRDU_CMD(ccsettle, INFO);

@@ -21,10 +21,10 @@
 #include "privateTen.h"
 
 #define INFO "Describe everything about one sample in a DT volume"
-static const char *_tend_pointInfoL = (INFO ". ");
+static const char *pointInfoL = (INFO ". ");
 
 static int
-tend_pointMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+pointMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   int pret;
   hestOpt *hopt = NULL;
   char *perr, *err;
@@ -42,7 +42,7 @@ tend_pointMain(int argc, const char **argv, const char *me, const hestParm *hpar
 
   mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(_tend_pointInfoL);
+  USAGE_PARSE(pointInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   if (tenTensorCheck(nin, nrrdTypeFloat, AIR_TRUE, AIR_TRUE)) {
@@ -103,4 +103,4 @@ tend_pointMain(int argc, const char **argv, const char *me, const hestParm *hpar
   airMopOkay(mop);
   return 0;
 }
-TEND_CMD(point, INFO);
+MY_TEND_CMD(point, INFO);

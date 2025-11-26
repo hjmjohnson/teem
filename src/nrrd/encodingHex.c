@@ -20,8 +20,8 @@
 #include "nrrd.h"
 #include "privateNrrd.h"
 
-static const int _nrrdWriteHexTable[16] = {'0', '1', '2', '3', '4', '5', '6', '7',
-                                           '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+static const int writeHexTable[16] = {'0', '1', '2', '3', '4', '5', '6', '7',
+                                      '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
 /*
 ** -2: not allowed, error
@@ -30,7 +30,7 @@ static const int _nrrdWriteHexTable[16] = {'0', '1', '2', '3', '4', '5', '6', '7
 */
 /* clang-format off */
 static const int
-_nrrdReadHexTable[128] = {
+readHexTable[128] = {
 /* 0   1   2   3   4   5   6   7   8   9 */
   -2, -2, -2, -2, -2, -2, -2, -2, -2, -1,  /*   0 */
   -1, -1, -1, -1, -2, -2, -2, -2, -2, -2,  /*  10 */
@@ -49,15 +49,14 @@ _nrrdReadHexTable[128] = {
 /* clang-format on */
 
 static int
-_nrrdEncodingHex_available(void) {
+encodingHex_available(void) {
 
   return AIR_TRUE;
 }
 
 static int /* Biff: 1 */
-_nrrdEncodingHex_read(FILE *file, void *_data, size_t elNum, Nrrd *nrrd,
-                      NrrdIoState *nio) {
-  static const char me[] = "_nrrdEncodingHex_read";
+encodingHex_read(FILE *file, void *_data, size_t elNum, Nrrd *nrrd, NrrdIoState *nio) {
+  static const char me[] = "encodingHex_read";
   size_t nibIdx, nibNum;
   unsigned char *data;
   int car = 0, nib;
@@ -74,7 +73,7 @@ _nrrdEncodingHex_read(FILE *file, void *_data, size_t elNum, Nrrd *nrrd,
     unsigned char nibshift;
     car = fgetc(file);
     if (EOF == car) break;
-    nib = _nrrdReadHexTable[car & 127];
+    nib = readHexTable[car & 127];
     if (-2 == nib) {
       /* not a valid hex character */
       break;
@@ -109,9 +108,9 @@ _nrrdEncodingHex_read(FILE *file, void *_data, size_t elNum, Nrrd *nrrd,
 }
 
 static int /* Biff: 1 */
-_nrrdEncodingHex_write(FILE *file, const void *_data, size_t elNum, const Nrrd *nrrd,
-                       NrrdIoState *nio) {
-  static const char me[] = "_nrrdEncodingHex_write";
+encodingHex_write(FILE *file, const void *_data, size_t elNum, const Nrrd *nrrd,
+                  NrrdIoState *nio) {
+  static const char me[] = "encodingHex_write";
   const unsigned char *data;
   size_t byteIdx, byteNum;
   unsigned int bytesPerLine;
@@ -125,8 +124,7 @@ _nrrdEncodingHex_write(FILE *file, const void *_data, size_t elNum, const Nrrd *
   data = AIR_CAST(const unsigned char *, _data);
   byteNum = elNum * nrrdElementSize(nrrd);
   for (byteIdx = 0; byteIdx < byteNum; byteIdx++) {
-    fprintf(file, "%c%c", _nrrdWriteHexTable[(*data) >> 4],
-            _nrrdWriteHexTable[(*data) & 15]);
+    fprintf(file, "%c%c", writeHexTable[(*data) >> 4], writeHexTable[(*data) & 15]);
     if (bytesPerLine - 1 == byteIdx % bytesPerLine) {
       fprintf(file, "\n");
     }
@@ -137,12 +135,12 @@ _nrrdEncodingHex_write(FILE *file, const void *_data, size_t elNum, const Nrrd *
   return 0;
 }
 
-const NrrdEncoding _nrrdEncodingHex = {"hex",     /* name */
-                                       "hex",     /* suffix */
-                                       AIR_TRUE,  /* endianMatters */
-                                       AIR_FALSE, /* isCompression */
-                                       _nrrdEncodingHex_available,
-                                       _nrrdEncodingHex_read,
-                                       _nrrdEncodingHex_write};
+const NrrdEncoding nrrd__EncodingHex = {"hex",     /* name */
+                                        "hex",     /* suffix */
+                                        AIR_TRUE,  /* endianMatters */
+                                        AIR_FALSE, /* isCompression */
+                                        encodingHex_available,
+                                        encodingHex_read,
+                                        encodingHex_write};
 
-const NrrdEncoding *const nrrdEncodingHex = &_nrrdEncodingHex;
+const NrrdEncoding *const nrrdEncodingHex = &nrrd__EncodingHex;

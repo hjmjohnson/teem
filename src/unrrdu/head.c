@@ -21,7 +21,7 @@
 #include "privateUnrrdu.h"
 
 #define INFO "Print header of one or more NRRD files"
-static const char *_unrrdu_headInfoL
+static const char *unu_headInfoL
   = (INFO ".  The value of this is simply to print the contents of nrrd "
           "headers, and without any attempt to parse the header (see \"unu describe\" "
           "for something that loads and then describes the Nrrd). \"unu head\" avoids "
@@ -31,7 +31,7 @@ static const char *_unrrdu_headInfoL
           "* Uses nrrdOneLine");
 
 static int /* Biff: 1 */
-unrrdu_headDoit(const char *me, NrrdIoState *nio, const char *inS, FILE *fout) {
+headDoit(const char *me, NrrdIoState *nio, const char *inS, FILE *fout) {
   if (!strcmp("-", inS) && isatty(STDIN_FILENO)) {
     biffAddf(me, "declining to try reading Nrrd from stdin as tty (terminal)");
     return 1;
@@ -81,7 +81,7 @@ unrrdu_headDoit(const char *me, NrrdIoState *nio, const char *inS, FILE *fout) {
 }
 
 static int
-unrrdu_headMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
+unu_headMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
   char **inS;
   uint ninLen;
@@ -91,7 +91,7 @@ unrrdu_headMain(int argc, const char **argv, const char *me, const hestParm *_hp
   // (boilerplate for YES some hparm modification)
   hestParm *hparm = hestParmCopy(_hparm);
   hparm->noArgsIsNoProblem = AIR_TRUE;
-  hestParseOrExit(hopt, argc, argv, hparm, me, _unrrdu_headInfoL);
+  hestParseOrExit(hopt, argc, argv, hparm, me, unu_headInfoL);
   airArray *mop = unrrduMopNew(hopt, hparm);
   char *err;
 
@@ -102,7 +102,7 @@ unrrdu_headMain(int argc, const char **argv, const char *me, const hestParm *_hp
     if (ninLen > 1) {
       fprintf(stdout, "==> %s <==\n", inS[ni]);
     }
-    if (unrrdu_headDoit(me, nio, inS[ni], stdout)) {
+    if (headDoit(me, nio, inS[ni], stdout)) {
       airMopAdd(mop, err = biffGetDone(me), airFree, airMopAlways);
       fprintf(stderr, "%s: trouble reading from \"%s\":\n%s", me, inS[ni], err);
       /* continue working on the remaining files */
@@ -127,4 +127,4 @@ unrrdu_headMain(int argc, const char **argv, const char *me, const hestParm *_hp
   return 0;
 }
 
-UNRRDU_CMD(head, INFO);
+MY_UNRRDU_CMD(head, INFO);

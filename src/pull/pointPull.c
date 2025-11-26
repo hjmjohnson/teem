@@ -101,15 +101,15 @@ AIR_MOPPER(pullPointNix)
 
 #if PULL_PHIST
 void
-_pullPointHistInit(pullPoint *point) {
+pull__PointHistInit(pullPoint *point) {
 
   airArrayLenSet(point->phistArr, 0);
   return;
 }
 
 void
-_pullPointHistAdd(pullPoint *point, int cond, double val) {
-  static const char me[] = "_pullPointHistAdd";
+pull__PointHistAdd(pullPoint *point, int cond, double val) {
+  static const char me[] = "pull__PointHistAdd";
   unsigned int phistIdx;
 
   phistIdx = airArrayLenIncr(point->phistArr, 1);
@@ -161,7 +161,7 @@ pullPointNumber(const pullContext *pctx) {
 }
 
 double /* Biff: (private) nope */
-_pullEnergyTotal(const pullContext *pctx) {
+pull__EnergyTotal(const pullContext *pctx) {
   unsigned int binIdx, pointIdx;
   const pullBin *bin;
   const pullPoint *point;
@@ -179,7 +179,7 @@ _pullEnergyTotal(const pullContext *pctx) {
 }
 
 void
-_pullPointStepEnergyScale(pullContext *pctx, double scale) {
+pull__PointStepEnergyScale(pullContext *pctx, double scale) {
   unsigned int binIdx, pointIdx;
   const pullBin *bin;
   pullPoint *point;
@@ -189,14 +189,14 @@ _pullPointStepEnergyScale(pullContext *pctx, double scale) {
     for (pointIdx = 0; pointIdx < bin->pointNum; pointIdx++) {
       point = bin->point[pointIdx];
       point->stepEnergy *= scale;
-      point->stepEnergy = AIR_MIN(point->stepEnergy, _PULL_STEP_ENERGY_MAX);
+      point->stepEnergy = AIR_MIN(point->stepEnergy, MY_PULL_STEP_ENERGY_MAX);
     }
   }
   return;
 }
 
 double /* Biff: (private) nope */
-_pullStepInterAverage(const pullContext *pctx) {
+pull__StepInterAverage(const pullContext *pctx) {
   unsigned int binIdx, pointIdx, pointNum;
   const pullBin *bin;
   const pullPoint *point;
@@ -217,7 +217,7 @@ _pullStepInterAverage(const pullContext *pctx) {
 }
 /* ^^^  vvv HEY HEY HEY: COPY + PASTE COPY + PASTE COPY + PASTE */
 double /* Biff: (private) nope */
-_pullStepConstrAverage(const pullContext *pctx) {
+pull__StepConstrAverage(const pullContext *pctx) {
   unsigned int binIdx, pointIdx, pointNum;
   const pullBin *bin;
   const pullPoint *point;
@@ -312,7 +312,7 @@ pullPointScalar(const pullContext *pctx, const pullPoint *point, int sclInfo,
             point->pos[0], point->pos[1],
             point->info[infoIdx[sclInfo]], ispec->zero, ispec->scale, scl);
   } */
-  if (0 && _pullVerbose) {
+  if (0 && pull__Verbose) {
     if (pullInfoSeedThresh == sclInfo) {
       printf("!%s: seed thresh (%g - %g)*%g == %g\n", me, point->info[infoIdx[sclInfo]],
              ispec->zero, ispec->scale, scl);
@@ -484,10 +484,10 @@ pullProbe(pullTask *task, pullPoint *point) {
     const pullInfoSpec *ispec;
     ispec = task->pctx->ispec[ii];
     if (ispec) {
-      alen = _pullInfoLen[ii];
+      alen = pull__InfoLen[ii];
       aidx = task->pctx->infoIdx[ii];
       if (pullSourceGage == ispec->source) {
-        _pullInfoCopy[alen](point->info + aidx, task->ans[ii]);
+        pull__InfoCopy[alen](point->info + aidx, task->ans[ii]);
         /* if (289 == task->pctx->iter) {
           fprintf(stderr, "!%s(%u): copied info %u (%s) len %u\n", me, point->idtag,
                   ii, airEnumStr(pullInfo, ii), alen);
@@ -614,8 +614,8 @@ pullProbe(pullTask *task, pullPoint *point) {
 }
 
 static int
-_threshFail(const pullContext *pctx, const pullPoint *point, int info) {
-  /* static const char me[] = "_threshFail"; */
+threshFail(const pullContext *pctx, const pullPoint *point, int info) {
+  /* static const char me[] = "threshFail"; */
   double val;
   int ret;
 
@@ -679,7 +679,7 @@ pullPointInitializePerVoxel(const pullContext *pctx, const unsigned int pointIdx
     point->pos[2] = 0.0;
   }
 
-  if (0 && _pullVerbose) {
+  if (0 && pull__Verbose) {
     printf("!%s: pointIdx %u -> vidx %u %u %u (%u)\n"
            "       -> iPos %g %g %g -> wPos %g %g %g\n",
            me, pointIdx, vidx[0], vidx[1], vidx[2], pix, iPos[0], iPos[1], iPos[2],
@@ -698,7 +698,7 @@ pullPointInitializePerVoxel(const pullContext *pctx, const unsigned int pointIdx
     if (pctx->flag.scaleIsTau) {
       point->pos[3] = gageTauOfSig(point->pos[3]);
     }
-    if (0 && _pullVerbose) {
+    if (0 && pull__Verbose) {
       printf("!%s(%u): pix %u -> a %g b %g -> wpos %g\n", me, point->idtag, pix, aidx,
              bidx, point->pos[3]);
     }
@@ -714,7 +714,7 @@ pullPointInitializePerVoxel(const pullContext *pctx, const unsigned int pointIdx
       return 1;
     }
     pctx->task[0]->probeSeedPreThreshOnly = AIR_FALSE;
-    if (_threshFail(pctx, point, pullInfoSeedPreThresh)) {
+    if (threshFail(pctx, point, pullInfoSeedPreThresh)) {
       reject = AIR_TRUE;
       /* HEY! this obviously need to be re-written */
       goto finish;
@@ -734,31 +734,31 @@ pullPointInitializePerVoxel(const pullContext *pctx, const unsigned int pointIdx
   reject = AIR_FALSE;
 
   /* Check we pass pre-threshold */
-  if (!reject) reject |= _threshFail(pctx, point, pullInfoSeedPreThresh);
+  if (!reject) reject |= threshFail(pctx, point, pullInfoSeedPreThresh);
 
   if (!pctx->flag.constraintBeforeSeedThresh) {
     /* we should be guaranteed to have a seed thresh info */
-    if (!reject) reject |= _threshFail(pctx, point, pullInfoSeedThresh);
+    if (!reject) reject |= threshFail(pctx, point, pullInfoSeedThresh);
     if (pctx->initParm.liveThreshUse) {
-      if (!reject) reject |= _threshFail(pctx, point, pullInfoLiveThresh);
-      if (!reject) reject |= _threshFail(pctx, point, pullInfoLiveThresh2);
-      if (!reject) reject |= _threshFail(pctx, point, pullInfoLiveThresh3);
+      if (!reject) reject |= threshFail(pctx, point, pullInfoLiveThresh);
+      if (!reject) reject |= threshFail(pctx, point, pullInfoLiveThresh2);
+      if (!reject) reject |= threshFail(pctx, point, pullInfoLiveThresh3);
     }
   }
 
   if (!reject && pctx->constraint) {
-    if (_pullConstraintSatisfy(pctx->task[0], point, 10 * _PULL_CONSTRAINT_TRAVEL_MAX,
-                               &constrFail)) {
+    if (pull__ConstraintSatisfy(pctx->task[0], point, 10 * MY_PULL_CONSTRAINT_TRAVEL_MAX,
+                                &constrFail)) {
       biffAddf(PULL, "%s: on pnt %u", me, pointIdx);
       return 1;
     }
     reject |= constrFail;
     /* post constraint-satisfaction, we certainly have to assert thresholds */
-    if (!reject) reject |= _threshFail(pctx, point, pullInfoSeedThresh);
+    if (!reject) reject |= threshFail(pctx, point, pullInfoSeedThresh);
     if (pctx->initParm.liveThreshUse) {
-      if (!reject) reject |= _threshFail(pctx, point, pullInfoLiveThresh);
-      if (!reject) reject |= _threshFail(pctx, point, pullInfoLiveThresh2);
-      if (!reject) reject |= _threshFail(pctx, point, pullInfoLiveThresh3);
+      if (!reject) reject |= threshFail(pctx, point, pullInfoLiveThresh);
+      if (!reject) reject |= threshFail(pctx, point, pullInfoLiveThresh2);
+      if (!reject) reject |= threshFail(pctx, point, pullInfoLiveThresh3);
     }
     if (pctx->flag.nixAtVolumeEdgeSpace && (point->status & PULL_STATUS_EDGE_BIT)) {
       rejectEdge = AIR_TRUE;
@@ -768,10 +768,10 @@ pullPointInitializePerVoxel(const pullContext *pctx, const unsigned int pointIdx
     reject |= rejectEdge;
     if (pctx->verbose > 1) {
       fprintf(stderr, "%s(%u): constr %d, seed %d, thresh %d %d %d, edge %d\n", me,
-              point->idtag, constrFail, _threshFail(pctx, point, pullInfoSeedThresh),
-              _threshFail(pctx, point, pullInfoLiveThresh),
-              _threshFail(pctx, point, pullInfoLiveThresh2),
-              _threshFail(pctx, point, pullInfoLiveThresh3), rejectEdge);
+              point->idtag, constrFail, threshFail(pctx, point, pullInfoSeedThresh),
+              threshFail(pctx, point, pullInfoLiveThresh),
+              threshFail(pctx, point, pullInfoLiveThresh2),
+              threshFail(pctx, point, pullInfoLiveThresh3), rejectEdge);
     }
   } else {
     constrFail = AIR_FALSE;
@@ -789,9 +789,9 @@ finish:
 }
 
 static void
-_pullUnitToWorld(const pullContext *pctx, const pullVolume *scaleVol, double wrld[4],
-                 const double unit[4]) {
-  /* static const char me[] = "_pullUnitToWorld"; */
+unitToWorld(const pullContext *pctx, const pullVolume *scaleVol, double wrld[4],
+            const double unit[4]) {
+  /* static const char me[] = "unitToWorld"; */
 
   wrld[0] = AIR_AFFINE(0.0, unit[0], 1.0, pctx->bboxMin[0], pctx->bboxMax[0]);
   wrld[1] = AIR_AFFINE(0.0, unit[1], 1.0, pctx->bboxMin[1], pctx->bboxMax[1]);
@@ -832,7 +832,7 @@ pullPointInitializeRandomOrHalton(pullContext *pctx, const unsigned int pointIdx
     /* fprintf(stderr, "!%s: starting doooo (tryCount %u)!\n", me, tryCount); */
     tryCount++;
     reject = AIR_FALSE;
-    _pullPointHistInit(point);
+    pull__PointHistInit(point);
     /* Populate tentative random point */
     if (pullInitMethodHalton == pctx->initParm.method) {
       /* we generate all 4 coordinates, even if we don't need them all */
@@ -864,7 +864,7 @@ pullPointInitializeRandomOrHalton(pullContext *pctx, const unsigned int pointIdx
         rpos[3] = 0;
       }
     }
-    _pullUnitToWorld(pctx, scaleVol, point->pos, rpos);
+    unitToWorld(pctx, scaleVol, point->pos, rpos);
     if (pctx->flag.zeroZ) {
       point->pos[2] = 0.0;
     }
@@ -878,7 +878,7 @@ pullPointInitializeRandomOrHalton(pullContext *pctx, const unsigned int pointIdx
       fprintf(stderr, "%s: verbo on for point %u at %g %g %g %g\n", me, point->idtag,
               point->pos[0], point->pos[1], point->pos[2], point->pos[3]);
     }
-    _pullPointHistAdd(point, pullCondOld, AIR_NAN);
+    pull__PointHistAdd(point, pullCondOld, AIR_NAN);
 
     /* HEY copy and paste */
     if (pctx->ispec[pullInfoSeedPreThresh]) {
@@ -889,7 +889,7 @@ pullPointInitializeRandomOrHalton(pullContext *pctx, const unsigned int pointIdx
         return 1;
       }
       pctx->task[0]->probeSeedPreThreshOnly = AIR_FALSE;
-      if (_threshFail(pctx, point, pullInfoSeedPreThresh)) {
+      if (threshFail(pctx, point, pullInfoSeedPreThresh)) {
         threshFailCount++;
         spthreshFailCount++;
         reject = AIR_TRUE;
@@ -902,7 +902,7 @@ pullPointInitializeRandomOrHalton(pullContext *pctx, const unsigned int pointIdx
     }
     /* Check we pass pre-threshold */
 #define THRESH_TEST(INFO)                                                               \
-  if (pctx->ispec[INFO] && _threshFail(pctx, point, INFO)) {                            \
+  if (pctx->ispec[INFO] && threshFail(pctx, point, INFO)) {                             \
     threshFailCount++;                                                                  \
     reject = AIR_TRUE;                                                                  \
     goto reckoning;                                                                     \
@@ -922,9 +922,9 @@ pullPointInitializeRandomOrHalton(pullContext *pctx, const unsigned int pointIdx
 
     if (pctx->constraint) {
       int constrFail;
-      /* fprintf(stderr, "!%s: calling _pullConstraintSatisfy(%u)\n", me, pointIdx); */
-      if (_pullConstraintSatisfy(pctx->task[0], point, _PULL_CONSTRAINT_TRAVEL_MAX,
-                                 &constrFail)) {
+      /* fprintf(stderr, "!%s: calling pull__ConstraintSatisfy(%u)\n", me, pointIdx); */
+      if (pull__ConstraintSatisfy(pctx->task[0], point, MY_PULL_CONSTRAINT_TRAVEL_MAX,
+                                  &constrFail)) {
         biffAddf(PULL, "%s: trying constraint on point %u", me, pointIdx);
         return 1;
       }
@@ -970,12 +970,12 @@ pullPointInitializeRandomOrHalton(pullContext *pctx, const unsigned int pointIdx
 
   reckoning:
     if (reject) {
-      if (threshFailCount + constrFailCount >= _PULL_RANDOM_SEED_TRY_MAX) {
+      if (threshFailCount + constrFailCount >= MY_PULL_RANDOM_SEED_TRY_MAX) {
         /* Very bad luck; we've too many times */
         biffAddf(PULL,
                  "%s: failed too often (%u times) placing point %u: "
                  "%u fails on thresh (%u on pre-thresh), %u on constr",
-                 me, _PULL_RANDOM_SEED_TRY_MAX, pointIdx, threshFailCount,
+                 me, MY_PULL_RANDOM_SEED_TRY_MAX, pointIdx, threshFailCount,
                  spthreshFailCount, constrFailCount);
         return 1;
       }
@@ -1030,17 +1030,17 @@ pullPointInitializeGivenPos(pullContext *pctx,
   }
   reject |= rejectEdge;
   if (pctx->initParm.liveThreshUse) {
-    if (!reject) reject |= _threshFail(pctx, point, pullInfoLiveThresh);
-    if (!reject) reject |= _threshFail(pctx, point, pullInfoLiveThresh2);
-    if (!reject) reject |= _threshFail(pctx, point, pullInfoLiveThresh3);
+    if (!reject) reject |= threshFail(pctx, point, pullInfoLiveThresh);
+    if (!reject) reject |= threshFail(pctx, point, pullInfoLiveThresh2);
+    if (!reject) reject |= threshFail(pctx, point, pullInfoLiveThresh3);
   }
   /*
   if (reject) {
     fprintf(stderr, "!%s(%u): edge %d thresh %d %d %d\n",
             me, point->idtag, rejectEdge,
-            _threshFail(pctx, point, pullInfoLiveThresh),
-            _threshFail(pctx, point, pullInfoLiveThresh2),
-            _threshFail(pctx, point, pullInfoLiveThresh3));
+            threshFail(pctx, point, pullInfoLiveThresh),
+            threshFail(pctx, point, pullInfoLiveThresh2),
+            threshFail(pctx, point, pullInfoLiveThresh3));
   }
   */
   if (reject) {
@@ -1053,7 +1053,7 @@ pullPointInitializeGivenPos(pullContext *pctx,
 }
 
 /*
-** _pullPointSetup sets:
+** pull__PointSetup sets:
 **
 ** This is only called by the master thread
 **
@@ -1061,13 +1061,13 @@ pullPointInitializeGivenPos(pullContext *pctx,
 ** just before the rebinning
 */
 int /* Biff: (private) 1 */
-_pullPointSetup(pullContext *pctx) {
-  static const char me[] = "_pullPointSetup";
+pull__PointSetup(pullContext *pctx) {
+  static const char me[] = "pull__PointSetup";
 
   /* on using pullBinsPointMaybeAdd: This is used only in the context of constraints; it
      makes sense to be a little more selective about adding points, so that they aren't
      completely piled on top of each other. This relies on
-     _PULL_BINNING_MAYBE_ADD_THRESH: its tempting to set this value high, to more
+     MY_PULL_BINNING_MAYBE_ADD_THRESH: its tempting to set this value high, to more
      aggressively limit the number of points added, but that's really the job of
      population control, and we can't always guarantee that constraint manifolds will be
      well-sampled (with respect to pctx->radiusSpace and pctx->radiusScale) to start with
@@ -1342,9 +1342,9 @@ _pullPointSetup(pullContext *pctx) {
     pullBin *bin = pctx->bin + binIdx;
     for (pointIdx = 0; pointIdx < bin->pointNum; pointIdx++) {
       point = bin->point[pointIdx];
-      point->energy = _pullPointEnergyTotal(pctx->task[0], bin, point,
-                                            /* ignoreImage */
-                                            !pctx->haveScale, point->force);
+      point->energy = pull__PointEnergyTotal(pctx->task[0], bin, point,
+                                             /* ignoreImage */
+                                             !pctx->haveScale, point->force);
     }
   }
 
@@ -1357,7 +1357,7 @@ _pullPointSetup(pullContext *pctx) {
 }
 
 void
-_pullPointFinish(pullContext *pctx) {
+pull__PointFinish(pullContext *pctx) {
 
   airFree(pctx->tmpPointPtr);
   airFree(pctx->tmpPointPerm);

@@ -21,7 +21,7 @@
 
 /* clang-format off */
 static const char *
-_coilMethodTypeStr[COIL_METHOD_TYPE_MAX+1] = {
+methodTypeStr[COIL_METHOD_TYPE_MAX+1] = {
   "(unknown_method)",
   "testing",
   "homogeneous",
@@ -34,7 +34,7 @@ _coilMethodTypeStr[COIL_METHOD_TYPE_MAX+1] = {
 };
 
 static const char *
-_coilMethodTypeDesc[COIL_METHOD_TYPE_MAX+1] = {
+methodTypeDesc[COIL_METHOD_TYPE_MAX+1] = {
   "unknown_method",
   "nothing, actually, just here for testing",
   "homogenous isotropic diffusion (Gaussian blurring)",
@@ -47,7 +47,7 @@ _coilMethodTypeDesc[COIL_METHOD_TYPE_MAX+1] = {
 };
 
 static const char *
-_coilMethodTypeStrEqv[] = {
+methodTypeStrEqv[] = {
   "test", "testing",
   "iso", "homog", "homogeneous",
   "pm", "perona-malik",
@@ -60,7 +60,7 @@ _coilMethodTypeStrEqv[] = {
 };
 
 static const int
-_coilMethodTypeValEqv[] = {
+methodTypeValEqv[] = {
   coilMethodTypeTesting, coilMethodTypeTesting,
   coilMethodTypeHomogeneous, coilMethodTypeHomogeneous, coilMethodTypeHomogeneous,
   coilMethodTypePeronaMalik, coilMethodTypePeronaMalik,
@@ -72,21 +72,20 @@ _coilMethodTypeValEqv[] = {
 };
 
 static const airEnum
-_coilMethodType = {
+methodType_ae = {
   "method",
   COIL_METHOD_TYPE_MAX,
-  _coilMethodTypeStr,  NULL,
-  _coilMethodTypeDesc,
-  _coilMethodTypeStrEqv, _coilMethodTypeValEqv,
+  methodTypeStr,  NULL,
+  methodTypeDesc,
+  methodTypeStrEqv, methodTypeValEqv,
   AIR_FALSE
 };
-const airEnum *const
-coilMethodType = &_coilMethodType;
+const airEnum *const coilMethodType = &methodType_ae;
 
 /* -------------------------------------------------- */
 
 static const char *
-_coilKindTypeStr[COIL_KIND_TYPE_MAX+1] = {
+kindTypeStr[COIL_KIND_TYPE_MAX+1] = {
   "(unknown_kind)",
   "scalar",
   "3color",
@@ -94,7 +93,7 @@ _coilKindTypeStr[COIL_KIND_TYPE_MAX+1] = {
 };
 
 static const char *
-_coilKindTypeDesc[COIL_KIND_TYPE_MAX+1] = {
+kindTypeDesc[COIL_KIND_TYPE_MAX+1] = {
   "unknown_kind",
   "plain old scalar quantities",
   "3-component color",
@@ -102,7 +101,7 @@ _coilKindTypeDesc[COIL_KIND_TYPE_MAX+1] = {
 };
 
 static const char *
-_coilKindTypeStrEqv[] = {
+kindTypeStrEqv[] = {
   "scalar",
   "3color",
   "7tensor", "tensor",
@@ -110,21 +109,20 @@ _coilKindTypeStrEqv[] = {
 };
 
 static const int
-_coilKindTypeValEqv[] = {
+kindTypeValEqv[] = {
   coilKindTypeScalar,
   coilKindType3Color,
   coilKindType7Tensor, coilKindType7Tensor
 };
 
 static const airEnum
-_coilKindType = {
+kindType_ae = {
   "kind",
   COIL_KIND_TYPE_MAX,
-  _coilKindTypeStr,  NULL,
-  _coilKindTypeDesc,
-  _coilKindTypeStrEqv, _coilKindTypeValEqv,
+  kindTypeStr,  NULL,
+  kindTypeDesc,
+  kindTypeStrEqv, kindTypeValEqv,
   AIR_FALSE
 };
-const airEnum *const
-coilKindType = &_coilKindType;
+const airEnum *const coilKindType = &kindType_ae;
 /* clang-format on */

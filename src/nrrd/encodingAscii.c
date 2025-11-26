@@ -26,12 +26,12 @@
    number parsing. Please forgive me, or help me fix it :) */
 
 static int
-_nrrdEncodingAscii_available(void) {
+encodingAscii_available(void) {
 
   return AIR_TRUE;
 }
 
-/* _nrrdFgetWord:
+/* fgetWord:
  *
  * TeemV2 replacement for old code that used unsafe `fscanf(file, "%s", buff)`
  * If nrrdStateEncodingAsciiCommaAllow, this treats commas a little bit like
@@ -42,8 +42,8 @@ _nrrdEncodingAscii_available(void) {
  * - breaks on white-space-separated commas (2 or more)
  */
 static int
-_nrrdFgetWord(FILE *file, size_t II, char buff[AIR_STRLEN_SMALL + 1]) {
-  static const char me[] = "_nrrdFgetWord";
+fgetWord(FILE *file, size_t II, char buff[AIR_STRLEN_SMALL + 1]) {
+  static const char me[] = "fgetWord";
   uint idx = 0;
   buff[idx] = '\0';
   /* in following comments, "charn" means "any CHARacter we attribute to the ascii
@@ -129,9 +129,8 @@ _nrrdFgetWord(FILE *file, size_t II, char buff[AIR_STRLEN_SMALL + 1]) {
 }
 
 static int /* Biff: 1 */
-_nrrdEncodingAscii_read(FILE *file, void *_data, size_t elNum, Nrrd *nrrd,
-                        NrrdIoState *nio) {
-  static const char me[] = "_nrrdEncodingAscii_read";
+encodingAscii_read(FILE *file, void *_data, size_t elNum, Nrrd *nrrd, NrrdIoState *nio) {
+  static const char me[] = "encodingAscii_read";
   /* fprintf(stderr, "!%s: hi -------------------- \n", me); */
   int (*istore)(void *v, int j);
   char *valPtr;
@@ -152,7 +151,7 @@ _nrrdEncodingAscii_read(FILE *file, void *_data, size_t elNum, Nrrd *nrrd,
   while (I < elNum) {
     int pret;
     char numbStr[AIR_STRLEN_SMALL + 1], stmp[2][AIR_STRLEN_SMALL + 1];
-    if (_nrrdFgetWord(file, I, numbStr)) {
+    if (fgetWord(file, I, numbStr)) {
       biffAddf(NRRD, "%s: couldn't fread value %s of %s", me,
                airSprintSize_t(stmp[0], I + 1), airSprintSize_t(stmp[1], elNum));
       return 1;
@@ -182,9 +181,9 @@ _nrrdEncodingAscii_read(FILE *file, void *_data, size_t elNum, Nrrd *nrrd,
 }
 
 static int /* Biff: 1 */
-_nrrdEncodingAscii_write(FILE *file, const void *_data, size_t elNum, const Nrrd *nrrd,
-                         NrrdIoState *nio) {
-  static const char me[] = "_nrrdEncodingAscii_write";
+encodingAscii_write(FILE *file, const void *_data, size_t elNum, const Nrrd *nrrd,
+                    NrrdIoState *nio) {
+  static const char me[] = "encodingAscii_write";
   /* fprintf(stderr, "!%s: hi\n", me); */
   char buff[AIR_STRLEN_SMALL + 1];
   size_t buffSize = sizeof(buff);
@@ -244,12 +243,12 @@ _nrrdEncodingAscii_write(FILE *file, const void *_data, size_t elNum, const Nrrd
   return 0;
 }
 
-const NrrdEncoding _nrrdEncodingAscii = {"ASCII",   /* name */
-                                         "ascii",   /* suffix */
-                                         AIR_FALSE, /* endianMatters */
-                                         AIR_FALSE, /* isCompression */
-                                         _nrrdEncodingAscii_available,
-                                         _nrrdEncodingAscii_read,
-                                         _nrrdEncodingAscii_write};
+const NrrdEncoding nrrd__EncodingAscii = {"ASCII",   /* name */
+                                          "ascii",   /* suffix */
+                                          AIR_FALSE, /* endianMatters */
+                                          AIR_FALSE, /* isCompression */
+                                          encodingAscii_available,
+                                          encodingAscii_read,
+                                          encodingAscii_write};
 
-const NrrdEncoding *const nrrdEncodingAscii = &_nrrdEncodingAscii;
+const NrrdEncoding *const nrrdEncodingAscii = &nrrd__EncodingAscii;

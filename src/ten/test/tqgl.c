@@ -20,15 +20,6 @@
 #include "../ten.h"
 #include "../privateTen.h"
 
-/* BAD gordon */
-extern double _tenQGL_Kdist(const double RThZA[3], const double RThZB[3]);
-extern void _tenQGL_Klog(double klog[3], const double RThZA[3], const double RThZB[3]);
-extern void _tenQGL_Kexp(double RThZB[3], const double RThZA[3], const double klog[3]);
-
-extern double _tenQGL_Rdist(const double RThPhA[3], const double RThPhB[3]);
-extern void _tenQGL_Rlog(double rlog[3], const double RThPhA[3], const double RThPhB[3]);
-extern void _tenQGL_Rexp(double RThPhB[3], const double RThPhA[3], const double rlog[3]);
-
 /* normalized gradients of k or r invariants, in XYZ space,
    to help determine if path is really a loxodrome */
 void
@@ -121,16 +112,16 @@ main(int argc, const char *argv[]) {
   int rttype;
   if (tenInterpTypeQuatGeoLoxK == ptype) {
     interp = tenQGLInterpTwoEvalK;
-    qdist = _tenQGL_Kdist;
-    qlog = _tenQGL_Klog;
-    qexp = _tenQGL_Kexp;
+    qdist = ten__QGL_Kdist;
+    qlog = ten__QGL_Klog;
+    qexp = ten__QGL_Kexp;
     grads = kgrads;
     rttype = tenTripleTypeRThetaZ;
   } else {
     interp = tenQGLInterpTwoEvalR;
-    qdist = _tenQGL_Rdist;
-    qlog = _tenQGL_Rlog;
-    qexp = _tenQGL_Rexp;
+    qdist = ten__QGL_Rdist;
+    qlog = ten__QGL_Rlog;
+    qexp = ten__QGL_Rexp;
     grads = rgrads;
     rttype = tenTripleTypeRThetaPhi;
   }

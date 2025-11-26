@@ -40,53 +40,53 @@ print " /* ************************************************* */\n\n";
 # generate a stub kernel for when the user incorrectly indexes
 # into ef == 0, which is undefined; ef must be >= 1
 print "static double\n";
-print "_nrrd_TMFBAD_Int(const double *parm) {\n";
+print "nTMFBAD_Int(const double *parm) {\n";
 print "  AIR_UNUSED(parm);\n";
-print "  fprintf\(stderr, \"_nrrd_TMFBAD: Invalid TMF indexing: ef == 0\\n\"\);\n";
+print "  fprintf\(stderr, \"nTMFBAD: Invalid TMF indexing: ef == 0\\n\"\);\n";
 print "  return 0.0;\n";
 print "}\n\n";
 print "static double\n";
-print "_nrrd_TMFBAD_Sup(const double *parm) {\n";
+print "nTMFBAD_Sup(const double *parm) {\n";
 print "  AIR_UNUSED(parm);\n";
-print "  fprintf\(stderr, \"_nrrd_TMFBAD: Invalid TMF indexing: ef == 0\\n\"\);\n";
+print "  fprintf\(stderr, \"nTMFBAD: Invalid TMF indexing: ef == 0\\n\"\);\n";
 print "  return 0.0;\n";
 print "}\n\n";
 print "static double\n";
-print "_nrrd_TMFBAD_1_d(double x, const double *parm) {\n";
+print "nTMFBAD_1_d(double x, const double *parm) {\n";
 print "  AIR_UNUSED(x);\n";
 print "  AIR_UNUSED(parm);\n";
-print "  fprintf\(stderr, \"_nrrd_TMFBAD: Invalid TMF indexing: ef == 0\\n\"\);\n";
+print "  fprintf\(stderr, \"nTMFBAD: Invalid TMF indexing: ef == 0\\n\"\);\n";
 print "  return 0.0;\n";
 print "}\n\n";
 print "static float\n";
-print "_nrrd_TMFBAD_1_f(float x, const double *parm) {\n";
+print "nTMFBAD_1_f(float x, const double *parm) {\n";
 print "  AIR_UNUSED(x);\n";
 print "  AIR_UNUSED(parm);\n";
-print "  fprintf\(stderr, \"_nrrd_TMFBAD: Invalid TMF indexing: ef == 0\\n\"\);\n";
+print "  fprintf\(stderr, \"nTMFBAD: Invalid TMF indexing: ef == 0\\n\"\);\n";
 print "  return 0.0;\n";
 print "}\n\n";
 print "static void\n";
-print "_nrrd_TMFBAD_N_d(double *f, const double *x, size_t len, const double *parm) {\n";
+print "nTMFBAD_N_d(double *f, const double *x, size_t len, const double *parm) {\n";
 print "  AIR_UNUSED(f);\n";
 print "  AIR_UNUSED(x);\n";
 print "  AIR_UNUSED(len);\n";
 print "  AIR_UNUSED(parm);\n";
-print "  fprintf\(stderr, \"_nrrd_TMFBAD: Invalid TMF indexing: ef == 0\\n\"\);\n";
+print "  fprintf\(stderr, \"nTMFBAD: Invalid TMF indexing: ef == 0\\n\"\);\n";
 print "}\n\n";
 print "static void\n";
-print "_nrrd_TMFBAD_N_f(float *f, const float *x, size_t len, const double *parm) {\n";
+print "nTMFBAD_N_f(float *f, const float *x, size_t len, const double *parm) {\n";
 print "  AIR_UNUSED(f);\n";
 print "  AIR_UNUSED(x);\n";
 print "  AIR_UNUSED(len);\n";
 print "  AIR_UNUSED(parm);\n";
-print "  fprintf\(stderr, \"_nrrd_TMFBAD: Invalid TMF indexing: ef == 0\\n\"\);\n";
+print "  fprintf\(stderr, \"nTMFBAD: Invalid TMF indexing: ef == 0\\n\"\);\n";
 print "}\n\n";
 print "static const NrrdKernel\n";
-print "_nrrdKernel_TMFBAD = {\n";
+print "nKernel_TMFBAD = {\n";
 print "  \"TMFBAD\", 1, AIR_FALSE,\n";
-print "  _nrrd_TMFBAD_Sup, _nrrd_TMFBAD_Int,\n";
-print "  _nrrd_TMFBAD_1_f, _nrrd_TMFBAD_N_f,\n";
-print "  _nrrd_TMFBAD_1_d, _nrrd_TMFBAD_N_d\n";
+print "  nTMFBAD_Sup, nTMFBAD_Int,\n";
+print "  nTMFBAD_1_f, nTMFBAD_N_f,\n";
+print "  nTMFBAD_1_d, nTMFBAD_N_d\n";
 print "};\n";
 
 %needk = ();
@@ -187,10 +187,10 @@ for ($_d=0; $_d<=3; $_d++) {
     for ($_c=0; $_c<=4; $_c++) {
 	$c = (($_c > 0) ? $_c-1 : "n");
 	print "    {\n";
-	print "       &_nrrdKernel_TMFBAD,\n";
+	print "       &nKernel_TMFBAD,\n";
 	for ($ef=1; $ef<=4; $ef++) {
 	    $kern = "TMF_d${d}_c${c}_${ef}ef";
-	    print "       &_nrrdKernel_${kern},\n";
+	    print "       &nKernel_${kern},\n";
 	}
 	print "    },\n";
     }
@@ -211,19 +211,19 @@ sub blah {
 	       ? $support{$needk{$kern}}
 	       : $support{$needk{$needk{$kern}}}));
     $integral = ("static double "
-		 . "_nrrd_${kern}_Int\(const double *parm\) {\n"
+		 . "n${kern}_Int\(const double *parm\) {\n"
                  . "  AIR_UNUSED(parm);\n"
 		 . (($kern =~ m/_d0_/ || $kern =~ m/_dn_/)
 		    ? "  return 1.0;\n"
 		    : "  return 0.0;\n")
 		 . "}\n\n");
     $support = ("static double "
-		. "_nrrd_${kern}_Sup\(const double *parm\) {\n"
+		. "n${kern}_Sup\(const double *parm\) {\n"
                 . "  AIR_UNUSED(parm);\n"
 		. "  return ${sup};\n"
 		. "}\n\n");
     $_1_d = ("static double\n"
-	     . "_nrrd_${kern}_1_d\(double x, const double *parm\) {\n"
+	     . "n${kern}_1_d\(double x, const double *parm\) {\n"
 	     . "  int i;\n\n"
              . "  AIR_UNUSED(parm); /* ${kern} */\n"
 	     . "  x += $sup;\n"
@@ -232,7 +232,7 @@ sub blah {
 	     . "  return ${kern}\(parm[0], i, x\);\n"
 	     . "}\n\n");
     $_1_f = ("static float\n"
-	     . "_nrrd_${kern}_1_f\(float x, const double *parm\) {\n"
+	     . "n${kern}_1_f\(float x, const double *parm\) {\n"
 	     . "  int i;\n\n"
              . "  AIR_UNUSED(parm); /* ${kern} */\n"
 	     . "  x += $sup;\n"
@@ -241,7 +241,7 @@ sub blah {
 	     . "  return AIR_CAST(float, ${kern}\(parm[0], i, x\));\n"
 	     . "}\n\n");
     $_N_d = ("static void\n"
-	     . "_nrrd_${kern}_N_d(double *f, const double *x, size_t len, const double *parm) {\n"
+	     . "n${kern}_N_d(double *f, const double *x, size_t len, const double *parm) {\n"
 	     . "  double t;\n"
 	     . "  size_t I;\n"
 	     . "  int i;\n\n"
@@ -254,7 +254,7 @@ sub blah {
 	     . "  }\n"
 	     . "}\n\n");
     $_N_f = ("static void\n"
-	     . "_nrrd_${kern}_N_f(float *f, const float *x, size_t len, const double *parm) {\n"
+	     . "n${kern}_N_f(float *f, const float *x, size_t len, const double *parm) {\n"
 	     . "  float t;\n"
 	     . "  size_t I;\n"
 	     . "  int i;\n\n"
@@ -267,11 +267,11 @@ sub blah {
 	     . "  }\n"
 	     . "}\n\n");
     $kdef = ("static const NrrdKernel\n"
-	     . "_nrrdKernel_${kern} = {\n"
+	     . "nKernel_${kern} = {\n"
 	     . "  \"${kern}\", 1, AIR_FALSE,\n"
-             . "  _nrrd_${kern}_Sup, _nrrd_${kern}_Int,\n"
-	     . "  _nrrd_${kern}_1_f,  _nrrd_${kern}_N_f,\n"
-	     . "  _nrrd_${kern}_1_d,  _nrrd_${kern}_N_d\n"
+             . "  n${kern}_Sup, n${kern}_Int,\n"
+	     . "  n${kern}_1_f,  n${kern}_N_f,\n"
+	     . "  n${kern}_1_d,  n${kern}_N_d\n"
 	     . "};\n\n");
     ($integral
      . $support

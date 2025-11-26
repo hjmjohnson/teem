@@ -49,11 +49,11 @@ extern "C" {
 
 typedef unsigned int uint; /* uint is just more concise */
 
-#define TEND_CMD(name, info)                                                            \
-  const unrrduCmd tend_##name##Cmd = {#name, info, tend_##name##Main, AIR_FALSE}
+#define MY_TEND_CMD(name, info)                                                         \
+  const unrrduCmd tend_##name##Cmd = {#name, info, name##Main, AIR_FALSE}
 
-#define TEND_CMD_HIDE(name, info)                                                       \
-  const unrrduCmd tend_##name##Cmd = {#name, info, tend_##name##Main, AIR_TRUE}
+#define MY_TEND_CMD_HIDE(name, info)                                                    \
+  const unrrduCmd tend_##name##Cmd = {#name, info, name##Main, AIR_TRUE}
 
 /* USAGE, PARSE: both copied verbatim from unrrdu/privateUnrrdu.h, but
 ** then some hacking was added . . .
@@ -128,31 +128,20 @@ typedef unsigned int uint; /* uint is just more concise */
 #define USAGE_JUSTPARSE(INFO) USAGE(INFO) JUSTPARSE(INFO)
 
 /* enumsTen.c */
-extern const airEnum _tenGage;
+extern const airEnum ten__Gage_ae;
 
 /* qseg.c: 2-tensor estimation */
-extern void _tenQball(const double b, const int gradcount, const double svals[],
-                      const double grads[], double qvals[]);
-extern void _tenSegsamp2(const int gradcount, const double qvals[], const double grads[],
-                         const double qpoints[], unsigned int seg[], double dists[]);
-extern void _tenCalcdists(const int centcount, const double centroid[],
-                          const int gradcount, const double qpoints[], double dists[]);
-extern void _tenInitcent2(const int gradcount, const double qvals[],
-                          const double grads[], double centroids[6]);
-extern int _tenCalccent2(const int gradcount, const double qpoints[],
-                         const double dists[], double centroid[6], unsigned int seg[]);
-extern void _tenSeg2weights(const int gradcount, const int seg[], const int segcount,
-                            double weights[]);
-extern void _tenQvals2points(const int gradcount, const double qvals[],
-                             const double grads[], double qpoints[]);
-extern double _tenPldist(const double point[], const double line[]);
-
-/* arishFuncs.c: Arish's implementation of Peled's 2-tensor fit */
-#define VEC_SIZE 3
+extern void ten__Qball(const double b, const int gradcount, const double svals[],
+                       const double grads[], double qvals[]);
+extern void ten__Segsamp2(const int gradcount, const double qvals[],
+                          const double grads[], const double qpoints[],
+                          unsigned int seg[], double dists[]);
+extern void ten__Qvals2points(const int gradcount, const double qvals[],
+                              const double grads[], double qpoints[]);
 
 /* epireg.c */
-extern int _tenEpiRegThresholdFind(double *DWthrP, Nrrd **nin, int ninLen, int save,
-                                   double expo);
+extern int ten__EpiRegThresholdFind(double *DWthrP, Nrrd **nin, int ninLen, int save,
+                                    double expo);
 
 /* qglox.c: stuff for quaternion geodesic-loxodromes that has dubious
    utility for the general public */
@@ -168,32 +157,43 @@ extern void tenQGLInterpTwoEvec(double oevec[9], const double evecA[9],
                                 const double evecB[9], double tt);
 extern void tenQGLInterpTwo(double oten[7], const double tenA[7], const double tenB[7],
                             int ptype, double aa, tenInterpParm *tip);
-extern int _tenQGLInterpNEval(double evalOut[3],
-                              const double *evalIn, /* size 3 -by- NN */
-                              const double *wght,   /* size NN */
-                              unsigned int NN, int ptype, tenInterpParm *tip);
-extern int _tenQGLInterpNEvec(double evecOut[9],
-                              const double *evecIn, /* size 9 -by- NN */
-                              const double *wght,   /* size NN */
-                              unsigned int NN,
-                              tenInterpParm *tip);
+extern int ten__QGLInterpNEval(double evalOut[3],
+                               const double *evalIn, /* size 3 -by- NN */
+                               const double *wght,   /* size NN */
+                               unsigned int NN, int ptype, tenInterpParm *tip);
+extern int ten__QGLInterpNEvec(double evecOut[9],
+                               const double *evecIn, /* size 9 -by- NN */
+                               const double *wght,   /* size NN */
+                               unsigned int NN,
+                               tenInterpParm *tip);
+extern double ten__QGL_Kdist(const double RThZA[3], const double RThZB[3]);
+extern void ten__QGL_Klog(double klog[3], const double RThZA[3], const double RThZB[3]);
+extern void ten__QGL_Kexp(double RThZB[3], const double RThZA[3], const double klog[3]);
+extern double ten__QGL_Rdist(const double RThPhA[3], const double RThPhB[3]);
+extern void ten__QGL_Rlog(double rlog[3], const double RThPhA[3],
+                          const double RThPhB[3]);
+extern void ten__QGL_Rexp(double RThPhB[3], const double RThPhA[3],
+                          const double rlog[3]);
 
 /* experSpec.c */
-extern double _tenExperSpec_sqe(const double *dwiMeas,
-                                const double *dwiSim,
-                                const tenExperSpec *espec,
-                                int knownB0);
-extern double _tenExperSpec_nll(const double *dwiMeas, const double *dwiSim,
-                                const tenExperSpec *espec, int rician, double sigma,
-                                int knownB0);
+extern double ten__ExperSpec_sqe(const double *dwiMeas,
+                                 const double *dwiSim,
+                                 const tenExperSpec *espec,
+                                 int knownB0);
+extern double ten__ExperSpec_nll(const double *dwiMeas, const double *dwiSim,
+                                 const tenExperSpec *espec, int rician, double sigma,
+                                 int knownB0);
 
-extern double _tenModelSqeFitSingle(const tenModel *model, double *testParm,
-                                    double *grad, double *parm, double *convFrac,
-                                    unsigned int *itersTaken, const tenExperSpec *espec,
-                                    double *dwiBuff, const double *dwiMeas,
-                                    const double *parmInit, int knownB0,
-                                    unsigned int minIter, unsigned int maxIter,
-                                    double convEps, int verbose);
+extern double ten__ModelSqeFitSingle(const tenModel *model, double *testParm,
+                                     double *grad, double *parm, double *convFrac,
+                                     unsigned int *itersTaken, const tenExperSpec *espec,
+                                     double *dwiBuff, const double *dwiMeas,
+                                     const double *parmInit, int knownB0,
+                                     unsigned int minIter, unsigned int maxIter,
+                                     double convEps, int verbose);
+
+/* miscTen.c */
+TEN_EXPORT int ten__FindValley(double *valP, const Nrrd *nhist, double tweak, int save);
 
 /* model*.c */
 /*
@@ -204,13 +204,13 @@ extern double _tenModelSqeFitSingle(const tenModel *model, double *testParm,
 ** call overhead might be doubled
 */
 
-#define _TEN_PARM_ALLOC                                                                 \
+#define MY_TEN_PARM_ALLOC                                                               \
   static double *parmAlloc(void) {                                                      \
                                                                                         \
     return AIR_CAST(double *, calloc(PARM_NUM ? PARM_NUM : 1, sizeof(double)));         \
   }
 
-#define _TEN_PARM_RAND                                                                  \
+#define MY_TEN_PARM_RAND                                                                \
   static void parmRand(double *parm, airRandMTState *rng, int knownB0) {                \
     unsigned int ii;                                                                    \
                                                                                         \
@@ -237,7 +237,7 @@ extern double _tenModelSqeFitSingle(const tenModel *model, double *testParm,
     return;                                                                             \
   }
 
-#define _TEN_PARM_STEP                                                                  \
+#define MY_TEN_PARM_STEP                                                                \
   static void parmStep(double *parm1, const double scl, const double *grad,             \
                        const double *parm0) {                                           \
     unsigned int ii;                                                                    \
@@ -262,7 +262,7 @@ extern double _tenModelSqeFitSingle(const tenModel *model, double *testParm,
     }                                                                                   \
   }
 
-#define _TEN_PARM_DIST                                                                  \
+#define MY_TEN_PARM_DIST                                                                \
   static double parmDist(const double *parmA, const double *parmB) {                    \
     unsigned int ii;                                                                    \
     double dist;                                                                        \
@@ -289,7 +289,7 @@ extern double _tenModelSqeFitSingle(const tenModel *model, double *testParm,
     return sqrt(dist);                                                                  \
   }
 
-#define _TEN_PARM_COPY                                                                  \
+#define MY_TEN_PARM_COPY                                                                \
   static void parmCopy(double *parmA, const double *parmB) {                            \
     unsigned int ii;                                                                    \
                                                                                         \
@@ -299,7 +299,7 @@ extern double _tenModelSqeFitSingle(const tenModel *model, double *testParm,
     return;                                                                             \
   }
 
-#define _TEN_PARM_CONVERT_NOOP                                                          \
+#define MY_TEN_PARM_CONVERT_NOOP                                                        \
   static int parmConvert(double *parmDst, const double *parmSrc,                        \
                          const tenModel *modelSrc) {                                    \
     unsigned int ii;                                                                    \
@@ -312,15 +312,15 @@ extern double _tenModelSqeFitSingle(const tenModel *model, double *testParm,
     return 1;                                                                           \
   }
 
-#define _TEN_SQE                                                                        \
+#define MY_TEN_SQE                                                                      \
   static double sqe(const double *parm, const tenExperSpec *espec, double *dwiBuff,     \
                     const double *dwiMeas, int knownB0) {                               \
                                                                                         \
     simulate(dwiBuff, parm, espec);                                                     \
-    return _tenExperSpec_sqe(dwiMeas, dwiBuff, espec, knownB0);                         \
+    return ten__ExperSpec_sqe(dwiMeas, dwiBuff, espec, knownB0);                        \
   }
 
-#define _TEN_SQE_GRAD_CENTDIFF                                                          \
+#define MY_TEN_SQE_GRAD_CENTDIFF                                                        \
   static void sqeGrad(double *grad, const double *parm0, const tenExperSpec *espec,     \
                       double *dwiBuff, const double *dwiMeas, int knownB0) {            \
     double parm1[PARM_NUM ? PARM_NUM : 1], sqeForw, sqeBack, dp;                        \
@@ -356,7 +356,7 @@ extern double _tenModelSqeFitSingle(const tenModel *model, double *testParm,
     return;                                                                             \
   }
 
-#define _TEN_SQE_FIT(model)                                                             \
+#define MY_TEN_SQE_FIT(model)                                                           \
   static double sqeFit(double *parm, double *convFrac, unsigned int *itersTaken,        \
                        const tenExperSpec *espec, double *dwiBuff,                      \
                        const double *dwiMeas, const double *parmInit, int knownB0,      \
@@ -364,12 +364,12 @@ extern double _tenModelSqeFitSingle(const tenModel *model, double *testParm,
                        int verbose) {                                                   \
     double testparm[PARM_NUM ? PARM_NUM : 1], grad[PARM_NUM ? PARM_NUM : 1];            \
                                                                                         \
-    return _tenModelSqeFitSingle((model), testparm, grad, parm, convFrac, itersTaken,   \
-                                 espec, dwiBuff, dwiMeas, parmInit, knownB0, minIter,   \
-                                 maxIter, convEps, verbose);                            \
+    return ten__ModelSqeFitSingle((model), testparm, grad, parm, convFrac, itersTaken,  \
+                                  espec, dwiBuff, dwiMeas, parmInit, knownB0, minIter,  \
+                                  maxIter, convEps, verbose);                           \
   }
 
-#define _TEN_SQE_FIT_STUB                                                               \
+#define MY_TEN_SQE_FIT_STUB                                                             \
   static double sqeFit(double *parm, double *convFrac, unsigned int *itersTaken,        \
                        const tenExperSpec *espec, double *dwiBuff,                      \
                        const double *dwiMeas, const double *parmInit, int knownB0,      \
@@ -390,15 +390,15 @@ extern double _tenModelSqeFitSingle(const tenModel *model, double *testParm,
     return 0;                                                                           \
   }
 
-#define _TEN_NLL                                                                        \
+#define MY_TEN_NLL                                                                      \
   static double nll(const double *parm, const tenExperSpec *espec, double *dwiBuff,     \
                     const double *dwiMeas, int rician, double sigma, int knownB0) {     \
                                                                                         \
     simulate(dwiBuff, parm, espec);                                                     \
-    return _tenExperSpec_nll(dwiMeas, dwiBuff, espec, rician, sigma, knownB0);          \
+    return ten__ExperSpec_nll(dwiMeas, dwiBuff, espec, rician, sigma, knownB0);         \
   }
 
-#define _TEN_NLL_GRAD_STUB                                                              \
+#define MY_TEN_NLL_GRAD_STUB                                                            \
   static void nllGrad(double *grad, const double *parm, const tenExperSpec *espec,      \
                       double *dwiBuff, const double *dwiMeas, int rician,               \
                       double sigma) {                                                   \
@@ -413,7 +413,7 @@ extern double _tenModelSqeFitSingle(const tenModel *model, double *testParm,
     return;                                                                             \
   }
 
-#define _TEN_NLL_FIT_STUB                                                               \
+#define MY_TEN_NLL_FIT_STUB                                                             \
   static double nllFit(double *parm, const tenExperSpec *espec, const double *dwiMeas,  \
                        const double *parmInit, int rician, double sigma, int knownB0) { \
     unsigned int pp;                                                                    \
@@ -429,7 +429,7 @@ extern double _tenModelSqeFitSingle(const tenModel *model, double *testParm,
     return 0;                                                                           \
   }
 
-#define _TEN_MODEL_FIELDS                                                               \
+#define MY_TEN_MODEL_FIELDS                                                             \
   PARM_NUM, parmDesc, simulate, parmSprint, parmAlloc, parmRand, parmStep, parmDist,    \
     parmCopy, parmConvert, sqe, sqeGrad, sqeFit, nll, nllGrad, nllFit
 
