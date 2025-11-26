@@ -44,11 +44,10 @@ encodingAscii_available(void) {
 static int
 fgetWord(FILE *file, size_t II, char buff[AIR_STRLEN_SMALL + 1]) {
   static const char me[] = "fgetWord";
-  uint idx = 0;
+  uint idx = 0, comCount = 0;
   buff[idx] = '\0';
   /* in following comments, "charn" means "any CHARacter we attribute to the ascii
      representation of a Number" == a non-white-space (and possibly non-,) character */
-  uint comCount = 0;
   AIR_UNUSED(II);
   /* fprintf(stderr, "!%s(%u): ---------\n", me, AIR_UINT(II)); */
   while (1) {
