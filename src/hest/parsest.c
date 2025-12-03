@@ -1185,7 +1185,7 @@ finishingup:
   if (havec->len) {
     havStr = hestArgVecSprint(havec, AIR_TRUE);
     BIFF_GIVEN_ARGV(havStr);
-    fprintf(stderr, "!%s: haveStr=|%s|\n", __func__, havStr);
+    // fprintf(stderr, "!%s: haveStr=|%s|\n", __func__, havStr);
     if (ufOptNum) {
       biffAddf(HEST,
                "%s%safter getting %u unflagged opts, have %u unexpected arg%s "
@@ -1197,7 +1197,7 @@ finishingup:
                havec->len > 1 ? "s," : "", havec->len > 1 ? "starting with " : "",
                havec->harg[0]->str);
     }
-    fprintf(stderr, "!%s: have added to biff about unexpected arg(s)\n", __func__);
+    // fprintf(stderr, "!%s: have added to biff about unexpected arg(s)\n", __func__);
     return (free(havStr), airFree(ufOpi2), 1);
   }
 
