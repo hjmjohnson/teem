@@ -425,6 +425,7 @@ extern hestArgVec *hestArgVecNix(hestArgVec *havec);
 extern void *hestArgVecNix_mop(void *);
 extern hestArg *hestArgVecRemove(hestArgVec *havec, unsigned int popIdx);
 extern char *hestArgVecSprint(const hestArgVec *havec, int showIndices);
+extern char *hestArgcArgvSprint(int argc, const char **argv, int showIdx);
 extern void hestArgVecAppendString(hestArgVec *havec, const char *str);
 extern void hestArgVecAppendArg(hestArgVec *havec, hestArg *harg);
 extern void hestArgVecPrint(const char *caller, const char *info,
