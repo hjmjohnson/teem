@@ -733,9 +733,11 @@ nternaryOpMin(double a, double b, double c) {
   return AIR_MIN(a, b);
 }
 /*
-** minsmooth(x, w, M) is like min(x,M), but starting at value M-w, values
-** are lowered (via erf), so that the output is asymptotic to M
-*/
+ * minsmooth(x, w, M) is like min(x,M), but starting at value M-w, values
+ * are lowered (via erf), so that the output is asymptotic to M
+ *
+ * btw 0.886226925452758 ~= sqrt(pi)/2 = 1/(slope of erf(x) at x=0)
+ */
 static double
 nternaryOpMinSmooth(double x, double width, double max) {
   double tran;
