@@ -173,9 +173,9 @@ hestArgVecRemove(hestArgVec *havec, uint popIdx) {
   return ret;
 }
 
-/* hestArgVecSprint goes is opposite of the shell-style tokenization of
-parsest.c/argstGo: generate a single human-friendly string that could be tokenized to
-recover the hestArgVec we started with.
+/* hestArgVecSprint is like the opposite of the shell-style tokenization done by
+parsest.c:argstGo(); this generates a single human-friendly string that could be
+tokenized to recover the hestArgVec we started with.
 ChatGPT helped with prototyping hest__PlainWord and argAddQuotedString
 (and in this file, only those two functions)
 Here are instructive examples of the same kind of argv pretty-printing:
@@ -265,6 +265,21 @@ hestArgVecSprint(const hestArgVec *havec, int showIdx) {
   char *ret = retArg->str;
   airArrayNix(retArg->strArr);
   free(retArg);
+  return ret;
+}
+
+// hestArgcArgvSprint: (allocated and) sprint argc,argv to single string
+char *
+hestArgcArgvSprint(int argc, const char **argv, int showIdx) {
+  if (!argv) {
+    return NULL;
+  }
+  hestArgVec *havec = hestArgVecNew();
+  for (int ai = 0; ai < argc; ai++) {
+    hestArgVecAppendString(havec, argv[ai]);
+  }
+  char *ret = hestArgVecSprint(havec, showIdx);
+  hestArgVecNix(havec);
   return ret;
 }
 

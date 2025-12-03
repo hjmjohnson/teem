@@ -817,11 +817,15 @@ optAllPrint(const char *func, const char *ctx, const hestOpt *hoptall) {
   return;
 }
 
-#define BIFF_GIVEN_ARGV(HAVSTR)                                                         \
+#define BIFF_GIVEN_ARGV(HAVSTR, SHOWIDX)                                                \
   if (airStrlen((HAVSTR))) {                                                            \
-    biffAddf(HEST, "%s%swith (index: labeled) argv=|%s|", MY_ME, (HAVSTR));             \
+    if (SHOWIDX) {                                                                      \
+      biffAddf(HEST, "%s%swith (index: labeled) args=|%s|", MY_ME, (HAVSTR));           \
+    } else {                                                                            \
+      biffAddf(HEST, "%s%swith args=|%s|", MY_ME, (HAVSTR));                            \
+    }                                                                                   \
   } else {                                                                              \
-    biffAddf(HEST, "%s%swith *empty* argv", MY_ME);                                     \
+    biffAddf(HEST, "%s%swith *no* args", MY_ME);                                        \
   }
 
 /* havecExtractFlagged
@@ -902,8 +906,9 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
              "parmNum=%u hitEnd=%d hitVPS=%d nextOptIdx=%u\n",
              __func__, optIdx, theOpt->flag, parmNum, hitEnd, hitVPS, nextOptIdx);
     if (parmNum < theOpt->min) { // didn't get required min # parameters
-      havStr = hestArgVecSprint(havec, AIR_TRUE);
-      BIFF_GIVEN_ARGV(havStr);
+      int shwi = AIR_FALSE;
+      havStr = hestArgVecSprint(havec, shwi);
+      BIFF_GIVEN_ARGV(havStr, shwi);
       if (hitEnd) {
         biffAddf(HEST,
                  "%s%shit end of args before getting %u parameter%s "
@@ -946,7 +951,7 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     hestArgNix(hestArgVecRemove(havec, argIdx));
     havStr = hestArgVecSprint(havec, AIR_TRUE);
     if (havecTransfer(theOpt, havec, argIdx, parmNum, hparm)) {
-      BIFF_GIVEN_ARGV(havStr);
+      BIFF_GIVEN_ARGV(havStr, AIR_TRUE); // copying from 2 lines above
       biffAddf(HEST, "%s%strouble transferring %u args for %s", MY_ME, parmNum,
                identStr(ident1, sizeof(ident1), theOpt));
       return (free(havStr), 1);
@@ -1082,9 +1087,10 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     how to set it to satisfy hopt[opi].min. It is only later (optProcessDefaults) that
     the default string is actually processed. */
     if (hopt[opi].min /* == max */ < havec->len || !hopt[opi].dflt) {
-      havStr = hestArgVecSprint(havec, AIR_TRUE);
+      int shwi = AIR_TRUE;
+      havStr = hestArgVecSprint(havec, shwi);
       if (havecTransfer(hopt + opi, havec, 0, hopt[opi].min, hparm)) {
-        BIFF_GIVEN_ARGV(havStr);
+        BIFF_GIVEN_ARGV(havStr, shwi);
         biffAddf(HEST, "%s%strouble getting args for %s%s[%u]", MY_ME,
                  !hopt[opi].dflt ? "default-less " : "",
                  identStr(ident, sizeof(ident), hopt + opi), opi);
@@ -1113,9 +1119,10 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
       uint idx0 = (hopt[opi].min < havec->len     // index of first arg for this option
                      ? havec->len - hopt[opi].min //
                      : 0);
-      havStr = hestArgVecSprint(havec, AIR_TRUE);
+      int shwi = AIR_TRUE;
+      havStr = hestArgVecSprint(havec, shwi);
       if (havecTransfer(hopt + opi, havec, idx0, hopt[opi].min, hparm)) {
-        BIFF_GIVEN_ARGV(havStr);
+        BIFF_GIVEN_ARGV(havStr, shwi);
         biffAddf(HEST, "%s%strouble getting args for (later) %s%s[%u]", MY_ME,
                  !hopt[opi].dflt ? "default-less " : "",
                  identStr(ident, sizeof(ident), hopt + opi), opi);
@@ -1132,8 +1139,9 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
   }
   uint minArg = hopt[ufVarOpi].min; /* min < max for sure */
   if (minArg > havec->len && !hopt[ufVarOpi].dflt) {
-    havStr = hestArgVecSprint(havec, AIR_TRUE);
-    BIFF_GIVEN_ARGV(havStr);
+    int shwi = AIR_TRUE;
+    havStr = hestArgVecSprint(havec, shwi);
+    BIFF_GIVEN_ARGV(havStr, shwi);
     biffAddf(HEST,
              "%s%shave %s%u args left but need %u for "
              "(default-less) variadic %s[%u]",
@@ -1149,8 +1157,9 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
       getArg = AIR_MIN(getArg, AIR_UINT(hopt[ufVarOpi].max));
     }
     if (havecTransfer(hopt + ufVarOpi, havec, 0, getArg, hparm)) {
-      havStr = hestArgVecSprint(havec, AIR_TRUE);
-      BIFF_GIVEN_ARGV(havStr);
+      int shwi = AIR_TRUE;
+      havStr = hestArgVecSprint(havec, shwi);
+      BIFF_GIVEN_ARGV(havStr, shwi);
       biffAddf(HEST, "%s%strouble getting args for variadic %s[%u]", MY_ME,
                identStr(ident, sizeof(ident), hopt + ufVarOpi), ufVarOpi);
       return (free(havStr), free(ufOpi2), 1);
@@ -1183,8 +1192,9 @@ finishingup:
   }
   // currently it's an error to have un-accounted-for args left over
   if (havec->len) {
-    havStr = hestArgVecSprint(havec, AIR_TRUE);
-    BIFF_GIVEN_ARGV(havStr);
+    int shwi = AIR_FALSE;
+    havStr = hestArgVecSprint(havec, shwi);
+    BIFF_GIVEN_ARGV(havStr, shwi);
     // fprintf(stderr, "!%s: haveStr=|%s|\n", __func__, havStr);
     if (ufOptNum) {
       biffAddf(HEST,
@@ -1575,8 +1585,11 @@ hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
   }
 #endif
 
-  // error string song and dance
-#define DO_ERR(WUT)                                                                     \
+  // error string songs and dances
+#define DO_ERR2(WUT, ARGVS)                                                             \
+  if ((ARGVS)) {                                                                        \
+    biffAddf(HEST, "from command-line=|%s|", (char *)(ARGVS));                          \
+  }                                                                                     \
   biffAddf(HEST, "%s%s" WUT, MY_MEV(HPARM->verbose));                                   \
   char *err = biffGetDone(HEST);                                                        \
   if (errP) {                                                                           \
@@ -1586,6 +1599,7 @@ hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
     free(err);                                                                          \
   }                                                                                     \
   if (-5 == hopt->parseErrOptIdx) hopt->parseErrOptIdx = -10 * phase
+#define DO_ERR(WUT) DO_ERR2(WUT, NULL)
 
   // --1--1--1--1--1-- check on validity of the hestOpt array
   int phase = 1;
@@ -1612,6 +1626,8 @@ hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
   airMopAdd(mop, havec, hestArgVecNix_mop, airMopAlways);
   hestArg *tharg = hestArgNew(); // tmp hestArg
   airMopAdd(mop, tharg, hestArgNix_mop, airMopAlways);
+  char *argvstr = hestArgcArgvSprint(argc, argv, AIR_FALSE);
+  airMopAdd(mop, argvstr, airFree, airMopAlways);
   /* in case we have a parsing error, we make ourselves responsible for
      cleaning up the things allocated by parsing, prior to the error */
   airMopAdd(mop, hopt, hestParseFree_mop, airMopOnError);
@@ -1623,7 +1639,7 @@ hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
   phase = 2;
   if (histPushCommandLine(hist, argc, argv, HPARM)
       || histProcess(havec, &(hopt->helpWanted), tharg, hist, HPARM)) {
-    DO_ERR("problem with initial processing of command-line");
+    DO_ERR2("problem with initial processing of command-line", argvstr);
     airMopError(mop);
     return 1;
   }
@@ -1647,7 +1663,7 @@ hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
   // this will detect extraneous args after unflagged opts are extracted
   if (!EE) EE = havecExtractUnflagged(hopt, havec, HPARM);
   if (EE) {
-    DO_ERR("problem extracting args for options");
+    DO_ERR2("problem extracting args for options", argvstr);
     airMopError(mop);
     return 1;
   }
