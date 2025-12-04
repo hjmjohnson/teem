@@ -51,7 +51,7 @@ autoload -Uz add-zsh-hook
 add-zsh-hook zshexit zet_cleanup
 
 zet_die() {
-    print -u2 "$funcstack[1]: ERROR:"
+    print -u2 "ERROR in ${funcstack[2]}() called from ${funcfiletrace[2]}:"
     local line
     for line in "$@"; do
         print -u2 "$line"
@@ -103,6 +103,8 @@ zet_run_cmd() {
                 "File \"$fname\" already exists so will not run:" \
                 "$cmd"
     fi
+    # junk file first (more reliably erases it upon interrupt)
+    zet_junk $fname
     # run the command but lose stdout and stderr
     # echo "$funcstack[1]: $cmd"
     eval $cmd >& /dev/null
@@ -111,7 +113,6 @@ zet_run_cmd() {
                 "File \"$fname\" not created by:" \
                 "$cmd"
     fi
-    zet_junk $fname
 }
 
 #### zet_unspace str
@@ -184,6 +185,8 @@ zet_init_ICW() {
         # print -u2 "$funcstack[1]: read line $lineno: |$line|"
         # Skip blank lines and comment lines
         [[ -z $line || $line == '#'* ]] && continue
+        # handle #-comments within line
+        line=${line%%\#*}
         # Expected format: `fname :: info ;; chek => want`
         # Split off fname :: rest
         if [[ $line =~ '^(.*[^[:space:]])[[:space:]]*::[[:space:]]*(.*)$' ]]; then
@@ -191,7 +194,7 @@ zet_init_ICW() {
             fname=${match[1]}
             rest=${match[2]}
         else
-            zet_die "bad line $lineno of $reffile (missing `::`)" \
+            zet_die "Missing \"::\" on line $lineno of ${reffile:A}:" \
                     "   $line"
         fi
         # Replace {} with filename in the rest of the line
@@ -202,10 +205,18 @@ zet_init_ICW() {
             info=$(zet_unspace "${match[1]}")
             chek=$(zet_unspace "${match[2]}")
             want=$(zet_unspace "${match[3]}")
+            if [[ -z $info || -z $chek || -z $want ]]; then
+                zet_die "line $lineno of ${reffile:A}:" \
+                        "   $line" \
+                        "set one of these to an empty string:" \
+                        "  info=\"$info\"" \
+                        "  chek=\"$chek\"" \
+                        "  want=\"$want\""
+            fi
         else
-            zet_die "malformed line $lineno of $reffile:" \
+            zet_die "malformed line $lineno of ${reffile:A}:" \
                     "   $line" \
-                    "need `info ;; chek => want`"
+                    "need: \"fname :: info ;; chek => want\""
             exit 1
         fi
         # Ensure $chek includes fname, or end with fname if not

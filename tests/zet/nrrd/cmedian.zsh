@@ -36,14 +36,14 @@ Mx[1]=1599
 Mx[2]=159
 Mx[3]=27
 Mx[4]=11
-Out=data1gf.nrrd; echo 1 | unu reshape -s         1 | unu pad -min         0 -max                        $Mx[1] | valgen 1 -o $Out; zet_junk $Out
-Out=data1cf.nrrd; echo 1 | unu reshape -s       1 1 | unu pad -min       0 0 -max                    2   $Mx[1] | valgen 2 -o $Out; zet_junk $Out
-Out=data2gf.nrrd; echo 1 | unu reshape -s       1 1 | unu pad -min       0 0 -max                 $Mx[2] $Mx[2] | valgen 3 -o $Out; zet_junk $Out
-Out=data2cf.nrrd; echo 1 | unu reshape -s     1 1 1 | unu pad -min     0 0 0 -max             2   $Mx[2] $Mx[2] | valgen 4 -o $Out; zet_junk $Out
-Out=data3gf.nrrd; echo 1 | unu reshape -s     1 1 1 | unu pad -min     0 0 0 -max          $Mx[3] $Mx[3] $Mx[3] | valgen 5 -o $Out; zet_junk $Out
-Out=data3cf.nrrd; echo 1 | unu reshape -s   1 1 1 1 | unu pad -min   0 0 0 0 -max     2    $Mx[3] $Mx[3] $Mx[3] | valgen 6 -o $Out; zet_junk $Out
-Out=data4gf.nrrd; echo 1 | unu reshape -s   1 1 1 1 | unu pad -min   0 0 0 0 -max   $Mx[4] $Mx[4] $Mx[4] $Mx[4] | valgen 7 -o $Out; zet_junk $Out
-Out=data4cf.nrrd; echo 1 | unu reshape -s 1 1 1 1 1 | unu pad -min 0 0 0 0 0 -max 2 $Mx[4] $Mx[4] $Mx[4] $Mx[4] | valgen 8 -o $Out; zet_junk $Out
+Out=data1gf.nrrd; zet_junk $Out; echo 1 | unu reshape -s         1 | unu pad -min         0 -max                        $Mx[1] | valgen 1 -o $Out
+Out=data1cf.nrrd; zet_junk $Out; echo 1 | unu reshape -s       1 1 | unu pad -min       0 0 -max                    2   $Mx[1] | valgen 2 -o $Out
+Out=data2gf.nrrd; zet_junk $Out; echo 1 | unu reshape -s       1 1 | unu pad -min       0 0 -max                 $Mx[2] $Mx[2] | valgen 3 -o $Out
+Out=data2cf.nrrd; zet_junk $Out; echo 1 | unu reshape -s     1 1 1 | unu pad -min     0 0 0 -max             2   $Mx[2] $Mx[2] | valgen 4 -o $Out
+Out=data3gf.nrrd; zet_junk $Out; echo 1 | unu reshape -s     1 1 1 | unu pad -min     0 0 0 -max          $Mx[3] $Mx[3] $Mx[3] | valgen 5 -o $Out
+Out=data3cf.nrrd; zet_junk $Out; echo 1 | unu reshape -s   1 1 1 1 | unu pad -min   0 0 0 0 -max     2    $Mx[3] $Mx[3] $Mx[3] | valgen 6 -o $Out
+Out=data4gf.nrrd; zet_junk $Out; echo 1 | unu reshape -s   1 1 1 1 | unu pad -min   0 0 0 0 -max   $Mx[4] $Mx[4] $Mx[4] $Mx[4] | valgen 7 -o $Out
+Out=data4cf.nrrd; zet_junk $Out; echo 1 | unu reshape -s 1 1 1 1 1 | unu pad -min 0 0 0 0 0 -max 2 $Mx[4] $Mx[4] $Mx[4] $Mx[4] | valgen 8 -o $Out
 # (checksums set manually)
 typeset -A Ckc
 Ckc[1gf]="86347561 6658"
