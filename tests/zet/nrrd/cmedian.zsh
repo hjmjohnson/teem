@@ -72,25 +72,8 @@ for dim in 1 2 3 4; do
     done
 done
 
-RefFile=data.txt
-if (( ${+ZET_WRITE_REF} )); then
-    # *Writing* RefFile (not reading it)
-    if [[ -f $RefFile ]]; then
-        Verb="OVER-writing"
-    else
-        Verb="Writing"
-    fi
-    print "$0: === $Verb === RefFile=$RefFile"
-    rm -f $RefFile
-    touch $RefFile
-else
-    # not writing RefFile: we're *reading* it
-    print "$0: === Reading === RefFile=$RefFile"
-    zet_init_ICW $RefFile
-    #echo "====== ZET_INFO"; for k v in ${(kv)ZET_INFO}; do print "[$k] => [$v]"; done
-    #echo "====== ZET_CHEK"; for k v in ${(kv)ZET_CHEK}; do print "[$k] => [$v]"; done
-    #echo "====== ZET_WANT"; for k v in ${(kv)ZET_WANT}; do print "[$k] => [$v]"; done
-fi
+RefFile=cmedian-ref.txt
+zet_init_ref $RefFile
 
 typeset -A mode
 mode[mode0]=""
@@ -157,10 +140,3 @@ if (( ! ${+ZET_WRITE_REF} )); then
         print "All tests passed."
     fi
 fi
-
-# TODO:
-# Create one more test set
-# Create test sets with names like nrrd/cmedian, and rename data.txt accordingly
-# Figure out how to register test sets, so as to "run all tests", and report stats
-# Figure out how to run with recompiling unu with UBSAN or running with valgrind
-#   ---> how to report errors? from ubsan or valgrind, but not from outputs being wrong
