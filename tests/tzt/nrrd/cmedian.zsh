@@ -97,6 +97,7 @@ pad[pad0]=""
 pad[pad1]="-p"
 BINS_LIST=(100 5000)
 WGHT_LIST=(1 2 5)
+typeset -ga FAIL_CMD
 for WUT in ${(k)Ckc}; do  # for all keywords in Ckc
     for RAD in 1 2 4; do
         for BINS in $BINS_LIST; do
@@ -123,6 +124,9 @@ for WUT in ${(k)Ckc}; do  # for all keywords in Ckc
                                 print -n "."
                             else
                                 print -n "X"
+                                FAIL_CMD+=($Cmd)
+                                # preserve the input to the failed command
+                                tzt_unjunk $Fin
                             fi
                         else
                             # *Writing* RefFile (not reading it)
@@ -138,3 +142,14 @@ for WUT in ${(k)Ckc}; do  # for all keywords in Ckc
     done
 done
 print ""
+
+if [[ -z ${TEEM_ZT_WRITE_REF:-} ]]; then
+    if (( ${#FAIL_CMD} > 0 )); then
+        print "Failed commands:"
+        for Cmd in "${FAIL_CMD[@]}"; do
+            print -- "$Cmd"
+        done
+    else
+        print "All tests passed."
+    fi
+fi

@@ -27,6 +27,13 @@ setopt WARN_CREATE_GLOBAL # warn if a function leaks variables
 
 typeset -ga TZT_JUNK  # junk and cleanup functions for tmp files
 tzt_junk() { TZT_JUNK+=("$@"); }
+tzt_unjunk() {
+    # For each argument, remove matching entries from the array
+    local f
+    for f in "$@"; do
+        TZT_JUNK=(${TZT_JUNK:#${~f}})
+    done
+}
 tzt_cleanup() {
     [[ ${#TZT_JUNK[@]} -gt 0 ]] && rm -rf -- "${TZT_JUNK[@]}"
 }
@@ -78,6 +85,7 @@ tzt_run_cmd() {
         exit 1
     fi
     # run the command but lose stdout and stderr
+    # echo "$funcstack[1]: $cmd"
     eval $cmd >& /dev/null
     if [[ ! -f $fname ]]; then
         print -u2 "$funcstack[1]: problem with ${funcfiletrace[1]}:"
