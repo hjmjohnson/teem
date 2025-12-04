@@ -17,6 +17,19 @@
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 
+/* learned example of cross-architecture floating-point confusion:
+In cheapMedian2D, this line:
+     hist[INDEX(nin, range, lup, I + X + sx * (J + Y), bins, val)]
+              += wt[I + radius] * wt[J + radius];
+on x86_64 (with -O3 but no fast math) had the same wt[] factors and
+  the same hist[] index and hence the same hist[idx] increment,
+BUT, after three such incements the stored hist[] value was a *different* float
+than after the same three increments on arm64.
+This caused great confusion when comparing old unu (svn r6382)
+with new TeemV2 unu with the new teem-src/tests/tzt/nrrd/cmedian.zsh
+tests.  By accident the old unu binary was compiled with "-arch x86_64"
+since was using the old pre-ARM make files.
+About 10% of the tests failed because of this difference. */
 #include "nrrd.h"
 #include "privateNrrd.h"
 
