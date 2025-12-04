@@ -17,87 +17,107 @@
 # along with this library; if not, see <https://www.gnu.org/licenses/>.
 #
 
-####### TeemZT = TZT = Teem Zsh-based Testing
+####### Zet = Zsh-Enabled Testing
 #
-# A way to do shell-script-based testing of Teem tools
-# that have command-line interfaces
+# New/minimal/experimental zsh-based machinery to test command-line tools
 
 setopt NO_UNSET           # error on unbound variables
 setopt WARN_CREATE_GLOBAL # warn if a function leaks variables
 
-typeset -ga TZT_JUNK  # junk and cleanup functions for tmp files
-tzt_junk() { TZT_JUNK+=("$@"); }
-tzt_unjunk() {
+# junk and cleanup functions for any transient files
+typeset -ga ZET_JUNK
+zet_junk() {
+    ZET_JUNK+=("$@");
+}
+zet_unjunk() {
     # For each argument, remove matching entries from the array
     local f
     for f in "$@"; do
-        TZT_JUNK=(${TZT_JUNK:#${~f}})
+        ZET_JUNK=(${ZET_JUNK:#${~f}})
     done
 }
-tzt_cleanup() {
-    [[ ${#TZT_JUNK[@]} -gt 0 ]] && rm -rf -- "${TZT_JUNK[@]}"
+zet_cleanup() {
+    # we're done if have no junk
+    (( ${#ZET_JUNK[@]} == 0 )) && return 0
+    # else remove it
+    rm -rf -- "${ZET_JUNK[@]}"
+    # clear junk list in case of repeated calls
+    ZET_JUNK=()
 }
-trap tzt_cleanup EXIT INT TERM
-#autoload -Uz add-zsh-hook
-#add-zsh-hook zshexit tzt_cleanup
+# Ensure trap works for ordinary exits and signals
+trap zet_cleanup EXIT INT TERM
+# Ensure cleanup even when script is sourced or run in a subshell
+autoload -Uz add-zsh-hook
+add-zsh-hook zshexit zet_cleanup
 
-tzt_die() { print -u2 "$@"; exit 1 }
+zet_die() {
+    print -u2 "$funcstack[1]: ERROR:"
+    local line
+    for line in "$@"; do
+        print -u2 "$line"
+    done
+    exit 1
+}
 
-# tzt_assert_out want cmd: runs command `cmd`, asserts that its output is same as `want`
-tzt_assert_out() {
+#### zet_assert_out want cmd
+# runs command `cmd`, asserts that its output is same as `want`
+zet_assert_out() {
     #emulate -L zsh   # create a local, clean shell environment
     #unsetopt XTRACE  # disable verbose in this local scope
-    local cmd want got
+    local want cmd got
     want="$1"
     shift
     cmd=("$@")       # store the command and all its arguments in an array
     got="$("${cmd[@]}")"  # run the command safely and capture stdout
     if [[ "$got" != "$want" ]]; then
-        print -u2 "$funcstack[1]: problem at ${funcfiletrace[1]}"
-        print -u2 "\"$cmd\" supposed to say: $want"
-        print -u2 "but actually got: $got\n"
-        exit 1
+        zet_die "problem at ${funcfiletrace[1]}" \
+                "\"$cmd\" supposed to say: $want" \
+                "but actually got: $got"
     fi
+    # else got == want; continue
 }
 
-# tzt_assert_cksum want fname: runs (effectively) "cat fname | cksum", asserts that its output is same as `want`
-tzt_assert_cksum() {
+#### zet_assert_cksum want fname
+# runs (effectively) "cat fname | cksum", asserts that its output is same as `want`
+zet_assert_cksum() {
     #emulate -L zsh   # create a local, clean shell environment
     #unsetopt XTRACE  # disable verbose in this local scope
     local want="$1" fname="$2"
     local got="$(cksum $fname)" # actually 3 words, ending with filename
     got=${${=got}[1,2]} # get first two words: cksum and size
-    if [[ "$want" != "$got" ]]; then
-        print -u2 "$funcstack[1]: problem at ${funcfiletrace[1]}"
-        print -u2 "\"cat $fname | cksum\" supposed to say: $want"
-        print -u2 "but actually got: $got\n"
-        exit 1
+    if [[ "$got" != "$want" ]]; then
+        zet_die "problem at ${funcfiletrace[1]}" \
+                "\"cat $fname | cksum\" supposed to say: $want" \
+                "but actually got: $got\n"
     fi
+    # else got == want; continue
 }
 
-# tzt_run_cmd $Cmd $Fname: run command $Cmd that should write file $Fname
-# but do so cautiously, and call junk on $Fname
-tzt_run_cmd() {
+#### zet_run_cmd cmd fname
+# run command `cmd` that should create (write to) file `fname`
+# but do so cautiously, and call junk on `fname`
+zet_run_cmd() {
     local cmd="$1" fname="$2"
     if [[ -f $fname ]]; then
-        print -u2 "$funcstack[1]: problem with ${funcfiletrace[1]}:"
-        print -u2 "File \"$fname\" already exists so will not run: $cmd"
-        exit 1
+        zet_die "problem with ${funcfiletrace[1]}:" \
+                "File \"$fname\" already exists so will not run:" \
+                "$cmd"
     fi
     # run the command but lose stdout and stderr
     # echo "$funcstack[1]: $cmd"
     eval $cmd >& /dev/null
     if [[ ! -f $fname ]]; then
-        print -u2 "$funcstack[1]: problem with ${funcfiletrace[1]}:"
-        print -u2 "File \"$fname\" not created by: $cmd"
-        exit 1
+        zet_die "problem with ${funcfiletrace[1]}:" \
+                "File \"$fname\" not created by:" \
+                "$cmd"
     fi
-    tzt_junk $fname
+    zet_junk $fname
 }
 
-# tzt_unspace str: Collapse internal multiple spaces in `str` to one,
-#   as well as entirely removing leading and trailing spaces
-tzt_unspace() {
+#### zet_unspace str
+# Collapse internal multiple spaces in `str` to single space,
+# and entirely remove leading and trailing spaces
+zet_unspace() {
     emulate -L zsh
     unsetopt WARN_CREATE_GLOBAL
     unsetopt ERR_EXIT
@@ -113,8 +133,9 @@ tzt_unspace() {
     print -n "$str"
 }
 
-# tzt_enbrace Rest Fname: replace occurances of $Fname in $Rest with `{}`
-tzt_enbrace() {
+#### zet_enbrace rest fname
+# replace occurances of `fname` in `rest` with `{}`
+zet_enbrace() {
     emulate -L zsh
     setopt NO_BRACE_EXPAND
     local Rest="$1" Fname="$2"
@@ -123,38 +144,39 @@ tzt_enbrace() {
     print -n "$Rest"
 }
 
-# tzt_init_ICW: sets up (global) maps ("associative array") INFO, CHEK, and WANT:
-# INFO[`fname`] = info about how `fname` was generated
-#    e.g. a command ending with "-o `fname`". NOTE: this is for documentation
-#    and context rather than for actually re-generating fname. The test
-#    script has to otherwise know exactly how to generate `fname`.
-# CHEK[`fname`] = command(s) to run to asses something
-#    about `fname` in order to see if it looks like the expected output.
-#    Like in `find`, the token "{}" stands in for the filename. If "{}" is not
-#    used, then it is assumed to be at the end of the command.
-#    E.g. If CHEK[`fname`] is "cksum" that is the same as "cksum {}",
-#    which should be expanded to "cksum `fname`" when saved to CHEK.
-# WANT[`fname`] = expected output of CHEK[`fname`]
-# init_ICW assumes variable $RefFile is filename of reference data.
-#    Each line should be formatted as:
+#### zet_init_ICW reffile
+# Sets up (global) maps (associative arrays) `ZET_INFO`, `ZET_CHEK`, `ZET_WANT`
+# from reference data in file `reffile`, each line of which is formatted as:
 #       fname :: info ;; chek => want
-#    The `::`, `;;`, and `=>` delimit the `fname`, `info`, `check`, and `want`
-#    fields described above; with or without any white-space between them
-tzt_init_ICW() {
+# The `::`, `;;`, and `=>` delimit the `fname`, `info`, `check`, and `want`
+# fields (with or without any white-space between them).
+# * `fname` is a file generated by a test; effectively this is the test name.
+# * `info` is info about how `fname` was generated, often a command ending
+#   with "-o $fname". NOTE: this is for documentation and context rather
+#   than for actually re-generating `fname`. The calling test script has to
+#   already know from context exactly how to generate `fname`.
+#   `info` is saved in `ZET_INFO[$fname]`
+# * `chek` is the actual command(s) to run to asses something about `fname`,
+#   to see if it looks like the expected output (does it match `want`).
+#   `chek` is saved to `ZET_CHEK[$fname]`, but if $chek does not include $fname
+#   then $fname is added as a final word before saving to `ZET_CHEK[$fname]`.
+# * `want` is the expected output of `chek`
+# NOTE: Within `info`, `chek`, and `want`, just like with unix `find`,
+# the token "{}" works as an abbreviation for the filename `fname`.
+# Thus, if $chek is "cksum {}" that is expanded to "cksum $fname" prior to
+# saving in to ZET_CHEK[$fname]. Also, if $chek is just "cksum" that is also
+# expanded to "cksum $fname" because of the rule above.
+zet_init_ICW() {
     emulate -L zsh
+    local reffile="$1"
     unsetopt WARN_CREATE_GLOBAL
     unsetopt ERR_EXIT
     setopt extendedglob
-    if [[ -z ${RefFile:-} ]]; then
-        print -u2 "$funcstack[1]: RefFile variable is empty or not set"
-        exit 1
+    if [[ ! -f $reffile ]]; then
+        zet_die "reffile \"$reffile\" not found"
     fi
-    if [[ ! -f $RefFile ]]; then
-        print -u2 "$funcstack[1]: RefFile file \"$RefFile\" not found"
-        exit 1
-    fi
-    # print -u2 "$funcstack[1]: reading from $RefFile"
-    typeset -g -A INFO CHEK WANT
+    # print -u2 "$funcstack[1]: reading from $reffile"
+    typeset -g -A ZET_INFO ZET_CHEK ZET_WANT
     local line lineno=0
     local info fname check want
     while IFS= read -r line; do
@@ -169,21 +191,21 @@ tzt_init_ICW() {
             fname=${match[1]}
             rest=${match[2]}
         else
-            print -u2 "$funcstack[1]: malformed line $lineno of $RefFile (missing `::`)"
-            print -u2 "    $line"
-            exit 1
+            zet_die "bad line $lineno of $reffile (missing `::`)" \
+                    "   $line"
         fi
         # Replace {} with filename in the rest of the line
         rest=${${(S)rest}//\{\}/$fname}
         # Parse `rest` as `info ;; chek => want`
         if [[ $rest =~ '^(.*)[[:space:]]*;;[[:space:]]*(.*)[[:space:]]*=>[[:space:]]*(.*)$' ]]; then
             #            info            ;;            chek            =>            want
-            info=$(tzt_unspace "${match[1]}")
-            chek=$(tzt_unspace "${match[2]}")
-            want=$(tzt_unspace "${match[3]}")
+            info=$(zet_unspace "${match[1]}")
+            chek=$(zet_unspace "${match[2]}")
+            want=$(zet_unspace "${match[3]}")
         else
-            print -u2 "$funcstack[1]: malformed line $lineno of $RefFile (need: `info ;; chek => want`)"
-            print -u2 "    $line"
+            zet_die "malformed line $lineno of $reffile:" \
+                    "   $line" \
+                    "need `info ;; chek => want`"
             exit 1
         fi
         # Ensure $chek includes fname, or end with fname if not
@@ -191,8 +213,8 @@ tzt_init_ICW() {
             chek="${chek} ${fname}"
         fi
         # Assign to global arrays
-        INFO[$fname]="$info"
-        CHEK[$fname]="$chek"
-        WANT[$fname]="$want"
-    done < "$RefFile"
+        ZET_INFO[$fname]="$info"
+        ZET_CHEK[$fname]="$chek"
+        ZET_WANT[$fname]="$want"
+    done < "$reffile"
 }
