@@ -21,12 +21,18 @@
 #
 # New/minimal/experimental zsh-based machinery to test command-line tools
 #
-# Written by GLK for TeemV2 with recognition that shell scripts will be much faster to
-# whip up than CTest programs. This was also an excuse to learn more about zsh-specific
+# Written by GLK for TeemV2 with recognition that once you have a command-line parser
+# (like hest) and once you have command-line wrappers around your C programs (like unu
+# around nrrd) shell scripts will be much faster to whip up, and more probably concise,
+# than CTest tests. CTest is still obviously very important, but maybe there are easier
+# ways to test some things. The acute need for creating Zet was the uncertainty around
+# the correctness of the modernization to teem/src/nrrd/filt.c and its myriad ways of
+# filtering data 1D, 2D, 3D, and 4D data.  Now, for the first time, everything there is
+# actually tested. Creating Zet was also an excuse to learn more about zsh-specific
 # scripting. Many technical zsh details were learned thanks to ChatGPT, but the structure
 # of files and functions here is all hand-crafted.
 #
-# No relation to all the other software already named zet:
+# No relation to all the other software already named Zet:
 # http://zaytsev.com/
 # https://github.com/yarrow/zet
 # https://www.zoho.com/developer/help/extensions/zappscli.html
@@ -40,11 +46,12 @@
 #
 # learned:
 #
-# • with one character difference `typeset -g A ZET_FAIL_COMD` you actually get a regular
-# array, and then indexing like `ZET_FAIL_COMD[$fname]`
-# (e.g. fname=hght-d13-th0.5-b0.nrrd) will produce cryptic errors like:
-# `d13: parameter not set` because zsh is dutifully trying to interpret $fname as
-# arithmetic as it (sensibly) always done for regular arrays)
+# • with 1 character change from `typeset -g -A ZET_FAIL_COMD`, with
+# `typeset -g A ZET_FAIL_COMD` you actually get a regular array, and then indexing like
+# `ZET_FAIL_COMD[$fname]` (e.g. fname=hght-d13-th0.5-b0.nrrd) will produce cryptic errors
+# like: `d13: parameter not set` because zsh is dutifully trying to interpret $fname as
+# arithmetic as it (sensibly) always done for regular arrays). Use `typeset -p` to check
+# what kind of type a thing currently is.
 #
 # • as "man zshparam" says: "In cases where there are two parameters with an upper- and
 # lowercase form of the same name, such as path and PATH, the lowercase form is an array
@@ -584,6 +591,7 @@ zet_end() {
 }
 
 # TODO:
+# create a system of naming and reading architecture-specific (arm vs x86) reffiles
 # enable running specific tests instead of all of them
 # Figure out how to run with recompiling unu with UBSAN or running with valgrind
 #   ---> how to report errors? from ubsan or valgrind, but not from outputs being wrong
