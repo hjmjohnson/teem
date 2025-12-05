@@ -5,10 +5,9 @@ setopt ERR_EXIT           # exit on error
 setopt PIPE_FAIL          # propagate pipeline errors
 
 if (( $+commands[unu] )); then
-    print "${0:A} starting with:\nunu = $(which unu)\n"
+    print "${0} using unu = $(which unu)\n"
 else
-    print -u2 "unu not found, bye"
-    exit 1
+    zet_die "unu not found, bye"
 fi
 
 typeset -A Ckc
@@ -58,11 +57,9 @@ EOF
 }
 Setup
 
-RefFile=dist-ref.txt
-zet_init_ref $RefFile
+zet_begin ####### BEGIN #######
 
 Test() {
-    local FAIL_CMD; typeset -ga FAIL_CMD  # HEY this belongs at a higher-level
     local th sgn inv bi xnn opts obase fin fout cmd got want rest
     for th in 0.5 1.5 2.5 3.5; do
         for sgn in "" "-sgn"; do
@@ -70,7 +67,7 @@ Test() {
                 for bi in 0 3; do
                     for xnn in ${(k)Ckc}; do  # for all keywords in Ckc
                         if [[ $bi == 3 && $sgn == "-sgn" ]]; then
-                            # unu dist: sorry, signed and biased transform not yet implemented
+                            # "unu dist: sorry, signed and biased transform not yet implemented"
                             continue
                         fi
                         # Usage: unu dist -th,--thresh <val> [-b,--bias <val>] [-t,--type <type>]
@@ -79,46 +76,18 @@ Test() {
                         obase=${(j::)opts} # join without spaces
                         fin="hght-${xnn}.nrrd"; fout=${fin/.nrrd/$obase.nrrd}
                         cmd="unu dist -i $fin $opts -o $fout"
-                        zet_run_cmd "$cmd" "$fout"
-                        if (( ${+ZET_WRITE_REF} )); then
-                            # *Writing* RefFile (not reading it)
-                            # format=     fname :: info ;; chek => want
-                            rest=$(zet_enbrace "$cmd ;; cksum => $(cksum $fout)" "$fout")
-                            echo "$fout :: $rest" >> $RefFile
-                            print -n "o"
-                        else
-                            # not writing RefFile: we (already) *read* it
-                            got=$(eval $ZET_CHEK[$fout])
-                            want=$ZET_WANT[$fout]
-                            if [[ "$got" = "$want" ]]; then
-                                print -n "."
-                            else
-                                print -n "X"
-                                FAIL_CMD+=($cmd)
-                                # preserve the input to the failed command
-                                zet_unjunk $fin
-                            fi
-                        fi
+                        zet_test "$fout" "$cmd" "$fin"
                     done
                 done
             done
         done
     done
-    print ""
-    # zet_stop
-    if (( ! ${+ZET_WRITE_REF} )); then
-        # not writing ref = doing test
-        if (( ${#FAIL_CMD} > 0 )); then
-            print "Failed commands:"
-            for cmd in "${FAIL_CMD[@]}"; do
-                print -- "$cmd"
-            done
-        else
-            print "All tests passed."
-        fi
-    fi
 }
 Test
+
+zet_end ####### END #######
+
+exit 0
 
 if false; then
     # one-time checks, perhaps should also be scripted:
@@ -139,4 +108,3 @@ if false; then
     # (distance transform is usefully using the inter-sample distance)
 fi
 
-exit 0

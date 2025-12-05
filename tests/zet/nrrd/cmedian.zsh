@@ -13,10 +13,9 @@ setopt PIPE_FAIL          # propagate pipeline errors
 #setopt VERBOSE            # print shell input lines as they are read
 
 if (( $+commands[unu] )); then
-    print "${0:A} starting with:\nunu = $(which unu)\n"
+    print "${0} using unu = $(which unu)\n"
 else
-    print -u2 "unu not found, bye"
-    exit 1
+    zet_die "unu not found, bye"
 fi
 
 valgen() {
@@ -78,11 +77,9 @@ Setup() {
 }
 Setup
 
-RefFile=cmedian-ref.txt
-zet_init_ref $RefFile
+zet_begin ####### BEGIN ####### 
 
 Test() {
-    typeset -ga FAIL_CMD
     local wut rad bins wght mode pad
     local opts obase inn out cmd got want
     for wut in ${(k)Ckc}; do  # for all keywords in Ckc
@@ -102,45 +99,16 @@ Test() {
                             obase=${(j::)opts} # join without spaces
                             inn="data${wut}.nrrd"; out=${inn/.nrrd/$obase.nrrd}
                             cmd="unu cmedian -i $inn $opts -o $out"
-                            zet_run_cmd "$cmd" "$out"
-                            if (( ${+ZET_WRITE_REF} )); then
-                                # *Writing* RefFile (not reading it)
-                                # format=     fname :: info ;; chek => want
-                                local rest=$(zet_enbrace "$cmd ;; cksum => $(cksum $out)" "$out")
-                                echo "$out :: $rest" >> $RefFile
-                                print -n "o"
-                            else
-                                # not writing RefFile: we (already) *read* it
-                                got=$(eval $ZET_CHEK[$out])
-                                want=$ZET_WANT[$out]
-                                if [[ "$got" = "$want" ]]; then
-                                    print -n "."
-                                else
-                                    print -n "X"
-                                    FAIL_CMD+=($cmd)
-                                    # preserve the input to the failed command
-                                    zet_unjunk $inn
-                                fi
-                            fi
+                            zet_test "$out" "$cmd" "$inn"
                         done
                     done
                 done
             done
         done
     done
-    print ""
-    if (( ! ${+ZET_WRITE_REF} )); then
-        # not writing ref = doing test
-        if (( ${#FAIL_CMD} > 0 )); then
-            print "Failed commands:"
-            for cmd in "${FAIL_CMD[@]}"; do
-                print -- "$cmd"
-            done
-        else
-            print "All tests passed."
-        fi
-    fi
 }
 Test
+
+zet_end ####### END #######
 
 exit 0
