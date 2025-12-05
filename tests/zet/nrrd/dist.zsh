@@ -11,32 +11,32 @@ else
     exit 1
 fi
 
-# some sort of non-trivial terrain
-cat > hght.txt <<'EOF'
+typeset -A Ckc
+Setup() {
+    # some sort of non-trivial terrain
+    cat > hght.txt <<'EOF'
 0 0 0 0 1
 0 2 2 2 1
 0 2 4 3 1
 0 2 3 3 1
 0 0 0 0 1
 EOF
-zet_junk hght.txt
-typeset -A Ckc
-Setup() {
+    zet_junk hght.txt
     # upsample it with a bit noise to make it interesting
-    local In Out
-    Out=hght-a11.nrrd; zet_junk $Out; unu resample -i hght.txt -s x3 x3 -k box |
+    local inn out
+    out=hght-a11.nrrd; zet_junk $out; unu resample -i hght.txt -s x3 x3 -k box |
         unu 2op nrand - 0.15 -s 53 |
         unu resample -s x15 x15 -k bspln3 |
-        unu dnorm -o $Out
+        unu dnorm -o $out
     # some different aspect ratios
-    Out=hght-a13.nrrd; zet_junk $Out; unu resample -i hght-a11.nrrd -s  =   /3 -k tent -o $Out
-    Out=hght-a21.nrrd; zet_junk $Out; unu resample -i hght-a11.nrrd -s /2.2  = -k tent -o $Out
+    out=hght-a13.nrrd; zet_junk $out; unu resample -i hght-a11.nrrd -s  =   /3 -k tent -o $out
+    out=hght-a21.nrrd; zet_junk $out; unu resample -i hght-a11.nrrd -s /2.2  = -k tent -o $out
     local nn
     for nn in 11 13 21; do
-        In=hght-a$nn.nrrd
-        Out=hght-b$nn.nrrd; zet_junk $Out; unu swap -i $In -a 0 1 -o $Out
-        Out=hght-c$nn.nrrd; zet_junk $Out; unu swap -i $In -a 0 1 | unu flip -a 0 -o $Out
-        Out=hght-d$nn.nrrd; zet_junk $Out; unu flip -i $In -a 0 | unu flip -a 1 -o $Out
+        inn=hght-a$nn.nrrd
+        out=hght-b$nn.nrrd; zet_junk $out; unu swap -i $inn -a 0 1 -o $out
+        out=hght-c$nn.nrrd; zet_junk $out; unu swap -i $inn -a 0 1 | unu flip -a 0 -o $out
+        out=hght-d$nn.nrrd; zet_junk $out; unu flip -i $inn -a 0 | unu flip -a 1 -o $out
     done
     # check on these files' contents
     Ckc[a11]="1967624952 202667"
@@ -142,6 +142,7 @@ if false; then
         unu resample -s = x3 = -k tent | unu tile -a 2 0 1 -s 2 2 |
         unu jhisto -i tmp.nrrd - -b 300 300 -t float | unu 1op log1p | XV
     # which show that resampling roughly commutes with distance transform
+    # (distance transform is usefully using the inter-sample distance)
 fi
 
 exit 0
