@@ -534,7 +534,7 @@ zet_end() {
         print ", as follows:" # finishing previous line
         local fout
         for fout in $ZET_FAIL; do
-            print "\n$fout ::"
+            print "\n$ZET_PFX $fout ::"
             print "${ZET_FAIL_CMD[$fout]} ;;"
             print "$ZET_CHEK["$fout"] =>"
             print "   gave: ${ZET_FAIL_GOT[$fout]}"
