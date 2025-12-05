@@ -60,7 +60,7 @@ Setup
 zet_begin ####### BEGIN #######
 
 Test() {
-    local th sgn inv bi xnn opts obase fin fout cmd got want rest
+    local th sgn inv bi xnn opts obase fin fout comd got want
     for th in 0.5 1.5 2.5 3.5; do
         for sgn in "" "-sgn"; do
             for inv in "" "-inv"; do
@@ -75,8 +75,8 @@ Test() {
                         opts=(-th $th -b $bi $sgn $inv)
                         obase=${(j::)opts} # join without spaces
                         fin="hght-${xnn}.nrrd"; fout=${fin/.nrrd/$obase.nrrd}
-                        cmd="unu dist -i $fin $opts -o $fout"
-                        zet_test "$fout" "$cmd" "$fin"
+                        comd="unu dist -i $fin $opts -o $fout"
+                        zet_test "$fout" "$comd" "$fin" "cksum"
                     done
                 done
             done

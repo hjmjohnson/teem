@@ -81,7 +81,7 @@ zet_begin ####### BEGIN #######
 
 Test() {
     local wut rad bins wght mode pad
-    local opts obase inn out cmd got want
+    local opts obase fin fout comd got want
     for wut in ${(k)Ckc}; do  # for all keywords in Ckc
         for rad in 1 2 4; do
             for bins in 100 5000; do
@@ -97,9 +97,9 @@ Test() {
                                 opts+=("-c")
                             fi
                             obase=${(j::)opts} # join without spaces
-                            inn="data${wut}.nrrd"; out=${inn/.nrrd/$obase.nrrd}
-                            cmd="unu cmedian -i $inn $opts -o $out"
-                            zet_test "$out" "$cmd" "$inn"
+                            fin="data${wut}.nrrd"; fout=${fin/.nrrd/$obase.nrrd}
+                            comd="unu cmedian -i $fin $opts -o $fout"
+                            zet_test "$fout" "$comd" "$fin" "cksum"
                         done
                     done
                 done
