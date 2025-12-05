@@ -46,10 +46,10 @@ nrrdDeringExecute,int,1,0,nrrd,nrrd/deringNrrd.c:751
 nrrdFFTWWisdomRead,int,1,0,nrrd,nrrd/fftNrrd.c:32
 nrrdFFT,int,1,0,nrrd,nrrd/fftNrrd.c:89
 nrrdFFTWWisdomWrite,int,1,0,nrrd,nrrd/fftNrrd.c:286
-nrrdCheapMedian,int,1,0,nrrd,nrrd/filt.c:418
-nrrdDistanceL2,int,1,0,nrrd,nrrd/filt.c:825
-nrrdDistanceL2Biased,int,1,0,nrrd,nrrd/filt.c:837
-nrrdDistanceL2Signed,int,1,0,nrrd,nrrd/filt.c:849
+nrrdCheapMedian,int,1,0,nrrd,nrrd/filt.c:438
+nrrdDistanceL2,int,1,0,nrrd,nrrd/filt.c:845
+nrrdDistanceL2Biased,int,1,0,nrrd,nrrd/filt.c:857
+nrrdDistanceL2Signed,int,1,0,nrrd,nrrd/filt.c:869
 nrrdHisto,int,1,0,nrrd,nrrd/histogram.c:38
 nrrdHistoCheck,int,1,0,nrrd,nrrd/histogram.c:158
 nrrdHistoDraw,int,1,0,nrrd,nrrd/histogram.c:187
