@@ -63,25 +63,19 @@ zet_init_ref $RefFile
 
 Test() {
     local FAIL_CMD; typeset -ga FAIL_CMD  # HEY this belongs at a higher-level
-    local sgn; typeset -A sgn
-    sgn[0]=""
-    sgn[1]="-sgn"
-    local inv; typeset -A inv
-    inv[0]=""
-    inv[1]="-inv"
-    local th ss ii bi xnn opts obase fin fout cmd got want rest
+    local th sgn inv bi xnn opts obase fin fout cmd got want rest
     for th in 0.5 1.5 2.5 3.5; do
-        for ss in 0 1; do
-            for ii in 0 1; do
+        for sgn in "" "-sgn"; do
+            for inv in "" "-inv"; do
                 for bi in 0 3; do
                     for xnn in ${(k)Ckc}; do  # for all keywords in Ckc
-                        if [[ $bi == 3 && $ss == 1 ]]; then
+                        if [[ $bi == 3 && $sgn == "-sgn" ]]; then
                             # unu dist: sorry, signed and biased transform not yet implemented
                             continue
                         fi
                         # Usage: unu dist -th,--thresh <val> [-b,--bias <val>] [-t,--type <type>]
                         #        [-sgn] [-inv] [-i,--input <nin>] [-o,--output <nout>]
-                        opts=(-th $th -b $bi $sgn[$ss] $inv[$ii])
+                        opts=(-th $th -b $bi $sgn $inv)
                         obase=${(j::)opts} # join without spaces
                         fin="hght-${xnn}.nrrd"; fout=${fin/.nrrd/$obase.nrrd}
                         cmd="unu dist -i $fin $opts -o $fout"
