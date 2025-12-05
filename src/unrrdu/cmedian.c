@@ -73,6 +73,12 @@ unu_cmedianMain(int argc, const char **argv, const char *me, const hestParm *_hp
                   "Slice the input along axis 0, run filtering on all slices, "
                   "and join the results back together.  This is the way you'd "
                   "want to process color (multi-channel) images or volumes.");
+  int verberr;
+  hestOptAdd_Flag(&hopt, "ve,verberr", &verberr,
+                  "Filtering 3D and 4D data is slow, so progress information can be "
+                  "useful. The standard place to send verbose diagnostics is stdout, "
+                  "but because unu commands are typically piped, we defy conventions "
+                  "and (if this \"-ve\" option is used) we print it to stderr");
   Nrrd *nin;
   hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-", "input nrrd",
                      nrrdHestNrrdNoTTY);
@@ -102,7 +108,7 @@ unu_cmedianMain(int argc, const char **argv, const char *me, const hestParm *_hp
         return 1;
       }
       airMopAdd(mop, mnout[ni] = nrrdNew(), nrrdNuke_mop, airMopAlways);
-      if (nrrdCheapMedian(mnout[ni], ntmp, pad, mode, radius, wght, bins)) {
+      if (nrrdCheapMedian(mnout[ni], ntmp, pad, mode, radius, wght, bins, verberr)) {
         airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
         fprintf(stderr, "%s: error doing cheap median:\n%s", me, err);
         airMopError(mop);
@@ -130,7 +136,7 @@ unu_cmedianMain(int argc, const char **argv, const char *me, const hestParm *_hp
       return 1;
     }
   } else {
-    if (nrrdCheapMedian(nout, nin, pad, mode, radius, wght, bins)) {
+    if (nrrdCheapMedian(nout, nin, pad, mode, radius, wght, bins, verberr)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
       fprintf(stderr, "%s: error doing cheap median:\n%s", me, err);
       airMopError(mop);

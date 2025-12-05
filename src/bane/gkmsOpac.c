@@ -127,7 +127,8 @@ opacMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
     return 1;
   }
   if (radius) {
-    if (nrrdCheapMedian(nout, nopac, AIR_TRUE, AIR_FALSE, radius, 1.0, 2048)) {
+    if (nrrdCheapMedian(nout, nopac, AIR_TRUE, AIR_FALSE, radius, 1.0, 2048,
+                        AIR_FALSE)) {
       biffMovef(BANE, NRRD, "%s: error in median filtering", me);
       airMopError(mop);
       return 1;

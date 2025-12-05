@@ -279,7 +279,7 @@ ten__FindValley(double *valP, const Nrrd *nhist, double tweak, int save) {
   dparm[0] = 1.0;        /* unit spacing */
   dparm[1] = 1.0;        /* B-Spline kernel */
   dparm[2] = 0.0;
-  if (nrrdCheapMedian(ntmpA, nhist, AIR_TRUE, AIR_FALSE, 2, 1.0, 1024)
+  if (nrrdCheapMedian(ntmpA, nhist, AIR_TRUE, AIR_FALSE, 2, 1.0, 1024, AIR_FALSE)
       || nrrdSimpleResample(ntmpB, ntmpA, nrrdKernelGaussian, gparm, &bins, NULL)
       || nrrdSimpleResample(nhistD, ntmpB, nrrdKernelBCCubicD, dparm, &bins, NULL)
       || nrrdSimpleResample(nhistDD, ntmpB, nrrdKernelBCCubicDD, dparm, &bins, NULL)) {

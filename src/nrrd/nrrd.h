@@ -1396,7 +1396,8 @@ NRRD_EXPORT unsigned int nrrdCRC32(const Nrrd *nin, int endian);
 /******** filtering and re-sampling */
 /* filt.c */
 NRRD_EXPORT int nrrdCheapMedian(Nrrd *nout, const Nrrd *nin, int pad, int mode,
-                                unsigned int radius, float wght, unsigned int bins);
+                                unsigned int radius, float wght, unsigned int bins,
+                                int verberr);
 NRRD_EXPORT int nrrdDistanceL2(Nrrd *nout, const Nrrd *nin, int typeOut,
                                const int *axisDo, double thresh, int insideHigher);
 NRRD_EXPORT int nrrdDistanceL2Biased(Nrrd *nout, const Nrrd *nin, int typeOut,
