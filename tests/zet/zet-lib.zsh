@@ -269,6 +269,7 @@ zet_assert_cksum() {
     local rslt="$(cksum $fname)" # actually 3 words, ending with filename
     rslt=${${=rslt}[1,2]} # get first two words: cksum and size
     if [[ "$rslt" != "$want" ]]; then
+        zet_unjunk $fname
         zet_die "problem at ${funcfiletrace[1]}" \
                 "\"cat $fname | cksum\" supposed to say: $want" \
                 "but actually got: $rslt\n"
@@ -583,7 +584,6 @@ zet_end() {
 }
 
 # TODO:
-# preserve inputs failing setup
 # enable running specific tests instead of all of them
 # Figure out how to run with recompiling unu with UBSAN or running with valgrind
 #   ---> how to report errors? from ubsan or valgrind, but not from outputs being wrong
