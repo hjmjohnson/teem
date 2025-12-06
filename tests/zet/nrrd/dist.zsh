@@ -65,7 +65,7 @@ Test() {
         for sgn in "" "-sgn"; do
             for inv in "" "-inv"; do
                 for bi in 0 3; do
-                    for xnn in ${(k)Ckc}; do  # for all keywords in Ckc
+                    for xnn in ${(ok)Ckc}; do  # "o" sorting all "k" keywords in Ckc
                         if [[ $bi == 3 && $sgn == "-sgn" ]]; then
                             # "unu dist: sorry, signed and biased transform not yet implemented"
                             continue
