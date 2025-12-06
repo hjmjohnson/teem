@@ -190,10 +190,12 @@ _zet_cleanup() {
     fi
     # we're done if have no junk
     (( ${#ZET_JUNK[@]} == 0 )) && return 0
-    # else remove it
-    rm -rf -- "${ZET_JUNK[@]}"
-    # clear junk list in case of repeated calls
-    ZET_JUNK=()
+    if (( ! ${+ZET_KEEP_JUNK} )); then
+        # else remove it (unless ZET_KEEP_JUNK)
+        rm -rf -- "${ZET_JUNK[@]}"
+        # clear junk list in case of repeated calls
+        ZET_JUNK=()
+    fi
 }
 # Ensure trap works for ordinary exits and signals
 trap _zet_cleanup EXIT INT TERM
@@ -386,7 +388,7 @@ _zet_read_reff() {
 }
 
 #__#__# _zet_init_reff
-# Either starts writing $ZET_TSET[reff] if ZET_WRITE_REF,
+# Either starts writing $ZET_TSET[reff] if ZET_GEN_REF,
 # else reads it with _zet_read_reff
 _zet_init_reff() {
     if (( ! ${#ZET_TSET[@]} )); then
@@ -460,14 +462,14 @@ zet_begin() {
     ZET_TSET[name]=$subpath/$subname
     ZET_TSET[given]=$given
     ZET_TSET[reff]="${caller_file_raw%.*}-ref.txt"
-    if (( ${+ZET_WRITE_REF} )); then
-        print -n "$ZET_PFX Variable ZET_WRITE_REF is set ==> "
+    if (( ${+ZET_GEN_REF} )); then
+        print -n "$ZET_PFX Variable ZET_GEN_REF is set ==> "
         # *Writing* reffile
         ZET_TSET[mode]="write"
         ZET_PASS=("(moot! writing reference file)")
         ZET_FAIL=("(moot! writing reference file)")
     else
-        print -n "$ZET_PFX Variable ZET_WRITE_REF *not* set ==> "
+        print -n "$ZET_PFX Variable ZET_GEN_REF *not* set ==> "
         ZET_TSET[mode]="read"
         # we will be recording test results in these:
         ZET_PASS=() # regular array
@@ -532,6 +534,10 @@ zet_test() {
         echo "$fout :: $rest" >> $reffile
         print -n "o"
     else
+        if [[ -z ${ZET_CHEK[$fout]+_} ]]; then
+            # $fout is not a key in ZET_CHECK
+            zet_die "Testing $fout but no reference known (incomplete ref file?)"
+        fi
         local rslt=$(eval $ZET_CHEK[$fout])
         local want=$ZET_WANT[$fout]
         if [[ "$rslt" = "$want" ]]; then
@@ -573,6 +579,7 @@ zet_end() {
     if [[ $ZET_TSET[mode] == "read" ]]; then
         print -n "$ZET_PFX $ZET_TSET[name] results: $#ZET_PASS passed, $#ZET_FAIL failed"
         if (( $#ZET_FAIL )); then
+            #( # of elements in ZET_FAIL array )
             print ", as follows:" # finishing previous line
             local fout
             for fout in $ZET_FAIL; do
@@ -591,8 +598,12 @@ zet_end() {
 }
 
 # TODO:
+# make ^C work more reliably during reffile read
+# set a key-value pair that documents how the output nrrd was created
 # create a system of naming and reading architecture-specific (arm vs x86) reffiles
 # enable running specific tests instead of all of them
-# Figure out how to run with recompiling unu with UBSAN or running with valgrind
+# Figure out top-level framework for running w/ recompiling unu with UBSAN
+#   or running with valgrind
 #   ---> how to report errors? from ubsan or valgrind, but not from outputs being wrong
 #                              or from test command crashing out
+#  e.g. we should have a way of testing that unu commands fail when expected
