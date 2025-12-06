@@ -91,8 +91,8 @@ CM_wtAlloc(uint radius, float wght) {
     wt[r] /= sum;
   }
   /*
-  for (uint r=0; r<diam; r++) {
-    fprintf(stderr, "!%s: wt[%u] = %g\n", "CM_wtAlloc", r, wt[r]);
+  for (uint r = 0; r < diam; r++) {
+    fprintf(stderr, "!%s: wt[%u] = %.9g\n", __func__, r, wt[r]);
   }
   */
   return wt;
