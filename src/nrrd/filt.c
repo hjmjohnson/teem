@@ -63,19 +63,17 @@ CM_mode(const float *hist, uint bins) {
 
 #define SpU(S, U) (AIR_UINT(S + AIR_INT(U)))
 
-/* not currently used
+#if 0
 static void
-nrrd__CM_printhist(const float *hist, int bins, const char *desc) {
-  int i;
-
-  printf("%s:\n", desc);
-  for (i = 0; i < bins; i++) {
+CM_printhist(const float *hist, uint bins, const char *desc) {
+  fprintf(stderr, "%s: (%u bins)\n", desc, bins);
+  for (uint i = 0; i < bins; i++) {
     if (hist[i]) {
-      printf("   %d: %g\n", i, hist[i]);
+      fprintf(stderr, "%c   %u: %.9g\n", desc[0], i, hist[i]);
     }
   }
 }
-*/
+#endif
 
 static float *
 CM_wtAlloc(uint radius, float wght) {
@@ -103,6 +101,20 @@ CM_wtAlloc(uint radius, float wght) {
 static void
 cheapMedian1D(Nrrd *nout, const Nrrd *nin, const NrrdRange *range, uint radius,
               float wght, uint bins, int mode, float *hist) {
+  /* // for debugging non-commutativity of flipping and filtering
+  char *evs = getenv("_DBI");
+  uint DBI = UINT_MAX;
+  if (evs) {
+    uint tmpui;
+    if (1 == sscanf(evs, "%u", &tmpui)) {
+      DBI = tmpui;
+    }
+    // else fprintf(stderr, "!%s: failed to get or parse envvar DBI\n", __func__);
+  }
+  if (DBI != UINT_MAX) {
+    fprintf(stderr, "!%s: DBI=%u\n", __func__, DBI);
+  }
+  */
   // static const char me[] = "cheapMedian1D";
   uint diam = 2 * radius + 1;
   double (*lup)(const void *, size_t) = nrrdDLookup[nin->type];
@@ -139,12 +151,36 @@ cheapMedian1D(Nrrd *nout, const Nrrd *nin, const NrrdRange *range, uint radius,
     float *wt = CM_wtAlloc(radius, wght);
     half = 0.5;
     for (uint X = radius; X < num - radius; X++) {
+      // int DB = (X == DBI);
       memset(hist, 0, bins * sizeof(float));
       for (int I = mrad; I <= prad; I++) {
         hist[INDEX(nin, range, lup, SpU(I, X), bins, val)] += wt[SpU(I, radius)];
+        /*
+        uint Ipr = SpU(I, radius);
+        float ww = wt[Ipr];
+        uint hidx = INDEX(nin, range, lup, SpU(I, X), bins, val);
+        hist[hidx] += ww;
+        if (DB && hidx == 49) {
+          fprintf(stderr,
+                  "!%s: X=%u I=%d --> Ipr=%u ww=%.9g hidx=%u hist[hidx] --> %.9g\n",
+                  __func__, X, I, Ipr, ww, hidx, hist[hidx]);
+        }
+        */
       }
+      /*
+      if (DB) {
+        fprintf(stderr, "!%s: hist at DBI=%u\n", __func__, DBI);
+        CM_printhist(hist, bins, "before");
+      }
+      */
       idx = mode ? CM_mode(hist, bins) : CM_median(hist, half);
       val = NRRD_NODE_POS(range->min, range->max, bins, idx);
+      /*
+      if (DB) {
+        fprintf(stderr, "!%s: mode=%d --> idx=%u --> val=%.17g\n", __func__, mode, idx,
+                val);
+      }
+      */
       nrrdDInsert[nout->type](nout->data, X, val);
     }
     free(wt);
