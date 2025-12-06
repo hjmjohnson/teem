@@ -271,8 +271,8 @@ formatVTK_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
 static int /* Biff: 1 */
 formatVTK_write(FILE *file, const Nrrd *nrrd__, NrrdIoState *nio) {
   static const char me[] = "formatVTK_write";
-  int i, sax;
-  unsigned int sx, sy, sz;
+  int i;
+  unsigned int sx, sy, sz, sax;
   double xs, ys, zs, xm, ym, zm;
   char type[AIR_STRLEN_MED + 1], name[AIR_STRLEN_SMALL + 1];
   size_t nameSize = AIR_STRLEN_SMALL + 1;

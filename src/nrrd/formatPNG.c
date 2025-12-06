@@ -156,8 +156,9 @@ formatPNG_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
   png_bytep *row;
   png_uint_32 width, height, rowsize, hi;
   png_text *txt;
-  int depth, type, i, channels, numtxt, ret;
-  int ntype, ndim;
+  int depth, type, ret;
+  unsigned int channels, ndim, numtxt;
+  int ntype;
   size_t nsize[3];
   char stmp[6][AIR_STRLEN_SMALL + 1];
 #endif /* TEEM_PNG */
@@ -345,8 +346,8 @@ formatPNG_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
   /* read the entire image in one pass */
   png_read_image(png, row);
   /* read all text fields from the text chunk */
-  numtxt = png_get_text(png, info, &txt, NULL);
-  for (i = 0; i < numtxt; i++) {
+  numtxt = AIR_UINT(png_get_text(png, info, &txt, NULL));
+  for (unsigned int i = 0; i < numtxt; i++) {
     if (!strcmp(txt[i].key, NRRD_PNG_FIELD_KEY)) {
       nio->pos = 0;
       /* Reading PNGs teaches Gordon that his scheme for parsing nrrd header
@@ -582,7 +583,7 @@ formatPNG_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
       }
       txtidx++;
     }
-    png_set_text(png, info, txt, numtxt);
+    png_set_text(png, info, txt, AIR_INT(numtxt));
   }
   /* write header */
   png_write_info(png, info);

@@ -73,7 +73,8 @@ formatText_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
   const char *fs;
   char *errS;
   size_t llen, line, plen, sx, sy, elsz, size[NRRD_DIM_MAX];
-  int nret, fidx, settwo = 0, gotOnePerAxis = AIR_FALSE;
+  int nret, fidx, gotOnePerAxis = AIR_FALSE;
+  uint settwo = 0;
   /* fl: first line (of floats) */
   airArray *flArr, *dataArr;
   float oneFloat;
