@@ -66,14 +66,14 @@ usage(const char *me, const hestParm *hparm, int alsoHidden) {
   size_t _buffSize = ASP1_L, _fmtSize = ASP1_L;
   airStrcpy(_buff, _buffSize, "--- unu: Utah Nrrd Utilities command-line interface ---");
   size_t len = strlen(_buff);
-  uint half = (hparm->columns > len ? hparm->columns - len : 0) / 2 + len - 1;
-  snprintf(_fmt, _fmtSize, "%%%us\n", half);
+  size_t half = (hparm->columns > len ? hparm->columns - len : 0) / 2 + len - 1;
+  snprintf(_fmt, _fmtSize, "%%%zus\n", half);
   printf(_fmt, _buff);
   if (alsoHidden) {
     airStrcpy(_buff, _buffSize, "(hidden commands have \" : \" in listing)");
     len = strlen(_buff);
     half = (hparm->columns > len ? hparm->columns - len : 0) / 2 + len - 1;
-    snprintf(_fmt, _fmtSize, "%%%us\n", half);
+    snprintf(_fmt, _fmtSize, "%%%zus\n", half);
     printf(_fmt, _buff);
   }
   for (uint cmdi = 0; unrrduUnuCmdList[cmdi]; cmdi++) {
