@@ -19,7 +19,12 @@
 
 ####### Zet = Zsh-Enabled Testing
 #
-# New/minimal/experimental zsh-based machinery to test command-line tools
+# New/minimal zsh-based machinery for testing command-line tools. This is roughly for
+# <https://en.wikipedia.org/wiki/Characterization_test>. While the tools being tested are
+# not "legacy", it important to have some way of ensuring that updates do not change the
+# code output. Determining whether the output is correct is likely via human reasoning
+# that can be done as part of generating the "reference file" ("reffile") that contains
+# descriptions of the expected outputs (sometimes called a "golden file").
 #
 # Written by GLK for TeemV2 with recognition that once you have a command-line parser
 # (like hest) and once you have command-line wrappers around your C programs (like unu
@@ -98,7 +103,7 @@ print "$ZET_PFX Starting with ZET_ROOT=$ZET_ROOT"
 ####### ZET_DLM: visually distinctive things to delimit output
 ZET_DLM="≡≡==≡≡≡-≡≡=≡≡==-≡≡=≡=≡≡-=≡≡≡≡==-=≡≡==≡≡-≡≡≡≡=≡=-≡≡==≡=≡-≡≡≡=≡=="
 
-####### ZET_DCMD and ZET_TRACE track where we are in scripts
+####### ZET_DCMD, ZET_TRACE: track where we are in scripts
 # used by _zet_debug and _zet_cleanup
 ZET_DCMD=""
 ZET_TRACE=""
@@ -110,7 +115,7 @@ typeset -g -A ZET_TSET  # -A : associative array
 # (Ideally all the following arrays could also hang off of ZET_TSET
 #  e.g. ZET_TSET[comd] instead of ZET_COMD, but sadly zsh cannot nest
 #  associative arrays ...)
-####### ZET_COMD, ZET_CHEK ZET_WANT: maps from test/file names to more details
+####### ZET_COMD, ZET_CHEK, ZET_WANT: maps from test/file names to more details
 # see _zet_read_reff description
 typeset -g -A ZET_COMD
 typeset -g -A ZET_CHEK
@@ -598,7 +603,7 @@ zet_end() {
 }
 
 # TODO:
-# make ^C work more reliably during reffile read
+# _zet_read_reff: speed it up, while making ^C work more reliably
 # set a key-value pair that documents how the output nrrd was created
 # create a system of naming and reading architecture-specific (arm vs x86) reffiles
 # enable running specific tests instead of all of them
