@@ -67,6 +67,8 @@
 
 setopt no_unset           # error on unbound variables
 setopt warn_create_global # warn if a function leaks variables
+setopt warn_nested_var    # warns if looks like non-array/hash used as such
+setopt bad_pattern        # error on invalid glob pattern (don' treat as literal)
 setopt typeset_silent     # make `local` (aka `typeset`) inside loop silent
 # Protect against accidental clobbering of tied parameters; all of these lower-case names
 # are connected to special upper-case varible. Copied from man zshparam.
@@ -105,8 +107,8 @@ ZET_DLM="≡≡==≡≡≡-≡≡=≡≡==-≡≡=≡=≡≡-=≡≡≡≡==-=�
 
 ####### ZET_DCMD, ZET_TRACE: track where we are in scripts
 # used by _zet_debug and _zet_cleanup
-ZET_DCMD=""
-ZET_TRACE=""
+typeset -g ZET_DCMD
+typeset -g ZET_TRACE
 
 ####### ZET_TSET: top-level description of current test set
 # (only one tset at a time can be actively running)
@@ -135,6 +137,7 @@ typeset -g -A ZET_FAIL_WANT
 # a helper function to (re)initialize these global arrays. Despite the
 # uniform syntax, this preserves the type (regular vs associative) of the array
 _zet_arrays_reset() {
+    setopt localoptions no_warn_nested_var # we're here to modify globals
     ZET_TSET=()
     ZET_COMD=()
     ZET_CHEK=()
@@ -156,6 +159,7 @@ typeset -ga ZET_JUNK
 ####### zet_junk file1 file2 ...
 # says that these are transient files, to be cleaned up later
 zet_junk() {
+    setopt localoptions no_warn_nested_var # we're here to modify globals
     ZET_JUNK+=("$@");
 }
 ####### zet_unjunk file1 file2 ...
@@ -169,9 +173,8 @@ zet_unjunk() {
 }
 #__#__# _zet_debug
 # records commands prior to being run here, for trap DEBUG
-# or for a more continuous accounting of what's being run:
-#    setopt XTRACE; PS4=$'%N:%i> '
 _zet_debug() {
+    setopt localoptions no_warn_nested_var # we're here to modify globals
     local dcmd=${${(z)ZSH_DEBUG_CMD}[1]}
     #              (z) shell-like word-splitting of ZSH_DEBUG_CMD
     #            ${  ... array ... }[1]  1st element
@@ -199,13 +202,20 @@ _zet_cleanup() {
     (( ${#ZET_JUNK[@]} == 0 )) && return 0
     if (( ! ${+ZET_UNJUNK} )); then
         # else remove it (unless ZET_UNJUNK)
+        print "(_zet_cleanup rm'ing $#ZET_JUNK files)"
         rm -rf -- "${ZET_JUNK[@]}"
         # clear junk list in case of repeated calls
+        setopt localoptions no_warn_nested_var
         ZET_JUNK=()
     fi
 }
 # Ensure trap works for ordinary exits and signals
-trap _zet_cleanup EXIT INT TERM ERR
+# Note: trapping on "ERR" allows failing commands (in addition to
+# failure to start running a command) to generate diagnostic context
+# (e.g. to help show which unu command had busted options)
+trap _zet_cleanup EXIT TERM ERR
+# Respond to a control-C by cleaning up and then `exit`ing
+trap '_zet_cleanup; exit 130' INT
 # Ensure cleanup even when script is sourced or run in a subshell
 autoload -Uz add-zsh-hook
 add-zsh-hook zshexit _zet_cleanup
@@ -234,6 +244,7 @@ zet_die() {
 # way to stop a script while preventing any junk cleanup
 # (for debugging of any transient files)
 zet_stop() {
+    setopt localoptions no_warn_nested_var # okay to modify ZET_JUNK
     ZET_JUNK=()
     exit 0
 }
@@ -348,25 +359,31 @@ _zet_read_reff() {
     local lineno=0
     local fname rest comd chek want
     while IFS= read -r line; do
-        # Combined with `trap _zet_cleanup ... ERR`, the first iteration of this:
-        # (( lineno++ ))
-        # generates (via _zet_cleanup) an extraneous "error running: (( lineno++ ))"
-        # GLK does not understand why (do you?). This is a work-around:
-        (( lineno = ${lineno:-0} + 1 ))
+        (( ++lineno ))
         # Skip blank lines and comment lines
         [[ -z $line || $line == '#'* ]] && continue
         # handle #-comments within line
         line=${line%%\#*}
         # Expected format: `fname :: comd ;; chek => want`
+
         # Split off fname :: rest
-        if [[ $line =~ '^(.*[^[:space:]])[[:space:]]*::[[:space:]]*(.*)$' ]]; then
-            #                fname                   ::            rest
-            fname=${match[1]}
-            rest=${match[2]}
-        else
+        #if [[ $line =~ '^(.*[^[:space:]])[[:space:]]*::[[:space:]]*(.*)$' ]]; then
+        #    #                fname                   ::            rest
+        #    fname=${match[1]}
+        #    rest=${match[2]}
+        #else
+        #    zet_die "Missing \"::\" on line $lineno of ${reffile:A}:" \
+        #            "   $line"
+        #fi
+        # trying to be faster with less pattern matching
+        fname=${line%%::*} # everything before ::
+        rest=${line#*::}   # everything after the first ::
+        if [[ ${#fname} == 0 || ${#rest} == 0 ]]; then
+            # invalid line: no :: delimiter
             zet_die "Missing \"::\" on line $lineno of ${reffile:A}:" \
                     "   $line"
         fi
+
         # Replace {} with filename in the rest of the line
         rest=${${(S)rest}//\{\}/$fname}
         # Parse `rest` as `comd ;; chek => want`
@@ -433,6 +450,7 @@ _zet_init_reff() {
 # where `subpath` is the path to caller script from here
 # and `subname` is either given, else is the filename base of caller
 zet_begin() {
+    setopt localoptions no_warn_nested_var # we're here to modify globals
     if (( ${#ZET_TSET[@]} )); then
         zet_die "$ZET_PFX Seem to be already running test set \"${ZET_TSET[name]}\""
     fi
@@ -531,6 +549,7 @@ _zet_run_comd() {
 #    to $ZET_WANT[$fout] to see if test passes or fails, and records the
 #    circumstances of a failure.
 zet_test() {
+    setopt localoptions no_warn_nested_var # we're here (in part) to modify globals
     if (( ! ${#ZET_TSET[@]} )); then
         zet_die "Not currently running any test set"
     fi
@@ -610,9 +629,14 @@ zet_end() {
 }
 
 # TODO:
+# lintish ideas:
+# - in important helper functions:
+#       emulate -L zsh -o pipefail -o no_unset  # explicitly list options
+# - always add a type with local (local -a array; local -i count; local -F value)
+# - use typeset to create all globals, not just the arrays
 # Make some way of automatically generating the input file Ckc array,
 # (to speed creation of new test sets), and apply that to nrrd/heq.zsh
-# _zet_read_reff: speed it up, while making ^C work more reliably
+# (in progress) _zet_read_reff: speed it up
 # pre-req to parallel: add zet_file to declare that this testset writes this file
 #   and have a variable ZET_FILE_LOG that writes out all these files,
 #   to (one-time) detect collisions that would confuse parallel runs

@@ -1,22 +1,23 @@
 #!/usr/bin/env zsh
 
-source ${(q)0:A:h}/../zet-lib.zsh # set up the zet "library"
-#          $0 path of me
-#            :A made absolute
-#              :h head = drop my filename to get path
-#                 /../ = parent directory
-#        (q) with quoting of result
-
-setopt ERR_EXIT           # exit on error
-setopt PIPE_FAIL          # propagate pipeline errors
-#setopt XTRACE             # print commands before executing them
-#setopt VERBOSE            # print shell input lines as they are read
-
+source ${0:A:h}/../zet-lib.zsh # set up the zet "library"
+#       $0 path of me
+#         :A made absolute
+#           :h head = drop my filename to get path
+#              /../ = parent directory
+setopt err_exit                # exit on error
+setopt pipe_fail               # propagate pipeline errors
 if (( $+commands[unu] )); then
     print "${0} using unu = $(which unu)\n"
 else
     zet_die "unu not found, bye"
 fi
+
+# This was the first zet test set written; things that weren't right:
+#setopt XTRACE             # print commands before executing them
+#setopt XTRACE; PS4=$'%N:%i> '    (with prompt showing where we are)
+#setopt VERBOSE            # print shell input lines as they are read
+#  ( _zet_debug seems better than these )
 
 valgen() {
     local seed
@@ -125,7 +126,7 @@ Test() {
                             fi
                             obase=${(j::)opts} # join without spaces
                             fin="data${wut}.nrrd"; fout=${fin/.nrrd/$obase.nrrd}
-                            comd="unu cmedian -i $fin $opts -o $fout"
+                            comd="unu cmedian -i $fin "${opts[@]}" -o $fout"
                             zet_test "$fout" "$comd" "$fin" "cksum"
                             if (( $FLIPCHECK )); then
                                 # generate commands to (outsize of zet testing) see if cmedian commutes with unu flip -a 0

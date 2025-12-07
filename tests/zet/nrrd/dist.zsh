@@ -1,8 +1,8 @@
 #!/usr/bin/env zsh
 
-source ${(q)0:A:h}/../zet-lib.zsh # set up the zet "library"
-setopt ERR_EXIT           # exit on error
-setopt PIPE_FAIL          # propagate pipeline errors
+source ${0:A:h}/../zet-lib.zsh # set up the zet "library"
+setopt err_exit                # exit on error
+setopt pipe_fail               # propagate pipeline errors
 
 if (( $+commands[unu] )); then
     print "${0} using unu = $(which unu)\n"
@@ -58,6 +58,7 @@ EOF
 Setup
 
 zet_begin ####### BEGIN #######
+zet_stop
 
 Test() {
     local th sgn inv bi xnn opts obase fin fout comd got want
@@ -75,7 +76,7 @@ Test() {
                         opts=(-th $th -b $bi $sgn $inv)
                         obase=${(j::)opts} # join without spaces
                         fin="hght-${xnn}.nrrd"; fout=${fin/.nrrd/$obase.nrrd}
-                        comd="unu dist -i $fin $opts -o $fout"
+                        comd="unu dist -i $fin "${opts[@]}" -o $fout"
                         zet_test "$fout" "$comd" "$fin" "cksum"
                     done
                 done

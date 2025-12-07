@@ -1,9 +1,8 @@
 #!/usr/bin/env zsh
 
-source ${(q)0:A:h}/../zet-lib.zsh # set up the zet "library"
-setopt ERR_EXIT           # exit on error
-setopt PIPE_FAIL          # propagate pipeline errors
-
+source ${0:A:h}/../zet-lib.zsh # set up the zet "library"
+setopt err_exit                # exit on error
+setopt pipe_fail               # propagate pipeline errors
 if (( $+commands[unu] )); then
     print "${0} using unu = $(which unu)\n"
 else
@@ -94,7 +93,7 @@ Test() {
                     fi
                     local fin="ramp${wut}.nrrd"
                     local fout=${fin/.nrrd/$obase.nrrd}
-                    local comd="unu heq -i $fin $opts -o $fout"
+                    local comd="unu heq -i $fin "${opts[@]}" -o $fout"
                     zet_test "$fout" "$comd" "$fin" "cksum"
                 done
             done
