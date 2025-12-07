@@ -65,9 +65,9 @@
 # warnings) that path is a vanilla variable. Hence the defensive `readonly` commands
 # below.
 
-setopt NO_UNSET           # error on unbound variables
-setopt WARN_CREATE_GLOBAL # warn if a function leaks variables
-
+setopt no_unset           # error on unbound variables
+setopt warn_create_global # warn if a function leaks variables
+setopt typeset_silent     # make `local` (aka `typeset`) inside loop silent
 # Protect against accidental clobbering of tied parameters; all of these lower-case names
 # are connected to special upper-case varible. Copied from man zshparam.
 readonly fignore fpath histchars mailpath manpath
@@ -169,6 +169,8 @@ zet_unjunk() {
 }
 #__#__# _zet_debug
 # records commands prior to being run here, for trap DEBUG
+# or for a more continuous accounting of what's being run:
+#    setopt XTRACE; PS4=$'%N:%i> '
 _zet_debug() {
     local dcmd=${${(z)ZSH_DEBUG_CMD}[1]}
     #              (z) shell-like word-splitting of ZSH_DEBUG_CMD
@@ -195,15 +197,15 @@ _zet_cleanup() {
     fi
     # we're done if have no junk
     (( ${#ZET_JUNK[@]} == 0 )) && return 0
-    if (( ! ${+ZET_KEEP_JUNK} )); then
-        # else remove it (unless ZET_KEEP_JUNK)
+    if (( ! ${+ZET_UNJUNK} )); then
+        # else remove it (unless ZET_UNJUNK)
         rm -rf -- "${ZET_JUNK[@]}"
         # clear junk list in case of repeated calls
         ZET_JUNK=()
     fi
 }
 # Ensure trap works for ordinary exits and signals
-trap _zet_cleanup EXIT INT TERM
+trap _zet_cleanup EXIT INT TERM ERR
 # Ensure cleanup even when script is sourced or run in a subshell
 autoload -Uz add-zsh-hook
 add-zsh-hook zshexit _zet_cleanup
@@ -336,16 +338,21 @@ zet_assert_out() {
 # saving in to ZET_CHEK[$fname].
 _zet_read_reff() {
     emulate -L zsh
-    local reffile="$1"
     unsetopt ERR_EXIT
     setopt extendedglob
+    local reffile="$1"
     if [[ ! -f $reffile ]]; then
         zet_die "reffile \"$reffile\" not found"
     fi
-    local line lineno=0
+    local line
+    local lineno=0
     local fname rest comd chek want
     while IFS= read -r line; do
-        (( lineno++ ))
+        # Combined with `trap _zet_cleanup ... ERR`, the first iteration of this:
+        # (( lineno++ ))
+        # generates (via _zet_cleanup) an extraneous "error running: (( lineno++ ))"
+        # GLK does not understand why (do you?). This is a work-around:
+        (( lineno = ${lineno:-0} + 1 ))
         # Skip blank lines and comment lines
         [[ -z $line || $line == '#'* ]] && continue
         # handle #-comments within line
@@ -603,7 +610,13 @@ zet_end() {
 }
 
 # TODO:
+# Make some way of automatically generating the input file Ckc array,
+# (to speed creation of new test sets), and apply that to nrrd/heq.zsh
 # _zet_read_reff: speed it up, while making ^C work more reliably
+# pre-req to parallel: add zet_file to declare that this testset writes this file
+#   and have a variable ZET_FILE_LOG that writes out all these files,
+#   to (one-time) detect collisions that would confuse parallel runs
+# allow tests to run in parallel
 # set a key-value pair that documents how the output nrrd was created
 # create a system of naming and reading architecture-specific (arm vs x86) reffiles
 # enable running specific tests instead of all of them
