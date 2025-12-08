@@ -257,6 +257,7 @@ zet_stop() {
 #__#__# _zet_unspace str
 # Collapse internal multiple spaces in `str` to single space,
 # and entirely remove leading and trailing spaces
+# (Actually: no longer used in _zet_read_reff, but may still be useful)
 _zet_unspace() {
     emulate -L zsh
     unsetopt WARN_CREATE_GLOBAL
