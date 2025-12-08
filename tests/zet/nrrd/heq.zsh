@@ -15,50 +15,75 @@ fi
 # (2) only ignoring bins (with smart > 0) if they were incessantly hit
 
 typeset -a Wuts
+typeset -A Fname # maps from wut to filename
 Setup() {
     setopt localoptions no_warn_nested_var # we're here to modify Wuts
-    local szX=600 szY=100
+    local szX=600 szY=100 # size of ramp array
     # an amount of padding with area ~1/3 of interior
     local szP=$(( (szX*szY/(2*szX + 2*szY))/3 ))
-    # making various ramps, with various gammas, and paddings
+    # starting with one linear ramp
     echo "1  $szY   0  $(( szY - 1 ))" | unu 2op / - $szY | unu reshape -s 2 2 |
         unu resample -s $szX $szY -c node -k tent |
         unu basinfo -c ramp -o ramp_10.nrrd; zet_junk ramp_10.nrrd
-    Wuts=("_10")
-    local tpows=(03 05 20 33) # various exponents, times 10
-    local wut out tenpow
+    local wut="_10"
+    Wuts=($wut)
+    Fname[$wut]=ramp${wut}.nrrd
+    # raising linear ramp to various exponents
+    local tpows=(03 05 20 33) # the exponents, times 10
+    local fin fout tenpow
     for tenpow in $tpows; do
         local pow=$(( $tenpow / 10.0 ))
-        # two ways of warping values
-        wut="_${tenpow}"; Wuts+=($wut)
-        out=ramp${wut}.nrrd; unu 2op pow ramp_10.nrrd $pow -o $out; zet_junk $out
-        ## actually just one; this test set is getting out of hand
-        wut="n${tenpow}"; Wuts+=($wut)
-        out=ramp${wut}.nrrd; unu 2op - 1 ramp_10.nrrd | unu 2op pow - $pow | unu 2op - 1 - -o $out; zet_junk $out
+        wut="_${tenpow}";
+        Wuts+=($wut); fout=ramp${wut}.nrrd; Fname[$wut]=$fout; zet_junk $fout
+        unu 2op pow ramp_10.nrrd $pow -o $fout
+        ## actually maybe just one warping; this test set size is getting out of hand
+        #wut="n${tenpow}"; Wuts+=($wut)
+        #fout=ramp${wut}.nrrd; unu 2op - 1 ramp_10.nrrd | unu 2op pow - $pow | unu 2op - 1 - -o $fout; zet_junk $fout
     done
+    # for all ramps make so far, add various paddings
     local tppvals=(00 06 12) # various pad values (-0.1, 0.5, 1.1), times 10, plus 1
-    local foo padval
+    local padval
     for wut in $Wuts; do
         local tppval
         for tppval in $tppvals; do
             local padval=$(( (tppval-1.0) / 10.0 ))
+            fin=$Fname[$wut];
             local owut=${wut}p${tppval}
-            out=ramp${owut}.nrrd
-            unu pad -i ramp${wut}.nrrd -b pad -v $padval -min -$szP -$szP -max M+$szP M+$szP -o $out; zet_junk $out
-            Wuts+=($owut)
+            Wuts+=($owut); fout=ramp${owut}.nrrd; Fname[$owut]=$fout; zet_junk $fout
+            unu pad -i $fin -b pad -v $padval -min -$szP -$szP -max M+$szP M+$szP -o $fout
             # *N*ested copy of above loop, for more padding
-            local tppvalN
+            local tppvalN foutN
             for tppvalN in $tppvals; do
                 padval=$(( (tppvalN-1.0) / 10.0 ))
                 local owutN=${owut}p${tppvalN}
-                local outN=ramp${owutN}.nrrd
-                unu pad -i $out -b pad -v $padval -min -$szP -$szP -max M+$szP M+$szP -o $outN; zet_junk $outN
-                Wuts+=($owutN)
+                Wuts+=($owutN); foutN=ramp${owutN}.nrrd; Fname[$owutN]=$foutN; zet_junk $foutN
+                unu pad -i $fout -b pad -v $padval -min -$szP -$szP -max M+$szP M+$szP -o $foutN
             done
         done
     done
-    # check on these files' contents (with Ckc) ...
-    # (actually trying skipping this for this test set)
+    # HEY obviously this should be refactored into something more re-usable ...
+    local ckfile="heq-ichk.txt"
+    if (( ${+ZET_GEN_ICHK} )); then
+        print "heq.zsh: variable ZET_GEN_ICHK is set ==> *Generating* $ckfile"
+        rm -f $ckfile
+        touch $ckfile
+        for wut in $Wuts; do
+            print "$(cksum $Fname[$wut])" >> $ckfile
+        done
+    else
+        print "heq.zsh: variable ZET_GEN_ICHK is set ==> reading $ckfile"
+        exec 3< "$ckfile"    # open file descriptor 3 for reading
+        local line
+        for wut in $Wuts; do
+            local chk=$(cksum $Fname[$wut])
+            read -r line <&3
+            if [[ "$chk" != "$line" ]]; then
+                zet_die "For input file (wut=$wut)" \
+                        "computed \"$chk\" but $ckfile says \"$line\""
+            fi
+        done
+        exec 3<&-  # close descriptor 3
+    fi
 }
 Setup
 
@@ -91,7 +116,7 @@ Test() {
                             continue
                         fi
                     fi
-                    local fin="ramp${wut}.nrrd"
+                    local fin=$Fname[$wut]
                     local fout=${fin/.nrrd/$obase.nrrd}
                     local comd="unu heq -i $fin "${opts[@]}" -o $fout"
                     zet_test "$fout" "$comd" "$fin" "cksum"

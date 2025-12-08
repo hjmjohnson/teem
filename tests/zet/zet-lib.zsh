@@ -637,8 +637,6 @@ zet_end() {
 #       emulate -L zsh -o pipefail -o no_unset  # explicitly list options
 # - always add a type with local (local -a array; local -i count; local -F value)
 # - use typeset to create all globals, not just the arrays
-# Make some way of automatically generating the input file Ckc array,
-# (to speed creation of new test sets), and apply that to nrrd/heq.zsh
 # pre-req to parallel: add zet_file to declare that this testset writes this file
 #   and have a variable ZET_FILE_LOG that writes out all these files,
 #   to (one-time) detect collisions that would confuse parallel runs
