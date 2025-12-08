@@ -1030,6 +1030,9 @@ uniformly created.
 * ... option section dividers ? ....
 * ... priority modifiers .....
 
+• Wed Dec 3 01:35:15 2025 -0600 git commit: 403f148f
+API NEW: hestArgcArgvSprint for (allocing and) sprinting a given argc,argv
+
 • Sun Nov 16 22:22:23 2025 -0600 git commit: d1472dcf
 ABI CHANGEs/API NEWs/API CHANGEs:
 - Added to hestParm `airArray *_selfMop` which underlies the new "self-mopping" ability
@@ -1389,6 +1392,32 @@ should have been taking a const char * as a second arg (various files in other l
 updated to conform).
 
 ========= nrrd =========
+
+• Sun Dec 7 07:20:10 2025 -0600 git commit: 13c42407
+BEHAVIOR CHANGE in nrrdHistoEq (basis of "unu heq"): how "smart" is handled has been
+improved.  The idea of the "smart" parameter is to do useful heq even in the presence of
+large constant regions that would otherwise distort the value mapping.  So certain bins
+of the histogram are ignored ("disrespected") in the creation of the value map if the bin
+was hit incessantly by the same value.
+So for TeemV2:
+(1) keeping better track of "steady" per-bin: it used to be that all knowledge of being
+incessantly hit was lost if the bin saw some later different values, but maybe the big
+background region is earliar in the value sweep than later. Now the "steady" can only
+increase with repeated values, and is not reset to 0 on different values.
+(2) only ignoring bins (with smart > 0) if they were incessantly hit: Turning on the
+"smart" handling should be harmless if it turns out there isn't a constant value
+region. Previously, bins were ignored even if their steady count was 0.  Now the steady
+count has to be at least 0.5% of the number of values in the array for the bin to be
+ignored.
+
+• Thu Dec 4 22:09:01 2025 -0600 git commit: fa93ea7a
+
+API CHANGE: nrrdCheapMedian (basis of "unu cmedian") needs an additional argument (now at
+end) for controlling whether it does verbose progress indication for slow filtering
+computations (currently, for any 3D or 4D volume). Now called because this goes to stderr
+not stdout, in order to not interfere with piping. Added new -ve flag to "unu cmedian";
+so BEHAVIOR CHANGE in "unu cmedian":
+now this verbose output is OFF by default instead of always being ON.
 
 • Thu Nov 20 20:51:09 2025 -0600 git commit: e157cf1b
 API NEW: nrrdStateEncodingAsciiCommaAllow a new global (sorry) to control something that
