@@ -349,7 +349,7 @@ hestParmNew(void) {
   // hparm->multiFlagSep = hestDefaultMultiFlagSep;
   hparm->orExitWithoutNewerFeatures = AIR_FALSE;
   hparm->_selfMop = NULL; /* handling this is subtle: see hestParmMopNew,
-                        hestParmUnmop, hestParmCopy, and hestParmFree */
+                             hestParmUnmop, hestParmCopy, and hestParmFree */
   hparm->quietQuit = NULL;
   return hparm;
 }
