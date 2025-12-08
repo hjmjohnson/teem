@@ -833,7 +833,7 @@ NRRD_EXPORT int nrrdStateKeyValuePairsPropagate;
 /* ---- BEGIN non-NrrdIO */
 NRRD_EXPORT int nrrdStateBlind8BitRange;
 NRRD_EXPORT int nrrdStateMeasureType;
-NRRD_EXPORT int nrrdStateMeasureModeBins;
+NRRD_EXPORT unsigned int nrrdStateMeasureModeBins;
 NRRD_EXPORT int nrrdStateMeasureHistoType;
 NRRD_EXPORT int nrrdStateDisallowIntegerNonExist;
 /* ---- END non-NrrdIO */

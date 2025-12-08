@@ -65,7 +65,7 @@ int nrrdStateKeyValuePairsPropagate = AIR_FALSE;
 /* ---- BEGIN non-NrrdIO */
 int nrrdStateBlind8BitRange = AIR_TRUE;
 int nrrdStateMeasureType = nrrdTypeFloat;
-int nrrdStateMeasureModeBins = 1024;
+unsigned int nrrdStateMeasureModeBins = 1024u;
 int nrrdStateMeasureHistoType = nrrdTypeFloat;
 int nrrdStateDisallowIntegerNonExist = AIR_TRUE;
 /* ---- END non-NrrdIO */
@@ -337,7 +337,7 @@ nrrdStateGetenv(void) {
   nrrdGetenvBool(/**/ &nrrdStateAlwaysSetContent, NULL, nrrdEnvVarStateAlwaysSetContent);
   nrrdGetenvBool(/**/ &nrrdStateDisableContent, NULL, nrrdEnvVarStateDisableContent);
   nrrdGetenvEnum(/**/ &nrrdStateMeasureType, NULL, nrrdType, nrrdEnvVarStateMeasureType);
-  nrrdGetenvInt(/**/ &nrrdStateMeasureModeBins, NULL, nrrdEnvVarStateMeasureModeBins);
+  nrrdGetenvUInt(/**/ &nrrdStateMeasureModeBins, NULL, nrrdEnvVarStateMeasureModeBins);
   nrrdGetenvEnum(/**/ &nrrdStateMeasureHistoType, NULL, nrrdType,
                  nrrdEnvVarStateMeasureHistoType);
   nrrdGetenvBool(/**/ &nrrdStateGrayscaleImage3D, NULL, nrrdEnvVarStateGrayscaleImage3D);
