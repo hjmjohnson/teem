@@ -59,7 +59,7 @@ main(int argc, char *argv[]) {
   int tmpi = AIR_INT(tmpu);
   for (unsigned int ii = 0; ii < 12; ii++) {
     printf("%u: %d\n", ii, tmpi);
-    tmpi++;
+    tmpi++; // intentional UB!
   }
 
   exit(0);
