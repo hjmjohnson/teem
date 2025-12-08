@@ -16,6 +16,7 @@ fi
 
 typeset -a Wuts
 Setup() {
+    setopt localoptions no_warn_nested_var # we're here to modify Wuts
     local szX=600 szY=100
     # an amount of padding with area ~1/3 of interior
     local szP=$(( (szX*szY/(2*szX + 2*szY))/3 ))
@@ -24,7 +25,6 @@ Setup() {
         unu resample -s $szX $szY -c node -k tent |
         unu basinfo -c ramp -o ramp_10.nrrd; zet_junk ramp_10.nrrd
     Wuts=("_10")
-    # local tpows=(01 03 05 07 14 20 40 90) # various exponents, times 10
     local tpows=(03 05 20 33) # various exponents, times 10
     local wut out tenpow
     for tenpow in $tpows; do

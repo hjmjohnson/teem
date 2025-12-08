@@ -58,7 +58,6 @@ EOF
 Setup
 
 zet_begin ####### BEGIN #######
-zet_stop
 
 Test() {
     local th sgn inv bi xnn opts obase fin fout comd got want
