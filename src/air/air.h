@@ -525,7 +525,7 @@ AIR_EXPORT char *airStrdup(const char *s);
 AIR_EXPORT size_t airStrlen(const char *s);
 /* ---- BEGIN non-NrrdIO */
 AIR_EXPORT char *airStrunc(char *str, size_t bsize, size_t drop);
-AIR_EXPORT char *airStruntag(char *str);
+AIR_EXPORT char *airStret(char *str);
 AIR_EXPORT int airStrcmp(const char *s1, const char *s2);
 /* ---- END non-NrrdIO */
 AIR_EXPORT char *airStrtok(char *s, const char *ct, char **last);

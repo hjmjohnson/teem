@@ -86,15 +86,15 @@ airStrunc(char *str, size_t bsize, size_t drop) {
 }
 
 /*
-airStruntag: The purpose is to non-earnestly and disdainfully address warnings like:
+airStret: The purpose is to non-earnestly and disdainfully address warnings like:
    snprintf ...'%s' directive output may be truncated writing up to N bytes
    into a region of size ...
-by doing something (i.e. passing through a function that hopefully is not inlined)
-that effectively removes whatever tags the compiler has put on a char* to know the
-size of the string therein.  See airStrunc for the earnest approach.
+by doing something (i.e. passing through a function that hopefully is not inlined) that
+effectively removes whatever internal meta-data the compiler has put on a char* to know
+the size of the string therein.  See airStrunc for the earnest approach.
 */
 char * /* may want `__attribute__((noinline))` here */
-airStruntag(char *str) {
+airStret(char *str) {
   return str;
 }
 
