@@ -25,10 +25,6 @@ int
 main(int argc, const char *argv[]) {
   const char *me = argv[0];
   hestOpt *hopt = NULL;
-  airArray *mop = airMopNew();
-  hestParm *hparm = hestParmMopNew(); /* Mop for hestParseOrExit */
-  /* hparm not actually used, but that's ok */
-  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   Nrrd *nin;
   hestOptAdd(&hopt, "i", "nin", airTypeOther, 1, 1, &nin, NULL, "input image", NULL,
              NULL, nrrdHestNrrd);
@@ -52,7 +48,8 @@ main(int argc, const char *argv[]) {
   char *outS;
   hestOptAdd(&hopt, "o", "filename", airTypeString, 1, 1, &outS, "-",
              "file to write histogram to");
-  hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, histradInfo);
+  hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, histradInfo);
+  airArray *mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
