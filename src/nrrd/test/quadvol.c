@@ -50,7 +50,8 @@ main(int argc, const char *argv[]) {
   hestOptAdd_1_Float(&hopt, "off", "z offset", &off, "0.0", "vertical offset");
   char *out;
   hestOptAdd_1_String(&hopt, "o", "filename", &out, "-", "file to write output nrrd to");
-  hestParm *hparm = hestParmMopNew(); /* Mop for hestParseOrExit */
+  hestParm *hparm = hestParmMopNew(); // self-mopping via hestParseOrExit
+  // don't actually need the hparm, but modeling correct usage to be memory-clean
   hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, quadInfo);
   airArray *mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
