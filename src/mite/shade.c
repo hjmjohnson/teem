@@ -193,9 +193,9 @@ miteShadeSpecSprint(char buff[AIR_STRLEN_SMALL + 1], const miteShadeSpec *shpec)
       /* hmmm: the ASP1_S buffer size is maybe uncomfortably small given what we're
          trying to pack in. We could set a conservative limit with which to repeatedly
          call airStrunc with that, or we can say this is a stupid waste of time and use
-         airStruntag, which was created for exactly this purpose. */
-      snprintf(buff, ASP1_S, "litten:%s,%s,%s,%s", airStruntag(var[0]),
-               airStruntag(var[1]), airStruntag(var[2]), airStruntag(var[3]));
+         airStret, which was created for exactly this purpose. */
+      snprintf(buff, ASP1_S, "litten:%s,%s,%s,%s", airStret(var[0]), airStret(var[1]),
+               airStret(var[2]), airStret(var[3]));
       break;
     default:
       snprintf(buff, ASP1_S, "%s: unknown shade method!", me);
