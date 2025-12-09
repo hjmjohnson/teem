@@ -183,14 +183,22 @@ miteShadeSpecSprint(char buff[AIR_STRLEN_SMALL + 1], const miteShadeSpec *shpec)
       break;
     case miteShadeMethodPhong:
       miteVariableSprint(var[0], shpec->vec0);
-      snprintf(buff, ASP1_S, "phong:%s", var[0]);
+      snprintf(buff, ASP1_S, "phong:%s", airStrunc(var[0], sizeof(var[0]), 10));
       break;
     case miteShadeMethodLitTen:
       miteVariableSprint(var[0], shpec->vec0);
       miteVariableSprint(var[1], shpec->vec1);
       miteVariableSprint(var[2], shpec->scl0);
       miteVariableSprint(var[3], shpec->scl1);
-      snprintf(buff, ASP1_S, "litten:%s,%s,%s,%s", var[0], var[1], var[2], var[3]);
+      /* hmmm: the ASP1_S buffer size is actually uncomfortably small given what we're
+         trying to pack in. We set a conservative limit and hope for the best. */
+      size_t cap = (ASP1_S - strlen("litten:")) / 4; // == 30 for AIR_STRLEN_SMALL=128
+      size_t drop = ASP1_S - cap;
+      snprintf(buff, ASP1_S, "litten:%s,%s,%s,%s",
+               airStrunc(var[0], sizeof(var[0]), drop),
+               airStrunc(var[1], sizeof(var[1]), drop),
+               airStrunc(var[2], sizeof(var[2]), drop),
+               airStrunc(var[3], sizeof(var[3]), drop));
       break;
     default:
       snprintf(buff, ASP1_S, "%s: unknown shade method!", me);
