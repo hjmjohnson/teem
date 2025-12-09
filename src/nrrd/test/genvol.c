@@ -103,6 +103,7 @@ main(int argc, const char *argv[]) {
                       "upper bounding corner of volume");
   char *out;
   hestOptAdd_1_String(&hopt, "o", "filename", &out, "-", "file to write output nrrd to");
+  // (passing NULL for hparm because we didn't need to customize hestParse action)
   hestParseOrExit(hopt, argc - 1, argv + 1, NULL, me, genvolInfo);
   airArray *mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
