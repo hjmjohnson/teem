@@ -3359,8 +3359,7 @@ int /* Biff: 1 */
 nrrdKernelSpecCompare(const NrrdKernelSpec *aa, const NrrdKernelSpec *bb, int *differ,
                       char explain[AIR_STRLEN_LARGE + 1]) {
   static const char me[] = "nrrdKernelSpecCompare";
-#define ASL AIR_STRLEN_LARGE
-  char subexplain[ASL + 1];
+  char subexplain[ASP1_L];
 
   if (!(differ)) {
     biffAddf(NRRD, "%s: got NULL differ", me);
@@ -3368,7 +3367,7 @@ nrrdKernelSpecCompare(const NrrdKernelSpec *aa, const NrrdKernelSpec *bb, int *d
   }
   if (!!aa != !!bb) {
     if (explain) {
-      snprintf(explain, ASL + 1, "different NULL-ities of kspec itself %s != %s",
+      snprintf(explain, ASP1_L, "different NULL-ities of kspec itself %s != %s",
                aa ? "non-NULL" : "NULL", bb ? "non-NULL" : "NULL");
     }
     *differ = 1;
@@ -3381,7 +3380,7 @@ nrrdKernelSpecCompare(const NrrdKernelSpec *aa, const NrrdKernelSpec *bb, int *d
   }
   if (!!aa->kernel != !!bb->kernel) {
     if (explain) {
-      snprintf(explain, ASL + 1, "different NULL-ities of kspec->kernel %s != %s",
+      snprintf(explain, ASP1_L, "different NULL-ities of kspec->kernel %s != %s",
                aa->kernel ? "non-NULL" : "NULL", bb->kernel ? "non-NULL" : "NULL");
     }
     *differ = 1;
@@ -3399,8 +3398,8 @@ nrrdKernelSpecCompare(const NrrdKernelSpec *aa, const NrrdKernelSpec *bb, int *d
   }
   if (*differ) {
     if (explain) {
-      snprintf(explain, ASL + 1, "kern/parm pairs differ: %s",
-               airStrunc(subexplain, ASL + 1, 30));
+      snprintf(explain, ASP1_L, "kern/parm pairs differ: %s",
+               airStrunc(subexplain, sizeof(subexplain), ASP1_S));
     }
     *differ = 1; /* losing ordering info (of dubious value) */
     return 0;
