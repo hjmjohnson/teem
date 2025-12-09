@@ -67,7 +67,7 @@
 
 setopt no_unset           # error on unbound variables
 setopt warn_create_global # warn if a function leaks variables
-setopt warn_nested_var    # warns if looks like non-array/hash used as such
+setopt warn_nested_var    # warns if function modifies a global
 setopt bad_pattern        # error on invalid glob pattern (don' treat as literal)
 setopt typeset_silent     # make `local` (aka `typeset`) inside loop silent
 # Protect against accidental clobbering of tied parameters; all of these lower-case names
@@ -88,9 +88,10 @@ readonly PWD OLDPWD RANDOM SECONDS
 ####### ZET_ROOT: absolute directory containing this Zet library file
 if (( ${+ZET_ROOT} )); then
     print -u2 "ZET_ROOT already set to $ZET_ROOT"
-    print -u2 "ZET_ROOT/zet-lib.zsh should be source'd once"
+    print -u2 "ZET_ROOT/zet-lib.zsh should be source'd only once"
     exit 1
 fi
+typeset -g ZET_ROOT
 ZET_ROOT=${(%):-%x}       # get the path of this file
 #               %x  = path of the current script file
 #        ${(%):-  } = expands %x to string we can save
@@ -99,10 +100,12 @@ ZET_ROOT=${ZET_ROOT:A:h}
 #                    :h takes directory
 
 ####### ZET_PFX: way of marking lines originating from these functions
+typeset -g ZET_PFX
 ZET_PFX="(zet):"
 print "$ZET_PFX Starting with ZET_ROOT=$ZET_ROOT"
 
 ####### ZET_DLM: visually distinctive things to delimit output
+typeset -g ZET_DLM
 ZET_DLM="≡≡==≡≡≡-≡≡=≡≡==-≡≡=≡=≡≡-=≡≡≡≡==-=≡≡==≡≡-≡≡≡≡=≡=-≡≡==≡=≡-≡≡≡=≡=="
 
 ####### ZET_DCMD, ZET_TRACE: track where we are in scripts
@@ -110,13 +113,26 @@ ZET_DLM="≡≡==≡≡≡-≡≡=≡≡==-≡≡=≡=≡≡-=≡≡≡≡==-=�
 typeset -g ZET_DCMD
 typeset -g ZET_TRACE
 
+####### ZET_JUNK: array of transient files to cleanup at finish
+# used by zet_junk, zet_unjunk, and _zet_cleanup
+typeset -g -a ZET_JUNK
+
+# (see "About input file lists" below)
+####### ZET_INF_FMT: printf format for current set of input files
+# set by zet_inf_begin
+typeset -g ZET_INF_FMT
+####### ZET_IKE: array (NOT hash) of ikes for current test script
+typeset -g -a ZET_IKE
+####### ZET_INF_NAME
+# set by zet_inf_begin, set to "" by zet_inf_end
+typeset -g ZET_INF_NAME
+
 ####### ZET_TSET: top-level description of current test set
 # (only one tset at a time can be actively running)
 # used with zet_{begin,test,end} functions below
-typeset -g -A ZET_TSET  # -A : associative array
+typeset -g -A ZET_TSET  # -A : associative array or *hash* (term used here)
 # (Ideally all the following arrays could also hang off of ZET_TSET
-#  e.g. ZET_TSET[comd] instead of ZET_COMD, but sadly zsh cannot nest
-#  associative arrays ...)
+#  e.g. ZET_TSET[comd] instead of ZET_COMD, but sadly zsh cannot nest hashes)
 ####### ZET_COMD, ZET_CHEK, ZET_WANT: maps from test/file names to more details
 # see _zet_read_reff description
 typeset -g -A ZET_COMD
@@ -135,7 +151,7 @@ typeset -g -A ZET_FAIL_WANT
 
 #__#__# _zet_arrays_reset
 # a helper function to (re)initialize these global arrays. Despite the
-# uniform syntax, this preserves the type (regular vs associative) of the array
+# uniform syntax, this preserves the type (regular vs hash) of the array
 _zet_arrays_reset() {
     setopt localoptions no_warn_nested_var # we're here to modify globals
     ZET_TSET=()
@@ -155,11 +171,11 @@ _zet_arrays_reset() {
 ##  what to do when finishing, and ways of finishing
 ##
 
-typeset -ga ZET_JUNK
 ####### zet_junk file1 file2 ...
 # says that these are transient files, to be cleaned up later
 zet_junk() {
     setopt localoptions no_warn_nested_var # we're here to modify globals
+    # HEY maybe should avoid redundantly adding the same file multiple times
     ZET_JUNK+=("$@");
 }
 ####### zet_unjunk file1 file2 ...
@@ -192,6 +208,7 @@ trap _zet_debug DEBUG
 #__#__# _zet_cleanup
 # how we speak for ourselves on our way out the door
 _zet_cleanup() {
+    setopt localoptions no_warn_nested_var # we're here (in part) to modify globals
     trap '' DEBUG
     if [[ -n $ZET_DCMD ]]; then
         local fileline=("${(@s/:/)ZET_TRACE}")
@@ -214,7 +231,11 @@ _zet_cleanup() {
 # failure to start running a command) to generate diagnostic context
 # (e.g. to help show which unu command had busted options)
 trap _zet_cleanup EXIT TERM ERR
-# Respond to a control-C by cleaning up and then `exit`ing
+# Respond to a control-C by cleaning up and then `exit 130`
+# why 130: as per https://tldp.org/LDP/abs/html/exitcodes.html
+# (which is here about unix not bash specifically)
+# exit code 128+N is used for fatal signal N
+# and "man signal" shows that SIGINT (made by control-C) has value 2
 trap '_zet_cleanup; exit 130' INT
 # Ensure cleanup even when script is sourced or run in a subshell
 autoload -Uz add-zsh-hook
@@ -257,7 +278,8 @@ zet_stop() {
 #__#__# _zet_unspace str
 # Collapse internal multiple spaces in `str` to single space,
 # and entirely remove leading and trailing spaces
-# (Actually: no longer used in _zet_read_reff, but may still be useful)
+# (Actually: no longer used in _zet_read_reff in the interest of speed,
+#  but may still be useful, if only for examples of string manipulation)
 _zet_unspace() {
     emulate -L zsh
     unsetopt WARN_CREATE_GLOBAL
@@ -324,12 +346,170 @@ zet_assert_out() {
 
 ########################################################################
 ##
+##  Functions for managing info about input file lists
+##
+##  About input file lists and the associated variables and functions:
+##  Zet test sets usually have a number of transient input files that are the immediate
+##  `-i` inputs to some test command (zet doesn't try to know anything about
+##  non-transient input files, and beyond zet_junk zet doesn't try to know anything about
+##  the tmp files that are pre-cursors to input files). Within one test set, there is
+##  typically a consistent pattern for naming input files (e.g. ramp_10.nrrd,
+##  ramp_20.nrrd, ramp_20p00.nrrd), which can expressed via `printf` with a single format
+##  string and some variable base or key.
+##
+####### Some related conventions for zet variable names:
+####### "inf" or "INF": _in_put _f_ile(name)
+####### "ike" or "IKE": _i_nput file(name) _ke_y (for printf)
+####### "ich" of "ICH": _i_nput file _ch_ecksum
+##
+##  The purpose of ZET_I* variables and zet_i* commands is to help maintain information
+##  about the infs and ikes, given that one pattern of running through tests is to
+##  iterate through the ikes in an outer loop to identify a single inf, and then iterate
+##  (in inner loops) through ways of operating on the inf.
+##  One motivation for putting all of this in Zet itself (instead of leaving that to the
+##  test set scripts) is that we want to facilitate both first generating a canonical
+##  list of checksums (ichs) for the infs (as indexed by the ikes), and later testing
+##  just-generated infs against those ichs.  That is controlled by a shell variable set
+##  by the uesr that we test (but do not set):
+####### ZET_GEN_ICH: if set, write file "foo-ich.txt" for test script foo.zsh
+##  Note that an inf list is specific to test script (e.g. foo.zsh) but not the test set
+##  name set implicitly or explicitly by zet_begin because one test script can define
+##  multiple test sets.
+
+####### zet_inf_begin fmt
+# declares that we are starting to create infs that conform to printf format `fmt`
+# sets ZET_INF_FMT and resets ZET_IKE
+zet_inf_begin() {
+    setopt localoptions no_warn_nested_var # we're here (in part) to modify globals
+    if (( $#ZET_INF_FMT )); then
+        zet_die "ZET_INF_FMT already set to $ZET_INF_FMT" \
+                "zet_inf_begin calls cannot be nested"
+    fi
+    local fmt="$1"
+    if [[ "$fmt" == *[[:space:]]* ]]; then
+        zet_die "Given fmt \"$fmt\" contains whitespace"
+    fi
+    if [[ ! "$fmt" == *%s* ]]; then
+        zet_die "Given fmt \"$fmt\" does not contain string conversion sequence %s"
+    fi
+    local caller_file=${funcfiletrace[1]%:*}
+    if [[ ! "$caller_file" == *.zsh ]]; then
+        zet_die "Caller filename \"caller_file\" does not end with .zsh"
+    fi
+    local fbase=${caller_file/.zsh/}
+    ZET_INF_NAME=${fbase:t} # t = tail = end of path
+    print "zet_inf_begin: ZET_INF_NAME=$ZET_INF_NAME"
+    ZET_INF_FMT=$fmt
+    ZET_IKE=()
+}
+
+####### zet_inf ike [out]
+# Intended to be used in one of two ways:
+# (1):
+#       zet_inf $ike
+#    or zet_inf $ike fname
+# By not being in a subshell, this increments the global list ZET_IKE with `ike`,
+# registers the resulting input filename `inf` with zet_junk, and,
+# if `fname` is given, saves the `inf` (via eval) into `fname.
+# (2):
+#      $(zet_info $ike)
+# In this subshell mode, nothing about ZET_IKE is modified (because it would be
+# futile to modify a global in a subshell), but instead, as a printf work-alike,
+# the output filename is printed.
+zet_inf() {
+    setopt localoptions no_warn_nested_var # we're here (in part) to modify globals
+    if (( ! $#ZET_INF_FMT )); then
+        zet_die "Not currently defining an inf list"
+    fi
+    local ike="$1"
+    if [[ "$ike" == *[[:space:]]* ]]; then
+        zet_die "Given ike \"$ike\" contains whitespace"
+    fi
+    local ret=$(printf $ZET_INF_FMT $ike)
+    #print -u2 "zet_inf: ike=$ike"
+    #print -u2 "zet_inf: #ZET_INF_NAME=$#ZET_INF_NAME"
+    #print -u2 "zet_inf: ZET_IKE[(I)$ike]=${ZET_IKE[(I)$ike]}"
+    if (( ${+2} )); then
+        # apparently namerefs don't work on Mac zsh??
+        # typeset -n out="$2" # -n nameref
+        local outvar="$2"
+        if [[ "$outvar" == *[[:space:]]* ]]; then
+            zet_die "Given output variable name \"$outvar\" contains whitespace"
+        fi
+        if (( ! $#outvar )); then
+            zet_die "Got empty output variable"
+        fi
+        if (( ZSH_SUBSHELL > 0 )); then
+            zet_die "Should not be using output variable name with subshell call"
+        fi
+    fi
+    if (( $#ZET_INF_NAME && ! ${ZET_IKE[(I)$ike]} && ! ZSH_SUBSHELL )); then
+        # we're learning ikes
+        # and we have not see this ike before,
+        # and we're not in a subshell (which makes modifying globals pointless)
+        #print -u2 "zet_inf: learning $ike"
+        #print -u2 "zet_inf: 00 $(typeset -p ZET_IKE)"
+        ZET_IKE+=($ike)
+        #print -u2 "zet_inf: 11 $(typeset -p ZET_IKE)"
+        zet_junk $ret
+    fi
+    if [[ -v out ]]; then  # if `out` was set
+        # because we don't have namerefs
+        eval "$outvar=$ret"
+    else
+        # $out is empty; print if we're in a subshell
+        if (( ZSH_SUBSHELL > 0 )); then
+            print -n $ret
+        fi
+    fi
+}
+
+####### zet_inf_end fmt
+# declares that we're done creating infs with format `fmt`.
+# If ZET_GEN_ICH is set, then generate/over-write foo-ich.txt file
+# Else read foo-ich.txt file and check files against that
+# HOWEVER, unlike the somewhat analogous zet_end; this does leaves set
+# associated globals ZET_INF_FMT and ZET_IKE because they are certainly
+# needed afterwards, during the test set itself.
+# This does set ZET_INF_NAME to "", to signal (to zet_inf) that we're done
+# learning the ike list.
+zet_inf_end() {
+    setopt localoptions no_warn_nested_var # we're here (in part) to modify globals
+    if (( ! $#ZET_INF_FMT )); then
+        zet_die "Not currently defining an inf list"
+    fi
+    if (( ! $#ZET_INF_NAME )); then
+        zet_die "Inf list name unset; was zet_inf_end already called?"
+    fi
+    if [[ $ZET_INF_FMT != "$1" ]]; then
+        zet_die "Current inf list (with fmt \"ZET_INF_FMT\" inconsistent with arg \"$1\""
+    fi
+    print -u2 "zet_inf_end: $(typeset -p ZET_IKE)"
+    if (( ! ${#ZET_IKE} )); then
+        zet_die "ZET_IKE is empty; was zet_inf ever called?"
+    fi
+    local fname="$ZET_INF_NAME-ich.txt"
+    if (( ${+ZET_GEN_ICH} )); then
+        print "$ZET_PFX Variable ZET_GEN_ICH is set ==> *Generating* $fname"
+        # *Writing* ich file
+    else
+        print "$ZET_PFX Variable ZET_GEN_ICH *not* set ==> checking against $fname"
+        # *Reading* ich file
+    fi
+    # Keep ZET_INF_FMT and ZET_IKE as is for future $(zet_inf $ike) calls,
+    # but signal that we're done learning about input files
+    ZET_INF_NAME=""
+}
+
+
+########################################################################
+##
 ##  Functions for setting up and running a test set
 ##  and the various test commands therein
 ##
 
 #__#__# _zet_read_reff reffile
-# Fills in associative arrays `ZET_COMD`, `ZET_CHEK`, `ZET_WANT`
+# Fills in hashes `ZET_COMD`, `ZET_CHEK`, `ZET_WANT`
 # from reference data in file `reffile`, each line of which is formatted as:
 #       fname :: comd ;; chek => want
 # The `::`, `;;`, and `=>` delimit the `fname`, `comd`, `chek`, and `want`
@@ -491,7 +671,7 @@ zet_begin() {
     subpath=${subpath:h}                     # keep directory only
     # hard reset on all the global arrays
     _zet_arrays_reset
-    # Initialize test set associative array
+    # Initialize test set hash
     ZET_TSET[name]=$subpath/$subname
     ZET_TSET[given]=$given
     ZET_TSET[reff]="${caller_file_raw%.*}-ref.txt"
@@ -636,7 +816,6 @@ zet_end() {
 # - in important helper functions:
 #       emulate -L zsh -o pipefail -o no_unset  # explicitly list options
 # - always add a type with local (local -a array; local -i count; local -F value)
-# - use typeset to create all globals, not just the arrays
 # pre-req to parallel: add zet_file to declare that this testset writes this file
 #   and have a variable ZET_FILE_LOG that writes out all these files,
 #   to (one-time) detect collisions that would confuse parallel runs
