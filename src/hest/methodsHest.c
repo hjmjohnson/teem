@@ -179,7 +179,9 @@ parseSingleO(void *out, const char *str, hest__PPair *hpp) {
       snprintf(hpp->err, AIR_STRLEN_HUGE + 1,
                "error (ret=%d) parsing \"%s\" from %s as %s:\n%s", ret, str,
                airEnumStr(hestSource, hpp->hopt->source), hpp->hopt->CB->type,
-               airStrunc(myerr, AIR_STRLEN_HUGE + 1,
+               airStrunc(myerr, sizeof(myerr),
+                         /* conservative estimate of what is generated prior to \n by
+                            format string above */
                          strlen(str) + strlen(hpp->hopt->CB->type) + 100));
     } else {
       snprintf(hpp->err, AIR_STRLEN_HUGE + 1,
