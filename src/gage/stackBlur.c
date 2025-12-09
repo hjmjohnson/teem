@@ -203,7 +203,7 @@ gageStackBlurParmCompare(const gageStackBlurParm *aa, const char *_nameA,
   if (*differ) {
     if (explain) {
       snprintf(explain, ASP1_L, "kernel specs different: %s",
-               airStrunc(subexplain, sizeof(subexplain), AIR_STRLEN_SMALL));
+               airStrunc(subexplain, sizeof(subexplain), ASP1_S));
     }
     *differ = 1;
     return 0;
@@ -215,7 +215,7 @@ gageStackBlurParmCompare(const gageStackBlurParm *aa, const char *_nameA,
   if (*differ) {
     if (explain) {
       snprintf(explain, ASP1_L, "boundary specs different: %s",
-               airStrunc(subexplain, sizeof(subexplain), AIR_STRLEN_SMALL));
+               airStrunc(subexplain, sizeof(subexplain), ASP1_S));
     }
     *differ = 1;
     return 0;
