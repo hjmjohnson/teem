@@ -86,15 +86,22 @@ airStrunc(char *str, size_t bsize, size_t drop) {
 }
 
 /*
-airStret: The purpose is to non-earnestly and disdainfully address warnings like:
+airStret: For non-earnestly and disdainfully addressing warnings like:
    snprintf ...'%s' directive output may be truncated writing up to N bytes
    into a region of size ...
-by doing something (i.e. passing through a function that hopefully is not inlined) that
+by doing something (i.e. *ret*urning the same *Str*ing pointer as we were given) that
 effectively removes whatever internal meta-data the compiler has put on a char* to know
 the size of the string therein.  See airStrunc for the earnest approach.
 */
 char * /* may want `__attribute__((noinline))` here */
 airStret(char *str) {
+  return str;
+}
+/* airStrect: the const char* version of airSret.  This should really be called airStretc
+or airConstStret but the great annoyance accompanying the acute need for this function
+overcame any principled consistency. */
+const char * /* may want `__attribute__((noinline))` here */
+airStrect(const char *str) {
   return str;
 }
 
