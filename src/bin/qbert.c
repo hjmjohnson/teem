@@ -28,7 +28,7 @@ typedef unsigned int uint;
 #define QBERT           "qbert"
 #define QBERT_HIST_BINS 1024 /* histogram size for v, g, and h */
 
-int qbertSaveAll = AIR_FALSE; /* can be used to save output of every stage */
+int qbertSaveAll; /* (set by hest) can be used to save output of every stage */
 
 /*
 ** This padding/resampling is to get axis[i]'s size >= sz[i], which
@@ -364,11 +364,16 @@ qbertMakeVghHists(Nrrd *nvhist, Nrrd *nghist, Nrrd *nhhist, uint *sz, uint bins,
 }
 
 /*
-** determine inclusion from histograms and create 8-bit VGH volume
-*/
+ * determine inclusion from histograms and create 8-bit VGH volume
+ *
+ * NOTE: `hfullrange` was added for TeemV2; GLK honestly forgets what it was about the
+ * SGI hardware (which motivated creating this tool) that required the the 2nd derivative
+ * values to be something other than occupying all the 8-bit range.  Old code behavior
+ * is equivalent to hfullrange being 0 (false).
+ */
 int
 qbertMakeVgh(Nrrd *nvgh, Nrrd *nvhist, Nrrd *nghist, Nrrd *nhhist, unsigned int *sz,
-             float *perc, Nrrd *nvghF) {
+             float *perc, Nrrd *nvghF, int hfullrange) {
   static const char me[] = "qbertMakeVgh";
   uint nval = AIR_UINT(nvghF->axis[0].size);
   int doH = !!(nval == 3);
@@ -426,7 +431,9 @@ qbertMakeVgh(Nrrd *nvgh, Nrrd *nvhist, Nrrd *nghist, Nrrd *nhhist, unsigned int 
   if (doH) {
     fprintf(stderr, "%s: new 2ndDDs (ignored %5d): [%g .. %g]\n", me,
             (int)(perc[2] * sz[0] * sz[1] * sz[2] / 100), minh, maxh);
-    fprintf(stderr, "%s: putting 2ndDD in range 1 to 169 (0.0 -> 85)\n", me);
+    if (!hfullrange) {
+      fprintf(stderr, "%s: putting 2ndDD in range 1 to 169 (0.0 -> 85)\n", me);
+    }
   }
 
   if (nrrdMaybeAlloc_va(nvgh, nrrdTypeUChar, 4, AIR_SIZE_T(nval), AIR_SIZE_T(sz[0]),
@@ -443,8 +450,13 @@ qbertMakeVgh(Nrrd *nvgh, Nrrd *nvhist, Nrrd *nghist, Nrrd *nhhist, unsigned int 
     uint gi = airIndex(ming, vghF[1], maxg, 254);
     vgh[1] = AIR_UCHAR(AIR_CLAMP(1, gi + 1, 254));
     if (doH) {
-      uint hi = airIndex(minh, vghF[2], maxh, 168);
-      vgh[2] = AIR_UCHAR(AIR_CLAMP(1, hi + 1, 169));
+      if (hfullrange) {
+        uint hi = airIndex(minh, vghF[2], maxh, 254);
+        vgh[2] = AIR_UCHAR(AIR_CLAMP(1, hi + 1, 254));
+      } else {
+        uint hi = airIndex(minh, vghF[2], maxh, 168);
+        vgh[2] = AIR_UCHAR(AIR_CLAMP(1, hi + 1, 169));
+      }
     }
     vgh += nval;
     vghF += nval;
@@ -523,7 +535,7 @@ qbertScat(Nrrd *nvgh, uint pos, unsigned int size, const char *name) {
 }
 
 static const char qbertInfo[]
-  = "Generates volume datasets friendly to circa-2002 hardware-based "
+  = "Generates volume datasets friendly to circa-2002 GPU-based "
     "volume renderers. "
     "The main value of this is a means of combining the functions of "
     "resampling a dataset to a particular size, measuring first (and "
@@ -587,12 +599,20 @@ main(int argc, const char *argv[]) {
                      "Like \"-vp\", but for gradient magnitudes. ");
   hestOptAdd_1_Float(&hopt, "hp", "H perc", perc + 2, "0.004",
                      "Like \"-vp\", but for Hessian-based 2nd derivatives. ");
+  int hlimrange;
+  hestOptAdd_Flag(&hopt, "hlr", &hlimrange,
+                  "For some reason (GLK forgets!) the original version of this "
+                  "code limited the quantized 2nd derivative value to [1,169] "
+                  "instead of [1,254]. Use this option to recreate that old "
+                  "behavior. Without it, the fuller range of 8-bit values is used. ");
   uint scat;
   hestOptAdd_1_UInt(&hopt, "scat", "scat size", &scat, "0",
                     "generate VG (and VH) scatterplots with this resolution. "
                     "Size 0 means \"no scatterplots\".  The scatterplots are "
                     "histogram equalized, quantized, and saved out as PGM images "
                     "named \"vg.pgm\" (and \"vh.pgm\").");
+  hestOptAdd_Flag(&hopt, "saveall", &qbertSaveAll,
+                  "save all intermediate results for debugging");
   char *outS;
   hestOptAdd_1_String(&hopt, "o", "output", &outS, NULL, "output volume in nrrd format");
 
@@ -696,7 +716,7 @@ main(int argc, const char *argv[]) {
 
     Nrrd *nvgh = nrrdNew();
     airMopAdd(mop, nvgh, nrrdNuke_mop, airMopAlways);
-    if (qbertMakeVgh(nvgh, nvhist, nghist, nhhist, sz, perc, nvghF)) {
+    if (qbertMakeVgh(nvgh, nvhist, nghist, nhhist, sz, perc, nvghF, !hlimrange)) {
       airMopAdd(mop, errS = biffGetDone(QBERT), airFree, airMopAlways);
       fprintf(stderr, "%s: trouble:\n%s\n", me, errS);
       airMopError(mop);
