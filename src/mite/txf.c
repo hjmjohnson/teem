@@ -217,10 +217,10 @@ miteVariableSprint(char buff[AIR_STRLEN_SMALL + 1], const gageItemSpec *isp) {
   } else if (gageKindScl == isp->kind || gageKindVec == isp->kind
              || tenGageKind == isp->kind) {
     snprintf(buff, ASP1_S, "gage(%s:%s)", isp->kind->name,
-             airStret(airEnumStr(isp->kind->enm, isp->item)));
+             airStrect(airEnumStr(isp->kind->enm, isp->item)));
   } else if (miteValGageKind == isp->kind) {
     snprintf(buff, ASP1_S, "%s(%s)", isp->kind->name,
-             airStret(airEnumStr(isp->kind->enm, isp->item)));
+             airStrect(airEnumStr(isp->kind->enm, isp->item)));
   } else {
     snprintf(buff, ASP1_S, "(%s: unknown gageKind!)", me);
   }
