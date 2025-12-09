@@ -67,10 +67,14 @@ airStrlen(const char *s) {
 
 /* ---- BEGIN non-NrrdIO */
 /*
-(possibly) truncates a given string `str` stored in a buffer of size `bsize`
-to ensure that its strlen does not exceed bsize-1-drop.  But main purpose is
-to hide compile-time info about static buffer sizes to avoid warnings about:
-snprintf ...'%s' directive output may be truncated writing up to ... */
+airStrunc: (possibly) truncates a given string `str` stored in a buffer of size `bsize`
+to ensure that its strlen does not exceed bsize-1-drop.  The practical purpose is to
+*earnestly* address warnings like:
+   snprintf ...'%s' directive output may be truncated writing up to N bytes
+   into a region of size ...
+but as far as the compiler is concerned, the effect just to hide compile-time information
+about the size of buffer size.  See airStrun
+*/
 char *
 airStrunc(char *str, size_t bsize, size_t drop) {
   if (str) {
@@ -78,6 +82,19 @@ airStrunc(char *str, size_t bsize, size_t drop) {
       str[bsize - (1 + drop)] = '\0';
     }
   }
+  return str;
+}
+
+/*
+airStruntag: The purpose is to non-earnestly and disdainfully address warnings like:
+   snprintf ...'%s' directive output may be truncated writing up to N bytes
+   into a region of size ...
+by doing something (i.e. passing through a function that hopefully is not inlined)
+that effectively removes whatever tags the compiler has put on a char* to know the
+size of the string therein.  See airStrunc for the earnest approach.
+*/
+char * /* may want `__attribute__((noinline))` here */
+airStruntag(char *str) {
   return str;
 }
 
