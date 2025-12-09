@@ -80,7 +80,7 @@ static const char *tkwbInfo
      "replacement tags (\"-r\", see below).  Within the slide pages, navigation "
      "arrows are based on remaining command-line options.");
 
-int tkwbArrayIncr = 16;
+uint tkwbArrayIncr = 16;
 
 typedef struct {
   char *title, *image, *text;
@@ -119,18 +119,15 @@ typedef union {
 int
 tkwbReadFileToString(char **strP, int *hitEOF, FILE *file, char *stop) {
   char **all, line[AIR_STRLEN_HUGE + 1];
-  airArray *allArr;
-  unsigned int allLen;
-  unsigned int lineLen, lineIdx, totalLen;
   tkwb_pu uu;
-
   uu.pc = &all;
-  allArr = airArrayNew(uu.v, &allLen, sizeof(char *), tkwbArrayIncr);
+  uint allLen;
+  airArray *allArr = airArrayNew(uu.v, &allLen, sizeof(char *), tkwbArrayIncr);
   airArrayPointerCB(allArr, airNull, airFree);
-  lineLen = airOneLine(file, line, sizeof(line));
-  totalLen = 0;
+  size_t lineLen = airOneLine(file, line, sizeof(line));
+  size_t totalLen = 0;
   while (lineLen && (!(airStrlen(stop) && !strcmp(line, stop)))) {
-    lineIdx = airArrayLenIncr(allArr, 1); /* HEY error checking */
+    uint lineIdx = airArrayLenIncr(allArr, 1); /* HEY error checking */
     size_t aliSize = strlen(line) + strlen("\n") + 1;
     all[lineIdx] = AIR_CALLOC(aliSize, char);
     airStrcpy(all[lineIdx], aliSize, line);
@@ -144,7 +141,7 @@ tkwbReadFileToString(char **strP, int *hitEOF, FILE *file, char *stop) {
   size_t strSize = totalLen + 1;
   char *str = *strP = AIR_CALLOC(strSize, char);
   str[0] = '\0';
-  for (lineIdx = 0; lineIdx < allLen; lineIdx++) {
+  for (uint lineIdx = 0; lineIdx < allLen; lineIdx++) {
     SN_COPY(str, strSize, all[lineIdx]);
   }
 
@@ -179,49 +176,46 @@ tkwbReadTemplate(char **tmplSP, char *filename) {
 int
 tkwbReadSlides(tkwbSlide ***slideP, char *filename, airArray *pmop) {
   static const char me[] = "tkwbReadSlides";
-  FILE *file;
-  airArray *mop, *slideArr;
-  tkwbSlide **slide = NULL;
-  char *title, *image, *text, stop[AIR_STRLEN_HUGE + 1], line[AIR_STRLEN_HUGE + 1];
-  int slideIdx = 0, hitEOF, notReally;
-  unsigned int len;
-  tkwb_pu uu;
-
-  mop = airMopNew();
-  if (!(file = airFopen(filename, stdin, "rb"))) {
+  airArray *mop = airMopNew();
+  FILE *file = airFopen(filename, stdin, "rb");
+  if (!file) {
     biffAddf(TKWB, "%s: couldn't open %s: %s", me, filename, strerror(errno));
     airMopError(mop);
     return 1;
   }
   airMopAdd(mop, file, airFclose_mop, airMopAlways);
 
-  len = airOneLine(file, stop, AIR_STRLEN_HUGE + 1);
+  char stop[AIR_STRLEN_HUGE + 1];
+  size_t len = airOneLine(file, stop, sizeof(stop));
   if (!(len > 1)) {
     biffAddf(TKWB, "%s: didn't get a stop delimiter from %s", me, filename);
     airMopError(mop);
     return 1;
   }
-
+  tkwb_pu uu;
+  tkwbSlide **slide = NULL;
   uu.ps = &slide;
-  slideArr = airArrayNew(uu.v, NULL, sizeof(tkwbSlide *), tkwbArrayIncr);
+  airArray *slideArr = airArrayNew(uu.v, NULL, sizeof(tkwbSlide *), tkwbArrayIncr);
   airMopAdd(mop, slideArr, airArrayNix_mop, airMopAlways);
-  hitEOF = notReally = AIR_FALSE;
+  int hitEOF = AIR_FALSE, notReally = AIR_FALSE;
+  uint slideIdx = 0;
   while (!hitEOF) {
     slideIdx = airArrayLenIncr(slideArr, 1); /* HEY error checking */
-    len = airOneLine(file, line, AIR_STRLEN_HUGE + 1);
+    char line[AIR_STRLEN_HUGE + 1];
+    len = airOneLine(file, line, sizeof(line));
     if (!len) {
       /* got EOF after a division marker, that's okay */
       notReally = AIR_TRUE;
       break;
     }
-    title = airStrdup(line);
+    char *title = airStrdup(line);
     len = airOneLine(file, line, AIR_STRLEN_HUGE + 1);
     if (!len) {
       break;
     }
-    image = airStrdup(line);
+    char *text, *image = airStrdup(line);
     if (tkwbReadFileToString(&text, &hitEOF, file, stop)) {
-      biffAddf(TKWB, "%s: couldn't read in slide %d", me, slideIdx);
+      biffAddf(TKWB, "%s: couldn't read in slide %u", me, slideIdx);
       airMopError(mop);
       return 1;
     }
@@ -229,7 +223,7 @@ tkwbReadSlides(tkwbSlide ***slideP, char *filename, airArray *pmop) {
     airMopAdd(pmop, slide[slideIdx], tkwbSlideNix_mop, airMopAlways);
   }
   if (!hitEOF && !notReally) {
-    biffAddf(TKWB, "%s: got incomplete slide info for slide %d\n", me, slideIdx);
+    biffAddf(TKWB, "%s: got incomplete slide info for slide %u\n", me, slideIdx);
     airMopError(mop);
     return 1;
   }
@@ -246,15 +240,10 @@ tkwbReadSlides(tkwbSlide ***slideP, char *filename, airArray *pmop) {
 int
 tkwbExpandImageInfo(tkwbSlide **slide) {
   static const char me[] = "tkwbExpandImageInfo";
-  char *image;
-  Nrrd *nimg;
-  int si, sx, sy, len;
-  airArray *mop;
-
-  mop = airMopNew();
-  nimg = nrrdNew();
+  airArray *mop = airMopNew();
+  Nrrd *nimg = nrrdNew();
   airMopAdd(mop, nimg, nrrdNuke_mop, airMopAlways);
-  for (si = 0; slide[si]; si++) {
+  for (uint si = 0; slide[si]; si++) {
     if (nrrdLoad(nimg, slide[si]->image, NULL)) {
       biffMovef(TKWB, NRRD, "%s: trouble reading slide image \"%s\"", me,
                 slide[si]->image);
@@ -267,12 +256,12 @@ tkwbExpandImageInfo(tkwbSlide **slide) {
       airMopError(mop);
       return 1;
     }
-    sx = nimg->axis[nimg->dim - 2].size;
-    sy = nimg->axis[nimg->dim - 1].size;
-    len = (strlen("<img width=xxxx height=xxxx src=\"\">") + strlen(slide[si]->image)
-           + 1);
-    image = AIR_CALLOC(len, char);
-    snprintf(image, len, "<img width=%d height=%d src=\"%s\">", sx, sy,
+    uint sx = AIR_UINT(nimg->axis[nimg->dim - 2].size);
+    uint sy = AIR_UINT(nimg->axis[nimg->dim - 1].size);
+    uint len = AIR_UINT(strlen("<img width=xxxx height=xxxx src=\"\">")
+                        + strlen(slide[si]->image) + 1);
+    char *image = AIR_CALLOC(len, char);
+    snprintf(image, len, "<img width=%u height=%u src=\"%s\">", sx, sy,
              slide[si]->image);
     free(slide[si]->image);
     slide[si]->image = image;
@@ -286,7 +275,6 @@ int
 tkwbWriteStringToFile(const char *filename, const char *content) {
   static const char me[] = "tkwbWriteStringToFile";
   FILE *file;
-
   if (!(file = fopen(filename, "wb"))) {
     biffAddf(TKWB, "%s: trouble opening file \"%s\": %s", me, filename, strerror(errno));
     return 1;
@@ -319,7 +307,7 @@ substAgain(char **strP,       // string to search in
   size_t nstSize = strlen(*strP) - fndLen + repLen + 1; // nst = new string
   char *_nst = AIR_CALLOC(nstSize, char);
   char *nst = _nst;
-  size_t pfxLen = pos - *strP;
+  size_t pfxLen = AIR_SIZE_T(pos - *strP);
   /* with reference to what "man strncpy" says about strncpy(dst, src, len)
      src=*strP is longer than len=pfxLen ==> dst=nst is NOT \0-terminated */
   strncpy(nst, *strP, pfxLen);
