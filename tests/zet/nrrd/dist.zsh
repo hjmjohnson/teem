@@ -59,7 +59,7 @@ Test() {
                         opts=(-th $th -b $bi $sgn $inv)
                         obase=${(j::)opts} # join without spaces
                         fin=$(zet_inf $ike); fout=${fin/.nrrd/$obase.nrrd}
-                        comd="unu dist -i $fin "${opts[@]}" -o $fout"
+                        comd="unu dist -i $fin ${opts[@]} -o $fout"
                         zet_test "$fout" "$comd" "$fin" "cksum"
                     done
                 done

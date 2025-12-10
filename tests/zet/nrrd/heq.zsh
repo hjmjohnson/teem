@@ -27,9 +27,8 @@ Setup() {
         unu basinfo -c ramp -o $outf
 
     # raising linear ramp to various exponents
-    local tpows=(03 05 20 33) # the exponents, times 10
     local tenpow
-    for tenpow in $tpows; do
+    for tenpow in 03 05 20 33; do # the exponents, times 10
         local pow=$(( $tenpow / 10.0 ))
         zet_inf "_${tenpow}" outf
         unu 2op pow ramp_10.nrrd $pow -o $outf
@@ -92,7 +91,7 @@ Test() {
                     fi
                     local inf=$(zet_inf $ike)
                     local outf=${inf/.nrrd/$obase.nrrd}
-                    local comd="unu heq -i $inf "${opts[@]}" -o $outf"
+                    local comd="unu heq -i $inf ${opts[@]} -o $outf"
                     zet_test "$outf" "$comd" "$inf" "cksum"
                 done
             done

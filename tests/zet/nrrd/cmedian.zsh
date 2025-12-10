@@ -110,7 +110,7 @@ Test() {
                             local obase=${(j::)opts} # join without spaces
                             local fin="$(zet_inf $ike)"
                             local fout=${fin/.nrrd/$obase.nrrd}
-                            local comd="unu cmedian -i $fin "${opts[@]}" -o $fout"
+                            local comd="unu cmedian -i $fin ${opts[@]} -o $fout"
                             zet_test "$fout" "$comd" "$fin" "cksum"
                             if (( $FLIPCHECK )); then
                                 # generate commands to (outsize of zet testing) see if cmedian commutes with unu flip -a 0
