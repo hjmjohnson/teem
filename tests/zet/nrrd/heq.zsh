@@ -15,7 +15,6 @@ fi
 # (2) only ignoring bins (with smart > 0) if they were incessantly hit
 
 Setup() {
-    setopt localoptions no_warn_nested_var # we're here (in part) to modify globals
     local szX=600 szY=100 # size of ramp array
     # an amount of padding with area ~1/3 of interior
     local szP=$(( (szX*szY/(2*szX + 2*szY))/3 ))

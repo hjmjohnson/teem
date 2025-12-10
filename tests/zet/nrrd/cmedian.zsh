@@ -13,7 +13,7 @@ else
     zet_die "unu not found, bye"
 fi
 
-# This was the first zet test set written; things that weren't right:
+# This was the first zet test set written; things that didn't stick
 #setopt XTRACE             # print commands before executing them
 #setopt XTRACE; PS4=$'%N:%i> '    (with prompt showing where we are)
 #setopt VERBOSE            # print shell input lines as they are read

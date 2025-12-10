@@ -399,7 +399,6 @@ zet_inf_begin() {
     fi
     local fbase=${caller_file/.zsh/}
     ZET_INF_NAME=${fbase:t} # t = tail = end of path
-    print "zet_inf_begin: ZET_INF_NAME=$ZET_INF_NAME"
     ZET_INF_FMT=$fmt
     ZET_IKE=()
 }
