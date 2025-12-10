@@ -10,7 +10,6 @@ else
     zet_die "unu not found, bye"
 fi
 
-typeset -A Ckc
 Setup() {
     # some sort of non-trivial terrain
     cat > hght.txt <<'EOF'
@@ -23,49 +22,35 @@ EOF
     zet_junk hght.txt
     # upsample it with a bit noise to make it interesting
     local inn out
-    out=hght-a11.nrrd; zet_junk $out; unu resample -i hght.txt -s x3 x3 -k box |
+    zet_inf_begin 'hght-%s.nrrd' ######## BEGIN input file creation
+    zet_inf a11 out
+    unu resample -i hght.txt -s x3 x3 -k box |
         unu 2op nrand - 0.15 -s 53 |
         unu resample -s x15 x15 -k bspln3 |
         unu dnorm -o $out
     # some different aspect ratios
-    out=hght-a13.nrrd; zet_junk $out; unu resample -i hght-a11.nrrd -s  =   /3 -k tent -o $out
-    out=hght-a21.nrrd; zet_junk $out; unu resample -i hght-a11.nrrd -s /2.2  = -k tent -o $out
+    zet_inf a13 out; unu resample -i hght-a11.nrrd -s  =   /3 -k tent -o $out
+    zet_inf a21 out; unu resample -i hght-a11.nrrd -s /2.2  = -k tent -o $out
     local nn
     for nn in 11 13 21; do
         inn=hght-a$nn.nrrd
-        out=hght-b$nn.nrrd; zet_junk $out; unu swap -i $inn -a 0 1 -o $out
-        out=hght-c$nn.nrrd; zet_junk $out; unu swap -i $inn -a 0 1 | unu flip -a 0 -o $out
-        out=hght-d$nn.nrrd; zet_junk $out; unu flip -i $inn -a 0 | unu flip -a 1 -o $out
+        zet_inf b$nn out; unu swap -i $inn -a 0 1 -o $out
+        zet_inf c$nn out; unu swap -i $inn -a 0 1 | unu flip -a 0 -o $out
+        zet_inf d$nn out; unu flip -i $inn -a 0 | unu flip -a 1 -o $out
     done
-    # check on these files' contents
-    Ckc[a11]="1967624952 202667"
-    Ckc[a13]="2947370679 67803"
-    Ckc[a21]="3602888103 92139"
-    Ckc[b11]="1572555009 202783"
-    Ckc[b13]="139883114 67813"
-    Ckc[b21]="2930763932 92149"
-    Ckc[c11]="2311120603 202795"
-    Ckc[c13]="4291150667 67825"
-    Ckc[c21]="3538037484 92161"
-    Ckc[d11]="2091956497 202797"
-    Ckc[d13]="2122642803 67827"
-    Ckc[d21]="234418738 92160"
-    local xnn
-    for xnn in ${(k)Ckc}; do  # for all keywords in Ckc
-        zet_assert_cksum $Ckc[$xnn] hght-$xnn.nrrd
-    done
+    zet_inf_end hght-%s.nrrd ######## END input file creation
 }
 Setup
 
-zet_begin ####### BEGIN #######
+zet_begin ####### BEGIN testing
 
 Test() {
-    local th sgn inv bi xnn opts obase fin fout comd got want
+    local th sgn inv bi ike opts obase fin fout comd got want
     for th in 0.5 1.5 2.5 3.5; do
         for sgn in "" "-sgn"; do
             for inv in "" "-inv"; do
                 for bi in 0 3; do
-                    for xnn in ${(ok)Ckc}; do  # "o" sorting all "k" keywords in Ckc
+                    for ike in $ZET_IKE; do
                         if [[ $bi == 3 && $sgn == "-sgn" ]]; then
                             # "unu dist: sorry, signed and biased transform not yet implemented"
                             continue
@@ -74,7 +59,7 @@ Test() {
                         #        [-sgn] [-inv] [-i,--input <nin>] [-o,--output <nout>]
                         opts=(-th $th -b $bi $sgn $inv)
                         obase=${(j::)opts} # join without spaces
-                        fin="hght-${xnn}.nrrd"; fout=${fin/.nrrd/$obase.nrrd}
+                        fin=$(zet_inf $ike); fout=${fin/.nrrd/$obase.nrrd}
                         comd="unu dist -i $fin "${opts[@]}" -o $fout"
                         zet_test "$fout" "$comd" "$fin" "cksum"
                     done
@@ -85,7 +70,7 @@ Test() {
 }
 Test
 
-zet_end ####### END #######
+zet_end ####### END testing
 
 exit 0
 
@@ -107,4 +92,3 @@ if false; then
     # which show that resampling roughly commutes with distance transform
     # (distance transform is usefully using the inter-sample distance)
 fi
-
