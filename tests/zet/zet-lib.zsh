@@ -501,8 +501,8 @@ zet_inf_end() {
     else
         print "$ZET_PFX Variable ZET_GEN_ICH *not* set ==> checking against $ichname"
         if [[ ! -f $ichname ]]; then
-            zet_die "Input checksum file \"$ichname\" does not exist" \
-                    "need to run first with: ZET_GEN_ICH= ./$ZET_INF_NAME.zsh"
+            zet_die "Input checksum file \"$ichname\" does not exist." \
+                    "Need to run first with: ZET_GEN_ICH= ./$ZET_INF_NAME.zsh"
         fi
         exec 3< "$ichname"    # open file descriptor 3 for reading
         # We don't make any effort to parse the file (e.g. ignoring comments)
@@ -707,6 +707,10 @@ zet_begin() {
         ZET_FAIL=("(moot! writing reference file)")
     else
         print -n "$ZET_PFX Variable ZET_GEN_REF *not* set ==> "
+        if [[ ! -f $ZET_TSET[reff] ]]; then
+            zet_die "Reference file \"${ZET_TSET[reff]}\" does not exist." \
+                    "Need to run first with: ZET_GEN_REF="
+        fi
         ZET_TSET[mode]="read"
         # we will be recording test results in these:
         ZET_PASS=() # regular array
