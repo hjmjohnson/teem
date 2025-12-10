@@ -122,6 +122,7 @@ typeset -g -a ZET_JUNK
 # set by zet_inf_begin
 typeset -g ZET_INF_FMT
 ####### ZET_IKE: array (NOT hash) of ikes for current test script
+# set by zet_inf
 typeset -g -a ZET_IKE
 ####### ZET_INF_NAME
 # set by zet_inf_begin, set to "" by zet_inf_end
@@ -358,14 +359,14 @@ zet_assert_out() {
 ##  string and some variable base or key.
 ##
 ####### Some related conventions for zet variable names:
-####### "inf" or "INF": _in_put _f_ile(name)
-####### "ike" or "IKE": _i_nput file(name) _ke_y (for printf)
-####### "ich" of "ICH": _i_nput file _ch_ecksum
+####### inf or INF ("inf") : _in_put _f_ile(name)
+####### ike or IKE ("eyek"): _i_nput file(name) _ke_y (for printf)
+####### ich of ICH ("itch"): _i_nput file _ch_ecksum
 ##
 ##  The purpose of ZET_I* variables and zet_i* commands is to help maintain information
 ##  about the infs and ikes, given that one pattern of running through tests is to
-##  iterate through the ikes in an outer loop to identify a single inf, and then iterate
-##  (in inner loops) through ways of operating on the inf.
+##  iterate through the ikes in one loop to identify a single inf, and then iterate
+##  (in other loops) through ways of operating on the inf.
 ##  One motivation for putting all of this in Zet itself (instead of leaving that to the
 ##  test set scripts) is that we want to facilitate both first generating a canonical
 ##  list of checksums (ichs) for the infs (as indexed by the ikes), and later testing
@@ -412,7 +413,7 @@ zet_inf_begin() {
 # registers the resulting input filename `inf` with zet_junk, and,
 # if `fname` is given, saves the `inf` (via eval) into `fname.
 # (2):
-#      $(zet_info $ike)
+#      $(zet_inf $ike)
 # In this subshell mode, nothing about ZET_IKE is modified (because it would be
 # futile to modify a global in a subshell), but instead, as a printf work-alike,
 # the output filename is printed.
@@ -453,8 +454,8 @@ zet_inf() {
         #print -u2 "zet_inf: 11 $(typeset -p ZET_IKE)"
         zet_junk $ret
     fi
-    if [[ -v out ]]; then  # if `out` was set
-        # because we don't have namerefs
+    if [[ -v outvar ]]; then  # if `outvar` was set
+        # eval because we don't have namerefs
         eval "$outvar=$ret"
     else
         # $out is empty; print if we're in a subshell
@@ -478,23 +479,48 @@ zet_inf_end() {
     if (( ! $#ZET_INF_FMT )); then
         zet_die "Not currently defining an inf list"
     fi
+    print -u2 "zet_inf_end: ZET_INF_NAME=$ZET_INF_NAME"
     if (( ! $#ZET_INF_NAME )); then
         zet_die "Inf list name unset; was zet_inf_end already called?"
     fi
     if [[ $ZET_INF_FMT != "$1" ]]; then
         zet_die "Current inf list (with fmt \"ZET_INF_FMT\" inconsistent with arg \"$1\""
     fi
-    print -u2 "zet_inf_end: $(typeset -p ZET_IKE)"
+    # print -u2 "zet_inf_end: $(typeset -p ZET_IKE)"
     if (( ! ${#ZET_IKE} )); then
         zet_die "ZET_IKE is empty; was zet_inf ever called?"
     fi
-    local fname="$ZET_INF_NAME-ich.txt"
+    local ichname="$ZET_INF_NAME-ich.txt"
+    local ike
     if (( ${+ZET_GEN_ICH} )); then
-        print "$ZET_PFX Variable ZET_GEN_ICH is set ==> *Generating* $fname"
-        # *Writing* ich file
+        print "$ZET_PFX Variable ZET_GEN_ICH is set ==> *Generating* $ichname"
+        rm -f $ichname
+        touch $ichname
+        for ike in $ZET_IKE; do
+            local inf=$(zet_inf $ike)
+            print $(cksum $inf) >> $ichname
+        done
     else
-        print "$ZET_PFX Variable ZET_GEN_ICH *not* set ==> checking against $fname"
-        # *Reading* ich file
+        print "$ZET_PFX Variable ZET_GEN_ICH *not* set ==> checking against $ichname"
+        if [[ ! -f $ichname ]]; then
+            zet_die "Input checksum file \"$ichname\" does not exist" \
+                    "need to run first with: ZET_GEN_ICH= ./$ZET_INF_NAME.zsh"
+        fi
+        exec 3< "$ichname"    # open file descriptor 3 for reading
+        # We don't make any effort to parse the file (e.g. ignoring comments)
+        # and we entirely rely on the ZET_IKE traversal here at read time
+        # being identical to how it worked at write time.
+        local line
+        for ike in $ZET_IKE; do
+            local inf=$(zet_inf $ike)
+            local ich=$(cksum $inf)
+            read -r line <&3
+            if [[ "$ich" != "$line" ]]; then
+                zet_die "For input file $inf (for input key $ike)" \
+                        "computed \"$ich\" but $ichname says \"$line\""
+            fi
+        done
+        exec 3<&-  # close descriptor 3
     fi
     # Keep ZET_INF_FMT and ZET_IKE as is for future $(zet_inf $ike) calls,
     # but signal that we're done learning about input files
