@@ -620,7 +620,6 @@ enum {
   "intercept, slope, and error from line fitting\n "                                    \
   "\b\bo \"stdv\": standard deviation\n "                                               \
   "\b\bo \"cov\": coefficient of variation\n "                                          \
-  "\b\bo \"product\", \"sum\": product or sum of all values\n "                         \
   "\b\bo \"L1\", \"L2\", \"L4\", \"NL2\", \"RMS\", \"Linf\": vector norms\n "           \
   "\b\bo \"histo-min\", \"histo-max\", \"histo-mean\","                                 \
   "\"histo-median\", \"histo-mode\", \"histo-product\", \"histo-l2\", "                 \
