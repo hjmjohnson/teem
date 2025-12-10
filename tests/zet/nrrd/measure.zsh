@@ -46,7 +46,7 @@ Setup() {
     for ike in $ZET_IKE; do
         local inf=$(zet_inf $ike)
         zet_inf ${ike}H outf
-        unu histo -i $inf -b 200 -o $outf
+        unu histax -i $inf -a 0 -b 200 -o $outf
     done
     zet_inf_end 'rows%s.nrrd' ######## END input file creation
 }
