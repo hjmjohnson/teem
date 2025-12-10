@@ -3,7 +3,6 @@
 source ${0:A:h}/../zet-lib.zsh # set up the zet "library"
 setopt err_exit                # exit on error
 setopt pipe_fail               # propagate pipeline errors
-
 if (( $+commands[unu] )); then
     print "${0} using unu = $(which unu)\n"
 else
