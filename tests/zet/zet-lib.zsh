@@ -478,7 +478,6 @@ zet_inf_end() {
     if (( ! $#ZET_INF_FMT )); then
         zet_die "Not currently defining an inf list"
     fi
-    print -u2 "zet_inf_end: ZET_INF_NAME=$ZET_INF_NAME"
     if (( ! $#ZET_INF_NAME )); then
         zet_die "Inf list name unset; was zet_inf_end already called?"
     fi
