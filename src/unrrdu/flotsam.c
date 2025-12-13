@@ -73,7 +73,7 @@ unrrduGetenvDefaultImplicitLutRmapRescale(void) {
 /*
  ******** unrrduUnuCmdList[]
  *
- * NULL-terminated array of unrrduCmd pointers, as ordered by UNRRDU_MAP macro
+ * NULL-terminated array of unrrduCmd pointers, as ordered by MY_UNRRDU_MAP macro
  */
 const unrrduCmd *const unrrduUnuCmdList[] = {MY_UNRRDU_MAP(MY_UNRRDU_LIST) NULL};
 
