@@ -205,7 +205,7 @@ rnParse_block_size(FILE *file, Nrrd *nrrd, NrrdIoState *nio, int useBiff) {
 
   AIR_UNUSED(file);
   info = nio->line + nio->pos;
-  if (1 != airSingleSscanf(info, "%z", &(nrrd->blockSize))) {
+  if (1 != airSingleSscanf(info, "%zu", &(nrrd->blockSize))) {
     biffMaybeAddf(useBiff, NRRD,
                   "%s: couldn't parse size_t"
                   " from \"%s\"",
