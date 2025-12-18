@@ -114,7 +114,7 @@ static int parseSingleI (PARSE_1_ARGS) { PARSE_1_BODY("int",            "%d" ); 
 static int parseSingleUI(PARSE_1_ARGS) { PARSE_1_BODY("unsigned int",   "%u" ); }
 static int parseSingleL (PARSE_1_ARGS) { PARSE_1_BODY("long",           "%ld"); }
 static int parseSingleUL(PARSE_1_ARGS) { PARSE_1_BODY("unsigned long",  "%lu"); }
-static int parseSingleZ (PARSE_1_ARGS) { PARSE_1_BODY("size_t",         "%zu" ); }
+static int parseSingleZ (PARSE_1_ARGS) { PARSE_1_BODY("size_t",         "%zu"); }
 static int parseSingleF (PARSE_1_ARGS) { PARSE_1_BODY("float",          "%f" ); }
 static int parseSingleD (PARSE_1_ARGS) { PARSE_1_BODY("double",         "%lf"); }
 // clang-format on
