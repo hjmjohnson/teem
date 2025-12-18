@@ -207,6 +207,14 @@ main(int argc, const char **argv) {
     airMopAdd(hparm->_selfMop, me, airFree, airMopAlways);
     snprintf(me, meSize, "%s %s", UNU, argv[1]);
     // run the individual unu program, saving its exit status
+    /* argc/argv accounting.  Example of what main() got:
+          argc                                                  == 10
+          argv: [0]  [1]  [2]  [3]    [4] [5] [6] [7] [8]   [9]
+       cmdline: unu slice -i in.nrrd  -a   1  -p   2  -o  out.nrrd
+       By convention (and only convention), mainFunc is called with everything *after*
+       the arg identifying the command (but nothing about hest or unrrdu actually
+       requires those argc,argv arguments to be used in that particular way).
+       The unu commands' mainFuncs can look at argv[-1] to see the command. */
     ret = unrrduUnuCmdList[i]->mainFunc(argc - 2, argv + 2, me, hparm);
   } else {
     fprintf(stderr,
