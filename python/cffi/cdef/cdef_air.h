@@ -447,7 +447,9 @@ extern unsigned int airParseStrE(int *out, const char *s, const char *ct,
 extern char *airStrdup(const char *s);
 extern size_t airStrlen(const char *s);
 /* ---- BEGIN non-NrrdIO */
-extern char *airStrunc(char *s, size_t bsize, size_t drop);
+extern char *airStrunc(char *str, size_t bsize, size_t drop);
+extern char *airStret(char *str);
+extern const char *airStrect(const char *str);
 extern int airStrcmp(const char *s1, const char *s2);
 /* ---- END non-NrrdIO */
 extern char *airStrtok(char *s, const char *ct, char **last);
