@@ -27,7 +27,7 @@
 /* moss.h is included where it is needed, in ilk.c */
 
 #if defined(_WIN32) && !defined(__CYGWIN__) && !defined(TEEM_STATIC)
-#  if defined(TEEM_BUILD) || defined(unrrdu_EXPORTS) || defined(teem_EXPORTS)
+#  if defined(TEEM_BUILD) || defined(unrrdu_EXPORTS) || defined(Teem_EXPORTS)
 #    define UNRRDU_EXPORT extern __declspec(dllexport)
 #  else
 #    define UNRRDU_EXPORT extern __declspec(dllimport)
