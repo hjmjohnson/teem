@@ -101,6 +101,10 @@ function(teem_add_test target)
   if(tmp_dir)
     list(APPEND env_list "TEEM_TEST_TMP_DIR=${tmp_dir}")
   endif()
+  if(WIN32)
+    # On Windows, we need the Teem.dll in the PATH for ctests to pass
+    list(APPEND env_list "PATH=$<TARGET_FILE_DIR:Teem>;$ENV{PATH}")
+  endif()
 
   # Register the test
   add_test(NAME ${test_name} COMMAND ${target} ${TAT_ARGS})

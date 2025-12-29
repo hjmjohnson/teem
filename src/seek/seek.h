@@ -33,7 +33,7 @@
 #include <teem/limn.h>
 
 #if defined(_WIN32) && !defined(__CYGWIN__) && !defined(TEEM_STATIC)
-#  if defined(TEEM_BUILD) || defined(seek_EXPORTS) || defined(teem_EXPORTS)
+#  if defined(TEEM_BUILD) || defined(seek_EXPORTS) || defined(Teem_EXPORTS)
 #    define SEEK_EXPORT extern __declspec(dllexport)
 #  else
 #    define SEEK_EXPORT extern __declspec(dllimport)
