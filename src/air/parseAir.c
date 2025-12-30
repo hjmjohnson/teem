@@ -77,7 +77,7 @@ airAtod(const char *str) {
   return val;
 }
 
-/* NOTE: see info n air.h about TeemV2 changes to all things airType and airParse */
+/* NOTE: see info in air.h about TeemV2 changes to all things airType and airParse */
 
 int
 airSingleSscanf(const char *str, const char *fmt, void *ptr) {
@@ -114,8 +114,8 @@ airSingleSscanf(const char *str, const char *fmt, void *ptr) {
       free(tmp);
       return ret;
     }
-    /* else we matched "nan", "-inf", or "inf", and set val accordingly */
-    if (!strncmp(fmt, "%l", 2)) {
+    /* else we matched "nan", "-inf", or "inf"; now set val accordingly */
+    if (fmt[1] == 'l') {
       /* we were given a double pointer */
       *((double *)(ptr)) = val;
     } else {
@@ -124,7 +124,7 @@ airSingleSscanf(const char *str, const char *fmt, void *ptr) {
     }
     free(tmp);
     return 1;
-  } else if (!strcmp(fmt, "%z")) {
+  } else if (!strcmp(fmt, "%zu")) {
     /* its a size_t */
     size_t tsz = 0;        /* tmp size_t */
     const char *chh = str; /* char here */

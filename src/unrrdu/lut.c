@@ -84,20 +84,20 @@ unu_lutMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
   Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
-  unrrduGetenvDefaultImplicitLutRmapRescale();
+  unrrduUnuGetenvDefaultImplicitLutRmapRescale();
   /* Pre-TeemV2: "here is a big difference between unu and nrrd: we enforce rescaling any
   time that the map domain is implicit.  This is how the pre-1.6 functionality is
   recreated."
   TeemV2: Given an implicit map domain, if user is not used "-r", then rescale is set to
-  unrrduDefaultImplicitLutRmapRescale (initialized to AIR_TRUE) which can be controlled
-  by envvar "UNRRDU_DEFAULT_IMPLICIT_LUT_RMAP_RESCALE".
-  Also, whenever there is rescaling we pass a NrrdRange to reflect the (optional) user
-  range specification, instead of letting nrrdApply1DRegMap find the input range itself
-  (by passing a NULL NrrdRange). */
+  unrrduUnuDefaultImplicitLutRmapRescale (initialized to AIR_TRUE) which can be
+  controlled by envvar "UNRRDU_DEFAULT_IMPLICIT_LUT_RMAP_RESCALE". Also, whenever there
+  is rescaling we pass a NrrdRange to reflect the (optional) user range specification,
+  instead of letting nrrdApply1DRegMap find the input range itself (by passing a NULL
+  NrrdRange). */
   if (!hestSourceUser(hopt[rsclOptIdx].source)) {
     if (!(AIR_EXISTS(nlut->axis[nlut->dim - 1].min)
           && AIR_EXISTS(nlut->axis[nlut->dim - 1].max))) {
-      rescale = unrrduDefaultImplicitLutRmapRescale;
+      rescale = unrrduUnuDefaultImplicitLutRmapRescale;
     }
   }
   NrrdRange *range = NULL;

@@ -87,12 +87,12 @@ unu_rmapMain(int argc, const char **argv, const char *me, const hestParm *hparm)
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
-  unrrduGetenvDefaultImplicitLutRmapRescale();
+  unrrduUnuGetenvDefaultImplicitLutRmapRescale();
   /* NOTE: comment in lut.c describes logic for how rescale is set */
   if (!hestSourceUser(hopt[rsclOptIdx].source)) {
     if (!(AIR_EXISTS(nmap->axis[nmap->dim - 1].min)
           && AIR_EXISTS(nmap->axis[nmap->dim - 1].max))) {
-      rescale = unrrduDefaultImplicitLutRmapRescale;
+      rescale = unrrduUnuDefaultImplicitLutRmapRescale;
     }
   }
   NrrdRange *range = NULL;

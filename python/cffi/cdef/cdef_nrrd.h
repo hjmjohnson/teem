@@ -755,7 +755,7 @@ extern int nrrdStateKeyValuePairsPropagate;
 /* ---- BEGIN non-NrrdIO */
 extern int nrrdStateBlind8BitRange;
 extern int nrrdStateMeasureType;
-extern int nrrdStateMeasureModeBins;
+extern unsigned int nrrdStateMeasureModeBins;
 extern int nrrdStateMeasureHistoType;
 extern int nrrdStateDisallowIntegerNonExist;
 /* ---- END non-NrrdIO */

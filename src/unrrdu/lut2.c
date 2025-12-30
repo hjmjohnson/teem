@@ -98,14 +98,14 @@ unu_lut2Main(int argc, const char **argv, const char *me, const hestParm *hparm)
     return 1;
   }
 
-  unrrduGetenvDefaultImplicitLutRmapRescale();
+  unrrduUnuGetenvDefaultImplicitLutRmapRescale();
   Nrrd *ntmp[2];
   /* NOTE: comment in lut.c describes logic for how rescale is set */
   for (uint rai = 0; rai <= 1; rai++) {
     if (!hestSourceUser(hopt[rsclOptIdx].source)) {
       if (!(AIR_EXISTS(nlut->axis[mapAxis + rai].min)
             && AIR_EXISTS(nlut->axis[mapAxis + rai].max))) {
-        rescale[rai] = unrrduDefaultImplicitLutRmapRescale;
+        rescale[rai] = unrrduUnuDefaultImplicitLutRmapRescale;
       }
     }
     if (rescale[rai]) {

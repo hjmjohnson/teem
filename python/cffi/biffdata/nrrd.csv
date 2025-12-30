@@ -62,7 +62,7 @@ nrrdKernelSpecSprint,int,1,0,nrrd,nrrd/kernel.c:3233
 nrrdKernelSprint,int,1,0,nrrd,nrrd/kernel.c:3292
 nrrdKernelCompare,int,1,0,nrrd,nrrd/kernel.c:3310
 nrrdKernelSpecCompare,int,1,0,nrrd,nrrd/kernel.c:3359
-nrrdKernelCheck,int,1,0,nrrd,nrrd/kernel.c:3435
+nrrdKernelCheck,int,1,0,nrrd,nrrd/kernel.c:3434
 nrrdConvert,int,1,0,nrrd,nrrd/map.c:123
 nrrdClampConvert,int,1,0,nrrd,nrrd/map.c:143
 nrrdCastClampRound,int,1,0,nrrd,nrrd/map.c:169

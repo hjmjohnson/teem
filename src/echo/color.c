@@ -25,7 +25,7 @@
     echoThreadState *tstate
 typedef void (*IntxColor_t)(INTXCOLOR_ARGS);
 // forward-declaration of array defined near end of this file
-static IntxColor_t const IntxColor[];
+static IntxColor_t const IntxColor[ECHO_MATTER_MAX + 1];
 
 static char myBuff[AIR_STRLEN_SMALL + 1] = "";
 

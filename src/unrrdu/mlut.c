@@ -109,12 +109,12 @@ unu_mlutMain(int argc, const char **argv, const char *me, const hestParm *hparm)
     nmlut->axis[mapAxis].max = max;
   }
 
-  unrrduGetenvDefaultImplicitLutRmapRescale();
+  unrrduUnuGetenvDefaultImplicitLutRmapRescale();
   /* NOTE: comment in lut.c describes logic for how rescale is set */
   if (!hestSourceUser(hopt[rsclOptIdx].source)) {
     if (!(AIR_EXISTS(nmlut->axis[mapAxis].min)
           && AIR_EXISTS(nmlut->axis[mapAxis].max))) {
-      rescale = unrrduDefaultImplicitLutRmapRescale;
+      rescale = unrrduUnuDefaultImplicitLutRmapRescale;
     }
   }
   NrrdRange *range = NULL;

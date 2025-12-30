@@ -1007,7 +1007,7 @@ measureStr[NRRD_MEASURE_MAX+1] = {
   "histo-sum",
   "histo-L2",
   "histo-variance",
-  "histo-SD",
+  "histo-stdv",
 };
 
 static const char *
@@ -1076,7 +1076,7 @@ measureStrEqv[] = {
   "histo-sum",
   "histo-l2",
   "histo-variance", "histo-var",
-  "histo-sd",
+  "histo-sd", "histo-stdv",
   ""
 };
 
@@ -1112,7 +1112,7 @@ measureValEqv[] = {
   nrrdMeasureHistoSum,
   nrrdMeasureHistoL2,
   nrrdMeasureHistoVariance, nrrdMeasureHistoVariance,
-  nrrdMeasureHistoSD,
+  nrrdMeasureHistoSD, nrrdMeasureHistoSD,
 };
 
 static const airEnum

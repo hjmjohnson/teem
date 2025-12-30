@@ -107,7 +107,7 @@ main(int argc, const char *argv[]) {
                      "\b\bo \"x<float>\": number of output samples is some scaling of "
                      " the number input of samples; multiplied by <float>\n "
                      "\b\bo \"<int>\": specify exact number of samples",
-                     &unrrduHestScaleCB);
+                     &unrrduUnuHestScaleCB);
   hestOptAdd_1_UInt(&hopt, "a", "avg #", &avgNum, "0",
                     "number of averages (if there there is only one "
                     "rotation as transform)");
@@ -173,19 +173,19 @@ main(int argc, const char *argv[]) {
 
   for (d = 0; d < 2; d++) {
     switch (AIR_INT(scale[0 + 2 * d])) {
-    case unrrduScaleNothing:
+    case unrrduUnuScaleNothing:
       /* same number of samples as input */
       size[d] = AIR_INT(nin->axis[ax0 + d].size);
       break;
-    case unrrduScaleMultiply:
+    case unrrduUnuScaleMultiply:
       /* scaling of input # samples */
       size[d] = AIR_ROUNDUP(nin->axis[ax0 + d].size * scale[1 + 2 * d]);
       break;
-    case unrrduScaleDivide:
+    case unrrduUnuScaleDivide:
       /* scaling of input # samples */
       size[d] = AIR_ROUNDUP(nin->axis[ax0 + d].size / scale[1 + 2 * d]);
       break;
-    case unrrduScaleExact:
+    case unrrduUnuScaleExact:
       /* explicit # of samples */
       size[d] = AIR_INT(scale[1 + 2 * d]);
       break;

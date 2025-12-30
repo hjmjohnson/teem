@@ -43,7 +43,7 @@ unu_quantizeMain(int argc, const char **argv, const char *me, const hestParm *hp
                      "\b\bo \"8\": unsigned char\n "
                      "\b\bo \"16\": unsigned short\n "
                      "\b\bo \"32\": unsigned int",
-                     &unrrduHestBitsCB);
+                     &unrrduUnuHestBitsCB);
   char *minStr, *maxStr;
   hestOptAdd_1_String(&hopt, "min,minimum", "value", &minStr, "nan",
                       "The value to map to zero, given explicitly as a regular number, "

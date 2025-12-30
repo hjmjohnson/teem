@@ -48,7 +48,7 @@
 #include <teem/mite.h>
 
 #if defined(_WIN32) && !defined(__CYGWIN__) && !defined(TEEM_STATIC)
-#  if defined(TEEM_BUILD) || defined(meet_EXPORTS) || defined(teem_EXPORTS)
+#  if defined(TEEM_BUILD) || defined(meet_EXPORTS) || defined(Teem_EXPORTS)
 #    define MEET_EXPORT extern __declspec(dllexport)
 #  else
 #    define MEET_EXPORT extern __declspec(dllimport)
