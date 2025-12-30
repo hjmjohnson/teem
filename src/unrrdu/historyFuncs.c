@@ -83,11 +83,9 @@ historyClear(Nrrd *nout) {
 static airArray *
 historyGet(const Nrrd *nin) {
   uint hdig = historyDigitsGet(nin);
+  fprintf(stderr, "!%s: hdig(nin) = %u\n", __func__, hdig);
   // else have 0, 1, 2, or 3 digits of history: create airArray
-  airPtrPtrUnion appu;
-  char **hist;
-  appu.cp = &hist;
-  airArray *ret = airArrayNew(appu.v, NULL, sizeof(char *), 32);
+  airArray *ret = airArrayNew(NULL, NULL, sizeof(char *), 32);
   airArrayPointerCB(ret, NULL, airFree);
   if (hdig) {
     // there is some history to extract
@@ -105,6 +103,7 @@ historyGet(const Nrrd *nin) {
       }
       // else we do have line `hln` of history
       uint idx = airArrayLenIncr(ret, 1);
+      char **hist = ret->data;
       hist[idx] = val;
       fprintf(stderr, "!%s: hist[%u]=|%s|\n", __func__, idx, val);
     }
