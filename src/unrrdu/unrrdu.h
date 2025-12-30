@@ -94,6 +94,8 @@ consistent "UNU_QUIET_QUIT" is now (for TeemV2) also supported.
 */
 #define UNRRDU_UNU_QUIET_QUIT_ENV     "UNU_QUIET_QUIT"
 #define UNRRDU_UNU_QUIET_QUIT_ENV_OLD "UNRRDU_QUIET_QUIT"
+// for controlling whether to build up unu history in key/value pairs
+#define UNRRDU_UNU_HISTORY_TRACE_ENV  "UNU_HISTORY_TRACE"
 
 /*
  ******** unrrduCmd
@@ -133,6 +135,10 @@ enum {
   unrrduUnuScaleSpacingTarget, /* 8: e.g. "s0.89" */
   unrrduUnuScaleLast
 };
+
+// history.c
+UNRRDU_EXPORT int unrrduUnuKeyValueHistoryAdd(Nrrd *nout, int argc, const char **argv,
+                                              const Nrrd *nin);
 
 // flotsam.c
 UNRRDU_EXPORT const int unrrduPresent;

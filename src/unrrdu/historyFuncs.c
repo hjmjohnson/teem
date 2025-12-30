@@ -25,7 +25,7 @@ static const uint hlnMax[4] = {0, 9, 99, 999};
 
 static void
 historyKeyFormat(char *keyfmt, size_t size, uint hdig) {
-  snprintf(keyfmt, size, "%s_%%%u", keybase, hdig);
+  snprintf(keyfmt, size, "%s_%%0%uu", keybase, hdig);
   fprintf(stderr, "!%s(%u): keyfmt=|%s|\n", __func__, hdig, keyfmt);
   return;
 }
@@ -64,7 +64,7 @@ historyDigitsGet(const Nrrd *nin) {
 
 static void
 historyClear(Nrrd *nout) {
-  uint hdig = historyDigitsGet(nin);
+  uint hdig = historyDigitsGet(nout);
   if (!hdig) {
     // no history needs clearing
     return;
@@ -126,18 +126,18 @@ historySet(Nrrd *nout, airArray *histArr) {
   } else if (hnum <= 999) {
     hdig = 3;
   } else {
-    biffAddf(UNRRDU, "%s: %u lines of history exceeds 3-digit limit") return 1;
+    biffAddf(UNRRDU, "%s: %u lines of history exceeds 3-digit limit", __func__, hnum);
+    return 1;
   }
   char keyfmt[AIR_STRLEN_SMALL + 1];
   historyKeyFormat(keyfmt, sizeof(keyfmt), hdig);
   historyClear(nout);
   char **hist = histArr->data;
-  for (uint hln = 1; hln <= hlnMax[hdig]; hln++) {
+  for (uint hidx = 0; hidx < histArr->len; hidx++) {
     char key[AIR_STRLEN_SMALL + 1];
-    snprintf(key, sizeof(key), keyfmt, hln);
-    nrrdKeyValueSet(nin, key);
-    if (nrrdKeyValueAdd(nout, key, hist[hln - 1])) {
-      biffAddf(UNRRDU, "%s: trouble adding line %u of history", __func__, hln);
+    snprintf(key, sizeof(key), keyfmt, hidx + 1);
+    if (nrrdKeyValueAdd(nout, key, hist[hidx])) {
+      biffAddf(UNRRDU, "%s: trouble adding line %u of history", __func__, hidx + 1);
       return 1;
     }
   }
@@ -146,9 +146,8 @@ historySet(Nrrd *nout, airArray *histArr) {
 
 // assumes that there is no history already in nout
 int /* Biff: 1 */
-unrrduUnuKeyValueHistoryAdd(Nrrd *nout, int argc, const char **argv, const Nrrd *nin,
-                            const char *fname) {
-  if (!(nout && argv && (nin || fname))) {
+unrrduUnuKeyValueHistoryAdd(Nrrd *nout, int argc, const char **argv, const Nrrd *nin) {
+  if (!(nout && argv && nin)) {
     biffAddf(UNRRDU, "%s: got NULL pointer", __func__);
     return 1;
   }
@@ -164,7 +163,9 @@ unrrduUnuKeyValueHistoryAdd(Nrrd *nout, int argc, const char **argv, const Nrrd 
   airArray *histArr = historyGet(nin);
   uint idx = airArrayLenIncr(histArr, 1);
   char **hist = histArr->data;
-  hist[idx] = hestArgcArgvSprint(argc, argv, AIR_FALSE);
+  char *cmd = hestArgcArgvSprint(argc, argv, AIR_FALSE);
+  fprintf(stderr, "!%s: setting hist[%u] = |%s|\n", __func__, idx, cmd);
+  hist[idx] = cmd;
   if (historySet(nout, histArr)) {
     biffAddf(UNRRDU, "%s: trouble adding history", __func__);
     airArrayNuke(histArr);
