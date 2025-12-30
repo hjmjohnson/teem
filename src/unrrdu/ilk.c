@@ -43,7 +43,7 @@ perspGo(airArray *mop, Nrrd *nout, const Nrrd *nin, mossSampler *msp, int bound,
 
   for (ii = 0; ii < 2; ii++) {
     switch (AIR_INT(scale[0 + 2 * ii])) {
-    case unrrduScaleExact:
+    case unrrduUnuScaleExact:
       /* explicit # of samples */
       size[ii] = AIR_INT(scale[1 + 2 * ii]);
       break;
@@ -107,19 +107,19 @@ ilkGo(airArray *mop, Nrrd *nout, Nrrd *nin, mossSampler *msp, int bound,
 
   for (ii = 0; ii < 2; ii++) {
     switch (AIR_INT(scale[0 + 2 * ii])) {
-    case unrrduScaleNothing:
+    case unrrduUnuScaleNothing:
       /* same number of samples as input */
       size[ii] = AIR_INT(nin->axis[ax0 + ii].size);
       break;
-    case unrrduScaleMultiply:
+    case unrrduUnuScaleMultiply:
       /* scaling of input # samples */
       size[ii] = AIR_ROUNDUP(nin->axis[ax0 + ii].size * scale[1 + 2 * ii]);
       break;
-    case unrrduScaleDivide:
+    case unrrduUnuScaleDivide:
       /* scaling of input # samples */
       size[ii] = AIR_ROUNDUP(nin->axis[ax0 + ii].size / scale[1 + 2 * ii]);
       break;
-    case unrrduScaleExact:
+    case unrrduUnuScaleExact:
       /* explicit # of samples */
       size[ii] = AIR_INT(scale[1 + 2 * ii]);
       break;
@@ -299,7 +299,7 @@ unu_ilkMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
                      "\b\bo \"x<float>\": number of output samples is some scaling of "
                      " the number input of samples; multiplied by <float>\n "
                      "\b\bo \"<int>\": specify exact number of samples",
-                     &unrrduHestScaleCB);
+                     &unrrduUnuHestScaleCB);
   int debug[2];
   hestOptAdd_2_Int(&hopt, "db", "x y", debug, "-1 -1",
                    "if both non-negative, turn on verbose debugging for this output "

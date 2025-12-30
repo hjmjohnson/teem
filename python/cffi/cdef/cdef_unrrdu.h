@@ -22,22 +22,24 @@ CFFI, within its many limitations, specifically lacking a C pre-processor
 */
 /* moss.h is included where it is needed, in ilk.c */
 /*
-NOTE: unrrdu started as the place to put the implementation of the "unu" command:
-all the glue between the command-line and the nrrd library calls.
-With time, that functionality, especially having (sub)comamnds described by a
-unrrduCmd structs in an array, was leveraged by other programs (like "tend"),
-and then others (like limn/test/lpu, and the many programs for GLK's SciVis class
-at UChicago). Still, the "unrrdu" name remains even though it has outgrown
-its specificity to "unu" (which is short for Utah Nrrd Utilities).
-Efforts are made to mark the unu-specific elements below as such.
+NOTE: the unrrdu library started as the place to put the implementation of all the "unu"
+commands, i.e. all the glue between the command-line and the nrrd library calls. With
+time, that functionality, especially having (sub)comamnds described by a unrrduCmd
+structs in an array, was leveraged by other programs: first "tend", and then others like
+limn/test/lpu, and the many programs for GLK's SciVis class at UChicago. Still, the
+"unrrdu" library name remains even though it has outgrown its specificity to "unu" (which
+is short for Utah Nrrd Utilities). For TeemV2, despite the apparent redundancy, the
+unu-specific elements have been better (re)named with unrrduUnu or UNRRDU_UNU.
 */
 /*
-UNRRDU_QUIET_QUIT_ENV: the name of environment variable to set to enable unu to "quiet
-quit": if the command fails to run because upon trying to read its input it immediately
-hit EOF, then maybe don't complain about that to the terminal and generate lots of
-unwanted usage info.  In settings where many unu commands are piped together, this is
-important for leaving the initial important error message legible in the terminal, and
-quietly eliding the uninformative stuff.
+UNRRDU_UNU_QUIET_QUIT_ENV: the name of environment variable to set to enable unu to
+"quiet quit": if the command fails to run because upon trying to read its input it
+immediately hit EOF, then maybe don't complain about that to the terminal and generate
+lots of unwanted usage info.  In settings where many unu commands are piped together,
+this is important for leaving the initial important error message legible in the
+terminal, and quietly eliding the uninformative stuff. For backwards compatibility,
+this is also enabled if the environment varable named by UNRRDU_UNU_QUIET_QUIT_ENV_OLD
+is set.
 For more context:
 - hest/hest.h:hestParm struct includes a quietQuit function pointer
 - hest/parseHest.c:hestParseOrExit() calls the quietQuit function upon parse failure
@@ -57,9 +59,9 @@ to get a Nrrd out of a string from the command-line (e.g. unu minmax, unu descri
 unu cksum, maybe others); these handle themselves the nrrdLaod()ing from a string,
 and do not (currently) support quiet quitting.
 This functionality was created (in a completely undocumented and even more fragile way)
-when the unrrdu library was entirely unu-specific, but now "UNRRDU_QUIET_QUIT" appears in
-so many shell scripts that the name remains (rather then being something more logically
-unu-specific like like UNU_QUIET_QUIT_ENV or UNRRDU_UNU_QUIET_QUIT_ENV)
+when the unrrdu library was entirely unu-specific, and "UNRRDU_QUIET_QUIT" appears in
+many shell scripts so that variable name must still be supported, even though the more
+consistent "UNU_QUIET_QUIT" is now (for TeemV2) also supported.
 */
 /*
  ******** unrrduCmd
@@ -80,37 +82,38 @@ typedef struct {
   int hidden; // whether to hide this from default command listing
 } unrrduCmd;
 /*
-** (unu-specific) used with unrrduHestScaleCB to identify for "unu resample -s"
-** whether to resample along an axis, and if so, how the number of
-** samples on an axis should be scaled (though now its more general
-** than just scaling) */
+ ******** unrrduUnuScale* enum
+ *
+ * used with unrrduUnuHestScaleCB to identify for "unu resample -s" whether to resample
+ * along an axis, and if so, how the number of samples on an axis should be scaled
+ * (though now its more general than just scaling)
+ */
 enum {
-  unrrduScaleUnknown,       /* 0: */
-  unrrduScaleNothing,       /* 1: "=" */
-  unrrduScaleMultiply,      /* 2: e.g. "x2" */
-  unrrduScaleDivide,        /* 3: e.g. "/2" */
-  unrrduScaleAdd,           /* 4: e.g. "+2" */
-  unrrduScaleSubtract,      /* 5: e.g. "-2" */
-  unrrduScaleAspectRatio,   /* 6: "a" */
-  unrrduScaleExact,         /* 7: e.g. "128" */
-  unrrduScaleSpacingTarget, /* 8: e.g. "s0.89" */
-  unrrduScaleLast
+  unrrduUnuScaleUnknown,       /* 0: */
+  unrrduUnuScaleNothing,       /* 1: "=" */
+  unrrduUnuScaleMultiply,      /* 2: e.g. "x2" */
+  unrrduUnuScaleDivide,        /* 3: e.g. "/2" */
+  unrrduUnuScaleAdd,           /* 4: e.g. "+2" */
+  unrrduUnuScaleSubtract,      /* 5: e.g. "-2" */
+  unrrduUnuScaleAspectRatio,   /* 6: "a" */
+  unrrduUnuScaleExact,         /* 7: e.g. "128" */
+  unrrduUnuScaleSpacingTarget, /* 8: e.g. "s0.89" */
+  unrrduUnuScaleLast
 };
 // flotsam.c
 extern const int unrrduPresent;
 extern const char *const unrrduBiffKey;
-extern int unrrduQuietQuitTest(const char *parseErrStr, const hestOpt *errOpt);
-// these globals are unu-specific
-extern int unrrduDefaultImplicitLutRmapRescale;
-extern const char *const unrrduEnvVarDefaultImplicitLutRmapRescale;
-extern void unrrduGetenvDefaultImplicitLutRmapRescale(void);
-extern const hestCB unrrduHestPosCB;
-extern const hestCB unrrduHestMaybeTypeCB;
-extern const hestCB unrrduHestScaleCB;
-extern const hestCB unrrduHestBitsCB;
-extern const hestCB unrrduHestFileCB;
-extern const hestCB unrrduHestEncodingCB;
-extern const hestCB unrrduHestFormatCB;
+extern int unrrduUnuQuietQuitTest(const char *parseErrStr, const hestOpt *errOpt);
+extern int unrrduUnuDefaultImplicitLutRmapRescale;
+extern const char *const unrrduUnuEnvVarDefaultImplicitLutRmapRescale;
+extern void unrrduUnuGetenvDefaultImplicitLutRmapRescale(void);
+extern const hestCB unrrduUnuHestPosCB;
+extern const hestCB unrrduUnuHestScaleCB;
+extern const hestCB unrrduUnuHestBitsCB;
+extern const hestCB unrrduUnuHestFileCB;
+extern const hestCB unrrduUnuHestEncodingCB;
+extern const hestCB unrrduUnuHestFormatCB;
+extern const hestCB unrrduHestMaybeTypeCB; // not unu specific
 /* unrrduUnuCmdList[] gives addresses of unrrdu_fooCmd for all commands "unu foo".
    The list of all commands is maintained in privateUnrrdu.h */
 extern const unrrduCmd *const unrrduUnuCmdList[];

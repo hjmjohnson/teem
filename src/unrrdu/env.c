@@ -197,22 +197,34 @@ unu_envMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
                AIR_FALSE);
   fprintf(out, "\n");
 
-  /* UNRRDU_QUIET_QUIT functionality implemented in privateUnrrdu.h */
   hestPrintStr(out, 0, 0, hparm->columns,
                ("In addition to the many \"NRRD_\" environment variables, "
-                "there is this one, " UNRRDU_QUIET_QUIT_ENV ", which "
+                "there is one, " UNRRDU_UNU_QUIET_QUIT_ENV " "
+                "(or legacy name " UNRRDU_UNU_QUIET_QUIT_ENV_OLD "), which "
                 "determines whether unu exits "
                 "quietly (without error and usage info) when it fails "
-                "because an input nrrd read immediately hit EOF (as "
+                "because an input nrrd read immediately hit EOF (as often "
                 "happens when many unu invocations are piped together)."),
                AIR_FALSE);
   fprintf(out, "\n");
 
-  fprintf(out, "%s: ", UNRRDU_QUIET_QUIT_ENV);
-  if (getenv(UNRRDU_QUIET_QUIT_ENV)) {
-    fprintf(out, "is set (to what doesn't matter); quiet-quit testing enabled\n");
+  static const char *qqname[2] = {UNRRDU_UNU_QUIET_QUIT_ENV,
+                                  UNRRDU_UNU_QUIET_QUIT_ENV_OLD};
+  static int qqset[2];
+  for (unsigned int qqi = 0; qqi < 2; qqi++) {
+    fprintf(out, "%s: ", qqname[qqi]);
+    if (getenv(qqname[qqi])) {
+      fprintf(out, "is set (to what doesn't matter)\n");
+      qqset[qqi] = 1;
+    } else {
+      fprintf(out, "is NOT set\n");
+      qqset[qqi] = 0;
+    }
+  }
+  if (qqset[0] || qqset[1]) {
+    fprintf(out, "   ==> quiet-quit testing is enabled\n");
   } else {
-    fprintf(out, "is NOT set; quiet-quit testing NOT enabled\n");
+    fprintf(out, "   ==> quiet-quit testing is NOT enabled\n");
   }
   fprintf(out, "\n");
 

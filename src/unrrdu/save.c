@@ -51,7 +51,7 @@ unu_saveMain(int argc, const char **argv, const char *me, const hestParm *hparm)
   SN_COPY(fmt, fmtSize, "\n \b\bo \"eps\": EPS file");
   int frmt[2];
   hestOptAdd_1_Other(&hopt, "f,format", "form", frmt, NULL, fmtInfo,
-                     &unrrduHestFormatCB);
+                     &unrrduUnuHestFormatCB);
   char encInfo[AIR_STRLEN_HUGE + 1];
   char *ens = encInfo;
   size_t ensSize = sizeof(encInfo);
@@ -80,7 +80,7 @@ unu_saveMain(int argc, const char **argv, const char *me, const hestParm *hparm)
   }
   int enc[3];
   hestOptAdd_1_Other(&hopt, "e,encoding", "enc", enc, "raw", encInfo,
-                     &unrrduHestEncodingCB);
+                     &unrrduUnuHestEncodingCB);
   int nioEndian;
   hestOptAdd_1_Enum(&hopt, "en,endian", "end", &nioEndian,
                     airEnumStr(airEndian, airMyEndian()),

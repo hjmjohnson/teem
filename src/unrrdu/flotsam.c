@@ -27,13 +27,13 @@ const int unrrduPresent = 42;
 const char *const unrrduBiffKey = "unrrdu";
 /* how rescale was set in {lut,rmap,mlut,mrmap}.c when
    lut,rmap,mlut,mrmap domain is implicit */
-int unrrduDefaultImplicitLutRmapRescale = AIR_TRUE;
-const char *const unrrduEnvVarDefaultImplicitLutRmapRescale = MY_UNRRDU_DILRR;
+int unrrduUnuDefaultImplicitLutRmapRescale = AIR_TRUE;
+const char *const unrrduUnuEnvVarDefaultImplicitLutRmapRescale = MY_UNRRDU_DILRR;
 
 // (new for TeemV2) how unu (and others, if they want) can test for quiet quitting
-// see more info in unrrdu.h's description of UNRRDU_QUIET_QUIT_ENV
+// see more info in unrrdu.h's description of UNRRDU_UNU_QUIET_QUIT_ENV
 int
-unrrduQuietQuitTest(const char *parseErrStr, const hestOpt *errOpt) {
+unrrduUnuQuietQuitTest(const char *parseErrStr, const hestOpt *errOpt) {
   int ret = 0;
   AIR_UNUSED(parseErrStr);
   /*
@@ -42,7 +42,8 @@ unrrduQuietQuitTest(const char *parseErrStr, const hestOpt *errOpt) {
   fprintf(stderr, "!%s: type=|%d|\n", __func__, errOpt->type);
   fprintf(stderr, "!%s: parseErr=|%d|\n", __func__, errOpt->parseErr);
   */
-  if (getenv(UNRRDU_QUIET_QUIT_ENV)          /* quiet-quit testing enabled */
+  if ((getenv(UNRRDU_UNU_QUIET_QUIT_ENV_OLD) /* quiet-quit testing enabled */
+       || getenv(UNRRDU_UNU_QUIET_QUIT_ENV))
       && errOpt->type == airTypeOther        /* tried to parse an "other" */
       && (errOpt->CB == nrrdHestNrrd         /* */
           || errOpt->CB == nrrdHestNrrdNoTTY /* */
@@ -54,18 +55,18 @@ unrrduQuietQuitTest(const char *parseErrStr, const hestOpt *errOpt) {
   return ret;
 }
 
-// setter-from-env-far for unrrduDefaultImplicitLutRmapRescale
+// setter-from-env-far for unrrduUnuDefaultImplicitLutRmapRescale
 void
-unrrduGetenvDefaultImplicitLutRmapRescale(void) {
+unrrduUnuGetenvDefaultImplicitLutRmapRescale(void) {
   char *envStr = NULL;
   if (AIR_FALSE
-      == nrrdGetenvBool(&unrrduDefaultImplicitLutRmapRescale, &envStr,
-                        unrrduEnvVarDefaultImplicitLutRmapRescale)) {
+      == nrrdGetenvBool(&unrrduUnuDefaultImplicitLutRmapRescale, &envStr,
+                        unrrduUnuEnvVarDefaultImplicitLutRmapRescale)) {
     fprintf(stderr,
             "WARNING: envvar \"%s\" set to \"%s\" which could not be parsed as "
-            "a bool, so unrrduDefaultImplicitLutRmapRescale=%d unchanged\n",
-            unrrduEnvVarDefaultImplicitLutRmapRescale, envStr ? envStr : "(null)",
-            unrrduDefaultImplicitLutRmapRescale);
+            "a bool, so unrrduUnuDefaultImplicitLutRmapRescale=%d unchanged\n",
+            unrrduUnuEnvVarDefaultImplicitLutRmapRescale, envStr ? envStr : "(null)",
+            unrrduUnuDefaultImplicitLutRmapRescale);
   }
   return;
 }
@@ -435,7 +436,7 @@ unrrduMainBiffOrExit(int argc,          /* as received by main() */
 /* --------------------------------------------------------- */
 
 /*
- ******** unrrduHestPosCB
+ ******** unrrduUnuHestPosCB
  *
  * For parsing position along an axis. Can be a simple (long) integer, or "M" to signify
  * last position along axis (#samples-1), or "M+<int>"" or "M-<int>"" to signify some
@@ -508,7 +509,7 @@ parsePos(void *ptr, const char *str, char err[ASP1_H]) {
   return 0;
 }
 
-const hestCB unrrduHestPosCB = {2 * sizeof(long int), "position", parsePos, NULL};
+const hestCB unrrduUnuHestPosCB = {2 * sizeof(long int), "position", parsePos, NULL};
 
 /* --------------------------------------------------------- */
 /* --------------------------------------------------------- */
@@ -559,7 +560,7 @@ const hestCB unrrduHestMaybeTypeCB = {sizeof(int), "type", parseMaybeType, NULL}
 /* --------------------------------------------------------- */
 
 /*
- ******** unrrduHestBitsCB
+ ******** unrrduUnuHestBitsCB
  *
  * for parsing an int that can be 8, 16, or 32
  */
@@ -583,27 +584,27 @@ parseBits(void *ptr, const char *str, char err[ASP1_H]) {
   return 0;
 }
 
-const hestCB unrrduHestBitsCB = {sizeof(int), "quantization bits", parseBits, NULL};
+const hestCB unrrduUnuHestBitsCB = {sizeof(int), "quantization bits", parseBits, NULL};
 
 /* --------------------------------------------------------- */
 /* --------------------------------------------------------- */
 /* --------------------------------------------------------- */
 
 /*
- ******** unrrduParseScale
+ ******** unrrduUnuParseScale
  *
  * parse the strings used with "unu resample -s" to indicate
  * the new number of samples.
- * =         : unrrduScaleNothing
- * a         : unrrduScaleAspectRatio
- * x<float>  : unrrduScaleMultiply
- * x=<float> : unrrduScaleMultiply
- * /<float>  : unrrduScaleDivide
- * /=<float> : unrrduScaleDivide
- * +=<uint>  : unrrduScaleAdd
- * -=<uint>  : unrrduScaleSubstract
- * <uint>    : unrrduScaleExact
- * s<float>  : unrrduScaleSpacingTarget
+ * =         : unrrduUnuScaleNothing
+ * a         : unrrduUnuScaleAspectRatio
+ * x<float>  : unrrduUnuScaleMultiply
+ * x=<float> : unrrduUnuScaleMultiply
+ * /<float>  : unrrduUnuScaleDivide
+ * /=<float> : unrrduUnuScaleDivide
+ * +=<uint>  : unrrduUnuScaleAdd
+ * -=<uint>  : unrrduUnuScaleSubstract
+ * <uint>    : unrrduUnuScaleExact
+ * s<float>  : unrrduUnuScaleSpacingTarget
  */
 static int
 parseScale(void *ptr, const char *str, char err[ASP1_H]) {
@@ -616,10 +617,10 @@ parseScale(void *ptr, const char *str, char err[ASP1_H]) {
   }
   scale = AIR_CAST(double *, ptr);
   if (!strcmp("=", str)) {
-    scale[0] = AIR_CAST(double, unrrduScaleNothing);
+    scale[0] = AIR_CAST(double, unrrduUnuScaleNothing);
     scale[1] = 0.0;
   } else if (!strcmp("a", str)) {
-    scale[0] = AIR_CAST(double, unrrduScaleAspectRatio);
+    scale[0] = AIR_CAST(double, unrrduUnuScaleAspectRatio);
     scale[1] = 0.0;
   } else if (strlen(str) > 2 && ('x' == str[0] || '/' == str[0]) && '=' == str[1]) {
     if (1 != sscanf(str + 2, "%lf", scale + 1)) {
@@ -633,7 +634,7 @@ parseScale(void *ptr, const char *str, char err[ASP1_H]) {
       return 1;
     }
     scale[0] = AIR_CAST(double,
-                        ('x' == str[0] ? unrrduScaleMultiply : unrrduScaleDivide));
+                        ('x' == str[0] ? unrrduUnuScaleMultiply : unrrduUnuScaleDivide));
   } else if (strlen(str) > 1 && ('x' == str[0] || '/' == str[0] || 's' == str[0])) {
     if (1 != sscanf(str + 1, "%lf", scale + 1)) {
       snprintf(err, ASP1_H,
@@ -648,37 +649,38 @@ parseScale(void *ptr, const char *str, char err[ASP1_H]) {
       return 1;
     }
     scale[0] = AIR_CAST(double,
-                        ('x' == str[0] ? unrrduScaleMultiply
-                                       : ('/' == str[0] ? unrrduScaleDivide
-                                                        : unrrduScaleSpacingTarget)));
+                        ('x' == str[0] ? unrrduUnuScaleMultiply
+                                       : ('/' == str[0] ? unrrduUnuScaleDivide
+                                                        : unrrduUnuScaleSpacingTarget)));
   } else if (strlen(str) > 2 && ('+' == str[0] || '-' == str[0]) && '=' == str[1]) {
     if (1 != sscanf(str + 2, "%u", &num)) {
       snprintf(err, ASP1_H, "%s: can't parse \"%s\" as +=<uint> or -=<uint>", __func__,
                str);
       return 1;
     }
-    scale[0] = AIR_CAST(double, ('+' == str[0] ? unrrduScaleAdd : unrrduScaleSubtract));
+    scale[0] = AIR_CAST(double,
+                        ('+' == str[0] ? unrrduUnuScaleAdd : unrrduUnuScaleSubtract));
     scale[1] = AIR_CAST(double, num);
   } else {
     if (1 != sscanf(str, "%u", &num)) {
       snprintf(err, ASP1_H, "%s: can't parse \"%s\" as uint", __func__, str);
       return 1;
     }
-    scale[0] = AIR_CAST(double, unrrduScaleExact);
+    scale[0] = AIR_CAST(double, unrrduUnuScaleExact);
     scale[1] = AIR_CAST(double, num);
   }
   return 0;
 }
 
-const hestCB unrrduHestScaleCB = {2 * sizeof(double), "sampling/scaling specification",
-                                  parseScale, NULL};
+const hestCB unrrduUnuHestScaleCB = {2 * sizeof(double),
+                                     "sampling/scaling specification", parseScale, NULL};
 
 /* --------------------------------------------------------- */
 /* --------------------------------------------------------- */
 /* --------------------------------------------------------- */
 
 /*
- ******** unrrduHestFileCB
+ ******** unrrduUnuHestFileCB
  *
  * for parsing a filename, which means opening it in "rb" mode and getting a FILE *.
  * "-" is interpreted as stdin, which is not fclose()ed at the end,
@@ -712,7 +714,7 @@ parseFile(void *ptr, const char *str, char err[ASP1_H]) {
   return 0;
 }
 
-const hestCB unrrduHestFileCB = {
+const hestCB unrrduUnuHestFileCB = {
   sizeof(FILE *),
   "filename",
   parseFile,
@@ -724,7 +726,7 @@ const hestCB unrrduHestFileCB = {
 /* --------------------------------------------------------- */
 
 /*
- ******** unrrduHestEncodingCB
+ ******** unrrduUnuHestEncodingCB
  *
  * for parsing output encoding, including compression flags
  * enc[0]: which encoding, from nrrdEncodingType* enum
@@ -797,14 +799,15 @@ parseEncoding(void *ptr, const char *_str, char err[ASP1_H]) {
   return 0;
 }
 
-const hestCB unrrduHestEncodingCB = {3 * sizeof(int), "encoding", parseEncoding, NULL};
+const hestCB unrrduUnuHestEncodingCB = {3 * sizeof(int), "encoding", parseEncoding,
+                                        NULL};
 
 /* --------------------------------------------------------- */
 /* --------------------------------------------------------- */
 /* --------------------------------------------------------- */
 
 /*
- ******** unrrduHestFormatCB
+ ******** unrrduUnuHestFormatCB
  *
  * for parsing output format
  * enc[0]: which format, from nrrdFormatType* enum
@@ -841,4 +844,4 @@ parseFormat(void *ptr, const char *str, char err[ASP1_H]) {
   return 0;
 }
 
-const hestCB unrrduHestFormatCB = {2 * sizeof(int), "format", parseFormat, NULL};
+const hestCB unrrduUnuHestFormatCB = {2 * sizeof(int), "format", parseFormat, NULL};

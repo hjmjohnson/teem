@@ -36,7 +36,7 @@ unu_spliceMain(int argc, const char **argv, const char *me, const hestParm *hpar
                      "\b\bo <int> gives 0-based index\n "
                      "\b\bo M-<int> give index relative "
                      "to the last sample on the axis (M == #samples-1).",
-                     &unrrduHestPosCB);
+                     &unrrduUnuHestPosCB);
   Nrrd *nslice;
   hestOptAdd_1_Other(&hopt, "s,slice", "nslice", &nslice, NULL,
                      "slice nrrd.  This is the slice to insert into \"nin\"",

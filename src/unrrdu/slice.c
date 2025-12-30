@@ -50,7 +50,7 @@ unu_sliceMain(int argc, const char **argv, const char *me, const hestParm *hparm
                       "\b\bo <int> gives 0-based index\n "
                       "\b\bo M-<int> give index relative "
                       "to the last sample on the axis (M == #samples-1).",
-                      &posNum, &unrrduHestPosCB);
+                      &posNum, &unrrduUnuHestPosCB);
   Nrrd *nin;
   MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;

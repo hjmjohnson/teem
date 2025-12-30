@@ -167,7 +167,7 @@ main(int argc, const char **argv) {
   // Gone in TeemV2: hparm->greedySingleString = AIR_TRUE;
   /* New for TeemV2: a more explicit way to support quiet quitting,
      instead of hacky macros hiding in unrrdu/privateUnrrdu.h */
-  hparm->quietQuit = unrrduQuietQuitTest;
+  hparm->quietQuit = unrrduUnuQuietQuitTest;
 
   /* if there are no arguments, or "unu list" (or "unu all" shhh), then we give general
   usage information */
