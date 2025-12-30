@@ -111,6 +111,7 @@ historyGet(const Nrrd *nin) {
   return ret;
 }
 
+// will clear out any existing history in nout
 static int /* Biff: 1 */
 historySet(Nrrd *nout, airArray *histArr) {
   uint hdig, hnum = histArr ? histArr->len : 0;
@@ -143,9 +144,15 @@ historySet(Nrrd *nout, airArray *histArr) {
   return 0;
 }
 
-// assumes that there is no history already in nout
 int /* Biff: 1 */
 unrrduUnuKeyValueHistoryAdd(Nrrd *nout, int argc, const char **argv, const Nrrd *nin) {
+  if (!getenv(UNRRDU_UNU_HISTORY_TRACE_ENV)) {
+    /* have not explicitly requested history tracing,
+       so don't add command from argc/argv
+       but furthermore, erase history already in nout for consistency */
+    historyClear(nout);
+    return 0;
+  }
   if (!(nout && argv && nin)) {
     biffAddf(UNRRDU, "%s: got NULL pointer", __func__);
     return 1;
@@ -157,7 +164,8 @@ unrrduUnuKeyValueHistoryAdd(Nrrd *nout, int argc, const char **argv, const Nrrd 
              __func__);
     return 1;
   }
-  // else nrrdKeyValueGet will return newly strdup'ed strings
+  /* else nrrdKeyValueGet will return newly strdup'ed strings,
+     which our airArray will manage */
 
   airArray *histArr = historyGet(nin);
   uint idx = airArrayLenIncr(histArr, 1);

@@ -199,12 +199,16 @@ unu_envMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
 
   hestPrintStr(out, 0, 0, hparm->columns,
                ("In addition to the many \"NRRD_\" environment variables, "
-                "there is one, " UNRRDU_UNU_QUIET_QUIT_ENV " "
-                "(or legacy name " UNRRDU_UNU_QUIET_QUIT_ENV_OLD "), which "
-                "determines whether unu exits "
+                "there are two which are specific to unu. " UNRRDU_UNU_QUIET_QUIT_ENV " "
+                "(or legacy name " UNRRDU_UNU_QUIET_QUIT_ENV_OLD ") determines "
+                "whether unu exits "
                 "quietly (without error and usage info) when it fails "
                 "because an input nrrd read immediately hit EOF (as often "
-                "happens when many unu invocations are piped together)."),
+                "happens when many unu invocations are piped "
+                "together). " UNRRDU_UNU_HISTORY_TRACE_ENV " "
+                "controls whether unu commands "
+                "accumulate a history of their use inside output nrrd "
+                "key/value pairs."),
                AIR_FALSE);
   fprintf(out, "\n");
 
@@ -225,6 +229,14 @@ unu_envMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
     fprintf(out, "   ==> quiet-quit testing is enabled\n");
   } else {
     fprintf(out, "   ==> quiet-quit testing is NOT enabled\n");
+  }
+  fprintf(out, "\n");
+
+  fprintf(out, "%s: ", UNRRDU_UNU_HISTORY_TRACE_ENV);
+  if (getenv(UNRRDU_UNU_HISTORY_TRACE_ENV)) {
+    fprintf(out, "is set (to what doesn't matter) ==> will trace unu history\n");
+  } else {
+    fprintf(out, "is NOT set ==> will NOT trace unu history\n");
   }
   fprintf(out, "\n");
 
