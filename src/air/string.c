@@ -129,6 +129,19 @@ airStrcmp(const char *_s1, const char *_s2) {
   return ret;
 }
 
+char *
+airStrcat(const char *s1, const char *s2) {
+  char *ret = NULL;
+  if (s1 && s2) {
+    size_t retsz = strlen(s1) + strlen(s2) + 1;
+    ret = AIR_CALLOC(retsz, char);
+    if (ret) {
+      snprintf(ret, retsz, "%s%s", s1, s2);
+    }
+  }
+  return ret;
+}
+
 /* ---- END non-NrrdIO */
 /*
 ******** airStrtok()

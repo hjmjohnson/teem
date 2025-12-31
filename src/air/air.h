@@ -528,6 +528,7 @@ AIR_EXPORT char *airStrunc(char *str, size_t bsize, size_t drop);
 AIR_EXPORT char *airStret(char *str);
 AIR_EXPORT const char *airStrect(const char *str);
 AIR_EXPORT int airStrcmp(const char *s1, const char *s2);
+AIR_EXPORT char *airStrcat(const char *s1, const char *s2);
 /* ---- END non-NrrdIO */
 AIR_EXPORT char *airStrtok(char *s, const char *ct, char **last);
 AIR_EXPORT unsigned int airStrntok(const char *s, const char *ct);
