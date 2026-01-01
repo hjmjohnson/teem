@@ -77,8 +77,10 @@ unu_heqMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
   }
 
   if (airStrlen(mapS)) {
+    // TODO? save history of nmap
     MY_SAVE(mapS, nmap, NULL);
   }
+  MY_HISTORY(nout, nin);
   MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);

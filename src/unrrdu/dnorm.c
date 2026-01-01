@@ -57,8 +57,9 @@ unu_dnormMain(int argc, const char **argv, const char *me, const hestParm *_hpar
                       "no per-axis min/max or spacing, this is the sample spacing "
                       "to assert");
   Nrrd *nin;
-  hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-",
-                     "input image. By default reads from stdin", nrrdHestNrrdNoTTY);
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-",
+                                   "input image. By default reads from stdin",
+                                   nrrdHestNrrdNoTTY);
   char *outS;
   MY_OPT_ADD_NOUT(outS, "output filename");
 
@@ -101,6 +102,7 @@ unu_dnormMain(int argc, const char **argv, const char *me, const hestParm *_hpar
   if (headerOnly) {
     nio->skipData = AIR_TRUE;
   }
+  MY_HISTORY(nout, nin);
   if (nrrdSave(outS, nout, nio)) {
     airMopAdd(mop, err = biffGet(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble saving \"%s\":\n%s", me, outS, err);

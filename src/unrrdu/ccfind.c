@@ -49,8 +49,8 @@ unu_ccfindMain(int argc, const char **argv, const char *me, const hestParm *_hpa
                     "that vary in order to traverse the neighborhood of a given "
                     "sample.  In 2D: \"1\": 4-connected, \"2\": 8-connected");
   Nrrd *nin;
-  hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-", "input nrrd",
-                     nrrdHestNrrdNoTTY);
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-", "input nrrd",
+                                   nrrdHestNrrdNoTTY);
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 
@@ -74,8 +74,10 @@ unu_ccfindMain(int argc, const char **argv, const char *me, const hestParm *_hpa
   }
 
   if (airStrlen(valS)) {
+    // TODO? save history of nval
     MY_SAVE(valS, nval, NULL);
   }
+  MY_HISTORY(nout, nin);
   MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);

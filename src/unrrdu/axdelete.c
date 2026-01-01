@@ -85,6 +85,7 @@ unu_axdeleteMain(int argc, const char **argv, const char *me, const hestParm *hp
     }
   }
 
+  MY_HISTORY(nout, nin);
   MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);

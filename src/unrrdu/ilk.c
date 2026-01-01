@@ -305,8 +305,8 @@ unu_ilkMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
                    "if both non-negative, turn on verbose debugging for this output "
                    "image pixel");
   Nrrd *nin;
-  hestOptAdd_1_Other(&hopt, "i,input", "image", &nin, "-", "input 2D image",
-                     nrrdHestNrrdNoTTY);
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i,input", "image", &nin, "-",
+                                   "input 2D image", nrrdHestNrrdNoTTY);
   char *outS;
   MY_OPT_ADD_NOUT(outS, "output image");
 
@@ -361,6 +361,7 @@ unu_ilkMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
     airMopError(mop);
     return 1;
   }
+  MY_HISTORY(nout, nin);
   MY_SAVE(outS, nout, NULL);
 
   airMopOkay(mop);

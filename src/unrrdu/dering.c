@@ -136,6 +136,7 @@ unu_deringMain(int argc, const char **argv, const char *me, const hestParm *_hpa
     }
   }
 
+  MY_HISTORY(nout, nin);
   MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);

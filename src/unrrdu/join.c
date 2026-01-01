@@ -65,6 +65,7 @@ unu_joinMain(int argc, const char **argv, const char *me, const hestParm *_hparm
                       "spacing between samples along join axis");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
+  AIR_UNUSED(outHidx); // TODO handle history
 
   // (boilerplate for YES some hparm modification)
   hestParm *hparm = hestParmCopy(_hparm);

@@ -103,6 +103,7 @@ unu_acropMain(int argc, const char **argv, const char *me, const hestParm *hparm
       bounds[axi + 0 * (nin->dim)] = AIR_CAST(airULLong, min[axi]);
       bounds[axi + 1 * (nin->dim)] = AIR_CAST(airULLong, max[axi]);
     }
+    // TODO? save history of bounds
     if (nrrdSave(boundsSave, nbounds, NULL)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
       fprintf(stderr, "%s: error saving cropping bounds array:\n%s", me, err);
@@ -111,6 +112,7 @@ unu_acropMain(int argc, const char **argv, const char *me, const hestParm *hparm
     }
   }
 
+  MY_HISTORY(nout, nin);
   MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);

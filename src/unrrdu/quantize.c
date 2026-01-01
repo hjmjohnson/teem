@@ -164,6 +164,7 @@ unu_quantizeMain(int argc, const char **argv, const char *me, const hestParm *hp
                                   that's handled by the writer */
   }
 
+  MY_HISTORY(nout, nin);
   MY_SAVE(out, nout, nio);
 
   airMopOkay(mop);

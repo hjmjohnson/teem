@@ -72,6 +72,7 @@ unu_hackMain(int argc, const char **argv, const char *me, const hestParm *hparm)
     return 1;
   }
 
+  MY_HISTORY(nout, nin);
   MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);

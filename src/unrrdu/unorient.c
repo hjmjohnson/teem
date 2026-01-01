@@ -41,8 +41,9 @@ unu_unorientMain(int argc, const char **argv, const char *me, const hestParm *_h
    *            NULL, NULL, nrrdHestNrrd);
    */
   Nrrd *nin;
-  hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-",
-                     "input nrrd. By default reads from stdin", nrrdHestNrrdNoTTY);
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-",
+                                   "input nrrd. By default reads from stdin",
+                                   nrrdHestNrrdNoTTY);
   int setMinsFromOrigin;
   hestOptAdd_Flag(&hopt, "smfo", &setMinsFromOrigin,
                   "set some axis mins based on space origin (hack)");
@@ -65,6 +66,7 @@ unu_unorientMain(int argc, const char **argv, const char *me, const hestParm *_h
     return 1;
   }
 
+  MY_HISTORY(nout, nin);
   MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);

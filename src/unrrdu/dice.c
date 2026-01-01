@@ -34,6 +34,7 @@ unu_diceMain(int argc, const char **argv, const char *me, const hestParm *hparm)
   MY_OPT_ADD_AXIS(axis, "axis to slice along");
   Nrrd *nin;
   MY_OPT_ADD_NIN(nin, "input nrrd");
+  AIR_UNUSED(inHidx); // TODO? save history of multiple outs; how?
   uint start;
   hestOptAdd_1_UInt(&hopt, "s,start", "start", &start, "0",
                     "integer value to start numbering with");

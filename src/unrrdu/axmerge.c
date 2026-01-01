@@ -73,6 +73,7 @@ unu_axmergeMain(int argc, const char **argv, const char *me, const hestParm *hpa
     ni = 1 - ni;
   }
 
+  MY_HISTORY(nout[1 - ni], nin);
   MY_SAVE(out, nout[1 - ni], NULL);
 
   airMopOkay(mop);

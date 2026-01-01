@@ -136,6 +136,7 @@ unu_saveMain(int argc, const char **argv, const char *me, const hestParm *hparm)
     }
   }
 
+  MY_HISTORY(nout, nin);
   MY_SAVE(out, nout, nio);
 
   airMopOkay(mop);

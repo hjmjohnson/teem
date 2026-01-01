@@ -32,6 +32,7 @@ unu_sselectMain(int argc, const char **argv, const char *me, const hestParm *hpa
   hestOpt *hopt = NULL;
   Nrrd *nin;
   MY_OPT_ADD_NIN(nin, "input nrrd");
+  AIR_UNUSED(inHidx); // TODO handle history; hard because of two outputs
   uint axis;
   MY_OPT_ADD_AXIS(axis, "axis to slice along");
   Nrrd *nline;

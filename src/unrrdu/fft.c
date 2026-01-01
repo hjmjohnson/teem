@@ -199,6 +199,7 @@ unu_fftMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
     fclose(fwise);
   }
 
+  MY_HISTORY(nout, nin);
   MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);

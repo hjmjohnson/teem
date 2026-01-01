@@ -194,6 +194,7 @@ unu_axinfoMain(int argc, const char **argv, const char *me, const hestParm *hpar
     }
   }
 
+  MY_HISTORY(nout, nin);
   MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);

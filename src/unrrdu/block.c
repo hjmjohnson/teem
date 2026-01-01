@@ -34,7 +34,8 @@ static int
 unu_blockMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
   Nrrd *nin;
-  hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-", "input nrrd", nrrdHestNrrdNoTTY);
+  uint inHidx
+    = hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-", "input nrrd", nrrdHestNrrdNoTTY);
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 
@@ -55,6 +56,7 @@ unu_blockMain(int argc, const char **argv, const char *me, const hestParm *_hpar
     return 1;
   }
 
+  MY_HISTORY(nout, nin);
   MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);

@@ -66,6 +66,7 @@ unu_convertMain(int argc, const char **argv, const char *me, const hestParm *hpa
     return 1;
   }
 
+  MY_HISTORY(nout, nin);
   MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);

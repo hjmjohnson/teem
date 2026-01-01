@@ -72,6 +72,7 @@ unu_jhistoMain(int argc, const char **argv, const char *me, const hestParm *hpar
                     "axis to slice along when working with single nrrd. ");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
+  AIR_UNUSED(outHidx); // TODO handle history
 
   // (boilerplate for no hparm modification)
   hestParseOrExit(hopt, argc, argv, hparm, me, unu_jhistoInfoL);

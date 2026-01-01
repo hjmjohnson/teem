@@ -188,6 +188,7 @@ unu_basinfoMain(int argc, const char **argv, const char *me, const hestParm *hpa
     nrrdKeyValueClear(nout);
   }
 
+  MY_HISTORY(nout, nin);
   MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);

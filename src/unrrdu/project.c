@@ -56,6 +56,7 @@ unu_projectMain(int argc, const char **argv, const char *me, const hestParm *hpa
                      &unrrduHestMaybeTypeCB);
   Nrrd *nin;
   MY_OPT_ADD_NIN(nin, "input nrrd");
+  AIR_UNUSED(inHidx); // TODO handle history; hard because of multiple outs
   char **out;
   uint outLen;
   hestOptAdd_Nv_String(&hopt, "o,output", "nout", 1, -1, &out, "-",

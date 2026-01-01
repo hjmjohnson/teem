@@ -110,7 +110,7 @@ unu_1opMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
   }
   /* if we had to create ntmp with nrrdConvert, it will be mopped,
      otherwise ntmp is an alias for nin, which will also be mopped */
-
+  MY_HISTORY(nout, nin);
   MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);

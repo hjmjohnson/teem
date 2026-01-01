@@ -120,6 +120,7 @@ unu_axinsertMain(int argc, const char **argv, const char *me, const hestParm *_h
     nout->axis[axis].max = mm[1];
   }
 
+  MY_HISTORY(nout, nin);
   MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);
