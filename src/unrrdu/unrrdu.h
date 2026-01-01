@@ -137,8 +137,17 @@ enum {
 };
 
 // history.c
-UNRRDU_EXPORT int unrrduUnuKeyValueHistoryAdd(Nrrd *nout, int argc, const char **argv,
-                                              const Nrrd *nin);
+typedef struct {
+  const Nrrd *nin;
+  const char *name;
+} unrrduUnuInNSPair;
+typedef struct {
+  Nrrd *nout;
+  const char *name;
+} unrrduUnuOutNSPair;
+UNRRDU_EXPORT void unrrduUnuHistoryClear(Nrrd *nout);
+UNRRDU_EXPORT int unrrduUnuHistoryAdd(unrrduUnuOutNSPair onsp, int argc,
+                                      const char **argv, unrrduUnuInNSPair insp);
 
 // flotsam.c
 UNRRDU_EXPORT const int unrrduPresent;
