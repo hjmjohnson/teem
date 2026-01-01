@@ -6,7 +6,7 @@ CFFI, within its many limitations, specifically lacking a C pre-processor
  /* =========== unrrdu.h =========== */
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2025  University of Chicago
+  Copyright (C) 2009--2026  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
   This library is free software; you can redistribute it and/or modify it under the terms
@@ -63,6 +63,7 @@ when the unrrdu library was entirely unu-specific, and "UNRRDU_QUIET_QUIT" appea
 many shell scripts so that variable name must still be supported, even though the more
 consistent "UNU_QUIET_QUIT" is now (for TeemV2) also supported.
 */
+// for controlling whether to build up unu history in key/value pairs
 /*
  ******** unrrduCmd
  *
@@ -100,6 +101,18 @@ enum {
   unrrduUnuScaleSpacingTarget, /* 8: e.g. "s0.89" */
   unrrduUnuScaleLast
 };
+// history.c
+typedef struct {
+  const Nrrd *nin;
+  const char *name;
+} unrrduUnuInNSPair;
+typedef struct {
+  Nrrd *nout;
+  const char *name;
+} unrrduUnuOutNSPair;
+extern void unrrduUnuHistoryClear(Nrrd *nout);
+extern int unrrduUnuHistoryAdd(unrrduUnuOutNSPair onsp, int argc,
+                                      const char **argv, unrrduUnuInNSPair insp);
 // flotsam.c
 extern const int unrrduPresent;
 extern const char *const unrrduBiffKey;

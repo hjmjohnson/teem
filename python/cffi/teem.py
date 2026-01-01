@@ -1,6 +1,6 @@
 #
 # Teem: Tools to process and visualize scientific data and images
-# Copyright (C) 2009--2025  University of Chicago
+# Copyright (C) 2009--2026  University of Chicago
 # Copyright (C) 2008, 2007, 2006, 2005  Gordon Kindlmann
 # Copyright (C) 2004, 2003, 2002, 2001, 2000, 1999, 1998  University of Utah
 #
@@ -428,6 +428,7 @@ _BIFF_DICT = {  # contents here are filled in by teem/python/cffi/exult.py Tffi.
     'mossSamplerSample': (_equals_one, 0, b'moss', 'moss/sampler.c:198'),
     'mossLinearTransform': (_equals_one, 0, b'moss', 'moss/xform.c:154'),
     'mossFourPointTransform': (_equals_one, 0, b'moss', 'moss/xform.c:233'),
+    'unrrduUnuHistoryAdd': (_equals_one, 0, b'unrrdu', 'unrrdu/historyFuncs.c:174'),
     'alanUpdate': (_equals_one, 0, b'alan', 'alan/coreAlan.c:58'),
     'alanInit': (_equals_one, 0, b'alan', 'alan/coreAlan.c:97'),
     'alanRun': (_equals_one, 0, b'alan', 'alan/coreAlan.c:451'),

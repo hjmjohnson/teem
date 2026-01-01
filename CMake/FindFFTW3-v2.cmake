@@ -1,6 +1,6 @@
 ## FindFFTW3.cmake: Slightly better way of looking for FFTW3 package
 #    ("fftw3" = http://www.fftw.org)
-# Copyright (C) 2025  University of Chicago
+# Copyright (C) 2025, 2026  University of Chicago
 # See ../LICENSE.txt for licensing terms
 
 # Even though CMake already has a built-in FindFFTW3.cmake, it assumes that fftw3 was

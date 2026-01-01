@@ -1,5 +1,5 @@
 # CTestConfig.cmake - Dashboard submission settings for Teem
-# Copyright (C) 1998--2025 Teem contributors
+# Copyright (C) 1998--2026 Teem contributors
 # Licensed under the GNU LGPL v2.1 or later (see LICENSE.txt for details)
 
 # This file is used only when running CTest in "dashboard mode":

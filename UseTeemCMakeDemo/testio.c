@@ -1,6 +1,6 @@
 /*
   testio.c: demos nrrdSanity(), nrrdLoad(), nrrdSave from Teem
-  Copyright (C) 2025
+  Copyright (C) 2026  University of Chicago
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any

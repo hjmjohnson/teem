@@ -6,7 +6,7 @@ CFFI, within its many limitations, specifically lacking a C pre-processor
  /* =========== air.h =========== */
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2025  University of Chicago
+  Copyright (C) 2009--2026  University of Chicago
   Copyright (C) 2010 Thomas Schultz
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
@@ -451,6 +451,8 @@ extern char *airStrunc(char *str, size_t bsize, size_t drop);
 extern char *airStret(char *str);
 extern const char *airStrect(const char *str);
 extern int airStrcmp(const char *s1, const char *s2);
+extern char *airStrcat(const char *s1, const char *s2);
+extern char *airStrcat3(const char *s1, const char *s2, const char *s3);
 /* ---- END non-NrrdIO */
 extern char *airStrtok(char *s, const char *ct, char **last);
 extern unsigned int airStrntok(const char *s, const char *ct);

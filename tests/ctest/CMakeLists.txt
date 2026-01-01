@@ -1,5 +1,5 @@
 # tests/ctest/CMakeLists.txt: Test driver for Teem's CTest-based tests
-# Copyright (C) 2025  University of Chicago
+# Copyright (C) 2026  University of Chicago
 # See ../../LICENSE.txt for licensing terms
 
 # Note: these tests are very incomplete. It is unclear how much of Teem's

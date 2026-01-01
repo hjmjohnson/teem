@@ -1,5 +1,5 @@
 /* testutil: minimal testing library functions for Teem
-   Copyright (C) 2025  University of Chicago
+   Copyright (C) 2026  University of Chicago
    See ../../LICENSE.txt for licensing terms */
 
 #include <stdlib.h> /* for getenv, malloc */

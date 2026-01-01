@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2025  University of Chicago
+  Copyright (C) 2009--2026  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -41,7 +41,7 @@
 */
 const char *const airTeemVersion = TEEM_VERSION_STRING;
 const int airTeemReleaseDone = AIR_FALSE;
-const char *const airTeemReleaseDate = "hopefully 2025";
+const char *const airTeemReleaseDate = "early 2026";
 
 /*
 ******** airTeemVersionSprint
