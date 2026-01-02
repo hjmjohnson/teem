@@ -155,6 +155,15 @@ airRandMTStateNix(airRandMTState *state) {
 }
 AIR_MOPPER(airRandMTStateNix);
 
+/*
+NOTE: users annoyed with valgrind's memory-in-use warnings flagging how
+airRandMTStateGlobal is still allocated at exit after airSrandMT, airDrandMT, etc
+was used, can add the following to their local `mop`:
+
+  airMopAdd(mop, airRandMTStateGlobal, airRandMTStateNix_mop, airMopAlways);
+
+*/
+
 void
 airSrandMT_r(airRandMTState *rng, unsigned int seed) {
   /* Seed the generator with a simple uint32 */
