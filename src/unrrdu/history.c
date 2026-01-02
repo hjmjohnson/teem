@@ -20,21 +20,41 @@
 #include "unrrdu.h"
 #include "privateUnrrdu.h"
 
-#define INFO "Show unu command history making an array"
+#define INFO "Show unu command history (if known) that made an array"
 static const char *unu_historyInfoL
-  = (INFO ". When the environment variable " UNRRDU_UNU_HISTORY_TRACE_ENV " "
-          "is set (to what doesn't matter), unu makes an effort to trace the history "
-          "of the unu commands used to generate a nrrd by saving information in "
-          "key/value pairs starting with \"" MY_HISTORY_KEY "\". This could be of "
-          "interest in settings where unu is being used to do some work on given "
-          "real-world data, but its main purpose is to facilitate reproducibility "
-          "in settings where unu (and only unu) is used to generate synthetic/test "
-          "data from scratch Because there is non-trivial work in maintaining that "
-          "list of key/value pairs, this functionality is not enabled by default. "
-          "The key/value pairs can be see with \"unu describe\" or "
-          "(from .nrrd files) \"unu head\", but this command prints just the "
-          "history, in a form that (ideally) can be redirected to a shell script.\n "
-          "* Uses unrrduUnuHistoryGet");
+  = (INFO
+     ". When the environment variable " UNRRDU_UNU_HISTORY_TRACE_ENV " "
+     "is set (to what doesn't matter), unu makes an effort to trace the history "
+     "of the unu commands used to generate a nrrd by saving information in "
+     "key/value pairs starting with \"" MY_HISTORY_KEY "_\". This could be of "
+     "interest in settings where unu is being used to do some work on given "
+     "real-world data, but its main purpose is to facilitate reproducibility "
+     "in settings where unu (and only unu) is used to generate synthetic/test "
+     "data from scratch.  Because there is non-trivial work in maintaining that "
+     "list of key/value pairs, this functionality is not enabled by default. "
+     "See \"unu env\" for info about other consequential environment variables. "
+     "The key/value pairs could be see with \"unu describe\" or "
+     "(from .nrrd files) \"unu head\", but this command prints just the "
+     "history, in a form that (ideally) can be redirected to a shell script.\n "
+     "\n "
+     "\t\t\tHere is a demo example, showing off \"-{ }-\" hest commenting of "
+     "part of a command-line as well as a (hacky!) way to record the "
+     "origin of data coming into stdin that did not originate with unu:\n "
+     "\n "
+     "\t\t\t\texport " UNRRDU_UNU_HISTORY_TRACE_ENV "\n "
+     "\t\t\t\techo 0 1 2 3 |\n "
+     "\t\t\t\t\t\t\t\t(" UNRRDU_UNU_HISTORY_STDIN_ENV
+     "=\"echo 0 1 2 3\" unu reshape -s 2 2) |\n "
+     "\t\t\t\t\t\t\t\tunu resample -s 300 300 -k tent -c node -{ bilinear interp }- |\n "
+     "\t\t\t\t\t\t\t\tunu quantize -b 8 |\n "
+     "\t\t\t\t\t\t\t\tunu 2op / - 16 | unu 2op x - 16 -o bands.png\n "
+     "\t\t\t\tunu describe bands.png -{ to see the underlying key/value pairs }-\n "
+     "\t\t\t\tunu history bands.png\n "
+     "\n "
+     "The final command should show shell commands that can be copy-pasted to "
+     "regenerate the bands.png data (though unfortunately not, because of "
+     "the " UNRRDU_UNU_HISTORY_STDIN_ENV " hack, the same self-contained history).\n\n "
+     "* Uses unrrduUnuHistoryGet");
 
 static int /* Biff: 1 */
 historyDoit(const char *me, char *fname, int commentIfNone) {
@@ -69,8 +89,8 @@ static int
 unu_historyMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
   int commentIfNone;
-  hestOptAdd_1_Bool(&hopt, "cn,commmentifnone", "bool", &commentIfNone, "true",
-                    "When there is no unu history in the key/value pairs, "
+  hestOptAdd_1_Bool(&hopt, "cin,commmentifnone", "bool", &commentIfNone, "true",
+                    "If there is no unu history available in the key/value pairs, "
                     "print a \"#\" shell comment saying so");
   char **inS;
   unsigned int inLen;
@@ -88,7 +108,14 @@ unu_historyMain(int argc, const char **argv, const char *me, const hestParm *_hp
     if (inLen > 1) {
       fprintf(stdout, "# ==> %s <==\n", inS[ni]);
     }
-    historyDoit(me, inS[ni], commentIfNone);
+    if (historyDoit(me, inS[ni], commentIfNone)) {
+      airMopAdd(mop, err = biffGetDone(me), airFree, airMopAlways);
+      fprintf(stderr, "%s: trouble with \"%s\":\n%s", me, inS[ni], err);
+      hestUsage(stderr, hopt, me, hparm, AIR_TRUE /* oneline */);
+      fprintf(stderr, "\nFor more info: \"%s --help\"\n", me);
+      airMopError(mop);
+      return 1;
+    }
     if (inLen > 1 && ni < inLen - 1) {
       fprintf(stdout, "\n");
     }
