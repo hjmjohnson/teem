@@ -124,6 +124,7 @@ unu commands.  Functional programming meets the C pre-processor.  Therefore:
   F(make)                                                                               \
   F(head)                                                                               \
   F(describe)                                                                           \
+  F(history)                                                                            \
   F(data)                                                                               \
   F(convert)                                                                            \
   F(resample)                                                                           \
@@ -243,7 +244,10 @@ MY_UNRRDU_MAP(MY_UNRRDU_DECLARE)
 #define MY_OPT_ADD_TYPE(var, desc, dflt)                                                \
   hestOptAdd_1_Enum(&hopt, "t,type", "type", &(var), dflt, desc, nrrdType)
 
-#define MY_NULL_INSP ((unrrduUnuInNSPair){.nin = NULL, .name = NULL})
+// for historyFuncs.c
+#define MY_NULL_INSP   ((unrrduUnuInNSPair){.nin = NULL, .name = NULL})
+// for unu history and historyFuncs.c
+#define MY_HISTORY_KEY "unu_history"
 
 /* adds line of key/value pair history, using both
    `inHidx` created by MY_OPT_ADD_NIN and

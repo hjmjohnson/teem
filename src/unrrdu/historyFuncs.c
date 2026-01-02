@@ -19,14 +19,15 @@
 
 #include "unrrdu.h"
 #include "privateUnrrdu.h"
+#include <assert.h>
 
-static const char keybase[] = "unu_history";
+static const char keybase[] = MY_HISTORY_KEY;
 static const uint hlnMax[4] = {0, 9, 99, 999};
 
 static void
 historyKeyFormat(char *keyfmt, size_t size, uint hdig) {
   snprintf(keyfmt, size, "%s_%%0%uu", keybase, hdig);
-  fprintf(stderr, "!%s(%u): keyfmt=|%s|\n", __func__, hdig, keyfmt);
+  // fprintf(stderr, "!%s(%u): keyfmt=|%s|\n", __func__, hdig, keyfmt);
   return;
 }
 
@@ -87,12 +88,12 @@ unrrduUnuHistoryClear(Nrrd *nout) {
 
 /* makes an airArray of history from given `nin`
    or just initializes an empty array from NULL */
-static airArray *
-historyGet(unrrduUnuInNSPair insp) {
-  uint hdig = historyDigitsGet(insp.nin);
+static airArray * /* Biff: nope */
+historyGet(unrrduUnuInNSPair insp, int commentIfNone) {
   // whether or not we have any input history; create the airArray
   airArray *ret = airArrayNew(NULL, NULL, sizeof(char *), 32);
   airArrayPointerCB(ret, NULL, airFree);
+  uint hdig = historyDigitsGet(insp.nin);
   if (hdig) {
     // there is some history to extract
     char keyfmt[AIR_STRLEN_SMALL + 1];
@@ -101,7 +102,7 @@ historyGet(unrrduUnuInNSPair insp) {
     for (uint hln = 1; hln <= hlnMax[hdig]; hln++) {
       char key[AIR_STRLEN_SMALL + 1];
       snprintf(key, sizeof(key), keyfmt, hln);
-      fprintf(stderr, "!%s: key=|%s|\n", __func__, key);
+      // fprintf(stderr, "!%s: key=|%s|\n", __func__, key);
       char *val = nrrdKeyValueGet(insp.nin, key);
       if (!val) {
         // no value for this key; we've gone past the end of recorded history
@@ -111,16 +112,41 @@ historyGet(unrrduUnuInNSPair insp) {
       uint idx = airArrayLenIncr(ret, 1);
       char **hist = ret->data;
       hist[idx] = val;
-      fprintf(stderr, "!%s: hist[%u]=|%s|\n", __func__, idx, val);
+      // fprintf(stderr, "!%s: hist[%u]=|%s|\n", __func__, idx, val);
     }
   } else if (insp.name) {
-    uint idx = airArrayLenIncr(ret, 1);
-    char **hist = ret->data;
-    char buff[AIR_STRLEN_LARGE + 1];
-    snprintf(buff, sizeof(buff), "# (\"%s\" has no history)", insp.name);
-    hist[idx] = airStrdup(buff);
+    const char *envhstdin = NULL;
+    if (!strcmp("-", insp.name) /* input is stdin */
+        && (envhstdin = getenv(UNRRDU_UNU_HISTORY_STDIN_ENV))) {
+      // use given back channel description of history (assuming only single line)
+      char *hcmd = airOneLinify(airStrdup(envhstdin));
+      assert(hcmd);
+      size_t hlinesz = strlen(hcmd) + strlen(" |") + 1;
+      char *hline = AIR_CALLOC(hlinesz, char);
+      assert(hline);
+      snprintf(hline, hlinesz, "%s |", hcmd);
+      uint idx = airArrayLenIncr(ret, 1);
+      char **hist = ret->data;
+      hist[idx] = hline; // new ownership; no free(hline)
+      free(hcmd);
+    } else if (commentIfNone) {
+      // input is not stdin and/or had no backchannel info
+      // so, if requested, say that we have no history for insp.name
+      uint idx = airArrayLenIncr(ret, 1);
+      char **hist = ret->data;
+      size_t hlinesz = strlen(insp.name) + strlen("# (\"\" has no history)") + 1;
+      char *hline = AIR_CALLOC(hlinesz, char);
+      assert(hline);
+      snprintf(hline, hlinesz, "# (\"%s\" has no history)", insp.name);
+      hist[idx] = hline; // new ownership; no free(hline)
+    }
   }
   return ret;
+}
+
+airArray * /* Biff: nope */
+unrrduUnuHistoryGet(const Nrrd *nin, const char *fname, int commentIfNone) {
+  return historyGet((unrrduUnuInNSPair){.nin = nin, .name = fname}, commentIfNone);
 }
 
 static int /* Biff: 1 */
@@ -131,7 +157,7 @@ historyAdd(Nrrd *nout, airArray *ihArr) {
     return 1;
   }
   // have to use unrrduUnuInNSPair because that's the type historyGet wants
-  airArray *ohArr = historyGet((unrrduUnuInNSPair){.nin = nout, .name = NULL});
+  airArray *ohArr = historyGet((unrrduUnuInNSPair){.nin = nout, .name = NULL}, AIR_TRUE);
   // we are concatenating the input onto existing history in output
   uint ohnum = ohArr->len + ihnum;
   if (ohnum <= 9) {
@@ -196,7 +222,7 @@ unrrduUnuHistoryAdd(unrrduUnuOutNSPair onsp,
   /* else nrrdKeyValueGet will return newly strdup'ed strings,
      which our airArray will manage */
 
-  airArray *histArr = historyGet(insp);
+  airArray *histArr = historyGet(insp, AIR_TRUE);
   if (argv) {
     // we have an argc/argv command to add
     uint idx = airArrayLenIncr(histArr, 1);

@@ -96,6 +96,8 @@ consistent "UNU_QUIET_QUIT" is now (for TeemV2) also supported.
 #define UNRRDU_UNU_QUIET_QUIT_ENV_OLD "UNRRDU_QUIET_QUIT"
 // for controlling whether to build up unu history in key/value pairs
 #define UNRRDU_UNU_HISTORY_TRACE_ENV  "UNU_HISTORY_TRACE"
+// back-channel to specify history of stdin when missing
+#define UNRRDU_UNU_HISTORY_STDIN_ENV  "UNU_HISTORY_STDIN"
 
 /*
  ******** unrrduCmd
@@ -136,7 +138,7 @@ enum {
   unrrduUnuScaleLast
 };
 
-// history.c
+// for historyFuncs.c and history.c
 typedef struct {
   const Nrrd *nin;
   const char *name;
@@ -146,6 +148,8 @@ typedef struct {
   const char *name;
 } unrrduUnuOutNSPair;
 UNRRDU_EXPORT void unrrduUnuHistoryClear(Nrrd *nout);
+UNRRDU_EXPORT airArray *unrrduUnuHistoryGet(const Nrrd *nin, const char *fname,
+                                            int commentIfNone);
 UNRRDU_EXPORT int unrrduUnuHistoryAdd(unrrduUnuOutNSPair onsp, int argc,
                                       const char **argv, unrrduUnuInNSPair insp);
 
