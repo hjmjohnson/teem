@@ -4,11 +4,11 @@ Teem 2.0.0 aka "TeemV2"  (2026-?-?)
 
 tl;dr list of breaking-est changes for TeemV2 relative to previous release v1.11:
 - The options for configuring a CMake build have changed, and how Teem can also
-  be built via GNUmake has also changed, see "use of CMake and GNUmake" below
+  be built via GNUmake has also changed. See "use of CMake and GNUmake" below.
 - Renamed hestParseOrDie() --> hestParseOrExit()
   and it no longer takes last 3 args `doInfo`, `doUsage`, `doGlossary`,
   and the hestParm->dieLessVerbose field is removed
-- hestUsage() has new additional final argument `oneline`
+- hestUsage() has new additional final bool-ish argument `oneline`
 - Renamed nrrdSanityOrDie() --> nrrdSanityOrExit()
 - The global variable nrrdStateVerboseIO is gone,
   replaced by NrrdIoState->verbose (usually nio->verbose in code)
@@ -64,7 +64,7 @@ updated. Please let me (glk@uchicago.edu) know if you know how to facilitate thi
 
 All the changes and bug fixes, from version 2012's 1.11.0 to today's version 2.0.0, are
 described below. The log suffers from some inconsistency of format due to being written
-over 13 years; hopefully you find it informative.  The ordering of items within sections
+over 14 years; hopefully you find it informative.  The ordering of items within sections
 is some combination of reverse chronological (later changes described earlier in file)
 and ordering changes from most interesting/important to least so.  Search for "BUG" to
 see info about bugs fixed. Search for "API CHANGE" to see changes to the APIs of the
@@ -546,6 +546,11 @@ miteDefOpacNear1 --> miteDefaultOpacNear1
 miteDefOpacMatters --> miteDefaultOpacMatters
 
 ========= air =========
+
+• Wed Dec 31 06:20:50 2025 -0600 git commit a11f70d5 and
+  Wed Dec 31 06:08:17 2025 -0600 git commit 2d0a828c:
+    API NEW: airStrcat3 allocates the concatenation of the three given strings
+    API NEW: airStrcat allocates the concatenation of the two given strings
 
 • Mon Nov 17 09:40:32 2025 -0600 git commit: eace12d3
   and more commits up to Mon Nov 17 17:56:01 2025 -0600 3199ccfd
@@ -1858,6 +1863,58 @@ input histogram was all zeros, the output value is nan
 • nrrdSpaceVecExists is now const-correct
 
 ========= unrrdu / unu =========
+
+• Fri Jan 2 07:19:11 2026 -0600 git commit 9c0144f5
+API NEW and new command "unu history".  New in unrrdu:
+   void unrrduUnuHistoryClear(Nrrd *nout);
+   airArray *unrrduUnuHistoryGet(const Nrrd *nin, const char *fname,
+                                 int commentIfNone);
+   int unrrduUnuHistoryAdd(unrrduUnuOutNSPair onsp, int argc,
+                           const char **argv, unrrduUnuInNSPair insp);
+These are used to implement a new history tracing capability in unu,
+which is enabled by setting environment variable "UNU_HISTORY_TRACE"
+(the value of UNRRDU_UNU_HISTORY_TRACE_ENV).  The goal is to create
+a reproducible log of how a nrrd was created, if it was created by
+pure unu hacking, stored in the key/value pairs of a nrrd.  The new
+"unu history" command shows the log for a given file. See
+"unu history --help" for more details and a usage example.
+
+• Mon Dec 29 20:37:25 2025 -0600 git commit 19f2ca19
+API CHANGE and unu BEHAVIOR NEW:
+the API CHANGE is from renaming some unrrdu things to be more clearly specific to unu:
+unrrduScaleUnknown --> unrrduUnuScaleUnknown
+unrrduScaleNothing --> unrrduUnuScaleNothing
+unrrduScaleMultiply --> unrrduUnuScaleMultiply
+unrrduScaleDivide --> unrrduUnuScaleDivide
+unrrduScaleAdd --> unrrduUnuScaleAdd
+unrrduScaleSubtract --> unrrduUnuScaleSubtract
+unrrduScaleAspectRatio --> unrrduUnuScaleAspectRatio
+unrrduScaleExact --> unrrduUnuScaleExact
+unrrduScaleSpacingTarget --> unrrduScaleSpacingTarget
+unrrduScaleLast --> unrrduScaleLast
+unrrduQuietQuitTest --> unrrduUnuQuietQuitTest
+unrrduDefaultImplicitLutRmapRescale --> unrrduUnuDefaultImplicitLutRmapRescale
+unrrduEnvVarDefaultImplicitLutRmapRescale --> unrrduUnuEnvVarDefaultImplicitLutRmapRescale
+unrrduGetenvDefaultImplicitLutRmapRescale --> unrrduUnuGetenvDefaultImplicitLutRmapRescale
+unrrduHestPosCB --> unrrduUnuHestPosCB
+unrrduHestScaleCB --> unrrduUnuHestScaleCB
+unrrduHestBitsCB --> unrrduUnuHestBitsCB
+unrrduHestFileCB --> unrrduUnuHestFileCB
+unrrduHestEncodingCB --> unrrduUnuHestEncodingCB
+unrrduHestFormatCB --> unrrduUnuHestFormatCB
+UNRRDU_UNU_QUIET_QUIT_ENV -->  UNRRDU_UNU_QUIET_QUIT_ENV_OLD
+and NEW: UNRRDU_UNU_QUIET_QUIT_ENV
+
+BEHAVIOR NEW:
+Previously: setting env-var "UNRRDU_QUIET_QUIT"
+   (the value of UNRRDU_UNU_QUIET_QUIT_ENV_OLD)
+to anything would enable the quiet-quit behavior in unu.
+Now, for naming consistency, setting env-var "UNU_QUIET_QUIT"
+   (the value of UNRRDU_UNU_QUIET_QUIT_ENV)
+to anything will also do this. Because this is triggered by merely setting the env-var
+(as opposed to setting it to "true" or some such), there is no problem of detecting and flagging
+inconsistent settings of "UNRRDU_QUIET_QUIT" and "UNU_QUIET_QUIT"; either one
+being set triggers quiet-quitting.
 
 • Wed Nov 19 13:53:21 2025 -0600 git commit: 99fbe0c5
 API NEW: unrrduMainBiffOrExit() is the biff-using sibling of unrrduMainOrExit(): if
