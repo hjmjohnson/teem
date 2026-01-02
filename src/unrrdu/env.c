@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2025  University of Chicago
+  Copyright (C) 2009--2026  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -174,7 +174,6 @@ unu_envMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
   out = stdout;
 
   hestInfo(out, me, unu_envInfoL, hparm);
-  fprintf(out, "\n");
 
   hestPrintStr(out, 0, 0, hparm->columns,
                ("Each variable in the listing below starts with the name of "
@@ -199,12 +198,16 @@ unu_envMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
 
   hestPrintStr(out, 0, 0, hparm->columns,
                ("In addition to the many \"NRRD_\" environment variables, "
-                "there is one, " UNRRDU_UNU_QUIET_QUIT_ENV " "
-                "(or legacy name " UNRRDU_UNU_QUIET_QUIT_ENV_OLD "), which "
-                "determines whether unu exits "
+                "there are two which are specific to unu. " UNRRDU_UNU_QUIET_QUIT_ENV " "
+                "(or legacy name " UNRRDU_UNU_QUIET_QUIT_ENV_OLD ") determines "
+                "whether unu exits "
                 "quietly (without error and usage info) when it fails "
                 "because an input nrrd read immediately hit EOF (as often "
-                "happens when many unu invocations are piped together)."),
+                "happens when many unu invocations are piped "
+                "together). " UNRRDU_UNU_HISTORY_TRACE_ENV " "
+                "controls whether unu commands "
+                "accumulate a history of their use inside output nrrd "
+                "key/value pairs."),
                AIR_FALSE);
   fprintf(out, "\n");
 
@@ -214,7 +217,7 @@ unu_envMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
   for (unsigned int qqi = 0; qqi < 2; qqi++) {
     fprintf(out, "%s: ", qqname[qqi]);
     if (getenv(qqname[qqi])) {
-      fprintf(out, "is set (to what doesn't matter)\n");
+      fprintf(out, "is set (to what doesn't matter) **********************\n");
       qqset[qqi] = 1;
     } else {
       fprintf(out, "is NOT set\n");
@@ -225,6 +228,16 @@ unu_envMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
     fprintf(out, "   ==> quiet-quit testing is enabled\n");
   } else {
     fprintf(out, "   ==> quiet-quit testing is NOT enabled\n");
+  }
+  fprintf(out, "\n");
+
+  fprintf(out, "%s: ", UNRRDU_UNU_HISTORY_TRACE_ENV);
+  if (getenv(UNRRDU_UNU_HISTORY_TRACE_ENV)) {
+    fprintf(out, "is set (to what doesn't matter) **********************\n"
+                 "   ==> will trace unu history\n");
+  } else {
+    fprintf(out, "is NOT set\n"
+                 "   ==> will NOT trace unu history\n");
   }
   fprintf(out, "\n");
 

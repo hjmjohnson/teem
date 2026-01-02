@@ -1,6 +1,6 @@
 /*
   sanity.c: stand-alone demo of nrrdSanity() from Teem
-  Copyright (C) 2008
+  Copyright (C) 2008  Gordon Kindlmann
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any

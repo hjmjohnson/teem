@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2025  University of Chicago
+  Copyright (C) 2009--2026  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -63,12 +63,15 @@ unu_3opMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
                     "and stdv=3rd value",
                     nrrdTernaryOp);
   NrrdIter *in1, *in2, *in3;
-  hestOptAdd_1_Other(&hopt, NULL, "in1", &in1, NULL,
-                     "First input.  Can be a single value or a nrrd.", nrrdHestIter);
-  hestOptAdd_1_Other(&hopt, NULL, "in2", &in2, NULL,
-                     "Second input.  Can be a single value or a nrrd.", nrrdHestIter);
-  hestOptAdd_1_Other(&hopt, NULL, "in3", &in3, NULL,
-                     "Third input.  Can be a single value or a nrrd.", nrrdHestIter);
+  uint in1Hidx = hestOptAdd_1_Other(&hopt, NULL, "in1", &in1, NULL,
+                                    "First input.  Can be a single value or a nrrd.",
+                                    nrrdHestIter);
+  uint in2Hidx = hestOptAdd_1_Other(&hopt, NULL, "in2", &in2, NULL,
+                                    "Second input.  Can be a single value or a nrrd.",
+                                    nrrdHestIter);
+  uint in3Hidx = hestOptAdd_1_Other(&hopt, NULL, "in3", &in3, NULL,
+                                    "Third input.  Can be a single value or a nrrd.",
+                                    nrrdHestIter);
   int type;
   hestOptAdd_1_Other(&hopt, "t,type", "type", &type, "default",
                      "type to convert all nrrd inputs to, prior to "
@@ -135,6 +138,54 @@ unu_3opMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
     return 1;
   }
 
+  unrrduUnuHistoryClear(nout);
+  if (getenv(UNRRDU_UNU_HISTORY_TRACE_ENV)) {
+    // HEY copy-pasta from 2op.c
+    // (it is a big bummer than handling history is so clunky ...)
+    unrrduUnuOutNSPair onsp = {.nout = nout, .name = hopt[outHidx].parmStr};
+    const Nrrd *in1Nrrd = in1->nrrd ? in1->nrrd : (in1->ownNrrd ? in1->ownNrrd : NULL);
+    const Nrrd *in2Nrrd = in2->nrrd ? in2->nrrd : (in2->ownNrrd ? in2->ownNrrd : NULL);
+    const Nrrd *in3Nrrd = in3->nrrd ? in3->nrrd : (in3->ownNrrd ? in3->ownNrrd : NULL);
+    unrrduUnuInNSPair insp1 = {.nin = in1Nrrd, .name = hopt[in1Hidx].parmStr};
+    unrrduUnuInNSPair insp2 = {.nin = in2Nrrd, .name = hopt[in2Hidx].parmStr};
+    unrrduUnuInNSPair insp3 = {.nin = in3Nrrd, .name = hopt[in3Hidx].parmStr};
+    int in1Stdin = !strcmp("-", insp1.name);
+    int in2Stdin = !strcmp("-", insp2.name);
+    int in3Stdin = !strcmp("-", insp3.name);
+    int E = 0;
+    if (in1Stdin + in2Stdin + in3Stdin == 0) {
+      // inputs are only files or constants
+      if (!E && insp1.nin) E |= unrrduUnuHistoryAdd(onsp, 0, NULL, insp1);
+      if (!E && insp2.nin) E |= unrrduUnuHistoryAdd(onsp, 0, NULL, insp2);
+      if (!E && insp3.nin) E |= unrrduUnuHistoryAdd(onsp, 0, NULL, insp3);
+      if (!E) E |= unrrduUnuHistoryAdd(onsp, argc + 1, argv - 1, MY_NULL_INSP);
+    } else if (in1Stdin + in2Stdin + in3Stdin == 1) {
+      // one these three is stdin; the other two's history should come first
+      unrrduUnuInNSPair inspStdin, inspOtheA, inspOtheB;
+      if (in1Stdin) {
+        inspStdin = insp1;
+        inspOtheA = insp2;
+        inspOtheB = insp3;
+      } else if (in2Stdin) {
+        inspStdin = insp2;
+        inspOtheA = insp1;
+        inspOtheB = insp3;
+      } else {
+        inspStdin = insp3;
+        inspOtheA = insp1;
+        inspOtheB = insp2;
+      }
+      if (!E && inspOtheA.nin) E |= unrrduUnuHistoryAdd(onsp, 0, NULL, inspOtheA);
+      if (!E && inspOtheB.nin) E |= unrrduUnuHistoryAdd(onsp, 0, NULL, inspOtheB);
+      if (!E) E |= unrrduUnuHistoryAdd(onsp, argc + 1, argv - 1, inspStdin);
+    }
+    if (E) {
+      airMopAdd(mop, err = biffGetDone(UNRRDU), airFree, airMopAlways);
+      fprintf(stderr, "%s: trouble generating history:\n%s", me, err);
+      airMopError(mop);
+      return 1;
+    }
+  }
   MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);

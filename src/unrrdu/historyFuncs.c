@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2025  University of Chicago
+  Copyright (C) 2009--2026  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -19,21 +19,22 @@
 
 #include "unrrdu.h"
 #include "privateUnrrdu.h"
+#include <assert.h>
 
-static const char keybase[] = "unu_history";
+static const char keybase[] = MY_HISTORY_KEY;
 static const uint hlnMax[4] = {0, 9, 99, 999};
 
 static void
 historyKeyFormat(char *keyfmt, size_t size, uint hdig) {
   snprintf(keyfmt, size, "%s_%%0%uu", keybase, hdig);
-  fprintf(stderr, "!%s(%u): keyfmt=|%s|\n", __func__, hdig, keyfmt);
+  // fprintf(stderr, "!%s(%u): keyfmt=|%s|\n", __func__, hdig, keyfmt);
   return;
 }
 
 static uint
 historyDigitsGet(const Nrrd *nin) {
   if (!nin) {
-    // NULL nrrd has no history
+    // NULL nrrd has no history, and that's ok
     return 0;
   }
   char key[AIR_STRLEN_SMALL + 1], *val;
@@ -62,8 +63,13 @@ historyDigitsGet(const Nrrd *nin) {
   return 0;
 }
 
-static void
-historyClear(Nrrd *nout) {
+/*
+ ******** unrrduUnuHistoryClear
+ *
+ * empties key/value history of given `nout`
+ */
+void
+unrrduUnuHistoryClear(Nrrd *nout) {
   uint hdig = historyDigitsGet(nout);
   if (!hdig) {
     // no history needs clearing
@@ -80,13 +86,14 @@ historyClear(Nrrd *nout) {
   return;
 }
 
-static airArray *
-historyGet(const Nrrd *nin) {
-  uint hdig = historyDigitsGet(nin);
-  fprintf(stderr, "!%s: hdig(nin) = %u\n", __func__, hdig);
-  // else have 0, 1, 2, or 3 digits of history: create airArray
+/* makes an airArray of history from given `nin`
+   or just initializes an empty array from NULL */
+static airArray * /* Biff: nope */
+historyGet(unrrduUnuInNSPair insp, int commentIfNone) {
+  // whether or not we have any input history; create the airArray
   airArray *ret = airArrayNew(NULL, NULL, sizeof(char *), 32);
   airArrayPointerCB(ret, NULL, airFree);
+  uint hdig = historyDigitsGet(insp.nin);
   if (hdig) {
     // there is some history to extract
     char keyfmt[AIR_STRLEN_SMALL + 1];
@@ -95,8 +102,8 @@ historyGet(const Nrrd *nin) {
     for (uint hln = 1; hln <= hlnMax[hdig]; hln++) {
       char key[AIR_STRLEN_SMALL + 1];
       snprintf(key, sizeof(key), keyfmt, hln);
-      fprintf(stderr, "!%s: key=|%s|\n", __func__, key);
-      char *val = nrrdKeyValueGet(nin, key);
+      // fprintf(stderr, "!%s: key=|%s|\n", __func__, key);
+      char *val = nrrdKeyValueGet(insp.nin, key);
       if (!val) {
         // no value for this key; we've gone past the end of recorded history
         break;
@@ -105,48 +112,103 @@ historyGet(const Nrrd *nin) {
       uint idx = airArrayLenIncr(ret, 1);
       char **hist = ret->data;
       hist[idx] = val;
-      fprintf(stderr, "!%s: hist[%u]=|%s|\n", __func__, idx, val);
+      // fprintf(stderr, "!%s: hist[%u]=|%s|\n", __func__, idx, val);
+    }
+  } else if (insp.name) {
+    const char *envhstdin = NULL;
+    if (!strcmp("-", insp.name) /* input is stdin */
+        && (envhstdin = getenv(UNRRDU_UNU_HISTORY_STDIN_ENV))) {
+      // use given back channel description of history (assuming only single line)
+      char *hcmd = airOneLinify(airStrdup(envhstdin));
+      assert(hcmd);
+      size_t hlinesz = strlen(hcmd) + strlen(" |") + 1;
+      char *hline = AIR_CALLOC(hlinesz, char);
+      assert(hline);
+      snprintf(hline, hlinesz, "%s |", hcmd);
+      uint idx = airArrayLenIncr(ret, 1);
+      char **hist = ret->data;
+      hist[idx] = hline; // new ownership; no free(hline)
+      free(hcmd);
+    } else if (commentIfNone) {
+      // input is not stdin and/or had no backchannel info
+      // so, if requested, say that we have no history for insp.name
+      uint idx = airArrayLenIncr(ret, 1);
+      char **hist = ret->data;
+      size_t hlinesz = strlen(insp.name) + strlen("# (\"\" has no history)") + 1;
+      char *hline = AIR_CALLOC(hlinesz, char);
+      assert(hline);
+      snprintf(hline, hlinesz, "# (\"%s\" has no history)", insp.name);
+      hist[idx] = hline; // new ownership; no free(hline)
     }
   }
   return ret;
 }
 
+airArray * /* Biff: nope */
+unrrduUnuHistoryGet(const Nrrd *nin, const char *fname, int commentIfNone) {
+  return historyGet((unrrduUnuInNSPair){.nin = nin, .name = fname}, commentIfNone);
+}
+
 static int /* Biff: 1 */
-historySet(Nrrd *nout, airArray *histArr) {
-  uint hdig, hnum = histArr ? histArr->len : 0;
-  if (!hnum) {
+historyAdd(Nrrd *nout, airArray *ihArr) {
+  uint hdig, ihnum = ihArr ? ihArr->len : 0;
+  if (!ihnum) {
     biffAddf(UNRRDU, "%s: got no history to set", __func__);
     return 1;
   }
-  if (hnum <= 9) {
+  // have to use unrrduUnuInNSPair because that's the type historyGet wants
+  airArray *ohArr = historyGet((unrrduUnuInNSPair){.nin = nout, .name = NULL}, AIR_TRUE);
+  // we are concatenating the input onto existing history in output
+  uint ohnum = ohArr->len + ihnum;
+  if (ohnum <= 9) {
     hdig = 1;
-  } else if (hnum <= 99) {
+  } else if (ohnum <= 99) {
     hdig = 2;
-  } else if (hnum <= 999) {
+  } else if (ohnum <= 999) {
     hdig = 3;
   } else {
-    biffAddf(UNRRDU, "%s: %u lines of history exceeds 3-digit limit", __func__, hnum);
+    biffAddf(UNRRDU, "%s: %u lines of history exceeds 3-digit limit", __func__, ohnum);
     return 1;
   }
   char keyfmt[AIR_STRLEN_SMALL + 1];
   historyKeyFormat(keyfmt, sizeof(keyfmt), hdig);
-  historyClear(nout);
-  char **hist = histArr->data;
-  for (uint hidx = 0; hidx < histArr->len; hidx++) {
+  /* even though we're just adding to existing history in nout,
+     the numbering may have to change from (e.g.) 1 to 2 digits,
+     so to be safe we do first clear the output */
+  unrrduUnuHistoryClear(nout);
+  char **ohist = ohArr->data;
+  char **ihist = ihArr->data;
+  for (uint hidx = 0; hidx < ohnum; hidx++) {
+    uint oln = hidx + 1;
     char key[AIR_STRLEN_SMALL + 1];
-    snprintf(key, sizeof(key), keyfmt, hidx + 1);
-    if (nrrdKeyValueAdd(nout, key, hist[hidx])) {
-      biffAddf(UNRRDU, "%s: trouble adding line %u of history", __func__, hidx + 1);
+    snprintf(key, sizeof(key), keyfmt, oln);
+    const char *hline = hidx < ohArr->len ? ohist[hidx] : ihist[hidx - ohArr->len];
+    if (nrrdKeyValueAdd(nout, key, hline)) {
+      biffAddf(UNRRDU, "%s: trouble adding line %u of history", __func__, oln);
       return 1;
     }
   }
   return 0;
 }
 
-// assumes that there is no history already in nout
+/*
+ ******** unrrduUnuHistoryAdd
+ *
+ * adds history to onsp.nout, from argc,argv command and/or insp.nin
+ */
 int /* Biff: 1 */
-unrrduUnuKeyValueHistoryAdd(Nrrd *nout, int argc, const char **argv, const Nrrd *nin) {
-  if (!(nout && argv && nin)) {
+unrrduUnuHistoryAdd(unrrduUnuOutNSPair onsp,
+                    int argc,
+                    const char **argv,
+                    unrrduUnuInNSPair insp) {
+  if (!getenv(UNRRDU_UNU_HISTORY_TRACE_ENV)) {
+    /* see above */
+    unrrduUnuHistoryClear(onsp.nout);
+    return 0;
+  }
+  if (!(onsp.nout && onsp.name)) {
+    /* `argv` can be NULL to say: no command to add */
+    /* `insp.nin` can be NULL to say: we're the starting point */
     biffAddf(UNRRDU, "%s: got NULL pointer", __func__);
     return 1;
   }
@@ -157,15 +219,26 @@ unrrduUnuKeyValueHistoryAdd(Nrrd *nout, int argc, const char **argv, const Nrrd 
              __func__);
     return 1;
   }
-  // else nrrdKeyValueGet will return newly strdup'ed strings
+  /* else nrrdKeyValueGet will return newly strdup'ed strings,
+     which our airArray will manage */
 
-  airArray *histArr = historyGet(nin);
-  uint idx = airArrayLenIncr(histArr, 1);
-  char **hist = histArr->data;
-  char *cmd = hestArgcArgvSprint(argc, argv, AIR_FALSE);
-  fprintf(stderr, "!%s: setting hist[%u] = |%s|\n", __func__, idx, cmd);
-  hist[idx] = cmd;
-  if (historySet(nout, histArr)) {
+  airArray *histArr = historyGet(insp, AIR_TRUE);
+  if (argv) {
+    // we have an argc/argv command to add
+    uint idx = airArrayLenIncr(histArr, 1);
+    char **hist = histArr->data;
+    char *cmd0 = hestArgcArgvSprint(argc, argv, AIR_FALSE);
+    const char *lnbeg = (insp.name && !strcmp(insp.name, "-")
+                           ? "    unu " /* indent because we were piped to */
+                           : "unu " /* else assume we started w/ "-i filename" */);
+    const char *lnend = (!strcmp(onsp.name, "-")
+                           ? " |" /* if output is stdout, then assume piping */
+                           : ";" /* else assume we're finished w/ "-o filename" */);
+    char *cmd = airStrcat3(lnbeg, cmd0, lnend);
+    free(cmd0);
+    hist[idx] = cmd;
+  }
+  if (historyAdd(onsp.nout, histArr)) {
     biffAddf(UNRRDU, "%s: trouble adding history", __func__);
     airArrayNuke(histArr);
     return 1;

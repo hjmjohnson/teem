@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2025  University of Chicago
+  Copyright (C) 2009--2026  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -72,6 +72,7 @@ unu_jhistoMain(int argc, const char **argv, const char *me, const hestParm *hpar
                     "axis to slice along when working with single nrrd. ");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
+  AIR_UNUSED(outHidx); // TODO handle history
 
   // (boilerplate for no hparm modification)
   hestParseOrExit(hopt, argc, argv, hparm, me, unu_jhistoInfoL);

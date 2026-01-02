@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2025  University of Chicago
+  Copyright (C) 2009--2026  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -34,6 +34,7 @@ unu_diceMain(int argc, const char **argv, const char *me, const hestParm *hparm)
   MY_OPT_ADD_AXIS(axis, "axis to slice along");
   Nrrd *nin;
   MY_OPT_ADD_NIN(nin, "input nrrd");
+  AIR_UNUSED(inHidx); // TODO? save history of multiple outs; how?
   uint start;
   hestOptAdd_1_UInt(&hopt, "s,start", "start", &start, "0",
                     "integer value to start numbering with");

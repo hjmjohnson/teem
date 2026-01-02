@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2025  University of Chicago
+  Copyright (C) 2009--2026  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -42,8 +42,8 @@ unu_unquantizeMain(int argc, const char **argv, const char *me, const hestParm *
    *            NULL, NULL, nrrdHestNrrd);
    */
   Nrrd *nin;
-  hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-", "input nrrd",
-                     nrrdHestNrrdNoTTY);
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-", "input nrrd",
+                                   nrrdHestNrrdNoTTY);
   double oldMin, oldMax;
   hestOptAdd_1_Double(&hopt, "min,minimum", "value", &oldMin, "nan",
                       "Lowest value prior to quantization.  Defaults to "
@@ -74,6 +74,7 @@ unu_unquantizeMain(int argc, const char **argv, const char *me, const hestParm *
     return 1;
   }
 
+  MY_HISTORY(nout, nin);
   MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);

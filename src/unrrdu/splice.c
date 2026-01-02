@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2025  University of Chicago
+  Copyright (C) 2009--2026  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -38,9 +38,10 @@ unu_spliceMain(int argc, const char **argv, const char *me, const hestParm *hpar
                      "to the last sample on the axis (M == #samples-1).",
                      &unrrduUnuHestPosCB);
   Nrrd *nslice;
-  hestOptAdd_1_Other(&hopt, "s,slice", "nslice", &nslice, NULL,
-                     "slice nrrd.  This is the slice to insert into \"nin\"",
-                     nrrdHestNrrdNoTTY);
+  uint slcHidx
+    = hestOptAdd_1_Other(&hopt, "s,slice", "nslice", &nslice, NULL,
+                         "slice nrrd.  This is the slice to insert into \"nin\"",
+                         nrrdHestNrrdNoTTY);
   Nrrd *nin;
   MY_OPT_ADD_NIN(nin, "input nrrd.  This is the nrrd into which the slice is "
                       "inserted");
@@ -71,6 +72,29 @@ unu_spliceMain(int argc, const char **argv, const char *me, const hestParm *hpar
     return 1;
   }
 
+  // HEY copy-pasta from inset.c
+  unrrduUnuHistoryClear(nout);
+  if (getenv(UNRRDU_UNU_HISTORY_TRACE_ENV)) {
+    unrrduUnuOutNSPair onsp = {.nout = nout, .name = hopt[outHidx].parmStr};
+    unrrduUnuInNSPair insp = {.nin = nin, .name = hopt[inHidx].parmStr};
+    unrrduUnuInNSPair snsp = {.nin = nslice, .name = hopt[slcHidx].parmStr};
+    int E = 0;
+    if (!strcmp("-", snsp.name)) {
+      // first nin then nslice=stdin
+      if (!E) E |= unrrduUnuHistoryAdd(onsp, 0, NULL, insp);
+      if (!E) E |= unrrduUnuHistoryAdd(onsp, argc + 1, argv - 1, snsp);
+    } else {
+      // first slice then nin
+      if (!E) E |= unrrduUnuHistoryAdd(onsp, 0, NULL, snsp);
+      if (!E) E |= unrrduUnuHistoryAdd(onsp, argc + 1, argv - 1, insp);
+    }
+    if (E) {
+      airMopAdd(mop, err = biffGetDone(UNRRDU), airFree, airMopAlways);
+      fprintf(stderr, "%s: trouble generating history:\n%s", me, err);
+      airMopError(mop);
+      return 1;
+    }
+  }
   MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);

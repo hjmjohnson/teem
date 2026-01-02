@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2025  University of Chicago
+  Copyright (C) 2009--2026  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -39,6 +39,7 @@ unu_aabplotMain(int argc, const char **argv, const char *me, const hestParm *hpa
   hestOptAdd_1_Bool(&hopt, "ms", "show", &medshow, "false", "print the median value");
   Nrrd *_nin;
   MY_OPT_ADD_NIN(_nin, "input nrrd");
+  AIR_UNUSED(inHidx); // (no attempt to save history here)
   Nrrd *_nsingle;
   hestOptAdd_1_Other(&hopt, "s", "single", &_nsingle, "",
                      "if given a 1D nrrd here that matches the number of "

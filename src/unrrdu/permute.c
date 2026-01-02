@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2025  University of Chicago
+  Copyright (C) 2009--2026  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -59,6 +59,7 @@ unu_permuteMain(int argc, const char **argv, const char *me, const hestParm *hpa
     return 1;
   }
 
+  MY_HISTORY(nout, nin);
   MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);

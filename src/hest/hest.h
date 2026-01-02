@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2025  University of Chicago
+  Copyright (C) 2009--2026  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -278,13 +278,13 @@ typedef struct {
                          hestOpt, wherein some fields were set to special values to
                          indicate termination. With the 2023 code revisit, that was
                          deemed even uglier than the new and current hack: the first
-                         hestOpt now stores here in arrAlloc the allocated length of the
-                         hestOpt array, and in arrLen the number of hestOpts actually
-                         used and set. This facilitates implementing something much like
-                         an airArray, but without the burden of extra calls for the user
-                         (like airArrayLenIncr), nor new kinds of containers for hest and
-                         its users to manage: it is just the same array of hestOpt
-                         structs */
+                         hestOpt now stores here in `arrAlloc` the allocated length of
+                         the hestOpt array, and in `arrLen` the number of hestOpts
+                         actually used and set. This facilitates implementing something
+                         much like an airArray, but without the burden of extra calls for
+                         the user (like airArrayLenIncr), nor new kinds of containers for
+                         hest and its users to manage: it is still just an array of
+                         hestOpt structs */
 
   // ------------------- Output fields set/allocated by hestParse.
   // - - - - - Things specific to this very hestOpt - - - - -

@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2025  University of Chicago
+  Copyright (C) 2009--2026  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -80,8 +80,8 @@ unu_cmedianMain(int argc, const char **argv, const char *me, const hestParm *_hp
                   "but because unu commands are typically piped, we defy conventions "
                   "and (if this \"-ve\" option is used) we print it to stderr");
   Nrrd *nin;
-  hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-", "input nrrd",
-                     nrrdHestNrrdNoTTY);
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-", "input nrrd",
+                                   nrrdHestNrrdNoTTY);
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 
@@ -144,6 +144,7 @@ unu_cmedianMain(int argc, const char **argv, const char *me, const hestParm *_hp
     }
   }
 
+  MY_HISTORY(nout, nin);
   MY_SAVE(out, nout, NULL);
 
   airMopOkay(mop);

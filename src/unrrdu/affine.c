@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2025  University of Chicago
+  Copyright (C) 2009--2026  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -35,15 +35,17 @@ static int
 unu_affineMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   NrrdIter *minIn, *in, *maxIn, *minOut, *maxOut;
-  hestOptAdd_1_Other(&hopt, NULL, "minIn", &minIn, NULL,
-                     "Lower end of input value range.", nrrdHestIter);
-  hestOptAdd_1_Other(&hopt, NULL, "in", &in, NULL, "Input value.", nrrdHestIter);
-  hestOptAdd_1_Other(&hopt, NULL, "maxIn", &maxIn, NULL,
-                     "Upper end of input value range.", nrrdHestIter);
-  hestOptAdd_1_Other(&hopt, NULL, "minOut", &minOut, NULL,
-                     "Lower end of output value range.", nrrdHestIter);
-  hestOptAdd_1_Other(&hopt, NULL, "maxOut", &maxOut, NULL,
-                     "Upper end of output value range.", nrrdHestIter);
+  uint inHidx[5];
+  inHidx[0] = hestOptAdd_1_Other(&hopt, NULL, "minIn", &minIn, NULL,
+                                 "Lower end of input value range.", nrrdHestIter);
+  inHidx[1] = hestOptAdd_1_Other(&hopt, NULL, "in", &in, NULL, "Input value.",
+                                 nrrdHestIter);
+  inHidx[2] = hestOptAdd_1_Other(&hopt, NULL, "maxIn", &maxIn, NULL,
+                                 "Upper end of input value range.", nrrdHestIter);
+  inHidx[3] = hestOptAdd_1_Other(&hopt, NULL, "minOut", &minOut, NULL,
+                                 "Lower end of output value range.", nrrdHestIter);
+  inHidx[4] = hestOptAdd_1_Other(&hopt, NULL, "maxOut", &maxOut, NULL,
+                                 "Upper end of output value range.", nrrdHestIter);
   int type;
   hestOptAdd_1_Other(&hopt, "t,type", "type", &type, "default",
                      "type to convert all nrrd inputs to, prior to "
@@ -98,7 +100,7 @@ unu_affineMain(int argc, const char **argv, const char *me, const hestParm *hpar
       double mmax = AIR_MAX(minOut->val, maxOut->val);
       valOut = AIR_CLAMP(mmin, valOut, mmax);
     }
-    printf("%g\n", valOut);
+    airSinglePrintf(stdout, NULL, 0, "%lg\n", valOut);
   } else {
     /* we have a nrrd output */
     int E;
@@ -113,6 +115,51 @@ unu_affineMain(int argc, const char **argv, const char *me, const hestParm *hpar
       fprintf(stderr, "%s: error doing ternary operation:\n%s", me, err);
       airMopError(mop);
       return 1;
+    }
+    unrrduUnuHistoryClear(nout);
+    if (getenv(UNRRDU_UNU_HISTORY_TRACE_ENV)) {
+      // HEY how to make all this less clunky?
+      unrrduUnuOutNSPair onsp = {.nout = nout, .name = hopt[outHidx].parmStr};
+      NrrdIter *inItr[5] = {minIn, in, maxIn, minOut, maxOut};
+      const Nrrd *inNrrd[5];
+      unrrduUnuInNSPair insp[5];
+      uint numStdin = 0, stdindx = UINT_MAX;
+      for (uint ii = 0; ii < 5; ii++) {
+        inNrrd[ii] = inItr[ii]->nrrd ? inItr[ii]->nrrd
+                                     : (inItr[ii]->ownNrrd ? inItr[ii]->ownNrrd : NULL);
+        insp[ii].nin = inNrrd[ii];
+        insp[ii].name = hopt[inHidx[ii]].parmStr;
+        if (!strcmp("-", insp[ii].name)) {
+          numStdin += 1;
+          stdindx = ii;
+        }
+      };
+      if (numStdin > 1) {
+        fprintf(stderr, "%s: confused by having %u > 1 inputs from stdin\n", me,
+                numStdin);
+        airMopError(mop);
+        return 1;
+      }
+      // else numStdin == 0 or numStdin == 1
+      E = 0;
+      if (!numStdin) {
+        for (uint ii = 0; ii < 5; ii++) {
+          if (!E && insp[ii].nin) E |= unrrduUnuHistoryAdd(onsp, 0, NULL, insp[ii]);
+        }
+        if (!E) E |= unrrduUnuHistoryAdd(onsp, argc + 1, argv - 1, MY_NULL_INSP);
+      } else {
+        for (uint ii = 0; ii < 5; ii++) {
+          if (!E && insp[ii].nin && ii != stdindx)
+            E |= unrrduUnuHistoryAdd(onsp, 0, NULL, insp[ii]);
+        }
+        if (!E) E |= unrrduUnuHistoryAdd(onsp, argc + 1, argv - 1, insp[stdindx]);
+      }
+      if (E) {
+        airMopAdd(mop, err = biffGetDone(UNRRDU), airFree, airMopAlways);
+        fprintf(stderr, "%s: trouble generating history:\n%s", me, err);
+        airMopError(mop);
+        return 1;
+      }
     }
     MY_SAVE(out, nout, NULL);
   }

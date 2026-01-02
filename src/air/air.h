@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2025  University of Chicago
+  Copyright (C) 2009--2026  University of Chicago
   Copyright (C) 2010 Thomas Schultz
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
@@ -528,6 +528,8 @@ AIR_EXPORT char *airStrunc(char *str, size_t bsize, size_t drop);
 AIR_EXPORT char *airStret(char *str);
 AIR_EXPORT const char *airStrect(const char *str);
 AIR_EXPORT int airStrcmp(const char *s1, const char *s2);
+AIR_EXPORT char *airStrcat(const char *s1, const char *s2);
+AIR_EXPORT char *airStrcat3(const char *s1, const char *s2, const char *s3);
 /* ---- END non-NrrdIO */
 AIR_EXPORT char *airStrtok(char *s, const char *ct, char **last);
 AIR_EXPORT unsigned int airStrntok(const char *s, const char *ct);

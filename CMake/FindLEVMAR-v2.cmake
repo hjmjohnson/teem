@@ -1,6 +1,6 @@
 ## FindLEVMAR.cmake: Careful+verbose way of looking for a levmar install
 #    ("levmar" = https://users.ics.forth.gr/~lourakis/levmar/index.html)
-# Copyright (C) 2025  University of Chicago
+# Copyright (C) 2025, 2026  University of Chicago
 # See ../LICENSE.txt for licensing terms
 
 # This module tries to find a Levmar library and header, and sets variables/targets

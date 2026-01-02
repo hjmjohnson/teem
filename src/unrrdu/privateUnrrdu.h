@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2025  University of Chicago
+  Copyright (C) 2009--2026  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -124,6 +124,7 @@ unu commands.  Functional programming meets the C pre-processor.  Therefore:
   F(make)                                                                               \
   F(head)                                                                               \
   F(describe)                                                                           \
+  F(history)                                                                            \
   F(data)                                                                               \
   F(convert)                                                                            \
   F(resample)                                                                           \
@@ -222,11 +223,13 @@ MY_UNRRDU_MAP(MY_UNRRDU_DECLARE)
 */
 /* Nrrd *var */
 #define MY_OPT_ADD_NIN(var, desc)                                                       \
-  hestOptAdd_1_Other(&hopt, "i,input", "nin", &(var), "-", desc, nrrdHestNrrdNoTTY)
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i,input", "nin", &(var), "-", desc,          \
+                                   nrrdHestNrrdNoTTY)
 
-/* char *var */
+/* char *var
+   NOTE this also creates `outHidx`: the index into `hopt` of the output option */
 #define MY_OPT_ADD_NOUT(var, desc)                                                      \
-  hestOptAdd_1_String(&hopt, "o,output", "nout", &(var), "-", desc)
+  uint outHidx = hestOptAdd_1_String(&hopt, "o,output", "nout", &(var), "-", desc)
 
 /* unsigned int var */
 #define MY_OPT_ADD_AXIS(var, desc)                                                      \
@@ -241,10 +244,33 @@ MY_UNRRDU_MAP(MY_UNRRDU_DECLARE)
 #define MY_OPT_ADD_TYPE(var, desc, dflt)                                                \
   hestOptAdd_1_Enum(&hopt, "t,type", "type", &(var), dflt, desc, nrrdType)
 
-#define MY_SAVE(outS, nout, io)                                                         \
-  if (nrrdSave((outS), (nout), (io))) {                                                 \
+// for historyFuncs.c
+#define MY_NULL_INSP   ((unrrduUnuInNSPair){.nin = NULL, .name = NULL})
+// for unu history and historyFuncs.c
+#define MY_HISTORY_KEY "unu_history"
+
+/* adds line of key/value pair history, using both
+   `inHidx` created by MY_OPT_ADD_NIN and
+   `outHidx` created by MY_OPT_ADD_NOUT.
+   This ONLY handles (common) case of single input and single output */
+#define MY_HISTORY(NOUT, NIN)                                                           \
+  unrrduUnuHistoryClear((NOUT)); /* needed since likely at some point earlier did */    \
+                                 /* nrrdCopy(nout, nin) */                              \
+  if (unrrduUnuHistoryAdd((unrrduUnuOutNSPair){.nout = (NOUT),                          \
+                                               .name = hopt[outHidx].parmStr},          \
+                          argc + 1, argv - 1,                                           \
+                          (unrrduUnuInNSPair){.nin = (NIN),                             \
+                                              .name = hopt[inHidx].parmStr})) {         \
+    airMopAdd(mop, err = biffGetDone(UNRRDU), airFree, airMopAlways);                   \
+    fprintf(stderr, "%s: error adding history %s\n", me, err);                          \
+    airMopError(mop);                                                                   \
+    return 1;                                                                           \
+  }
+
+#define MY_SAVE(OUTS, NOUT, IO)                                                         \
+  if (nrrdSave((OUTS), (NOUT), (IO))) {                                                 \
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);                     \
-    fprintf(stderr, "%s: error saving nrrd to \"%s\":\n%s\n", me, (outS), err);         \
+    fprintf(stderr, "%s: error saving nrrd to \"%s\":\n%s\n", me, (OUTS), err);         \
     airMopError(mop);                                                                   \
     return 1;                                                                           \
   }

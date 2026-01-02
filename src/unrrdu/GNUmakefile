@@ -1,6 +1,6 @@
 #
 # Teem: Tools to process and visualize scientific data and images
-# Copyright (C) 2009--2025  University of Chicago
+# Copyright (C) 2009--2026  University of Chicago
 # Copyright (C) 2005--2008  Gordon Kindlmann
 # Copyright (C) 1998--2004  University of Utah
 #
@@ -52,11 +52,11 @@ $(L).Obj = $(patsubst %.c,%.o, \
     axinsert.c axmerge.c axsplit.c basinfo.c block.c built.c ccadj.c ccfind.c \
     ccmerge.c ccsettle.c cksum.c cmedian.c convert.c crop.c data.c dering.c \
     describe.c dhisto.c dice.c diff.c dist.c dnorm.c env.c fft.c flip.c flotsam.c \
-    gamma.c grid.c hack.c head.c heq.c histax.c histo.c historyFuncs.c i2w.c ilk.c \
-    imap.c inset.c jhisto.c join.c lut.c lut2.c make.c minmax.c mlut.c mrmap.c \
-    ninspect.c pad.c permute.c project.c quantize.c resample.c reshape.c rmap.c \
-    save.c shuffle.c slice.c splice.c sselect.c subst.c swap.c tile.c unblock.c \
-    uncmt.c undos.c unorient.c unquantize.c untile.c vidicon.c w2i.c \
+    gamma.c grid.c hack.c head.c heq.c histax.c histo.c history.c historyFuncs.c \
+    i2w.c ilk.c imap.c inset.c jhisto.c join.c lut.c lut2.c make.c minmax.c mlut.c \
+    mrmap.c ninspect.c pad.c permute.c project.c quantize.c resample.c reshape.c \
+    rmap.c save.c shuffle.c slice.c splice.c sselect.c subst.c swap.c tile.c \
+    unblock.c uncmt.c undos.c unorient.c unquantize.c untile.c vidicon.c w2i.c \
   )
 $(L).Test = thist
 ####

@@ -1,5 +1,5 @@
 ## CheckLibmNeeded.cmake: learn if linking bin with math-using lib also needs -lm
-# Copyright (C) 2025  University of Chicago
+# Copyright (C) 2025, 2026  University of Chicago
 # See ../LICENSE.txt for licensing terms
 
 ### Rationale

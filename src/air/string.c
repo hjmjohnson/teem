@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2025  University of Chicago
+  Copyright (C) 2009--2026  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -126,6 +126,32 @@ airStrcmp(const char *_s1, const char *_s2) {
           _s2 ? _s2 : "(NULL)", s2);
   */
   ret = strcmp(s1, s2);
+  return ret;
+}
+
+char *
+airStrcat(const char *s1, const char *s2) {
+  char *ret = NULL;
+  if (s1 && s2) {
+    size_t retsz = strlen(s1) + strlen(s2) + 1;
+    ret = AIR_CALLOC(retsz, char);
+    if (ret) {
+      snprintf(ret, retsz, "%s%s", s1, s2);
+    }
+  }
+  return ret;
+}
+
+char *
+airStrcat3(const char *s1, const char *s2, const char *s3) {
+  char *ret = NULL;
+  if (s1 && s2 && s3) {
+    size_t retsz = strlen(s1) + strlen(s2) + strlen(s3) + 1;
+    ret = AIR_CALLOC(retsz, char);
+    if (ret) {
+      snprintf(ret, retsz, "%s%s%s", s1, s2, s3);
+    }
+  }
   return ret;
 }
 

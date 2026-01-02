@@ -1,5 +1,5 @@
 ## DumpTarget.cmake: utilities for printing target properties
-# Copyright (C) 2025  University of Chicago
+# Copyright (C) 2025, 2026  University of Chicago
 # See ../LICENSE.txt for licensing terms
 
 # This is the result of GLK nudging ChatGPT to explain what exactly is the state built up

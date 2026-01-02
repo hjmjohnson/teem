@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2025  University of Chicago
+  Copyright (C) 2009--2026  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -96,6 +96,8 @@ consistent "UNU_QUIET_QUIT" is now (for TeemV2) also supported.
 #define UNRRDU_UNU_QUIET_QUIT_ENV_OLD "UNRRDU_QUIET_QUIT"
 // for controlling whether to build up unu history in key/value pairs
 #define UNRRDU_UNU_HISTORY_TRACE_ENV  "UNU_HISTORY_TRACE"
+// back-channel to specify history of stdin when missing
+#define UNRRDU_UNU_HISTORY_STDIN_ENV  "UNU_HISTORY_STDIN"
 
 /*
  ******** unrrduCmd
@@ -136,9 +138,20 @@ enum {
   unrrduUnuScaleLast
 };
 
-// history.c
-UNRRDU_EXPORT int unrrduUnuKeyValueHistoryAdd(Nrrd *nout, int argc, const char **argv,
-                                              const Nrrd *nin);
+// for historyFuncs.c and history.c
+typedef struct {
+  const Nrrd *nin;
+  const char *name;
+} unrrduUnuInNSPair;
+typedef struct {
+  Nrrd *nout;
+  const char *name;
+} unrrduUnuOutNSPair;
+UNRRDU_EXPORT void unrrduUnuHistoryClear(Nrrd *nout);
+UNRRDU_EXPORT airArray *unrrduUnuHistoryGet(const Nrrd *nin, const char *fname,
+                                            int commentIfNone);
+UNRRDU_EXPORT int unrrduUnuHistoryAdd(unrrduUnuOutNSPair onsp, int argc,
+                                      const char **argv, unrrduUnuInNSPair insp);
 
 // flotsam.c
 UNRRDU_EXPORT const int unrrduPresent;

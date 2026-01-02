@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2025  University of Chicago
+  Copyright (C) 2009--2026  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -143,8 +143,8 @@ unu_gridMain(int argc, const char **argv, const char *me, const hestParm *_hparm
   hestOpt *hopt = NULL;
   /* we parse filename, not Nrrd since we always want to skipData */
   char *inS;
-  hestOptAdd_1_String(&hopt, "i,input", "nin", &inS, "-",
-                      "input nrrd. By default reads from stdin");
+  uint inHidx = hestOptAdd_1_String(&hopt, "i,input", "nin", &inS, "-",
+                                    "input nrrd. By default reads from stdin");
   int psz;
   hestOptAdd_Flag(&hopt, "ps", &psz,
                   "instead of the default behavior of flattening all but the "
@@ -196,6 +196,7 @@ unu_gridMain(int argc, const char **argv, const char *me, const hestParm *_hparm
     return 1;
   }
 
+  MY_HISTORY(nout, nin);
   MY_SAVE(outS, nout, NULL);
 
   airMopOkay(mop);

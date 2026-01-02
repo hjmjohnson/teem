@@ -1,5 +1,5 @@
 ## CheckAirExists.cmake: see if AIR_EXISTS() macro works like isfinite()
-# Copyright (C) 2025  University of Chicago
+# Copyright (C) 2025, 2026  University of Chicago
 # See ../LICENSE.txt for licensing terms
 
 ### Rationale

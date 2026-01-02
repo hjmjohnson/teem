@@ -1,6 +1,6 @@
 /*
   Teem: Tools to process and visualize scientific data and images
-  Copyright (C) 2009--2025  University of Chicago
+  Copyright (C) 2009--2026  University of Chicago
   Copyright (C) 2005--2008  Gordon Kindlmann
   Copyright (C) 1998--2004  University of Utah
 
@@ -60,8 +60,8 @@ unu_ccmergeMain(int argc, const char **argv, const char *me, const hestParm *_hp
                   "are re-assigned their original datavalues, as given by "
                   "the \"-v\" option");
   Nrrd *nin;
-  hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-", "input nrrd",
-                     nrrdHestNrrdNoTTY);
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-", "input nrrd",
+                                   nrrdHestNrrdNoTTY);
   Nrrd *nval;
   hestOptAdd_1_Other(&hopt, "v,values", "values", &nval, "",
                      "result of using \"ccfind -v\", the record of which values "
@@ -97,6 +97,7 @@ unu_ccmergeMain(int argc, const char **argv, const char *me, const hestParm *_hp
     return 1;
   }
 
+  MY_HISTORY(revalue ? nout2 : nout, nin);
   MY_SAVE(out, revalue ? nout2 : nout, NULL);
 
   airMopOkay(mop);
