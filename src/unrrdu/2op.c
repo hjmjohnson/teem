@@ -162,7 +162,7 @@ unu_2opMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
       if (!E) E |= unrrduUnuHistoryAdd(onsp, argc + 1, argv - 1, MY_NULL_INSP);
     } else if (in1Stdin + in2Stdin == 1) {
       // one these two is stdin; the other one's history should come first
-      fprintf(stderr, "!%s: one inputs is stdin\n", __func__);
+      // fprintf(stderr, "!%s: one inputs is stdin\n", __func__);
       unrrduUnuInNSPair inspStdin, inspOther;
       if (in1Stdin) {
         inspStdin = insp1;
