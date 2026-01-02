@@ -428,7 +428,7 @@ _BIFF_DICT = {  # contents here are filled in by teem/python/cffi/exult.py Tffi.
     'mossSamplerSample': (_equals_one, 0, b'moss', 'moss/sampler.c:198'),
     'mossLinearTransform': (_equals_one, 0, b'moss', 'moss/xform.c:154'),
     'mossFourPointTransform': (_equals_one, 0, b'moss', 'moss/xform.c:233'),
-    'unrrduUnuHistoryAdd': (_equals_one, 0, b'unrrdu', 'unrrdu/historyFuncs.c:200'),
+    'unrrduUnuHistoryAdd': (_equals_one, 0, b'unrrdu', 'unrrdu/historyFuncs.c:205'),
     'alanUpdate': (_equals_one, 0, b'alan', 'alan/coreAlan.c:58'),
     'alanInit': (_equals_one, 0, b'alan', 'alan/coreAlan.c:97'),
     'alanRun': (_equals_one, 0, b'alan', 'alan/coreAlan.c:451'),
