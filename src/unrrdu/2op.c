@@ -137,6 +137,8 @@ unu_2opMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
     /* got no request for specific seed */
     airSrandMT(AIR_UINT(airTime()));
   }
+  // to avoid valgrind warnings about memory-in-use-at-exit
+  airMopAdd(mop, airRandMTStateGlobal, airRandMTStateNix_mop, airMopAlways);
   if (-1 == which ? nrrdArithIterBinaryOp(nout, op, in1, in2)
                   : nrrdArithIterBinaryOpSelect(nout, op, in1, in2, AIR_UINT(which))) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
