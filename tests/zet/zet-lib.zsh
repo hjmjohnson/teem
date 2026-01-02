@@ -848,7 +848,6 @@ zet_end() {
 #   and have a variable ZET_FILE_LOG that writes out all these files,
 #   to (one-time) detect collisions that would confuse parallel runs
 # allow tests to run in parallel
-# set a key-value pair that documents how the output nrrd was created
 # create a system of naming and reading architecture-specific (arm vs x86) reffiles
 # enable running specific tests instead of all of them
 # Figure out top-level framework for running w/ recompiling unu with UBSAN
