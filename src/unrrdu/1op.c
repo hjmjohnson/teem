@@ -102,6 +102,8 @@ unu_1opMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
     /* got no request for specific seed */
     airSrandMT(AIR_UINT(airTime()));
   }
+  // to avoid valgrind warnings about memory-in-use-at-exit
+  airMopAdd(mop, airRandMTStateGlobal, airRandMTStateNix_mop, airMopAlways);
   if (nrrdArithUnaryOp(nout, op, ntmp)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error doing unary operation:\n%s", me, err);
