@@ -156,8 +156,10 @@ historyAdd(Nrrd *nout, airArray *ihArr) {
     biffAddf(UNRRDU, "%s: got no history to set", __func__);
     return 1;
   }
+  airArray *mop = airMopNew();
   // have to use unrrduUnuInNSPair because that's the type historyGet wants
   airArray *ohArr = historyGet((unrrduUnuInNSPair){.nin = nout, .name = NULL}, AIR_TRUE);
+  airMopAdd(mop, ohArr, airArrayNuke_mop, airMopAlways);
   // we are concatenating the input onto existing history in output
   uint ohnum = ohArr->len + ihnum;
   if (ohnum <= 9) {
@@ -168,6 +170,7 @@ historyAdd(Nrrd *nout, airArray *ihArr) {
     hdig = 3;
   } else {
     biffAddf(UNRRDU, "%s: %u lines of history exceeds 3-digit limit", __func__, ohnum);
+    airMopError(mop);
     return 1;
   }
   char keyfmt[AIR_STRLEN_SMALL + 1];
@@ -185,9 +188,11 @@ historyAdd(Nrrd *nout, airArray *ihArr) {
     const char *hline = hidx < ohArr->len ? ohist[hidx] : ihist[hidx - ohArr->len];
     if (nrrdKeyValueAdd(nout, key, hline)) {
       biffAddf(UNRRDU, "%s: trouble adding line %u of history", __func__, oln);
+      airMopError(mop);
       return 1;
     }
   }
+  airMopOkay(mop);
   return 0;
 }
 
