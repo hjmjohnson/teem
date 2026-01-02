@@ -174,7 +174,6 @@ unu_envMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
   out = stdout;
 
   hestInfo(out, me, unu_envInfoL, hparm);
-  fprintf(out, "\n");
 
   hestPrintStr(out, 0, 0, hparm->columns,
                ("Each variable in the listing below starts with the name of "
@@ -218,7 +217,7 @@ unu_envMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
   for (unsigned int qqi = 0; qqi < 2; qqi++) {
     fprintf(out, "%s: ", qqname[qqi]);
     if (getenv(qqname[qqi])) {
-      fprintf(out, "is set (to what doesn't matter)\n");
+      fprintf(out, "is set (to what doesn't matter) **********************\n");
       qqset[qqi] = 1;
     } else {
       fprintf(out, "is NOT set\n");
@@ -234,9 +233,11 @@ unu_envMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
 
   fprintf(out, "%s: ", UNRRDU_UNU_HISTORY_TRACE_ENV);
   if (getenv(UNRRDU_UNU_HISTORY_TRACE_ENV)) {
-    fprintf(out, "is set (to what doesn't matter) ==> will trace unu history\n");
+    fprintf(out, "is set (to what doesn't matter) **********************\n"
+                 "   ==> will trace unu history\n");
   } else {
-    fprintf(out, "is NOT set ==> will NOT trace unu history\n");
+    fprintf(out, "is NOT set\n"
+                 "   ==> will NOT trace unu history\n");
   }
   fprintf(out, "\n");
 
