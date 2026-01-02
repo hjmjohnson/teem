@@ -41,7 +41,7 @@ static const char *unu_historyInfoL
      "part of a command-line as well as a (hacky!) way to record the "
      "origin of data coming into stdin that did not originate with unu:\n "
      "\n "
-     "\t\t\t\texport " UNRRDU_UNU_HISTORY_TRACE_ENV "\n "
+     "\t\t\t\texport " UNRRDU_UNU_HISTORY_TRACE_ENV "=\n "
      "\t\t\t\techo 0 1 2 3 |\n "
      "\t\t\t\t\t\t\t\t(" UNRRDU_UNU_HISTORY_STDIN_ENV
      "=\"echo 0 1 2 3\" unu reshape -s 2 2) |\n "
