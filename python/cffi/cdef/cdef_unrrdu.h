@@ -64,6 +64,7 @@ many shell scripts so that variable name must still be supported, even though th
 consistent "UNU_QUIET_QUIT" is now (for TeemV2) also supported.
 */
 // for controlling whether to build up unu history in key/value pairs
+// back-channel to specify history of stdin when missing
 /*
  ******** unrrduCmd
  *
@@ -101,7 +102,7 @@ enum {
   unrrduUnuScaleSpacingTarget, /* 8: e.g. "s0.89" */
   unrrduUnuScaleLast
 };
-// history.c
+// for historyFuncs.c and history.c
 typedef struct {
   const Nrrd *nin;
   const char *name;
@@ -111,6 +112,8 @@ typedef struct {
   const char *name;
 } unrrduUnuOutNSPair;
 extern void unrrduUnuHistoryClear(Nrrd *nout);
+extern airArray *unrrduUnuHistoryGet(const Nrrd *nin, const char *fname,
+                                            int commentIfNone);
 extern int unrrduUnuHistoryAdd(unrrduUnuOutNSPair onsp, int argc,
                                       const char **argv, unrrduUnuInNSPair insp);
 // flotsam.c
