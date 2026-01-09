@@ -291,7 +291,7 @@ hestOpt array. Very few uses of hest within Teem use more than 32 options. Hopef
 this avoids all the reallocations in the past action of hestOptAdd and the like. */
 #define INCR 32
 
-// for debugging allocation and especially hestParm->_selfMop usage
+// for debugging allocation and especially hestParm->selfMop usage
 #define SMVERB 0
 
 hestParm * /* Biff: nope */
@@ -350,7 +350,7 @@ hestParmNew(void) {
   // hparm->varParamStopFlag = hestDefaultVarParamStopFlag;
   // hparm->multiFlagSep = hestDefaultMultiFlagSep;
   hparm->orExitWithoutNewerFeatures = AIR_FALSE;
-  hparm->_selfMop = NULL; /* handling this is subtle: see hestParmMopNew,
+  hparm->selfMop = NULL; /* handling this is subtle: see hestParmMopNew,
                              hestParmUnmop, hestParmCopy, and hestParmFree */
   hparm->quietQuit = NULL;
   return hparm;
@@ -363,7 +363,7 @@ plainParmFree(hestParm *hparm) {
 #if defined(SMVERB) && SMVERB
   fprintf(stderr, "%s(%p): hello\n", __func__, AIR_VOIDP(hparm));
 #endif
-  /* ignore the hparm->_selfMop to avoid recursion */
+  /* ignore the hparm->selfMop to avoid recursion */
   airFree(hparm);
   return NULL;
 }
@@ -377,14 +377,14 @@ then you should be making the hparm via hestParmMopNew, not plain hestParmNew
 hestParm * /* Biff: nope */
 hestParmMopNew(void) {
   hestParm *ret = hestParmNew();
-  ret->_selfMop = airMopNew();
+  ret->selfMop = airMopNew();
   /* we choose airMopAlways but really we don't know the `when` of
      the mopping, see hestParmFree */
 #if defined(SMVERB) && SMVERB
   fprintf(stderr, "%s: created %p with mop %p with plainParmFree(%p)\n", __func__,
-          AIR_VOIDP(ret), AIR_VOIDP(ret->_selfMop), AIR_VOIDP(ret));
+          AIR_VOIDP(ret), AIR_VOIDP(ret->selfMop), AIR_VOIDP(ret));
 #endif
-  airMopAdd(ret->_selfMop, ret, plainParmFree_mop, airMopAlways);
+  airMopAdd(ret->selfMop, ret, plainParmFree_mop, airMopAlways);
   return ret;
 }
 
@@ -397,18 +397,18 @@ hestParmCopy(const hestParm *hparm) {
     fprintf(stderr, "%s(%p): created %p\n", __func__, AIR_CVOIDP(hparm), AIR_VOIDP(ret));
 #endif
     memcpy(ret, hparm, sizeof(hestParm));
-    /* if hparm->_selfMop was non-NULL, then we've just copied that pointer to the
-       airArray mop. If hparm was in the hparm->_selfMop, it still is: ret->_selfMop ==
-       hparm->_selfMop and hestParmFree(ret) will free it. But now we have a new
+    /* if hparm->selfMop was non-NULL, then we've just copied that pointer to the
+       airArray mop. If hparm was in the hparm->selfMop, it still is: ret->selfMop ==
+       hparm->selfMop and hestParmFree(ret) will free it. But now we have a new
        hestParm*, this `ret`. We avoid creating new memory sloppiness, by adding `ret` to
        the same mop, and thus removing the need for a separate hestParmMopCopy */
-    if (ret->_selfMop) {
+    if (ret->selfMop) {
 #if defined(SMVERB) && SMVERB
       fprintf(stderr, "%s(%p): copied mop %p (len %u), adding plainParmFree(%p)\n",
-              __func__, AIR_CVOIDP(hparm), AIR_VOIDP(ret->_selfMop),
-              AIR_UINT(ret->_selfMop->len), AIR_VOIDP(ret));
+              __func__, AIR_CVOIDP(hparm), AIR_VOIDP(ret->selfMop),
+              AIR_UINT(ret->selfMop->len), AIR_VOIDP(ret));
 #endif
-      airMopAdd(ret->_selfMop, ret, plainParmFree_mop, airMopAlways);
+      airMopAdd(ret->selfMop, ret, plainParmFree_mop, airMopAlways);
     }
   }
   return ret;
@@ -420,19 +420,19 @@ hestParmUnmop(hestParm *hparm) {
 #if defined(SMVERB) && SMVERB
   fprintf(stderr, "%s(%p): hello\n", __func__, AIR_VOIDP(hparm));
 #endif
-  if (hparm && hparm->_selfMop && hparm->_selfMop->len > 1) {
+  if (hparm && hparm->selfMop && hparm->selfMop->len > 1) {
     /* This is how to check that this is plausibly the result of a hestParmCopy of a
        self-mopping hestParm. airMopSub can be safely called even when the
        (pointer,callback) pair is not actually in the mop */
 #if defined(SMVERB) && SMVERB
     fprintf(stderr, "%s(%p): (mop len %u) --> airMopSub(%p, %p, plainParmFree)\n",
-            __func__, AIR_VOIDP(hparm), AIR_UINT(hparm->_selfMop->len),
-            AIR_VOIDP(hparm->_selfMop), AIR_VOIDP(hparm));
+            __func__, AIR_VOIDP(hparm), AIR_UINT(hparm->selfMop->len),
+            AIR_VOIDP(hparm->selfMop), AIR_VOIDP(hparm));
 #endif
-    airMopSub(hparm->_selfMop, hparm, plainParmFree_mop);
+    airMopSub(hparm->selfMop, hparm, plainParmFree_mop);
     /* btw: airMopSub does not actually shorten the mop; it just turns
        the removed entry into a no-op, which is harmless */
-    hparm->_selfMop = NULL;
+    hparm->selfMop = NULL;
     /* and with that are no longer self-mopping; so a subsequent call to hestParmFree
        will call plainParmFree */
   }
@@ -455,19 +455,19 @@ hestParmFree(hestParm *hparm) {
   fprintf(stderr, "%s(%p): hello\n", __func__, AIR_VOIDP(hparm));
 #endif
   if (hparm) {
-    if (hparm->_selfMop) {
+    if (hparm->selfMop) {
 #if defined(SMVERB) && SMVERB
       fprintf(stderr, "%s(%p): mopping mop %p (len %u)\n", __func__, AIR_VOIDP(hparm),
-              AIR_VOIDP(hparm->_selfMop), AIR_UINT(hparm->_selfMop->len));
+              AIR_VOIDP(hparm->selfMop), AIR_UINT(hparm->selfMop->len));
 #endif
-      /* if hparm->_selfMop->len > 1 (and hparm->_selfMop has not been meddled with)
+      /* if hparm->selfMop->len > 1 (and hparm->selfMop has not been meddled with)
          then we are the result of a hestParmCopy. If we were to just
-         `airMopOkay(hparm->_selfMop)` then we'd also end up freeing the (self-mopping)
+         `airMopOkay(hparm->selfMop)` then we'd also end up freeing the (self-mopping)
          parm that we are a copy of, confusing */
-      /* we could free up hparm->_selfMop and then airFree(hparm), but it would
+      /* we could free up hparm->selfMop and then airFree(hparm), but it would
          be easier to just use the mop as intended. We are going to assume
          that the caller created this via hestParmMopNew */
-      airMopOkay(hparm->_selfMop);
+      airMopOkay(hparm->selfMop);
     } else {
       plainParmFree(hparm);
     }
@@ -478,15 +478,15 @@ AIR_MOPPER(hestParmFree)
 
 const hestParm * /* Biff: nope */
 hestParmMopDone(const hestParm *hparm) {
-  if (hparm && hparm->_selfMop) {
+  if (hparm && hparm->selfMop) {
     /* if this in in fact properly self-mopping running mop will clean up the same
     `hparm` that we can't call hestParmFree on because for us `hparm` is const. It seems
     like maybe we should have a special 2nd arg to airMopDone to mean "everything": to
     call callback on pointer even if it was added only airMopOnError or airMopOnOkay. But
     not a problem as long rest of hest code here uses airMopAlways */
-    airMopDone(hparm->_selfMop, AIR_FALSE /* error */);
+    airMopDone(hparm->selfMop, AIR_FALSE /* error */);
   }
-  /* else NULL hparm or NULL hparm->_selfMop:
+  /* else NULL hparm or NULL hparm->selfMop:
      either way, nothing for us to do here */
   return NULL;
 }

@@ -415,11 +415,11 @@ typedef struct {
   /*                             Do not let hestParseOrExit turn on respectDashDashHelpor
                                  or use hestParmColumnsIoctl to set columns, or other
                                  TeemV2 or later functionality */
-  airArray *_selfMop;
-  /*                             If non-NULL, this is a self-mopping hestParm. `_selfMop`
-                                 should *only* contain (hestParm*,hestParmFree) pairs,
-                                 including a pointer to this hestParm. YOU SHOULD NOT BE
-                                 DIRECTLY ADDING ANYTHING TO THIS MOP; it is maintained
+  airArray *selfMop;
+  /*                             If non-NULL, this is a self-mopping hestParm. `selfMop`
+                                 is intended to contain a (hestParm*,hestParmFree) pair,
+                                 including a pointer to this hestParm. You likely have
+                                 no reason to use this mop directly; it is maintained
                                  for you by the hestParm functions. This mop is the
                                  dubiously clever solution to reconciling const
                                  correctness (input parms should be const) and memory

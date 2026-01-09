@@ -203,8 +203,8 @@ main(int argc, const char **argv) {
     // initialize variables used by the various commands
     size_t meSize = strlen(UNU) + strlen(argv[1]) + 2;
     char *me = AIR_CALLOC(meSize, char);
-    // hijack hparm->_selfMop to clean this dynamic allocation
-    airMopAdd(hparm->_selfMop, me, airFree, airMopAlways);
+    // hijack hparm->selfMop to clean this dynamic allocation
+    airMopAdd(hparm->selfMop, me, airFree, airMopAlways);
     snprintf(me, meSize, "%s %s", UNU, argv[1]);
     // run the individual unu program, saving its exit status
     /* argc/argv accounting.  Example of what main() got:
