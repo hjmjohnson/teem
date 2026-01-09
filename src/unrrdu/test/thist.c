@@ -43,7 +43,8 @@ main(int argc, const char **argv) {
   Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   nrrdCopy(nout, nin);
-  if (unrrduUnuKeyValueHistoryAdd(nout, argc - 3, argv + 3, nin)) {
+  if (unrrduUnuHistoryAdd((unrrduUnuOutNSPair){.nout = nout, .name = argv[2]}, argc - 3,
+                          argv + 3, (unrrduUnuInNSPair){.nin = nin, .name = argv[1]})) {
     airMopAdd(mop, err = biffGetDone(UNRRDU), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble adding command \"%s ...\":\n%s", me, argv[3], err);
     airMopError(mop);
