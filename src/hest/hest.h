@@ -418,18 +418,19 @@ typedef struct {
   airArray *selfMop;
   /*                             If non-NULL, this is a self-mopping hestParm. `selfMop`
                                  is intended to contain a (hestParm*,hestParmFree) pair,
-                                 including a pointer to this hestParm. You likely have
-                                 no reason to use this mop directly; it is maintained
-                                 for you by the hestParm functions. This mop is the
-                                 dubiously clever solution to reconciling const
-                                 correctness (input parms should be const) and memory
-                                 cleanliness (should not leak memory and should not have
-                                 any memory-in-use at exit) while using hestParseOrExit,
-                                 which has a `const hestParm*` parameter and can call
-                                 exit() (when hestParse isn't called or fails).
-                                 hestParseOrExit can call hestParmFree indirectly, via
-                                 this mop. See also: hestParmMopNew, hestParmUnmop and
-                                 hestParmMopDone */
+                                 including a pointer to this hestParm. This is not meant
+                                 to be a general-purpose mop; it is intended for use by
+                                 the hestParm functions. If you know what you're doing,
+                                 this may be helpful for mopping resources allocated
+                                 prior to hestParse. This mop is the dubiously clever
+                                 solution to reconciling const correctness (input parms
+                                 should be const) and memory cleanliness (should not leak
+                                 memory and should not have any memory-in-use at exit)
+                                 while using hestParseOrExit, which has a `const
+                                 hestParm*` parameter and can call exit() (when hestParse
+                                 isn't called or fails). hestParseOrExit can call
+                                 hestParmFree indirectly, via this mop. See also:
+                                 hestParmMopNew, hestParmUnmop and hestParmMopDone */
   hestQuietQuitTest quietQuit;
   /*                             (See description above of this typedef)
                                  If non-NULL, hestParseOrExit calls this and a non-zero
