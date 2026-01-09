@@ -20,34 +20,30 @@
 #include "ten.h"
 #include "privateTen.h"
 
-#define INFO "Slice 3D tensors to get slab/image of 3D/2D  tensors"
+#define INFO "Slice 3D tensors to get slab/image of 3D/2D tensors"
 static const char *sliceInfoL = (INFO ". ");
 
 static int
 sliceMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  int pret;
   hestOpt *hopt = NULL;
-  char *perr, *err;
-  airArray *mop;
-
-  char *outS;
   unsigned int axis, pos, dim;
-  Nrrd *nin, *nout;
-
   hestOptAdd_1_UInt(&hopt, "a", "axis", &axis, NULL, "axis along which to slice");
   hestOptAdd_1_UInt(&hopt, "p", "pos", &pos, NULL, "position to slice at");
   hestOptAdd_1_UInt(&hopt, "d", "dim", &dim, "3",
                     "dimension of desired tensor output, can be either 2 or 3");
+  Nrrd *nin;
   hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-", "input diffusion tensor volume",
                      nrrdHestNrrd);
+  char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output tensor slice");
 
-  mop = airMopNew();
-  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(sliceInfoL);
-  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
-  airMopAdd(mop, nout = nrrdNew(), nrrdNuke_mop, airMopAlways);
+  // (boilerplate for no hparm modification)
+  hestParseOrExit(hopt, argc, argv, hparm, me, sliceInfoL);
+  airArray *mop = unrrduMopNew(hopt, NULL);
+  char *err;
 
+  Nrrd *nout;
+  airMopAdd(mop, nout = nrrdNew(), nrrdNuke_mop, airMopAlways);
   if (tenSlice(nout, nin, axis, pos, dim)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble\n%s\n", me, err);
