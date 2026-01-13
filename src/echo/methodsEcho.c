@@ -118,6 +118,7 @@ echoThreadStateNix(echoThreadState *state) {
     nrrdNuke(state->nperm);
     state->permBuff = AIR_CAST(unsigned int *, airFree(state->permBuff));
     state->chanBuff = AIR_CAST(echoCol_t *, airFree(state->chanBuff));
+    state->rst = airRandMTStateNix(state->rst);
     airFree(state);
   }
   return NULL;
