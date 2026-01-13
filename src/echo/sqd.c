@@ -203,7 +203,6 @@ echo__RayIntx_Superquad(MY_RAYINTX_ARGS(Superquad)) {
             (*vg)(echoPos_t[3], echoPos_t, echoPos_t, echoPos_t, echoPos_t, echoPos_t),
             (*lvg)(echoPos_t[3], echoPos_t, echoPos_t, echoPos_t, echoPos_t, echoPos_t),
             from[3], grad[3], pos[3]; /* these two used only by macros */
-  int iter;
 
   if (!echo__RayIntx_CubeSolid(&Tmin, &Tmax, -1 - 2 * ECHO_EPSILON, 1 + 2 * ECHO_EPSILON,
                                -1 - 2 * ECHO_EPSILON, 1 + 2 * ECHO_EPSILON,
@@ -350,14 +349,14 @@ echo__RayIntx_Superquad(MY_RAYINTX_ARGS(Superquad)) {
   /* the value isn't necessarily monotonic between Tmin and Tmax, but
      we know that there is only one root. Find it with newton-raphson,
      using the log of function, both for values and for derivatives */
-  iter = 0;
+  uint iter = 0;
   TT = (Tmin + Tmax) / 2;
   LVALGRAD(VV, dV, TT);
 
   while (iter < parm->sqNRI && AIR_ABS(VV) > parm->sqTol && AIR_EXISTS(VV)
          && AIR_EXISTS(dV)) {
     if (tstate->verbose) {
-      fprintf(stderr, "%s%s: iter = %d: TT = %g, VV = %g, dV = %g\n",
+      fprintf(stderr, "%s%s: iter = %u: TT = %g, VV = %g, dV = %g\n",
               echo__Dot(tstate->depth), me, iter, TT, VV, dV);
     }
     TT -= VV / dV;

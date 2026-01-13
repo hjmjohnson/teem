@@ -58,6 +58,8 @@ NEW_TMPL(Sphere, MatterInit(OBJECT(obj)); ELL_3V_SET(obj->pos, 0, 0, 0); obj->ra
 
 NEW_TMPL(Cylinder, MatterInit(OBJECT(obj)); obj->axis = 2;)
 
+NEW_TMPL(Cone, MatterInit(OBJECT(obj));)
+
 NEW_TMPL(Superquad, MatterInit(OBJECT(obj)); obj->axis = 2; obj->A = obj->B = 1;)
 
 NEW_TMPL(Cube, MatterInit(OBJECT(obj));)
@@ -99,12 +101,13 @@ NEW_TMPL(Instance, ELL_4M_IDENTITY_SET(obj->M); ELL_4M_IDENTITY_SET(obj->Mi);
          obj->obj = NULL;)
 
 static echoObject *(*ObjectNew[ECHO_TYPE_NUM])(void)
-  = {(echoObject * (*)(void)) Sphere_new,    (echoObject * (*)(void)) Cylinder_new,
-     (echoObject * (*)(void)) Superquad_new, (echoObject * (*)(void)) Cube_new,
-     (echoObject * (*)(void)) Triangle_new,  (echoObject * (*)(void)) Rectangle_new,
-     (echoObject * (*)(void)) TriMesh_new,   (echoObject * (*)(void)) Isosurface_new,
-     (echoObject * (*)(void)) AABBox_new,    (echoObject * (*)(void)) Split_new,
-     (echoObject * (*)(void)) List_new,      (echoObject * (*)(void)) Instance_new};
+  = {(echoObject * (*)(void)) Sphere_new,     (echoObject * (*)(void)) Cylinder_new,
+     (echoObject * (*)(void)) Cone_new,       (echoObject * (*)(void)) Superquad_new,
+     (echoObject * (*)(void)) Cube_new,       (echoObject * (*)(void)) Triangle_new,
+     (echoObject * (*)(void)) Rectangle_new,  (echoObject * (*)(void)) TriMesh_new,
+     (echoObject * (*)(void)) Isosurface_new, (echoObject * (*)(void)) AABBox_new,
+     (echoObject * (*)(void)) Split_new,      (echoObject * (*)(void)) List_new,
+     (echoObject * (*)(void)) Instance_new};
 
 echoObject * /* Biff: nope */
 echoObjectNew(echoScene *scene, signed char type) {

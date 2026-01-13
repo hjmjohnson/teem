@@ -48,6 +48,8 @@ BNDS_TMPL(Sphere, lo[0] = obj->pos[0] - obj->rad; lo[1] = obj->pos[1] - obj->rad
 BNDS_TMPL(Cylinder, AIR_UNUSED(obj); ELL_3V_SET(lo, -1, -1, -1);
           ELL_3V_SET(hi, 1, 1, 1);)
 
+BNDS_TMPL(Cone, AIR_UNUSED(obj); ELL_3V_SET(lo, -1, -1, -1); ELL_3V_SET(hi, 1, 1, 0);)
+
 BNDS_TMPL(Superquad, AIR_UNUSED(obj); ELL_3V_SET(lo, -1, -1, -1);
           ELL_3V_SET(hi, 1, 1, 1);)
 
@@ -109,12 +111,13 @@ BNDS_TMPL(Instance, echoPos_t a[8][4]; echoPos_t b[8][4]; echoPos_t l[3]; echoPo
           ELL_3V_MAX(hi, hi, b[5]); ELL_3V_MAX(hi, hi, b[6]); ELL_3V_MAX(hi, hi, b[7]);)
 
 static const BoundsGet_t BoundsGet[ECHO_TYPE_NUM] = {
-  (BoundsGet_t)Sphere_bounds,    (BoundsGet_t)Cylinder_bounds,
-  (BoundsGet_t)Superquad_bounds, (BoundsGet_t)Cube_bounds,
-  (BoundsGet_t)Triangle_bounds,  (BoundsGet_t)Rectangle_bounds,
-  (BoundsGet_t)TriMesh_bounds,   (BoundsGet_t)Isosurface_bounds,
-  (BoundsGet_t)AABBox_bounds,    (BoundsGet_t)Split_bounds,
-  (BoundsGet_t)List_bounds,      (BoundsGet_t)Instance_bounds,
+  (BoundsGet_t)Sphere_bounds,     (BoundsGet_t)Cylinder_bounds,
+  (BoundsGet_t)Cone_bounds,       (BoundsGet_t)Superquad_bounds,
+  (BoundsGet_t)Cube_bounds,       (BoundsGet_t)Triangle_bounds,
+  (BoundsGet_t)Rectangle_bounds,  (BoundsGet_t)TriMesh_bounds,
+  (BoundsGet_t)Isosurface_bounds, (BoundsGet_t)AABBox_bounds,
+  (BoundsGet_t)Split_bounds,      (BoundsGet_t)List_bounds,
+  (BoundsGet_t)Instance_bounds,
 };
 
 void

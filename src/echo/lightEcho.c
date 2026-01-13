@@ -54,20 +54,28 @@ echoLightPosition(echoPos_t pos[3], echoObject *light, echoThreadState *tstate) 
 ** inverse square fall-off of light intensity
 */
 void
-echoLightColor(echoCol_t rgb[3], echoPos_t Ldist, echoObject *light, echoRTParm *parm,
-               echoThreadState *tstate) {
-  echoCol_t rgba[4], falloff;
+echoLightColor(echoCol_t rgb[3], echoPos_t Ldist, echoObject *light,
+               const echoRTParm *parm, echoThreadState *tstate) {
+  echoCol_t falloff;
   echoPos_t x, y;
 
   x = tstate->jitt[0 + 2 * echoJittableLight] + 0.5;
   y = tstate->jitt[1 + 2 * echoJittableLight] + 0.5;
+  echoCol_t rgb0[3];
   if (light->ntext) {
+    echoCol_t rgba[4];
     echoTextureLookup(rgba, light->ntext, x, y, parm);
-    ELL_3V_COPY(rgb, rgba);
+    ELL_3V_COPY(rgb0, rgba);
   } else {
-    ELL_3V_COPY(rgb, light->rgba);
+    ELL_3V_COPY(rgb0, light->rgba);
   }
-  ELL_3V_SCALE(rgb, light->mat[echoMatterLightPower], rgb);
+  ELL_3V_SCALE(rgb, light->mat[echoMatterLightPower], rgb0);
+  if (tstate->verbose) {
+    printf("%s%s: initial rgb0=%g %g %g; scaled by power %g -> %g %g %g (unit=%g)\n",
+           echo__Dot(tstate->depth), __func__, rgb0[0], rgb0[1], rgb0[2],
+           light->mat[echoMatterLightPower], rgb[0], rgb[1], rgb[2],
+           light->mat[echoMatterLightUnit]);
+  }
   if (light->mat[echoMatterLightUnit]) {
     falloff = AIR_CAST(echoCol_t, light->mat[echoMatterLightUnit] / Ldist);
     falloff *= falloff;

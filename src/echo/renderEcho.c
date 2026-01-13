@@ -21,7 +21,7 @@
 #include "privateEcho.h"
 
 int /* Biff: 1 */
-echoThreadStateInit(int threadIdx, echoThreadState *tstate, echoRTParm *parm,
+echoThreadStateInit(int threadIdx, echoThreadState *tstate, const echoRTParm *parm,
                     echoGlobalState *gstate) {
   static const char me[] = "echoThreadStateInit";
 
@@ -73,7 +73,7 @@ echoThreadStateInit(int threadIdx, echoThreadState *tstate, echoRTParm *parm,
 **
 */
 void
-echoJitterCompute(echoRTParm *parm, echoThreadState *tstate) {
+echoJitterCompute(const echoRTParm *parm, echoThreadState *tstate) {
   echoPos_t *jitt, w;
   int s, i, j, xi, yi, n, N, *perm;
 
@@ -123,16 +123,15 @@ echoJitterCompute(echoRTParm *parm, echoThreadState *tstate) {
 }
 
 /*
-******** echoRTRenderCheck
-**
-** does all the error checking required of echoRTRender and
-** everything that it calls
-*/
+ ******** echoRTRenderCheck
+ *
+ * does all the error checking required of echoRTRender and
+ * everything that it calls
+ */
 int /* Biff: 1 */
-echoRTRenderCheck(Nrrd *nraw, limnCamera *cam, echoScene *scene, echoRTParm *parm,
-                  echoGlobalState *gstate) {
+echoRTRenderCheck(Nrrd *nraw, limnCamera *cam, const echoScene *scene,
+                  const echoRTParm *parm, echoGlobalState *gstate) {
   static const char me[] = "echoRTRenderCheck";
-  int tmp;
 
   if (!(nraw && cam && scene && parm && gstate)) {
     biffAddf(ECHO, "%s: got NULL pointer", me);
@@ -153,11 +152,11 @@ echoRTRenderCheck(Nrrd *nraw, limnCamera *cam, echoScene *scene, echoRTParm *par
     return 1;
   }
   if (!(parm->numSamples > 0)) {
-    biffAddf(ECHO, "%s: # samples (%d) invalid", me, parm->numSamples);
+    biffAddf(ECHO, "%s: # samples (%u) invalid", me, parm->numSamples);
     return 1;
   }
   if (!(parm->imgResU > 0 && parm->imgResV)) {
-    biffAddf(ECHO, "%s: image dimensions (%dx%d) invalid", me, parm->imgResU,
+    biffAddf(ECHO, "%s: image dimensions (%ux%u) invalid", me, parm->imgResU,
              parm->imgResV);
     return 1;
   }
@@ -166,15 +165,16 @@ echoRTRenderCheck(Nrrd *nraw, limnCamera *cam, echoScene *scene, echoRTParm *par
     return 1;
   }
 
+  uint tmp;
   switch (parm->jitterType) {
   case echoJitterNone:
   case echoJitterRandom:
     break;
   case echoJitterGrid:
   case echoJitterJitter:
-    tmp = (int)sqrt(parm->numSamples);
+    tmp = (uint)sqrt(parm->numSamples);
     if (tmp * tmp != parm->numSamples) {
-      biffAddf(ECHO, "%s: need a square # samples for %s jitter method (not %d)", me,
+      biffAddf(ECHO, "%s: need a square # samples for %s jitter method (not %u)", me,
                airEnumStr(echoJitter, parm->jitterType), parm->numSamples);
       return 1;
     }
@@ -192,12 +192,11 @@ echoRTRenderCheck(Nrrd *nraw, limnCamera *cam, echoScene *scene, echoRTParm *par
 }
 
 void
-echoChannelAverage(echoCol_t *img, echoRTParm *parm, echoThreadState *tstate) {
-  int s;
+echoChannelAverage(echoCol_t *img, const echoRTParm *parm, echoThreadState *tstate) {
   echoCol_t R, G, B, A, T;
 
   R = G = B = A = T = 0;
-  for (s = 0; s < parm->numSamples; s++) {
+  for (uint s = 0; s < parm->numSamples; s++) {
     R += tstate->chanBuff[0 + ECHO_IMG_CHANNELS * s];
     G += tstate->chanBuff[1 + ECHO_IMG_CHANNELS * s];
     B += tstate->chanBuff[2 + ECHO_IMG_CHANNELS * s];
@@ -214,16 +213,15 @@ echoChannelAverage(echoCol_t *img, echoRTParm *parm, echoThreadState *tstate) {
 }
 
 /*
-******** echoRayColor
-**
-** This is called by echoRTRender and by the various color routines,
-** following an intersection with non-phong non-light material (the
-** things that require reflection or refraction rays).  As such, it is
-** never called on shadow rays.
-*/
+ ******** echoRayColor
+ *
+ * This is called by echoRTRender and by the various color routines, following an
+ * intersection with non-phong non-light material (the things that require reflection or
+ * refraction rays).  As such, it is never called on shadow rays.
+ */
 void
-echoRayColor(echoCol_t chan[4], echoRay *ray, echoScene *scene, echoRTParm *parm,
-             echoThreadState *tstate) {
+echoRayColor(echoCol_t chan[4], echoRay *ray, const echoScene *scene,
+             const echoRTParm *parm, echoThreadState *tstate) {
   static const char me[] = "echoRayColor";
   echoCol_t rgba[4];
   echoIntx intx;
@@ -265,7 +263,7 @@ done:
 static void *
 RTRenderThreadBody(void *_arg) {
   char done[20];
-  int imgUi, imgVi,                     /* integral pixel indices */
+  uint imgUi, imgVi,                    /* integral pixel indices */
     samp;                               /* which sample are we doing */
   echoPos_t tmp0, tmp1, pixUsz, pixVsz, /* U and V dimensions of a pixel */
     U[4], V[4], N[4], /* view space basis (only first 3 elements used) */
@@ -279,14 +277,12 @@ RTRenderThreadBody(void *_arg) {
   echoCol_t *img, *chan; /* current scanline of channel buffer array */
   Nrrd *nraw;            /* copies of arguments to echoRTRender . . . */
   limnCamera *cam;
-  echoScene *scene;
-  echoRTParm *parm;
 
   arg = (echoThreadState *)_arg;
   nraw = arg->gstate->nraw;
   cam = arg->gstate->cam;
-  scene = arg->gstate->scene;
-  parm = arg->gstate->parm;
+  const echoScene *scene = arg->gstate->scene;
+  const echoRTParm *parm = arg->gstate->parm;
 
   echoJitterCompute(arg->gstate->parm, arg);
   if (arg->gstate->verbose > 2) {
@@ -341,14 +337,13 @@ RTRenderThreadBody(void *_arg) {
       chan = arg->chanBuff;
 
       /*
-      arg->verbose = ( (48 == imgUi && 13 == imgVi)
-                       || (49 == imgUi && 13 == imgVi) );
+      arg->verbose = (150 == imgUi && 100 == imgVi);
       */
 
       if (arg->verbose) {
         fprintf(stderr, "\n");
         fprintf(stderr, "-----------------------------------------------\n");
-        fprintf(stderr, "----------------- (%3d, %3d) ------------------\n", imgUi,
+        fprintf(stderr, "----------------- (%4u, %4u) ------------------\n", imgUi,
                 imgVi);
         fprintf(stderr, "-----------------------------------------------\n\n");
       }
@@ -397,17 +392,15 @@ RTRenderThreadBody(void *_arg) {
 }
 
 /*
-******** echoRTRender
-**
-** top-level call to accomplish all (ray-tracing) rendering.  As much
-** error checking as possible should be done here and not in the
-** lower-level functions.
-*/
+ ******** echoRTRender
+ *
+ * top-level call to accomplish all (ray-tracing) rendering.  As much error checking as
+ * possible should be done here and not in the lower-level functions.
+ */
 int /* Biff: 1 */
-echoRTRender(Nrrd *nraw, limnCamera *cam, echoScene *scene, echoRTParm *parm,
+echoRTRender(Nrrd *nraw, limnCamera *cam, const echoScene *scene, const echoRTParm *parm,
              echoGlobalState *gstate) {
   static const char me[] = "echoRTRender";
-  int tid, ret;
   airArray *mop;
   echoThreadState *tstate[ECHO_THREAD_MAX];
 
@@ -438,14 +431,15 @@ echoRTRender(Nrrd *nraw, limnCamera *cam, echoScene *scene, echoRTParm *parm,
   } else {
     gstate->workMutex = NULL;
   }
-  for (tid = 0; tid < parm->numThreads; tid++) {
+  printf("!%s: hello numThreads = %u\n", me, parm->numThreads);
+  for (uint tid = 0; tid < parm->numThreads; tid++) {
     if (!(tstate[tid] = echoThreadStateNew())) {
-      biffAddf(ECHO, "%s: failed to create thread state %d", me, tid);
+      biffAddf(ECHO, "%s: failed to create thread state %u", me, tid);
       airMopError(mop);
       return 1;
     }
     if (echoThreadStateInit(tid, tstate[tid], parm, gstate)) {
-      biffAddf(ECHO, "%s: failed to initialized thread state %d", me, tid);
+      biffAddf(ECHO, "%s: failed to initialized thread state %u", me, tid);
       airMopError(mop);
       return 1;
     }
@@ -453,18 +447,19 @@ echoRTRender(Nrrd *nraw, limnCamera *cam, echoScene *scene, echoRTParm *parm,
   }
   fprintf(stderr, "%s:       ", me); /* prep for printing airDoneStr */
   gstate->workIdx = 0;
-  for (tid = 0; tid < parm->numThreads; tid++) {
+  int ret;
+  for (uint tid = 0; tid < parm->numThreads; tid++) {
     if ((ret = airThreadStart(tstate[tid]->thread, RTRenderThreadBody,
                               (void *)(tstate[tid])))) {
-      biffAddf(ECHO, "%s: thread[%d] failed to start: %d", me, tid, ret);
+      biffAddf(ECHO, "%s: thread[%u] failed to start: %d", me, tid, ret);
       airMopError(mop);
       return 1;
     }
   }
-  for (tid = 0; tid < parm->numThreads; tid++) {
+  for (uint tid = 0; tid < parm->numThreads; tid++) {
     if ((ret = airThreadJoin(tstate[tid]->thread,
                              (void **)(&(tstate[tid]->returnPtr))))) {
-      biffAddf(ECHO, "%s: thread[%d] failed to join: %d", me, tid, ret);
+      biffAddf(ECHO, "%s: thread[%u] failed to join: %d", me, tid, ret);
       airMopError(mop);
       return 1;
     }

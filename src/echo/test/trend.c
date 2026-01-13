@@ -844,10 +844,10 @@ main(int argc, char **argv) {
   /* makeSceneBVH(cam, parm, scene); */
   /* makeSceneInstance(cam, parm, scene); */
   /* makeSceneTexture(cam, parm, scene); */
-  /* makeSceneSimple(cam, parm, scene);  */
+  makeSceneSimple(cam, parm, scene);
   /* makeSceneRainLights(cam, parm, scene); */
   /* makeSceneAntialias(cam, parm, scene); */
-  makeSceneShadow(cam, parm, scene);
+  /* makeSceneShadow(cam, parm, scene); */
   /* makeSceneDOF(cam, parm, scene); */
 
   if ((env = getenv("NT"))) {

@@ -21,7 +21,7 @@
 #include "privateEcho.h"
 
 #define INTXCOLOR_ARGS                                                                  \
-  echoCol_t rgba[4], echoIntx *intx, echoScene *scene, echoRTParm *parm,                \
+  echoCol_t rgba[4], echoIntx *intx, const echoScene *scene, const echoRTParm *parm,    \
     echoThreadState *tstate
 typedef void (*IntxColor_t)(INTXCOLOR_ARGS);
 // forward-declaration of array defined near end of this file
@@ -43,7 +43,7 @@ echo__Dot(uint depth) {
 /* clang-format off */
 void
 echoTextureLookup(echoCol_t rgba[4], Nrrd *ntext,
-                  echoPos_t u, echoPos_t v, echoRTParm *parm) {
+                  echoPos_t u, echoPos_t v, const echoRTParm *parm) {
   unsigned int su, sv, ui, vi;
   float uf, vf;
   unsigned char *tdata00, *tdata10, *tdata01, *tdata11;
@@ -80,7 +80,7 @@ echoTextureLookup(echoCol_t rgba[4], Nrrd *ntext,
 /* clang-format on */
 
 void
-echoIntxMaterialColor(echoCol_t rgba[4], echoIntx *intx, echoRTParm *parm) {
+echoIntxMaterialColor(echoCol_t rgba[4], echoIntx *intx, const echoRTParm *parm) {
 
   if (intx->obj->ntext) {
     echo__RayIntxUV[intx->obj->type](intx);
@@ -95,15 +95,15 @@ echoIntxMaterialColor(echoCol_t rgba[4], echoIntx *intx, echoRTParm *parm) {
 }
 
 /*
-******** echoIntxLightColor
-**
-** determines ambient, diffuse, and (Phong) specular contributions to lighting
-** a given intersection.  "ambi" and "diff" MUST be given as non-NULL,
-** "spec" can be given as NULL in order to bypass specular computations
-*/
+ ******** echoIntxLightColor
+ *
+ * determines ambient, diffuse, and (Phong) specular contributions to lighting at a given
+ * intersection.  "ambi" and "diff" MUST be given as non-NULL, "spec" can be given as
+ * NULL in order to bypass specular computations
+ */
 void
 echoIntxLightColor(echoCol_t ambi[3], echoCol_t diff[3], echoCol_t spec[3], echoCol_t sp,
-                   echoIntx *intx, echoScene *scene, echoRTParm *parm,
+                   echoIntx *intx, const echoScene *scene, const echoRTParm *parm,
                    echoThreadState *tstate) {
   unsigned int Lidx;
   int blocked;
@@ -112,6 +112,10 @@ echoIntxLightColor(echoCol_t ambi[3], echoCol_t diff[3], echoCol_t spec[3], echo
   echoPos_t Ldist, Ldir[3], Lpos[3], Ldot;
   echoCol_t Lcol[3], fracseen;
 
+  if (tstate->verbose) {
+    printf("%s%s: hello; parm->shadow = %g\n", echo__Dot(tstate->depth), __func__,
+           parm->shadow);
+  }
   if (parm->shadow) {
     /* from, neer, shadow */
     shadRay.shadow = AIR_TRUE;
@@ -125,6 +129,10 @@ echoIntxLightColor(echoCol_t ambi[3], echoCol_t diff[3], echoCol_t spec[3], echo
 
   /* set ambient (easy) */
   ELL_3V_COPY(ambi, scene->ambi);
+  if (tstate->verbose) {
+    printf("%s%s: ambi = %g %g %g\n", echo__Dot(tstate->depth), __func__, ambi[0],
+           ambi[1], ambi[2]);
+  }
 
   /* environment contributes only to diffuse */
   if (scene->envmap) {
@@ -137,13 +145,22 @@ echoIntxLightColor(echoCol_t ambi[3], echoCol_t diff[3], echoCol_t spec[3], echo
   if (spec) {
     ELL_3V_SET(spec, 0, 0, 0);
   }
+  if (tstate->verbose) {
+    printf("%s%s: #lights = %u\n", echo__Dot(tstate->depth), __func__,
+           scene->lightArr->len);
+  }
   for (Lidx = 0; Lidx < scene->lightArr->len; Lidx++) {
     echoLightPosition(Lpos, scene->light[Lidx], tstate);
     ELL_3V_SUB(Ldir, Lpos, intx->pos);
     ELL_3V_NORM(Ldir, Ldir, Ldist);
     Ldot = ELL_3V_DOT(Ldir, intx->norm);
-    /* HEY: HACK: we have to general per-object-type flag that says,
-       this kind of object has no notion of in-versus-out facing . . . */
+    if (tstate->verbose) {
+      printf("%s%s: light[%u]: Lpos=%g %g %g; Ldir=%g %g %g; Ldot=%g\n",
+             echo__Dot(tstate->depth), __func__, Lidx, Lpos[0], Lpos[1], Lpos[2],
+             Ldir[0], Ldir[1], Ldir[2], Ldot);
+    }
+    /* HEY: HACK: we would benefit from a general per-object-type flag that says,
+       "this object has no notion of in-versus-out facing, so do two-sided lighting" */
     if (echoTypeRectangle == intx->obj->type) {
       Ldot = AIR_ABS(Ldot);
     }
@@ -171,6 +188,10 @@ echoIntxLightColor(echoCol_t ambi[3], echoCol_t diff[3], echoCol_t spec[3], echo
     }
     fracseen = AIR_CAST(echoCol_t, blocked ? 1.0 - parm->shadow : 1.0);
     echoLightColor(Lcol, Ldist, scene->light[Lidx], parm, tstate);
+    if (tstate->verbose) {
+      printf("%s%s: light[%u]: fracseen=%g, Lcol=%g %g %g\n", echo__Dot(tstate->depth),
+             __func__, Lidx, fracseen, Lcol[0], Lcol[1], Lcol[2]);
+    }
     ELL_3V_SCALE_INCR_TT(diff, echoCol_t, fracseen * Ldot, Lcol);
     if (spec) {
       Ldot = ELL_3V_DOT(Ldir, intx->refl);
@@ -196,6 +217,11 @@ intxColorPhong(INTXCOLOR_ARGS) {
   sp = intx->obj->mat[echoMatterPhongSp];
 
   echoIntxMaterialColor(rgba, intx, parm);
+  if (tstate->verbose) {
+    printf("%s%s: ka kd ks sp = %g %g %g %g;  material color rgba = %g %g %g %g\n",
+           echo__Dot(tstate->depth), __func__, ka, kd, ks, sp, rgba[0], rgba[1], rgba[2],
+           rgba[3]);
+  }
   ELL_3V_SET(spec, 0, 0, 0);
   echoIntxLightColor(ambi, diff, ks ? spec : NULL, sp, intx, scene, parm, tstate);
   rgba[0] = rgba[0] * (ka * ambi[0] + kd * diff[0]) + ks * spec[0];
@@ -458,10 +484,13 @@ echoIntxFuzzify(echoIntx *intx, echoCol_t fuzz, echoThreadState *tstate) {
 }
 
 void
-echoIntxColor(echoCol_t rgba[4], echoIntx *intx, echoScene *scene, echoRTParm *parm,
-              echoThreadState *tstate) {
+echoIntxColor(echoCol_t rgba[4], echoIntx *intx, const echoScene *scene,
+              const echoRTParm *parm, echoThreadState *tstate) {
   echoCol_t fuzz;
 
+  if (tstate->verbose) {
+    printf("%s%s: matter = %d\n", echo__Dot(tstate->depth), __func__, intx->obj->matter);
+  }
   switch (intx->obj->matter) {
   case echoMatterGlass:
     fuzz = intx->obj->mat[echoMatterGlassFuzzy];

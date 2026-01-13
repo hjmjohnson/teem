@@ -56,10 +56,10 @@ RayIntx_Noop(MY_RAYINTX_ARGS(Object)) {
 /* clang-format off */
 static int
 RayIntx_CubeSurf(echoPos_t *tP, int *axP, int *dirP,
-                      echoPos_t xmin, echoPos_t xmax,
-                      echoPos_t ymin, echoPos_t ymax,
-                      echoPos_t zmin, echoPos_t zmax,
-                      echoRay *ray) {
+                 echoPos_t xmin, echoPos_t xmax,
+                 echoPos_t ymin, echoPos_t ymax,
+                 echoPos_t zmin, echoPos_t zmax,
+                 echoRay *ray) {
   echoPos_t txmin, tymin, tzmin, txmax, tymax, tzmax,
     dx, dy, dz, ox, oy, oz, tmin, tmax;
   int axmin, axmax, sgn[3];
@@ -161,6 +161,23 @@ RayIntx_Sphere(MY_RAYINTX_ARGS(Sphere)) {
   intx->obj = OBJECT(obj);
   /* does NOT set u, v */
   return AIR_TRUE;
+}
+
+static int
+RayIntx_Cone(MY_RAYINTX_ARGS(Cone)) {
+  echoPos_t t, tmax;
+
+  AIR_UNUSED(parm);
+  AIR_UNUSED(tstate);
+  if (!echo__RayIntx_CubeSolid(&t, &tmax, -1 - ECHO_EPSILON, 1 + ECHO_EPSILON,
+                               -1 - ECHO_EPSILON, 1 + ECHO_EPSILON, -1 - ECHO_EPSILON,
+                               1 + ECHO_EPSILON, ray)) {
+    return AIR_FALSE;
+  }
+
+  AIR_UNUSED(intx);
+  AIR_UNUSED(obj);
+  return AIR_FALSE;
 }
 
 static void
@@ -667,17 +684,12 @@ RayIntxUV_Noop(echoIntx *intx) {
 ** intx->norm
 */
 static const RayIntx_t RayIntx[ECHO_TYPE_NUM] = {
-  (RayIntx_t)RayIntx_Sphere,
-  (RayIntx_t)RayIntx_Cylinder,
-  (RayIntx_t)echo__RayIntx_Superquad,
-  (RayIntx_t)RayIntx_Cube,
-  (RayIntx_t)RayIntx_Triangle,
-  (RayIntx_t)RayIntx_Rectangle,
-  (RayIntx_t)RayIntx_TriMesh,
-  (RayIntx_t)RayIntx_Noop,
-  (RayIntx_t)RayIntx_AABBox,
-  (RayIntx_t)RayIntx_Split,
-  (RayIntx_t)RayIntx_List,
+  (RayIntx_t)RayIntx_Sphere,    (RayIntx_t)RayIntx_Cylinder,
+  (RayIntx_t)RayIntx_Cone,      (RayIntx_t)echo__RayIntx_Superquad,
+  (RayIntx_t)RayIntx_Cube,      (RayIntx_t)RayIntx_Triangle,
+  (RayIntx_t)RayIntx_Rectangle, (RayIntx_t)RayIntx_TriMesh,
+  (RayIntx_t)RayIntx_Noop,      (RayIntx_t)RayIntx_AABBox,
+  (RayIntx_t)RayIntx_Split,     (RayIntx_t)RayIntx_List,
   (RayIntx_t)RayIntx_Instance,
 };
 
@@ -685,6 +697,7 @@ static const RayIntx_t RayIntx[ECHO_TYPE_NUM] = {
 const echo__RayIntxUV_t echo__RayIntxUV[ECHO_TYPE_NUM] = {
   RayIntxUV_Sphere,  /* echoTypeSphere */
   RayIntxUV_Noop,    /* echoTypeCylinder */
+  RayIntxUV_Noop,    /* echoTypeCone */
   RayIntxUV_Noop,    /* sqd.c: echoTypeSuperquad */
   RayIntxUV_Cube,    /* echoTypeCube */
   RayIntxUV_Noop,    /* echoTypeTriangle */
@@ -698,7 +711,7 @@ const echo__RayIntxUV_t echo__RayIntxUV[ECHO_TYPE_NUM] = {
 };
 
 int /* Biff: nope */
-echoRayIntx(echoIntx *intx, echoRay *ray, echoScene *scene, echoRTParm *parm,
+echoRayIntx(echoIntx *intx, echoRay *ray, const echoScene *scene, const echoRTParm *parm,
             echoThreadState *tstate) {
   unsigned int idx;
   int ret;

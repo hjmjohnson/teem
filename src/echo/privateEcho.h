@@ -96,7 +96,7 @@ extern void echo__SceneNrrdAdd(echoScene *scene, Nrrd *nrrd);
 
 /* intx.c */
 #define MY_RAYINTX_ARGS(TYPE)                                                           \
-  echoIntx *intx, echoRay *ray, echo##TYPE *obj, echoRTParm *parm,                      \
+  echoIntx *intx, echoRay *ray, echo##TYPE *obj, const echoRTParm *parm,                \
     echoThreadState *tstate
 typedef void (*echo__RayIntxUV_t)(echoIntx *intx);
 extern const echo__RayIntxUV_t echo__RayIntxUV[/* object type idx */];
