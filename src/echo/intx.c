@@ -165,19 +165,67 @@ RayIntx_Sphere(MY_RAYINTX_ARGS(Sphere)) {
 
 static int
 RayIntx_Cone(MY_RAYINTX_ARGS(Cone)) {
-  echoPos_t t, tmax;
+  echoPos_t t, tmax, pos[3];
 
   AIR_UNUSED(parm);
   AIR_UNUSED(tstate);
+  // cone is bounded by bi-unit cube
   if (!echo__RayIntx_CubeSolid(&t, &tmax, -1 - ECHO_EPSILON, 1 + ECHO_EPSILON,
                                -1 - ECHO_EPSILON, 1 + ECHO_EPSILON, -1 - ECHO_EPSILON,
                                1 + ECHO_EPSILON, ray)) {
     return AIR_FALSE;
   }
-
-  AIR_UNUSED(intx);
-  AIR_UNUSED(obj);
-  return AIR_FALSE;
+  echoPos_t rx = ray->from[0], ry = ray->from[1], rz = ray->from[2];
+  echoPos_t dx = ray->dir[0], dy = ray->dir[1], dz = ray->dir[2];
+  // first see if hitting disc on underside of code
+  echoPos_t hide = 0.01;
+  echoPos_t zlo = -1 + hide; // to hide from precision problems with bounding cube
+  if (rz < zlo && dz > 0) {
+    t = (zlo - rz) / dz;
+    if (AIR_IN_CL(ray->neer, t, ray->faar)) {
+      ELL_3V_SCALE_ADD2(pos, 1, ray->from, t, ray->dir);
+      if (ELL_2V_DOT(pos, pos) <= 1 - hide / 2) { // yes just 2D
+        ELL_3V_SET(intx->norm, 0, 0, -1);
+        intx->obj = OBJECT(obj);
+        /* does NOT set u, v */
+        return AIR_TRUE;
+      }
+    }
+  }
+  // all the following intuition-free formulae courtesy of Mathematica
+  echoPos_t foo = dz + 4 * dx * rx + 4 * dy * ry - dz * rz;
+  echoPos_t dscr = (-4 * (-4 * (dx * dx + dy * dy) + dz * dz)
+                      * (-4 * rx * rx - 4 * ry * ry + (rz - 1) * (rz - 1))
+                    + 4 * foo * foo);
+  if (dscr <= 0) {
+    // grazes or misses
+    return AIR_FALSE;
+  }
+  dscr = sqrt(dscr);
+  foo = -dz - 4 * dx * rx - 4 * dy * ry + dz * rz;
+  echoPos_t denom = 4 * (dx * dx + dy * dy) - dz * dz;
+  t = (foo - 0.5 * dscr) / denom;
+  if (!AIR_IN_CL(ray->neer, t, ray->faar)) {
+    t = (foo + 0.5 * dscr) / denom;
+    if (!AIR_IN_CL(ray->neer, t, ray->faar)) {
+      return AIR_FALSE;
+    }
+  }
+  // else one of the intxs is in [neer,faar] segment
+  intx->t = t;
+  echoPos_t tmp;
+  ELL_3V_SCALE_ADD2(pos, 1, ray->from, t, ray->dir);
+  if (!AIR_IN_CL(-1, pos[2], 1)) {
+    /* actually hit mirror cone pointing down (z > 1),
+       or cone below z=-1 clip plane; ignore */
+    return AIR_FALSE;
+  }
+  echoPos_t cr = ELL_2V_LEN(pos); // YES actually 2V: just sqrt(x*x + y*y)
+  ELL_3V_SET(intx->norm, 2 * pos[0] / cr, 2 * pos[1] / cr, 1);
+  ELL_3V_NORM(intx->norm, intx->norm, tmp);
+  intx->obj = OBJECT(obj);
+  /* does NOT set u, v */
+  return AIR_TRUE;
 }
 
 static void

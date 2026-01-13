@@ -70,6 +70,8 @@ main(int argc, const char *argv[]) {
   ELL_3V_COPY(cam->up, up);
   ELL_2V_SET(cam->uRange, -1, 1);
   ELL_2V_SET(cam->vRange, -1, 1);
+  // ELL_2V_SET(cam->uRange, -1.5, 1.5);
+  // ELL_2V_SET(cam->vRange, -1.5, 1.5);
   cam->aspect = 1;
   // (not setting fov)
   cam->neer = -1;
@@ -107,24 +109,17 @@ main(int argc, const char *argv[]) {
   ELL_3V_SET(scene->ambi, 1, 1, 1);
   ELL_3V_SET(scene->bkgr, 0.2, 0.4, 0.8);
 
-  /*
-  echoObject *sphere = echoObjectNew(scene, echoTypeSphere);
-  echoColorSet(sphere, 1, rgb[0], rgb[1], rgb[2]);
-  echoMatterPhongSet(scene, sphere, 0.2, 0.8, 0, 1);
-  echoObjectAdd(scene, sphere);
-  */
-
   float adsp[4] = {0.2, 0.8, 0, 1};
-  echoObject *cyl = echoObjectNew(scene, echoTypeCylinder);
-  echoCylinderSet(cyl, 0);
-  echoColorSet(cyl, 1, rgb[0], rgb[1], rgb[2]);
-  echoMatterPhongSet(scene, cyl, adsp[0], adsp[1], adsp[2], adsp[3]);
-
+  echoObject *cone = echoObjectNew(scene, echoTypeCone); // Cube
+  echoColorSet(cone, 1, rgb[0], rgb[1], rgb[2]);
+  echoMatterPhongSet(scene, cone, adsp[0], adsp[1], adsp[2], adsp[3]);
+  /*
   echoObject *inst = echoObjectNew(scene, echoTypeInstance);
   float A[16];
-  ELL_4M_SCALE_SET(A, 0.8, 0.15, 0.15);
-  echoInstanceSet(inst, A, cyl);
-  echoObjectAdd(scene, inst);
+  ELL_4M_SCALE_SET(A, 1, 1, 1);
+  echoInstanceSet(inst, A, cone);
+  */
+  echoObjectAdd(scene, cone);
 
   echoObject *rect = echoObjectNew(scene, echoTypeRectangle);
   {
