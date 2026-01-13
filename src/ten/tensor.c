@@ -665,8 +665,13 @@ tenSlice(Nrrd *nout, const Nrrd *nten, unsigned int axis, size_t pos, unsigned i
   mop = airMopNew();
   airMopAdd(mop, nslice = nrrdNew(), nrrdNuke_mop, airMopAlways);
   if (3 == dim) {
-    if (nrrdSlice(nslice, nten, axis + 1, pos)
-        || nrrdAxesInsert(nout, nslice, axis + 1)) {
+    size_t cmin[4] = {0, 0, 0, 0},
+           cmax[4] = {nten->axis[0].size - 1, nten->axis[1].size - 1,
+                      nten->axis[2].size - 1, nten->axis[3].size - 1};
+    cmin[axis + 1] = cmax[axis + 1] = pos;
+    if (nrrdCrop(nout, nten, cmin, cmax)) {
+      /*if (nrrdSlice(nslice, nten, axis + 1, pos)
+          || nrrdAxesInsert(nout, nslice, axis + 1)) { */
       biffMovef(TEN, NRRD, "%s: trouble making slice", me);
       airMopError(mop);
       return 1;

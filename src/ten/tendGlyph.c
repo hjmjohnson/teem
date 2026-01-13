@@ -95,50 +95,11 @@ readCams(int imgSize[2], limnCamera **camP, unsigned int *numCamsP, FILE *fin) {
 
 static int
 glyphMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
-  int pret, doRT = AIR_FALSE;
-  hestOpt *hopt = NULL;
-  char *perr, *err;
 
-  Nrrd *nin, *emap, *nraw, *npos, *nslc;
-  char *outS;
-  limnCamera *cam, *hackcams;
-  limnObject *glyph;
-  limnWindow *win;
-  echoObject *rect = NULL;
-  echoScene *scene;
-  echoRTParm *eparm;
-  echoGlobalState *gstate;
-  tenGlyphParm *gparm;
-  float bg[3], edgeColor[3], buvne[5], shadow, creaseAngle;
-  int ires[2], slice[2], nobg, ambocc, concave;
-  unsigned int hackci, hacknumcam;
-  size_t hackmin[3] = {0, 0, 0}, hackmax[3] = {2, 0, 0};
-  char *hackFN, hackoutFN[AIR_STRLEN_SMALL + 1];
-  FILE *hackF;
-  Nrrd *hacknpng, *hacknrgb;
-  NrrdRange *hackrange;
-
-  double v2w[9], ldir[3], edir[3], fdir[3], corn[3], len;
-
-  airArray *mop = airMopNew();
+  /* (YES some hparm modification) but we (unusually) put this above the hestOptAdd
+     calls, because we want to (ab)use hparm->selfMop to mop things that are destinations
+     for some hest options */
   hestParm *hparm = hestParmCopy(_hparm);
-  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
-  /* so that command-line options can be read from file */
-  hparm->responseFileEnable = AIR_TRUE;
-  hparm->elideSingleEmptyStringDefault = AIR_TRUE;
-
-  cam = limnCameraNew();
-  airMopAdd(mop, cam, limnCameraNix_mop, airMopAlways);
-  glyph = limnObjectNew(1000, AIR_TRUE);
-  airMopAdd(mop, glyph, limnObjectNix_mop, airMopAlways);
-  scene = echoSceneNew();
-  airMopAdd(mop, scene, echoSceneNix_mop, airMopAlways);
-  win = limnWindowNew(limnDevicePS);
-  airMopAdd(mop, win, limnWindowNix_mop, airMopAlways);
-  gparm = tenGlyphParmNew();
-  airMopAdd(mop, gparm, tenGlyphParmNix_mop, airMopAlways);
-  eparm = echoRTParmNew();
-  airMopAdd(mop, eparm, echoRTParmNix_mop, airMopAlways);
 
   /* do postscript or ray-traced? */
   /* Do you see the problem here?
@@ -147,10 +108,13 @@ glyphMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
    * bogus airTypeFloat, which is harmless because that type was ignored, but it is
    * still a bummer that it took 20 years to get a version of hestOptAdd with some
    * type checking */
+  int doRT = AIR_FALSE;
+  hestOpt *hopt = NULL;
   hestOptAdd_Flag(&hopt, "rt", &doRT,
                   "generate ray-traced output.  By default (not using this "
                   "option), postscript output is generated.");
-
+  tenGlyphParm *gparm = tenGlyphParmNew();
+  airMopAdd(hparm->selfMop, gparm, tenGlyphParmNix_mop, airMopAlways);
   hestOptAdd_1_Int(&hopt, "v", "level", &(gparm->verbose), "0", "verbosity level");
 
   /* which points will rendered */
@@ -164,6 +128,7 @@ glyphMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOptAdd_1_Float(&hopt, "atr", "aniso thresh", &(gparm->anisoThresh), "0.5",
                      "Glyphs will be drawn only for tensors with anisotropy "
                      "greater than this threshold");
+  Nrrd *npos;
   hestOptAdd_1_Other(&hopt, "p", "pos array", &npos, "",
                      "Instead of being on a grid, tensors are at arbitrary locations, "
                      "as defined by this 3-by-N array of floats. Doing this makes "
@@ -171,7 +136,7 @@ glyphMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
                      nrrdHestNrrd);
   hestOptAdd_1_Other(&hopt, "m", "mask vol", &(gparm->nmask), "",
                      "Scalar volume (if any) for masking region in which glyphs are "
-                     "drawn, in conjunction with \"mtr\" flag. ",
+                     "drawn, in conjunction with \"mtr\" flag",
                      nrrdHestNrrd);
   hestOptAdd_1_Float(&hopt, "mtr", "mask thresh", &(gparm->maskThresh), "0.5",
                      "Glyphs will be drawn only for tensors with mask "
@@ -192,13 +157,13 @@ glyphMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
 
   /* how glyphs will be colored */
   hestOptAdd_1_Int(&hopt, "c", "evector #", &(gparm->colEvec), "0",
-                   "which eigenvector should determine coloring. "
-                   "(formally \"v\") "
+                   "which eigenvector should determine coloring "
+                   "(formerly \"v\"); "
                    "\"0\", \"1\", \"2\" are principal, medium, and minor");
   hestOptAdd_1_Float(&hopt, "sat", "saturation", &(gparm->colMaxSat), "1.0",
                      "maximal saturation to use on glyph colors (use 0.0 to "
                      "create a black and white image)");
-  hestOptAdd_1_Enum(&hopt, "ga", "aniso", &(gparm->colAnisoType), "fa",
+  hestOptAdd_1_Enum(&hopt, "ga", "aniso", &(gparm->colAnisoType), "cl2",
                     "Which anisotropy metric to use for modulating the "
                     "saturation of the glyph color",
                     tenAniso);
@@ -212,6 +177,7 @@ glyphMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
                      "tends towards this gray level");
   hestOptAdd_1_Float(&hopt, "gam", "gamma", &(gparm->colGamma), "0.7",
                      "gamma to use on color components (after saturation)");
+  Nrrd *emap;
   hestOptAdd_1_Other(&hopt, "emap", "env map", &emap, "",
                      "environment map to use for shading glyphs.  By default, "
                      "there is no shading",
@@ -219,16 +185,20 @@ glyphMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOptAdd_4_Float(&hopt, "adsp", "phong", gparm->ADSP, "0 1 0 30",
                      "phong ambient, diffuse, specular components, "
                      "and specular power");
+  float bg[3];
   hestOptAdd_3_Float(&hopt, "bg", "background", bg, "1 1 1",
                      "background RGB color; each component in range [0.0,1.0]");
+  float edgeColor[3];
   hestOptAdd_3_Float(&hopt, "ec", "edge rgb", edgeColor, "0 0 0",
                      "edge RGB color; each component in range [0.0,1.0]");
 
   /* parameters for showing a dataset slice */
+  int slice[2];
   hestOptAdd_2_Int(&hopt, "slc", "axis pos", slice, "-1 -1",
                    "For showing a gray-scale slice of anisotropy: the axis "
                    "and position along which to slice.  Use \"-1 -1\" to signify "
                    "that no slice should be shown");
+  Nrrd *nslc;
   hestOptAdd_1_Other(&hopt, "si", "slice image", &nslc, "",
                      "Instead of showing a slice of the anisotropy used to cull "
                      "glyphs, show something else. ",
@@ -242,6 +212,8 @@ glyphMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
                      "amount by which to bump up slice gray values prior to gamma.");
 
   /* camera */
+  limnCamera *cam = limnCameraNew();
+  airMopAdd(hparm->selfMop, cam, limnCameraNix_mop, airMopAlways);
   limnHestCameraOptAdd(&hopt, cam,             /* */
                        NULL, "0 0 0", "0 0 1", /* fr, at, up*/
                        "-2", "0", "2",         /* dn, di, df */
@@ -256,32 +228,41 @@ glyphMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
                      "(* postscript only *) "
                      "width of edges drawn for three kinds of glyph "
                      "edges: silohuette, crease, non-crease");
+  limnWindow *win = limnWindowNew(limnDevicePS);
+  airMopAdd(hparm->selfMop, win, limnWindowNix_mop, airMopAlways);
   hestOptAdd_1_Float(&hopt, "psc", "scale", &(win->scale), "300",
                      "(* postscript only *) "
                      "scaling from screen space units to postscript units "
                      "(in points)");
+  float creaseAngle;
   hestOptAdd_1_Float(&hopt, "ca", "angle", &creaseAngle, "70",
                      "(* postscript only *) "
                      "minimum crease angle");
+  int nobg;
   hestOptAdd_Flag(&hopt, "nobg", &nobg,
                   "(* postscript only *) "
                   "don't initially fill with background color");
+  int concave;
   hestOptAdd_Flag(&hopt, "concave", &concave,
                   "use slightly buggy rendering method suitable for "
                   "concave or self-occluding objects");
 
   /* ray-traced-specific options */
+  int ires[2];
   hestOptAdd_2_Int(&hopt, "is", "nx ny", ires, "256 256",
                    "(* ray-traced only *) "
                    "image size (resolution) to render");
-  hestOptAdd_1_Int(&hopt, "ns", "# samp", &(eparm->numSamples), "4",
-                   "(* ray-traced only *) "
-                   "number of samples per pixel (must be a square number)");
+  echoRTParm *eparm = echoRTParmNew();
+  airMopAdd(hparm->selfMop, eparm, echoRTParmNix_mop, airMopAlways);
+  hestOptAdd_1_UInt(&hopt, "ns", "# samp", &(eparm->numSamples), "4",
+                    "(* ray-traced only *) "
+                    "number of samples per pixel (must be a square number)");
   if (airThreadCapable) {
-    hestOptAdd_1_Int(&hopt, "nt", "# threads", &(eparm->numThreads), "1",
-                     "(* ray-traced only *) "
-                     "number of threads to be used for rendering");
+    hestOptAdd_1_UInt(&hopt, "nt", "# threads", &(eparm->numThreads), "1",
+                      "(* ray-traced only *) "
+                      "number of threads to be used for rendering");
   }
+  float buvne[5];
   hestOptAdd_N_Float(&hopt, "al", "B U V N E", 5, buvne, "0 -1 -1 -4 0.7",
                      "(* ray-traced only *) "
                      "brightness (B), view-space location (U V N), "
@@ -290,21 +271,28 @@ glyphMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
                      "Requires lots more samples \"-ns\" to converge.  Use "
                      "brightness 0 (the default) to turn this off, and use "
                      "environment map-based shading (\"-emap\") instead. ");
+  int ambocc;
   hestOptAdd_Flag(&hopt, "ao", &ambocc,
                   "set up 6 area lights in a box to approximate "
                   "ambient occlusion");
+  float shadow;
   hestOptAdd_1_Float(&hopt, "shadow", "s", &shadow, "1.0",
                      "the extent to which shadowing occurs");
+  char *hackFN;
   hestOptAdd_1_String(&hopt, "hack", "hack", &hackFN, "", "don't mind me");
 
   /* input/output */
+  Nrrd *nin;
   hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-", "input diffusion tensor volume",
                      nrrdHestNrrd);
+  char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output file");
 
-  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-  USAGE_PARSE(glyphInfoL);
-  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
+  hparm->responseFileEnable = AIR_TRUE;
+  hparm->elideSingleEmptyStringDefault = AIR_TRUE;
+  hestParseOrExit(hopt, argc, argv, hparm, me, glyphInfoL);
+  airArray *mop = unrrduMopNew(hopt, hparm);
+  char *err;
 
   /* set up slicing stuff */
   if (!(-1 == slice[0] && -1 == slice[1])) {
@@ -323,6 +311,10 @@ glyphMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   if (gparm->verbose) {
     fprintf(stderr, "%s: verbose = %d\n", me, gparm->verbose);
   }
+  limnObject *glyph = limnObjectNew(1000, AIR_TRUE);
+  airMopAdd(mop, glyph, limnObjectNix_mop, airMopAlways);
+  echoScene *scene = echoSceneNew();
+  airMopAdd(mop, scene, echoSceneNix_mop, airMopAlways);
   if (tenGlyphGen(doRT ? NULL : glyph, doRT ? scene : NULL, gparm, nin, npos, nslc)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble generating glyphs:\n%s\n", me, err);
@@ -351,9 +343,11 @@ glyphMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
     return 1;
   }
   if (doRT) {
-    nraw = nrrdNew();
+    double v2w[9], ldir[3], edir[3], fdir[3], corn[3], len;
+    echoObject *rect = NULL;
+    Nrrd *nraw = nrrdNew();
     airMopAdd(mop, nraw, nrrdNuke_mop, airMopAlways);
-    gstate = echoGlobalStateNew();
+    echoGlobalState *gstate = echoGlobalStateNew();
     airMopAdd(mop, gstate, echoGlobalStateNix_mop, airMopAlways);
     eparm->shadow = shadow;
     if (buvne[0] > 0) {
@@ -442,12 +436,15 @@ glyphMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
       }
     } else {
       /* hack: multiple renderings per invocation */
+      FILE *hackF;
       if (!(hackF = airFopen(hackFN, stdin, "rb"))) {
         fprintf(stderr, "%s: couldn't fopen(\"%s\",\"rb\"): %s\n", me, hackFN,
                 strerror(errno));
         airMopError(mop);
         return 1;
       }
+      limnCamera *hackcams;
+      uint hacknumcam;
       if (readCams(ires, &hackcams, &hacknumcam, hackF)) {
         airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);
         fprintf(stderr, "%s: trouble reading frames %s\n", me, err);
@@ -456,15 +453,13 @@ glyphMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
       }
       eparm->imgResU = ires[0];
       eparm->imgResV = ires[1];
-      hackmax[1] = ires[0] - 1;
-      hackmax[2] = ires[1] - 1;
-      hacknrgb = nrrdNew();
-      hacknpng = nrrdNew();
+      Nrrd *hacknrgb = nrrdNew();
+      Nrrd *hacknpng = nrrdNew();
       airMopAdd(mop, hacknrgb, nrrdNuke_mop, airMopAlways);
       airMopAdd(mop, hacknpng, nrrdNuke_mop, airMopAlways);
-      hackrange = nrrdRangeNew(0.0, 1.0);
+      NrrdRange *hackrange = nrrdRangeNew(0.0, 1.0);
       airMopAdd(mop, hackrange, nrrdRangeNix_mop, airMopAlways);
-      for (hackci = 0; hackci < hacknumcam; hackci++) {
+      for (uint hackci = 0; hackci < hacknumcam; hackci++) {
         memcpy(cam, hackcams + hackci, sizeof(limnCamera));
         /* rightHanded and orthographic not handled nicely */
 
@@ -494,7 +489,9 @@ glyphMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
           airMopError(mop);
           return 1;
         }
+        char hackoutFN[AIR_STRLEN_SMALL + 1];
         snprintf(hackoutFN, sizeof(hackoutFN), "%4u.png", hackci);
+        size_t hackmin[3] = {0, 0, 0}, hackmax[3] = {2, ires[0] - 1, ires[1] - 1};
         if (nrrdCrop(hacknrgb, nraw, hackmin, hackmax)
             || nrrdQuantize(hacknpng, hacknrgb, hackrange, 8)
             || nrrdSave(hackoutFN, hacknpng, NULL)) {
