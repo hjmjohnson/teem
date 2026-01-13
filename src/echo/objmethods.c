@@ -136,6 +136,7 @@ echoObjectAdd(echoScene *scene, echoObject *obj) {
 static echoObject *(*ObjectNix[ECHO_TYPE_NUM])(echoObject *) = {
   (echoObject * (*)(echoObject *)) airFree,   /* echoTypeSphere */
   (echoObject *(*)(echoObject *))airFree,     /* echoTypeCylinder */
+  (echoObject *(*)(echoObject *))airFree,     /* echoTypeCone */
   (echoObject *(*)(echoObject *))airFree,     /* echoTypeSuperquad */
   (echoObject *(*)(echoObject *))airFree,     /* echoTypeCube */
   (echoObject *(*)(echoObject *))airFree,     /* echoTypeTriangle */
