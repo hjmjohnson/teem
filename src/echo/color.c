@@ -155,9 +155,10 @@ echoIntxLightColor(echoCol_t ambi[3], echoCol_t diff[3], echoCol_t spec[3], echo
     ELL_3V_NORM(Ldir, Ldir, Ldist);
     Ldot = ELL_3V_DOT(Ldir, intx->norm);
     if (tstate->verbose) {
-      printf("%s%s: light[%u]: Lpos=%g %g %g; Ldir=%g %g %g; Ldot=%g\n",
-             echo__Dot(tstate->depth), __func__, Lidx, Lpos[0], Lpos[1], Lpos[2],
-             Ldir[0], Ldir[1], Ldir[2], Ldot);
+      printf(
+        "%s%s: light[%u]: Lpos=%g %g %g; intx->pos=%g %g %g; Ldir=%g %g %g; Ldot=%g\n",
+        echo__Dot(tstate->depth), __func__, Lidx, Lpos[0], Lpos[1], Lpos[2],
+        intx->pos[0], intx->pos[1], intx->pos[2], Ldir[0], Ldir[1], Ldir[2], Ldot);
     }
     /* HEY: HACK: we would benefit from a general per-object-type flag that says,
        "this object has no notion of in-versus-out facing, so do two-sided lighting" */

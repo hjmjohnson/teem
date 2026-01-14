@@ -247,14 +247,19 @@ echoRayColor(echoCol_t chan[4], echoRay *ray, const echoScene *scene,
 
   if (tstate->verbose) {
     fprintf(stderr,
-            "%s%s: hit a %d (%p) at (%g,%g,%g)\n"
+            "%s%s: hit a %d=%s (%p) at (%g,%g,%g)\n"
             "%s    = %g along (%g,%g,%g)\n",
-            echo__Dot(tstate->depth), me, intx.obj->type, AIR_VOIDP(intx.obj),
-            intx.pos[0], intx.pos[1], intx.pos[2], echo__Dot(tstate->depth), intx.t,
-            ray->dir[0], ray->dir[1], ray->dir[2]);
+            echo__Dot(tstate->depth), me, intx.obj->type,
+            airEnumStr(echoType, intx.obj->type), AIR_VOIDP(intx.obj), intx.pos[0],
+            intx.pos[1], intx.pos[2], echo__Dot(tstate->depth), intx.t, ray->dir[0],
+            ray->dir[1], ray->dir[2]);
   }
   echoIntxColor(rgba, &intx, scene, parm, tstate);
   ELL_4V_COPY(chan, rgba);
+  if (tstate->verbose) {
+    fprintf(stderr, "%s%s: finishing with chan=%g %g %g %g\n", echo__Dot(tstate->depth),
+            me, chan[0], chan[1], chan[2], chan[3]);
+  }
 done:
   tstate->depth--;
   return;
@@ -337,7 +342,7 @@ RTRenderThreadBody(void *_arg) {
       chan = arg->chanBuff;
 
       /*
-      arg->verbose = (150 == imgUi && 100 == imgVi);
+      arg->verbose = (150 == imgUi && (230 == imgVi || 240 == imgVi));
       */
 
       if (arg->verbose) {

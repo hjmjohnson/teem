@@ -178,16 +178,15 @@ RayIntx_Cone(MY_RAYINTX_ARGS(Cone)) {
   echoPos_t rx = ray->from[0], ry = ray->from[1], rz = ray->from[2];
   echoPos_t dx = ray->dir[0], dy = ray->dir[1], dz = ray->dir[2];
   // first see if hitting disc on underside of code
-  echoPos_t hide = 0.01;
-  echoPos_t zlo = -1 + hide; // to hide from precision problems with bounding cube
-  if (rz < zlo && dz > 0) {
-    t = (zlo - rz) / dz;
+  if (rz < -1 && dz > 0) {
+    t = (-1 - rz) / dz;
     if (AIR_IN_CL(ray->neer, t, ray->faar)) {
       ELL_3V_SCALE_ADD2(pos, 1, ray->from, t, ray->dir);
-      if (ELL_2V_DOT(pos, pos) <= 1 - hide / 2) { // yes just 2D
+      if (ELL_2V_DOT(pos, pos) <= 1) { // yes just 2D
+        intx->t = t;
         ELL_3V_SET(intx->norm, 0, 0, -1);
         intx->obj = OBJECT(obj);
-        /* does NOT set u, v */
+        // does NOT set u, v
         return AIR_TRUE;
       }
     }

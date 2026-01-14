@@ -26,8 +26,8 @@ int
 main(int argc, const char *argv[]) {
   const char *me = argv[0];
   hestOpt *hopt = NULL;
-  float g[3];
-  hestOptAdd_3_Float(&hopt, "g", "x y z", g, NULL,
+  float gg[3];
+  hestOptAdd_3_Float(&hopt, "g", "x y z", gg, NULL,
                      "the diffusion sensitizing gradient to show (will be normalized)");
   float fr[3];
   hestOptAdd_3_Float(&hopt, "fr", "x y z", fr, NULL,
@@ -53,14 +53,14 @@ main(int argc, const char *argv[]) {
 
   {
     float gtmp[3], glen;
-    ELL_3V_NORM(gtmp, g, glen);
+    ELL_3V_NORM(gtmp, gg, glen);
     if (!glen) {
-      fprintf(stderr, "%s: need non-zero dsg vector (not %g %g %g)\n", me, g[0], g[1],
-              g[2]);
+      fprintf(stderr, "%s: need non-zero dsg vector (not %g %g %g)\n", me, gg[0], gg[1],
+              gg[2]);
       airMopError(mop);
       return 1;
     }
-    ELL_3V_COPY(g, gtmp);
+    ELL_3V_COPY(gg, gtmp);
   }
 
   limnCamera *cam = limnCameraNew();
@@ -68,8 +68,8 @@ main(int argc, const char *argv[]) {
   ELL_3V_COPY(cam->from, fr);
   ELL_3V_SET(cam->at, 0, 0, 0);
   ELL_3V_COPY(cam->up, up);
-  ELL_2V_SET(cam->uRange, -1, 1);
-  ELL_2V_SET(cam->vRange, -1, 1);
+  ELL_2V_SET(cam->uRange, -1.05, 1.05);
+  ELL_2V_SET(cam->vRange, -1.05, 1.05);
   // ELL_2V_SET(cam->uRange, -1.5, 1.5);
   // ELL_2V_SET(cam->vRange, -1.5, 1.5);
   cam->aspect = 1;
@@ -109,17 +109,51 @@ main(int argc, const char *argv[]) {
   ELL_3V_SET(scene->ambi, 1, 1, 1);
   ELL_3V_SET(scene->bkgr, 0.2, 0.4, 0.8);
 
-  float adsp[4] = {0.2, 0.8, 0, 1};
-  echoObject *cone = echoObjectNew(scene, echoTypeCone); // Cube
+  float adsp[4] = {0.2, 0.8, 0, 1}, AA[16], BB[16], CC[16];
+
+  echoObject *cone = echoObjectNew(scene, echoTypeCone);
   echoColorSet(cone, 1, rgb[0], rgb[1], rgb[2]);
   echoMatterPhongSet(scene, cone, adsp[0], adsp[1], adsp[2], adsp[3]);
-  /*
-  echoObject *inst = echoObjectNew(scene, echoTypeInstance);
-  float A[16];
-  ELL_4M_SCALE_SET(A, 1, 1, 1);
-  echoInstanceSet(inst, A, cone);
-  */
-  echoObjectAdd(scene, cone);
+  echoObject *instP = echoObjectNew(scene, echoTypeInstance);
+  echoPos_t cscl = 0.2, ctrn = 0.85;
+  ELL_4M_SCALE_SET(AA, cscl, cscl, cscl);
+  ELL_4M_ROTATE_Y_SET(BB, AIR_PI / 2);
+  ELL_4M_MUL(CC, BB, AA);
+  ELL_4M_TRANSLATE_SET(AA, ctrn, 0, 0);
+  ELL_4M_MUL(BB, AA, CC);
+  echoInstanceSet(instP, BB, cone);
+  // echoObjectAdd(scene, instP);
+  echoObject *instN = echoObjectNew(scene, echoTypeInstance);
+  ELL_4M_SCALE_SET(AA, cscl, cscl, cscl);
+  ELL_4M_ROTATE_Y_SET(BB, -AIR_PI / 2);
+  ELL_4M_MUL(CC, BB, AA);
+  ELL_4M_TRANSLATE_SET(AA, -ctrn, 0, 0);
+  ELL_4M_MUL(BB, AA, CC);
+  echoInstanceSet(instN, BB, cone);
+  // echoObjectAdd(scene, instN);
+  echoObject *cyl = echoObjectNew(scene, echoTypeCylinder);
+  echoCylinderSet(cyl, 0);
+  echoColorSet(cyl, 1, rgb[0], rgb[1], rgb[2]);
+  echoMatterPhongSet(scene, cyl, adsp[0], adsp[1], adsp[2], adsp[3]);
+  echoObject *instC = echoObjectNew(scene, echoTypeInstance);
+  ELL_4M_SCALE_SET(AA, 1 - 1.5 * cscl, cscl / 2, cscl / 2);
+  echoInstanceSet(instC, AA, cyl);
+  // echoObjectAdd(scene, instC);
+  echoObject *list = echoObjectNew(scene, echoTypeList);
+  echoListAdd(list, instP);
+  echoListAdd(list, instN);
+  echoListAdd(list, instC);
+  //  echoObjectAdd(scene, list);
+  double rot[9], dfrom[3] = {1, 0, 0}, dto[3] = {gg[0], gg[1], gg[2]};
+  ell_3m_rotate_between_d(rot, dfrom, dto);
+  ELL_4M_SET(AA,                        //
+             rot[0], rot[1], rot[2], 0, //
+             rot[3], rot[4], rot[5], 0, //
+             rot[6], rot[7], rot[8], 0, //
+             0, 0, 0, 1);
+  echoObject *instL = echoObjectNew(scene, echoTypeInstance);
+  echoInstanceSet(instL, AA, list);
+  echoObjectAdd(scene, instL);
 
   echoObject *rect = echoObjectNew(scene, echoTypeRectangle);
   {
