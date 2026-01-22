@@ -150,7 +150,7 @@ cmdListCheckLen(const char *prog, const unrrduCmd *const *cmdList, size_t *maxle
       maxlen = AIR_MAX(maxlen, len);
     }
     /* maxlen + proglen + 2 == max strlen("<prog> <cmd>") + 1 */
-    if (!(minlen >= 2 && maxlen + proglen + 2 < AIR_STRLEN_SMALL)) {
+    if (!(minlen >= 1 && maxlen + proglen + 2 < AIR_STRLEN_SMALL)) {
       fprintf(stderr,
               "%s: min (%zu), max (%zu) strlen of %s command names seem not right\n",
               __func__, minlen, maxlen, prog);
