@@ -37,6 +37,11 @@ main(int argc, const char *argv[]) {
   hestOptAdd_3_Float(&hopt, "up", "x y z", up, NULL, "the pseudo-up vector");
   float rgb[3];
   hestOptAdd_3_Float(&hopt, "c", "r g b", rgb, "1 1 1", "object color");
+  float bkgr[3];
+  hestOptAdd_3_Float(&hopt, "bg", "r g b", bkgr, "0 0 0", "background color");
+  float adsp[4];
+  hestOptAdd_4_Float(&hopt, "adsp", "a d s p", adsp, "0.1 0.7 0.2 50",
+                     "phong parameters: ambient diffusion specular shininess");
   unsigned int isz;
   hestOptAdd_1_UInt(&hopt, "sz", "size", &isz, "300", "size of output image");
   unsigned int numsamp;
@@ -68,8 +73,8 @@ main(int argc, const char *argv[]) {
   ELL_3V_COPY(cam->from, fr);
   ELL_3V_SET(cam->at, 0, 0, 0);
   ELL_3V_COPY(cam->up, up);
-  ELL_2V_SET(cam->uRange, -1.05, 1.05);
-  ELL_2V_SET(cam->vRange, -1.05, 1.05);
+  ELL_2V_SET(cam->uRange, -1.1, 1.1);
+  ELL_2V_SET(cam->vRange, -1.1, 1.1);
   // ELL_2V_SET(cam->uRange, -1.5, 1.5);
   // ELL_2V_SET(cam->vRange, -1.5, 1.5);
   cam->aspect = 1;
@@ -107,15 +112,15 @@ main(int argc, const char *argv[]) {
   echoScene *scene = echoSceneNew();
   airMopAdd(mop, scene, echoSceneNix_mop, airMopAlways);
   ELL_3V_SET(scene->ambi, 1, 1, 1);
-  ELL_3V_SET(scene->bkgr, 0.2, 0.4, 0.8);
+  ELL_3V_COPY(scene->bkgr, bkgr);
 
-  float adsp[4] = {0.2, 0.8, 0, 1}, AA[16], BB[16], CC[16];
+  float AA[16], BB[16], CC[16];
 
   echoObject *cone = echoObjectNew(scene, echoTypeCone);
-  echoColorSet(cone, 1, rgb[0], rgb[1], rgb[2]);
+  echoColorSet(cone, rgb[0], rgb[1], rgb[2], 1);
   echoMatterPhongSet(scene, cone, adsp[0], adsp[1], adsp[2], adsp[3]);
   echoObject *instP = echoObjectNew(scene, echoTypeInstance);
-  echoPos_t cscl = 0.2, ctrn = 0.85;
+  echoPos_t cscl = 0.3, ctrn = 0.80;
   ELL_4M_SCALE_SET(AA, cscl, cscl, cscl);
   ELL_4M_ROTATE_Y_SET(BB, AIR_PI / 2);
   ELL_4M_MUL(CC, BB, AA);
@@ -133,7 +138,7 @@ main(int argc, const char *argv[]) {
   // echoObjectAdd(scene, instN);
   echoObject *cyl = echoObjectNew(scene, echoTypeCylinder);
   echoCylinderSet(cyl, 0);
-  echoColorSet(cyl, 1, rgb[0], rgb[1], rgb[2]);
+  echoColorSet(cyl, rgb[0], rgb[1], rgb[2], 1);
   echoMatterPhongSet(scene, cyl, adsp[0], adsp[1], adsp[2], adsp[3]);
   echoObject *instC = echoObjectNew(scene, echoTypeInstance);
   ELL_4M_SCALE_SET(AA, 1 - 1.5 * cscl, cscl / 2, cscl / 2);
@@ -160,7 +165,7 @@ main(int argc, const char *argv[]) {
     // GLK unsure about u,v,n names here
     float nn[3], uu[3], vv[3], dist;
     ELL_3V_NORM(nn, fr, dist);
-    float lsz = dist * 0.7; /* scaling view distance to get light size (edge length of
+    float lsz = dist * 0.4; /* scaling view distance to get light size (edge length of
                                square area light) */
     ELL_3V_CROSS(uu, up, nn);
     ELL_3V_CROSS(vv, nn, uu);
