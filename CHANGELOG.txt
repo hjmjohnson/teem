@@ -1926,7 +1926,8 @@ via hestParseOrExit()). Once the command is running, whether or not they finish
 successfully, it just `return`s.  (The "gkms" program modeled this behavior, so for
 TeemV2 urrdu gained a way to support it directly).
 
-• Sun Nov 16 22:22:23 2025 -0600 git commit: d1472dcf
+• Sun Nov 16 22:22:23 2025 -0600 git commit: d1472dcf, plus later:
+  Sat Jan 31 07:38:33 2026 -0600 git commit: ac1ffe0
 API CHANGE:
 - In the unrrduCmd that is the container of a "command" in the sense that unu and tend
   have:
@@ -1939,9 +1940,12 @@ API CHANGE:
 - unrrduUsage arguments have changed order to be more consistent with other functions:
   from: unrrduUsage(const char *me, hestParm *hparm,
                     const char *title, const unrrduCmd *const *cmdList);
-    to: unrrduUsage(const char *me, const char *title,
+    to: unrrduUsage(const char *title,
                     const unrrduCmd *const *cmdList, const hestParm *hparm)
   and note that hestParm is now const
+  The initial `const char *me,` arg (aka argv0) to unrrduUsage was removed
+  with ac1ffe0 because it looked ugly and confusing to use it, at least the
+  way it was being used.
 - rename global unrrduCmdList[] --> unrrduUnuCmdList[]
 - removed unrrduDefaultNumColumns global variable
   Not set-able via env-var, and was only used in src/bin/unu.c which now directly uses 78
