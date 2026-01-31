@@ -225,7 +225,7 @@ unrrduUsage(const char *prog, const char *title, const unrrduCmd *const *cmdList
     hestPrintStr(stdout, len + indent, len, columns, cmdList[ci]->info,
                  AIR_FALSE /* bslash */);
   }
-  printf("For more on using \"%s <cmd>\" listed above run: %s <cmd> --help\n", prog,
+  printf("For more on using \"%s <cmd>\" listed above, run: %s <cmd> --help\n", prog,
          prog);
   return 0;
 }
