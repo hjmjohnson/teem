@@ -49,7 +49,7 @@ main(int argc, const char **argv) {
 
   /* if there are no arguments, then we give general usage information */
   if (1 >= argc) {
-    unrrduUsage(argv[0], TEND, tendTitle, tendCmdList, hparm);
+    unrrduUsage(TEND, tendTitle, tendCmdList, hparm);
     hestParmFree(hparm);
     exit(1);
   }

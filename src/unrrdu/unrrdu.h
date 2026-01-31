@@ -172,7 +172,7 @@ UNRRDU_EXPORT const hestCB unrrduHestMaybeTypeCB; // not unu specific
 UNRRDU_EXPORT const unrrduCmd *const unrrduUnuCmdList[];
 /* these next three functions can be used by command-line tools like unu */
 UNRRDU_EXPORT airArray *unrrduMopNew(hestOpt *hopt, hestParm *hparm);
-UNRRDU_EXPORT int unrrduUsage(const char *argv0, const char *prog, const char *title,
+UNRRDU_EXPORT int unrrduUsage(const char *prog, const char *title,
                               const unrrduCmd *const *cmdList, const hestParm *hparm);
 UNRRDU_EXPORT int unrrduMainOrExit(int argc, const char **argv, const char *cmd,
                                    const char *title, const unrrduCmd *const *cmdList,

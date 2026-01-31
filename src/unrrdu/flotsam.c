@@ -117,7 +117,7 @@ unrrduMopNew(hestOpt *hopt, hestParm *hparm) {
  *                       so downstream of there, argc and argv describe all the
  *                       arguments AFTER the program command
  *             `argv0` = like it says, just argv[0] = what user typed (modulo aliases)
- *                       to get here, which probably ending with `prog`
+ *                       to get here, which probably ends with `prog`
  *                `me` = "`prog` `cmd`", the way a downstream "main" function
  *                       (a unrrduCmd->mainFunc) may self-identify e.g. "unu slice",
  *                       but confusingly *not* the current function name
@@ -192,10 +192,10 @@ cmdListCheckLen(const char *prog, const unrrduCmd *const *cmdList, size_t *maxle
  * run-time way to fix the error.
  */
 int /* Biff: nope */
-unrrduUsage(const char *argv0, const char *prog, const char *title,
-            const unrrduCmd *const *cmdList, const hestParm *hparm) {
-  if (!(argv0 && prog && title)) {
-    fprintf(stderr, "%s: need non-NULL title", __func__);
+unrrduUsage(const char *prog, const char *title, const unrrduCmd *const *cmdList,
+            const hestParm *hparm) {
+  if (!(prog && title)) {
+    fprintf(stderr, "%s: need non-NULL prog and title", __func__);
     return 1;
   }
   size_t maxlen;
@@ -226,7 +226,7 @@ unrrduUsage(const char *argv0, const char *prog, const char *title,
                  AIR_FALSE /* bslash */);
   }
   printf("For more on using \"%s <cmd>\" listed above run: %s <cmd> --help\n", prog,
-         argv0);
+         prog);
   return 0;
 }
 
@@ -249,7 +249,7 @@ unu_Prime(int argc,          /* as received by main() */
   }
   int ret;
   if (1 == argc) {
-    ret = unrrduUsage(argv[0], prog, title, cmdList, _hparm);
+    ret = unrrduUsage(prog, title, cmdList, _hparm);
     /* if `ret`: already fprintf(stderr) what went wrong */
     exit(ret); // (in unu_Prime)
   }
@@ -280,7 +280,7 @@ unu_Prime(int argc,          /* as received by main() */
   }
   if (2 == argc && !strcmp("--help", argv[1]) && !aboutHave) {
     // without an "about" command, --help is another way to ask for command list
-    exit(unrrduUsage(argv[0], prog, title, cmdList, _hparm)); // (in unu_Prime)
+    exit(unrrduUsage(prog, title, cmdList, _hparm)); // (in unu_Prime)
   }
   /* now:
      either we're run with "--help" which effectively equals "about",
