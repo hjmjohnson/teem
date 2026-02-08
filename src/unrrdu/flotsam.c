@@ -111,7 +111,7 @@ unrrduMopNew(hestOpt *hopt, hestParm *hparm) {
  * `prog` or "program" = name of the command-line program that we're here to implement
  *                       e.g. "unu" or "lpu"
  * `cmd` or  "command" = a sub-command of `prog`, like the "slice" of "unu slice"
- *      `argc`, `argv` = within this file: the way the actual top-level `main() function
+ *      `argc`, `argv` = within this file: the way the actual top-level `main()` function
  *                       received the command-line arguments.
  *                       BUT, unrrduCmd->mainFunc is called with argc-2,argv+2
  *                       so downstream of there, argc and argv describe all the
@@ -245,24 +245,28 @@ unu_Prime(int argc,          /* as received by main() */
             "prog (%p), title (%p), or cmdList (%p)",
             __func__, argc, AIR_CVOIDP(argv), AIR_CVOIDP(argv[0]), AIR_CVOIDP(prog),
             AIR_CVOIDP(title), AIR_CVOIDP(cmdList));
+    // not calling hestParmMopDone(_hparm) because something is amiss
     exit(1); // (in unu_Prime)
   }
   int ret;
   if (1 == argc) {
     ret = unrrduUsage(prog, title, cmdList, _hparm);
     /* if `ret`: already fprintf(stderr) what went wrong */
+    hestParmMopDone(_hparm);
     exit(ret); // (in unu_Prime)
   }
   // else argc >= 2
   if (2 == argc && !strcmp("--version", argv[1])) {
     char pfx[ASP1_L];
     snprintf(pfx, ASP1_L, "%s built with", prog);
+    hestParmMopDone(_hparm);
     airTeemVersionPrintAndExit(pfx);
   }
   // handle "--usage" (but not yet "--help" or "about")
   uint aboutCmdIdx;
   if (cmdListCheckLen(prog, cmdList, NULL, &aboutCmdIdx)) {
-    /* already fprintf(stderr) what went wrong */
+    // already fprintf(stderr) what went wrong
+    // not calling hestParmMopDone(_hparm) because something is amiss
     exit(1); // (in unu_Prime)
   }
   int aboutHave = (aboutCmdIdx != UINT_MAX);
@@ -276,11 +280,14 @@ unu_Prime(int argc,          /* as received by main() */
       printf("Run \"%s\" or \"%s --help\" for list of %s commands\n", argv[0], argv[0],
              prog);
     }
+    hestParmMopDone(_hparm);
     exit(0); // (in unu_Prime)
   }
   if (2 == argc && !strcmp("--help", argv[1]) && !aboutHave) {
     // without an "about" command, --help is another way to ask for command list
-    exit(unrrduUsage(prog, title, cmdList, _hparm)); // (in unu_Prime)
+    int uret = unrrduUsage(prog, title, cmdList, _hparm);
+    hestParmMopDone(_hparm);
+    exit(uret); // (in unu_Prime)
   }
   /* now:
      either we're run with "--help" which effectively equals "about",
@@ -299,6 +306,7 @@ unu_Prime(int argc,          /* as received by main() */
   if (!torun) {
     fprintf(stderr, "%s: unknown %s command \"%s\"; run \"%s\" for complete list\n",
             argv[0], prog, argv[1], argv[0]);
+    hestParmMopDone(_hparm);
     exit(1); // (in unu_Prime)
   }
   // now: we actually know we're going to run `torun`
