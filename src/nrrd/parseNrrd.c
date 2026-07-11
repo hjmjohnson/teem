@@ -647,7 +647,7 @@ rnParse_kinds(FILE *file, Nrrd *nrrd, NrrdIoState *nio, int useBiff) {
       continue;
     }
     if (!strcmp(tok, NRRD_NONE)) {
-      nrrd->axis[ai].center = nrrdKindUnknown;
+      nrrd->axis[ai].kind = nrrdKindUnknown;
       continue;
     }
     if (!(nrrd->axis[ai].kind = airEnumVal(nrrdKind, tok))) {
