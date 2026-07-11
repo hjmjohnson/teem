@@ -21,3 +21,6 @@ teem_add_test(nrrd_macros)
 teem_create_test_bin(nrrd_bspec tbspec.c)
 teem_add_test(nrrd_bspec ARGS -bs bleed wrap pad:42)
 # HEY why not more nrrd_bspec tests?
+
+teem_create_test_bin(nrrd_datafilelast tdatafilelast.c USE_TMPDIR)
+teem_add_test(nrrd_datafilelast)
