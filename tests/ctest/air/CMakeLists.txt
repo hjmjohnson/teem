@@ -16,3 +16,7 @@ teem_add_test(air_strtok)
 
 teem_create_test_bin(air_pptest pptest.c)
 teem_add_test(air_pptest)
+
+teem_create_test_bin(air_locale locale.c)
+teem_add_test(air_locale)
+set_tests_properties(air_locale PROPERTIES SKIP_RETURN_CODE 77)
