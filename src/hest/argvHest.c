@@ -188,15 +188,34 @@ with its (more baroque) quotearg_buffer_restyled() function
 int
 hest__PlainWord(const char *s) {
   assert(s); // quiets clang-tidy warning: Dereference of null pointer
-  if (*s == '\0') {
+  if ('\0' == s[0]) {
     // wut - we got the empty string, yes needs quoting
     return 0;
   }
+  // else got a non-empty string
+  if ('~' == s[0]) {
+    /* it starts with ~, which a shell will probably expand to home directory, so we will
+    to quote it.  BUT NOTE that this is not detecting ~ appearing after : in something
+    like a PATH variable, alas. */
+    return 0;
+  }
+  if ('!' == s[0] && s[1]) {
+    /* a length > 1 string starts with !, which a shell will probably to history
+    expansion on, so will quote it.  BUT NOTE that this is not detecting any other
+    settings in which a shell might do history expansion, alas. */
+    return 0;
+  }
+  // choosing not to do anything to emulate handling #-starting comments
   int plain = AIR_TRUE;
+  // verify that all chars are either alphanumeric, or (else) do NOT need quoting
   for (; *s; s++) {
-    plain &= (isalnum(*s)               //
-              || *s == '_' || *s == '-' //
-              || *s == '.' || *s == ',' || *s == '/');
+    plain &= (isalnum(*s) //
+              || '_' == *s || '-' == *s || '.' == *s || ',' == *s
+              || '/' == *s
+              /* additional things that we decree do not need quoting */
+              || '~' == *s || '#' == *s || '!' == *s || '^' == *s || '+' == *s
+              || ':' == *s || '=' == *s || '@' == *s || '%' == *s);
+    // NOTE any of the following characters do trigger quoting: { } * ? [ ]
     if (!plain) break;
   }
   return plain;

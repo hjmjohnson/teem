@@ -64,8 +64,8 @@ typedef struct {
  *
  * hest__PlainWord(s) returns non-zero if the string s can be written to the
  * shell without any quoting or escaping.  The current implementation accepts:
- *   isalnum(c)  OR  c in { '_', '-', '.', ',', '/' }
- * and rejects the empty string.
+ *   isalnum(c)  OR  c in a set of characters deemed non-special, as well as
+ * simple position-dependent handling of ~ and !
  *
  * These tests document that contract.  When hest__PlainWord is extended to
  * allow additional characters (e.g. ':', '+', '=') the expected_plain_char
@@ -80,7 +80,7 @@ static int
 expected_plain_char(char c) {
   return isalnum((unsigned char)c) || c == '_' || c == '-' || c == '.' || c == ','
       || c == '/' || c == '!' || c == '#' || c == '%' || c == '+' || c == ':' || c == '='
-      || c == '@' || c == '^' || c == ':';
+      || c == '@' || c == '^';
 }
 
 static int
@@ -116,6 +116,7 @@ test_plain_word_strings(char err[AIR_STRLEN_HUGE + 1]) {
        "abc123",                       /* simple alphanumeric */
        "a+b",        "0:10",    "x=y", /* does not need quoting */
        "!",          "bingo!",         /* not history-expanded */
+       "bingo~",                       /* not $HOME-expanded */
        "A",                            /* single upper-case letter */
        "z",                            /* single lower-case letter */
        "9",                            /* single digit */
@@ -201,6 +202,13 @@ test_sprint_plain(char err[AIR_STRLEN_HUGE + 1]) {
   {
     const char *strs[] = {"foo", "bar", "baz"};
     if (check_sprint(strs, 3, "foo bar baz", "three plain words", err)) return 1;
+  }
+  /* Multiple words that should be treated as plain */
+  {
+    const char *strs[] = {"0:10", "+3.14", "key=val", "user@host"};
+    if (check_sprint(strs, 4, "0:10 +3.14 key=val user@host", "four plain-ish words",
+                     err))
+      return 1;
   }
   /* Verify the specific plain punctuation characters that are allowed. */
   {
