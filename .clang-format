@@ -5,8 +5,9 @@
 # this directory or a subdirectory.  The teem/src/_util/clang-format.sh
 # script helps do this.
 # For more info see: https://clang.llvm.org/docs/ClangFormat.html
+# 2026: GLK removed "Language: C" as one way to stop clang-format from complaining
+# about "Configuration file(s) do(es) not support C++"
 ---
-Language: C
 BasedOnStyle: LLVM
 ColumnLimit: 89
 AlwaysBreakAfterDefinitionReturnType: All
