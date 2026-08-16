@@ -140,9 +140,10 @@ which it depends).  (TEEM_LIB_LIST)
 
 * air: Basic utility functions, used throughout Teem
 
-* hest: Command-line parsing (air)
-
 * biff: Accumulation of error messages (air)
+
+* hest: Command-line parsing (air, biff) (as of TeemV2 hest uses biff to better
+organize its error messages about parsing)
 
 * nrrd: Nearly Raw Raster Data- library for raster data manipulation, and
 support for NRRD file format (biff, hest, air)
@@ -154,7 +155,7 @@ solving cubic polynomials. (nrrd, biff, air)
 
 * unrrdu: internals of "unu" command-line tool, and some machinery used in
 other multi-command tools (like "tend") (moss, nrrd, biff, hest, air). "unu
-ilk" is new home for "ilk" image transformer built on moss
+ilk" is new home for "ilk" image transformer built on moss.
 
 * alan: Reaction-diffusion textures (nrrd, ell, biff, air)
 
