@@ -6,6 +6,7 @@ tl;dr list of breaking-est changes for TeemV2 relative to previous release v1.11
 - The options for configuring a CMake build have changed, and how Teem can also
   be built via GNUmake has also changed. See "use of CMake and GNUmake" below.
 - Renamed hestParseOrDie() --> hestParseOrExit()
+  (now, all Teem functions that might call exit() have name ending with `Exit`)
   and it no longer takes last 3 args `doInfo`, `doUsage`, `doGlossary`,
   and the hestParm->dieLessVerbose field is removed
 - hestUsage() has new additional final bool-ish argument `oneline`
@@ -14,7 +15,6 @@ tl;dr list of breaking-est changes for TeemV2 relative to previous release v1.11
   replaced by NrrdIoState->verbose (usually nio->verbose in code)
 - Renamed unrrduCmdMain() --> unrrduMainOrExit()
   and removed the final `FILE *fusage` argument
-  (now, all Teem functions that might call exit() have name ending with `Exit`)
 - How AIR_STRLEN_SMALL, AIR_STRLEN_MEDIUM, AIR_STRLEN_LARGE, and
   AIR_STRLEN_HUGE are used was changed by one, which affects the nominal size
   of buffer that some function expect (search for "svn Revision: 7034" below)
@@ -46,7 +46,7 @@ around, the version number had to be incremented to 2.0.0.
 Upon realizing that this would be a major version change, I took the opportunity to tweak
 and fix other things that were long annoying. With the exception of breaking API changes
 summarized above, the changes for TeemV2 are unlikely to break Teem-using code, but all
-are lovingly documented below, as tagged with "API CHANGE". The major items are delineatd
+are lovingly documented below, as tagged with "API CHANGE". The major items are marked
 with •s. Some of these identify the moment of the change in terms of an svn revision
 number, the more recent in terms of git commit 8-character short hash. If your point of
 comparison is the last Teem release (2012's v1.11), then some of the API CHANGES noted
@@ -226,8 +226,8 @@ keeping Teem development going. Also, with newly increased reliance on python/cf
 wrapping (see below), the fact that the API of Teem can change depending on this
 experimental-or-not setting created stupid complications, e.g. how can Python code doing
 an "import teem" gracefully learn if that `teem` has the "experimental" bits or not?  Its
-an unpythonic mess.  Removing this was overdue, and the TeemV2 release was an additionally
-motivating opportunity.
+an unpythonic mess.  Removing this was overdue, and the TeemV2 release was an
+additionally motivating opportunity.
 -- Compiling a .c file in a Teem-using project used to find Teem headers with:
     -I/path/to/teeminstall/include
 but now it uses:
@@ -238,7 +238,7 @@ is probably the right choice, and seems to be the CMake convention?
 • 2025-08-28 05:17:10 +0000 (Thu, 28 Aug 2025) svn Revision: 7329
 With a thorough modernization of how CMake is used to build Teem, one might think that
 the older GNUmake-based build system is obsolete. Turns out, I (GLK) still prefer it for
-Teem hacking, since it offers more incremental per-library builds, and quick building of
+Teem hacking, since it offers quick incremental per-library builds, and simple building of
 per-library test programs. The GNUmake build system was first written in ~2001 (before
 CMake was useful or popular) but was needlessly complicated, in part because it was
 designed for having multiple architectures share a networked filesystem.  For TeemV2,
