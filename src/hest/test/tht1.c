@@ -1,6 +1,6 @@
 /*
-This file was first written by an LLM so it is not copyrightable; subsequent human tweaks
-do not change that. Link with source, assuming GLK's account:
+This file was first written by an LLM so it is not copyrightable; subsequent human
+tweaks do not change that. Link with source, assuming GLK's account:
 https://claude.ai/chat/1de6190b-7b97-46bf-adcf-7d03cbd1e579
 */
 
