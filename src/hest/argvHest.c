@@ -184,7 +184,11 @@ and here https://www.opencoverage.net/coreutils/index_html/source_213.html
 with its (more baroque) quotearg_buffer_restyled() function
 */
 
-// hest__PlainWord(str) is true if nothing in str needs quoting or escaping
+/* hest__PlainWord(str) is true if nothing in str needs quoting or escaping.
+Quoting for whom, really?  Not for any essential hest operation, at least not
+in this process. The most common use is in hestArgVecSprint, below, which is for creating
+a copy-paste-able version of whatever command-line was given, for later reproducability.
+*/
 int
 hest__PlainWord(const char *s) {
   assert(s); // quiets clang-tidy warning: Dereference of null pointer
@@ -195,13 +199,13 @@ hest__PlainWord(const char *s) {
   // else got a non-empty string
   if ('~' == s[0]) {
     /* it starts with ~, which a shell will probably expand to home directory, so we will
-    to quote it.  BUT NOTE that this is not detecting ~ appearing after : in something
-    like a PATH variable, alas. */
+    quote it.  BUT NOTE that this is not detecting ~ appearing after : in something like
+    a PATH variable, alas. */
     return 0;
   }
   if ('!' == s[0] && s[1]) {
-    /* a length > 1 string starts with !, which a shell will probably to history
-    expansion on, so will quote it.  BUT NOTE that this is not detecting any other
+    /* a length > 1 string starts with !, which a shell will probably do history
+    expansion on, so we will quote it.  BUT NOTE that this is not detecting any other
     settings in which a shell might do history expansion, alas. */
     return 0;
   }
