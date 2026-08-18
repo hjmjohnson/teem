@@ -24,11 +24,6 @@
 #### Mac vs Linux
 
 ### Maybe compile with some of the clang sanitizers
-# Entirely separately, there is the static analyzer:
-#    https://clang.llvm.org/docs/ClangStaticAnalyzer.html
-# which is run differently, via:
-#    CC='scan-build clang' make
-#
 # For UBSan: https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html compile with:
 #    ubsan= make
 # For ASan: https://clang.llvm.org/docs/AddressSanitizer.html compile with:
@@ -41,6 +36,11 @@
 #    ubsan= asan= make
 # Note however that not all sanitizers are available on all platforms,
 # and not all sanitizers play well with each other.
+#
+# Entirely separately, there is the static analyzer:
+#    https://clang.llvm.org/docs/ClangStaticAnalyzer.html
+# which is run differently, via:
+#    CC='scan-build clang' make
 SAN_LIST :=
 ifneq ($(origin ubsan),undefined)
   SAN_LIST += undefined
@@ -64,6 +64,21 @@ ifneq ($(SAN_LIST),)
 else
   SAN_FLAG :=
 endif
+
+### Maybe compile with coverage testing:
+#   https://clang.llvm.org/docs/SourceBasedCodeCoverage.html
+# (distinct from https://clang.llvm.org/docs/SanitizerCoverage.html)
+# Enable this with:
+#    coverage= make
+ifneq ($(origin coverage),undefined)
+  COV_FLAG += -fprofile-instr-generate -fcoverage-mapping
+  CC := clang
+  # NDEBUG removes asserts() and the branches therein that will never be taken
+  CFLAGS := $(CFLAGS) -DNDEBUG
+else
+  COV_FLAG :=
+endif
+
 
 # yes, we should probably be using more ?= instead = for the assignments below,
 # but the intent here is to be clear and explicit.  The assignment "AR ?= libtool"
@@ -92,7 +107,7 @@ CHMOD := chmod
 
 # other $(CC) flags for .c compilation (e.g. optimization and warnings)
 # Any existing CFLAGS variable (e.g. from environment) is added at end
-CFLAGS := -O3 -g -W -Wall -Wextra $(SAN_FLAG) $(CFLAGS)
+CFLAGS := -O3 -g -W -Wall -Wextra $(SAN_FLAG) $(COV_FLAG) $(CFLAGS)
 
 # further $(CC) flags for creating executables when linking with (static) library
 BIN_CFLAGS :=
