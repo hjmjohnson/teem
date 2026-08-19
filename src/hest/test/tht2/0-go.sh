@@ -63,10 +63,16 @@ echo -e "\n####### $0: running tests${WITHCOV}"
 runme python3 run_hest_tests.py $COVFLAG \
     --cflags "-DTEEM_NON_CMAKE -I../../../../built/include -std=c99" \
     --ldflags "-L../../../../built/lib -lhest -lbiff -lair"
+if [[ $COVERAGE ]]; then
+    # clean up what was just generated
+    junk *.profraw
+fi
+# but keep the build/ directory of executables for later debugging
 
 if [[ $COVERAGE ]]; then
     # analyzing coverage results
     runme llvm-profdata merge -sparse *.profraw -o test.profdata
+    junk test.profdata
     runme rm -rf $COVIS
     CARGS="build/th_fixed_multi \
         -object build/th_flag \
@@ -87,6 +93,7 @@ if [[ $COVERAGE ]]; then
         # NOTE: this does not know anything about macro expansion,
         # because .lcov format is entirely line-based
         runme llvm-cov export -format=lcov $CARGS >test.lcov
+        junk test.lcov
         runme genhtml test.lcov --branch-coverage \
             --ignore-errors unsupported,unsupported,inconsistent,corrupt \
             --output-directory covis/
