@@ -34,7 +34,6 @@ Options:
   --ldflags FLAGS    Linker flags string (library paths and -l flags)
   --build-dir DIR    Where to put compiled binaries (default: ./build)
   --only PATTERN     Run only tests whose name contains PATTERN (substring)
-  --no-build         Skip compilation; assume binaries already exist
   --coverage         Compile with and run llvm source-based code coverage
   --valgrind         Wrap each execution with valgrind --leak-check=full
   --keep-temps       Do not delete temporary response files after the run
@@ -484,6 +483,60 @@ TESTS = [
         argv=['-e', 'bingo'],
         expect_fail=True,
     ),
+    dict(
+        exe='th_flagged_scalars',
+        name='error: exercising ~string quoting (bad extra arg)',
+        argv=['-s', '~/quote/me', 'oopsie'],
+        expect_fail=True,
+    ),
+    dict(
+        exe='th_flagged_scalars',
+        name='error: exercising !string quoting (bad extra arg)',
+        argv=['-s', '!bingo', 'oopsie'],
+        expect_fail=True,
+    ),
+    dict(
+        exe='th_flagged_scalars',
+        name='error: exercising string! quoting (bad extra arg)',
+        argv=['-s', 'bingo!', 'oopsie'],
+        expect_fail=True,
+    ),
+    dict(
+        exe='th_flagged_scalars',
+        name='error: exercising ! quoting (bad extra arg)',
+        argv=['-s', '!', 'oopsie'],
+        expect_fail=True,
+    ),
+    dict(
+        exe='th_flagged_scalars',
+        name='error: exercising single quoting (bad extra arg)',
+        argv=['-s', '""\\""\\""`""`""$""$', 'oopsie'],
+        expect_fail=True,
+    ),
+    dict(
+        exe='th_flagged_scalars',
+        name='error: exercising quoting quoting (bad extra arg)',
+        argv=['-s', "'", 'oopsie'],
+        expect_fail=True,
+    ),
+    dict(
+        exe='th_flagged_scalars',
+        name='error: exercising str ing quoting (bad extra arg)',
+        argv=['-s', 'bingo bob', 'oopsie'],
+        expect_fail=True,
+    ),
+    dict(
+        exe='th_flagged_scalars',
+        name='error: exercising ,~#^+:=@% quoting (bad extra arg)',
+        argv=['-s', 'b,i~n#g^o+b:o=b@i%m', 'oopsie'],
+        expect_fail=True,
+    ),
+    dict(
+        exe='th_flagged_scalars',
+        name='error: exercising empty string quoting (bad extra arg)',
+        argv=['-s', '', 'oopsie'],
+        expect_fail=True,
+    ),
 ]  # end TESTS
 
 # ---------------------------------------------------------------------------
@@ -694,7 +747,6 @@ def main() -> int:
         metavar='PATTERN',
         help='run only tests whose name contains PATTERN',
     )
-    ap.add_argument('--no-build', action='store_true', help='skip compilation step')
     ap.add_argument(
         '--coverage',
         action='store_true',
@@ -716,20 +768,24 @@ def main() -> int:
     build_dir = Path(args.build_dir)
 
     # ---- build ----
-    if not args.no_build:
-        if not args.cflags and not args.ldflags:
-            print(
-                'Warning: --cflags and --ldflags are both empty.  Compilation will',
-                file=sys.stderr,
-            )
-            print(
-                '  probably fail without -I paths for hest.h and a link target.', file=sys.stderr
-            )
-        print('Building exes ...')
-        if not build_exes(args, exe_dir, build_dir):
-            print('One or more builds failed; aborting.', file=sys.stderr)
-            return 2
-        print()
+    if not args.cflags and not args.ldflags:
+        print(
+            'Warning: --cflags and --ldflags are both empty.  Compilation will',
+            file=sys.stderr,
+        )
+        print('  probably fail without -I paths for hest.h and a link target.', file=sys.stderr)
+    print('Building exes ...')
+    if not build_exes(args, exe_dir, build_dir):
+        print('One or more builds failed; aborting.', file=sys.stderr)
+        return 2
+    for exe in EXES:
+        binary = build_dir / exe
+        # if not binary.exists():
+        #    continue
+        result = subprocess.run([str(binary), '--help'], capture_output=True, text=True, env=ENV)
+        print(f'./{build_dir}/{exe} --help:')
+        # print(result.stdout, end='')
+        print(textwrap.indent(result.stdout, INDENT))
 
     # ---- filter ----
     active = TESTS
