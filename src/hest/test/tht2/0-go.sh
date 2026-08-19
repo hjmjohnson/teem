@@ -13,8 +13,8 @@ unset UNU_HISTORY_TRACE
 # put together based on info from (GLK account assumed)
 # https://claude.ai/chat/753238c4-c4d1-4241-824a-c1a310956286
 
-# COVERAGE='' #not doing coverage testing
-COVERAGE=yup # YES doing coverage testing
+COVERAGE='' #not doing coverage testing
+#COVERAGE=yup # YES doing coverage testing
 
 WITHCOV=""
 COVIS=""

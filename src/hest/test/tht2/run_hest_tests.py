@@ -7,8 +7,9 @@ run_hest_tests.py — build and run hest integration tests.
 
 Each test compiles a C test program (th_*.c), runs it with a specific
 argv, and compares the "key=value" stdout against an expected dict.
-Integer values are compared exactly; floating-point values with a relative
-tolerance; strings exactly.
+Integer and floats values are compared exactly (GLK fix: since we
+only use reals that floats can store exactly, and will handle special values
+separately)
 
 To run, from this directory (GLK fixed):
 
@@ -57,6 +58,9 @@ from pathlib import Path
 AIR_ENDIAN_LITTLE = 1234
 AIR_ENDIAN_BIG = 4321
 
+# how much to indent multi-line text
+INDENT = '       '
+
 # ---------------------------------------------------------------------------
 # Test table
 # ---------------------------------------------------------------------------
@@ -66,13 +70,11 @@ AIR_ENDIAN_BIG = 4321
 #   exe             str   binary name (without path or extension)
 #   argv            list  arguments passed to the binary (no program name)
 #   expected        dict  key → Python value to compare against printed output
-#                           int   → compared as integer (exact)
-#                           float → compared with relative tolerance
+#                           int, float → compared exactly
+#                           (we use reals that can be stored exactly)
 #                           str   → compared as string (exact, case-sensitive)
 #                         Keys not present in `expected` are ignored.
 #   expect_fail     bool  binary should exit non-zero  [default: False]
-#   stderr_contains str   substring that must appear in stderr on failure
-#                         [optional, only checked when expect_fail=True]
 #   response_files  dict  {filename: content}
 #                         Files to create in a temp dir before running.
 #                         Any argv element of the form "@FILENAME" where
@@ -193,8 +195,20 @@ TESTS = [
     dict(
         exe='th_flagged_scalars',
         name='scalars: nested -{ -{ }- }- comments',
-        argv=['-n', '5', '-{', '-n', '10', '-{', '-n', '20', '}-', '}-'],
+        argv=['-n', '5', '-{', '-n', '10', '-{', 'bingo', 'banana', '}-', '}-'],
         expected={'n': 5, 'n.src': 'cmdline'},
+    ),
+    dict(
+        exe='th_flagged_scalars',
+        name='scalars: badly nested -{ -{ }- }- comments 1',
+        argv=['-n', '5', '-{', '-n', '10', '-{', 'bingo', 'banana', '}-', '}-', '}-'],
+        expect_fail=True,
+    ),
+    dict(
+        exe='th_flagged_scalars',
+        name='scalars: badly nested -{ -{ }- }- comments 2',
+        argv=['-n', '5', '-{', '-n', '10', '-{', 'bingo', 'banana', '}-', '}-', '-{'],
+        expect_fail=True,
     ),
     dict(
         exe='th_flagged_scalars',
@@ -419,31 +433,54 @@ TESTS = [
         },
     ),
     # ==========================================================================
-    # th_errors — expected parse failures
-    # These use the th_errors binary (flagged -n int, -s string, both defaulted).
+    # expected parse failures
     # ==========================================================================
     dict(
-        exe='th_errors',
-        name='error: non-integer argument for -n',
-        argv=['-n', 'not-an-int'],
+        exe='th_flagged_scalars',
+        name='error: bogus option',
+        argv=['-q', 'bingo'],
         expect_fail=True,
     ),
     dict(
-        exe='th_errors',
-        name='error: unrecognised flag',
-        argv=['-zzz'],
-        expect_fail=True,
-    ),
-    dict(
-        exe='th_errors',
-        name='error: -n with no following argument',
+        exe='th_flagged_scalars',
+        name='error: missing argument',
         argv=['-n'],
         expect_fail=True,
     ),
     dict(
-        exe='th_errors',
-        name='error: extra positional argument (hest rejects unconsumed args)',
+        exe='th_flagged_scalars',
+        name='error: unexpected non-flag',
         argv=['unexpected'],
+        expect_fail=True,
+    ),
+    dict(
+        exe='th_flagged_scalars',
+        name='error: too many args',
+        argv=['-n', '6 7'],  # HEY should be '6', '7', but this usefully exposes a problem
+        expect_fail=True,
+    ),
+    dict(
+        exe='th_flagged_scalars',
+        name='error: bad integer argument',
+        argv=['-n', 'bingo'],
+        expect_fail=True,
+    ),
+    dict(
+        exe='th_flagged_scalars',
+        name='error: bad double argument',
+        argv=['-x', 'bingo'],
+        expect_fail=True,
+    ),
+    dict(
+        exe='th_flagged_scalars',
+        name='error: bad boolean argument',
+        argv=['-b', 'bingo'],
+        expect_fail=True,
+    ),
+    dict(
+        exe='th_flagged_scalars',
+        name='error: bad airEnum argument',
+        argv=['-e', 'bingo'],
         expect_fail=True,
     ),
 ]  # end TESTS
@@ -512,13 +549,6 @@ def parse_kv(stdout: str) -> dict:
 # Comparison
 # ---------------------------------------------------------------------------
 
-# Relative tolerances for floating-point keys.
-# The C programs print floats with %.9g and doubles with %.17g, both of
-# which guarantee round-trip accuracy.  These tolerances are generous
-# enough to absorb minor platform differences while still catching real bugs.
-_FLOAT_REL_TOL = 1e-6   # for float  (C type): ~7 significant digits
-_DOUBLE_REL_TOL = 1e-12  # for double (C type): ~15 significant digits
-
 
 def _values_match(key: str, actual_str: str, expected_val) -> bool:
     """Return True if actual_str is equivalent to expected_val for this key."""
@@ -530,10 +560,7 @@ def _values_match(key: str, actual_str: str, expected_val) -> bool:
             return int(actual_str) == expected_val
         elif isinstance(expected_val, float):
             actual_f = float(actual_str)
-            if expected_val == 0.0:
-                return abs(actual_f) < 1e-15
-            # Use double tolerance; float options are cast to double before printing.
-            return math.isclose(actual_f, expected_val, rel_tol=_DOUBLE_REL_TOL)
+            return actual_f == expected_val
         elif isinstance(expected_val, str):
             return actual_str == expected_val
         else:
@@ -551,14 +578,13 @@ def _values_match(key: str, actual_str: str, expected_val) -> bool:
 
 def run_one(test: dict, args, build_dir: Path) -> tuple:
     """
-    Execute one test case.  Returns (passed: bool, detail: str).
-    detail is empty on pass; it describes the problem on failure.
+    Execute one test case.  Returns (expected: bool, detail: str).
+    where "expected" means that the command ran or failed as expected.
     """
     exe = test['exe']
     argv = list(test.get('argv', []))
     expected = test.get('expected', {})
     expect_fail = test.get('expect_fail', False)
-    stderr_pat = test.get('stderr_contains', None)
     rf_specs = test.get('response_files', {})
 
     tmp_dir = None
@@ -576,7 +602,7 @@ def run_one(test: dict, args, build_dir: Path) -> tuple:
                             fh.write(rf_specs[fname])
                         print(f'with response file {fpath}:')
                         for line in rf_specs[fname].splitlines():
-                            print(f'        {line}')
+                            print(f'{INDENT}{line}')
                         argv[idx] = f'@{fpath}'
 
         # ---- build the command ----
@@ -595,34 +621,20 @@ def run_one(test: dict, args, build_dir: Path) -> tuple:
         print(f"running: {' '.join(cmd)}")
         result = subprocess.run(cmd, capture_output=True, text=True, env=ENV)
         exit_code = result.returncode
-        stdout = result.stdout
-        stderr = result.stderr
+        errlog = f'stderr:\n{textwrap.indent(result.stderr.strip(), INDENT)}'
 
-        # ---- check exit code ----
+        # ---- If supposed to not run, verify that
         if expect_fail:
             if exit_code == 0:
-                return False, 'expected non-zero exit but binary returned 0'
-            if stderr_pat and stderr_pat not in stderr:
-                return False, (
-                    f'expected stderr to contain {stderr_pat!r}\n'
-                    f'  actual stderr: {stderr.strip()!r}'
-                )
-            # Optional: surface the error message the binary printed
-            if args.verbose:
-                kv = parse_kv(stdout)
-                if 'error' in kv:
-                    print(f"      error message: {kv['error']!r}")
-            return True, ''
+                return False, 'expected failure/non-zero exit but got 0'
+            return True, errlog
 
-        # ---- binary should have succeeded ----
-        if exit_code != 0:
-            detail = f'unexpected exit code {exit_code}'
-            if stderr.strip():
-                detail += f"\n  stderr:\n{textwrap.indent(stderr.strip(), '    ')}"
-            return False, detail
+        # ---- Else supposed to run, verify that
+        if exit_code:
+            return False, f'unexpected failure/non-zero exit code {exit_code}' + errlog
 
-        # ---- parse and compare key=value output ----
-        actual = parse_kv(stdout)
+        # ---- Supposed to run and did run; did it run correctly?
+        actual = parse_kv(result.stdout)
         failures = []
         for key, exp_val in expected.items():
             if key not in actual:
@@ -634,12 +646,9 @@ def run_one(test: dict, args, build_dir: Path) -> tuple:
 
         if failures:
             detail = 'value mismatch(es):\n' + '\n'.join(failures)
-            if args.verbose:
-                detail += f"\n  full binary output:\n{textwrap.indent(stdout, '    ')}"
+            outlog = f'stdout:\n{textwrap.indent(result.stdout.strip(), INDENT)}'
+            detail += f'\nfull binary output:' + outlog
             return False, detail
-
-        if args.verbose and stdout.strip():
-            print(textwrap.indent(stdout, '      '))
 
         return True, ''
 
@@ -742,22 +751,20 @@ def main() -> int:
         total += 1
         label = t.get('name', f"{t['exe']} {t.get('argv', [])}")
         expect_fail = t.get('expect_fail', False)
+        # "ok" == got what we expected
         ok, detail = run_one(t, args, build_dir)
-        if ok and not expect_fail:
-            tag = '[good:pass] '
-        elif ok and expect_fail:
-            tag = '[OOPS:PASS]'
-        elif not ok and expect_fail:
-            tag = '[good:fail]'
-        else:
-            tag = '[OOPS:FAIL] '
-        if 'good' in tag:
+        # (GLK) HERE is where sense of "pass" changes
+        # from: "hestParse() and everything else worked ok"
+        # to: "the program worked or failed as we intended it to"
+        if ok:
+            tag = '[good:' + ('fail]' if expect_fail else 'pass]')
             passed += 1
         else:
+            tag = '[OOPS:' + ('PASS]' if expect_fail else 'FAIL]')
             failed += 1
-        print(f'  {tag} {label}')
-        if not ok and detail:
-            print(textwrap.indent(detail, '         '))
+        print(f'{tag} {label}')
+        if detail:
+            print(textwrap.indent(detail, INDENT))
         print('')   # to better visually separate tests
 
     # ---- summary ----

@@ -58,48 +58,12 @@ https://claude.ai/chat/753238c4-c4d1-4241-824a-c1a310956286
       hestGlossary(stdout, opt, hparm);                                                 \
       exit(0);                                                                          \
     }                                                                                   \
-    free(_th_err);                                                                      \
-  } while (0)
-
-/* TH_PARSE_SHOULD_FAIL: call hestParse expecting it to return non-zero.
-   If hestParse unexpectedly succeeds: emit to stderr and exit 1 (test fails).
-   If hestParse fails as expected: print "error=<msg>" to stdout so the runner
-   can inspect the message if desired, then continue.
-   Caller must follow with TH_CLEANUP_AFTER_FAIL (not TH_CLEANUP). */
-#define TH_PARSE_SHOULD_FAIL(opt, hparm, _argc, _argv)                                  \
-  do {                                                                                  \
-    char *_th_err = NULL;                                                               \
-    int _th_ret = hestParse((opt), (_argc), (const char **)(_argv), &_th_err, (hparm)); \
-    if (!_th_ret) {                                                                     \
-      if (opt->helpWanted) {                                                            \
-        hestUsage(stdout, opt, argv[0], hparm, AIR_FALSE);                              \
-        hestGlossary(stdout, opt, hparm);                                               \
-        exit(0);                                                                        \
-      }                                                                                 \
-      fprintf(stderr, "hestParse succeeded but was expected to fail\n");                \
-      free(_th_err);                                                                    \
-      hestParseFree(opt);                                                               \
-      hestOptFree(opt);                                                                 \
-      hestParmFree(hparm);                                                              \
-      exit(1);                                                                          \
-    }                                                                                   \
-    printf("error=%s\n", _th_err ? _th_err : "(no message)");                           \
-    free(_th_err);                                                                      \
   } while (0)
 
 /* TH_CLEANUP: free everything after a *successful* parse. */
 #define TH_CLEANUP(opt, hparm)                                                          \
   do {                                                                                  \
     hestParseFree(opt);                                                                 \
-    hestOptFree(opt);                                                                   \
-    hestParmFree(hparm);                                                                \
-  } while (0)
-
-/* TH_CLEANUP_AFTER_FAIL: free everything after a *failed* parse.
-   hestParseFree is intentionally omitted: the existing code patterns in
-   the hest test suite (ex1.c etc.) skip it on the failure path. */
-#define TH_CLEANUP_AFTER_FAIL(opt, hparm)                                               \
-  do {                                                                                  \
     hestOptFree(opt);                                                                   \
     hestParmFree(hparm);                                                                \
   } while (0)
