@@ -13,8 +13,11 @@ unset UNU_HISTORY_TRACE
 # put together based on info from (GLK account assumed)
 # https://claude.ai/chat/753238c4-c4d1-4241-824a-c1a310956286
 
-COVERAGE='' #not doing coverage testing
-#COVERAGE=yup # YES doing coverage testing
+# NOTE: this is very much in-progress: should have a command-line
+# option to control coverage, and, which kind of reporting to do
+
+#COVERAGE='' #not doing coverage testing
+COVERAGE=yup # YES doing coverage testing
 
 WITHCOV=""
 COVIS=""
@@ -37,6 +40,7 @@ if [[ $COVERAGE ]]; then
     # yes doing coverage testing
     (
         cd ../..
+        # The coverage= prefix tell Teem's make to compile with coverage testing
         coverage= make -j8
     )
     # clean up all .profraw from previous run
@@ -64,8 +68,7 @@ if [[ $COVERAGE ]]; then
     # analyzing coverage results
     runme llvm-profdata merge -sparse *.profraw -o test.profdata
     runme rm -rf $COVIS
-    CARGS="build/th_errors \
-        -object build/th_fixed_multi \
+    CARGS="build/th_fixed_multi \
         -object build/th_flag \
         -object build/th_flagged_scalars \
         -object build/th_unflagged_fixed \
@@ -87,7 +90,7 @@ if [[ $COVERAGE ]]; then
         runme genhtml test.lcov --branch-coverage \
             --ignore-errors unsupported,unsupported,inconsistent,corrupt \
             --output-directory covis/
-        # ... gave up on using gcovr ...
+        # ... actually, gave up on using gcovr ...
         ## after: pip3 install gcovr
         #gcovr --lcov test.lcov --html-details covis/
     fi
