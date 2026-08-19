@@ -209,6 +209,13 @@ hest__PlainWord(const char *s) {
     settings in which a shell might do history expansion, alas. */
     return 0;
   }
+  if (!strcmp("-{", s) || !strcmp("}-", s)) {
+    /* hest-specific trick: we accept the commenting strings as non-special because they
+    don't need quoting on rational shells (sorry csh and tcsh), and, we do this
+    regardless of hparm->respectDashBraceComments because we don't have an hparm here.
+    But other { and } do trigger quoting, below */
+    return 1;
+  }
   // choosing not to do anything to emulate handling #-starting comments
   int plain = AIR_TRUE;
   // verify that all chars are either alphanumeric, or (else) do NOT need quoting
