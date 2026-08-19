@@ -49,6 +49,7 @@ import subprocess
 import sys
 import tempfile
 import textwrap
+import shlex
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
@@ -456,7 +457,7 @@ TESTS = [
     dict(
         exe='th_flagged_scalars',
         name='error: too many args',
-        argv=['-n', '6 7'],  # HEY should be '6', '7', but this usefully exposes a problem
+        argv=['-n', '6', '7'],
         expect_fail=True,
     ),
     dict(
@@ -513,7 +514,7 @@ def build_exes(args, exe_dir: Path, build_dir: Path) -> bool:
         # Build the compile command.  ldflags comes last so that on Linux, the
         # linker sees the object file before the library that satisfies it.
         cmd = [cc] + cflags.split() + [str(src), '-o', str(out)] + args.ldflags.split()
-        print(f'  compiling via: {' '.join(cmd)}')
+        print(f'  compiling via: {shlex.join(cmd)}')
         print(f'  compiling {exe} ...', end='', flush=True)
         result = subprocess.run(cmd, capture_output=True, text=True)
         if result.returncode == 0:
@@ -618,7 +619,7 @@ def run_one(test: dict, args, build_dir: Path) -> tuple:
             ] + cmd
 
         # ---- execute ----
-        print(f"running: {' '.join(cmd)}")
+        print(f'running: {shlex.join(cmd)}')   # NOT: print(f"running: {' '.join(cmd)}")
         result = subprocess.run(cmd, capture_output=True, text=True, env=ENV)
         exit_code = result.returncode
         errlog = f'stderr:\n{textwrap.indent(result.stderr.strip(), INDENT)}'
