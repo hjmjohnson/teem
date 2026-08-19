@@ -212,7 +212,11 @@ typedef struct {
                          of the various functions (like hestOptAdd or hestOptAdd_nva or
                          hestOptSingleSet ... ) */
   char *flag;
-  /*                     how the option is identified on the cmd line */
+  /*                     how the option is identified on the cmd line. If one ',' occurs
+                         in this string, it separates the short and long forms that will
+                         be recognized. If `flag` is "s,size", then either "-s" or
+                         "--size" will work to identify the option.  The role of ',' is
+                         via the MY_MULTI_FLAG_SEP #define in privateHest.h. */
   char *name;
   /*                     simple description of option's parameter(s) */
   int type;
