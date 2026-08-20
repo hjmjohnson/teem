@@ -28,6 +28,7 @@ main(int argc, const char **argv) {
   hestParm *hparm = hestParmNew();
   hparm->noArgsIsNoProblem = AIR_TRUE; /* allow empty argv */
   hparm->respectDashDashHelp = AIR_TRUE;
+  hestParmColumnsIoctl(hparm, 80); // just for coverage
 
   int v = 0;
   hestOptAdd_Flag(&opt, "v", &v, "be verbose");

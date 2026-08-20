@@ -69,6 +69,8 @@ INDENT = '       '
 #
 #   exe             str   binary name (without path or extension)
 #   argv            list  arguments passed to the binary (no program name)
+#   env        (var,val)  (GLK added) prior to running, set environment variable
+#                         `var` to value `val`
 #   expected        dict  key → Python value to compare against printed output
 #                           int, float → compared exactly
 #                           (we use reals that can be stored exactly)
@@ -436,6 +438,20 @@ TESTS = [
     # expected parse failures
     # ==========================================================================
     dict(
+        env=('THT_VMIN', '0'),
+        exe='th_unflagged_variadic',
+        name='unflagged-variadic: cant have min=0 amidst other unflagged',
+        argv=['10', '20', '99'],
+        expect_fail=True,
+    ),
+    dict(
+        env=('THT_TWOVAR', 'true'),
+        exe='th_unflagged_variadic',
+        name='unflagged-variadic: cant have two unflagged variadic',
+        argv=['10', '20', '99'],
+        expect_fail=True,
+    ),
+    dict(
         exe='th_flagged_scalars',
         name='error: bogus option',
         argv=['-q', 'bingo'],
@@ -636,6 +652,7 @@ def run_one(test: dict, args, build_dir: Path) -> tuple:
     where "expected" means that the command ran or failed as expected.
     """
     exe = test['exe']
+    envvarval = test.get('env', None)   # GLK added
     argv = list(test.get('argv', []))
     expected = test.get('expected', {})
     expect_fail = test.get('expect_fail', False)
@@ -659,7 +676,7 @@ def run_one(test: dict, args, build_dir: Path) -> tuple:
                             print(f'{INDENT}{line}')
                         argv[idx] = f'@{fpath}'
 
-        # ---- build the command ----
+        # ---- assemble the argv for running the program ----
         binary = str(build_dir / exe)
         cmd = [binary] + argv
         if args.valgrind:
@@ -672,8 +689,16 @@ def run_one(test: dict, args, build_dir: Path) -> tuple:
             ] + cmd
 
         # ---- execute ----
-        print(f'running: {shlex.join(cmd)}')   # NOT: print(f"running: {' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True, env=ENV)
+        print(f'running: {shlex.join(cmd)}', end='')   # NOT: print(f"running: {' '.join(cmd)}")
+        if envvarval:
+            (envvar, envval) = envvarval
+            print(f' **with** env[{envvar}]={envval}')
+            MYENV = ENV.copy()
+            MYENV[envvar] = envval
+        else:
+            MYENV = ENV
+            print('')
+        result = subprocess.run(cmd, capture_output=True, text=True, env=MYENV)
         exit_code = result.returncode
         errlog = f'stderr:\n{textwrap.indent(result.stderr.strip(), INDENT)}'
 

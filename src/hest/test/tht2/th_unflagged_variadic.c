@@ -38,6 +38,55 @@ https://claude.ai/chat/753238c4-c4d1-4241-824a-c1a310956286
 #include <stdio.h> /* for snprintf */
 #include "thcommon.h"
 
+// GLK adapted from nrrdGetenvBool in ../nrrd/defaultsNrrd.c
+static void
+getenvBool(int *val, const char *envVar) {
+  char *envVal = getenv(envVar);
+  if (!envVal) {
+    // env var was not set, bye
+    return;
+  }
+  // else env var was set
+  if (!strlen(envVal)) {
+    /* for bools, being merely set to empty string means "true" */
+    *val = AIR_TRUE;
+    return;
+  }
+  // else env var was set to non-empty string
+  int tmp = airEnumVal(airBool, envVal);
+  if (airEnumUnknown(airBool) == tmp) {
+    // else env var was set but could not be parsed
+    fprintf(stderr, "ERROR(%s): could not parse env[\"%s\"]=\"%s\" as int\n", __func__,
+            envVar, envVal);
+    exit(1); // WE ARE OUT OF HERE
+  }
+  *val = tmp;
+  return;
+}
+
+// GLK adapted from nrrdGetenvInt in ../nrrd/defaultsNrrd.c
+static void
+getenvInt(int *val, const char *envVar) {
+  char *envVal = getenv(envVar);
+  if (!envVal) {
+    // env var was not set, bye
+    return;
+  }
+  // else env var was set: can it be parsed?
+  int tmp;
+  int scanned = sscanf(envVal, "%d", &tmp);
+  if (1 == scanned) {
+    // if could parse one, set it
+    *val = tmp;
+    return;
+  }
+  // else env var was set but could not be parsed
+  fprintf(stderr, "ERROR(%s): could not parse env[\"%s\"]=\"%s\" as int\n", __func__,
+          envVar, envVal);
+  exit(1); // WE ARE OUT OF HERE
+  return;
+}
+
 int
 main(int argc, const char **argv) {
   TH_SANITY;
@@ -50,11 +99,26 @@ main(int argc, const char **argv) {
 
   char **B = NULL;
   unsigned int sawB = 0;
-  hestOptAdd_Nv_String(&opt, NULL, "B", 1, -1, &B, NULL, "one-or-more middle strings",
-                       &sawB);
+
+  int eGot;
+  // export THT_VMIN=0 to trigger a particular hest failure
+  int VMIN = 1; // by default, min # args is 1
+  getenvInt(&VMIN, "THT_VMIN");
+  hestOptAdd_Nv_String(&opt, NULL, "B", VMIN, -1, &B, NULL,
+                       "variable # of middle strings", &sawB);
 
   int C = 0;
   hestOptAdd_1_Int(&opt, NULL, "C", &C, NULL, "trailing int");
+
+  // export THT_TWOVAR to trigger a different particular hest failure
+  int TWOVAR = AIR_FALSE; // by default, do not use extra variadic
+  getenvBool(&TWOVAR, "THT_TWOVAR");
+  char **D = NULL;
+  unsigned int sawD = 0;
+  if (TWOVAR) {
+    hestOptAdd_Nv_String(&opt, NULL, "D", 1, -1, &D, NULL, "one-or-more end strings",
+                         &sawD);
+  }
 
   TH_PARSE(opt, hparm, argc - 1, argv + 1);
 
