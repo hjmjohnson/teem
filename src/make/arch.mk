@@ -73,10 +73,12 @@ endif
 ifneq ($(origin coverage),undefined)
   COV_FLAG += -fprofile-instr-generate -fcoverage-mapping
   CC := clang
-  # NDEBUG removes asserts() and the branches therein that will never be taken
-  CFLAGS := $(CFLAGS) -DNDEBUG
+  # NDEBUG removes assert()s and the branches therein that will never be taken
+  # some conventional wisdom says to lower optimization for coverage testing
+  OPT_FLAGS := -DNDEBUG -O1
 else
   COV_FLAG :=
+  OPT_FLAGS := -O3
 endif
 
 
@@ -107,7 +109,7 @@ CHMOD := chmod
 
 # other $(CC) flags for .c compilation (e.g. optimization and warnings)
 # Any existing CFLAGS variable (e.g. from environment) is added at end
-CFLAGS := -O3 -g -W -Wall -Wextra $(SAN_FLAG) $(COV_FLAG) $(CFLAGS)
+CFLAGS := $(OPT_FLAGS) -g -W -Wall -Wextra $(SAN_FLAG) $(COV_FLAG) $(CFLAGS)
 
 # further $(CC) flags for creating executables when linking with (static) library
 BIN_CFLAGS :=
