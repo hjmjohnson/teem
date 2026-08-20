@@ -756,6 +756,23 @@ identStr(char *ident, size_t identSize, const hestOpt *hopt) {
   return ident;
 }
 
+// return havec->harg[popIdx] and shift higher indices down
+// formerly hestArgVecRemove but only used in this file; moving it
+// here removes cautious error checking that tests can't exercise
+static hestArg *
+havecRemove(hestArgVec *havec, uint popIdx) {
+  hestArg *ret = havec->harg[popIdx];
+  uint ai;
+  for (ai = popIdx; ai < havec->len - 1; ai++) {
+    havec->harg[ai] = havec->harg[ai + 1];
+  }
+  // NULL out final out, using final value of ai
+  havec->harg[ai] = NULL;
+  // decrement the nominal length of havec->harg
+  airArrayLenIncr(havec->hargArr, -1);
+  return ret;
+}
+
 /* havecTransfer
 (if `num`) moves `num` args from `hvsrc` (starting at `srcIdx`) to `hopt->havec`. This
 takes `hestOpt *hopt` instead of `hopt->havec` so that we can also set `hopt->source`
@@ -784,7 +801,7 @@ havecTransfer(hestOpt *hopt, hestArgVec *hvsrc, uint srcIdx, uint num,
     // okay now do the work, starting with emptying destination havec
     hestArgVecReset(hopt->havec);
     for (uint ai = 0; ai < num; ai++) {
-      hestArg *harg = hestArgVecRemove(hvsrc, srcIdx);
+      hestArg *harg = havecRemove(hvsrc, srcIdx);
       hestArgVecAppendArg(hopt->havec, harg);
       hopt->source = harg->source;
     }
@@ -948,7 +965,7 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     theOpt->source to every source of each arg extracted */
     theOpt->source = havec->harg[argIdx]->source;
     // lose the flag argument
-    hestArgNix(hestArgVecRemove(havec, argIdx));
+    hestArgNix(havecRemove(havec, argIdx));
     havStr = hestArgVecSprint(havec, AIR_TRUE);
     if (havecTransfer(theOpt, havec, argIdx, parmNum, hparm)) {
       BIFF_GIVEN_ARGV(havStr, AIR_TRUE); // copying from 2 lines above
@@ -959,7 +976,7 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     airFree(havStr);
     if (hitVPS) {
       // lose the variadic-parameter-stop flag
-      hestArgNix(hestArgVecRemove(havec, argIdx));
+      hestArgNix(havecRemove(havec, argIdx));
     }
     if (hparm->verbose) {
       char info[AIR_STRLEN_HUGE + 1];

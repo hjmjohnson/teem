@@ -469,7 +469,6 @@ HEST_EXPORT hestArgVec *hestArgVecNew(void);
 HEST_EXPORT void hestArgVecReset(hestArgVec *havec);
 HEST_EXPORT hestArgVec *hestArgVecNix(hestArgVec *havec);
 HEST_EXPORT void *hestArgVecNix_mop(void *);
-HEST_EXPORT hestArg *hestArgVecRemove(hestArgVec *havec, unsigned int popIdx);
 HEST_EXPORT char *hestArgVecSprint(const hestArgVec *havec, int showIndices);
 HEST_EXPORT char *hestArgcArgvSprint(int argc, const char **argv, int showIdx);
 HEST_EXPORT void hestArgVecAppendString(hestArgVec *havec, const char *str);

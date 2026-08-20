@@ -155,24 +155,6 @@ hestArgVecNix(hestArgVec *havec) {
 }
 AIR_MOPPER(hestArgVecNix)
 
-// return havec->harg[popIdx] and shift higher indices down
-hestArg *
-hestArgVecRemove(hestArgVec *havec, uint popIdx) {
-  hestArg *ret = NULL;
-  if (havec && popIdx < havec->len) { // note: this implies that havec->len >= 1
-    ret = havec->harg[popIdx];
-    uint ai;
-    for (ai = popIdx; ai < havec->len - 1; ai++) {
-      havec->harg[ai] = havec->harg[ai + 1];
-    }
-    // NULL out final out, using final value of ai
-    havec->harg[ai] = NULL;
-    // decrement the nominal length of havec->harg
-    airArrayLenIncr(havec->hargArr, -1);
-  }
-  return ret;
-}
-
 /* hestArgVecSprint is like the opposite of the shell-style tokenization done by
 parsest.c:argstGo(); this generates a single human-friendly string that could be
 tokenized to recover the hestArgVec we started with.
@@ -344,9 +326,9 @@ hestArgVecPrint(const char *caller, const char *info, const hestArgVec *havec) {
   for (uint idx = 0; idx < havec->hargArr->len; idx++) {
     const hestArg *harg;
     harg = havec->harg[idx];
-    // fprintf(stderr, "!%s harg@%p=%u:<%s>\n", "", AIR_VOIDP(harg), idx,
-    //        harg->str ? harg->str : "NULL");
-    printf(" %u%c:<%s>", idx, srcch[harg->source], harg->str ? harg->str : "NULL");
+    // it would be a logic error in hest code if harg->str was NULL
+    assert(harg->str);
+    printf(" %u%c:<%s>", idx, srcch[harg->source], harg->str);
   }
   printf("\n");
   char *ppargs = hestArgVecSprint(havec, AIR_FALSE);
