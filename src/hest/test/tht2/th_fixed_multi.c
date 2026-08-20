@@ -4,9 +4,8 @@ tweaks do not change that. Link with source, assuming GLK's account:
 https://claude.ai/chat/753238c4-c4d1-4241-824a-c1a310956286
 */
 
+static const char *info = "fixed multiple-parameter options (kind 3)";
 /*
-** th_fixed_multi.c: fixed multiple-parameter options (kind 3).
-**
 ** Kind 3: min == max >= 2.  The flag must be followed by exactly N arguments.
 **
 ** Options (both flagged, both with defaults):
@@ -33,7 +32,7 @@ main(int argc, const char **argv) {
   int i[3];
   hestOptAdd_3_Int(&opt, "i", "i0 i1 i2", i, "10 20 30", "three ints");
 
-  TH_PARSE(opt, hparm, argc - 1, argv + 1);
+  TH_PARSE(opt, info, hparm, argc - 1, argv + 1);
 
   THPRINT_FLOAT("f0", f[0]);
   THPRINT_FLOAT("f1", f[1]);

@@ -43,7 +43,7 @@ https://claude.ai/chat/753238c4-c4d1-4241-824a-c1a310956286
    has already done argc-1, argv+1 to skip the program name).
    On hestParse failure: print the error to stderr and exit 1.
    On success: continue normally. */
-#define TH_PARSE(opt, hparm, _argc, _argv)                                              \
+#define TH_PARSE(opt, info, hparm, _argc, _argv)                                        \
   do {                                                                                  \
     char *_th_err = NULL;                                                               \
     if (hestParse((opt), (_argc), (const char **)(_argv), &_th_err, (hparm))) {         \
@@ -54,6 +54,7 @@ https://claude.ai/chat/753238c4-c4d1-4241-824a-c1a310956286
       exit(1);                                                                          \
     }                                                                                   \
     if (opt->helpWanted) {                                                              \
+      hestInfo(stdout, argv[0], info, hparm);                                           \
       hestUsage(stdout, opt, argv[0], hparm, AIR_FALSE);                                \
       hestGlossary(stdout, opt, hparm);                                                 \
       exit(0);                                                                          \
@@ -116,5 +117,54 @@ th_source_str(int src) {
 /* THPRINT_SOURCE: print "name.src=<source>" for the option at index optIdx. */
 #define THPRINT_SOURCE(name, opt, optIdx)                                               \
   printf("%s.src=%s\n", (name), th_source_str((opt)[(optIdx)].source))
+
+// GLK adapted from nrrdGetenvBool in ../nrrd/defaultsNrrd.c
+static void
+th_getenvBool(int *val, const char *envVar) {
+  char *envVal = getenv(envVar);
+  if (!envVal) {
+    // env var was not set, bye
+    return;
+  }
+  // else env var was set
+  if (!strlen(envVal)) {
+    /* for bools, being merely set to empty string means "true" */
+    *val = AIR_TRUE;
+    return;
+  }
+  // else env var was set to non-empty string
+  int tmp = airEnumVal(airBool, envVal);
+  if (airEnumUnknown(airBool) == tmp) {
+    // else env var was set but could not be parsed
+    fprintf(stderr, "ERROR(%s): could not parse env[\"%s\"]=\"%s\" as int\n", __func__,
+            envVar, envVal);
+    exit(1); // WE ARE OUT OF HERE
+  }
+  *val = tmp;
+  return;
+}
+
+// GLK adapted from nrrdGetenvInt in ../nrrd/defaultsNrrd.c
+static void
+th_getenvInt(int *val, const char *envVar) {
+  char *envVal = getenv(envVar);
+  if (!envVal) {
+    // env var was not set, bye
+    return;
+  }
+  // else env var was set: can it be parsed?
+  int tmp;
+  int scanned = sscanf(envVal, "%d", &tmp);
+  if (1 == scanned) {
+    // if could parse one, set it
+    *val = tmp;
+    return;
+  }
+  // else env var was set but could not be parsed
+  fprintf(stderr, "ERROR(%s): could not parse env[\"%s\"]=\"%s\" as int\n", __func__,
+          envVar, envVal);
+  exit(1); // WE ARE OUT OF HERE
+  return;
+}
 
 #endif /* THCOMMON_HAS_BEEN_INCLUDED */

@@ -438,14 +438,14 @@ TESTS = [
     # expected parse failures
     # ==========================================================================
     dict(
-        env=('THT_VMIN', '0'),
+        env=('TH_VMIN', '0'),
         exe='th_unflagged_variadic',
         name='unflagged-variadic: cant have min=0 amidst other unflagged',
         argv=['10', '20', '99'],
         expect_fail=True,
     ),
     dict(
-        env=('THT_TWOVAR', 'true'),
+        env=('TH_TWOVAR', 'true'),
         exe='th_unflagged_variadic',
         name='unflagged-variadic: cant have two unflagged variadic',
         argv=['10', '20', '99'],
@@ -696,7 +696,9 @@ def run_one(test: dict, args, build_dir: Path) -> tuple:
             MYENV = ENV.copy()
             MYENV[envvar] = envval
         else:
-            MYENV = ENV
+            # MYENV = ENV
+            MYENV = ENV.copy()
+            MYENV['TH_VERBOSE'] = '10'
             print('')
         result = subprocess.run(cmd, capture_output=True, text=True, env=MYENV)
         exit_code = result.returncode
@@ -729,6 +731,9 @@ def run_one(test: dict, args, build_dir: Path) -> tuple:
             detail += f'\nfull binary output:' + outlog
             return False, detail
 
+        # if all went well, we do not include stdout: in the case of turning up hparm->verbose,
+        # via setting envvar TH_VERBOSE, stdout is very long and tedious
+        # (but still generated for the sake of coverage)
         return True, ''
 
     finally:
@@ -803,11 +808,13 @@ def main() -> int:
     if not build_exes(args, exe_dir, build_dir):
         print('One or more builds failed; aborting.', file=sys.stderr)
         return 2
+    MYENV = ENV.copy()
+    MYENV['TH_VERBOSE'] = '10'
     for exe in EXES:
         binary = build_dir / exe
         # if not binary.exists():
         #    continue
-        result = subprocess.run([str(binary), '--help'], capture_output=True, text=True, env=ENV)
+        result = subprocess.run([str(binary), '--help'], capture_output=True, text=True, env=MYENV)
         print(f'./{build_dir}/{exe} --help:')
         # print(result.stdout, end='')
         print(textwrap.indent(result.stdout, INDENT))
@@ -826,9 +833,11 @@ def main() -> int:
 
     # ---- run ----
     total = passed = failed = 0
-    if args.coverage:
-        # once, set filename pattern for .profraw file
-        ENV['LLVM_PROFILE_FILE'] = 'test-%p.profraw'
+    ## Actually, don't.  The real runner script 0-go.sh has to handle this, since there
+    ## will be other tests, not run from this .py, that contribute to coverage
+    # if args.coverage:
+    #    # once, set filename pattern for .profraw file
+    #    ENV['LLVM_PROFILE_FILE'] = 'test-%p.profraw'
     for t in active:
         total += 1
         label = t.get('name', f"{t['exe']} {t.get('argv', [])}")

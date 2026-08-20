@@ -4,9 +4,8 @@ tweaks do not change that. Link with source, assuming GLK's account:
 https://claude.ai/chat/753238c4-c4d1-4241-824a-c1a310956286
 */
 
+static const char *info = "stand-alone flag (kind 1)";
 /*
-** th_flag.c: stand-alone flag (kind 1).
-**
 ** Options:
 **   -v        stand-alone flag (kind 1); no parameters
 **
@@ -33,7 +32,7 @@ main(int argc, const char **argv) {
   int v = 0;
   hestOptAdd_Flag(&opt, "v", &v, "be verbose");
 
-  TH_PARSE(opt, hparm, argc - 1, argv + 1);
+  TH_PARSE(opt, info, hparm, argc - 1, argv + 1);
 
   THPRINT_BOOL("v", v);
   THPRINT_SOURCE("v", opt, 0);

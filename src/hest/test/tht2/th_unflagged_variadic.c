@@ -4,13 +4,13 @@ tweaks do not change that. Link with source, assuming GLK's account:
 https://claude.ai/chat/753238c4-c4d1-4241-824a-c1a310956286
 */
 
+static const char *info
+  = ("forward-then-backward assignment. "
+     "This test targets the most subtle part of hest's unflagged-option logic: "
+     "when one unflagged option is variadic, hestParse uses a two-pass strategy "
+     "to assign args unambiguously.");
+
 /*
-** th_unflagged_variadic.c: forward-then-backward assignment.
-**
-** This test targets the most subtle part of hest's unflagged-option logic:
-** when one unflagged option is variadic, hestParse uses a two-pass strategy
-** to assign args unambiguously:
-**
 **   Pass 1 (forward): fixed options that appear BEFORE the variadic in
 **     definition order consume args from the beginning of the command line.
 **   Pass 2 (backward): fixed options that appear AFTER the variadic in
@@ -38,60 +38,12 @@ https://claude.ai/chat/753238c4-c4d1-4241-824a-c1a310956286
 #include <stdio.h> /* for snprintf */
 #include "thcommon.h"
 
-// GLK adapted from nrrdGetenvBool in ../nrrd/defaultsNrrd.c
-static void
-getenvBool(int *val, const char *envVar) {
-  char *envVal = getenv(envVar);
-  if (!envVal) {
-    // env var was not set, bye
-    return;
-  }
-  // else env var was set
-  if (!strlen(envVal)) {
-    /* for bools, being merely set to empty string means "true" */
-    *val = AIR_TRUE;
-    return;
-  }
-  // else env var was set to non-empty string
-  int tmp = airEnumVal(airBool, envVal);
-  if (airEnumUnknown(airBool) == tmp) {
-    // else env var was set but could not be parsed
-    fprintf(stderr, "ERROR(%s): could not parse env[\"%s\"]=\"%s\" as int\n", __func__,
-            envVar, envVal);
-    exit(1); // WE ARE OUT OF HERE
-  }
-  *val = tmp;
-  return;
-}
-
-// GLK adapted from nrrdGetenvInt in ../nrrd/defaultsNrrd.c
-static void
-getenvInt(int *val, const char *envVar) {
-  char *envVal = getenv(envVar);
-  if (!envVal) {
-    // env var was not set, bye
-    return;
-  }
-  // else env var was set: can it be parsed?
-  int tmp;
-  int scanned = sscanf(envVal, "%d", &tmp);
-  if (1 == scanned) {
-    // if could parse one, set it
-    *val = tmp;
-    return;
-  }
-  // else env var was set but could not be parsed
-  fprintf(stderr, "ERROR(%s): could not parse env[\"%s\"]=\"%s\" as int\n", __func__,
-          envVar, envVal);
-  exit(1); // WE ARE OUT OF HERE
-  return;
-}
-
 int
 main(int argc, const char **argv) {
   TH_SANITY;
   hestOpt *opt = NULL;
   hestParm *hparm = hestParmNew();
+  th_getenvInt(&(hparm->verbose), "TH_VERBOSE");
   hparm->respectDashDashHelp = AIR_TRUE;
 
   int A[2];
@@ -101,18 +53,18 @@ main(int argc, const char **argv) {
   unsigned int sawB = 0;
 
   int eGot;
-  // export THT_VMIN=0 to trigger a particular hest failure
+  // export TH_VMIN=0 to trigger a particular hest failure
   int VMIN = 1; // by default, min # args is 1
-  getenvInt(&VMIN, "THT_VMIN");
+  th_getenvInt(&VMIN, "TH_VMIN");
   hestOptAdd_Nv_String(&opt, NULL, "B", VMIN, -1, &B, NULL,
                        "variable # of middle strings", &sawB);
 
   int C = 0;
   hestOptAdd_1_Int(&opt, NULL, "C", &C, NULL, "trailing int");
 
-  // export THT_TWOVAR to trigger a different particular hest failure
+  // export TH_TWOVAR to trigger a different particular hest failure
   int TWOVAR = AIR_FALSE; // by default, do not use extra variadic
-  getenvBool(&TWOVAR, "THT_TWOVAR");
+  th_getenvBool(&TWOVAR, "TH_TWOVAR");
   char **D = NULL;
   unsigned int sawD = 0;
   if (TWOVAR) {
@@ -120,7 +72,7 @@ main(int argc, const char **argv) {
                          &sawD);
   }
 
-  TH_PARSE(opt, hparm, argc - 1, argv + 1);
+  TH_PARSE(opt, info, hparm, argc - 1, argv + 1);
 
   THPRINT_INT("A0", A[0]);
   THPRINT_INT("A1", A[1]);

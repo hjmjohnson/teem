@@ -4,9 +4,8 @@ tweaks do not change that. Link with source, assuming GLK's account:
 https://claude.ai/chat/753238c4-c4d1-4241-824a-c1a310956286
 */
 
+static const char *info = "flagged scalar options (kind 2)";
 /*
-** th_flagged_scalars.c: flagged scalar options (kind 2).
-**
 ** This test covers the core case of one fixed parameter per option,
 ** all flagged, all with defaults.  It is also the vehicle for testing
 ** response files and -{ }- comment blocks, because those features operate
@@ -56,7 +55,7 @@ main(int argc, const char **argv) {
   int e = 0;
   hestOptAdd_1_Enum(&opt, "e", "end", &e, "little", "endianness", airEndian);
 
-  TH_PARSE(opt, hparm, argc - 1, argv + 1);
+  TH_PARSE(opt, info, hparm, argc - 1, argv + 1);
 
   THPRINT_INT("n", n);
   THPRINT_SOURCE("n", opt, 0);

@@ -4,12 +4,11 @@ tweaks do not change that. Link with source, assuming GLK's account:
 https://claude.ai/chat/753238c4-c4d1-4241-824a-c1a310956286
 */
 
+static const char *info
+  = ("unflagged fixed positional options. "
+     "Without any variadic option, unflagged options are assigned strictly in "
+     "definition order, consuming args left-to-right.  This is the simple case.");
 /*
-** th_unflagged_fixed.c: unflagged fixed positional options.
-**
-** Without any variadic option, unflagged options are assigned strictly in
-** definition order, consuming args left-to-right.  This is the simple case.
-**
 ** Options (all unflagged, all required — NULL default):
 **   <A0> <A1>   two ints   (kind 3, unflagged)
 **   <B>         one string (kind 2, unflagged)
@@ -43,7 +42,7 @@ main(int argc, const char **argv) {
   float C = 0.0f;
   hestOptAdd_1_Float(&opt, NULL, "C", &C, NULL, "required float");
 
-  TH_PARSE(opt, hparm, argc - 1, argv + 1);
+  TH_PARSE(opt, info, hparm, argc - 1, argv + 1);
 
   THPRINT_INT("A0", A[0]);
   THPRINT_INT("A1", A[1]);
