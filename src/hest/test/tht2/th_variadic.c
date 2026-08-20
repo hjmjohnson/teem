@@ -8,9 +8,12 @@ static const char *info
   = ("forward-then-backward assignment. "
      "This test targets the most subtle part of hest's unflagged-option logic: "
      "when one unflagged option is variadic, hestParse uses a two-pass strategy "
-     "to assign args unambiguously.");
+     "to assign args unambiguously.  By the env-var hack, this also tests "
+     "flagged variadic options, which Claude missed testing when it generated all "
+     "this.");
 
 /*
+** (the following is just about *unflagged* variadic options)
 **   Pass 1 (forward): fixed options that appear BEFORE the variadic in
 **     definition order consume args from the beginning of the command line.
 **   Pass 2 (backward): fixed options that appear AFTER the variadic in
@@ -46,8 +49,15 @@ main(int argc, const char **argv) {
   th_getenvInt(&(hparm->verbose), "TH_VERBOSE");
   hparm->respectDashDashHelp = AIR_TRUE;
 
+  // export TH_FLAGVAR=true to flag the variadic option(s)
+  int FLAGVAR = AIR_FALSE; // by default, do not flag (how this file started)
+  th_getenvBool(&FLAGVAR, "TH_FLAGVAR");
+  // export TH_FLAGFIX=true to flag the non-variadic=fixed option(s)
+  int FLAGFIX = AIR_FALSE; // by default, do not flag (how this file started)
+  th_getenvBool(&FLAGFIX, "TH_FLAGFIX");
+
   int A[2];
-  hestOptAdd_2_Int(&opt, NULL, "A0 A1", A, NULL, "two leading ints");
+  hestOptAdd_2_Int(&opt, FLAGFIX ? "A" : NULL, "A0 A1", A, NULL, "two leading ints");
 
   char **B = NULL;
   unsigned int sawB = 0;
@@ -56,20 +66,20 @@ main(int argc, const char **argv) {
   // export TH_VMIN=0 to trigger a particular hest failure
   int VMIN = 1; // by default, min # args is 1
   th_getenvInt(&VMIN, "TH_VMIN");
-  hestOptAdd_Nv_String(&opt, NULL, "B", VMIN, -1, &B, NULL,
+  hestOptAdd_Nv_String(&opt, FLAGVAR ? "B" : NULL, "Bvar", VMIN, -1, &B, NULL,
                        "variable # of middle strings", &sawB);
 
   int C = 0;
-  hestOptAdd_1_Int(&opt, NULL, "C", &C, NULL, "trailing int");
+  hestOptAdd_1_Int(&opt, FLAGFIX ? "C" : NULL, "C", &C, NULL, "trailing int");
 
-  // export TH_TWOVAR to trigger a different particular hest failure
-  int TWOVAR = AIR_FALSE; // by default, do not use extra variadic
+  // export TH_TWOVAR (but not TH_FLAGVAR) to trigger a different particular hest failure
+  int TWOVAR = AIR_FALSE; // by default, do not use extra unflagged variadic
   th_getenvBool(&TWOVAR, "TH_TWOVAR");
   char **D = NULL;
   unsigned int sawD = 0;
   if (TWOVAR) {
-    hestOptAdd_Nv_String(&opt, NULL, "D", 1, -1, &D, NULL, "one-or-more end strings",
-                         &sawD);
+    hestOptAdd_Nv_String(&opt, FLAGVAR ? "D" : NULL, "Dvar", 1, -1, &D, NULL,
+                         "one-or-more end strings", &sawD);
   }
 
   TH_PARSE(opt, info, hparm, argc - 1, argv + 1);

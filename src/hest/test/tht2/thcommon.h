@@ -126,13 +126,7 @@ th_getenvBool(int *val, const char *envVar) {
     // env var was not set, bye
     return;
   }
-  // else env var was set
-  if (!strlen(envVal)) {
-    /* for bools, being merely set to empty string means "true" */
-    *val = AIR_TRUE;
-    return;
-  }
-  // else env var was set to non-empty string
+  // else env var was set: can it be parsed?
   int tmp = airEnumVal(airBool, envVal);
   if (airEnumUnknown(airBool) == tmp) {
     // else env var was set but could not be parsed

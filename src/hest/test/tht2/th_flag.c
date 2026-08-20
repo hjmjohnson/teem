@@ -27,7 +27,16 @@ main(int argc, const char **argv) {
   hestParm *hparm = hestParmNew();
   hparm->noArgsIsNoProblem = AIR_TRUE; /* allow empty argv */
   hparm->respectDashDashHelp = AIR_TRUE;
-  hestParmColumnsIoctl(hparm, 80); // just for coverage
+  hestParmColumnsIoctl(hparm, 80); // coverage-theater
+  // coverage-theater
+  printf("%s: hestArgcArgvSprint(NULL) = %p\n", argv[0],
+         (void *)hestArgcArgvSprint(42, NULL, AIR_FALSE));
+  // coverage-theater
+  printf("%s: hestArgVecSprint(NULL) = %p\n", argv[0],
+         (void *)hestArgVecSprint(NULL, AIR_FALSE));
+  // coverage-theater
+  hestArgVecReset(NULL);
+  hestArgVecNix(NULL);
 
   int v = 0;
   hestOptAdd_Flag(&opt, "v", &v, "be verbose");

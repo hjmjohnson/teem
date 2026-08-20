@@ -371,11 +371,11 @@ TESTS = [
         expected={'A0': 0, 'A1': 0, 'C': 0.0},
     ),
     # ==========================================================================
-    # th_unflagged_variadic — forward-then-backward assignment
+    # th_variadic — forward-then-backward assignment
     # Definition order: A[2] int (req) | B[] strings variadic (min=1) | C int (req)
     # ==========================================================================
     dict(
-        exe='th_unflagged_variadic',
+        exe='th_variadic',
         name='unflagged-variadic: minimum B (exactly one string in middle)',
         argv=['10', '20', 'only', '99'],
         expected={
@@ -390,7 +390,7 @@ TESTS = [
         },
     ),
     dict(
-        exe='th_unflagged_variadic',
+        exe='th_variadic',
         name='unflagged-variadic: three strings in middle',
         argv=['10', '20', 'p', 'q', 'r', '99'],
         expected={
@@ -404,7 +404,7 @@ TESTS = [
         },
     ),
     dict(
-        exe='th_unflagged_variadic',
+        exe='th_variadic',
         name='unflagged-variadic: five strings in middle',
         argv=['1', '2', 'a', 'b', 'c', 'd', 'e', '42'],
         expected={
@@ -420,7 +420,7 @@ TESTS = [
         },
     ),
     dict(
-        exe='th_unflagged_variadic',
+        exe='th_variadic',
         name='unflagged-variadic: strings that look like numbers are still strings',
         argv=['1', '2', '100', '200', '300', '999'],
         expected={
@@ -434,7 +434,7 @@ TESTS = [
         },
     ),
     dict(
-        exe='th_unflagged_variadic',
+        exe='th_variadic',
         name='unflagged-variadic: negative int for C (backward-consumed from end)',
         # A gets the first two, C gets the last (even though it looks like a flag),
         # B gets the middle.  Tests that hest correctly identifies -7 as the
@@ -452,15 +452,15 @@ TESTS = [
     # expected parse failures
     # ==========================================================================
     dict(
-        env=('TH_VMIN', '0'),
-        exe='th_unflagged_variadic',
+        env=dict(TH_VMIN='0'),
+        exe='th_variadic',
         name='unflagged-variadic: cant have min=0 amidst other unflagged',
         argv=['10', '20', '99'],
         expect_fail=True,
     ),
     dict(
-        env=('TH_TWOVAR', 'true'),
-        exe='th_unflagged_variadic',
+        env=dict(TH_TWOVAR='true'),
+        exe='th_variadic',
         name='unflagged-variadic: cant have two unflagged variadic',
         argv=['10', '20', '99'],
         expect_fail=True,
@@ -666,7 +666,7 @@ def run_one(test: dict, args, build_dir: Path) -> tuple:
     where "expected" means that the command ran or failed as expected.
     """
     exe = test['exe']
-    envvarval = test.get('env', None)   # GLK added
+    envdict = test.get('env', None)   # GLK added
     argv = list(test.get('argv', []))
     expected = test.get('expected', {})
     expect_fail = test.get('expect_fail', False)
@@ -704,16 +704,15 @@ def run_one(test: dict, args, build_dir: Path) -> tuple:
 
         # ---- execute ----
         print(f'running: {shlex.join(cmd)}', end='')   # NOT: print(f"running: {' '.join(cmd)}")
-        if envvarval:
-            (envvar, envval) = envvarval
-            print(f' **with** env[{envvar}]={envval}')
+        if envdict:
+            print(f' **with**')
             MYENV = ENV.copy()
-            MYENV[envvar] = envval
+            for envvar, envval in envdict.items():
+                print(f' env[{envvar}]={envval}')
+                MYENV[envvar] = envval
         else:
-            # MYENV = ENV
-            MYENV = ENV.copy()
-            MYENV['TH_VERBOSE'] = '10'
-            print('')
+            MYENV = ENV
+        print('')
         result = subprocess.run(cmd, capture_output=True, text=True, env=MYENV)
         exit_code = result.returncode
         errlog = f'stderr:\n{textwrap.indent(result.stderr.strip(), INDENT)}'
@@ -822,16 +821,25 @@ def main() -> int:
     if not build_exes(args, exe_dir, build_dir):
         print('One or more builds failed; aborting.', file=sys.stderr)
         return 2
-    MYENV = ENV.copy()
-    MYENV['TH_VERBOSE'] = '10'
+
+    # ---- run --help on everything
+    # GLK added: helper function for running --help
+    def runhelp(thebinary, thenv):
+        result = subprocess.run(
+            [str(thebinary), '--help'], capture_output=True, text=True, env=thenv
+        )
+        print(f'./{build_dir}/{exe} --help:')
+        print(textwrap.indent(result.stdout, INDENT))
+
     for exe in EXES:
         binary = build_dir / exe
-        # if not binary.exists():
-        #    continue
-        result = subprocess.run([str(binary), '--help'], capture_output=True, text=True, env=MYENV)
-        print(f'./{build_dir}/{exe} --help:')
-        # print(result.stdout, end='')
-        print(textwrap.indent(result.stdout, INDENT))
+        runhelp(binary, ENV)
+        if 'th_variadic' == exe:
+            # this one has extra switches set by envvar
+            print('ALSO with TH_FLAGFIX=true')
+            runhelp(binary, dict(TH_FLAGFIX='true', **ENV))
+            print('ALSO with TH_FLAGFIX=true, TH_VMIN=0')
+            runhelp(binary, dict(TH_FLAGFIX='true', TH_VMIN='0', **ENV))
 
     # ---- filter ----
     active = TESTS
@@ -879,4 +887,7 @@ def main() -> int:
 
 if __name__ == '__main__':
     ENV = os.environ.copy()
+    # crank up verbosity, not that we will actually read the resulting output
+    # but just for better coverage
+    ENV['TH_VERBOSE'] = '11'
     sys.exit(main())

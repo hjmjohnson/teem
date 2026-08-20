@@ -89,7 +89,7 @@ if [[ $COVERAGE ]]; then
         -object build/th_flag \
         -object build/th_flagged_scalars \
         -object build/th_unflagged_fixed \
-        -object build/th_unflagged_variadic \
+        -object build/th_variadic \
         -instr-profile=test.profdata"
     if true; then
         # using llvm-cov
