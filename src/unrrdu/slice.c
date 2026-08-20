@@ -37,7 +37,7 @@ unu_sliceMain(int argc, const char **argv, const char *me, const hestParm *hparm
                      "single axis or multiple axes to slice along.  "
                      "Giving multiple axes here leads to doing multiple slices "
                      "(at the corresponding positions "
-                     "given with \"-p\"). Multiple axes should be identified\n "
+                     "given with \"-p\"). Multiple axes should be identified "
                      "in terms of the axis numbering of the original nrrd; as "
                      "the slices are done (in the given ordering) the actual "
                      "slice axis will be different if previous slices were on "
