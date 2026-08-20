@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # This file was first written by an LLM so it is not copyrightable; subsequent human
 # tweaks do not change that. Link with source, assuming GLK's account:
-# https://claude.ai/chat/753238c4-c4d1-4241-824a-c1a310956286
+# https://claude.ai/chat/16fae4e4-4bba-4965-8507-26292ccff3d6
 
 # this was created to diagnose a mysteriously missing uncovered region
 import json, sys
