@@ -314,6 +314,20 @@ TESTS = [
         },
     ),
     dict(
+        exe='th_fixed_multi',  # sorry, copy-pasta
+        name='multi: both options from cmdline, --long flags interleaved',
+        argv=['--int', '1', '2', '3', '--float', '0.5', '0.25'],
+        expected={
+            'f0': 0.5,
+            'f1': 0.25,
+            'f.src': 'cmdline',
+            'i0': 1,
+            'i1': 2,
+            'i2': 3,
+            'i.src': 'cmdline',
+        },
+    ),
+    dict(
         exe='th_fixed_multi',
         name='multi: -f with negative values',
         argv=['-f', '-1.0', '-2.5'],

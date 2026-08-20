@@ -27,10 +27,11 @@ main(int argc, const char **argv) {
   hparm->noArgsIsNoProblem = AIR_TRUE;
   hparm->respectDashDashHelp = AIR_TRUE;
 
+  // exercise long options for a change
   float f[2];
-  hestOptAdd_2_Float(&opt, "f", "f0 f1", f, "1.0 2.0", "two floats");
+  hestOptAdd_2_Float(&opt, "f,float", "f0 f1", f, "1.0 2.0", "two floats");
   int i[3];
-  hestOptAdd_3_Int(&opt, "i", "i0 i1 i2", i, "10 20 30", "three ints");
+  hestOptAdd_3_Int(&opt, "i,int", "i0 i1 i2", i, "10 20 30", "three ints");
 
   TH_PARSE(opt, info, hparm, argc - 1, argv + 1);
 
