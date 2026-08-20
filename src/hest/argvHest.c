@@ -373,20 +373,21 @@ hinInit(void *_hin) {
   return;
 }
 
-hestInput *
-hestInputNew(void) {
-  hestInput *hin = AIR_CALLOC(1, hestInput);
-  assert(hin);
-  hinInit(hin);
-  return hin;
-}
-
 static void
 hinDone(void *_hin) {
   hestInput *hin = (hestInput *)_hin;
   hin->rfile = airFclose(hin->rfile);
   hin->rfname = airFree(hin->rfname);
   return;
+}
+
+/* see note in hest.h: these are not actually needed
+hestInput *
+hestInputNew(void) {
+  hestInput *hin = AIR_CALLOC(1, hestInput);
+  assert(hin);
+  hinInit(hin);
+  return hin;
 }
 
 hestInput *
@@ -396,6 +397,7 @@ hestInputNix(hestInput *hin) {
   free(hin);
   return NULL;
 }
+*/
 
 /* ------------------- hestInputStack = hist = hestInputStack = hist --------------- */
 

@@ -476,8 +476,10 @@ HEST_EXPORT void hestArgVecAppendString(hestArgVec *havec, const char *str);
 HEST_EXPORT void hestArgVecAppendArg(hestArgVec *havec, hestArg *harg);
 HEST_EXPORT void hestArgVecPrint(const char *caller, const char *info,
                                  const hestArgVec *havec);
-HEST_EXPORT hestInput *hestInputNew(void);
-HEST_EXPORT hestInput *hestInputNix(hestInput *hin);
+/* actually, no useful API for a single hestInput; they are always used within a
+   hestInputStack, and already managed fine that way */
+// HEST_EXPORT hestInput *hestInputNew(void);
+// HEST_EXPORT hestInput *hestInputNix(hestInput *hin);
 HEST_EXPORT hestInputStack *hestInputStackNew(void);
 HEST_EXPORT hestInputStack *hestInputStackNix(hestInputStack *hist);
 HEST_EXPORT void *hestInputStackNix_mop(void *);
