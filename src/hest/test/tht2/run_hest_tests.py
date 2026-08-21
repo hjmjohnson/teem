@@ -849,7 +849,7 @@ def main() -> int:
         binary = build_dir / exe
         print('--help with no env')
         runhelp(binary, ENV)
-        # some coverage-theater
+        # again with NULL hparm for coverage
         print('--help with TH_NULL_HPARM=1')
         runhelp(binary, dict(TH_NULL_HPARM='1', **ENV))
         if 'th_variadic' == exe:
