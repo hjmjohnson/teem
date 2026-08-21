@@ -18,6 +18,7 @@ unset UNU_HISTORY_TRACE
 
 # where is root of Teem source tree
 SRCROOT=$(cd "$(dirname "$0")/../../../.." && pwd)
+echo "####### $0: SRCROOT=$SRCROOT"
 
 #COVERAGE='' #not doing coverage testing
 COVERAGE=yup # YES doing coverage testing
@@ -48,8 +49,10 @@ if [[ $COVERAGE ]]; then
         # The coverage= prefix tell Teem's make to compile with coverage testing
         coverage= make test -j8
     )
-    # clean up all .profraw from previous run
-    rm -f *.profraw
+    # clean up everything from previous run(s)
+    echo "############## doing COVERAGE in $(pwd):"
+    rm -rf *.profraw *.profdata $COVIS build *.json
+    ls -alR
 else # not doing coverage testing
     (
         cd ../..
@@ -58,69 +61,70 @@ else # not doing coverage testing
 fi
 
 runme() {
-    echo "#######"
-    echo "####### $*"
-    echo "#######"
-    "$@"
-}
-funme() {
-    echo "#######"
-    echo "####### $*"
-    echo "#######"
+    echo "#######" >&2
+    echo "####### $1" >&2
+    echo "#######" >&2
+    eval "$1"
 }
 
 echo -e "\n####### $0: running tests${WITHCOV}"
-runme ../tht1 # simpler "tier 1" tests, also for coverage
-runme python3 run_hest_tests.py $COVFLAG \
-    --cflags "-DTEEM_NON_CMAKE -I../../../../built/include -std=c99" \
-    --ldflags "-L../../../../built/lib -lhest -lbiff -lair"
+runme "../tht1" # simpler "tier 1" tests, also for coverage
+runme "python3 run_hest_tests.py $COVFLAG \
+    --cflags '-DTEEM_NON_CMAKE -I../../../../built/include -std=c99' \
+    --ldflags '-L../../../../built/lib -lhest -lbiff -lair'"
 if [[ $COVERAGE ]]; then
-    # clean up what was just generated
+    # at end, clean up the raw profiles just generated
     junk *.profraw
 fi
 # but keep the build/ directory of executables for later debugging
 
 if [[ $COVERAGE ]]; then
-    # analyzing coverage results
-    runme llvm-profdata merge -sparse test-*.profraw -o test.profdata
+    # make the indexed profile
+    runme "llvm-profdata merge -sparse test-*.profraw -o test.profdata"
     junk test.profdata
-    runme rm -rf $COVIS
+    # different tests used different binaries, have to list them there
     CARGS="build/th_fixed_multi \
         -object build/th_flag \
         -object build/th_flagged_scalars \
         -object build/th_unflagged_fixed \
         -object build/th_variadic \
-        -instr-profile=test.profdata"
+        -instr-profile=test.profdata" # plus the indexed profile
     if true; then
         # using llvm-cov
+        # name the hest source files (but nothing below in test/ or test/tht2)
         HEST_C=$(
             cd ../..
             echo *.c | xargs -n 1 echo | sed -e 's|^|$SRCROOT/src/hest/|' | xargs echo
         )
         # expand $SRCROOT
         HEST_C=$(eval echo $HEST_C)
-        SHOW="$SRCROOT/src/air $SRCROOT/src/biff $HEST_C"
-        # textual report on functions in hest source files
-        runme llvm-cov report --show-functions $CARGS ../../*.c
-        runme llvm-cov show --format=html \
-            $CARGS $SHOW \
+        # what directories/files to show profiling results for
+        SHOWWHAT="$SRCROOT/src/air $SRCROOT/src/biff $HEST_C"
+        ## textual report on functions in hest source files
+        runme "llvm-cov report --show-functions $CARGS ../../*.c"
+        ## for diagnosing issue with uncovered region 0 characters long -> invisible in web view
+        runme "llvm-cov export $CARGS > cov.json"
+        # GLK went on a goose chase to figure out an unexecuted zero-length branch region
+        # in argvHest.c, identified here, but there other such in other files
+        runme "cat cov.json | python3 cov-json-check.py | wc -l"
+        runme "cat cov.json | python3 cov-json-check.py | grep argvHest"
+        runme "llvm-cov show --format=html \
+            $CARGS $SHOWWHAT \
             --show-branches=count --show-expansions \
-            -output-dir=${COVIS}/
+            -output-dir=${COVIS}/"
     else
         # using lcov tools, after: brew install lcov
         # NOTE: this does not know anything about macro expansion,
         # because .lcov format is entirely line-based
         IGNORE="--ignore-filename-regex='.*tht2/.*'"
-        # funme instead of runme because of redirect
-        funme "llvm-cov export -format=lcov $CARGS $IGNORE >test.lcov"
-        llvm-cov export -format=lcov $CARGS $IGNORE >test.lcov
+        runme "llvm-cov export -format=lcov $CARGS $IGNORE >test.lcov"
         junk test.lcov
-        runme genhtml test.lcov --branch-coverage \
+        runme "genhtml test.lcov --branch-coverage \
             --ignore-errors unsupported,unsupported,inconsistent,corrupt \
-            --output-directory covis/
+            --output-directory ${COVIS}/"
         # ... actually, gave up on using gcovr ...
         ## after: pip3 install gcovr
-        #gcovr --lcov test.lcov --html-details covis/
+        #gcovr --lcov test.lcov --html-details ${COVIS}/
     fi
     open -a Firefox $COVIS/index.html
 fi
