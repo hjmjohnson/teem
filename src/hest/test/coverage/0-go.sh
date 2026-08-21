@@ -71,6 +71,10 @@ echo -e "\n####### $0: running tests${WITHCOV}"
 # correctness of ../decls is indirectly via the compiler: could hest compile with the wrong header?
 runme "../decls" # for coverage of hestOptAddDeclsPrint
 junk decls.h     # just-created
+## work on th_kindK.c should create the coverage from this, and more
+#runme "../ex6"
+#runme "../ex6 --help"
+#runme "../ex6 --bogus"
 # correctness of ../tht1 results is checked internally: will exit(1) on error
 runme "../tht1" # simpler "tier 1" tests, also for coverage
 runme "python3 run_hest_tests.py $COVFLAG \
