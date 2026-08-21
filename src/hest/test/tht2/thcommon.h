@@ -46,7 +46,10 @@ https://claude.ai/chat/753238c4-c4d1-4241-824a-c1a310956286
 #define TH_PARSE(opt, info, hparm, _argc, _argv)                                        \
   do {                                                                                  \
     char *_th_err = NULL;                                                               \
-    if (hestParse((opt), (_argc), (const char **)(_argv), &_th_err, (hparm))) {         \
+    int NULL_HPARM = AIR_FALSE;                                                         \
+    th_getenvInt(&NULL_HPARM, "TH_NULL_HPARM");                                         \
+    if (hestParse((opt), (_argc), (const char **)(_argv), &_th_err,                     \
+                  NULL_HPARM > 1 ? NULL : (hparm))) {                                   \
       fprintf(stderr, "hestParse failed: %s\n", _th_err ? _th_err : "(no message)");    \
       free(_th_err);                                                                    \
       hestOptFree(opt);                                                                 \
@@ -54,9 +57,11 @@ https://claude.ai/chat/753238c4-c4d1-4241-824a-c1a310956286
       exit(1);                                                                          \
     }                                                                                   \
     if (opt->helpWanted) {                                                              \
-      hestInfo(stdout, argv[0], info, hparm);                                           \
-      hestUsage(stdout, opt, argv[0], hparm, AIR_FALSE);                                \
-      hestGlossary(stdout, opt, hparm);                                                 \
+      hestInfo(stdout, argv[0], info, NULL_HPARM ? NULL : (hparm));                     \
+      hestUsage(stdout, opt, argv[0], NULL_HPARM ? NULL : (hparm), AIR_FALSE);          \
+      printf("(again with oneLine=true for coverage)\n");                               \
+      hestUsage(stdout, opt, argv[0], NULL_HPARM ? NULL : (hparm), AIR_TRUE);           \
+      hestGlossary(stdout, opt, NULL_HPARM ? NULL : (hparm));                           \
       exit(0);                                                                          \
     }                                                                                   \
   } while (0)

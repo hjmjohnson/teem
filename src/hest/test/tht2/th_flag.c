@@ -27,16 +27,30 @@ main(int argc, const char **argv) {
   hestParm *hparm = hestParmNew();
   hparm->noArgsIsNoProblem = AIR_TRUE; /* allow empty argv */
   hparm->respectDashDashHelp = AIR_TRUE;
-  hestParmColumnsIoctl(hparm, 80); // coverage-theater
-  // coverage-theater
-  printf("%s: hestArgcArgvSprint(NULL) = %p\n", argv[0],
-         (void *)hestArgcArgvSprint(42, NULL, AIR_FALSE));
-  // coverage-theater
-  printf("%s: hestArgVecSprint(NULL) = %p\n", argv[0],
-         (void *)hestArgVecSprint(NULL, AIR_FALSE));
-  // coverage-theater
-  hestArgVecReset(NULL);
-  hestArgVecNix(NULL);
+  {
+    printf("%s: coverage theater begins\n", argv[0]);
+    hestParmColumnsIoctl(hparm, 80);
+    printf("%s: hestArgcArgvSprint(NULL) = %p\n", argv[0],
+           (void *)hestArgcArgvSprint(42, NULL, AIR_FALSE));
+    printf("%s: hestArgVecSprint(NULL) = %p\n", argv[0],
+           (void *)hestArgVecSprint(NULL, AIR_FALSE));
+    for (int showIndex = 0; showIndex <= 1; showIndex++) {
+      char *str = hestArgcArgvSprint(argc, argv, showIndex);
+      printf("%s: argc,argv (showIndex=%d) = %s\n", argv[0], showIndex, str);
+      free(str);
+    }
+    hestParseFree(NULL);
+    hestArgVecReset(NULL);
+    hestArgVecNix(NULL);
+    hestInfo(stdout, NULL /* const char *argv0 */, NULL /* const char *info */,
+             NULL /* const hestParm *_hparm */);
+    hestInfo(stdout, NULL, "info", NULL);
+    hestUsage(stdout, opt /* but its NULL */, argv[0], hparm, AIR_FALSE /* oneline */);
+    hestUsage(stdout, opt /* but its NULL */, argv[0], NULL, AIR_FALSE /* oneline */);
+    hestGlossary(stdout, opt, hparm);
+    hestGlossary(stdout, opt, NULL);
+    printf("%s: ... end coverage theater\n", argv[0]);
+  }
 
   int v = 0;
   hestOptAdd_Flag(&opt, "v", &v, "be verbose");

@@ -49,10 +49,10 @@ main(int argc, const char **argv) {
   th_getenvInt(&(hparm->verbose), "TH_VERBOSE");
   hparm->respectDashDashHelp = AIR_TRUE;
 
-  // export TH_FLAGVAR=true to flag the variadic option(s)
+  // export TH_FLAGVAR=true to make flagged the variadic option(s)
   int FLAGVAR = AIR_FALSE; // by default, do not flag (how this file started)
   th_getenvBool(&FLAGVAR, "TH_FLAGVAR");
-  // export TH_FLAGFIX=true to flag the non-variadic=fixed option(s)
+  // export TH_FLAGFIX=true to make flagged the non-variadic=fixed option(s)
   int FLAGFIX = AIR_FALSE; // by default, do not flag (how this file started)
   th_getenvBool(&FLAGFIX, "TH_FLAGFIX");
 
@@ -67,7 +67,9 @@ main(int argc, const char **argv) {
   int VMIN = 1; // by default, min # args is 1
   th_getenvInt(&VMIN, "TH_VMIN");
   hestOptAdd_Nv_String(&opt, FLAGVAR ? "B" : NULL, "Bvar", VMIN, -1, &B, NULL,
-                       "variable # of middle strings", &sawB);
+                       "variable # of middle strings\n "
+                       "(including a second line)",
+                       &sawB);
 
   int C = 0;
   hestOptAdd_1_Int(&opt, FLAGFIX ? "C" : NULL, "C", &C, NULL, "trailing int");

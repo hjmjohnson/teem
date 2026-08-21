@@ -452,6 +452,20 @@ TESTS = [
     # expected parse failures
     # ==========================================================================
     dict(
+        env=dict(TH_NULL_HPARM='2'),
+        exe='th_variadic',
+        name='unflagged-variadic: --help (after valid args) wont work without hparm->respectDashDashHelp',
+        argv='1 2 a b c d e 42 --help'.split(),
+        expect_fail=True,
+    ),
+    dict(
+        env=dict(TH_NULL_HPARM='2'),
+        exe='th_variadic',
+        name='unflagged-variadic: bare --help wont work without hparm->respectDashDashHelp',
+        argv=['--help'],
+        expect_fail=True,
+    ),
+    dict(
         env=dict(TH_VMIN='0'),
         exe='th_variadic',
         name='unflagged-variadic: cant have min=0 amidst other unflagged',
@@ -660,7 +674,7 @@ def _values_match(key: str, actual_str: str, expected_val) -> bool:
 # ---------------------------------------------------------------------------
 
 
-def run_one(test: dict, args, build_dir: Path) -> tuple:
+def run_one(tnum: int, test: dict, args, build_dir: Path) -> tuple:
     """
     Execute one test case.  Returns (expected: bool, detail: str).
     where "expected" means that the command ran or failed as expected.
@@ -703,7 +717,7 @@ def run_one(test: dict, args, build_dir: Path) -> tuple:
             ] + cmd
 
         # ---- execute ----
-        print(f'running: {shlex.join(cmd)}', end='')   # NOT: print(f"running: {' '.join(cmd)}")
+        print(f'[{tnum}] running: {shlex.join(cmd)}', end='')
         if envdict:
             print(f' **with**')
             MYENV = ENV.copy()
@@ -833,12 +847,16 @@ def main() -> int:
 
     for exe in EXES:
         binary = build_dir / exe
+        print('--help with no env')
         runhelp(binary, ENV)
+        # some coverage-theater
+        print('--help with TH_NULL_HPARM=1')
+        runhelp(binary, dict(TH_NULL_HPARM='1', **ENV))
         if 'th_variadic' == exe:
             # this one has extra switches set by envvar
-            print('ALSO with TH_FLAGFIX=true')
+            print('--help with TH_FLAGFIX=true')
             runhelp(binary, dict(TH_FLAGFIX='true', **ENV))
-            print('ALSO with TH_FLAGFIX=true, TH_VMIN=0')
+            print('--help with TH_FLAGFIX=true, TH_VMIN=0')
             runhelp(binary, dict(TH_FLAGFIX='true', TH_VMIN='0', **ENV))
 
     # ---- filter ----
@@ -865,7 +883,7 @@ def main() -> int:
         label = t.get('name', f"{t['exe']} {t.get('argv', [])}")
         expect_fail = t.get('expect_fail', False)
         # "ok" == got what we expected
-        ok, detail = run_one(t, args, build_dir)
+        ok, detail = run_one(total, t, args, build_dir)
         # (GLK) HERE is where sense of "pass" changes
         # from: "hestParse() and everything else worked ok"
         # to: "the program worked or failed as we intended it to"
