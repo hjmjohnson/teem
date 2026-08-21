@@ -185,8 +185,8 @@ shift2(char *clo, char *chi) {
  ******* airSinglePrintf
  *
  * a complete stand-in for {f|s}printf(), as long as the given format string contains
- * exactly one conversion sequence, and does use any precision modifiers.  The utility of
- * this is to standardize the printing of IEEE 754 special values:
+ * exactly one conversion sequence, and does not use any numeric precision modifiers.
+ * The utility of this is to standardize the printing of IEEE 754 special values:
  * NAN (any kind) -> "NaN"
  * POS_INF -> "inf"   <-- TeemV2 change: was "+inf"
  * NEG_INF -> "-inf"
