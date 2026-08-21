@@ -390,12 +390,13 @@ typedef struct {
                                  cannot be touching anything else, lest brace expansion
                                  kick in. */
   int noArgsIsNoProblem;
-  /*                             If non-zero, having no arguments to parse is not in and
-                                 of itself a problem; this means that if all options have
-                                 defaults, it would be *ok* to invoke the problem without
-                                 any further command-line options. This is counter to
-                                 pre-Teem-1.11 behavior (for which no arguments *always*
-                                 meant "show me usage info"). */
+  /*                             Specifically for hestParseOrExit (previously known as
+                                 hestParseOrDie): if non-zero, having no arguments to
+                                 parse is not in and of itself a problem; this means that
+                                 if all options have defaults, it would be *ok* to invoke
+                                 the problem without any further command-line options.
+                                 This is counter to pre-Teem-1.11 behavior (for which no
+                                 arguments *always* meant "show me usage info"). */
   int cleverPluralizeOtherY;
   /*                             When printing the type for airTypeOther, when the min
                                  number of items is > 1, and the type string ends with
