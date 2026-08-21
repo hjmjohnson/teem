@@ -32,7 +32,8 @@ main(int argc, const char **argv) {
   TH_SANITY;
   hestOpt *opt = NULL;
   hestParm *hparm = hestParmNew();
-  /* noArgsIsNoProblem stays false: all options are required anyway */
+  /* noArgsIsNoProblem stays false: all options are required anyway
+     (GLK: actually that's moot because it only matters for hestParseOrExit) */
   hparm->respectDashDashHelp = AIR_TRUE;
 
   int A[2];

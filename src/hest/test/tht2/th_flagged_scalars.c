@@ -39,7 +39,6 @@ main(int argc, const char **argv) {
   TH_SANITY;
   hestOpt *opt = NULL;
   hestParm *hparm = hestParmNew();
-  hparm->noArgsIsNoProblem = AIR_TRUE;
   hparm->responseFileEnable = AIR_TRUE;
   hparm->respectDashBraceComments = AIR_TRUE; /* already the default */
   hparm->respectDashDashHelp = AIR_TRUE;

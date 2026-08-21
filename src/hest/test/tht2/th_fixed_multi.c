@@ -24,7 +24,6 @@ main(int argc, const char **argv) {
   TH_SANITY;
   hestOpt *opt = NULL;
   hestParm *hparm = hestParmNew();
-  hparm->noArgsIsNoProblem = AIR_TRUE;
   hparm->respectDashDashHelp = AIR_TRUE;
 
   // exercise long options for a change

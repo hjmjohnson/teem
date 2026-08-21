@@ -25,7 +25,6 @@ main(int argc, const char **argv) {
   TH_SANITY;
   hestOpt *opt = NULL;
   hestParm *hparm = hestParmNew();
-  hparm->noArgsIsNoProblem = AIR_TRUE; /* allow empty argv */
   hparm->respectDashDashHelp = AIR_TRUE;
   {
     printf("%s: coverage theater begins\n", argv[0]);
