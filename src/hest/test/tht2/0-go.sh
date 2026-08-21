@@ -68,6 +68,10 @@ runme() {
 }
 
 echo -e "\n####### $0: running tests${WITHCOV}"
+# correctness of ../decls is indirectly via the compiler: could hest compile with the wrong header?
+runme "../decls" # for coverage of hestOptAddDeclsPrint
+junk decls.h     # just-created
+# correctness of ../tht1 results is checked internally: will exit(1) on error
 runme "../tht1" # simpler "tier 1" tests, also for coverage
 runme "python3 run_hest_tests.py $COVFLAG \
     --cflags '-DTEEM_NON_CMAKE -I../../../../built/include -std=c99' \
@@ -112,6 +116,7 @@ if [[ $COVERAGE ]]; then
             $CARGS $SHOWWHAT \
             --show-branches=count --show-expansions \
             -output-dir=${COVIS}/"
+        open -a Firefox $COVIS/index.html
     else
         # using lcov tools, after: brew install lcov
         # NOTE: this does not know anything about macro expansion,
@@ -122,9 +127,9 @@ if [[ $COVERAGE ]]; then
         runme "genhtml test.lcov --branch-coverage \
             --ignore-errors unsupported,unsupported,inconsistent,corrupt \
             --output-directory ${COVIS}/"
+        open -a Firefox $COVIS/hest/index.html
         # ... actually, gave up on using gcovr ...
         ## after: pip3 install gcovr
         #gcovr --lcov test.lcov --html-details ${COVIS}/
     fi
-    open -a Firefox $COVIS/index.html
 fi
