@@ -105,6 +105,7 @@ https://claude.ai/chat/753238c4-c4d1-4241-824a-c1a310956286
 /* th_source_str: map a hestSource* enum value to the string the Python runner
    expects.  Defined static so each .c that includes this header gets its own
    copy without linker conflict. */
+// (GLK) annoying!! that this is ignoring the const airEnum *const hestSource in hest.h
 static const char *
 th_source_str(int src) {
   switch (src) {
