@@ -69,7 +69,7 @@ THIS IS A WEIRD FUNCTION because of how it can finish. As the name suggests, thi
 call `exit` (either `exit(1)` after e.g. a hestParse failure, or `exit(0)` after e.g.
 responding to `--version`). Also the simultaneous demands of being const-correct with
 incoming parameter structs, while being clean about memory use (certainly no leaks, but
-not even any memory in use at exit), as led to some new (for TeemV2) functions involving
+not even any memory in use at exit), has led to some new (for TeemV2) functions involving
 the hestParm (e.g. functions hestParmMopNew, hestParmMopDone, hestParmUnmop).
 
 hestParseOrExit took over pre-TeemV2 hestParseOrDie to clear up accumulated
