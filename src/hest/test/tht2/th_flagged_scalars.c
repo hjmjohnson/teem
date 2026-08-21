@@ -22,7 +22,6 @@ static const char *info = "flagged scalar options (kind 2)";
 ** hparm settings enabled here:
 **   responseFileEnable    = true   (for @file.txt tests)
 **   respectDashBraceComments = true (already the default; explicit for clarity)
-**   noArgsIsNoProblem     = true   (so empty argv tests all-defaults cleanly)
 **
 ** Printed output:
 **   n=<int>     n.src=...
