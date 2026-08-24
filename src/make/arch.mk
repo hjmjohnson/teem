@@ -75,7 +75,7 @@ ifneq ($(origin coverage),undefined)
   CC := clang
   # NDEBUG removes assert()s and the branches therein that will never be taken
   # some conventional wisdom says to lower optimization for coverage testing
-  OPT_FLAGS := -DNDEBUG -O1
+  OPT_FLAGS := -DNDEBUG -O0
 else
   COV_FLAG :=
   OPT_FLAGS := -O3
