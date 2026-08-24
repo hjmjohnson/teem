@@ -82,7 +82,6 @@ main(int argc, const char **argv) {
   airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hparm->responseFileEnable = AIR_TRUE;
   hparm->respectDashDashHelp = AIR_TRUE;
-  hparm->noArgsIsNoProblem = AIR_TRUE;
   hparm->usageDefaultDisplayAvoidsWrapping = AIR_FALSE;
   hparm->verbose = 0;
   hestParmColumnsIoctl(hparm, 80);
