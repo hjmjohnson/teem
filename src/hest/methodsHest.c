@@ -200,23 +200,23 @@ parseSingleO(void *out, const char *str, hest__PPair *hpp) {
   return ret;
 }
 
-int (*const hest__ParseSingle[MY_HEST_TYPE_MAX + 1])(void *, const char *, hest__PPair *)
-  = {
-    NULL,          //
-    parseSingleB,  //
-    parseSingleH,  //
-    parseSingleUH, //
-    parseSingleI,  //
-    parseSingleUI, //
-    parseSingleL,  //
-    parseSingleUL, //
-    parseSingleZ,  //
-    parseSingleF,  //
-    parseSingleD,  //
-    parseSingleC,  //
-    parseSingleS,  //
-    parseSingleE,  //
-    parseSingleO   //
+int (*const hest__ParseSingle[MY_HEST_TYPE_MAX + 1])(void *, const char *,
+                                                     hest__PPair *) = {
+  NULL,          //
+  parseSingleB,  //
+  parseSingleH,  //
+  parseSingleUH, //
+  parseSingleI,  //
+  parseSingleUI, //
+  parseSingleL,  //
+  parseSingleUL, //
+  parseSingleZ,  //
+  parseSingleF,  //
+  parseSingleD,  //
+  parseSingleC,  //
+  parseSingleS,  //
+  parseSingleE,  //
+  parseSingleO   //
 };
 
 #define INVERT_SCALAR(TT, ctype)                                                        \
@@ -983,11 +983,13 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
     } else { // ------ end of if (hopt[opi].flag)
       // hopt[opi] is unflagged
       ufNum += 1;
-      if (1 == hopt[opi].kind || 4 == hopt[opi].kind) {
+      if (1 == hopt[opi].kind) {
+        biffAddf(HEST, "%s%sa stand-alone flag opt[%u] must be flagged (!)", MY_ME, opi);
+        return 1;
+      } else if (4 == hopt[opi].kind) {
         if (!hopt[opi].min) {
-          // this rules out all unflagged kind 1 and kind 4
-          biffAddf(HEST, "%s%sunflagged opt[%u] (name %s) must have min >= 1, not 0",
-                   MY_ME, opi, hopt[opi].name ? hopt[opi].name : "not set");
+          biffAddf(HEST, "%s%s single variadic opt[%u] (name %s) must be flagged", MY_ME,
+                   opi, hopt[opi].name ? hopt[opi].name : "not set");
           return 1;
         }
       } else if (5 == hopt[opi].kind) {
