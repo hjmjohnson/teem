@@ -28,7 +28,6 @@ main(int argc, const char **argv) {
   hparm->respectDashDashHelp = AIR_TRUE;
   {
     printf("%s: coverage theater begins\n", argv[0]);
-    hestParmColumnsIoctl(hparm, 80);
     printf("%s: hestArgcArgvSprint(NULL) = %p\n", argv[0],
            (void *)hestArgcArgvSprint(42, NULL, AIR_FALSE));
     printf("%s: hestArgVecSprint(NULL) = %p\n", argv[0],
@@ -56,7 +55,7 @@ main(int argc, const char **argv) {
 
   TH_PARSE(opt, info, hparm, argc - 1, argv + 1);
 
-  THPRINT_BOOL("v", v);
+  printf("v=%d\n", v);
   THPRINT_SOURCE("v", opt, 0);
 
   TH_CLEANUP(opt, hparm);

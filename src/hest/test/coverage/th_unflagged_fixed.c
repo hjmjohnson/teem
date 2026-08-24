@@ -45,12 +45,11 @@ main(int argc, const char **argv) {
 
   TH_PARSE(opt, info, hparm, argc - 1, argv + 1);
 
-  THPRINT_INT("A0", A[0]);
-  THPRINT_INT("A1", A[1]);
+  printf("A=[%d|%d]\n", A[0], A[1]);
   THPRINT_SOURCE("A", opt, 0);
-  THPRINT_STR("B", B);
+  printf("B=%s\n", B);
   THPRINT_SOURCE("B", opt, 1);
-  THPRINT_FLOAT("C", C);
+  airSinglePrintf(stdout, NULL, 0, "C=%g\n", C);
   THPRINT_SOURCE("C", opt, 2);
 
   TH_CLEANUP(opt, hparm);

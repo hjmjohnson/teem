@@ -58,6 +58,11 @@ from pathlib import Path
 AIR_ENDIAN_LITTLE = 1234
 AIR_ENDIAN_BIG = 4321
 
+# (GLK) anticipating airEnumStr(hestSource, src)
+# no need for 'commmand-line': that is the assumed default source
+SRC_RF = 'response-file'
+SRC_DF = 'default'
+
 # how much to indent multi-line text
 INDENT = '       '
 
@@ -92,13 +97,13 @@ TESTS = [
         exe='th_flag',
         name='flag: absent → 0, source=default',
         argv=[],
-        expected={'v': 0, 'v.src': 'default'},
+        expected={'v': 0, 'v.src': SRC_DF},
     ),
     dict(
         exe='th_flag',
         name='flag: present → 1, source=cmdline',
         argv=['-v'],
-        expected={'v': 1, 'v.src': 'cmdline'},
+        expected={'v': 1},
     ),
     # ==========================================================================
     # th_flagged_scalars — kind-2 flagged options of various types
@@ -111,112 +116,111 @@ TESTS = [
         argv=[],
         expected={
             'n': 99,
-            'n.src': 'default',
+            'n.src': SRC_DF,
             'x': 1.0,
-            'x.src': 'default',
+            'x.src': SRC_DF,
             's': 'bingo',
-            's.src': 'default',
-            'b': 0,
-            'b.src': 'default',
+            's.src': SRC_DF,
+            'b': False,
+            'b.src': SRC_DF,
             'e': AIR_ENDIAN_LITTLE,
-            'e.src': 'default',
+            'e.src': SRC_DF,
         },
     ),
     dict(
         exe='th_flagged_scalars',
         name='scalars: all from cmdline',
-        argv=['-n', '42', '-x', '3.14', '-s', 'hello', '-b', 'true', '-e', 'big'],
+        argv='-n 42 -x 3.14 -s hello -b true -e big',
         expected={
             'n': 42,
-            'n.src': 'cmdline',
             'x': 3.14,
-            'x.src': 'cmdline',
             's': 'hello',
-            's.src': 'cmdline',
-            'b': 1,
-            'b.src': 'cmdline',
+            'b': True,
             'e': AIR_ENDIAN_BIG,
-            'e.src': 'cmdline',
         },
     ),
     dict(
         exe='th_flagged_scalars',
         name='scalars: partial override (-n and -s only)',
-        argv=['-n', '7', '-s', 'world'],
+        argv='-n 7 -s world',
         expected={
             'n': 7,
-            'n.src': 'cmdline',
             'x': 1.0,
-            'x.src': 'default',
+            'x.src': SRC_DF,
             's': 'world',
-            's.src': 'cmdline',
-            'b': 0,
-            'b.src': 'default',
+            'b': False,
+            'b.src': SRC_DF,
             'e': AIR_ENDIAN_LITTLE,
-            'e.src': 'default',
+            'e.src': SRC_DF,
         },
     ),
     dict(
         exe='th_flagged_scalars',
         name='scalars: flags in reversed definition order',
-        argv=['-e', 'big', '-b', 'true', '-s', 'rev', '-x', '2.0', '-n', '1'],
+        argv='-e big -b true -s rev -x 2.0 -n 1',
         expected={
             'n': 1,
             'x': 2.0,
             's': 'rev',
-            'b': 1,
+            'b': True,
             'e': AIR_ENDIAN_BIG,
         },
     ),
     dict(
         exe='th_flagged_scalars',
         name='scalars: last -n wins when repeated',
-        argv=['-n', '10', '-n', '20'],
-        expected={'n': 20, 'n.src': 'cmdline'},
+        argv='-n 10 -n 20',
+        expected={'n': 20},
     ),
     dict(
         exe='th_flagged_scalars',
         name='scalars: -b false explicitly',
-        argv=['-b', 'false'],
-        expected={'b': 0, 'b.src': 'cmdline'},
+        argv='-b false',
+        expected={'b': False},
     ),
     dict(
         exe='th_flagged_scalars',
-        name='scalars: -b 0 and -b 1 synonyms',
-        argv=['-b', '1'],
-        expected={'b': 1, 'b.src': 'cmdline'},
+        name='scalars: -b 0 synonym',
+        argv='-b 0',
+        expected={'b': False},
+    ),
+    dict(
+        exe='th_flagged_scalars',
+        name='scalars: -b 1 synonym',
+        argv='-b 1',
+        expected={'b': True},
     ),
     dict(
         exe='th_flagged_scalars',
         name='scalars: -{ }- comment block is ignored',
         # The -{ ... }- encloses -n 100, which should be treated as a comment.
         # The real -n 42 before it should win.
-        argv=['-n', '42', '-{', '-n', '100', '}-'],
-        expected={'n': 42, 'n.src': 'cmdline'},
+        argv='-n 42 -{ -n 100 }-',
+        expected={'n': 42},
     ),
     dict(
         exe='th_flagged_scalars',
         name='scalars: nested -{ -{ }- }- comments',
-        argv=['-n', '5', '-{', '-n', '10', '-{', 'bingo', 'banana', '}-', '}-'],
-        expected={'n': 5, 'n.src': 'cmdline'},
+        argv='-n 5 -{ -n 10 -{ bingo banana }- }-',
+        expected={'n': 5},
     ),
     dict(
         exe='th_flagged_scalars',
         name='scalars: badly nested -{ -{ }- }- comments 1',
-        argv=['-n', '5', '-{', '-n', '10', '-{', 'bingo', 'banana', '}-', '}-', '}-'],
+        argv='-n 5 -{ -n 10 -{ bingo banana }- }- }-',
         expect_fail=True,
     ),
     dict(
         exe='th_flagged_scalars',
         name='scalars: badly nested -{ -{ }- }- comments 2',
-        argv=['-n', '5', '-{', '-n', '10', '-{', 'bingo', 'banana', '}-', '}-', '-{'],
+        argv='-n 5 -{ -n 10 -{ bingo banana }- }- -{',
         expect_fail=True,
     ),
     dict(
         exe='th_flagged_scalars',
         name='scalars: entire -n setting inside comment → n stays at default',
-        argv=['-{', '-n', '77', '}-'],
-        expected={'n': 99, 'n.src': 'default'},
+        argv='-{ -n 77 }-',
+        expected={'n': 99, 'n.src': SRC_DF},
     ),
     dict(
         exe='th_flagged_scalars',
@@ -225,47 +229,46 @@ TESTS = [
         argv=['@opts.txt'],
         expected={
             'n': 77,
-            'n.src': 'responsefile',
+            'n.src': SRC_RF,
             's': 'from-file',
-            's.src': 'responsefile',
+            's.src': SRC_RF,
             'x': 1.0,
-            'x.src': 'default',
-            'b': 0,
-            'b.src': 'default',
+            'x.src': SRC_DF,
+            'b': False,
+            'b.src': SRC_DF,
         },
     ),
     dict(
         exe='th_flagged_scalars',
         name='scalars: response file then cmdline override',
         response_files={'base.txt': '-n 77 -s from-file'},
-        argv=['@base.txt', '-n', '99'],
+        argv='@base.txt -n 99',
         expected={
             'n': 99,
-            'n.src': 'cmdline',
             's': 'from-file',
-            's.src': 'responsefile',
+            's.src': SRC_RF,
         },
     ),
     dict(
         exe='th_flagged_scalars',
         name='scalars: response file with # comment line',
         response_files={'commented.txt': '# this whole line is a comment\n-n 55'},
-        argv=['@commented.txt'],
-        expected={'n': 55, 'n.src': 'responsefile'},
+        argv='@commented.txt',
+        expected={'n': 55, 'n.src': SRC_RF},
     ),
     dict(
         exe='th_flagged_scalars',
         name='scalars: response file with double-quoted string containing space',
         response_files={'quoted.txt': '-s "hello world"'},
-        argv=['@quoted.txt'],
-        expected={'s': 'hello world', 's.src': 'responsefile'},
+        argv='@quoted.txt',
+        expected={'s': 'hello world', 's.src': SRC_RF},
     ),
     dict(
         exe='th_flagged_scalars',
         name='scalars: response file with single-quoted string',
         response_files={'squoted.txt': "-s 'one two'"},
-        argv=['@squoted.txt'],
-        expected={'s': 'one two', 's.src': 'responsefile'},
+        argv='@squoted.txt',
+        expected={'s': 'one two', 's.src': SRC_RF},
     ),
     # ==========================================================================
     # th_fixed_multi — kind-3 fixed-multiple options
@@ -276,68 +279,51 @@ TESTS = [
         name='multi: all defaults',
         argv=[],
         expected={
-            'f0': 1.0,
-            'f1': 2.0,
-            'f.src': 'default',
-            'i0': 10,
-            'i1': 20,
-            'i2': 30,
-            'i.src': 'default',
+            'f': [1.0, 2.0],
+            'f.src': SRC_DF,
+            'i': [10, 20, 30],
+            'i.src': SRC_DF,
         },
     ),
     dict(
         exe='th_fixed_multi',
         name='multi: -f from cmdline',
-        argv=['-f', '3.5', '7.25'],
+        argv='-f 3.5 7.25',
         expected={
-            'f0': 3.5,
-            'f1': 7.25,
-            'f.src': 'cmdline',
-            'i0': 10,
-            'i1': 20,
-            'i2': 30,
-            'i.src': 'default',
+            'f': [3.5, 7.25],
+            'i': [10, 20, 30],
+            'i.src': SRC_DF,
         },
     ),
     dict(
         exe='th_fixed_multi',
         name='multi: both options from cmdline, flags interleaved',
-        argv=['-i', '1', '2', '3', '-f', '0.5', '0.25'],
+        argv='-i 1 2 3 -f 0.5 0.25',
         expected={
-            'f0': 0.5,
-            'f1': 0.25,
-            'f.src': 'cmdline',
-            'i0': 1,
-            'i1': 2,
-            'i2': 3,
-            'i.src': 'cmdline',
+            'f': [0.5, 0.25],
+            'i': [1, 2, 3],
         },
     ),
     dict(
         exe='th_fixed_multi',  # sorry, copy-pasta
         name='multi: both options from cmdline, --long flags interleaved',
-        argv=['--int', '1', '2', '3', '--float', '0.5', '0.25'],
+        argv='--int 1 2 3 --float 0.5 0.25',
         expected={
-            'f0': 0.5,
-            'f1': 0.25,
-            'f.src': 'cmdline',
-            'i0': 1,
-            'i1': 2,
-            'i2': 3,
-            'i.src': 'cmdline',
+            'f': [0.5, 0.25],
+            'i': [1, 2, 3],
         },
     ),
     dict(
         exe='th_fixed_multi',
         name='multi: -f with negative values',
-        argv=['-f', '-1.0', '-2.5'],
-        expected={'f0': -1.0, 'f1': -2.5, 'f.src': 'cmdline'},
+        argv='-f -1.0 -2.5',
+        expected={'f': [-1.0, -2.5]},
     ),
     dict(
         exe='th_fixed_multi',
         name='multi: -i with zero and negative',
-        argv=['-i', '0', '-5', '100'],
-        expected={'i0': 0, 'i1': -5, 'i2': 100, 'i.src': 'cmdline'},
+        argv='-i 0 -5 100',
+        expected={'i': [0, -5, 100]},
     ),
     # ==========================================================================
     # th_unflagged_fixed — unflagged positional options, no variadic
@@ -347,28 +333,24 @@ TESTS = [
     dict(
         exe='th_unflagged_fixed',
         name='unflagged-fixed: basic left-to-right assignment',
-        argv=['10', '20', 'hello', '3.5'],
+        argv='10 20 hello 3.5',
         expected={
-            'A0': 10,
-            'A1': 20,
-            'A.src': 'cmdline',
+            'A': [10, 20],
             'B': 'hello',
-            'B.src': 'cmdline',
             'C': 3.5,
-            'C.src': 'cmdline',
         },
     ),
     dict(
         exe='th_unflagged_fixed',
-        name='unflagged-fixed: string with no whitespace (is parsed as one token)',
-        argv=['1', '2', 'no-spaces', '0.5'],
-        expected={'A0': 1, 'A1': 2, 'B': 'no-spaces', 'C': 0.5},
+        name='unflagged-fixed: "zero" values',
+        argv='0 0 zero 0.0',
+        expected={'A': [0, 0], 'B': 'zero', 'C': 0.0},
     ),
     dict(
         exe='th_unflagged_fixed',
-        name='unflagged-fixed: zero values',
-        argv=['0', '0', 'zero', '0.0'],
-        expected={'A0': 0, 'A1': 0, 'C': 0.0},
+        name='unflagged-fixed: ones and spaces values',
+        argv=['1', '1', 'one and done', '1.0'],
+        expected={'A': [1, 1], 'B': 'one and done', 'C': 1.0},
     ),
     # ==========================================================================
     # th_variadic — forward-then-backward assignment
@@ -377,59 +359,46 @@ TESTS = [
     dict(
         exe='th_variadic',
         name='unflagged-variadic: minimum B (exactly one string in middle)',
-        argv=['10', '20', 'only', '99'],
+        argv='10 20 only 99',
         expected={
-            'A0': 10,
-            'A1': 20,
-            'A.src': 'cmdline',
-            'B.len': 1,
-            'B0': 'only',
-            'B.src': 'cmdline',
+            'A': [10, 20],
+            'B': ['only'],
             'C': 99,
-            'C.src': 'cmdline',
         },
     ),
     dict(
         exe='th_variadic',
         name='unflagged-variadic: three strings in middle',
-        argv=['10', '20', 'p', 'q', 'r', '99'],
+        argv='10 20 p q r 99',
         expected={
-            'A0': 10,
-            'A1': 20,
-            'B.len': 3,
-            'B0': 'p',
-            'B1': 'q',
-            'B2': 'r',
+            'A': [10, 20],
+            'B': ['p', 'q', 'r'],
             'C': 99,
         },
     ),
     dict(
         exe='th_variadic',
         name='unflagged-variadic: five strings in middle',
-        argv=['1', '2', 'a', 'b', 'c', 'd', 'e', '42'],
+        argv='1 2 a b c d e 42',
         expected={
-            'A0': 1,
-            'A1': 2,
-            'B.len': 5,
-            'B0': 'a',
-            'B1': 'b',
-            'B2': 'c',
-            'B3': 'd',
-            'B4': 'e',
+            'A': [1, 2],
+            'B': [
+                'a',
+                'b',
+                'c',
+                'd',
+                'e',
+            ],
             'C': 42,
         },
     ),
     dict(
         exe='th_variadic',
         name='unflagged-variadic: strings that look like numbers are still strings',
-        argv=['1', '2', '100', '200', '300', '999'],
+        argv='1 2 100 200 300 999',
         expected={
-            'A0': 1,
-            'A1': 2,
-            'B.len': 3,
-            'B0': '100',
-            'B1': '200',
-            'B2': '300',
+            'A': [1, 2],
+            'B': ['100', '200', '300'],
             'C': 999,
         },
     ),
@@ -439,18 +408,77 @@ TESTS = [
         # A gets the first two, C gets the last (even though it looks like a flag),
         # B gets the middle.  Tests that hest correctly identifies -7 as the
         # trailing positional arg for C rather than misreading it as a flag.
-        argv=['3', '4', 'mid', '-7'],
+        argv='3 4 mid -7',
         expected={
-            'A0': 3,
-            'A1': 4,
-            'B.len': 1,
-            'B0': 'mid',
+            'A': [3, 4],
+            'B': ['mid'],
             'C': -7,
         },
     ),
-    # ==========================================================================
-    # expected parse failures
-    # ==========================================================================
+]
+# ==========================================================================
+# running the GLK-generated th_kind* tests
+# ==========================================================================
+# TY names and canonical order of types within these:
+#   BB     SH      UH      SI     UI     SL      UL     SZ       FL      DB       CH      SS      EE     XY      CO
+# <bool> <short> <ushort> <int> <uint> <long> <ulong> <size_t> <float> <double> <char> <string> <enum> <ostat> <odyn>
+# TYa and TYb are complementary subsets; maybe useful for testing
+TYsA = [
+    'BB',
+    'UH',
+    'UI',
+    'UL',
+    'FL',
+    'CH',
+    'EE',
+    'CO',
+]
+TYsB = [
+    'SH',
+    'SI',
+    'SL',
+    'SZ',
+    'DB',
+    'SS',
+    'XY',
+]
+TYs = TYsA + TYsB
+TYvals = {
+    'BB': ['true', 'true', 'false'],
+    'SH': ['-67', str(-(2**15)), str(2**15 - 1)],
+    'UH': ['42', '0', str(2**16 - 1)],
+    'SI': ['-68', str(-(2**31)), str(2**31 - 1)],
+    'UI': ['43', '0', str(2**32 - 1)],
+    'SL': ['-69', str(-(2**63)), str(2**63 - 1)],
+    'UL': ['44', '0', str(2**64 - 1)],
+    'SZ': ['45', '0', str(2**64 - 1)],
+    'FL': ['63.5', '-52.125', '23710'],
+    'DB': ['64.5', '-53.125', '33710'],
+    'CH': ['c', 'a', 'T'],
+    'SS': ['good dog', 'bat', 'coffee'],
+    'EE': ['big', 'little', 'big'],
+    'XY': ['3,4', '0,0', '-49,7.5'],
+    'CO': ['6.25', '0.1', '-5.125'],
+}
+if True:
+    TESTS += [
+        dict(
+            env={f'TH_{TY}_DEFAULT': TYvals[TY][0] for TY in TYs},
+            exe='th_kind2',
+            name='kind2 (NO TYs flagged) all defaults',
+            argv=['--help'],
+        ),
+        # dict(
+        #    env={f'TH_{TY}_FLAG': '' for TY in TYs},
+        #    exe='th_kind2',
+        #    name='kind2 (all TYs flagged) --help',
+        #    argv=['--help'],
+        # ),
+    ]
+# ==========================================================================
+# expected parse failures
+# ==========================================================================
+TESTS += [
     dict(
         env=dict(TH_NULL_HPARM='2'),
         exe='th_variadic',
@@ -632,14 +660,21 @@ def parse_kv(stdout: str) -> dict:
     """Parse 'key=value\\n' lines from stdout into {str: str}.
 
     Only the first '=' on each line is treated as the separator, so values
-    that happen to contain '=' would survive (though none of our test values do).
-    Lines that contain no '=' are silently ignored.
+    that happen to contain '=' would survive.
+    Lines that contain no '=', or (GLK) which have spaces prior to '=' are silently ignored.
     """
     result = {}
     for line in stdout.splitlines():
         if '=' in line:
             key, _, val = line.partition('=')
-            result[key.strip()] = val
+            if ' ' in key:
+                continue
+            if '[' == val[0]:
+                if ']' != val[-1]:
+                    raise RuntimeError(f'in {line=} {val=} starts with [ but does not end with ]')
+                # ignore [], split on |
+                val = val[1:-1].split('|')
+            result[key] = val
     return result
 
 
@@ -648,23 +683,40 @@ def parse_kv(stdout: str) -> dict:
 # ---------------------------------------------------------------------------
 
 
-def _values_match(key: str, actual_str: str, expected_val) -> bool:
+def _values_match(key: str, actual_val, expected_val) -> bool:
     """Return True if actual_str is equivalent to expected_val for this key."""
     try:
         # bool must be checked before int because bool is a subclass of int.
         if isinstance(expected_val, bool):
-            return int(actual_str) == int(expected_val)
-        elif isinstance(expected_val, int):
-            return int(actual_str) == expected_val
-        elif isinstance(expected_val, float):
-            actual_f = float(actual_str)
-            return actual_f == expected_val
-        elif isinstance(expected_val, str):
-            return actual_str == expected_val
-        else:
-            raise TypeError(
-                f'unsupported expected type {type(expected_val).__name__!r} for key {key!r}'
+            print(f'#########  {expected_val=} {type(expected_val)=} ')
+            print(f'#########  {actual_val=} {type(actual_val)=} ')
+            print(f'#########  returning {bool(actual_val) == expected_val}')
+            ret = ('true' == actual_val and expected_val) or (
+                'false' == actual_val and not expected_val
             )
+            print(f'#########  returning {ret}')
+            return ret
+        if isinstance(expected_val, int):
+            return int(actual_val) == expected_val
+        if isinstance(expected_val, float):
+            actual_f = float(actual_val)
+            return actual_f == expected_val
+        if isinstance(expected_val, str):
+            return actual_val == expected_val
+        if isinstance(expected_val, list):
+            if not isinstance(actual_val, list):
+                raise TypeError(
+                    f'expected list {expected_val} but got {type(actual_val).__name__!r} {actual_val=} for key {key!r}'
+                )
+            vnum = len(expected_val)
+            if len(actual_val) != vnum:
+                raise TypeError(
+                    f'len({expected_val=}) = {vnum} != {len(actual_val)} = len({actual_val=}) for key {key!r}'
+                )
+            return all(_values_match(key, actual_val[ii], expected_val[ii]) for ii in range(vnum))
+        raise TypeError(
+            f'unsupported expected type {type(expected_val).__name__!r} for key {key!r}'
+        )
     except (ValueError, ZeroDivisionError):
         return False
 
@@ -681,7 +733,10 @@ def run_one(tnum: int, test: dict, args, build_dir: Path) -> tuple:
     """
     exe = test['exe']
     envdict = test.get('env', None)   # GLK added
-    argv = list(test.get('argv', []))
+    argv = test.get('argv', [])
+    # GLK simplification: accept string, turn into list with naive splitting on ' '
+    if isinstance(argv, str):
+        argv = argv.split(' ')
     expected = test.get('expected', {})
     expect_fail = test.get('expect_fail', False)
     rf_specs = test.get('response_files', {})
@@ -717,16 +772,16 @@ def run_one(tnum: int, test: dict, args, build_dir: Path) -> tuple:
             ] + cmd
 
         # ---- execute ----
-        print(f'[{tnum}] running: {shlex.join(cmd)}', end='')
+        print(f'[{tnum}] running: ', end='')
         if envdict:
-            print(f' **with**')
+            print(f'')
             MYENV = ENV.copy()
             for envvar, envval in envdict.items():
-                print(f' env[{envvar}]={envval}')
+                print(f'{envvar}={envval}  ', end='')
                 MYENV[envvar] = envval
         else:
             MYENV = ENV
-        print('')
+        print(f'{shlex.join(cmd)}')
         result = subprocess.run(cmd, capture_output=True, text=True, env=MYENV)
         exit_code = result.returncode
         errlog = f'stderr:\n{textwrap.indent(result.stderr.strip(), INDENT)}'
@@ -742,15 +797,16 @@ def run_one(tnum: int, test: dict, args, build_dir: Path) -> tuple:
             return False, f'unexpected failure/non-zero exit code {exit_code}' + errlog
 
         # ---- Supposed to run and did run; did it run correctly?
+        print(f'stdout:\n{textwrap.indent(result.stdout.strip(), INDENT)}')
         actual = parse_kv(result.stdout)
         failures = []
         for key, exp_val in expected.items():
             if key not in actual:
                 failures.append(f'  missing key {key!r}')
                 continue
-            act_str = actual[key]
-            if not _values_match(key, act_str, exp_val):
-                failures.append(f'  {key}: got {act_str!r}, expected {exp_val!r}')
+            act_val = actual[key]
+            if not _values_match(key, act_val, exp_val):
+                failures.append(f'  {key}: got {act_val!r}, expected {exp_val!r}')
 
         if failures:
             detail = 'value mismatch(es):\n' + '\n'.join(failures)
@@ -838,9 +894,9 @@ def main() -> int:
 
     # ---- run --help on everything
     # GLK added: helper function for running --help
-    def runhelp(thebinary, thenv):
+    def runhelp(thebinary, thenv, stdin=None):
         result = subprocess.run(
-            [str(thebinary), '--help'], capture_output=True, text=True, env=thenv
+            [str(thebinary), '--help'], capture_output=True, text=True, stdin=stdin, env=thenv
         )
         print(f'./{build_dir}/{exe} --help:')
         print(textwrap.indent(result.stdout, INDENT))
@@ -858,6 +914,11 @@ def main() -> int:
             runhelp(binary, dict(TH_FLAGFIX='true', **ENV))
             print('--help with TH_FLAGFIX=true, TH_VMIN=0')
             runhelp(binary, dict(TH_FLAGFIX='true', TH_VMIN='0', **ENV))
+        elif 'th_kind2' == exe:
+            print('--help with all defaults on')
+            runhelp(binary, {f'TH_{TY}_DEFAULT': TYvals[TY][0] for TY in TYs})
+            print('--help with thwarted ioctl and 65 #columns')
+            runhelp(binary, dict(TH_COLUMNS='65', **ENV), stdin=subprocess.DEVNULL)
 
     # ---- filter ----
     active = TESTS

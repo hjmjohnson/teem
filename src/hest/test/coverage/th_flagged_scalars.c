@@ -55,15 +55,15 @@ main(int argc, const char **argv) {
 
   TH_PARSE(opt, info, hparm, argc - 1, argv + 1);
 
-  THPRINT_INT("n", n);
+  printf("n=%d\n", n);
   THPRINT_SOURCE("n", opt, 0);
-  THPRINT_DOUBLE("x", x);
+  airSinglePrintf(stdout, NULL, 0, "x=%lg\n", x);
   THPRINT_SOURCE("x", opt, 1);
-  THPRINT_STR("s", s);
+  printf("s=%s\n", s);
   THPRINT_SOURCE("s", opt, 2);
-  THPRINT_BOOL("b", b);
+  printf("b=%s\n", airEnumStr(airBool, b));
   THPRINT_SOURCE("b", opt, 3);
-  THPRINT_INT("e", e);
+  printf("e=%d\n", e);
   THPRINT_SOURCE("e", opt, 4);
 
   TH_CLEANUP(opt, hparm);

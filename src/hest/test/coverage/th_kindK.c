@@ -113,10 +113,14 @@ main(int argc, const char **argv) {
   hestParm *hparm = hestParmNew();
   // HEY need to figure out mopping with and without hestParseOrExit
   airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
-  hparm->respectDashDashHelp = AIR_TRUE; // HEY should vary this
+  hparm->respectDashDashHelp = AIR_TRUE;
   /* HEY only for hestParseOrExit but should vary this */
   hparm->noArgsIsNoProblem = AIR_TRUE;
-  hestParmColumnsIoctl(hparm, 80);                      // (to exercise next line)
+  unsigned int ncol = 70;
+  // if TH_COLUMNS is set, it will over-ride the (small!) default above
+  th_getenvUInt(&ncol, "TH_COLUMNS");
+  // if ioctl() fails (and testing will force that, once), use ncol
+  hestParmColumnsIoctl(hparm, ncol);
   hparm->usageDefaultDisplayAvoidsWrapping = AIR_FALSE; // HEY should vary this
   hparm->verbose = 0;                                   // HEY should vary this
 

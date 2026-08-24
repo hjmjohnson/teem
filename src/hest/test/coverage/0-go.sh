@@ -51,7 +51,7 @@ if [[ $COVERAGE ]]; then
     )
     # clean up everything from previous run(s)
     echo "############## doing COVERAGE in $(pwd):"
-    rm -rf *.profraw *.profdata $COVIS build *.json
+    rm -rf *.profraw *.profdata $COVIS build *.json ncov.txt
     ls -alR
 else # not doing coverage testing
     (
@@ -66,6 +66,7 @@ runme() {
     echo "#######" >&2
     eval "$1"
 }
+runme ./gen_kind.py # regenerate source code of programs generated from th_kindK.c
 
 echo -e "\n####### $0: running tests${WITHCOV}"
 # correctness of ../decls is indirectly via the compiler: could hest compile with the wrong header?
@@ -96,6 +97,7 @@ if [[ $COVERAGE ]]; then
         -object build/th_flagged_scalars \
         -object build/th_unflagged_fixed \
         -object build/th_variadic \
+		-object build/th_kind2 \
         -instr-profile=test.profdata" # plus the indexed profile
     if true; then
         # using llvm-cov
@@ -120,6 +122,10 @@ if [[ $COVERAGE ]]; then
             $CARGS $SHOWWHAT \
             --show-branches=count --show-expansions \
             -output-dir=${COVIS}/"
+        # generate simplified textual representation of coverage in source, to facilitate
+        # doing textual diffs to discover what changed in coverage between two runs
+        # (the sed commands reduce the |count| region to just | | or |0| or |1|)
+        runme "llvm-cov show --format=text $CARGS $SHOWWHAT | sed -E 's/\|[[:space:]]+([0-9])/|\1/g' | sed -E 's/\|[1-9][0-9]*(\.[0-9]+)?k?\|/|1|/g' | sed -E 's/\|[[:space:]]+\|/| |/g' > ncov.txt"
         open -a Firefox $COVIS/index.html
     else
         # using lcov tools, after: brew install lcov

@@ -29,13 +29,6 @@ static const char *info
 **   pass 1 forward:  A = {10, 20}       (consumes first 2 args)
 **   pass 2 backward: C = 99             (consumes last arg)
 **   variadic fill:   B = {"p","q","r"}  (the 3 middle args)
-**
-** Printed output:
-**   A0=<int>   A1=<int>   A.src=...
-**   B.len=<N>
-**   B0=<str>   B1=<str>   ...         (N lines, one per string)
-**   B.src=...
-**   C=<int>    C.src=...
 */
 
 #include <stdio.h> /* for snprintf */
@@ -47,6 +40,8 @@ main(int argc, const char **argv) {
   hestOpt *opt = NULL;
   hestParm *hparm = hestParmNew();
   th_getenvInt(&(hparm->verbose), "TH_VERBOSE");
+  // if ioctl() fails (and testing will force that, once) small number of column
+  hestParmColumnsIoctl(hparm, 70);
   hparm->respectDashDashHelp = AIR_TRUE;
 
   // export TH_FLAGVAR=true to make flagged the variadic option(s)
@@ -86,19 +81,17 @@ main(int argc, const char **argv) {
 
   TH_PARSE(opt, info, hparm, argc - 1, argv + 1);
 
-  THPRINT_INT("A0", A[0]);
-  THPRINT_INT("A1", A[1]);
+  printf("A=[%d|%d]\n", A[0], A[1]);
   THPRINT_SOURCE("A", opt, 0);
 
-  THPRINT_LEN("B", sawB);
+  printf("B=[");
   for (unsigned int ii = 0; ii < sawB; ii++) {
-    char key[32];
-    snprintf(key, sizeof(key), "B%u", ii);
-    THPRINT_STR(key, B[ii]);
+    printf("%s%s", ii ? "|" : "", B[ii]);
   }
+  printf("]\n");
   THPRINT_SOURCE("B", opt, 1);
 
-  THPRINT_INT("C", C);
+  printf("C=%d\n", C);
   THPRINT_SOURCE("C", opt, 2);
 
   TH_CLEANUP(opt, hparm);

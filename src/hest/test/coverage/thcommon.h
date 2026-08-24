@@ -74,55 +74,12 @@ https://claude.ai/chat/753238c4-c4d1-4241-824a-c1a310956286
     hestParmFree(hparm);                                                                \
   } while (0)
 
-/* ==========================================================================
-** Print macros: emit "key=value\n" to stdout.
-**
-** Floating-point precision:
-**   - float:  %.9g   (24-bit mantissa → ~7.2 sig-decimal digits; 9 suffices)
-**   - double: %.17g  (53-bit mantissa → ~15.9 sig-decimal digits; 17 suffices)
-** Both choices guarantee that parsing the printed string back recovers the
-** original bit pattern, which is what the Python runner's float comparison
-** relies on.
-**
-** Strings are printed verbatim (no quoting).  Test string values must not
-** contain '=' or newlines; hest itself does not support newlines in
-** command-line arguments, so this is not a real restriction.
-** ========================================================================== */
-#define THPRINT_INT(name, val)    printf("%s=%d\n", (name), (int)(val))
-#define THPRINT_UINT(name, val)   printf("%s=%u\n", (name), (unsigned int)(val))
-#define THPRINT_LONG(name, val)   printf("%s=%ld\n", (name), (long)(val))
-#define THPRINT_ULONG(name, val)  printf("%s=%lu\n", (name), (unsigned long)(val))
-#define THPRINT_SIZE_T(name, val) printf("%s=%zu\n", (name), (size_t)(val))
-#define THPRINT_BOOL(name, val)   printf("%s=%d\n", (name), (val) ? 1 : 0)
-#define THPRINT_FLOAT(name, val)  printf("%s=%.9g\n", (name), (double)(val))
-#define THPRINT_DOUBLE(name, val) printf("%s=%.17g\n", (name), (double)(val))
-#define THPRINT_CHAR(name, val)   printf("%s=%c\n", (name), (val))
-#define THPRINT_STR(name, val)    printf("%s=%s\n", (name), (val) ? (val) : "(null)")
-
-/* THPRINT_LEN: print the number of elements parsed for a variadic option. */
-#define THPRINT_LEN(name, sawVal) printf("%s.len=%u\n", (name), (unsigned int)(sawVal))
-
-/* th_source_str: map a hestSource* enum value to the string the Python runner
-   expects.  Defined static so each .c that includes this header gets its own
-   copy without linker conflict. */
-// (GLK) annoying!! that this is ignoring the const airEnum *const hestSource in hest.h
-static const char *
-th_source_str(int src) {
-  switch (src) {
-  case hestSourceCommandLine:
-    return "cmdline";
-  case hestSourceResponseFile:
-    return "responsefile";
-  case hestSourceDefault:
-    return "default";
-  default:
-    return "unknown";
-  }
-}
-
 /* THPRINT_SOURCE: print "name.src=<source>" for the option at index optIdx. */
+// GLK: now using hestSource airEnum
 #define THPRINT_SOURCE(name, opt, optIdx)                                               \
-  printf("%s.src=%s\n", (name), th_source_str((opt)[(optIdx)].source))
+  if (hestSourceCommandLine != (opt)[(optIdx)].source) {                                \
+    printf("%s.src=%s\n", (name), airEnumStr(hestSource, (opt)[(optIdx)].source));      \
+  }
 
 // GLK adapted from nrrdGetenvBool in ../nrrd/defaultsNrrd.c
 static void

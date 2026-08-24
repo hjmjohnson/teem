@@ -34,12 +34,10 @@ main(int argc, const char **argv) {
 
   TH_PARSE(opt, info, hparm, argc - 1, argv + 1);
 
-  THPRINT_FLOAT("f0", f[0]);
-  THPRINT_FLOAT("f1", f[1]);
+  airSinglePrintf(stdout, NULL, 0, "f=[%g", f[0]);
+  airSinglePrintf(stdout, NULL, 0, "|%g]\n", f[1]);
   THPRINT_SOURCE("f", opt, 0);
-  THPRINT_INT("i0", i[0]);
-  THPRINT_INT("i1", i[1]);
-  THPRINT_INT("i2", i[2]);
+  printf("i=[%d|%d|%d]\n", i[0], i[1], i[2]);
   THPRINT_SOURCE("i", opt, 1);
 
   TH_CLEANUP(opt, hparm);
