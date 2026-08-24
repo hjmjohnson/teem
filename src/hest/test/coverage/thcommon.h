@@ -167,4 +167,26 @@ th_getenvInt(int *val, const char *envVar) {
   return;
 }
 
+static void
+th_getenvUInt(unsigned int *val, const char *envVar) {
+  char *envVal = getenv(envVar);
+  if (!envVal) {
+    // env var was not set, bye
+    return;
+  }
+  // else env var was set: can it be parsed?
+  unsigned int tmp;
+  int scanned = sscanf(envVal, "%d", &tmp);
+  if (1 == scanned) {
+    // if could parse one, set it
+    *val = tmp;
+    return;
+  }
+  // else env var was set but could not be parsed
+  fprintf(stderr, "ERROR(%s): could not parse env[\"%s\"]=\"%s\" as uint\n", __func__,
+          envVar, envVal);
+  exit(1); // WE ARE OUT OF HERE
+  return;
+}
+
 #endif /* THCOMMON_HAS_BEEN_INCLUDED */
