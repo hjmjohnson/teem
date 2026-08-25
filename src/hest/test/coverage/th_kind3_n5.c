@@ -45,11 +45,11 @@ hestCB posCB = {2 * sizeof(double), "position", pos_parse, NULL};
 
 void
 pos_print(FILE *file, const double pos[2]) {
-  fprintf(file, "[");
+  fprintf(file, "(");
   airSinglePrintf(file, NULL, 0, "%lg", pos[0]);
   fprintf(file, ",");
   airSinglePrintf(file, NULL, 0, "%lg", pos[1]);
-  fprintf(file, "]");
+  fprintf(file, ")");
   fflush(file);
   return;
 }
@@ -123,91 +123,104 @@ main(int argc, const char **argv) {
   /* for each of two-letter TY below:
      setenv TH_TY_FLAG (to anything, even empty string) to use a non-NULL two-flag "ty".
      setenv TH_TY_DEFAULT to the default string (else is NULL == no default) */
-  int bb[5];
+  int BB[5];
   const char *BBflag = getenv("TH_BB_FLAG");
   const char *BBdefault = getenv("TH_BB_DEFAULT");
-  hestOptAdd_N_Bool(&hopt, BBflag ? "bb" : NULL, "bool0 bool1 bool2 bool3 bool4", 5, bb,
-                    BBdefault, "exactly 5 bool");
-  short sh[5];
+  unsigned int BBopidx = hestOptAdd_N_Bool(&hopt, BBflag ? "BB" : NULL,
+                                           "bool0 bool1 bool2 bool3 bool4", 5, BB,
+                                           BBdefault, "exactly 5 bool");
+  short SH[5];
   const char *SHflag = getenv("TH_SH_FLAG");
   const char *SHdefault = getenv("TH_SH_DEFAULT");
-  hestOptAdd_N_Short(&hopt, SHflag ? "sh" : NULL, "short0 short1 short2 short3 short4",
-                     5, sh, SHdefault, "exactly 5 short");
-  unsigned short uh[5];
+  unsigned int SHopidx = hestOptAdd_N_Short(&hopt, SHflag ? "SH" : NULL,
+                                            "short0 short1 short2 short3 short4", 5, SH,
+                                            SHdefault, "exactly 5 short");
+  unsigned short UH[5];
   const char *UHflag = getenv("TH_UH_FLAG");
   const char *UHdefault = getenv("TH_UH_DEFAULT");
-  hestOptAdd_N_UShort(&hopt, UHflag ? "uh" : NULL,
-                      "ushort0 ushort1 ushort2 ushort3 ushort4", 5, uh, UHdefault,
-                      "exactly 5 ushort");
-  int si[5];
+  unsigned int UHopidx = hestOptAdd_N_UShort(&hopt, UHflag ? "UH" : NULL,
+                                             "ushort0 ushort1 ushort2 ushort3 ushort4",
+                                             5, UH, UHdefault, "exactly 5 ushort");
+  int SI[5];
   const char *SIflag = getenv("TH_SI_FLAG");
   const char *SIdefault = getenv("TH_SI_DEFAULT");
-  hestOptAdd_N_Int(&hopt, SIflag ? "si" : NULL, "int0 int1 int2 int3 int4", 5, si,
-                   SIdefault, "exactly 5 int");
-  unsigned int ui[5];
+  unsigned int SIopidx = hestOptAdd_N_Int(&hopt, SIflag ? "SI" : NULL,
+                                          "int0 int1 int2 int3 int4", 5, SI, SIdefault,
+                                          "exactly 5 int");
+  unsigned int UI[5];
   const char *UIflag = getenv("TH_UI_FLAG");
   const char *UIdefault = getenv("TH_UI_DEFAULT");
-  hestOptAdd_N_UInt(&hopt, UIflag ? "ui" : NULL, "uint0 uint1 uint2 uint3 uint4", 5, ui,
-                    UIdefault, "exactly 5 uint");
-  long sl[5];
+  unsigned int UIopidx = hestOptAdd_N_UInt(&hopt, UIflag ? "UI" : NULL,
+                                           "uint0 uint1 uint2 uint3 uint4", 5, UI,
+                                           UIdefault, "exactly 5 uint");
+  long SL[5];
   const char *SLflag = getenv("TH_SL_FLAG");
   const char *SLdefault = getenv("TH_SL_DEFAULT");
-  hestOptAdd_N_Long(&hopt, SLflag ? "sl" : NULL, "long0 long1 long2 long3 long4", 5, sl,
-                    SLdefault, "exactly 5 long");
-  unsigned long ul[5];
+  unsigned int SLopidx = hestOptAdd_N_Long(&hopt, SLflag ? "SL" : NULL,
+                                           "long0 long1 long2 long3 long4", 5, SL,
+                                           SLdefault, "exactly 5 long");
+  unsigned long UL[5];
   const char *ULflag = getenv("TH_UL_FLAG");
   const char *ULdefault = getenv("TH_UL_DEFAULT");
-  hestOptAdd_N_ULong(&hopt, ULflag ? "ul" : NULL, "ulong0 ulong1 ulong2 ulong3 ulong4",
-                     5, ul, ULdefault, "exactly 5 ulong");
-  size_t sz[5];
+  unsigned int ULopidx = hestOptAdd_N_ULong(&hopt, ULflag ? "UL" : NULL,
+                                            "ulong0 ulong1 ulong2 ulong3 ulong4", 5, UL,
+                                            ULdefault, "exactly 5 ulong");
+  size_t SZ[5];
   const char *SZflag = getenv("TH_SZ_FLAG");
   const char *SZdefault = getenv("TH_SZ_DEFAULT");
-  hestOptAdd_N_Size_t(&hopt, SZflag ? "sz" : NULL,
-                      "size_t0 size_t1 size_t2 size_t3 size_t4", 5, sz, SZdefault,
-                      "exactly 5 size_t");
-  float fl[5];
+  unsigned int SZopidx = hestOptAdd_N_Size_t(&hopt, SZflag ? "SZ" : NULL,
+                                             "size_t0 size_t1 size_t2 size_t3 size_t4",
+                                             5, SZ, SZdefault, "exactly 5 size_t");
+  float FL[5];
   const char *FLflag = getenv("TH_FL_FLAG");
   const char *FLdefault = getenv("TH_FL_DEFAULT");
-  hestOptAdd_N_Float(&hopt, FLflag ? "fl" : NULL, "float0 float1 float2 float3 float4",
-                     5, fl, FLdefault, "exactly 5 float");
-  double db[5];
+  unsigned int FLopidx = hestOptAdd_N_Float(&hopt, FLflag ? "FL" : NULL,
+                                            "float0 float1 float2 float3 float4", 5, FL,
+                                            FLdefault, "exactly 5 float");
+  double DB[5];
   const char *DBflag = getenv("TH_DB_FLAG");
   const char *DBdefault = getenv("TH_DB_DEFAULT");
-  hestOptAdd_N_Double(&hopt, DBflag ? "db" : NULL,
-                      "double0 double1 double2 double3 double4", 5, db, DBdefault,
-                      "exactly 5 double");
-  char ch[5];
+  unsigned int DBopidx = hestOptAdd_N_Double(&hopt, DBflag ? "DB" : NULL,
+                                             "double0 double1 double2 double3 double4",
+                                             5, DB, DBdefault, "exactly 5 double");
+  char CH[5];
   const char *CHflag = getenv("TH_CH_FLAG");
   const char *CHdefault = getenv("TH_CH_DEFAULT");
-  hestOptAdd_N_Char(&hopt, CHflag ? "ch" : NULL, "char0 char1 char2 char3 char4", 5, ch,
-                    CHdefault, "exactly 5 char");
-  char *ss[5];
+  unsigned int CHopidx = hestOptAdd_N_Char(&hopt, CHflag ? "CH" : NULL,
+                                           "char0 char1 char2 char3 char4", 5, CH,
+                                           CHdefault, "exactly 5 char");
+  char *SS[5];
   const char *SSflag = getenv("TH_SS_FLAG");
   const char *SSdefault = getenv("TH_SS_DEFAULT");
-  hestOptAdd_N_String(&hopt, SSflag ? "ss" : NULL,
-                      "string0 string1 string2 string3 string4", 5, ss, SSdefault,
-                      "exactly 5 string");
-  int ee[5];
+  unsigned int SSopidx = hestOptAdd_N_String(&hopt, SSflag ? "SS" : NULL,
+                                             "string0 string1 string2 string3 string4",
+                                             5, SS, SSdefault, "exactly 5 string");
+  int EE[5];
   const char *EEflag = getenv("TH_EE_FLAG");
   const char *EEdefault = getenv("TH_EE_DEFAULT");
-  hestOptAdd_N_Enum(&hopt, EEflag ? "ee" : NULL, "enum0 enum1 enum2 enum3 enum4", 5, ee,
-                    EEdefault, "exactly 5 enum", airEndian);
-  double xy[2][5];
+  unsigned int EEopidx = hestOptAdd_N_Enum(&hopt, EEflag ? "EE" : NULL,
+                                           "enum0 enum1 enum2 enum3 enum4", 5, EE,
+                                           EEdefault, "exactly 5 enum", airEndian);
+  double XY[10];
   const char *XYflag = getenv("TH_XY_FLAG");
   const char *XYdefault = getenv("TH_XY_DEFAULT");
-  hestOptAdd_N_Other(&hopt, XYflag ? "xy" : NULL, "ostat0 ostat1 ostat2 ostat3 ostat4",
-                     5, xy, XYdefault, "exactly 5 ostat", &posCB);
-  Combo *co[5];
+  unsigned int XYopidx = hestOptAdd_N_Other(&hopt, XYflag ? "XY" : NULL,
+                                            "ostat0 ostat1 ostat2 ostat3 ostat4", 5, XY,
+                                            XYdefault, "exactly 5 ostat", &posCB);
+  Combo *CO[5];
   const char *COflag = getenv("TH_CO_FLAG");
   const char *COdefault = getenv("TH_CO_DEFAULT");
-  hestOptAdd_N_Other(&hopt, COflag ? "co" : NULL, "odyn0 odyn1 odyn2 odyn3 odyn4", 5, co,
-                     COdefault, "exactly 5 odyn", &comboCB);
+  unsigned int COopidx = hestOptAdd_N_Other(&hopt, COflag ? "CO" : NULL,
+                                            "odyn0 odyn1 odyn2 odyn3 odyn4", 5, CO,
+                                            COdefault, "exactly 5 odyn", &comboCB);
 
-  if (hestParse(hopt, argc - 1, argv + 1, NULL, hparm)) {
+  int pret = hestParse(hopt, argc - 1, argv + 1, NULL, hparm);
+  // fprintf(stderr, "!%s: hestParse returned pret=%d\n", argv[0], pret);
+  if (pret) {
     // have already fprintf'd to stderr
     hestParmFree(hparm);
     hestOptFree(hopt);
-    exit(0);
+    exit(1);
   }
   if (hopt->helpWanted) {
     hestUsage(stdout, hopt, argv[0], hparm, AIR_TRUE /* oneline */);
@@ -218,22 +231,219 @@ main(int argc, const char **argv) {
     exit(0);
   }
 
-  // print what was learned from hest
-  // print(BB)
-  // print(SH)
-  // print(UH)
-  // print(SI)
-  // print(UI)
-  // print(SL)
-  // print(UL)
-  // print(SZ)
-  // print(FL)
-  // print(DB)
-  // print(CH)
-  // print(SS)
-  // print(EE)
-  // print(XY)
-  // print(CO)
+  /* print what was learned from hest. Unfortunately, the means of generating this code
+  was simplistic, and the following output is not any kind of good example of
+  human-written C code; sorry! */
+  printf("BB=");
+  printf("[");
+  printf("%s", airEnumStr(airBool, BB[0]));
+  printf("|");
+  printf("%s", airEnumStr(airBool, BB[1]));
+  printf("|");
+  printf("%s", airEnumStr(airBool, BB[2]));
+  printf("|");
+  printf("%s", airEnumStr(airBool, BB[3]));
+  printf("|");
+  printf("%s", airEnumStr(airBool, BB[4]));
+  printf("]");
+  printf("\n");
+  THPRINT_SOURCE("BB", hopt, BBopidx);
+  printf("SH=");
+  printf("[");
+  printf("%hd", SH[0]);
+  printf("|");
+  printf("%hd", SH[1]);
+  printf("|");
+  printf("%hd", SH[2]);
+  printf("|");
+  printf("%hd", SH[3]);
+  printf("|");
+  printf("%hd", SH[4]);
+  printf("]");
+  printf("\n");
+  THPRINT_SOURCE("SH", hopt, SHopidx);
+  printf("UH=");
+  printf("[");
+  printf("%hu", UH[0]);
+  printf("|");
+  printf("%hu", UH[1]);
+  printf("|");
+  printf("%hu", UH[2]);
+  printf("|");
+  printf("%hu", UH[3]);
+  printf("|");
+  printf("%hu", UH[4]);
+  printf("]");
+  printf("\n");
+  THPRINT_SOURCE("UH", hopt, UHopidx);
+  printf("SI=");
+  printf("[");
+  printf("%d", SI[0]);
+  printf("|");
+  printf("%d", SI[1]);
+  printf("|");
+  printf("%d", SI[2]);
+  printf("|");
+  printf("%d", SI[3]);
+  printf("|");
+  printf("%d", SI[4]);
+  printf("]");
+  printf("\n");
+  THPRINT_SOURCE("SI", hopt, SIopidx);
+  printf("UI=");
+  printf("[");
+  printf("%u", UI[0]);
+  printf("|");
+  printf("%u", UI[1]);
+  printf("|");
+  printf("%u", UI[2]);
+  printf("|");
+  printf("%u", UI[3]);
+  printf("|");
+  printf("%u", UI[4]);
+  printf("]");
+  printf("\n");
+  THPRINT_SOURCE("UI", hopt, UIopidx);
+  printf("SL=");
+  printf("[");
+  printf("%ld", SL[0]);
+  printf("|");
+  printf("%ld", SL[1]);
+  printf("|");
+  printf("%ld", SL[2]);
+  printf("|");
+  printf("%ld", SL[3]);
+  printf("|");
+  printf("%ld", SL[4]);
+  printf("]");
+  printf("\n");
+  THPRINT_SOURCE("SL", hopt, SLopidx);
+  printf("UL=");
+  printf("[");
+  printf("%lu", UL[0]);
+  printf("|");
+  printf("%lu", UL[1]);
+  printf("|");
+  printf("%lu", UL[2]);
+  printf("|");
+  printf("%lu", UL[3]);
+  printf("|");
+  printf("%lu", UL[4]);
+  printf("]");
+  printf("\n");
+  THPRINT_SOURCE("UL", hopt, ULopidx);
+  printf("SZ=");
+  printf("[");
+  printf("%zu", SZ[0]);
+  printf("|");
+  printf("%zu", SZ[1]);
+  printf("|");
+  printf("%zu", SZ[2]);
+  printf("|");
+  printf("%zu", SZ[3]);
+  printf("|");
+  printf("%zu", SZ[4]);
+  printf("]");
+  printf("\n");
+  THPRINT_SOURCE("SZ", hopt, SZopidx);
+  printf("FL=");
+  printf("[");
+  airSinglePrintf(stdout, NULL, 0, "%g", FL[0]);
+  printf("|");
+  airSinglePrintf(stdout, NULL, 0, "%g", FL[1]);
+  printf("|");
+  airSinglePrintf(stdout, NULL, 0, "%g", FL[2]);
+  printf("|");
+  airSinglePrintf(stdout, NULL, 0, "%g", FL[3]);
+  printf("|");
+  airSinglePrintf(stdout, NULL, 0, "%g", FL[4]);
+  printf("]");
+  printf("\n");
+  THPRINT_SOURCE("FL", hopt, FLopidx);
+  printf("DB=");
+  printf("[");
+  airSinglePrintf(stdout, NULL, 0, "%lg", DB[0]);
+  printf("|");
+  airSinglePrintf(stdout, NULL, 0, "%lg", DB[1]);
+  printf("|");
+  airSinglePrintf(stdout, NULL, 0, "%lg", DB[2]);
+  printf("|");
+  airSinglePrintf(stdout, NULL, 0, "%lg", DB[3]);
+  printf("|");
+  airSinglePrintf(stdout, NULL, 0, "%lg", DB[4]);
+  printf("]");
+  printf("\n");
+  THPRINT_SOURCE("DB", hopt, DBopidx);
+  printf("CH=");
+  printf("[");
+  printf("%c", CH[0]);
+  printf("|");
+  printf("%c", CH[1]);
+  printf("|");
+  printf("%c", CH[2]);
+  printf("|");
+  printf("%c", CH[3]);
+  printf("|");
+  printf("%c", CH[4]);
+  printf("]");
+  printf("\n");
+  THPRINT_SOURCE("CH", hopt, CHopidx);
+  printf("SS=");
+  printf("[");
+  printf("%s", SS[0]);
+  printf("|");
+  printf("%s", SS[1]);
+  printf("|");
+  printf("%s", SS[2]);
+  printf("|");
+  printf("%s", SS[3]);
+  printf("|");
+  printf("%s", SS[4]);
+  printf("]");
+  printf("\n");
+  THPRINT_SOURCE("SS", hopt, SSopidx);
+  printf("EE=");
+  printf("[");
+  printf("%s", airEnumStr(airEndian, EE[0]));
+  printf("|");
+  printf("%s", airEnumStr(airEndian, EE[1]));
+  printf("|");
+  printf("%s", airEnumStr(airEndian, EE[2]));
+  printf("|");
+  printf("%s", airEnumStr(airEndian, EE[3]));
+  printf("|");
+  printf("%s", airEnumStr(airEndian, EE[4]));
+  printf("]");
+  printf("\n");
+  THPRINT_SOURCE("EE", hopt, EEopidx);
+  printf("XY=");
+  printf("[");
+  pos_print(stdout, XY + (2 * 0));
+  printf("|");
+  pos_print(stdout, XY + (2 * 1));
+  printf("|");
+  pos_print(stdout, XY + (2 * 2));
+  printf("|");
+  pos_print(stdout, XY + (2 * 3));
+  printf("|");
+  pos_print(stdout, XY + (2 * 4));
+  printf("]");
+  printf("\n");
+  THPRINT_SOURCE("XY", hopt, XYopidx);
+  printf("CO=");
+  printf("[");
+  combo_print(stdout, CO[0]);
+  printf("|");
+  combo_print(stdout, CO[1]);
+  printf("|");
+  combo_print(stdout, CO[2]);
+  printf("|");
+  combo_print(stdout, CO[3]);
+  printf("|");
+  combo_print(stdout, CO[4]);
+  printf("]");
+  printf("\n");
+  THPRINT_SOURCE("CO", hopt, COopidx);
 
   /* free the memory allocated by parsing ... */
   hestParseFree(hopt);

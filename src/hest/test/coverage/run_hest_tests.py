@@ -442,38 +442,306 @@ TYsB = [
     'SS',
     'XY',
 ]
-TYs = TYsA + TYsB
 TYvals = {
-    'BB': ['true', 'true', 'false'],
+    'BB': ['true', 'false', 'true'],
     'SH': ['-67', str(-(2**15)), str(2**15 - 1)],
-    'UH': ['42', '0', str(2**16 - 1)],
+    'UH': ['42', '1', str(2**16 - 1)],
     'SI': ['-68', str(-(2**31)), str(2**31 - 1)],
-    'UI': ['43', '0', str(2**32 - 1)],
+    'UI': ['43', '2', str(2**32 - 1)],
     'SL': ['-69', str(-(2**63)), str(2**63 - 1)],
-    'UL': ['44', '0', str(2**64 - 1)],
-    'SZ': ['45', '0', str(2**64 - 1)],
+    'UL': ['44', '3', str(2**64 - 1)],
+    'SZ': ['45', '4', str(2**64 - 1)],
     'FL': ['63.5', '-52.125', '23710'],
     'DB': ['64.5', '-53.125', '33710'],
     'CH': ['c', 'a', 'T'],
-    'SS': ['good dog', 'bat', 'coffee'],
+    'SS': ['good dog', 'mango', 'dark coffee'],
     'EE': ['big', 'little', 'big'],
     'XY': ['3,4', '0,0', '-49,7.5'],
     'CO': ['6.25', '0.1', '-5.125'],
 }
+TYs = list(TYvals.keys())
+TYsNumeric = [TY for TY in TYs if TY not in ['CH', 'SS', 'EE', 'XY', 'CO']]
+
+def p(TY, given):
+    """when a value of type `TY` is passed to hest as `given`, this
+    shows how the value should be printed after hestParse"""
+    ret = given
+    if TY == 'XY':
+        # like pos_print() in th_kindK.c
+        [xx, yy] = given.split(',')
+        ret = f'({xx},{yy})'
+    elif TY == 'CO':
+        # like combo_print() in th_kindK.c
+        ret = f'"{given}"->{str(float(given))}'
+    return ret
+
+
+def q(dd):
+    """when a default `dd` (of some type) is being put into a the "dflt" string
+    of the hestOpt (or passed into it via an TH_TY_DEFAULT envvar), this handles
+    the modest quoting that is needed.  But not in any robust kind of way!  This
+    is only smart enough to handle the way things are tested here."""
+    if ' ' in dd:
+        return "'" + dd + "'"
+    return dd
+
+
 if True:
+    FLAGS = {f'TH_{TY}_FLAG': '' for TY in TYs}
     TESTS += [
+        # th_kind2 (NO flags, with defaults) --help did not increase coverage
         dict(
-            env={f'TH_{TY}_DEFAULT': TYvals[TY][0] for TY in TYs},
+            env={
+                **{f'TH_{TY}_DEFAULT': TYvals[TY][0] for TY in TYs},
+                **FLAGS,
+            },
             exe='th_kind2',
-            name='kind2 (NO TYs flagged) all defaults',
+            name='kind2 (with flags, with defaults) --help',
             argv=['--help'],
         ),
+        # (does not seem to increase coverage)
         # dict(
-        #    env={f'TH_{TY}_FLAG': '' for TY in TYs},
+        #    env={
+        #        **{f'TH_{TY}_DEFAULT': TYvals[TY][0] for TY in TYs},
+        #        **FLAGS,
+        #    },
         #    exe='th_kind2',
-        #    name='kind2 (all TYs flagged) --help',
-        #    argv=['--help'],
+        #    name='kind2 (with flags, with defaults) set from default',
+        #    argv=[],
+        #    expected={TY: p(TY, TYvals[TY][0]) for TY in TYs},
         # ),
+        dict(
+            exe='th_kind2',
+            name='kind2 (NO flags, NO defaults) set from args',
+            argv=[TYvals[TY][1] for TY in TYs],
+            expected={TY: p(TY, TYvals[TY][1]) for TY in TYs},
+        ),
+        dict(
+            env=FLAGS,
+            exe='th_kind2',
+            name='kind2 (with flags, NO defaults) set from args',
+            argv=[wut for TY in TYs for wut in [f'-{TY}', TYvals[TY][1]]],
+            expected={TY: p(TY, TYvals[TY][1]) for TY in TYs},
+        ),
+        # (does not seem to increase coverage)
+        # dict(
+        #    env={
+        #        **{f'TH_{TY}_DEFAULT': TYvals[TY][0] for TY in TYs},
+        #        **FLAGS,
+        #    },
+        #    exe='th_kind2',
+        #    name='kind2 (with flags, with defaults) set from args',
+        #    argv=[wut for TY in TYs for wut in [f'-{TY}', TYvals[TY][1]]],
+        #    expected={TY: p(TY, TYvals[TY][1]) for TY in TYs},
+        # ),
+        ###################### kind3_n2
+        dict(
+            env={
+                **{f'TH_{TY}_DEFAULT': f'{q(TYvals[TY][0])} {q(TYvals[TY][1])}' for TY in TYs},
+                **FLAGS,
+            },
+            exe='th_kind3_n2',
+            name='kind3_n2 (with flags, with defaults) --help',
+            argv=['--help'],
+        ),
+        dict(
+            env={f'TH_{TY}_DEFAULT': f'{q(TYvals[TY][0])} {q(TYvals[TY][1])}' for TY in TYs},
+            exe='th_kind3_n2',
+            name='kind3_n2 (NO flags, with defaults) set from defaults',
+            argv=[],
+            expected={TY: [p(TY, TYvals[TY][0]), p(TY, TYvals[TY][1])] for TY in TYs},
+        ),
+        dict(
+            exe='th_kind3_n2',
+            name='kind3_n2 (NO flags, NO defaults) set from args',
+            argv=[x for TY in TYs for x in [TYvals[TY][1], TYvals[TY][2]]],
+            expected={TY: [p(TY, TYvals[TY][1]), p(TY, TYvals[TY][2])] for TY in TYs},
+        ),
+        # this increases air/array.c coverage but not hest coverage?
+        dict(
+            env=FLAGS,
+            exe='th_kind3_n2',
+            name='kind3_n2 (with flags, NO defaults) set from args',
+            argv=[x for TY in TYs for x in [f'-{TY}', TYvals[TY][1], TYvals[TY][2]]],
+            expected={TY: [p(TY, TYvals[TY][1]), p(TY, TYvals[TY][2])] for TY in TYs},
+        ),
+    ]
+
+    def DFLT(I):
+        """build up default env dict from indexed values"""
+        return {f'TH_{TY}_DEFAULT': ' '.join(q(TYvals[TY][i]) for i in I) for TY in TYs}
+
+    def EXPT(I):
+        """build up expected value dict from indexed value(s)"""
+        return {TY: ([p(TY, TYvals[TY][i]) for i in I] if isinstance(I, list) else p(TY, TYvals[TY][I])) for TY in TYs}
+
+    def ARGV(I, noflag=False):
+        """build up argv to pass indexed values (currently with flags)"""
+        return [x for TY in TYs for x in ([] if noflag else [f'-{TY}']) + [TYvals[TY][i] for i in I]]
+
+    ###################### kind3_n3
+    TESTS += [
+        dict(
+            env={
+                **DFLT([0, 1, 2]),
+                **FLAGS,
+            },
+            exe='th_kind3_n3',
+            name='kind3_n3 (with flags, with defaults) --help',
+            argv=['--help'],
+        ),
+        ## These do not seem to increase coverage but seems right to test the round-trips
+        dict(
+            env=DFLT([0, 1, 2]),
+            exe='th_kind3_n3',
+            name='kind3_n3 (NO flags, with defaults) set from defaults',
+            argv=[],
+            expected=EXPT([0, 1, 2]),
+        ),
+        dict(
+            env=FLAGS,
+            exe='th_kind3_n3',
+            name='kind3_n3 (with flags, NO defaults) set from args',
+            argv=ARGV([0, 1, 2]),
+            expected=EXPT([0, 1, 2]),
+        ),
+    ]
+    ###################### kind3_n4 (copy-pasta!)
+    TESTS += [
+        dict(
+            env={
+                **DFLT([0, 1, 2, 0]),
+                **FLAGS,
+            },
+            exe='th_kind3_n4',
+            name='kind3_n4 (with flags, with defaults) --help',
+            argv=['--help'],
+        ),
+        ## These do not seem to increase coverage but seems right to test the round-trips
+        dict(
+            env=DFLT([0, 1, 2, 0]),
+            exe='th_kind3_n4',
+            name='kind3_n4 (NO flags, with defaults) set from defaults',
+            argv=[],
+            expected=EXPT([0, 1, 2, 0]),
+        ),
+        dict(
+            env=FLAGS,
+            exe='th_kind3_n4',
+            name='kind3_n4 (with flags, NO defaults) set from args',
+            argv=ARGV([0, 1, 2, 0]),
+            expected=EXPT([0, 1, 2, 0]),
+        ),
+    ]
+    ###################### kind3_n5 (copy-pasta!)
+    TESTS += [
+        dict(
+            env={
+                **DFLT([0, 1, 2, 1, 0]),
+                **FLAGS,
+            },
+            exe='th_kind3_n5',
+            name='kind3_n5 (with flags, with defaults) --help',
+            argv=['--help'],
+        ),
+        ## These do not seem to increase coverage but seems right to test the round-trips
+        dict(
+            env=DFLT([0, 1, 2, 1, 0]),
+            exe='th_kind3_n5',
+            name='kind3_n5 (NO flags, with defaults) set from defaults',
+            argv=[],
+            expected=EXPT([0, 1, 2, 1, 0]),
+        ),
+        dict(
+            exe='th_kind3_n5',
+            name='kind3_n5 (NO flags, NO defaults) set from args',
+            argv=ARGV([0, 1, 2, 1, 0], noflag=True),
+            expected=EXPT([0, 1, 2, 1, 0]),
+        ),
+    ]
+    ###################### kind4
+    TESTS += [
+        dict(
+            env={
+                **DFLT([0]),
+                **FLAGS,
+            },
+            exe='th_kind4',
+            name='kind4 (with required flags+defaults) --help',
+            argv=['--help'],
+        ),
+        dict(
+            env={
+                **DFLT([0]), # harmlessly sets defaults for non-existent options
+                **FLAGS, # harmlessly turns on flags for non-existent options
+            },
+            exe='th_kind4',
+            name='kind4 (with required flags+defaults) set from defaults',
+            argv=[],
+            expected={TY: p(TY, TYvals[TY][0]) for TY in TYsNumeric},
+        ),
+        dict(
+            env={
+                **DFLT([0]),
+                **FLAGS,
+            },
+            exe='th_kind4',
+            name='kind4 (with required flags+defaults) set by kind4-specific inversion 1->0',
+            argv=[f'-{TY}' for TY in TYsNumeric],
+            expected={f'{TY}' : ('false' if TY == 'BB' else '0') for TY in TYsNumeric},
+        ),
+        dict(
+            env={
+                **{f'TH_{TY}_DEFAULT': ('false' if TY == 'BB' else '0') for TY in TYsNumeric},
+                **FLAGS,
+            },
+            exe='th_kind4',
+            name='kind4 (with required flags+defaults) set by kind4-specific inversion 0->1',
+            argv=[f'-{TY}' for TY in TYsNumeric],
+            expected={f'{TY}' : ('true' if TY == 'BB' else '1') for TY in TYsNumeric},
+        ),
+        dict(
+            env={
+                **DFLT([0]),
+                **FLAGS,
+            },
+            exe='th_kind4',
+            name='kind4 (with required flags+defaults) set args',
+            argv=[x for TY in TYsNumeric for x in [f'-{TY}', TYvals[TY][1]]],
+            expected={f'{TY}' : TYvals[TY][1] for TY in TYsNumeric},
+        ),
+    ]
+    ###################### kind5
+    TESTS += [
+        dict(
+            env={
+                **DFLT([0, 1]),
+                **FLAGS,
+            },
+            exe='th_kind5',
+            name='kind5 (with flags, with defaults) --help',
+            argv=['--help'],
+        ),
+        dict(
+            env={
+                **DFLT([0, 1]),
+                **FLAGS,
+            },
+            exe='th_kind5',
+            name='kind5 (with flags, with defaults) set from defaults',
+            argv=[],
+            expected=EXPT([0, 1]),
+        ),
+        # HEY would be nicer if we actually exercised having a variable number of parms
+        # i.e. with different number of parms for different options; it would demonstrate
+        # correctness but would not increase coverage
+        dict(
+            env=FLAGS,
+            exe='th_kind5',
+            name='kind5 (with flags, NO defaults) set from args',
+            argv=ARGV([1,2]),
+            expected=EXPT([1, 2]),
+        ),
     ]
 # ==========================================================================
 # expected parse failures
@@ -688,13 +956,9 @@ def _values_match(key: str, actual_val, expected_val) -> bool:
     try:
         # bool must be checked before int because bool is a subclass of int.
         if isinstance(expected_val, bool):
-            print(f'#########  {expected_val=} {type(expected_val)=} ')
-            print(f'#########  {actual_val=} {type(actual_val)=} ')
-            print(f'#########  returning {bool(actual_val) == expected_val}')
             ret = ('true' == actual_val and expected_val) or (
                 'false' == actual_val and not expected_val
             )
-            print(f'#########  returning {ret}')
             return ret
         if isinstance(expected_val, int):
             return int(actual_val) == expected_val
@@ -772,16 +1036,20 @@ def run_one(tnum: int, test: dict, args, build_dir: Path) -> tuple:
             ] + cmd
 
         # ---- execute ----
-        print(f'[{tnum}] running: ', end='')
+        print(f'[test# {tnum}] == {test['name']}')
+        print('running: ', end='')
+        # generate a copy-paste-able command-line by using shell syntax
+        # for building up an environment in which a command is run
         if envdict:
-            print(f'')
             MYENV = ENV.copy()
             for envvar, envval in envdict.items():
-                print(f'{envvar}={envval}  ', end='')
+                print(f'{envvar}="{envval}"  ', end='')
                 MYENV[envvar] = envval
         else:
             MYENV = ENV
+        # then print the command itself
         print(f'{shlex.join(cmd)}')
+        # run it
         result = subprocess.run(cmd, capture_output=True, text=True, env=MYENV)
         exit_code = result.returncode
         errlog = f'stderr:\n{textwrap.indent(result.stderr.strip(), INDENT)}'
@@ -794,7 +1062,7 @@ def run_one(tnum: int, test: dict, args, build_dir: Path) -> tuple:
 
         # ---- Else supposed to run, verify that
         if exit_code:
-            return False, f'unexpected failure/non-zero exit code {exit_code}' + errlog
+            return False, f'unexpected failure/non-zero exit code {exit_code}\n' + errlog
 
         # ---- Supposed to run and did run; did it run correctly?
         print(f'stdout:\n{textwrap.indent(result.stdout.strip(), INDENT)}')
@@ -894,31 +1162,34 @@ def main() -> int:
 
     # ---- run --help on everything
     # GLK added: helper function for running --help
-    def runhelp(thebinary, thenv, stdin=None):
+    def run_help(thebinary, thenv, stdin=None):
         result = subprocess.run(
             [str(thebinary), '--help'], capture_output=True, text=True, stdin=stdin, env=thenv
         )
         print(f'./{build_dir}/{exe} --help:')
-        print(textwrap.indent(result.stdout, INDENT))
+        if result.returncode == 0:
+            print(textwrap.indent(result.stdout, INDENT))
+        else:
+            print(textwrap.indent(result.stderr, INDENT))
 
     for exe in EXES:
         binary = build_dir / exe
         print('--help with no env')
-        runhelp(binary, ENV)
+        run_help(binary, ENV)
         # again with NULL hparm for coverage
         print('--help with TH_NULL_HPARM=1')
-        runhelp(binary, dict(TH_NULL_HPARM='1', **ENV))
+        run_help(binary, dict(TH_NULL_HPARM='1', **ENV))
         if 'th_variadic' == exe:
             # this one has extra switches set by envvar
             print('--help with TH_FLAGFIX=true')
-            runhelp(binary, dict(TH_FLAGFIX='true', **ENV))
+            run_help(binary, dict(TH_FLAGFIX='true', **ENV))
             print('--help with TH_FLAGFIX=true, TH_VMIN=0')
-            runhelp(binary, dict(TH_FLAGFIX='true', TH_VMIN='0', **ENV))
+            run_help(binary, dict(TH_FLAGFIX='true', TH_VMIN='0', **ENV))
         elif 'th_kind2' == exe:
             print('--help with all defaults on')
-            runhelp(binary, {f'TH_{TY}_DEFAULT': TYvals[TY][0] for TY in TYs})
+            run_help(binary, {f'TH_{TY}_DEFAULT': TYvals[TY][0] for TY in TYs})
             print('--help with thwarted ioctl and 65 #columns')
-            runhelp(binary, dict(TH_COLUMNS='65', **ENV), stdin=subprocess.DEVNULL)
+            run_help(binary, dict(TH_COLUMNS='65', **ENV), stdin=subprocess.DEVNULL)
 
     # ---- filter ----
     active = TESTS
@@ -941,7 +1212,6 @@ def main() -> int:
     #    ENV['LLVM_PROFILE_FILE'] = 'test-%p.profraw'
     for t in active:
         total += 1
-        label = t.get('name', f"{t['exe']} {t.get('argv', [])}")
         expect_fail = t.get('expect_fail', False)
         # "ok" == got what we expected
         ok, detail = run_one(total, t, args, build_dir)
@@ -954,7 +1224,7 @@ def main() -> int:
         else:
             tag = '[OOPS:' + ('PASS]' if expect_fail else 'FAIL]')
             failed += 1
-        print(f'{tag} {label}')
+        print(f'{tag} {t['name']}')
         if detail:
             print(textwrap.indent(detail, INDENT))
         print('')   # to better visually separate tests

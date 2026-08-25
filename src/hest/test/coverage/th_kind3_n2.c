@@ -45,11 +45,11 @@ hestCB posCB = {2 * sizeof(double), "position", pos_parse, NULL};
 
 void
 pos_print(FILE *file, const double pos[2]) {
-  fprintf(file, "[");
+  fprintf(file, "(");
   airSinglePrintf(file, NULL, 0, "%lg", pos[0]);
   fprintf(file, ",");
   airSinglePrintf(file, NULL, 0, "%lg", pos[1]);
-  fprintf(file, "]");
+  fprintf(file, ")");
   fflush(file);
   return;
 }
@@ -123,87 +123,93 @@ main(int argc, const char **argv) {
   /* for each of two-letter TY below:
      setenv TH_TY_FLAG (to anything, even empty string) to use a non-NULL two-flag "ty".
      setenv TH_TY_DEFAULT to the default string (else is NULL == no default) */
-  int bb[2];
+  int BB[2];
   const char *BBflag = getenv("TH_BB_FLAG");
   const char *BBdefault = getenv("TH_BB_DEFAULT");
-  hestOptAdd_2_Bool(&hopt, BBflag ? "bb" : NULL, "bool0 bool1", bb, BBdefault,
-                    "exactly 2 bool");
-  short sh[2];
+  unsigned int BBopidx = hestOptAdd_2_Bool(&hopt, BBflag ? "BB" : NULL, "bool0 bool1",
+                                           BB, BBdefault, "exactly 2 bool");
+  short SH[2];
   const char *SHflag = getenv("TH_SH_FLAG");
   const char *SHdefault = getenv("TH_SH_DEFAULT");
-  hestOptAdd_2_Short(&hopt, SHflag ? "sh" : NULL, "short0 short1", sh, SHdefault,
-                     "exactly 2 short");
-  unsigned short uh[2];
+  unsigned int SHopidx = hestOptAdd_2_Short(&hopt, SHflag ? "SH" : NULL, "short0 short1",
+                                            SH, SHdefault, "exactly 2 short");
+  unsigned short UH[2];
   const char *UHflag = getenv("TH_UH_FLAG");
   const char *UHdefault = getenv("TH_UH_DEFAULT");
-  hestOptAdd_2_UShort(&hopt, UHflag ? "uh" : NULL, "ushort0 ushort1", uh, UHdefault,
-                      "exactly 2 ushort");
-  int si[2];
+  unsigned int UHopidx = hestOptAdd_2_UShort(&hopt, UHflag ? "UH" : NULL,
+                                             "ushort0 ushort1", UH, UHdefault,
+                                             "exactly 2 ushort");
+  int SI[2];
   const char *SIflag = getenv("TH_SI_FLAG");
   const char *SIdefault = getenv("TH_SI_DEFAULT");
-  hestOptAdd_2_Int(&hopt, SIflag ? "si" : NULL, "int0 int1", si, SIdefault,
-                   "exactly 2 int");
-  unsigned int ui[2];
+  unsigned int SIopidx = hestOptAdd_2_Int(&hopt, SIflag ? "SI" : NULL, "int0 int1", SI,
+                                          SIdefault, "exactly 2 int");
+  unsigned int UI[2];
   const char *UIflag = getenv("TH_UI_FLAG");
   const char *UIdefault = getenv("TH_UI_DEFAULT");
-  hestOptAdd_2_UInt(&hopt, UIflag ? "ui" : NULL, "uint0 uint1", ui, UIdefault,
-                    "exactly 2 uint");
-  long sl[2];
+  unsigned int UIopidx = hestOptAdd_2_UInt(&hopt, UIflag ? "UI" : NULL, "uint0 uint1",
+                                           UI, UIdefault, "exactly 2 uint");
+  long SL[2];
   const char *SLflag = getenv("TH_SL_FLAG");
   const char *SLdefault = getenv("TH_SL_DEFAULT");
-  hestOptAdd_2_Long(&hopt, SLflag ? "sl" : NULL, "long0 long1", sl, SLdefault,
-                    "exactly 2 long");
-  unsigned long ul[2];
+  unsigned int SLopidx = hestOptAdd_2_Long(&hopt, SLflag ? "SL" : NULL, "long0 long1",
+                                           SL, SLdefault, "exactly 2 long");
+  unsigned long UL[2];
   const char *ULflag = getenv("TH_UL_FLAG");
   const char *ULdefault = getenv("TH_UL_DEFAULT");
-  hestOptAdd_2_ULong(&hopt, ULflag ? "ul" : NULL, "ulong0 ulong1", ul, ULdefault,
-                     "exactly 2 ulong");
-  size_t sz[2];
+  unsigned int ULopidx = hestOptAdd_2_ULong(&hopt, ULflag ? "UL" : NULL, "ulong0 ulong1",
+                                            UL, ULdefault, "exactly 2 ulong");
+  size_t SZ[2];
   const char *SZflag = getenv("TH_SZ_FLAG");
   const char *SZdefault = getenv("TH_SZ_DEFAULT");
-  hestOptAdd_2_Size_t(&hopt, SZflag ? "sz" : NULL, "size_t0 size_t1", sz, SZdefault,
-                      "exactly 2 size_t");
-  float fl[2];
+  unsigned int SZopidx = hestOptAdd_2_Size_t(&hopt, SZflag ? "SZ" : NULL,
+                                             "size_t0 size_t1", SZ, SZdefault,
+                                             "exactly 2 size_t");
+  float FL[2];
   const char *FLflag = getenv("TH_FL_FLAG");
   const char *FLdefault = getenv("TH_FL_DEFAULT");
-  hestOptAdd_2_Float(&hopt, FLflag ? "fl" : NULL, "float0 float1", fl, FLdefault,
-                     "exactly 2 float");
-  double db[2];
+  unsigned int FLopidx = hestOptAdd_2_Float(&hopt, FLflag ? "FL" : NULL, "float0 float1",
+                                            FL, FLdefault, "exactly 2 float");
+  double DB[2];
   const char *DBflag = getenv("TH_DB_FLAG");
   const char *DBdefault = getenv("TH_DB_DEFAULT");
-  hestOptAdd_2_Double(&hopt, DBflag ? "db" : NULL, "double0 double1", db, DBdefault,
-                      "exactly 2 double");
-  char ch[2];
+  unsigned int DBopidx = hestOptAdd_2_Double(&hopt, DBflag ? "DB" : NULL,
+                                             "double0 double1", DB, DBdefault,
+                                             "exactly 2 double");
+  char CH[2];
   const char *CHflag = getenv("TH_CH_FLAG");
   const char *CHdefault = getenv("TH_CH_DEFAULT");
-  hestOptAdd_2_Char(&hopt, CHflag ? "ch" : NULL, "char0 char1", ch, CHdefault,
-                    "exactly 2 char");
-  char *ss[2];
+  unsigned int CHopidx = hestOptAdd_2_Char(&hopt, CHflag ? "CH" : NULL, "char0 char1",
+                                           CH, CHdefault, "exactly 2 char");
+  char *SS[2];
   const char *SSflag = getenv("TH_SS_FLAG");
   const char *SSdefault = getenv("TH_SS_DEFAULT");
-  hestOptAdd_2_String(&hopt, SSflag ? "ss" : NULL, "string0 string1", ss, SSdefault,
-                      "exactly 2 string");
-  int ee[2];
+  unsigned int SSopidx = hestOptAdd_2_String(&hopt, SSflag ? "SS" : NULL,
+                                             "string0 string1", SS, SSdefault,
+                                             "exactly 2 string");
+  int EE[2];
   const char *EEflag = getenv("TH_EE_FLAG");
   const char *EEdefault = getenv("TH_EE_DEFAULT");
-  hestOptAdd_2_Enum(&hopt, EEflag ? "ee" : NULL, "enum0 enum1", ee, EEdefault,
-                    "exactly 2 enum", airEndian);
-  double xy[2][2];
+  unsigned int EEopidx = hestOptAdd_2_Enum(&hopt, EEflag ? "EE" : NULL, "enum0 enum1",
+                                           EE, EEdefault, "exactly 2 enum", airEndian);
+  double XY[4];
   const char *XYflag = getenv("TH_XY_FLAG");
   const char *XYdefault = getenv("TH_XY_DEFAULT");
-  hestOptAdd_2_Other(&hopt, XYflag ? "xy" : NULL, "ostat0 ostat1", xy, XYdefault,
-                     "exactly 2 ostat", &posCB);
-  Combo *co[2];
+  unsigned int XYopidx = hestOptAdd_2_Other(&hopt, XYflag ? "XY" : NULL, "ostat0 ostat1",
+                                            XY, XYdefault, "exactly 2 ostat", &posCB);
+  Combo *CO[2];
   const char *COflag = getenv("TH_CO_FLAG");
   const char *COdefault = getenv("TH_CO_DEFAULT");
-  hestOptAdd_2_Other(&hopt, COflag ? "co" : NULL, "odyn0 odyn1", co, COdefault,
-                     "exactly 2 odyn", &comboCB);
+  unsigned int COopidx = hestOptAdd_2_Other(&hopt, COflag ? "CO" : NULL, "odyn0 odyn1",
+                                            CO, COdefault, "exactly 2 odyn", &comboCB);
 
-  if (hestParse(hopt, argc - 1, argv + 1, NULL, hparm)) {
+  int pret = hestParse(hopt, argc - 1, argv + 1, NULL, hparm);
+  // fprintf(stderr, "!%s: hestParse returned pret=%d\n", argv[0], pret);
+  if (pret) {
     // have already fprintf'd to stderr
     hestParmFree(hparm);
     hestOptFree(hopt);
-    exit(0);
+    exit(1);
   }
   if (hopt->helpWanted) {
     hestUsage(stdout, hopt, argv[0], hparm, AIR_TRUE /* oneline */);
@@ -214,22 +220,129 @@ main(int argc, const char **argv) {
     exit(0);
   }
 
-  // print what was learned from hest
-  // print(BB)
-  // print(SH)
-  // print(UH)
-  // print(SI)
-  // print(UI)
-  // print(SL)
-  // print(UL)
-  // print(SZ)
-  // print(FL)
-  // print(DB)
-  // print(CH)
-  // print(SS)
-  // print(EE)
-  // print(XY)
-  // print(CO)
+  /* print what was learned from hest. Unfortunately, the means of generating this code
+  was simplistic, and the following output is not any kind of good example of
+  human-written C code; sorry! */
+  printf("BB=");
+  printf("[");
+  printf("%s", airEnumStr(airBool, BB[0]));
+  printf("|");
+  printf("%s", airEnumStr(airBool, BB[1]));
+  printf("]");
+  printf("\n");
+  THPRINT_SOURCE("BB", hopt, BBopidx);
+  printf("SH=");
+  printf("[");
+  printf("%hd", SH[0]);
+  printf("|");
+  printf("%hd", SH[1]);
+  printf("]");
+  printf("\n");
+  THPRINT_SOURCE("SH", hopt, SHopidx);
+  printf("UH=");
+  printf("[");
+  printf("%hu", UH[0]);
+  printf("|");
+  printf("%hu", UH[1]);
+  printf("]");
+  printf("\n");
+  THPRINT_SOURCE("UH", hopt, UHopidx);
+  printf("SI=");
+  printf("[");
+  printf("%d", SI[0]);
+  printf("|");
+  printf("%d", SI[1]);
+  printf("]");
+  printf("\n");
+  THPRINT_SOURCE("SI", hopt, SIopidx);
+  printf("UI=");
+  printf("[");
+  printf("%u", UI[0]);
+  printf("|");
+  printf("%u", UI[1]);
+  printf("]");
+  printf("\n");
+  THPRINT_SOURCE("UI", hopt, UIopidx);
+  printf("SL=");
+  printf("[");
+  printf("%ld", SL[0]);
+  printf("|");
+  printf("%ld", SL[1]);
+  printf("]");
+  printf("\n");
+  THPRINT_SOURCE("SL", hopt, SLopidx);
+  printf("UL=");
+  printf("[");
+  printf("%lu", UL[0]);
+  printf("|");
+  printf("%lu", UL[1]);
+  printf("]");
+  printf("\n");
+  THPRINT_SOURCE("UL", hopt, ULopidx);
+  printf("SZ=");
+  printf("[");
+  printf("%zu", SZ[0]);
+  printf("|");
+  printf("%zu", SZ[1]);
+  printf("]");
+  printf("\n");
+  THPRINT_SOURCE("SZ", hopt, SZopidx);
+  printf("FL=");
+  printf("[");
+  airSinglePrintf(stdout, NULL, 0, "%g", FL[0]);
+  printf("|");
+  airSinglePrintf(stdout, NULL, 0, "%g", FL[1]);
+  printf("]");
+  printf("\n");
+  THPRINT_SOURCE("FL", hopt, FLopidx);
+  printf("DB=");
+  printf("[");
+  airSinglePrintf(stdout, NULL, 0, "%lg", DB[0]);
+  printf("|");
+  airSinglePrintf(stdout, NULL, 0, "%lg", DB[1]);
+  printf("]");
+  printf("\n");
+  THPRINT_SOURCE("DB", hopt, DBopidx);
+  printf("CH=");
+  printf("[");
+  printf("%c", CH[0]);
+  printf("|");
+  printf("%c", CH[1]);
+  printf("]");
+  printf("\n");
+  THPRINT_SOURCE("CH", hopt, CHopidx);
+  printf("SS=");
+  printf("[");
+  printf("%s", SS[0]);
+  printf("|");
+  printf("%s", SS[1]);
+  printf("]");
+  printf("\n");
+  THPRINT_SOURCE("SS", hopt, SSopidx);
+  printf("EE=");
+  printf("[");
+  printf("%s", airEnumStr(airEndian, EE[0]));
+  printf("|");
+  printf("%s", airEnumStr(airEndian, EE[1]));
+  printf("]");
+  printf("\n");
+  THPRINT_SOURCE("EE", hopt, EEopidx);
+  printf("XY=");
+  printf("[");
+  pos_print(stdout, XY + (2 * 0));
+  printf("|");
+  pos_print(stdout, XY + (2 * 1));
+  printf("]");
+  printf("\n");
+  THPRINT_SOURCE("XY", hopt, XYopidx);
+  printf("CO=");
+  printf("[");
+  combo_print(stdout, CO[0]);
+  printf("|");
+  combo_print(stdout, CO[1]);
+  printf("]");
+  printf("\n");
+  THPRINT_SOURCE("CO", hopt, COopidx);
 
   /* free the memory allocated by parsing ... */
   hestParseFree(hopt);

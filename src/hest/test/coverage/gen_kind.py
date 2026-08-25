@@ -92,31 +92,29 @@ def HExtraArg(TY):
 
 def cvar_decl(TY, KI, VN):
     """Create C variable declaration for type `TY` kind `KI` and value number `VN`"""
-    vname = TY.lower()
     decl = None
     if TY in CType:
         ctype = CType[TY]
         match KI:
             case 2 | 4:
-                decl = f'{ctype} {vname}'
+                decl = f'{ctype} {TY}'
             case 3:
-                decl = f'{ctype} {vname}[{VN}]'
+                decl = f'{ctype} {TY}[{VN}]'
             case 5:
-                decl = f'{ctype} *{vname};  unsigned int {vname}Num'
+                decl = f'{ctype} *{TY};  unsigned int {TY}Num'
     else:   # TY == XY
         match KI:
             case 2 | 4:
-                decl = f'double {vname}[2]'
+                decl = f'double {TY}[2]'
             case 3:
-                decl = f'double {vname}[2][{VN}]'
+                decl = f'double {TY}[{2*VN}]'
             case 5:
-                decl = f'double *{vname}; unsigned int {vname}Num'
+                decl = f'double *{TY}; unsigned int {TY}Num'
     return decl
 
 
 def hoa_call(TY, KI, VN):
     """Create the hestOptAdd_ call for type `TY` kind `KI` and value number `VN`"""
-    vname = TY.lower()
     hnm = HName(TY)
     hcall = None
     getenvs = (
@@ -127,7 +125,7 @@ def hoa_call(TY, KI, VN):
         case 2:
             hcall = (
                 f'hestOptAdd_1_{HType[TY]}(&hopt, '
-                f'{TY}flag ? "{vname}" : NULL, "{hnm}", &{vname}, '
+                f'{TY}flag ? "{TY}" : NULL, "{hnm}", &{TY}, '
                 f'{TY}default, "exactly 1 {hnm}"{HExtraArg(TY)})'
             )
         case 3:
@@ -135,31 +133,109 @@ def hoa_call(TY, KI, VN):
             if VN <= 4:
                 hcall = (
                     f'hestOptAdd_{VN}_{HType[TY]}(&hopt, '
-                    f'{TY}flag ? "{vname}" : NULL, "{hname}", {vname}, '
+                    f'{TY}flag ? "{TY}" : NULL, "{hname}", {TY}, '
                     f'{TY}default, "exactly {VN} {hnm}"{HExtraArg(TY)})'
                 )
             else:
                 hcall = (
                     f'hestOptAdd_N_{HType[TY]}(&hopt, '
-                    f'{TY}flag ? "{vname}" : NULL, "{hname}", {VN}, {vname}, '
+                    f'{TY}flag ? "{TY}" : NULL, "{hname}", {VN}, {TY}, '
                     f'{TY}default, "exactly {VN} {hnm}"{HExtraArg(TY)})'
                 )
         case 4:
             hcall = (
                 f'hestOptAdd_1v_{HType[TY]}(&hopt, '
-                f'{TY}flag ? "{vname}" : NULL, "{hnm}", &{vname}, '
+                f'{TY}flag ? "{TY}" : NULL, "{hnm}", &{TY}, '
                 f'{TY}default, "exactly 1 {hnm}"{HExtraArg(TY)})'
             )
         case 5:
-            hcall = (
-                f'unsigned int {TY}vmin = 1; th_getenvUInt(&{TY}vmin, "TH_{TY}_VMIN");'
-                f'int {TY}vmax = 3; th_getenvInt(&{TY}vmax, "TH_{TY}_VMAX");'
-                f'hestOptAdd_Nv_{HType[TY]}(&hopt, '
-                f'{TY}flag ? "{vname}" : NULL, "{hnm}", '
-                f'{TY}vmin, {TY}vmax, &{vname}, '
-                f'{TY}default, "some number of {hnm}", &{TY.lower()}Num{HExtraArg(TY)})'
+            getenvs += (
+                f'unsigned int {TY}vmin = 1; th_getenvUInt(&{TY}vmin, "TH_{TY}_VMIN"); '
+                f'int {TY}vmax = 3; th_getenvInt(&{TY}vmax, "TH_{TY}_VMAX"); '
             )
-    return getenvs + hcall
+            hcall = (
+                f'hestOptAdd_Nv_{HType[TY]}(&hopt, '
+                f'{TY}flag ? "{TY}" : NULL, "{hnm}", '
+                f'{TY}vmin, {TY}vmax, &{TY}, '
+                f'{TY}default, "some number of {hnm}", &{TY}Num{HExtraArg(TY)})'
+            )
+    # need TYopidx for later printing of option source
+    return getenvs + f'unsigned int {TY}opidx = ' + hcall
+
+
+def print_scalar(TY, VI=-1):
+    """return C code to print a single value of type TY, perhaps from an array (index VI>=0)"""
+    # cnvseq: printf conversion sequence for TY, if it is that simple
+    cnvseq = dict(
+        # BB: airEnumStr(airBool)
+        SH='%hd',
+        UH='%hu',
+        SI='%d',
+        UI='%u',
+        SL='%ld',
+        UL='%lu',
+        SZ='%zu',
+        # FL: airSinglePrintf(%g)
+        # DB: airSinglePrintf(%lg)
+        CH='%c',
+        SS='%s',
+        # EE: airEnumStr(airEndian)
+        # XY: pos_print
+        # CO: combo_print
+    )
+    var = TY
+    if isinstance(VI, str) or VI >= 0:
+        if 'XY' == TY:
+            var += f'+(2*{VI})'
+        else:
+            var += f'[{VI}]'
+    match TY:
+        # first all the non-printf cases
+        case 'BB':
+            code = f'printf("%s", airEnumStr(airBool, {var})); '
+        case 'FL':
+            code = f'airSinglePrintf(stdout, NULL, 0, "%g", {var}); '
+        case 'DB':
+            code = f'airSinglePrintf(stdout, NULL, 0, "%lg", {var}); '
+        case 'EE':
+            code = f'printf("%s", airEnumStr(airEndian, {var})); '
+        case 'XY':
+            code = f'pos_print(stdout, {var}); '
+        case 'CO':
+            code = f'combo_print(stdout, {var}); '
+        case _:
+            # else we have a simple printf case
+            code = f'printf("{cnvseq[TY]}", {var}); '
+    return code
+
+
+def print_val(TY, KI, VN):
+    """Generate code for printing type `TY` kind `KI` and value number `VN`
+    The means of generating this code is simplistic, and the output is
+    not any kind of good example of human-written C code, unfortunately."""
+    code = f'printf("{TY}="); '
+    match KI:
+        case 2 | 4:
+            code += print_scalar(TY, -1)
+        case 3:
+            # number of values known at code generation time
+            code += f'printf("["); '
+            for vi in range(VN):
+                if vi:
+                    code += 'printf("|"); '
+                code += print_scalar(TY, vi)
+            code += f'printf("]"); '
+        case 5:
+            # number of values known only at run time
+            code += f'printf("["); '
+            code += f'for (unsigned int vi=0; vi<{TY}Num; vi++) {{'  # escaping {
+            code += f'  if (vi) printf("|");'
+            code += print_scalar(TY, 'vi')
+            code += '}'
+            code += f'printf("]"); '
+    code += 'printf("\\n"); '
+    code += f'THPRINT_SOURCE("{TY}", hopt, {TY}opidx); '
+    return code
 
 
 def procline(line, KI, VN, fname):
@@ -168,22 +244,32 @@ def procline(line, KI, VN, fname):
         return f'// {fname}: AUTOMATICALLY GENERATED; EDITING POINTLESS; SEE gen_kind.py'
     if '(K)' in line:
         return ''
+    TYnonnumeric = ['CH', 'SS', 'EE', 'XY', 'CO']
     if match := re.search('_DA_(..)_', line):
         # for *D*eclaring and *A*dding option
+        # special test for non-orthogonal non-existent functions
         TY = match.group(1)
-        decl = cvar_decl(TY, KI, VN)
-        hoac = hoa_call(TY, KI, VN)
-        line = f'{decl}; {hoac};'
+        if KI == 4 and TY in TYnonnumeric:
+            line = ''
+        else:
+            decl = cvar_decl(TY, KI, VN)
+            hoac = hoa_call(TY, KI, VN)
+            line = f'{decl}; {hoac};'
     if match := re.search('_PR_(..)_', line):
         # for *PR*inting what was learned by hest
+        # special test for non-orthogonal non-existent functions
         TY = match.group(1)
-        line = f' // print({TY})'
+        if KI == 4 and TY in TYnonnumeric:
+            line = ''
+        else:
+            line = print_val(TY, KI, VN)
     return line
 
 
 def generate(ilines, KI, VN):
     """generate and format the output file for kind `KI` and value number `VN`"""
     fname = f'th_kind{KI}_n{VN}.c' if KI == 3 else f'th_kind{KI}.c'
+    print(f'generating {fname} ...')
     olines = [procline(iline, KI, VN, fname) for iline in ilines]
     with open(fname, 'w', encoding='utf-8') as ff:
         for oline in olines:
@@ -210,4 +296,4 @@ if __name__ == '__main__':
                 generate(lines, 3, 4)
                 generate(lines, 3, 5)
             case 5:
-                generate(lines, 5, 6)
+                generate(lines, 5, 0)

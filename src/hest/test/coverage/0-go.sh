@@ -73,9 +73,11 @@ echo -e "\n####### $0: running tests${WITHCOV}"
 runme "../decls" # for coverage of hestOptAddDeclsPrint
 junk decls.h     # just-created
 ## work on th_kindK.c should create the coverage from this, and more
-#runme "../ex6"
-#runme "../ex6 --help"
-#runme "../ex6 --bogus"
+## (still working on "and more", but ex6 uniquely triggers growing the opt dynamic array
+## because of the crazy number of options it uses)
+runme "../ex6"
+runme "../ex6 --help"
+runme "../ex6 --bogus"
 # correctness of ../tht1 results is checked internally: will exit(1) on error
 runme "../tht1" # simpler "tier 1" tests, also for coverage
 runme "python3 run_hest_tests.py $COVFLAG \
@@ -97,7 +99,14 @@ if [[ $COVERAGE ]]; then
         -object build/th_flagged_scalars \
         -object build/th_unflagged_fixed \
         -object build/th_variadic \
-		-object build/th_kind2 \
+        -object build/th_kind2 \
+        -object build/th_kind3_n2 \
+        -object build/th_kind3_n3 \
+        -object build/th_kind3_n4 \
+        -object build/th_kind3_n5 \
+        -object build/th_kind4 \
+        -object build/th_kind5 \
+        -object ../ex6 \
         -instr-profile=test.profdata" # plus the indexed profile
     if true; then
         # using llvm-cov

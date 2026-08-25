@@ -50,11 +50,11 @@ hestCB posCB = {2 * sizeof(double), "position", pos_parse, NULL};
 
 void
 pos_print(FILE *file, const double pos[2]) {
-  fprintf(file, "[");
+  fprintf(file, "(");
   airSinglePrintf(file, NULL, 0, "%lg", pos[0]);
   fprintf(file, ",");
   airSinglePrintf(file, NULL, 0, "%lg", pos[1]);
-  fprintf(file, "]");
+  fprintf(file, ")");
   fflush(file);
   return;
 }
@@ -144,11 +144,13 @@ main(int argc, const char **argv) {
   _DA_XY_;
   _DA_CO_;
 
-  if (hestParse(hopt, argc - 1, argv + 1, NULL, hparm)) {
+  int pret = hestParse(hopt, argc - 1, argv + 1, NULL, hparm);
+  // fprintf(stderr, "!%s: hestParse returned pret=%d\n", argv[0], pret);
+  if (pret) {
     // have already fprintf'd to stderr
     hestParmFree(hparm);
     hestOptFree(hopt);
-    exit(0);
+    exit(1);
   }
   if (hopt->helpWanted) {
     hestUsage(stdout, hopt, argv[0], hparm, AIR_TRUE /* oneline */);
@@ -159,7 +161,9 @@ main(int argc, const char **argv) {
     exit(0);
   }
 
-  // print what was learned from hest
+  /* print what was learned from hest. Unfortunately, the means of generating this code
+  was simplistic, and the following output is not any kind of good example of
+  human-written C code; sorry! */
   _PR_BB_;
   _PR_SH_;
   _PR_UH_;
