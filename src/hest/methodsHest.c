@@ -842,10 +842,10 @@ relative to the given hestParm `hparm` (if non-NULL).
 Pre-2025, hest did not depend on biff, and this instead took a 'char *err' that somehow
 magically had to be allocated for the size of any possible error message generated here.
 The 2025 re-write recognized that biff is the right way to accumulate error messages, but
-the use of biff is internal to hest, and not (unusually for Teem) part of the the
-expected use of hest's API. Thus, public functions hestOptCheck() and hestOptParmCheck(),
-which are the expected way to access the functionality herein, take a `char **errP` arg
-into which a message is sprintf'ed, after allocation.
+the use of biff is internal to hest, and not (unusually for Teem) part of the expected
+use of hest's API. Thus, public functions hestOptCheck() and hestOptParmCheck(), which
+are the expected way to access the functionality herein, take a `char **errP` arg into
+which a message is sprintf'ed, after allocation.
 
 The shift to using biff removed how this function used to fprintf(stderr) some messages
 like "panic 0.5" which were totally uninformative.  Now, hestOptCheck() and
@@ -1016,8 +1016,9 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
                  MY_ME, opi, hopt[opi].flag, hopt[opi].dflt);
         return 1;
       }
-      /* pre 2025, these types were allowed for kind 4, but the semantics are just so
-         weird and thus hard to test + debug. It no longer makes sense to support them */
+      /* pre 2025, at least some of these types were allowed for kind 4, but the
+         semantics are just so weird that GLK can no longer justify supporting them.
+         They therefore did not survive the re-write (sorry). */
       if (airTypeChar == hopt[opi].type || airTypeString == hopt[opi].type
           || airTypeEnum == hopt[opi].type || airTypeOther == hopt[opi].type) {
         biffAddf(HEST,

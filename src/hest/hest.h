@@ -67,7 +67,7 @@ extern "C" {
  * The blissfully-type-unaware hestOptAdd() has always relied on the airTypeT enum values
  * below. Since that function is not being removed, to avoid needless code breakage with
  * TeemV2, these values now live in this hest header. However, hest users should instead
- * be using one of the 99 properly typed hestOptAdd_X_T functions from adder.c (see
+ * be using one of the 95 properly typed hestOptAdd_X_T functions from adder.c (see
  * below), which have no need for airType pseudo-types.
  *
  * Other things that used to be in air, but which really only mattered to implement hest
@@ -512,10 +512,10 @@ being part of calling hestParse() to being part of run-time hestOpt initializati
 "missing initializer" warnings from the hestOpt struct not being fully initialized.
 This was no issue for Teem code, which had been using hestOptAdd_nva() (non-var-args
 but still with void* valueP typeless mayhem) or hestOptAdd() (var-args for additional
-typeless mayhem). Btw now Teem uses one of the 99 type-checked variants.
+typeless mayhem). Btw now Teem uses one of the 95 type-checked variants.
 - Despite how long its used lasted in Teem code, as of 2023 there is no reason to use
 hestOptAdd().  There is no kind of hestOpt that you can create with hestOptAdd() that
-cannot be also created by one of the 99 type-checked hestOptAdd_*_T() variants listed
+cannot be also created by one of the 95 type-checked hestOptAdd_*_T() variants listed
 after "adders.c" below */
 HEST_EXPORT unsigned int hestOptAdd_nva(hestOpt **optP, const char *flag,
                                         const char *name, int type, unsigned int min,
@@ -562,8 +562,8 @@ HEST_EXPORT void hestInfo(FILE *file, const char *argv0, const char *info,
 
 // adders.c
 HEST_EXPORT void hestOptAddDeclsPrint(FILE *f);
-/* The 99 (!) alternatives to hestOptAdd that enable type checking on the specific type
-of value that is to be parsed for the option. In fact, *all* possible ways of using hest
+/* The 95 alternatives to hestOptAdd that enable type checking on the specific type of
+value that is to be parsed for the option. In fact, *all* possible ways of using hest
 are covered here, due to the enumeration over "kind" and over type T, which determines
 the function name as follows:
 
@@ -571,7 +571,7 @@ kind  min, max             function family         description
  1    min == max == 0      hestOptAdd_Flag         (stand-alone flag; no parameters)
  2    min == max == 1      hestOptAdd_1_T          single fixed parameter
  3    min == max >= 2      hestOptAdd_{2,3,4,N}_T  multiple fixed parameters
- 4    min == 0; max == 1   hestOptAdd_1v_T         single variadic parameter
+ 4    min == 0; max == 1   hestOptAdd_1v_T  [**]   single variadic parameter
  5    min < max; max >= 2  hestOptAdd_Nv_T         multiple variadic parameters
 
 The type T can be (one for each airType enum value): Bool, Short, UShort, Int, UInt,
@@ -580,9 +580,13 @@ passed with the T=Enum functions. A `hestCB *CB` is passed for the T=Other funct
 number of parms `int *sawP` that hestParm saw on the command-line is passed for the _Nv_
 options.
 
-For each of the 14 different `_T` types, there are 7 different families for `_1`
-(kind=2), `_2`,`_3`,`_4`,`_N` (kind=3),`_1v` (kind=4), and `_Nv` (kind=5).
-14 * 7 = 98, plus hestOptAdd_Flag makes 99 functions.
+With one exception, for each of the 14 different `_T` types, there are 7 different
+families for `_1` (kind=2), `_2`,`_3`,`_4`,`_N` (kind=3),`_1v` (kind=4), and `_Nv`
+(kind=5). The [**] exception is that hestOptAdd_1v_T is *not* supported for non-numeric
+types Char, String, Enum, or Other: the semantics of this option hinge on a logical
+negation of the (required) default value, via "!".  Earlier versions of hest tried
+to support this for non-numeric types but it stopped making sense in the v2 rewrite.
+So 14*7 - 4 == 98 - 4 = 94, plus hestOptAdd_Flag makes 95 functions.
 
 All declarations below were automatically generated via hest/test/decls (which calls
 hestOptAddDeclsPrint), followed by clang-format. */
@@ -619,20 +623,6 @@ HEST_EXPORT unsigned int hestOptAdd_1v_Float(hestOpt **hoptP, const char *flag,
 HEST_EXPORT unsigned int hestOptAdd_1v_Double(hestOpt **hoptP, const char *flag,
                                               const char *name, double *valueP,
                                               const char *dflt, const char *info);
-HEST_EXPORT unsigned int hestOptAdd_1v_Char(hestOpt **hoptP, const char *flag,
-                                            const char *name, char *valueP,
-                                            const char *dflt, const char *info);
-HEST_EXPORT unsigned int hestOptAdd_1v_String(hestOpt **hoptP, const char *flag,
-                                              const char *name, char **valueP,
-                                              const char *dflt, const char *info);
-HEST_EXPORT unsigned int hestOptAdd_1v_Enum(hestOpt **hoptP, const char *flag,
-                                            const char *name, int *valueP,
-                                            const char *dflt, const char *info,
-                                            const airEnum *enm);
-HEST_EXPORT unsigned int hestOptAdd_1v_Other(hestOpt **hoptP, const char *flag,
-                                             const char *name, void *valueP,
-                                             const char *dflt, const char *info,
-                                             const hestCB *CB);
 HEST_EXPORT unsigned int hestOptAdd_1_Bool(hestOpt **hoptP, const char *flag,
                                            const char *name, int *valueP,
                                            const char *dflt, const char *info);

@@ -295,9 +295,15 @@ _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V
   }
 #define DEF_O_V(_) DCL_O_V(_) IMP_O_V(_)
 
-/* MAP_T takes a macro MAC that (like DCL_T_M or DEF_T_M) takes three args
-(M, ATYP, CTYP) and applies it to all the simple scalar types */
-#define MAP_T(MAC, M)                                                                   \
+/* MAP_T_NUMERIC is just for the numeric types; a wrinkle needed to avoid generating
+functions that will ultimately run into an error message in methodsHest.c about no longer
+supporting single variadic non-numeric parameters:
+  hestOptAdd_1v_Char
+  hestOptAdd_1v_String
+  hestOptAdd_1v_Enum
+  hestOptAdd_1v_Other
+*/
+#define MAP_T_NUMERIC(MAC, M)                                                           \
   MAC(M, Bool, int)                                                                     \
   MAC(M, Short, short int)                                                              \
   MAC(M, UShort, unsigned short int)                                                    \
@@ -307,7 +313,12 @@ _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V
   MAC(M, ULong, unsigned long int)                                                      \
   MAC(M, Size_t, size_t)                                                                \
   MAC(M, Float, float)                                                                  \
-  MAC(M, Double, double)                                                                \
+  MAC(M, Double, double)
+
+/* MAP_T takes a macro MAC that (like DCL_T_M or DEF_T_M) takes three args
+(M, ATYP, CTYP) and applies it to all the simple scalar types */
+#define MAP_T(MAC, M)                                                                   \
+  MAP_T_NUMERIC(MAC, M)                                                                 \
   MAC(M, Char, char)                                                                    \
   MAC(M, String, char *)
 
@@ -319,15 +330,18 @@ DEF_O_1(0)
 */
 #define MAP(BSN, X, M) MAP_T(CONC3(BSN, T, X), M) CONC3(BSN, E, X)(M) CONC3(BSN, O, X)(M)
 
+/* MAP_1v: replaces MAP(BSN, 1, 0) in the ensuing party; limited to numeric types */
+#define MAP_1v(BSN) MAP_T_NUMERIC(CONC3(BSN, T, 1), 0)
+
 /* This does expansion over all possibilities of BSN */
-#define LETS_GET_THIS_PARTY_STARTED(BSN)                                                \
-  MAP(BSN, 1, 0)                                                                        \
-  MAP(BSN, 1, 1)                                                                        \
-  MAP(BSN, M, 2)                                                                        \
-  MAP(BSN, M, 3)                                                                        \
-  MAP(BSN, M, 4)                                                                        \
-  MAP(BSN, N, _)                                                                        \
-  MAP(BSN, V, _)
+#define LETS_GET_THIS_PARTY_STARTED(BSN) /* */                                          \
+  MAP_1v(BSN)                            /* */                                          \
+    MAP(BSN, 1, 1)                       /* */                                          \
+    MAP(BSN, M, 2)                       /* */                                          \
+    MAP(BSN, M, 3)                       /* */                                          \
+    MAP(BSN, M, 4)                       /* */                                          \
+    MAP(BSN, N, _)                       /* */                                          \
+    MAP(BSN, V, _)
 
 /* !!! HERE IS THE ACTUAL CODE FOR ALL THE hestOptAdd_*_* CASES !!! */
 LETS_GET_THIS_PARTY_STARTED(DEF)
