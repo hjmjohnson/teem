@@ -233,6 +233,17 @@ hestUsage(FILE *file, const hestOpt *hopt, const char *argv0, const hestParm *_h
   return;
 }
 
+/* formerly airAtod, which is kind of like atof() */
+static double
+stod(const char *str) {
+  double val = 0.0;
+
+  airSingleSscanf(str, "%lf", &val);
+  /* return value ignored, but trusting sscanf-like behavior that
+     if a value could not be parsed, then &val is not set */
+  return val;
+}
+
 void
 hestGlossary(FILE *file, const hestOpt *hopt, const hestParm *_hparm) {
   /* See note above about buff[] that is LIKE_SO_SO_HUGE
@@ -352,23 +363,29 @@ hestGlossary(FILE *file, const hestOpt *hopt, const hestParm *_hparm) {
     fprintf(stderr, "!%s: HPARM->elideSingleOtherDefault = %d\n",
             "hestGlossary", HPARM->elideSingleOtherDefault);
     */
-    if (hopt[opi].dflt && (hopt[opi].min || hest__Max(hopt[opi].max))
+    if (hopt[opi].dflt                                 // there is a default string
+        && (hopt[opi].min || hest__Max(hopt[opi].max)) // opt has values to parse
+        /* below is &&-ing together the !-negations of reasons to NOT show the default */
         && (!(2 == hopt[opi].kind
               && (airTypeFloat == hopt[opi].type || airTypeDouble == hopt[opi].type)
-              && !AIR_EXISTS(airAtod(hopt[opi].dflt))
+              && !AIR_EXISTS(stod(hopt[opi].dflt)) // dflt is nan, inf, or -inf
               && HPARM->elideSingleNonExistFloatDefault))
+        && (!(2 == hopt[opi].kind               //
+              && airTypeOther == hopt[opi].type //
+              && HPARM->elideSingleOtherDefault))
+        && (!(2 == hopt[opi].kind                //
+              && airTypeString == hopt[opi].type //
+              && 0 == airStrlen(hopt[opi].dflt)  //
+              && HPARM->elideSingleEmptyStringDefault))
         && (!((3 == hopt[opi].kind || 5 == hopt[opi].kind)
               && (airTypeFloat == hopt[opi].type || airTypeDouble == hopt[opi].type)
-              && !AIR_EXISTS(airAtod(hopt[opi].dflt))
+              && !AIR_EXISTS(stod(hopt[opi].dflt)) //
               && HPARM->elideMultipleNonExistFloatDefault))
-        && (!(2 == hopt[opi].kind && airTypeOther == hopt[opi].type
-              && HPARM->elideSingleOtherDefault))
-        && (!(2 == hopt[opi].kind && airTypeString == hopt[opi].type
-              && HPARM->elideSingleEmptyStringDefault && 0 == airStrlen(hopt[opi].dflt)))
         && (!((3 == hopt[opi].kind || 5 == hopt[opi].kind)
-              && airTypeString == hopt[opi].type
-              && HPARM->elideMultipleEmptyStringDefault
-              && 0 == airStrlen(hopt[opi].dflt)))) {
+              && airTypeString == hopt[opi].type //
+              && 0 == airStrlen(hopt[opi].dflt)
+              && HPARM->elideMultipleEmptyStringDefault))) {
+      // (so we do show the default)
       /* if there are newlines in the info, then we want to clarify the
          default by printing it on its own line */
       if (hopt[opi].info && strchr(hopt[opi].info, '\n')) {
