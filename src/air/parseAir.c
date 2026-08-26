@@ -69,14 +69,6 @@ bool_ae = {
 const airEnum *const airBool = &bool_ae;
 /* clang-format on */
 
-double
-airAtod(const char *str) {
-  double val = 0.0;
-
-  airSingleSscanf(str, "%lf", &val);
-  return val;
-}
-
 /* NOTE: see info in air.h about TeemV2 changes to all things airType and airParse */
 
 int
@@ -85,11 +77,14 @@ airSingleSscanf(const char *str, const char *fmt, void *ptr) {
   double val;
   int ret;
 
+  if (!(str && fmt && ptr)) {
+    return EOF;
+  }
   if (!strcmp(fmt, "%e") || !strcmp(fmt, "%f") || !strcmp(fmt, "%g")
       || !strcmp(fmt, "%le") || !strcmp(fmt, "%lf") || !strcmp(fmt, "%lg")) {
     tmp = airStrdup(str);
     if (!tmp) {
-      return 0;
+      return EOF;
     }
     airToLower(tmp);
     if (strstr(tmp, "nan")) {
@@ -128,18 +123,36 @@ airSingleSscanf(const char *str, const char *fmt, void *ptr) {
     /* its a size_t */
     size_t tsz = 0;        /* tmp size_t */
     const char *chh = str; /* char here */
-    while (chh) {
+    int prsd = AIR_FALSE;  /* we parsed/converted something */
+    while (*chh) {
       int dig;
-      dig = AIR_INT(*chh - '0');
+      dig = AIR_INT(*chh - '0'); /* dig could be positive or negative */
       if (AIR_IN_CL(0, dig, 9)) {
-        tsz = 10 * tsz + AIR_CAST(size_t, dig);
-      } else {
+        size_t nsz = 10 * tsz + AIR_CAST(size_t, dig);
+        if (nsz >= tsz) {
+          /* no overflow has happened */
+          tsz = nsz;
+        } else {
+          /* new value nsz got smaller than previous tsz: overflowed */
+          tsz = AIR_SIZE_T(-1);
+        }
+        prsd = AIR_TRUE;
+      } else if (
+        !isspace(*chh) /* it is not whitespace (it might be '\0') */
+        || prsd /* else it is whitespace and we've already parsed something */) {
         break;
       }
       chh++;
     }
-    *((size_t *)(ptr)) = tsz;
-    return 1;
+    if (prsd) {
+      /* there were characters that were processed as digits */
+      *((size_t *)(ptr)) = tsz;
+      ret = 1;
+    } else {
+      /* no parsing/conversion happened: return either 0 or EOF */
+      ret = *chh ? 0 : EOF;
+    }
+    return ret;
   } else {
     /* not a float, double, or size_t, let sscanf handle it */
     return sscanf(str, fmt, ptr);
