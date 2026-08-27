@@ -333,24 +333,24 @@ TESTS = [
     dict(
         exe='th_unflagged_fixed',
         name='unflagged-fixed: basic left-to-right assignment',
-        argv='10 20 hello 3.5',
+        argv='10 20 hello 3.5,4.24',
         expected={
             'A': [10, 20],
             'B': 'hello',
-            'C': 3.5,
+            'C': '(3.5,4.24)',
         },
     ),
     dict(
         exe='th_unflagged_fixed',
         name='unflagged-fixed: "zero" values',
-        argv='0 0 zero 0.0',
-        expected={'A': [0, 0], 'B': 'zero', 'C': 0.0},
+        argv='0 0 zero 0.0,00',
+        expected={'A': [0, 0], 'B': 'zero', 'C': '(0,0)'},
     ),
     dict(
         exe='th_unflagged_fixed',
         name='unflagged-fixed: ones and spaces values',
-        argv=['1', '1', 'one and done', '1.0'],
-        expected={'A': [1, 1], 'B': 'one and done', 'C': 1.0},
+        argv=['1', '1', 'one and done', '1.0,1.00'],
+        expected={'A': [1, 1], 'B': 'one and done', 'C': '(1,1)'},
     ),
     # ==========================================================================
     # th_variadic — forward-then-backward assignment
@@ -461,6 +461,7 @@ TYvals = {
 }
 TYs = list(TYvals.keys())
 TYsNumeric = [TY for TY in TYs if TY not in ['CH', 'SS', 'EE', 'XY', 'CO']]
+
 
 def p(TY, given):
     """when a value of type `TY` is passed to hest as `given`, this
@@ -573,11 +574,18 @@ if True:
 
     def EXPT(I):
         """build up expected value dict from indexed value(s)"""
-        return {TY: ([p(TY, TYvals[TY][i]) for i in I] if isinstance(I, list) else p(TY, TYvals[TY][I])) for TY in TYs}
+        return {
+            TY: (
+                [p(TY, TYvals[TY][i]) for i in I] if isinstance(I, list) else p(TY, TYvals[TY][I])
+            )
+            for TY in TYs
+        }
 
     def ARGV(I, noflag=False):
         """build up argv to pass indexed values (currently with flags)"""
-        return [x for TY in TYs for x in ([] if noflag else [f'-{TY}']) + [TYvals[TY][i] for i in I]]
+        return [
+            x for TY in TYs for x in ([] if noflag else [f'-{TY}']) + [TYvals[TY][i] for i in I]
+        ]
 
     ###################### kind3_n3
     TESTS += [
@@ -672,8 +680,8 @@ if True:
         ),
         dict(
             env={
-                **DFLT([0]), # harmlessly sets defaults for non-existent options
-                **FLAGS, # harmlessly turns on flags for non-existent options
+                **DFLT([0]),  # harmlessly sets defaults for non-existent options
+                **FLAGS,  # harmlessly turns on flags for non-existent options
             },
             exe='th_kind4',
             name='kind4 (with required flags+defaults) set from defaults',
@@ -688,7 +696,7 @@ if True:
             exe='th_kind4',
             name='kind4 (with required flags+defaults) set by kind4-specific inversion 1->0',
             argv=[f'-{TY}' for TY in TYsNumeric],
-            expected={f'{TY}' : ('false' if TY == 'BB' else '0') for TY in TYsNumeric},
+            expected={f'{TY}': ('false' if TY == 'BB' else '0') for TY in TYsNumeric},
         ),
         dict(
             env={
@@ -698,7 +706,7 @@ if True:
             exe='th_kind4',
             name='kind4 (with required flags+defaults) set by kind4-specific inversion 0->1',
             argv=[f'-{TY}' for TY in TYsNumeric],
-            expected={f'{TY}' : ('true' if TY == 'BB' else '1') for TY in TYsNumeric},
+            expected={f'{TY}': ('true' if TY == 'BB' else '1') for TY in TYsNumeric},
         ),
         dict(
             env={
@@ -708,7 +716,7 @@ if True:
             exe='th_kind4',
             name='kind4 (with required flags+defaults) set args',
             argv=[x for TY in TYsNumeric for x in [f'-{TY}', TYvals[TY][1]]],
-            expected={f'{TY}' : TYvals[TY][1] for TY in TYsNumeric},
+            expected={f'{TY}': TYvals[TY][1] for TY in TYsNumeric},
         ),
     ]
     ###################### kind5
@@ -739,7 +747,7 @@ if True:
             env=FLAGS,
             exe='th_kind5',
             name='kind5 (with flags, NO defaults) set from args',
-            argv=ARGV([1,2]),
+            argv=ARGV([1, 2]),
             expected=EXPT([1, 2]),
         ),
     ]
@@ -747,6 +755,38 @@ if True:
 # expected parse failures
 # ==========================================================================
 TESTS += [
+    dict(
+        env={'TH_THEATER': ''},
+        exe='th_unflagged_fixed',
+        name='unflagged-fixed: coverage theater (with busted invocation)',
+        argv=[],
+        expect_fail=True,
+    ),
+    dict(
+        env={'TH_DSOEM': ''},  # Dont Sprint Other Error Message
+        exe='th_unflagged_fixed',
+        name='unflagged-fixed: busted "other", without error message',
+        argv='10 20 hello 3,pets',
+        expect_fail=True,
+    ),
+    dict(
+        env=FLAGS,  # oops no defaults (harmlessly turns on flags for non-existent options)
+        exe='th_kind4',
+        name='kind=4 (single variadic) missing required defaults',
+        argv=[],
+        expect_fail=True,
+    ),
+    *[  # each dict has one flag passed a bad value, to test parsing error handling
+        dict(
+            env=FLAGS,
+            exe='th_kind2',
+            name=f'kind=2 with a non-parsable {TY=} value',
+            argv=ARGV([0]) + [f'-{TY}', 'entropy'],
+            expect_fail=True,
+        )
+        for TY in TYs
+        if TY != 'SS'  # because any string is a parsable string
+    ],
     dict(
         env=dict(TH_NULL_HPARM='2'),
         exe='th_variadic',
@@ -1036,7 +1076,7 @@ def run_one(tnum: int, test: dict, args, build_dir: Path) -> tuple:
             ] + cmd
 
         # ---- execute ----
-        print(f'[test# {tnum}] == {test['name']}')
+        print(f'[test# {tnum}] == {test["name"]}')
         print('running: ', end='')
         # generate a copy-paste-able command-line by using shell syntax
         # for building up an environment in which a command is run
@@ -1053,11 +1093,12 @@ def run_one(tnum: int, test: dict, args, build_dir: Path) -> tuple:
         result = subprocess.run(cmd, capture_output=True, text=True, env=MYENV)
         exit_code = result.returncode
         errlog = f'stderr:\n{textwrap.indent(result.stderr.strip(), INDENT)}'
+        outlog = f'stdout:\n{textwrap.indent(result.stdout.strip(), INDENT)}'
 
         # ---- If supposed to not run, verify that
         if expect_fail:
             if exit_code == 0:
-                return False, 'expected failure/non-zero exit but got 0'
+                return False, 'expected failure/non-zero exit but got 0\n' + outlog
             return True, errlog
 
         # ---- Else supposed to run, verify that
@@ -1065,7 +1106,7 @@ def run_one(tnum: int, test: dict, args, build_dir: Path) -> tuple:
             return False, f'unexpected failure/non-zero exit code {exit_code}\n' + errlog
 
         # ---- Supposed to run and did run; did it run correctly?
-        print(f'stdout:\n{textwrap.indent(result.stdout.strip(), INDENT)}')
+        print(outlog)
         actual = parse_kv(result.stdout)
         failures = []
         for key, exp_val in expected.items():
@@ -1190,6 +1231,20 @@ def main() -> int:
             run_help(binary, {f'TH_{TY}_DEFAULT': TYvals[TY][0] for TY in TYs})
             print('--help with thwarted ioctl and 65 #columns')
             run_help(binary, dict(TH_COLUMNS='65', **ENV), stdin=subprocess.DEVNULL)
+        elif 'th_flagged_scalars' == exe:
+            # from the --help output it is clear this is working as intended,
+            # but GLK cannot figure out why these tests do not increase coverage
+            print('--help with TH_ENEFD 1: nonfinite dflt and !elideSingleNonExistFloatDefault')
+            run_help(binary, {'TH_ENEFD': '1'})
+            print('--help with TH_ENEFD 2: nonfinite dflt and elideSingleNonExistFloatDefault')
+            run_help(binary, {'TH_ENEFD': '2'})
+        elif 'th_fixed_multi' == exe:
+            # from the --help output it is clear this is working as intended,
+            # but GLK cannot figure out why these tests do not increase coverage
+            print('--help with TH_ENEFD 1: nonfinite dflt and !elideMultipleNonExistFloatDefault')
+            run_help(binary, {'TH_ENEFD': '1'})
+            print('--help with TH_ENEFD 2: nonfinite dflt and elideMultipleNonExistFloatDefault')
+            run_help(binary, {'TH_ENEFD': '2'})
 
     # ---- filter ----
     active = TESTS
@@ -1224,7 +1279,7 @@ def main() -> int:
         else:
             tag = '[OOPS:' + ('PASS]' if expect_fail else 'FAIL]')
             failed += 1
-        print(f'{tag} {t['name']}')
+        print(f'{tag} {t["name"]}')
         if detail:
             print(textwrap.indent(detail, INDENT))
         print('')   # to better visually separate tests

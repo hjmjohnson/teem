@@ -61,10 +61,15 @@ main(int argc, const char **argv) {
   // export TH_VMIN=0 to trigger a particular hest failure
   int VMIN = 1; // by default, min # args is 1
   th_getenvInt(&VMIN, "TH_VMIN");
-  hestOptAdd_Nv_String(&opt, FLAGVAR ? "B" : NULL, "Bvar", VMIN, -1, &B, NULL,
-                       "variable # of middle strings\n "
-                       "(including a second line)",
-                       &sawB);
+  // hestOptAdd_Nv_String(&opt, FLAGVAR ? "B" : NULL, "Bvar", VMIN, -1, &B, NULL,
+  //                      "variable # of middle strings\n "
+  //                      "(including a second line)",
+  //                      &sawB);
+  // using old hestOptAdd for coverage
+  hestOptAdd(&opt, FLAGVAR ? "B" : NULL, "Bvar", airTypeString, VMIN, -1, &B, NULL,
+             "variable # of middle strings\n "
+             "(including a second line)",
+             &sawB);
 
   int C = 0;
   hestOptAdd_1_Int(&opt, FLAGFIX ? "C" : NULL, "C", &C, NULL, "trailing int");

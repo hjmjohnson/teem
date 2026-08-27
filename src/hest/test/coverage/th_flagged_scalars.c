@@ -39,19 +39,29 @@ main(int argc, const char **argv) {
   hestOpt *opt = NULL;
   hestParm *hparm = hestParmNew();
   hparm->responseFileEnable = AIR_TRUE;
-  hparm->respectDashBraceComments = AIR_TRUE; /* already the default */
   hparm->respectDashDashHelp = AIR_TRUE;
+  // ENEFD == elide non-exist float default
+  int testThing = 0;
+  th_getenvInt(&testThing, "TH_ENEFD");
+  if (testThing > 1) {
+    hparm->elideSingleNonExistFloatDefault = AIR_TRUE;
+  }
 
   int n = 0;
-  hestOptAdd_1_Int(&opt, "n", "count", &n, "99", "an integer");
+  // hestOptAdd_1_Int(&opt, "n", "count", &n, "99", "an integer");
+  // using old hestOptAdd for coverage
+  hestOptAdd(&opt, "n", "count", airTypeInt, 1, 1, &n, "99", "an integer");
   double x = 0.0;
-  hestOptAdd_1_Double(&opt, "x", "val", &x, "1.0", "a double");
+  hestOptAdd_1_Double(&opt, "x", "val", &x, testThing ? "nan" : "1.0", "a double");
   char *s = NULL;
   hestOptAdd_1_String(&opt, "s", "str", &s, "bingo", "a string");
   int b = 0;
   hestOptAdd_1_Bool(&opt, "b", "flag", &b, "false", "a boolean");
   int e = 0;
-  hestOptAdd_1_Enum(&opt, "e", "end", &e, "little", "endianness", airEndian);
+  // hestOptAdd_1_Enum(&opt, "e", "end", &e, "little", "endianness", airEndian);
+  // using old hestOptAdd for coverage
+  hestOptAdd(&opt, "e", "end", airTypeEnum, 1, 1, &e, "little", "endianness", NULL,
+             airEndian);
 
   TH_PARSE(opt, info, hparm, argc - 1, argv + 1);
 

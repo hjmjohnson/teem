@@ -25,10 +25,16 @@ main(int argc, const char **argv) {
   hestOpt *opt = NULL;
   hestParm *hparm = hestParmNew();
   hparm->respectDashDashHelp = AIR_TRUE;
+  int testThing = 0;
+  th_getenvInt(&testThing, "TH_ENEFD");
+  if (testThing > 1) {
+    hparm->elideMultipleNonExistFloatDefault = AIR_TRUE;
+  }
 
   // exercise long options for a change
   float f[2];
-  hestOptAdd_2_Float(&opt, "f,float", "f0 f1", f, "1.0 2.0", "two floats");
+  hestOptAdd_2_Float(&opt, "f,float", "f0 f1", f, testThing ? "nan inf" : "1.0 2.0",
+                     "two floats");
   int i[3];
   hestOptAdd_3_Int(&opt, "i,int", "i0 i1 i2", i, "10 20 30", "three ints");
 

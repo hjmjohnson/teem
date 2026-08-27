@@ -27,7 +27,17 @@ main(int argc, const char **argv) {
   hestParm *hparm = hestParmNew();
   hparm->respectDashDashHelp = AIR_TRUE;
   {
-    printf("%s: coverage theater begins\n", argv[0]);
+    printf("%s: coverage theater begins ...\n", argv[0]);
+    /* "theater" because we're doing this entirely to increase coverage,
+       mostly without actually checking for correctness. */
+    printf("%s: hestOptNum(NULL) = %u\n", argv[0], hestOptNum(NULL));
+    hestParmFree(hestParmCopy(hparm) /* i.e. not checking correctness of copy */);
+    printf("%s: hestSourceUser(hestSourceCommandLine) = %d\n", argv[0],
+           hestSourceUser(hestSourceCommandLine));
+    printf("%s: hestSourceUser(hestSourceResponseFile) = %d\n", argv[0],
+           hestSourceUser(hestSourceResponseFile));
+    printf("%s: hestSourceUser(hestSourceDefault) = %d\n", argv[0],
+           hestSourceUser(hestSourceDefault));
     printf("%s: hestArgcArgvSprint(NULL) = %p\n", argv[0],
            (void *)hestArgcArgvSprint(42, NULL, AIR_FALSE));
     printf("%s: hestArgVecSprint(NULL) = %p\n", argv[0],

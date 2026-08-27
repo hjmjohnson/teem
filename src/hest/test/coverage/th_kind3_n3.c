@@ -121,7 +121,7 @@ main(int argc, const char **argv) {
 
   hestOpt *hopt = NULL;
   /* for each of two-letter TY below:
-     setenv TH_TY_FLAG (to anything, even empty string) to use a non-NULL two-flag "ty".
+     setenv TH_TY_FLAG (to anything, even empty string) for non-NULL 2-letter flag"TY".
      setenv TH_TY_DEFAULT to the default string (else is NULL == no default) */
   int BB[3];
   const char *BBflag = getenv("TH_BB_FLAG");
