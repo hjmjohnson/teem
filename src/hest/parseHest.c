@@ -94,7 +94,7 @@ we do respect the setting of the new orExitWithoutNewerFeatures. */
 int                                     /* Biff: nope */
 hestParseOrExit(hestOpt *hopt,          // what to parse from command-line
                 int argc,               /* these argc,argv are *not* as seen by real
-                                        top-level `main()`: here argc,argv describe
+                                        top-level main(): here argc,argv describe
                                         the args *after* the whatever args got us to
                                         here: either argv[1] and onward for something
                                         like "vprobe", or argv[2] and onward for things
@@ -203,9 +203,9 @@ hestParseOrExit(hestOpt *hopt,          // what to parse from command-line
   if (!argcBereft && !helpWanted && !parseErr) {
     /* no help needed or wanted, and (if done) parsing was successful, great;
        clean up local hparm (though hestParmFree is doing work to avoid also freeing the
-       caller's parm we got as `_hparm1) and return to caller */
+       caller's parm we got as _hparm1) and return to caller */
     // fprintf(stderr, "!%s: A about to free(%p)\n", __func__, AIR_VOIDP(hparm));
-    /* if given _hparm is NULL, hestParmNew() made `hparm non-self-mopping,
+    /* if given _hparm is NULL, hestParmNew() made hparm non-self-mopping,
           we can just hestParmFree(hparm) and that will essentially be free(hparm)
        if given _hparm is non-NULL:
           if _hparm is properly self-mopping, then so is the copy,
@@ -213,9 +213,8 @@ hestParseOrExit(hestOpt *hopt,          // what to parse from command-line
             SO: have to ~undo our hestParmCopy so the caller can hestParmFree(_parm)
                 hence call to hestParmUnmop, which is safe to use when not necessary
           if _hparm is NOT property self-mopping (=> caller is accepting in-use-at-exit),
-            and then the copy `hparm` is also not self-mopping,
-            and hestParmFree(hparm) will clean it up.
-       In any case, then, we can pass NULL as 2nd arg to freeBeforeExit */
+            and then the copy hparm is also not self-mopping,
+            and hestParmFree(hparm) will clean it up. */
     hestParmUnmop(hparm);
     hestParmFree(hparm);
     return 0;

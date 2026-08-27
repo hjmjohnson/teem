@@ -87,7 +87,7 @@ parseSingleB(void *_out, const char *str, hest__PPair *hpp) {
   *out = airEnumVal(airBool, str);
   int ret = airEnumUnknown(airBool) /* which is -1 */ == *out;
   if (ret) {
-    snprintf(hpp->err, AIR_STRLEN_HUGE + 1, "couldnt parse \"%s\" (from %s) as %s", str,
+    snprintf(hpp->err, AIR_STRLEN_HUGE + 1, "couldn't parse \"%s\" (from %s) as %s", str,
              airEnumStr(hestSource, hpp->hopt->source), airBool->name);
   } else {
     hpp->err[0] = '\0';
@@ -168,7 +168,7 @@ parseSingleE(void *_out, const char *str, hest__PPair *hpp) {
 static int
 parseSingleO(void *out, const char *str, hest__PPair *hpp) {
   if (!(out && str && hpp)) return 1;
-  char myerr[AIR_STRLEN_HUGE + 1];
+  char myerr[AIR_STRLEN_HUGE + 1] = "";
   /* important to return this value; it has been part of hestParse() behavior
   for a long time. e.g. hestCB *nrrdHestNrrd->parse() returns 2 if nrrdLoad()
   fails with an error message mentioning "EOF", but returns 1 otherwise */
