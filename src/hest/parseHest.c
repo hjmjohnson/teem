@@ -174,15 +174,7 @@ hestParseOrExit(hestOpt *hopt,          // what to parse from command-line
       if (parseErr && hopt->parseErrOptIdx >= 0) {
         // hestParse's error is attributable to failure to parse a particular option
         hestOpt *errOpt = hopt + hopt->parseErrOptIdx;
-        if (parseErr != errOpt->parseErr) {
-          // hestParse didn't do its job: these should be consistent
-          fprintf(stderr,
-                  "%s(%s): ERROR in hestParse execution: "
-                  "return %d != hopt[%d]->parseErr %d\n",
-                  __func__, me, parseErr, hopt->parseErrOptIdx, errOpt->parseErr);
-          // no cleanup
-          exit(1); // (in hestParseOrExit)
-        }
+        assert(parseErr == errOpt->parseErr); // these should be consistent
         // now, can run quiet quit tester
         if (hparm->quietQuit && hparm->quietQuit(parseErrStr, errOpt)) {
           // we are meeting the caller's conditions for quiet quitting
