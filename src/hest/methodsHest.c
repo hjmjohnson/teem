@@ -886,7 +886,7 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
     }
     if (1 == hopt[opi].kind) {
       if (!hopt[opi].flag) {
-        biffAddf(HEST, "%s%sstand-alone flag opt[%u] must have a flag", MY_ME, opi);
+        biffAddf(HEST, "%s%sstand-alone flag opt[%u] must have a flag (!)", MY_ME, opi);
         return 1;
       }
       if (hopt[opi].dflt) {
@@ -983,10 +983,8 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
     } else { // ------ end of if (hopt[opi].flag)
       // hopt[opi] is unflagged
       ufNum += 1;
-      if (1 == hopt[opi].kind) {
-        biffAddf(HEST, "%s%sa stand-alone flag opt[%u] must be flagged (!)", MY_ME, opi);
-        return 1;
-      } else if (4 == hopt[opi].kind) {
+      // unflagged kind=1 is already checked above
+      if (4 == hopt[opi].kind) {
         if (!hopt[opi].min) {
           biffAddf(HEST, "%s%s single variadic opt[%u] (name %s) must be flagged", MY_ME,
                    opi, hopt[opi].name ? hopt[opi].name : "not set");
@@ -1035,7 +1033,7 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
                MY_ME, opi, hopt[opi].min, hopt[opi].max);
       return 1;
     }
-    if (hopt[opi].sawP && 5 != hopt[opi].kind) {
+    if (5 != hopt[opi].kind && hopt[opi].sawP) {
       biffAddf(HEST,
                "%s%sopt[%u] has non-NULL sawP but is not a (kind=5) "
                "multiple variadic parm option (min=%u,max=%d)",
