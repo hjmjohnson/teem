@@ -187,7 +187,9 @@ argstGo(int *nastP, hestArg *tharg, int *stateP, int source, int icc, int vrbo) 
   *nastP = nastUnknown;
   switch (*stateP) {
   case argstStart:
-    if (!isspace(cc)) { // if is space, we stay in argstStart
+    /* "The behavior is undefined if the value of ch is not representable as unsigned
+    char and is not equal to EOF." https://en.cppreference.com/c/string/byte/isspace */
+    if (!isspace(AIR_CAST(unsigned char, cc))) { // if is space, we stay in argstStart
       if ('\'' == cc) {
         *stateP = argstSingleQ;
       } else if ('"' == cc) {
@@ -203,7 +205,7 @@ argstGo(int *nastP, hestArg *tharg, int *stateP, int source, int icc, int vrbo) 
     } // if !isspace(cc)
     break;
   case argstInside:
-    if (isspace(cc)) { // this is the natural end to an arg
+    if (isspace(AIR_CAST(unsigned char, cc))) { // this is the natural end to an arg
       *nastP = nastBehold;
       *stateP = argstStart; // prepare for next arg
     } else if ('\'' == cc) {
