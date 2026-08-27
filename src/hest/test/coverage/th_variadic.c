@@ -69,7 +69,7 @@ main(int argc, const char **argv) {
   hestOptAdd(&opt, FLAGVAR ? "B" : NULL, "Bvar", airTypeString, VMIN, -1, &B, NULL,
              "variable # of middle strings\n "
              "(including a second line)",
-             &sawB);
+             getenv("TH_NULL_SAW") ? NULL : &sawB);
 
   int C = 0;
   hestOptAdd_1_Int(&opt, FLAGFIX ? "C" : NULL, "C", &C, NULL, "trailing int");

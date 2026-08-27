@@ -61,7 +61,7 @@ main(int argc, const char **argv) {
   }
 
   int v = 0;
-  hestOptAdd_Flag(&opt, "v", &v, "be verbose");
+  hestOptAdd_Flag(&opt, getenv("TH_MISSINGFLAG") ? NULL : "v", &v, "be verbose");
 
   TH_PARSE(opt, info, hparm, argc - 1, argv + 1);
 

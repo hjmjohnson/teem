@@ -20,7 +20,12 @@ static const char *info
      "Without any variadic option, unflagged options are assigned strictly in "
      "definition order, consuming args left-to-right.  This is the simple case.");
 
-// (GLK copied this from th_kindK.c to exercise hestOptAdd in another way)
+static int
+quietQuitTester(const char *parseErrStr, const hestOpt *errOpt) {
+  return parseErrStr && errOpt;
+}
+
+// (GLK copied these from th_kindK.c to exercise hestOptAdd in another way)
 // -------------- "pos": an "other" that doesn't do its own allocation = "ostat"
 
 static int
@@ -42,6 +47,9 @@ pos_parse(void *_ptr, const char *str, char *err) {
 }
 
 hestCB posCB = {2 * sizeof(double), "position", pos_parse, NULL};
+hestCB posCB_size0 = {0, "position", pos_parse, NULL};
+hestCB posCB_type0 = {2 * sizeof(double), NULL, pos_parse, NULL};
+hestCB posCB_parse0 = {2 * sizeof(double), "position", NULL, NULL};
 
 void
 pos_print(FILE *file, const double pos[2]) {
@@ -54,31 +62,97 @@ pos_print(FILE *file, const double pos[2]) {
   return;
 }
 
+// -------------- "Combo": an "other" that *does* do its own allocation = "odyn"
+
+typedef struct {
+  char *str;
+  double val;
+} Combo;
+
+static int
+combo_parse(void *_ptr, const char *str, char *err) {
+  Combo **ptrP;
+  Combo *ptr;
+
+  ptrP = _ptr;
+  ptr = (*ptrP) = AIR_MALLOC(1, Combo);
+  ptr->str = NULL;
+  if (1 != airSingleSscanf(str, "%lf", &(ptr->val))) {
+    sprintf(err, "didn't parse a double from %s", str);
+    return (free(ptr), 1);
+  }
+  ptr->str = airStrdup(str);
+  return 0;
+}
+
+Combo *
+combo_free(void *_ptr) {
+  Combo *ptr = _ptr;
+  if (ptr) {
+    free(ptr->str);
+    free(ptr);
+  }
+  return NULL;
+}
+AIR_MOPPER(combo_free);
+
+hestCB comboCB = {sizeof(Combo *), "combo", combo_parse, combo_free_mop};
+hestCB posCB_destroy = {2 * sizeof(double), "position", pos_parse, combo_free_mop};
+
+void
+combo_print(FILE *file, Combo *co) {
+  fprintf(file, "\"%s\"->", co->str);
+  airSinglePrintf(file, NULL, 0, "%lg", co->val);
+  fflush(file);
+  return;
+}
+
 int
 main(int argc, const char **argv) {
   TH_SANITY;
-  hestOpt *opt = NULL;
-  hestParm *hparm = hestParmNew();
+  hestOpt *hopt = NULL;
+  // mopParm means using the "self-mopping" hparm for hestParseOrExit
+  int selfMop = !!getenv("TH_SELFMOP");
+  hestParm *hparm = selfMop ? hestParmMopNew() : hestParmNew();
   /* noArgsIsNoProblem stays false: all options are required anyway
      (GLK: actually that's moot because it only matters for hestParseOrExit) */
   hparm->respectDashDashHelp = AIR_TRUE;
 
   int A[2];
-  hestOptAdd_2_Int(&opt, NULL, "A0 A1", A, NULL, "two required ints");
+  hestOptAdd_2_Int(&hopt, NULL, "A0 A1", A, NULL, "two required ints");
   char *B = NULL;
-  unsigned int sopi = hestOptAdd_1_String(&opt, NULL, "B", &B, NULL, "required string");
+  unsigned int sopi = hestOptAdd_1_String(&hopt, NULL, "B", &B, NULL, "required string");
   double C[2];
-  // hestOptAdd_1_Float(&opt, NULL, "C", &C, NULL, "required float");
+  // hestOptAdd_1_Float(&hopt, NULL, "C", &C, NULL, "required float");
   // using old hestOptAdd for coverage
-  unsigned int oopi = hestOptAdd(&opt, NULL, "C", airTypeOther, 1, 1, C, NULL,
+  unsigned int popi = hestOptAdd(&hopt, NULL, "C", airTypeOther, 1, 1, C, NULL,
                                  "required x,y", NULL, NULL, &posCB);
+  /* yes, this is a flagged option in "th_unflagged_fixed", but that is so that
+  this option can exist quietly with parsing from its default, while also being
+  an opportunity for more coverage testing */
+  Combo *Q;
+  unsigned int qopi = hestOptAdd_1_Other(&hopt, "Q", "combo", &Q, "pi",
+                                         /* newline forces default onto its own line */
+                                         "optional combo\n more info on new line",
+                                         &comboCB);
 
+  int breakPOE = 0;
+  th_getenvInt(&breakPOE, "TH_BREAK_POE");
+  if (1 == breakPOE) {
+    hestParseOrExit(NULL, argc - 1, argv + 1, hparm, "th_unflagged_fixed", info);
+  } else if (2 == breakPOE) {
+    hestParseOrExit(hopt, argc - 1, NULL, hparm, "th_unflagged_fixed", info);
+  } else if (3 == breakPOE) {
+    hestParseOrExit(hopt, argc - 1, argv + 1, hparm, NULL, info);
+  }
   if (getenv("TH_THEATER")) {
-    printf("%s: coverage theater begins ...\n", argv[0]);
+    fprintf(stderr, "%s: coverage theater begins ...\n", argv[0]);
     /* "theater" because we're doing this entirely to increase coverage,
-       mostly without actually checking for correctness. */
-    hestOpt *hoptStr = opt + sopi;
-    hestOpt *hoptOth = opt + oopi;
+       mostly without actually checking for correctness (but going through this
+       did reveal at least one harmless bug in hest code) */
+    hestOpt *hoptStr = hopt + sopi;
+    hestOpt *hoptPos = hopt + popi;
+    hestOpt *hoptCom = hopt + qopi;
     hest__PPair ppair;
     ppair.hopt = hoptStr;
     for (unsigned int ti = 1; ti <= MY_HEST_TYPE_MAX; ti++) {
@@ -88,50 +162,112 @@ main(int argc, const char **argv) {
       hest__ParseSingle[ti](buff, NULL, &ppair);
       hest__ParseSingle[ti](NULL, "bogus", &ppair);
     }
+    fprintf(stderr, "%s: ... coverage theater continues 0 ...\n", argv[0]);
     // exercising the many helpful error messages in methodsHest.c:hest__OPCheck()
     // (these will dump to stderr)
+    // NULL hopt or hparm
     hestOptCheck(NULL, NULL);
-    hoptStr->type += 100;
-    hestOptCheck(opt, NULL);
-    hoptStr->type -= 100;
-    char *tmpStr = hoptStr->valueP;
-    hoptStr->valueP = NULL;
-    hestOptCheck(opt, NULL);
-    hoptStr->valueP = tmpStr;
+    hestOptAdd(NULL, "flag", "name", airTypeInt, 1, 1, NULL, "default", "info");
+    hestOptAdd_nva(NULL, "flag", "name", airTypeInt, 1, 1, NULL, "default", "info", NULL,
+                   NULL, NULL);
+    hestOptSingleSet(NULL, "flag", "name", airTypeInt, 1, 1, NULL, "default", "info",
+                     NULL, NULL, NULL);
+    hestOptFree(NULL);
+    hestParmCopy(NULL);
+    hestParmMopDone(NULL);
+    hestParmUnmop(NULL);
+    fprintf(stderr, "%s: ... coverage theater continues 1 ...\n", argv[0]);
+    // clang-format off
+    // invalid type
+    hoptStr->type += 100;     hestOptCheck(hopt, NULL);   hoptStr->type -= 100;
+    // NULL value pointer
+    char *tmpStr = hoptStr->valueP; hoptStr->valueP = NULL;
+    fprintf(stderr, "!%s: setting hoptStr->valueP = NULL\n", __func__);
+    hestOptCheck(hopt, NULL);       hoptStr->valueP = tmpStr;
+    // too-long flag
+    tmpStr = hoptStr->flag; // save flag
     char longflag[] = ("this is way too long to be a reasonable flag. "
                        "this is way too long to be a reasonable flag. "
                        "this is way too long to be a reasonable flag. "
                        "this is way too long to be a reasonable flag. "
                        "this is way too long to be a reasonable flag. ");
-    tmpStr = hoptStr->flag;
-    hoptStr->flag = longflag;
-    hestOptCheck(opt, NULL);
-    // clang-format off
+    hoptStr->flag = longflag;   hestOptCheck(hopt, NULL);
+    // flag with non-printing character
     hoptStr->flag = airStrdup("shortflag");
-    hoptStr->flag[4] += 100;             hestOptCheck(opt, NULL);
-    hoptStr->flag[4] = ' ';              hestOptCheck(opt, NULL); free(hoptStr->flag);
-    hoptStr->flag = airStrdup("ss,");    hestOptCheck(opt, NULL); free(hoptStr->flag);
-    hoptStr->flag = airStrdup(",ll");    hestOptCheck(opt, NULL); free(hoptStr->flag);
-    hoptStr->flag = airStrdup("s,l,");   hestOptCheck(opt, NULL); free(hoptStr->flag);
-    hoptStr->flag = airStrdup("s,-l");   hestOptCheck(opt, NULL); free(hoptStr->flag);
-    hoptStr->flag = airStrdup("s,help"); hestOptParmCheck(opt, hparm, NULL); free(hoptStr->flag);
-    hoptStr->flag = airStrdup("{");      hestOptParmCheck(opt, hparm, NULL); free(hoptStr->flag);
+    hoptStr->flag[4] += 100;             hestOptCheck(hopt, NULL);
+    // flag with space character
+    hoptStr->flag[4] = ' ';              hestOptCheck(hopt, NULL); free(hoptStr->flag);
+    // zero-length long form
+    hoptStr->flag = airStrdup("ss,");    hestOptCheck(hopt, NULL); free(hoptStr->flag);
+    // zero-length short form
+    hoptStr->flag = airStrdup(",ll");    hestOptCheck(hopt, NULL); free(hoptStr->flag);
+    // too many separators
+    hoptStr->flag = airStrdup("s,l,");   hestOptCheck(hopt, NULL); free(hoptStr->flag);
+    // long form starts with '-'
+    hoptStr->flag = airStrdup("s,-l");   hestOptCheck(hopt, NULL); free(hoptStr->flag);
+    // long form would act like --help
+    hoptStr->flag = airStrdup("s,help"); hestOptParmCheck(hopt, hparm, NULL); free(hoptStr->flag);
+    // flag would look like comment
+    hoptStr->flag = airStrdup("{");      hestOptParmCheck(hopt, hparm, NULL);
+    // again with own error message buffer
+    char *myerr = NULL;
+    hestOptParmCheck(hopt, hparm, &myerr);
+    fprintf(stderr, "%s: optparmcheck fail: myerr=%p:\n%s\n", argv[0], (void*)myerr, myerr);
+    myerr = airFree(myerr);
+    free(hoptStr->flag); // cleanup bogus flag
+    // restore flag
     hoptStr->flag = tmpStr;
+    // non-NULL sawP for something not variadic
+    hoptStr->sawP = &sopi;    hestOptCheck(hopt, NULL);  hoptStr->sawP = NULL;
+    // non-NULL enm for something not an enum
+    hoptStr->enm = airEndian; hestOptCheck(hopt, NULL);  hoptStr->enm = NULL;
+    // handling "other"
+    const hestCB *cbSave = hoptPos->CB;
+    // non-NULL hestCB for something not an other
+    hoptStr->CB = cbSave; hestOptCheck(hopt, NULL);  hoptStr->CB = NULL;
+    // busted hestCB w/ 0 size
+    hoptPos->CB = &posCB_size0; hestOptCheck(hopt, NULL);
+    // busted hestCB w/ NULL type
+    hoptPos->CB = &posCB_type0; hestOptCheck(hopt, NULL);
+    // busted hestCB w/ NULL parser
+    hoptPos->CB = &posCB_parse0; hestOptCheck(hopt, NULL);
+    // busted hestCB w/ unexpected destroy CB
+    hoptPos->CB = &posCB_destroy; hestOptCheck(hopt, NULL);
+    hoptPos->CB = cbSave; // restore original hestCB
+    // hestOptCheck and hestOptParmCheck with no problems
+    hestOptCheck(hopt, NULL);
+    hestOptCheck(hopt, &myerr);
+    hestOptParmCheck(hopt, hparm, NULL);
+    hestOptParmCheck(hopt, hparm, &myerr);
     // clang-format on
-    printf("%s: ... end coverage theater\n", argv[0]);
+    fprintf(stderr, "%s: ... end coverage theater\n", argv[0]);
+    // if (!selfMop) hestParmUnmop(hparm); // forgot where this should go
+  }
+  if (selfMop) {
+    if (getenv("TH_QUIET_QUIT")) {
+      hparm->quietQuit = quietQuitTester;
+    }
+    if (4 == breakPOE) {
+      // break something in hestOpt so hestParseOrExit fails
+      hopt[sopi].type += 100;
+    }
+    hestParseOrExit(hopt, argc - 1, argv + 1, hparm, "th_unflagged_fixed", info);
+  } else {
+    TH_PARSE(hopt, info, hparm, argc - 1, argv + 1);
   }
 
-  TH_PARSE(opt, info, hparm, argc - 1, argv + 1);
-
   printf("A=[%d|%d]\n", A[0], A[1]);
-  THPRINT_SOURCE("A", opt, 0);
+  THPRINT_SOURCE("A", hopt, 0);
   printf("B=%s\n", B);
-  THPRINT_SOURCE("B", opt, 1);
+  THPRINT_SOURCE("B", hopt, 1);
   printf("C=");
   pos_print(stdout, C);
   printf("\n");
-  THPRINT_SOURCE("C", opt, 2);
+  // for human use, not actually assessed by coverage testing
+  printf("Q=");
+  combo_print(stdout, Q);
+  printf("\n");
 
-  TH_CLEANUP(opt, hparm);
+  TH_CLEANUP(hopt, hparm);
   return 0;
 }

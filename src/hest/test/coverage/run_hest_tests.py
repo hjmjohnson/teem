@@ -352,13 +352,39 @@ TESTS = [
         argv=['1', '1', 'one and done', '1.0,1.00'],
         expected={'A': [1, 1], 'B': 'one and done', 'C': '(1,1)'},
     ),
+    ## (GLK) exercising self-mop-enabled hest functions
+    dict(
+        env={'TH_SELFMOP': ''},
+        exe='th_unflagged_fixed',
+        name='unflagged-fixed: self-mopped ones and spaces values',
+        argv=['1', '1', 'one and done', '1.0,1.00'],
+        expected={'A': [1, 1], 'B': 'one and done', 'C': '(1,1)'},
+    ),
+    dict(
+        env={'TH_SELFMOP': ''},
+        exe='th_unflagged_fixed',
+        name='unflagged-fixed: self-mopped --version',
+        argv=['--version'],
+    ),
+    dict(
+        env={'TH_SELFMOP': ''},
+        exe='th_unflagged_fixed',
+        name='unflagged-fixed: self-mopped --usage',
+        argv=['--usage'],
+    ),
+    dict(
+        env={'TH_SELFMOP': ''},
+        exe='th_unflagged_fixed',
+        name='unflagged-fixed: self-mopped --help',
+        argv=['--help'],
+    ),
     # ==========================================================================
     # th_variadic — forward-then-backward assignment
     # Definition order: A[2] int (req) | B[] strings variadic (min=1) | C int (req)
     # ==========================================================================
     dict(
         exe='th_variadic',
-        name='unflagged-variadic: minimum B (exactly one string in middle)',
+        name='variadic: minimum B (exactly one string in middle)',
         argv='10 20 only 99',
         expected={
             'A': [10, 20],
@@ -368,7 +394,7 @@ TESTS = [
     ),
     dict(
         exe='th_variadic',
-        name='unflagged-variadic: three strings in middle',
+        name='variadic: three strings in middle',
         argv='10 20 p q r 99',
         expected={
             'A': [10, 20],
@@ -378,7 +404,7 @@ TESTS = [
     ),
     dict(
         exe='th_variadic',
-        name='unflagged-variadic: five strings in middle',
+        name='variadic: five strings in middle',
         argv='1 2 a b c d e 42',
         expected={
             'A': [1, 2],
@@ -394,7 +420,7 @@ TESTS = [
     ),
     dict(
         exe='th_variadic',
-        name='unflagged-variadic: strings that look like numbers are still strings',
+        name='variadic: strings that look like numbers are still strings',
         argv='1 2 100 200 300 999',
         expected={
             'A': [1, 2],
@@ -404,7 +430,7 @@ TESTS = [
     ),
     dict(
         exe='th_variadic',
-        name='unflagged-variadic: negative int for C (backward-consumed from end)',
+        name='variadic: negative int for C (backward-consumed from end)',
         # A gets the first two, C gets the last (even though it looks like a flag),
         # B gets the middle.  Tests that hest correctly identifies -7 as the
         # trailing positional arg for C rather than misreading it as a flag.
@@ -756,10 +782,48 @@ if True:
 # ==========================================================================
 TESTS += [
     dict(
+        env={'TH_MISSINGFLAG': ''},
+        exe='th_flag',
+        name='flag: but missing the flag',
+        argv=[],
+        expect_fail=True,
+    ),
+    dict(
         env={'TH_THEATER': ''},
         exe='th_unflagged_fixed',
         name='unflagged-fixed: coverage theater (with busted invocation)',
         argv=[],
+        expect_fail=True,
+    ),
+    dict(
+        env={'TH_SELFMOP': ''},  # make hestParseOrExit fail
+        exe='th_unflagged_fixed',
+        name='unflagged-fixed: hestParseOrExit failing on bad args',
+        argv='10 20 hello 3,nope',
+        expect_fail=True,
+    ),
+    dict(
+        env={'TH_SELFMOP': ''},  # make hestParseOrExit fail
+        exe='th_unflagged_fixed',
+        name='unflagged-fixed: hestParseOrExit with no args',
+        argv=[],
+        expect_fail=True,
+    ),
+    *[  # make hestParseOrExit fail in different ways
+        dict(
+            env={'TH_SELFMOP': '', 'TH_BREAK_POE': str(POE)},
+            exe='th_unflagged_fixed',
+            name=f'unflagged-fixed: hestParseOrExit failing on busted hestOpt ({POE=})',
+            argv='10 20 hello 3,4',
+            expect_fail=True,
+        )
+        for POE in [1, 2, 3, 4]
+    ],
+    dict(
+        env={'TH_SELFMOP': '', 'TH_QUIET_QUIT': ''},  # make hestParseOrExit quiet quit
+        exe='th_unflagged_fixed',
+        name='unflagged-fixed: busted "other", with quiet quitting',
+        argv='10 20 hello 3,pets',
         expect_fail=True,
     ),
     dict(
@@ -788,30 +852,37 @@ TESTS += [
         if TY != 'SS'  # because any string is a parsable string
     ],
     dict(
+        env={'TH_NULL_SAW': ''},
+        exe='th_variadic',
+        name='variadic: NULL sawP bad',
+        argv='1 2 a b c d e 42'.split(),
+        expect_fail=True,
+    ),
+    dict(
         env=dict(TH_NULL_HPARM='2'),
         exe='th_variadic',
-        name='unflagged-variadic: --help (after valid args) wont work without hparm->respectDashDashHelp',
+        name='variadic: --help (after valid args) wont work without hparm->respectDashDashHelp',
         argv='1 2 a b c d e 42 --help'.split(),
         expect_fail=True,
     ),
     dict(
         env=dict(TH_NULL_HPARM='2'),
         exe='th_variadic',
-        name='unflagged-variadic: bare --help wont work without hparm->respectDashDashHelp',
+        name='variadic: bare --help wont work without hparm->respectDashDashHelp',
         argv=['--help'],
         expect_fail=True,
     ),
     dict(
         env=dict(TH_VMIN='0'),
         exe='th_variadic',
-        name='unflagged-variadic: cant have min=0 amidst other unflagged',
+        name='variadic: cant have min=0 amidst other unflagged',
         argv=['10', '20', '99'],
         expect_fail=True,
     ),
     dict(
         env=dict(TH_TWOVAR='true'),
         exe='th_variadic',
-        name='unflagged-variadic: cant have two unflagged variadic',
+        name='variadic: cant have two unflagged variadic',
         argv=['10', '20', '99'],
         expect_fail=True,
     ),

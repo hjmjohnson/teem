@@ -109,7 +109,7 @@ if [[ $COVERAGE ]]; then
         -object ../ex6 \
         -instr-profile=test.profdata" # plus the indexed profile
     if true; then
-        # using llvm-cov
+        # using llvm-cov: makes more self-contained matrix of files and coverage kinds
         # name the hest source files (but nothing below in test/ or test/tht2)
         HEST_C=$(
             cd ../..
@@ -137,7 +137,8 @@ if [[ $COVERAGE ]]; then
         runme "llvm-cov show --format=text $CARGS $SHOWWHAT | sed -E 's/\|[[:space:]]+([0-9])/|\1/g' | sed -E 's/\|[1-9][0-9]*(\.[0-9]+)?k?\|/|1|/g' | sed -E 's/\|[[:space:]]+\|/| |/g' > ncov.txt"
         open -a Firefox $COVIS/index.html
     else
-        # using lcov tools, after: brew install lcov
+        # using lcov tools: gives list of uncovered files, and simpler source display
+        # after: brew install lcov
         # NOTE: this does not know anything about macro expansion,
         # because .lcov format is entirely line-based
         IGNORE="--ignore-filename-regex='.*tht2/.*'"
