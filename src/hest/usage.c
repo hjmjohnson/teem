@@ -359,10 +359,8 @@ hestGlossary(FILE *file, const hestOpt *hopt, const hestParm *_hparm) {
                         : "s")
                    : ""));
     }
-    /*
-    fprintf(stderr, "!%s: HPARM->elideSingleOtherDefault = %d\n",
-            "hestGlossary", HPARM->elideSingleOtherDefault);
-    */
+    // fprintf(stderr, "!%s: HPARM->elideSingleOtherDefault = %d\n",
+    //         "hestGlossary", HPARM->elideSingleOtherDefault);
     if (hopt[opi].dflt                                 // there is a default string
         && (hopt[opi].min || hest__Max(hopt[opi].max)) // opt has values to parse
         /* below is &&-ing together the !-negations of reasons to NOT show the default */
