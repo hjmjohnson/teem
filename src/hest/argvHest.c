@@ -332,7 +332,8 @@ hestArgVecPrint(const char *caller, const char *info, const hestArgVec *havec) {
   }
   printf("\n");
   char *ppargs = hestArgVecSprint(havec, AIR_FALSE);
-  printf("%s%s%s OR pretty-printed as:\n%s\n", airStrlen(caller) ? caller : "", //
+  printf("%s%s%s OR hestArgVec pretty-printed is:\n%s\n",
+         airStrlen(caller) ? caller : "", //
          airStrlen(caller) ? ": " : "", info, ppargs);
   free(ppargs);
   return;
