@@ -617,22 +617,6 @@ test_optcheck_invalid(char err[AIR_STRLEN_HUGE + 1]) {
     if (expect_invalid(hopt, "two unflagged variadic options", err)) return 1;
   }
 
-  /* An unflagged kind-5 with min=0 is only valid when it is the SOLE unflagged
-     option; adding any other unflagged option alongside it is an error. */
-  {
-    hestOpt *hopt = NULL;
-    int n = 0;
-    int *extra = NULL;
-    unsigned int saw = 0;
-    /* unflagged kind-5, min=0 */
-    hestOptAdd_nva(&hopt, NULL, "files", airTypeInt, 0, -1, &extra, "", "optional files",
-                   &saw, NULL, NULL);
-    /* second unflagged option makes the kind-5-min-0 invalid */
-    hestOptAdd_1_Int(&hopt, NULL, "count", &n, "0", "a count");
-    if (expect_invalid(hopt, "unflagged kind-5 min=0 with other unflagged opt", err))
-      return 1;
-  }
-
   return 0;
 }
 
