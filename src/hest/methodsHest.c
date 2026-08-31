@@ -865,9 +865,7 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
     return 1;
   }
   uint optNum = hopt->arrLen;
-  uint ufNum = 0;             // number of unflagged options
-  uint ufvarNum = 0;          // number of unflagged variadic-parameter options
-  uint ufvarKind5Min0Num = 0; // like it says
+  uint ufvarNum = 0; // number of unflagged variadic-parameter options
   for (uint opi = 0; opi < optNum; opi++) {
     if (!(AIR_IN_OP(airTypeUnknown, hopt[opi].type, airTypeLast))) {
       biffAddf(HEST, "%s%sopt[%u].type (%d) not in valid range [%d,%d]", MY_ME, opi,
@@ -982,7 +980,6 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
       free(tbuff);
     } else { // ------ end of if (hopt[opi].flag)
       // hopt[opi] is unflagged
-      ufNum += 1;
       // unflagged kind=1 is already checked above
       if (4 == hopt[opi].kind) {
         if (!hopt[opi].min) {
@@ -990,16 +987,11 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
                    opi, hopt[opi].name ? hopt[opi].name : "not set");
           return 1;
         }
-      } else if (5 == hopt[opi].kind) {
-        // Okay, allow variadic min==0 if is the *only* unflagged option (of any kind)
-        if (0 == hopt[opi].min) {
-          ufvarKind5Min0Num += 1;
-        }
       }
       // else it's a fixed (non-variadic) unflagged option; cool
     }
     if (4 == hopt[opi].kind) { // single variadic parameter
-      // immediately above have just ruled out unflagged kind 4
+      // above test has already ruled out unflagged kind 4
       if (!hopt[opi].dflt) {
         biffAddf(HEST,
                  "%s%sopt[%u] -%s is single variadic parameter, but "
@@ -1047,7 +1039,7 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
                MY_ME, opi, hopt[opi].flag ? hopt[opi].flag : "unflagged");
       return 1;
     }
-    if (hopt[opi].enm && airTypeEnum != hopt[opi].type) {
+    if (airTypeEnum != hopt[opi].type && hopt[opi].enm) {
       biffAddf(HEST,
                "%s%sopt[%u] (%s) has non-NULL airEnum pointer, but is not airTypeEnum",
                MY_ME, opi, hopt[opi].flag ? hopt[opi].flag : "unflagged");
@@ -1081,25 +1073,20 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
                  MY_ME, opi, (unsigned long)(hopt[opi].CB->size));
         return 1;
       }
+    } else { // airTypeOther != hopt[opi].type
+      if (hopt[opi].CB) {
+        biffAddf(HEST,
+                 "%s%sopt[%u] (%s) has non-NULL callbacks, but is not airTypeOther",
+                 MY_ME, opi, hopt[opi].flag ? hopt[opi].flag : "unflagged");
+        return 1;
+      }
     }
-    if (hopt[opi].CB && airTypeOther != hopt[opi].type) {
-      biffAddf(HEST, "%s%sopt[%u] (%s) has non-NULL callbacks, but is not airTypeOther",
-               MY_ME, opi, hopt[opi].flag ? hopt[opi].flag : "unflagged");
-      return 1;
-    }
-    // kind 4 = single variadic parm;  kind 5 = multiple variadic parm
+    // kind=4 : single variadic parm;  kind=5 : multiple variadic parm
     ufvarNum += (hopt[opi].kind > 3 && (!hopt[opi].flag));
   }
   if (ufvarNum > 1) {
     biffAddf(HEST, "%s%scan have at most 1 unflagged variadic options, not %u", MY_ME,
              ufvarNum);
-    return 1;
-  }
-  if (ufvarKind5Min0Num && ufNum > 1) {
-    biffAddf(HEST,
-             "%s%sAn unflagged variadic min=0 option must be sole unflagged option "
-             "(but there are %u)",
-             MY_ME, ufNum);
     return 1;
   }
   return 0;
