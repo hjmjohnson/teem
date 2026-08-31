@@ -30,7 +30,7 @@ hist  = hestInputStack
 hopt  = hestOpt
 */
 
-#define HIST_DEPTH_MAX 10u // max sensibly depth of hestInputStack
+#define HIST_DEPTH_MAX 5u // max sensible depth of hestInputStack
 
 // histPopt pops one hestInput from the `hist` stack
 static int /* Biff: 1 */
