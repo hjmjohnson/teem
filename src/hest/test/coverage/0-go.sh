@@ -80,9 +80,10 @@ runme "../ex6 --help"
 runme "../ex6 --bogus"
 # correctness of ../tht1 results is checked internally: will exit(1) on error
 runme "../tht1" # simpler "tier 1" tests, also for coverage
-runme "python3 run_hest_tests.py $COVFLAG \
-    --cflags '-DTEEM_NON_CMAKE -I../../../../built/include -std=c99' \
-    --ldflags '-L../../../../built/lib -lhest -lbiff -lair'"
+#runme "python3 run_hest_tests.py $COVFLAG \
+#    --cflags '-DTEEM_NON_CMAKE -I../../../../built/include -std=c99' \
+#    --ldflags '-L../../../../built/lib -lhest -lbiff -lair'"
+runme "python3 run_hest_tests.py $COVFLAG"
 if [[ $COVERAGE ]]; then
     # at end, clean up the raw profiles just generated
     junk *.profraw

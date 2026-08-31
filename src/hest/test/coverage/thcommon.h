@@ -93,7 +93,7 @@ th_getenvBool(int *val, const char *envVar) {
   int tmp = airEnumVal(airBool, envVal);
   if (airEnumUnknown(airBool) == tmp) {
     // else env var was set but could not be parsed
-    fprintf(stderr, "ERROR(%s): could not parse env[\"%s\"]=\"%s\" as int\n", __func__,
+    fprintf(stderr, "ERROR(%s): could not parse env[\"%s\"]=\"%s\" as bool\n", __func__,
             envVar, envVal);
     exit(1); // WE ARE OUT OF HERE
   }

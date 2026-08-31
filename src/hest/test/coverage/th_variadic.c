@@ -44,43 +44,50 @@ main(int argc, const char **argv) {
   hestParmColumnsIoctl(hparm, 70);
   hparm->respectDashDashHelp = AIR_TRUE;
 
-  // export TH_FLAGVAR=true to make flagged the variadic option(s)
-  int FLAGVAR = AIR_FALSE; // by default, do not flag (how this file started)
-  th_getenvBool(&FLAGVAR, "TH_FLAGVAR");
-  // export TH_FLAGFIX=true to make flagged the non-variadic=fixed option(s)
-  int FLAGFIX = AIR_FALSE; // by default, do not flag (how this file started)
-  th_getenvBool(&FLAGFIX, "TH_FLAGFIX");
+  // export TH_FLAG_VARI=true to make flagged the "B" (and possibly "D") variadic option
+  int FLAG_VARI = AIR_FALSE; // by default, do not flag (how this file started)
+  th_getenvBool(&FLAG_VARI, "TH_FLAG_VARI");
+  // export TH_FLAG_A=true to flag the non-variadic=fixed option "A"
+  int FLAG_A = AIR_FALSE; // by default, do not flag "A" (how this file started)
+  th_getenvBool(&FLAG_A, "TH_FLAG_A");
+  // export TH_FLAG_C=true to flag the non-variadic=fixed option "C"
+  int FLAG_C = AIR_FALSE; // by default, do not flag "C" (how this file started)
+  th_getenvBool(&FLAG_C, "TH_FLAG_C");
 
   int A[2];
-  hestOptAdd_2_Int(&opt, FLAGFIX ? "A" : NULL, "A0 A1", A, NULL, "two leading ints");
+  hestOptAdd_2_Int(&opt, FLAG_A ? "A" : NULL, "A0 A1", A, getenv("TH_A_DFLT"),
+                   "two leading ints");
 
   char **B = NULL;
   unsigned int sawB = 0;
 
   int eGot;
-  // export TH_VMIN=0 to trigger a particular hest failure
-  int VMIN = 1; // by default, min # args is 1
-  th_getenvInt(&VMIN, "TH_VMIN");
-  // hestOptAdd_Nv_String(&opt, FLAGVAR ? "B" : NULL, "Bvar", VMIN, -1, &B, NULL,
+  // export TH_B_VMIN=0 to trigger a particular hest failure
+  int B_VMIN = 1; // by default, min # args is 1
+  th_getenvInt(&B_VMIN, "TH_B_VMIN");
+  // hestOptAdd_Nv_String(&opt, FLAG_VARI ? "B" : NULL, "Bvar", B_VMIN, -1, &B, NULL,
   //                      "variable # of middle strings\n "
   //                      "(including a second line)",
   //                      &sawB);
   // using old hestOptAdd for coverage
-  hestOptAdd(&opt, FLAGVAR ? "B" : NULL, "Bvar", airTypeString, VMIN, -1, &B, NULL,
+  hestOptAdd(&opt, FLAG_VARI ? "B" : NULL, "Bvar", airTypeString, B_VMIN, -1, &B,
+             getenv("TH_B_DFLT"),
              "variable # of middle strings\n "
              "(including a second line)",
              getenv("TH_NULL_SAW") ? NULL : &sawB);
 
   int C = 0;
-  hestOptAdd_1_Int(&opt, FLAGFIX ? "C" : NULL, "C", &C, NULL, "trailing int");
+  hestOptAdd_1_Int(&opt, FLAG_C ? "C" : NULL, "C", &C, getenv("TH_C_DFLT"),
+                   "trailing int");
 
-  // export TH_TWOVAR (but not TH_FLAGVAR) to trigger a different particular hest failure
+  // export TH_TWO_VARI=true (but not TH_FLAG_VARI) to trigger a different particular
+  // hest failure
   int TWOVAR = AIR_FALSE; // by default, do not use extra unflagged variadic
-  th_getenvBool(&TWOVAR, "TH_TWOVAR");
+  th_getenvBool(&TWOVAR, "TH_TWO_VARI");
   char **D = NULL;
   unsigned int sawD = 0;
   if (TWOVAR) {
-    hestOptAdd_Nv_String(&opt, FLAGVAR ? "D" : NULL, "Dvar", 1, -1, &D, NULL,
+    hestOptAdd_Nv_String(&opt, FLAG_VARI ? "D" : NULL, "Dvar", 1, -1, &D, NULL,
                          "one-or-more end strings", &sawD);
   }
 

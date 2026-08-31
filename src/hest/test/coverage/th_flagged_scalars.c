@@ -54,7 +54,7 @@ main(int argc, const char **argv) {
   double x = 0.0;
   hestOptAdd_1_Double(&opt, "x", "val", &x, testThing ? "nan" : "1.0", "a double");
   char *s = NULL;
-  hestOptAdd_1_String(&opt, "s", "str", &s, "bingo", "a string");
+  hestOptAdd_1_String(&opt, "s", "str", &s, "sunk cost", "a string");
   int b = 0;
   hestOptAdd_1_Bool(&opt, "b", "flag", &b, "false", "a boolean");
   int e = 0;

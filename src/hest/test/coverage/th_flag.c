@@ -26,7 +26,7 @@ main(int argc, const char **argv) {
   hestOpt *opt = NULL;
   hestParm *hparm = hestParmNew();
   hparm->respectDashDashHelp = AIR_TRUE;
-  {
+  if (getenv("TH_THEATER")) {
     printf("%s: coverage theater begins ...\n", argv[0]);
     /* "theater" because we're doing this entirely to increase coverage,
        mostly without actually checking for correctness. */
