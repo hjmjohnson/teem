@@ -182,7 +182,6 @@ main(int argc, const char **argv) {
     hoptStr->type += 100;     hestOptCheck(hopt, NULL);   hoptStr->type -= 100;
     // NULL value pointer
     char *tmpStr = hoptStr->valueP; hoptStr->valueP = NULL;
-    fprintf(stderr, "!%s: setting hoptStr->valueP = NULL\n", __func__);
     hestOptCheck(hopt, NULL);       hoptStr->valueP = tmpStr;
     // too-long flag
     tmpStr = hoptStr->flag; // save flag
@@ -256,7 +255,7 @@ main(int argc, const char **argv) {
     TH_PARSE(hopt, info, hparm, argc - 1, argv + 1);
   }
 
-  printf("A=[%d|%d]\n", A[0], A[1]);
+  printf("A=[%d;%d;]\n", A[0], A[1]);
   THPRINT_SOURCE("A", hopt, 0);
   printf("B=%s\n", B);
   THPRINT_SOURCE("B", hopt, 1);

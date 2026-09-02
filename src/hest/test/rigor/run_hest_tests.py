@@ -44,15 +44,14 @@ import os
 import shutil
 import subprocess
 import sys
+import struct, fcntl, termios   # for ioctl hacking
 import tempfile
 import textwrap
 import shlex
 from pathlib import Path
 
-# ---------------------------------------------------------------------------
 # Constants from teem/air.h (not parsed at runtime to avoid a chicken-and-egg
 # dependency on the compiled library).
-# ---------------------------------------------------------------------------
 AIR_ENDIAN_LITTLE = 1234
 AIR_ENDIAN_BIG = 4321
 
@@ -137,9 +136,7 @@ def Q(dd):   # (GLK added)
 
 
 def test_list(args):
-    # ---------------------------------------------------------------------------
     # Test table
-    # ---------------------------------------------------------------------------
     #
     # Each entry is a dict.  Recognised keys:
     #
@@ -461,74 +458,72 @@ def test_list(args):
             argv=['--help'],
         ),
         # ==========================================================================
-        # th_variadic — two fixed, one variadic, single fixed
-        dict(
-            exe='th_variadic',
-            name='variadic: minimum B (exactly vmin=1 string in middle)',
-            argv='10 20 only 99',
-            expected={
-                'A': [10, 20],
-                'B': ['only'],
-                'C': 99,
-            },
-        ),
-        # dict(
-        #    env=dict(TH_B_VMIN='0'),
-        #    exe='th_variadic',
-        #    name='variadic: minimum B (exactly vmin=0 strings in middle)',
-        #    argv='10 20 99',
-        #    expected={
-        #        'A': [10, 20],
-        #        'B': [],
-        #        'C': 99,
-        #    },
-        # ),
+        # th_variadic — A:two fixed, B:one variadic, C:single fixed, D:two fixed
         dict(
             exe='th_variadic',
             name='variadic: three strings in middle',
-            argv=['10', '20', 'p', 'happy path', 'r', '99'],
+            argv=['10', '20', 'p', 'happy path', 'r', '33', '44', '55'],
             expected={
                 'A': [10, 20],
                 'B': ['p', 'happy path', 'r'],
-                'C': 99,
+                'C': 33,
+                'D': [44, 55],
             },
         ),
         dict(
             exe='th_variadic',
-            name='variadic: strings that look like numbers are still strings',
-            argv='1 2 100 200 300 999',
+            name='variadic: minimum B (exactly vmin=1 string in middle)',
+            argv='10 20 only 33 44 55',
             expected={
-                'A': [1, 2],
-                'B': ['100', '200', '300'],
-                'C': 999,
+                'A': [10, 20],
+                'B': ['only'],
+                'C': 33,
+                'D': [44, 55],
             },
         ),
         dict(
+            env=dict(TH_B_VMIN='0'),
             exe='th_variadic',
-            name='variadic: negative int for C (backward-consumed from end)',
-            # A gets the first two, C gets the last (even though it looks like a flag),
-            # B gets the middle.  Tests that hest correctly identifies -7 as the
-            # trailing positional arg for C rather than misreading it as a flag.
-            argv='3 4 mid -7',
+            name='variadic: minimum B (exactly vmin=0 string in middle)',
+            argv='10 20 33 44 55',
             expected={
-                'A': [3, 4],
-                'B': ['mid'],
-                'C': -7,
+                'A': [10, 20],
+                'B': [],
+                'C': 33,
+                'D': [44, 55],
             },
         ),
         # dict(
-        #    env=dict(TH_B_VMIN='0'),
+        #    env=dict(TH_B_VMIN='0', TH_B_DFLT='beta gamma'),
         #    exe='th_variadic',
-        #    name='variadic: cant have vmin=0 amidst other unflagged',
-        #    argv=['10', '20', '99'],
-        #    expect_fail=True,
+        #    name='variadic: with B default and minimum B (exactly vmin=0 string in middle)',
+        #    argv='10 20 -- 33 44 55',
+        #    expected={
+        #        'A': [10, 20],
+        #        'B': [],
+        #        'C': 33,
+        #        'D': [44, 55],
+        #    },
         # ),
         dict(
             env=dict(TH_TWO_VARI='true'),
             exe='th_variadic',
             name='variadic: cant have two unflagged variadic',
-            argv=['10', '20', '99'],
+            argv='1 2 100 200 300 -33 -44 -55',
             expect_fail=True,
+        ),
+        dict(
+            env=dict(TH_TWO_VARI='true', TH_SELFMOP='true'),
+            exe='th_variadic',
+            name='variadic: (self-mopping) cant have two unflagged variadic',
+            argv='1 2 100 200 300 -33 -44 -55',
+            expect_fail=True,
+        ),
+        dict(
+            env=dict(TH_SELFMOP='true'),
+            exe='th_variadic',
+            name='variadic: (self-mopping) --usage',
+            argv='--usage',
         ),
         ## NOTE: all of the above have been with all 3 options being *unflagged*
         # dict(
@@ -1020,9 +1015,7 @@ def build_exes(args, exes: list, exe_dir: Path, build_dir: Path) -> bool:
     return all_ok
 
 
-# ---------------------------------------------------------------------------
 # Output parsing
-# ---------------------------------------------------------------------------
 
 
 def parse_kv(stdout: str) -> dict:
@@ -1041,15 +1034,13 @@ def parse_kv(stdout: str) -> dict:
             if '[' == val[0]:
                 if ']' != val[-1]:
                     raise RuntimeError(f'in {line=} {val=} starts with [ but does not end with ]')
-                # ignore [], split on |
-                val = val[1:-1].split('|')
+                # ignore [], split on ;, ignore the final one
+                val = val[1:-1].split(';')[0:-1]
             result[key] = val
     return result
 
 
-# ---------------------------------------------------------------------------
 # Comparison
-# ---------------------------------------------------------------------------
 
 
 def _values_match(key: str, actual_val, expected_val) -> bool:
@@ -1086,9 +1077,7 @@ def _values_match(key: str, actual_val, expected_val) -> bool:
         return False
 
 
-# ---------------------------------------------------------------------------
 # Running one test
-# ---------------------------------------------------------------------------
 
 
 def run_one(test: dict, args, build_dir: Path) -> tuple:
@@ -1108,7 +1097,7 @@ def run_one(test: dict, args, build_dir: Path) -> tuple:
 
     tmp_dir = None
     try:
-        # ---- materialise response files ----
+        #### materialise response files
         if rf_specs:
             tmp_dir = tempfile.mkdtemp(prefix='hest_test_')
             # Rewrite "@FILENAME" argv elements where FILENAME is a known rf key.
@@ -1124,7 +1113,7 @@ def run_one(test: dict, args, build_dir: Path) -> tuple:
                             print(f'{INDENT}{line}')
                         argv[idx] = f'@{fpath}'
 
-        # ---- assemble the argv for running the program ----
+        #### assemble the argv for running the program
         binary = str(build_dir / exe)
         cmd = [binary] + argv
         if args.valgrind:
@@ -1136,7 +1125,7 @@ def run_one(test: dict, args, build_dir: Path) -> tuple:
                 '--quiet',
             ] + cmd
 
-        # ---- execute ----
+        #### execute
         print('running: ', end='')
         # generate a copy-paste-able command-line by using shell syntax
         # for building up an environment in which a command is run
@@ -1155,17 +1144,17 @@ def run_one(test: dict, args, build_dir: Path) -> tuple:
         errlog = f'stderr:\n{textwrap.indent(result.stderr.strip(), INDENT)}'
         outlog = f'stdout:\n{textwrap.indent(result.stdout.strip(), INDENT)}'
 
-        # ---- If supposed to not run, verify that
+        #### If supposed to not run, verify that
         if expect_fail:
             if exit_code == 0:
                 return False, 'expected failure/non-zero exit but got 0\n' + outlog
             return True, errlog
 
-        # ---- Else supposed to run, verify that
+        #### Else supposed to run, verify that
         if exit_code:
             return False, f'unexpected failure/non-zero exit code {exit_code}\n' + errlog
 
-        # ---- Supposed to run and did run; did it run correctly?
+        #### Supposed to run and did run; did it run correctly?
         print(outlog)
         actual = parse_kv(result.stdout)
         failures = []
@@ -1193,9 +1182,7 @@ def run_one(test: dict, args, build_dir: Path) -> tuple:
             shutil.rmtree(tmp_dir, ignore_errors=True)
 
 
-# ---------------------------------------------------------------------------
 # Main
-# ---------------------------------------------------------------------------
 
 
 def main() -> int:
@@ -1273,7 +1260,7 @@ def main() -> int:
     # Determine which test binaries are needed
     exes = sorted({t['exe'] for t in tests_active})
 
-    # ---- build ----
+    #### build
     if not args.cflags and not args.ldflags:
         print(
             'Warning: --cflags and --ldflags are both empty.  Compilation will',
@@ -1292,7 +1279,7 @@ def main() -> int:
         return 2
 
     if args.coverage:
-        # ---- run --help on everything
+        #### run --help on everything
         # GLK added: helper function for running --help
         def run_help(thebinary, thenv, stdin=None):
             result = subprocess.run(
@@ -1313,16 +1300,27 @@ def main() -> int:
             run_help(binary, dict(TH_NULL_HPARM='1', **ENV))
             if 'th_variadic' == exe:
                 # this one has extra switches set by envvar
-                print('--help with TH_FLAG_{A,B}=true')
-                run_help(binary, dict(TH_FLAG_A='true', TH_FLAG_B='true', **ENV))
-                print('--help with TH_FLAG_{A,B}=true, TH_B_VMIN=0')
-                run_help(binary, dict(TH_FLAG_A='true', TH_FLAG_B='true', TH_B_VMIN='0', **ENV))
+                myenv = dict(**{f'TH_FLAG_{L}': 'true' for L in ['A', 'B', 'C', 'D']}, **ENV)
+                print('--help with TH_FLAG_{A,B,C,D}=true')
+                run_help(binary, myenv)
+                print('--help with TH_FLAG_{A,B,C,D}=true, TH_B_VMIN=0')
+                run_help(binary, myenv)
             elif 'th_kind2' == exe:
                 print('--help with all defaults on')
                 run_help(binary, {f'TH_{TY}_DEFAULT': TYvals[TY][0] for TY in TYs})
                 if args.coverage:
-                    print('--help with thwarted ioctl and 65 #columns')
+                    print('--help with thwarted ioctl and 65 columns')
                     run_help(binary, dict(TH_COLUMNS='65', **ENV), stdin=subprocess.DEVNULL)
+                    print('--help with fake ioctl thinking it has only 20 columns')
+                    master_fd, slave_fd = os.openpty()
+                    # Set the pty's window size: rows=20, cols=20, xpixels=0, ypixels=0
+                    winsize = struct.pack('HHHH', 20, 20, 0, 0)
+                    fcntl.ioctl(master_fd, termios.TIOCSWINSZ, winsize)
+                    try:
+                        run_help(binary, ENV, stdin=slave_fd)
+                    finally:
+                        os.close(master_fd)
+                        os.close(slave_fd)
             elif 'th_flagged_scalars' == exe:
                 # from the --help output it is clear this is working as intended,
                 # BUT HEY SHOULD REALLY BE EXPLICITLY TESTING THAT HERE
@@ -1345,7 +1343,7 @@ def main() -> int:
                 )
                 run_help(binary, {'TH_ENEFD': '2'})
 
-    # ---- run ----
+    #### run
     total = passed = failed = 0
     # if args.coverage:
     #    # once, set filename pattern for .profraw file
@@ -1369,10 +1367,10 @@ def main() -> int:
             failed += 1
         if detail:
             print(textwrap.indent(detail, INDENT))
-        print(f'[test# {tt["num"]}] --> {tag}')
+        print(f'[test# {tt["num"]}] ==> {tag}')
         print('')   # to better visually separate tests
 
-    # ---- summary ----
+    #### summary
     print(f'\n{passed} passed, {failed} failed (of {total})')
     return 0 if failed == 0 else 1
 

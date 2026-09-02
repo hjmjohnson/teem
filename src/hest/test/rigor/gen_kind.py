@@ -154,7 +154,7 @@ def hoa_call(TY, KI, VN):
                 f'int {TY}vmax = 3; th_getenvInt(&{TY}vmax, "TH_{TY}_VMAX"); '
             )
             hcall = (
-                f'hestOptAdd_Nv_{HType[TY]}(&hopt, '
+                f'hestOptAdd_Mv_{HType[TY]}(&hopt, '
                 f'{TY}flag ? "{TY}" : NULL, "{hnm}", '
                 f'{TY}vmin, {TY}vmax, &{TY}, '
                 f'{TY}default, "some number of {hnm}", &{TY}Num{HExtraArg(TY)})'
@@ -221,16 +221,15 @@ def print_val(TY, KI, VN):
             # number of values known at code generation time
             code += f'printf("["); '
             for vi in range(VN):
-                if vi:
-                    code += 'printf("|"); '
                 code += print_scalar(TY, vi)
+                code += 'printf(";"); '
             code += f'printf("]"); '
         case 5:
             # number of values known only at run time
             code += f'printf("["); '
             code += f'for (unsigned int vi=0; vi<{TY}Num; vi++) {{'  # escaping {
-            code += f'  if (vi) printf("|");'
             code += print_scalar(TY, 'vi')
+            code += f'   printf(";");'
             code += '}'
             code += f'printf("]"); '
     code += 'printf("\\n"); '

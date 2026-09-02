@@ -200,7 +200,6 @@ main(int argc, const char **argv) {
                                             COdefault, "exactly 1 odyn", &comboCB);
 
   int pret = hestParse(hopt, argc - 1, argv + 1, NULL, hparm);
-  // fprintf(stderr, "!%s: hestParse returned pret=%d\n", argv[0], pret);
   if (pret) {
     // have already fprintf'd to stderr
     hestParmFree(hparm);

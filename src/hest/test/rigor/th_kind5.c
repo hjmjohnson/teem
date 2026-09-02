@@ -131,7 +131,7 @@ main(int argc, const char **argv) {
   th_getenvUInt(&BBvmin, "TH_BB_VMIN");
   int BBvmax = 3;
   th_getenvInt(&BBvmax, "TH_BB_VMAX");
-  unsigned int BBopidx = hestOptAdd_Nv_Bool(&hopt, BBflag ? "BB" : NULL, "bool", BBvmin,
+  unsigned int BBopidx = hestOptAdd_Mv_Bool(&hopt, BBflag ? "BB" : NULL, "bool", BBvmin,
                                             BBvmax, &BB, BBdefault,
                                             "some number of bool", &BBNum);
   short *SH;
@@ -142,7 +142,7 @@ main(int argc, const char **argv) {
   th_getenvUInt(&SHvmin, "TH_SH_VMIN");
   int SHvmax = 3;
   th_getenvInt(&SHvmax, "TH_SH_VMAX");
-  unsigned int SHopidx = hestOptAdd_Nv_Short(&hopt, SHflag ? "SH" : NULL, "short",
+  unsigned int SHopidx = hestOptAdd_Mv_Short(&hopt, SHflag ? "SH" : NULL, "short",
                                              SHvmin, SHvmax, &SH, SHdefault,
                                              "some number of short", &SHNum);
   unsigned short *UH;
@@ -153,7 +153,7 @@ main(int argc, const char **argv) {
   th_getenvUInt(&UHvmin, "TH_UH_VMIN");
   int UHvmax = 3;
   th_getenvInt(&UHvmax, "TH_UH_VMAX");
-  unsigned int UHopidx = hestOptAdd_Nv_UShort(&hopt, UHflag ? "UH" : NULL, "ushort",
+  unsigned int UHopidx = hestOptAdd_Mv_UShort(&hopt, UHflag ? "UH" : NULL, "ushort",
                                               UHvmin, UHvmax, &UH, UHdefault,
                                               "some number of ushort", &UHNum);
   int *SI;
@@ -164,7 +164,7 @@ main(int argc, const char **argv) {
   th_getenvUInt(&SIvmin, "TH_SI_VMIN");
   int SIvmax = 3;
   th_getenvInt(&SIvmax, "TH_SI_VMAX");
-  unsigned int SIopidx = hestOptAdd_Nv_Int(&hopt, SIflag ? "SI" : NULL, "int", SIvmin,
+  unsigned int SIopidx = hestOptAdd_Mv_Int(&hopt, SIflag ? "SI" : NULL, "int", SIvmin,
                                            SIvmax, &SI, SIdefault, "some number of int",
                                            &SINum);
   unsigned int *UI;
@@ -175,7 +175,7 @@ main(int argc, const char **argv) {
   th_getenvUInt(&UIvmin, "TH_UI_VMIN");
   int UIvmax = 3;
   th_getenvInt(&UIvmax, "TH_UI_VMAX");
-  unsigned int UIopidx = hestOptAdd_Nv_UInt(&hopt, UIflag ? "UI" : NULL, "uint", UIvmin,
+  unsigned int UIopidx = hestOptAdd_Mv_UInt(&hopt, UIflag ? "UI" : NULL, "uint", UIvmin,
                                             UIvmax, &UI, UIdefault,
                                             "some number of uint", &UINum);
   long *SL;
@@ -186,7 +186,7 @@ main(int argc, const char **argv) {
   th_getenvUInt(&SLvmin, "TH_SL_VMIN");
   int SLvmax = 3;
   th_getenvInt(&SLvmax, "TH_SL_VMAX");
-  unsigned int SLopidx = hestOptAdd_Nv_Long(&hopt, SLflag ? "SL" : NULL, "long", SLvmin,
+  unsigned int SLopidx = hestOptAdd_Mv_Long(&hopt, SLflag ? "SL" : NULL, "long", SLvmin,
                                             SLvmax, &SL, SLdefault,
                                             "some number of long", &SLNum);
   unsigned long *UL;
@@ -197,7 +197,7 @@ main(int argc, const char **argv) {
   th_getenvUInt(&ULvmin, "TH_UL_VMIN");
   int ULvmax = 3;
   th_getenvInt(&ULvmax, "TH_UL_VMAX");
-  unsigned int ULopidx = hestOptAdd_Nv_ULong(&hopt, ULflag ? "UL" : NULL, "ulong",
+  unsigned int ULopidx = hestOptAdd_Mv_ULong(&hopt, ULflag ? "UL" : NULL, "ulong",
                                              ULvmin, ULvmax, &UL, ULdefault,
                                              "some number of ulong", &ULNum);
   size_t *SZ;
@@ -208,7 +208,7 @@ main(int argc, const char **argv) {
   th_getenvUInt(&SZvmin, "TH_SZ_VMIN");
   int SZvmax = 3;
   th_getenvInt(&SZvmax, "TH_SZ_VMAX");
-  unsigned int SZopidx = hestOptAdd_Nv_Size_t(&hopt, SZflag ? "SZ" : NULL, "size_t",
+  unsigned int SZopidx = hestOptAdd_Mv_Size_t(&hopt, SZflag ? "SZ" : NULL, "size_t",
                                               SZvmin, SZvmax, &SZ, SZdefault,
                                               "some number of size_t", &SZNum);
   float *FL;
@@ -219,7 +219,7 @@ main(int argc, const char **argv) {
   th_getenvUInt(&FLvmin, "TH_FL_VMIN");
   int FLvmax = 3;
   th_getenvInt(&FLvmax, "TH_FL_VMAX");
-  unsigned int FLopidx = hestOptAdd_Nv_Float(&hopt, FLflag ? "FL" : NULL, "float",
+  unsigned int FLopidx = hestOptAdd_Mv_Float(&hopt, FLflag ? "FL" : NULL, "float",
                                              FLvmin, FLvmax, &FL, FLdefault,
                                              "some number of float", &FLNum);
   double *DB;
@@ -230,7 +230,7 @@ main(int argc, const char **argv) {
   th_getenvUInt(&DBvmin, "TH_DB_VMIN");
   int DBvmax = 3;
   th_getenvInt(&DBvmax, "TH_DB_VMAX");
-  unsigned int DBopidx = hestOptAdd_Nv_Double(&hopt, DBflag ? "DB" : NULL, "double",
+  unsigned int DBopidx = hestOptAdd_Mv_Double(&hopt, DBflag ? "DB" : NULL, "double",
                                               DBvmin, DBvmax, &DB, DBdefault,
                                               "some number of double", &DBNum);
   char *CH;
@@ -241,7 +241,7 @@ main(int argc, const char **argv) {
   th_getenvUInt(&CHvmin, "TH_CH_VMIN");
   int CHvmax = 3;
   th_getenvInt(&CHvmax, "TH_CH_VMAX");
-  unsigned int CHopidx = hestOptAdd_Nv_Char(&hopt, CHflag ? "CH" : NULL, "char", CHvmin,
+  unsigned int CHopidx = hestOptAdd_Mv_Char(&hopt, CHflag ? "CH" : NULL, "char", CHvmin,
                                             CHvmax, &CH, CHdefault,
                                             "some number of char", &CHNum);
   char **SS;
@@ -252,7 +252,7 @@ main(int argc, const char **argv) {
   th_getenvUInt(&SSvmin, "TH_SS_VMIN");
   int SSvmax = 3;
   th_getenvInt(&SSvmax, "TH_SS_VMAX");
-  unsigned int SSopidx = hestOptAdd_Nv_String(&hopt, SSflag ? "SS" : NULL, "string",
+  unsigned int SSopidx = hestOptAdd_Mv_String(&hopt, SSflag ? "SS" : NULL, "string",
                                               SSvmin, SSvmax, &SS, SSdefault,
                                               "some number of string", &SSNum);
   int *EE;
@@ -263,7 +263,7 @@ main(int argc, const char **argv) {
   th_getenvUInt(&EEvmin, "TH_EE_VMIN");
   int EEvmax = 3;
   th_getenvInt(&EEvmax, "TH_EE_VMAX");
-  unsigned int EEopidx = hestOptAdd_Nv_Enum(&hopt, EEflag ? "EE" : NULL, "enum", EEvmin,
+  unsigned int EEopidx = hestOptAdd_Mv_Enum(&hopt, EEflag ? "EE" : NULL, "enum", EEvmin,
                                             EEvmax, &EE, EEdefault,
                                             "some number of enum", &EENum, airEndian);
   double *XY;
@@ -274,7 +274,7 @@ main(int argc, const char **argv) {
   th_getenvUInt(&XYvmin, "TH_XY_VMIN");
   int XYvmax = 3;
   th_getenvInt(&XYvmax, "TH_XY_VMAX");
-  unsigned int XYopidx = hestOptAdd_Nv_Other(&hopt, XYflag ? "XY" : NULL, "ostat",
+  unsigned int XYopidx = hestOptAdd_Mv_Other(&hopt, XYflag ? "XY" : NULL, "ostat",
                                              XYvmin, XYvmax, &XY, XYdefault,
                                              "some number of ostat", &XYNum, &posCB);
   Combo **CO;
@@ -285,12 +285,11 @@ main(int argc, const char **argv) {
   th_getenvUInt(&COvmin, "TH_CO_VMIN");
   int COvmax = 3;
   th_getenvInt(&COvmax, "TH_CO_VMAX");
-  unsigned int COopidx = hestOptAdd_Nv_Other(&hopt, COflag ? "CO" : NULL, "odyn", COvmin,
+  unsigned int COopidx = hestOptAdd_Mv_Other(&hopt, COflag ? "CO" : NULL, "odyn", COvmin,
                                              COvmax, &CO, COdefault,
                                              "some number of odyn", &CONum, &comboCB);
 
   int pret = hestParse(hopt, argc - 1, argv + 1, NULL, hparm);
-  // fprintf(stderr, "!%s: hestParse returned pret=%d\n", argv[0], pret);
   if (pret) {
     // have already fprintf'd to stderr
     hestParmFree(hparm);
@@ -312,8 +311,8 @@ main(int argc, const char **argv) {
   printf("BB=");
   printf("[");
   for (unsigned int vi = 0; vi < BBNum; vi++) {
-    if (vi) printf("|");
     printf("%s", airEnumStr(airBool, BB[vi]));
+    printf(";");
   }
   printf("]");
   printf("\n");
@@ -321,8 +320,8 @@ main(int argc, const char **argv) {
   printf("SH=");
   printf("[");
   for (unsigned int vi = 0; vi < SHNum; vi++) {
-    if (vi) printf("|");
     printf("%hd", SH[vi]);
+    printf(";");
   }
   printf("]");
   printf("\n");
@@ -330,8 +329,8 @@ main(int argc, const char **argv) {
   printf("UH=");
   printf("[");
   for (unsigned int vi = 0; vi < UHNum; vi++) {
-    if (vi) printf("|");
     printf("%hu", UH[vi]);
+    printf(";");
   }
   printf("]");
   printf("\n");
@@ -339,8 +338,8 @@ main(int argc, const char **argv) {
   printf("SI=");
   printf("[");
   for (unsigned int vi = 0; vi < SINum; vi++) {
-    if (vi) printf("|");
     printf("%d", SI[vi]);
+    printf(";");
   }
   printf("]");
   printf("\n");
@@ -348,8 +347,8 @@ main(int argc, const char **argv) {
   printf("UI=");
   printf("[");
   for (unsigned int vi = 0; vi < UINum; vi++) {
-    if (vi) printf("|");
     printf("%u", UI[vi]);
+    printf(";");
   }
   printf("]");
   printf("\n");
@@ -357,8 +356,8 @@ main(int argc, const char **argv) {
   printf("SL=");
   printf("[");
   for (unsigned int vi = 0; vi < SLNum; vi++) {
-    if (vi) printf("|");
     printf("%ld", SL[vi]);
+    printf(";");
   }
   printf("]");
   printf("\n");
@@ -366,8 +365,8 @@ main(int argc, const char **argv) {
   printf("UL=");
   printf("[");
   for (unsigned int vi = 0; vi < ULNum; vi++) {
-    if (vi) printf("|");
     printf("%lu", UL[vi]);
+    printf(";");
   }
   printf("]");
   printf("\n");
@@ -375,8 +374,8 @@ main(int argc, const char **argv) {
   printf("SZ=");
   printf("[");
   for (unsigned int vi = 0; vi < SZNum; vi++) {
-    if (vi) printf("|");
     printf("%zu", SZ[vi]);
+    printf(";");
   }
   printf("]");
   printf("\n");
@@ -384,8 +383,8 @@ main(int argc, const char **argv) {
   printf("FL=");
   printf("[");
   for (unsigned int vi = 0; vi < FLNum; vi++) {
-    if (vi) printf("|");
     airSinglePrintf(stdout, NULL, 0, "%g", FL[vi]);
+    printf(";");
   }
   printf("]");
   printf("\n");
@@ -393,8 +392,8 @@ main(int argc, const char **argv) {
   printf("DB=");
   printf("[");
   for (unsigned int vi = 0; vi < DBNum; vi++) {
-    if (vi) printf("|");
     airSinglePrintf(stdout, NULL, 0, "%lg", DB[vi]);
+    printf(";");
   }
   printf("]");
   printf("\n");
@@ -402,8 +401,8 @@ main(int argc, const char **argv) {
   printf("CH=");
   printf("[");
   for (unsigned int vi = 0; vi < CHNum; vi++) {
-    if (vi) printf("|");
     printf("%c", CH[vi]);
+    printf(";");
   }
   printf("]");
   printf("\n");
@@ -411,8 +410,8 @@ main(int argc, const char **argv) {
   printf("SS=");
   printf("[");
   for (unsigned int vi = 0; vi < SSNum; vi++) {
-    if (vi) printf("|");
     printf("%s", SS[vi]);
+    printf(";");
   }
   printf("]");
   printf("\n");
@@ -420,8 +419,8 @@ main(int argc, const char **argv) {
   printf("EE=");
   printf("[");
   for (unsigned int vi = 0; vi < EENum; vi++) {
-    if (vi) printf("|");
     printf("%s", airEnumStr(airEndian, EE[vi]));
+    printf(";");
   }
   printf("]");
   printf("\n");
@@ -429,8 +428,8 @@ main(int argc, const char **argv) {
   printf("XY=");
   printf("[");
   for (unsigned int vi = 0; vi < XYNum; vi++) {
-    if (vi) printf("|");
     pos_print(stdout, XY + (2 * vi));
+    printf(";");
   }
   printf("]");
   printf("\n");
@@ -438,8 +437,8 @@ main(int argc, const char **argv) {
   printf("CO=");
   printf("[");
   for (unsigned int vi = 0; vi < CONum; vi++) {
-    if (vi) printf("|");
     combo_print(stdout, CO[vi]);
+    printf(";");
   }
   printf("]");
   printf("\n");
