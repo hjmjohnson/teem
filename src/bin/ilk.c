@@ -68,7 +68,7 @@ main(int argc, const char *argv[]) {
                      "\b\bo \"p:<float>,<float>\" locate origin at a particular "
                      "pixel location, in the index space of the image",
                      mossHestOrigin);
-  hestOptAdd_Nv_Other(&hopt, "t", "xform0", 1, -1, &matList, NULL,
+  hestOptAdd_Mv_Other(&hopt, "t", "xform0", 1, -1, &matList, NULL,
                       "transform(s) to apply to image.  Transforms "
                       "are applied in the order in which they appear.\n "
                       "\b\bo \"identity\": no geometric transform, just resampling\n "
@@ -98,7 +98,7 @@ main(int argc, const char *argv[]) {
                     "\b\bo \"pad\": use a given background value (via \"-bg\")",
                     nrrdBoundary);
   bkgIdx
-    = hestOptAdd_Nv_Double(&hopt, "bg", "bg0 bg1", 1, -1, &_bkg, "nan",
+    = hestOptAdd_Mv_Double(&hopt, "bg", "bg0 bg1", 1, -1, &_bkg, "nan",
                            "background color to use with boundary behavior \"pad\". "
                            "Defaults to all zeroes.",
                            &_bkgLen);

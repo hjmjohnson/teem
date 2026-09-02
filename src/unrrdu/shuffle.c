@@ -37,7 +37,7 @@ static int
 unu_shuffleMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
   uint *perm, permLen;
-  hestOptAdd_Nv_UInt(&hopt, "p,permute", "slc0 slc1", 1, -1, &perm, NULL,
+  hestOptAdd_Mv_UInt(&hopt, "p,permute", "slc0 slc1", 1, -1, &perm, NULL,
                      "new slice ordering", &permLen);
   int inverse;
   hestOptAdd_Flag(&hopt, "inv,inverse", &inverse, "use inverse of given permutation");

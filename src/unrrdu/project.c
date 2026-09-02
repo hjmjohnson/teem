@@ -39,11 +39,11 @@ static int
 unu_projectMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   uint *axis, axisLen;
-  hestOptAdd_Nv_UInt(&hopt, "a,axis", "axis", 1, -1, &axis, NULL,
+  hestOptAdd_Mv_UInt(&hopt, "a,axis", "axis", 1, -1, &axis, NULL,
                      "axis or axes to project along", &axisLen);
   int *measr;
   uint measrLen;
-  hestOptAdd_Nv_Enum(&hopt, "m,measure", "measr", 1, -1, &measr, NULL,
+  hestOptAdd_Mv_Enum(&hopt, "m,measure", "measr", 1, -1, &measr, NULL,
                      "How to \"measure\" a scanline, by summarizing all its values "
                      "with a single scalar. Multiple measures will be joined along "
                      "fastest axis if output, but you may need to set output type "
@@ -59,7 +59,7 @@ unu_projectMain(int argc, const char **argv, const char *me, const hestParm *hpa
   AIR_UNUSED(inHidx); // TODO handle history; hard because of multiple outs
   char **out;
   uint outLen;
-  hestOptAdd_Nv_String(&hopt, "o,output", "nout", 1, -1, &out, "-",
+  hestOptAdd_Mv_String(&hopt, "o,output", "nout", 1, -1, &out, "-",
                        "one or more output nrrd filenames. Number of names here "
                        "has to match number of axes specified.",
                        &outLen);

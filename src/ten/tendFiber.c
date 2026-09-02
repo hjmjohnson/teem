@@ -74,7 +74,7 @@ fiberMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
                   "(this feature is unstable and/or confusing)");
   hestOptAdd_1_Double(&hopt, "step", "step size", &step, "0.01",
                       "stepsize along fiber, in world space");
-  hestOptAdd_Nv_Other(&hopt, "stop", "stop1", 1, -1, &_stop, NULL,
+  hestOptAdd_Mv_Other(&hopt, "stop", "stop1", 1, -1, &_stop, NULL,
                       "the conditions that should signify the end of a fiber, or "
                       "when to discard a fiber that is done propagating. "
                       "Multiple stopping criteria are logically OR-ed and tested at "

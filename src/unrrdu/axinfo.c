@@ -30,7 +30,7 @@ static int
 unu_axinfoMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   uint *axes, axesLen;
-  hestOptAdd_Nv_UInt(&hopt, "a,axes", "ax0", 1, -1, &axes, NULL,
+  hestOptAdd_Mv_UInt(&hopt, "a,axes", "ax0", 1, -1, &axes, NULL,
                      "the one or more axes that should be modified", &axesLen);
   char *label;
   hestOptAdd_1_String(&hopt, "l,label", "label", &label, "",

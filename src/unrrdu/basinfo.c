@@ -50,7 +50,7 @@ unu_basinfoMain(int argc, const char **argv, const char *me, const hestParm *hpa
   /* HEY: copy and paste from unrrdu/make.c */
   char **kvp;
   uint kvpLen;
-  hestOptAdd_Nv_String(&hopt, "kv,keyvalue", "key/val", 0, -1, &kvp, "",
+  hestOptAdd_Mv_String(&hopt, "kv,keyvalue", "key/val", 0, -1, &kvp, "",
                        "key/value string pairs to be stored in nrrd.  Each key/value "
                        "pair must be a single string (put it in \"\"s "
                        "if the key or the value contain spaces).  The format of each "
@@ -59,7 +59,7 @@ unu_basinfoMain(int argc, const char **argv, const char *me, const hestParm *hpa
                        &kvpLen);
   char **dkey;
   uint dkeyLen;
-  hestOptAdd_Nv_String(&hopt, "dk,delkey", "key", 0, -1, &dkey, "",
+  hestOptAdd_Mv_String(&hopt, "dk,delkey", "key", 0, -1, &dkey, "",
                        "keys to be deleted (erased) from key/value pairs", &dkeyLen);
   int nixkvp;
   hestOptAdd_Flag(&hopt, "xkv,nixkeyvalue", &nixkvp, "nix (clear) all key/value pairs");

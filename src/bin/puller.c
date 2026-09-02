@@ -127,10 +127,10 @@ main(int argc, const char **argv) {
   hestOptAdd_1_Double(&hopt, "gssr", "rad", &glyphScaleRad, "0.0",
                       "if non-zero (length), scaling of scale to cylindrical tensors");
   hestOptAdd_1_Int(&hopt, "v", "verbosity", &verbose, "1", "verbosity level");
-  hestOptAdd_Nv_Other(&hopt, "vol", "vol0 vol1", 1, -1, &vspec, NULL,
+  hestOptAdd_Mv_Other(&hopt, "vol", "vol0 vol1", 1, -1, &vspec, NULL,
                       "input volumes, in format <filename>:<kind>:<volname>", &vspecNum,
                       meetHestPullVol);
-  hestOptAdd_Nv_Other(&hopt, "info", "info0 info1", 1, -1, &idef, NULL,
+  hestOptAdd_Mv_Other(&hopt, "info", "info0 info1", 1, -1, &idef, NULL,
                       "info definitions, in format "
                       "<info>[-c]:<volname>:<item>[:<zero>:<scale>]",
                       &idefNum, meetHestPullInfo);

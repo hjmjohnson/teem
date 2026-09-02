@@ -73,7 +73,7 @@ unu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hparm
                   "using stdin as the data source.");
   char **dataFileNames;
   uint nameLen;
-  hestOptAdd_Nv_String(&hopt, "i,input", "file", 1, -1, &dataFileNames, "-",
+  hestOptAdd_Mv_String(&hopt, "i,input", "file", 1, -1, &dataFileNames, "-",
                        "Filename(s) of data file(s); use \"-\" for stdin. *OR*, can "
                        "use sprintf-style format for identifying a range of numbered "
                        "files, see above for details.",
@@ -85,7 +85,7 @@ unu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hparm
                     nrrdType);
   size_t *size;
   uint sizeLen;
-  hestOptAdd_Nv_Size_t(&hopt, "s,size", "sz0 sz1", 1, -1, &size, NULL,
+  hestOptAdd_Mv_Size_t(&hopt, "s,size", "sz0 sz1", 1, -1, &size, NULL,
                        "number of samples along each axis (and implicit indicator "
                        "of dimension of nrrd)",
                        &sizeLen);
@@ -96,7 +96,7 @@ unu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hparm
                     "default (not using this option), this dimension is assumed "
                     "to be one less than the whole data dimension. ");
   double *spacing;
-  uint spacingLen, spacingIdx = hestOptAdd_Nv_Double(
+  uint spacingLen, spacingIdx = hestOptAdd_Mv_Double(
                      &hopt, "sp,spacing", "sp0 sp1", 1, -1, &spacing, "nan",
                      "spacing between samples on each axis.  Use \"nan\" for "
                      "any non-spatial axes (e.g. spacing between red, green, and blue "
@@ -105,21 +105,21 @@ unu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hparm
   /* NB: these are like unu jhisto's -min -max, not like unu crop's */
   double *axmin, *axmax, *thickness;
   uint minLen, maxLen, thicknessLen;
-  uint minIdx = hestOptAdd_Nv_Double(
+  uint minIdx = hestOptAdd_Mv_Double(
     &hopt, "min,axismin", "min0 min1", 1, -1, &axmin, "nan",
     "When each axis has a distinct meaning (as in a joint "
     "histogram), the per-axis min is the smallest \"position\" "
     "associated with the first sample on the axis. Use \"nan\" for "
     "\"no value to set\" when other axes do have axis min",
     &minLen);
-  uint maxIdx = hestOptAdd_Nv_Double(
+  uint maxIdx = hestOptAdd_Mv_Double(
     &hopt, "max,axismax", "max0 max1", 1, -1, &axmax, "nan",
     "Goes with -min: the per-axis maximum \"position\". "
     "-max and -min should probably be used together, and having "
     "this information logically supersedes the -sp spacing on those "
     "axes.",
     &maxLen);
-  uint thicknessIdx = hestOptAdd_Nv_Double(
+  uint thicknessIdx = hestOptAdd_Mv_Double(
     &hopt, "th,thickness", "th0 th1", 1, -1, &thickness, "nan",
     "thickness of region represented by one sample along each axis. "
     "  As with -sp spacing, use \"nan\" for "
@@ -127,24 +127,24 @@ unu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hparm
     &thicknessLen);
   char **kinds;
   uint kindsLen;
-  hestOptAdd_Nv_String(&hopt, "k,kind", "k0 k1", 1, -1, &kinds, "",
+  hestOptAdd_Mv_String(&hopt, "k,kind", "k0 k1", 1, -1, &kinds, "",
                        "what \"kind\" is each axis, from the nrrdKind airEnum "
                        "(e.g. space, time, 3-vector, 3D-masked-symmetric-matrix, "
                        "or \"none\" to signify no kind)",
                        &kindsLen);
   char **centerings;
   uint centeringsLen;
-  hestOptAdd_Nv_String(&hopt, "cn,centering", "c0 c1", 1, -1, &centerings, "",
+  hestOptAdd_Mv_String(&hopt, "cn,centering", "c0 c1", 1, -1, &centerings, "",
                        "kind of centering (node or cell) for each axis, or "
                        "\"none\" to signify no centering",
                        &centeringsLen);
   char **label;
   uint labelLen;
-  hestOptAdd_Nv_String(&hopt, "l,label", "lb0 lb1", 1, -1, &label, "",
+  hestOptAdd_Mv_String(&hopt, "l,label", "lb0 lb1", 1, -1, &label, "",
                        "short string labels for each of the axes", &labelLen);
   char **units;
   uint unitsLen;
-  hestOptAdd_Nv_String(&hopt, "u,unit", "un0 un1", 1, -1, &units, "",
+  hestOptAdd_Mv_String(&hopt, "u,unit", "un0 un1", 1, -1, &units, "",
                        "short strings giving units for each of the axes", &unitsLen);
   char *content;
   hestOptAdd_1_String(&hopt, "c,content", "content", &content, "",
@@ -188,7 +188,7 @@ unu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hparm
                     airEndian);
   char **kvp;
   uint kvpLen;
-  hestOptAdd_Nv_String(&hopt, "kv,keyvalue", "key/val", 1, -1, &kvp, "",
+  hestOptAdd_Mv_String(&hopt, "kv,keyvalue", "key/val", 1, -1, &kvp, "",
                        "key/value string pairs to be stored in nrrd.  Each key/value "
                        "pair must be a single string (put it in \"\"s "
                        "if the key or the value contain spaces).  The format of each "
@@ -232,7 +232,7 @@ unu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hparm
                       "world space.");
   char **spunits;
   uint spunitsLen;
-  hestOptAdd_Nv_String(&hopt, "spu,spaceunit", "su0 su1", 1, -1, &spunits, "",
+  hestOptAdd_Mv_String(&hopt, "spu,spaceunit", "su0 su1", 1, -1, &spunits, "",
                        "short strings giving units with which the coefficients of the "
                        "space origin and direction vectors are measured.",
                        &spunitsLen);

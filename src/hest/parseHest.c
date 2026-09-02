@@ -33,21 +33,21 @@
  * ignore-able quirk: returns given pointer, to facilitate use with the airMop functions
  */
 hestOpt *
-hestParseFree(hestOpt *opt) {
-  if (opt) {
-    uint optNum = opt->arrLen;
+hestParseFree(hestOpt *hopt) {
+  if (hopt) {
+    uint optNum = hopt->arrLen;
     for (uint opi = 0; opi < optNum; opi++) {
-      airArrayLenSet(opt[opi].havec->hargArr,
+      airArrayLenSet(hopt[opi].havec->hargArr,
                      0); // but not hestArgVecNix(opt[opi].havec);
-      opt[opi].parmStr = airFree(opt[opi].parmStr);
+      hopt[opi].parmStr = airFree(hopt[opi].parmStr);
       /* this gloriously replaces what used to be a lot of dense logic around
          opt[opi].alloc, opt[opi].type, and opt[opi].CB->destroy */
-      if (opt[opi].parseMop) {
-        opt[opi].parseMop = airMopOkay(opt[opi].parseMop);
+      if (hopt[opi].parseMop) {
+        hopt[opi].parseMop = airMopOkay(hopt[opi].parseMop);
       }
     }
   }
-  return opt;
+  return hopt;
 }
 AIR_MOPPER(hestParseFree)
 

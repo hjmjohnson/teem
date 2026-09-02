@@ -37,7 +37,7 @@ avgMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   Nrrd **nin, *nout;
   char *outS;
 
-  hestOptAdd_Nv_Other(&hopt, "i", "nin1 nin2", 2, -1, &nin, NULL,
+  hestOptAdd_Mv_Other(&hopt, "i", "nin1 nin2", 2, -1, &nin, NULL,
                       "list of input diffusion tensor volumes", &ninLen, nrrdHestNrrd);
   hestOptAdd_1_Enum(&hopt, "t", "type", &itype, "linear", "averaging method",
                     tenInterpType);

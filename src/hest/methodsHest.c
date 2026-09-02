@@ -312,6 +312,8 @@ hestParmNew(void) {
     = hestDefaultElideMultipleNonExistFloatDefault;
   hparm->elideSingleEmptyStringDefault = hestDefaultElideSingleEmptyStringDefault;
   hparm->elideMultipleEmptyStringDefault = hestDefaultElideMultipleEmptyStringDefault;
+  /* (for these more recent additions to the hestParm, abstaining from adding yet more
+      default global variables) */
   /* It would be really nice for parm->respectDashDashHelp to default to true:
   widespread conventions say what "--help" should mean e.g. https://clig.dev/#help
   HOWEVER, the problem is with how hestParse is called and how its return value
@@ -335,8 +337,17 @@ hestParmNew(void) {
   Users who do not want that convenience are signing up for more work, which includes
   deciding how to respond to --help (which is non-trivial as just explained) */
   hparm->respectDashDashHelp = AIR_FALSE;
-  /* for these most recent addition to the hestParm,
-     abstaining from adding yet another default global variable */
+  /* With all the hand-wringing about not respecting "--help" by default, you might
+  think that respecting "--" as "stop processing here" marker would also not be on
+  by default. But correctly handling "--help" is subtle, and handling "--" is simple,
+  and, the precedent for "--" is older than for "--help".  The 2026 rewrite/revisit
+  recognized that respecting "--" in a way that matches the world's expectations is
+  very over-due. */
+  hparm->respectDashDashMeansStop = AIR_TRUE;
+  /* The chances that an existing hest programmer or user will be confused by "-."
+  meaning "end of variadic parms" is low enough to enable it by default (and hopefully
+  there is no existing expectation this clashes with). */
+  hparm->respectDashPeriodMeansEnd = AIR_TRUE;
   hparm->respectDashBraceComments = AIR_TRUE;
   hparm->noArgsIsNoProblem = hestDefaultNoArgsIsNoProblem;
   hparm->cleverPluralizeOtherY = hestDefaultCleverPluralizeOtherY;
@@ -814,9 +825,10 @@ optFree(hestOpt *hopt) {
   hopt->name = (char *)airFree(hopt->name);
   hopt->dflt = (char *)airFree(hopt->dflt);
   hopt->info = (char *)airFree(hopt->info);
-  if (hopt->parseMop) {
-    hopt->parseMop = airMopOkay(hopt->parseMop);
-  }
+  /* In normal usage, this branch was never taken because hestParseFree had
+     already been called, which meant that hopt->parseMop was already handled,
+     and is now set to NULL */
+  // if (hopt->parseMop) hopt->parseMop = airMopOkay(hopt->parseMop);
   hopt->havec = hestArgVecNix(hopt->havec);
   return;
 }
@@ -866,41 +878,59 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
   }
   uint optNum = hopt->arrLen;
   uint ufvarNum = 0; // number of unflagged variadic-parameter options
+  /* dynamically allocated memory of previous short and long flags,
+     just so that we can ensure flags are not repeated */
+  airArray *mop = airMopNew();
+  char **shfl = AIR_CALLOC(optNum, char *);
+  assert(shfl);
+  airMopAdd(mop, shfl, airFree, airMopAlways);
+  char **lgfl = AIR_CALLOC(optNum, char *);
+  assert(lgfl);
+  airMopAdd(mop, lgfl, airFree, airMopAlways);
   for (uint opi = 0; opi < optNum; opi++) {
+    // always initialize flag pointers, will fill later if there is a flag
+    lgfl[opi] = shfl[opi] = NULL;
     if (!(AIR_IN_OP(airTypeUnknown, hopt[opi].type, airTypeLast))) {
       biffAddf(HEST, "%s%sopt[%u].type (%d) not in valid range [%d,%d]", MY_ME, opi,
                hopt[opi].type, airTypeUnknown + 1, airTypeLast - 1);
+      airMopError(mop);
       return 1;
     }
     // `kind` set by hestOptSingleSet
     if (-1 == hopt[opi].kind) {
       biffAddf(HEST, "%s%sopt[%u]'s min (%u) and max (%d) incompatible", MY_ME, opi,
                hopt[opi].min, hopt[opi].max);
+      airMopError(mop);
       return 1;
     }
     if (!(hopt[opi].valueP)) {
       biffAddf(HEST, "%s%sopt[%u]'s valueP is NULL!", MY_ME, opi);
+      airMopError(mop);
       return 1;
     }
     if (1 == hopt[opi].kind) {
       if (!hopt[opi].flag) {
         biffAddf(HEST, "%s%sstand-alone flag opt[%u] must have a flag (!)", MY_ME, opi);
+        airMopError(mop);
         return 1;
       }
       if (hopt[opi].dflt) {
         biffAddf(HEST, "%s%sstand-alone flag (opt[%u] %s) should not have a default",
                  MY_ME, opi, hopt[opi].flag);
+        airMopError(mop);
         return 1;
       }
       if (hopt[opi].name) {
         biffAddf(HEST, "%s%sstand-alone flag (opt[%u] %s) should not have a name", MY_ME,
                  opi, hopt[opi].flag);
+        airMopError(mop);
         return 1;
       }
     } else { // ------ end of if (1 == hopt[opi].kind)
       if (!hopt[opi].name) {
         biffAddf(HEST, "%s%sopt[%u] isn't stand-alone flag: must have \"name\"", MY_ME,
                  opi);
+        airMopError(mop);
         return 1;
       }
     }
@@ -910,50 +940,58 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
       /* This strlen constraint is leveraged by usage.c/hsetBuff() */
       if (fslen >= AIR_STRLEN_SMALL / 2) {
         biffAddf(HEST, "%s%sstrlen(opt[%u].flag) %zu is too big", MY_ME, opi, fslen);
+        airMopError(mop);
         return 1;
       }
       if ('-' == flag[0]) {
         biffAddf(HEST, "%s%sopt[%u].flag \"%s\" starts with '-', which is confusing",
                  MY_ME, opi, flag);
+        airMopError(mop);
         return 1;
       }
       for (uint chi = 0; chi < AIR_UINT(fslen); chi++) {
         if (!isprint(flag[chi])) {
           biffAddf(HEST, "%s%sopt[%u].flag \"%s\" char %u '%c' non-printing", MY_ME, opi,
                    flag, chi, flag[chi]);
+          airMopError(mop);
           return 1;
         }
         if (strchr(AIR_WHITESPACE, flag[chi])) {
           biffAddf(HEST, "%s%sopt[%u].flag \"%s\" char %u '%c' is whitespace", MY_ME,
                    opi, flag, chi, flag[chi]);
+          airMopError(mop);
           return 1;
         }
       }
       char *tbuff = airStrdup(flag);
       assert(tbuff);
-      // no mop, have to call free(tbuff) !
+      airMopAdd(mop, tbuff, airFree, airMopAlways);
       char *sep;
       if ((sep = strchr(tbuff, MY_MULTI_FLAG_SEP))) {
         *sep = '\0';
+        // have both short `tbuff` and long `sep + 1` flags
         if (!(strlen(tbuff) && strlen(sep + 1))) {
           biffAddf(HEST,
                    "%s%seither short (\"%s\") or long (\"%s\") flag"
                    " of opt[%u] is zero length",
                    MY_ME, tbuff, sep + 1, opi);
-          return (free(tbuff), 1);
+          airMopError(mop);
+          return 1;
         }
         if (strchr(sep + 1, MY_MULTI_FLAG_SEP)) {
           biffAddf(HEST,
                    "%s%sopt[%u] flag string \"%s\" has more than one instance of "
                    "short/long separation character '%c'",
                    MY_ME, opi, flag, MY_MULTI_FLAG_SEP);
-          return (free(tbuff), 1);
+          airMopError(mop);
+          return 1;
         }
         if ('-' == (sep + 1)[0]) {
           biffAddf(HEST,
                    "%s%slong flag \"%s\" (part of \"%s\") of opt[%u] starts with '-', "
                    "which is confusing",
                    MY_ME, sep + 1, flag, opi);
+          airMopError(mop);
           return 1;
         }
         if (hparm && hparm->respectDashDashHelp && !strcmp("help", sep + 1)) {
@@ -961,13 +999,27 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
                    "%s%slong \"--%s\" flag of opt[%u] is same as \"--help\" "
                    "that requested hparm->respectDashDashHelp handles separately",
                    MY_ME, sep + 1, opi);
-          return (free(tbuff), 1);
+          airMopError(mop);
+          return 1;
         }
+        // remember short flag
+        shfl[opi] = airStrdup(tbuff);
+        assert(shfl[opi]);
+        airMopAdd(mop, shfl[opi], airFree, airMopAlways);
+        // remember long flag
+        lgfl[opi] = airStrdup(sep + 1);
+        assert(lgfl[opi]);
+        airMopAdd(mop, lgfl[opi], airFree, airMopAlways);
       } else {
         if (!strlen(hopt[opi].flag)) {
           biffAddf(HEST, "%s%sopt[%u].flag is zero length", MY_ME, opi);
-          return (free(tbuff), 1);
+          airMopError(mop);
+          return 1;
         }
+        // remember (short) flag
+        shfl[opi] = airStrdup(hopt[opi].flag);
+        assert(shfl[opi]);
+        airMopAdd(mop, shfl[opi], airFree, airMopAlways);
       }
       if (hparm && hparm->respectDashBraceComments
           && (strchr(flag, '{') || strchr(flag, '}'))) {
@@ -975,9 +1027,9 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
                  "%s%srequested hparm->respectDashBraceComments but opt[%u]'s flag "
                  "\"%s\" confusingly contains '{' or '}'",
                  MY_ME, opi, flag);
-        return (free(tbuff), 1);
+        airMopError(mop);
+        return 1;
       }
-      free(tbuff);
     } else { // ------ end of if (hopt[opi].flag)
       // hopt[opi] is unflagged
       // unflagged kind=1 is already checked above
@@ -985,6 +1037,7 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
         if (!hopt[opi].min) {
           biffAddf(HEST, "%s%s single variadic opt[%u] (name %s) must be flagged", MY_ME,
                    opi, hopt[opi].name ? hopt[opi].name : "not set");
+          airMopError(mop);
           return 1;
         }
       }
@@ -997,6 +1050,7 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
                  "%s%sopt[%u] -%s is single variadic parameter, but "
                  "no default set",
                  MY_ME, opi, hopt[opi].flag);
+        airMopError(mop);
         return 1;
       }
       if (!(strlen(hopt[opi].dflt) && hest__PlainWord(hopt[opi].dflt))) {
@@ -1004,6 +1058,7 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
                  "%s%sopt[%u] -%s is single variadic parameter, but "
                  "default \"%s\" needs to be non-empty single value",
                  MY_ME, opi, hopt[opi].flag, hopt[opi].dflt);
+        airMopError(mop);
         return 1;
       }
       /* pre 2025, at least some of these types were allowed for kind 4, but the
@@ -1015,6 +1070,7 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
                  "%s%sopt[%u] -%s is single variadic parameter, but sorry, "
                  "type %s no longer supported",
                  MY_ME, opi, hopt[opi].flag, hest__TypeStr[hopt[opi].type]);
+        airMopError(mop);
         return 1;
       }
     }
@@ -1023,6 +1079,7 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
                "%s%sopt[%u] has multiple variadic parameters (min=%u,max=%d), "
                "but sawP is NULL",
                MY_ME, opi, hopt[opi].min, hopt[opi].max);
+      airMopError(mop);
       return 1;
     }
     if (5 != hopt[opi].kind && hopt[opi].sawP) {
@@ -1030,6 +1087,7 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
                "%s%sopt[%u] has non-NULL sawP but is not a (kind=5) "
                "multiple variadic parm option (min=%u,max=%d)",
                MY_ME, opi, hopt[opi].min, hopt[opi].max);
+      airMopError(mop);
       return 1;
     }
     if (airTypeEnum == hopt[opi].type && !(hopt[opi].enm)) {
@@ -1037,12 +1095,14 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
                "%s%sopt[%u] (%s) is type \"enum\", but no "
                "airEnum pointer given",
                MY_ME, opi, hopt[opi].flag ? hopt[opi].flag : "unflagged");
+      airMopError(mop);
       return 1;
     }
     if (airTypeEnum != hopt[opi].type && hopt[opi].enm) {
       biffAddf(HEST,
                "%s%sopt[%u] (%s) has non-NULL airEnum pointer, but is not airTypeEnum",
                MY_ME, opi, hopt[opi].flag ? hopt[opi].flag : "unflagged");
+      airMopError(mop);
       return 1;
     }
     if (airTypeOther == hopt[opi].type) {
@@ -1051,19 +1111,23 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
                  "%s%sopt[%u] (%s) is type \"other\", but no "
                  "callbacks given",
                  MY_ME, opi, hopt[opi].flag ? hopt[opi].flag : "unflagged");
+        airMopError(mop);
         return 1;
       }
       if (!(hopt[opi].CB->size > 0)) {
         biffAddf(HEST, "%s%sopt[%u]'s \"size\" (%u) invalid", MY_ME, opi,
                  (uint)(hopt[opi].CB->size));
+        airMopError(mop);
         return 1;
       }
       if (!(hopt[opi].CB->type)) {
         biffAddf(HEST, "%s%sopt[%u]'s \"type\" is NULL", MY_ME, opi);
+        airMopError(mop);
         return 1;
       }
       if (!(hopt[opi].CB->parse)) {
         biffAddf(HEST, "%s%sopt[%u]'s \"parse\" callback NULL", MY_ME, opi);
+        airMopError(mop);
         return 1;
       }
       if (hopt[opi].CB->destroy && (sizeof(void *) != hopt[opi].CB->size)) {
@@ -1071,6 +1135,7 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
                  "%s%sopt[%u] has a \"destroy\", but size %lu isn't "
                  "sizeof(void*)",
                  MY_ME, opi, (unsigned long)(hopt[opi].CB->size));
+        airMopError(mop);
         return 1;
       }
     } else { // airTypeOther != hopt[opi].type
@@ -1078,17 +1143,56 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
         biffAddf(HEST,
                  "%s%sopt[%u] (%s) has non-NULL callbacks, but is not airTypeOther",
                  MY_ME, opi, hopt[opi].flag ? hopt[opi].flag : "unflagged");
+        airMopError(mop);
         return 1;
       }
     }
     // kind=4 : single variadic parm;  kind=5 : multiple variadic parm
     ufvarNum += (hopt[opi].kind > 3 && (!hopt[opi].flag));
+    // finally, check for repeated use of flags
+    for (uint opj = 0; opj < opi; opj++) {
+      if (shfl[opi]) {
+        if (shfl[opj] && !strcmp(shfl[opi], shfl[opj])) {
+          biffAddf(HEST, "%s%s opt[%u] flag \"-%s\" repeats that of previous opt[%u]",
+                   MY_ME, opi, shfl[opi], opj);
+          airMopError(mop);
+          return 1;
+        }
+        if (lgfl[opj] && !strcmp(shfl[opi], lgfl[opj])) {
+          biffAddf(HEST,
+                   "%s%s opt[%u] flag \"-%s\" repeats "
+                   "long flag \"--%s\" of previous opt[%u]",
+                   MY_ME, opi, shfl[opi], lgfl[opj], opj);
+          airMopError(mop);
+          return 1;
+        }
+      }
+      if (lgfl[opi]) {
+        if (lgfl[opj] && !strcmp(lgfl[opi], lgfl[opj])) {
+          biffAddf(HEST,
+                   "%s%s opt[%u] long flag \"--%s\" repeats that of previous opt[%u]",
+                   MY_ME, opi, lgfl[opi], opj);
+          airMopError(mop);
+          return 1;
+        }
+        if (shfl[opj] && !strcmp(lgfl[opi], shfl[opj])) {
+          biffAddf(HEST,
+                   "%s%s opt[%u] long flag \"--%s\" repeats "
+                   "short flag \"-%s\" of previous opt[%u]",
+                   MY_ME, opi, lgfl[opi], shfl[opj], opj);
+          airMopError(mop);
+          return 1;
+        }
+      }
+    }
   }
   if (ufvarNum > 1) {
     biffAddf(HEST, "%s%scan have at most 1 unflagged variadic options, not %u", MY_ME,
              ufvarNum);
+    airMopError(mop);
     return 1;
   }
+  airMopOkay(mop);
   return 0;
 }
 

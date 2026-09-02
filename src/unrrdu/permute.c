@@ -31,7 +31,7 @@ static int
 unu_permuteMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   uint *perm, permLen;
-  hestOptAdd_Nv_UInt(&hopt, "p,permute", "ax0 ax1", 1, -1, &perm, NULL,
+  hestOptAdd_Mv_UInt(&hopt, "p,permute", "ax0 ax1", 1, -1, &perm, NULL,
                      "new axis ordering", &permLen);
   Nrrd *nin;
   MY_OPT_ADD_NIN(nin, "input nrrd");

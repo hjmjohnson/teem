@@ -47,9 +47,9 @@ bfitMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
                      "Input nrrd.  List of DWIs from different b-values must "
                      "be along axis 0",
                      nrrdHestNrrd);
-  hestOptAdd_Nv_Double(&hopt, "b", "b1 b2", 2, -1, &bb, NULL,
+  hestOptAdd_Mv_Double(&hopt, "b", "b1 b2", 2, -1, &bb, NULL,
                        "b values across axis 0 of input nrrd", &bbLen);
-  hestOptAdd_Nv_Double(&hopt, "w", "w1 w2", 2, -1, &_ww, "nan nan",
+  hestOptAdd_Mv_Double(&hopt, "w", "w1 w2", 2, -1, &_ww, "nan nan",
                        "weights for samples in non-linear fitting", &_wwLen);
   hestOptAdd_1_Int(&hopt, "imax", "# iter", &iterMax, "10",
                    "max number of iterations to use in non-linear fitting, or, "

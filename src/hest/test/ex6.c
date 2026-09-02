@@ -345,56 +345,56 @@ main(int argc, const char **argv) {
 #define VMIN 1
   int *bv;
   unsigned int bvSaw;
-  hestOptAdd_Nv_Bool(&opt, "bv", "bool1", VMIN, -1, &bv, "true false",
-                     "test of hestOptAdd_Nv_Bool", &bvSaw);
+  hestOptAdd_Mv_Bool(&opt, "bv", "bool1", VMIN, -1, &bv, "true false",
+                     "test of hestOptAdd_Mv_Bool", &bvSaw);
   int *iv;
   unsigned int ivSaw;
-  hestOptAdd_Nv_Int(&opt, "iv", "int1", VMIN, -1, &iv, "42 24",
-                    "test of hestOptAdd_Nv_Int", &ivSaw);
+  hestOptAdd_Mv_Int(&opt, "iv", "int1", VMIN, -1, &iv, "42 24",
+                    "test of hestOptAdd_Mv_Int", &ivSaw);
   unsigned int *uiv;
   unsigned int uivSaw;
-  hestOptAdd_Nv_UInt(&opt, "uiv", "uint1", VMIN, -1, &uiv, "42 24",
-                     "test of hestOptAdd_Nv_UInt", &uivSaw);
+  hestOptAdd_Mv_UInt(&opt, "uiv", "uint1", VMIN, -1, &uiv, "42 24",
+                     "test of hestOptAdd_Mv_UInt", &uivSaw);
   long int *lv;
   unsigned int lvSaw;
-  hestOptAdd_Nv_Long(&opt, "lv", "long1", VMIN, -1, &lv, "42 24",
-                     "test of hestOptAdd_Nv_Long", &lvSaw);
+  hestOptAdd_Mv_Long(&opt, "lv", "long1", VMIN, -1, &lv, "42 24",
+                     "test of hestOptAdd_Mv_Long", &lvSaw);
   unsigned long int *ulv;
   unsigned int ulvSaw;
-  hestOptAdd_Nv_ULong(&opt, "ulv", "ulong1", VMIN, -1, &ulv, "42 24",
-                      "test of hestOptAdd_Nv_ULong", &ulvSaw);
+  hestOptAdd_Mv_ULong(&opt, "ulv", "ulong1", VMIN, -1, &ulv, "42 24",
+                      "test of hestOptAdd_Mv_ULong", &ulvSaw);
   size_t *szv;
   unsigned int szvSaw;
-  hestOptAdd_Nv_Size_t(&opt, "szv", "size1", VMIN, -1, &szv, "42 24",
-                       "test of hestOptAdd_Nv_Size_t", &szvSaw);
+  hestOptAdd_Mv_Size_t(&opt, "szv", "size1", VMIN, -1, &szv, "42 24",
+                       "test of hestOptAdd_Mv_Size_t", &szvSaw);
   float *flv;
   unsigned int flvSaw;
-  hestOptAdd_Nv_Float(&opt, "flv", "float1", VMIN, -1, &flv, "4.2 2.4",
-                      "test of hestOptAdd_Nv_Float", &flvSaw);
+  hestOptAdd_Mv_Float(&opt, "flv", "float1", VMIN, -1, &flv, "4.2 2.4",
+                      "test of hestOptAdd_Mv_Float", &flvSaw);
   double *dbv;
   unsigned int dbvSaw;
-  hestOptAdd_Nv_Double(&opt, "dbv", "double1", VMIN, -1, &dbv, "4.2 2.4",
-                       "test of hestOptAdd_Nv_Double", &dbvSaw);
+  hestOptAdd_Mv_Double(&opt, "dbv", "double1", VMIN, -1, &dbv, "4.2 2.4",
+                       "test of hestOptAdd_Mv_Double", &dbvSaw);
   char *cv;
   unsigned int cvSaw;
-  hestOptAdd_Nv_Char(&opt, "cv", "char1", VMIN, -1, &cv, "x y",
-                     "test of hestOptAdd_Nv_Char", &cvSaw);
+  hestOptAdd_Mv_Char(&opt, "cv", "char1", VMIN, -1, &cv, "x y",
+                     "test of hestOptAdd_Mv_Char", &cvSaw);
   char **sv;
   unsigned int svSaw;
-  hestOptAdd_Nv_String(&opt, "sv", "str1", VMIN, -1, &sv, "bingo bob",
-                       "test of hestOptAdd_Nv_String", &svSaw);
+  hestOptAdd_Mv_String(&opt, "sv", "str1", VMIN, -1, &sv, "bingo bob",
+                       "test of hestOptAdd_Mv_String", &svSaw);
   int *ev;
   unsigned int evSaw;
-  hestOptAdd_Nv_Enum(&opt, "ev", "enum1", VMIN, -1, &ev, "little big",
-                     "test of hestOptAdd_Nv_Enum", &evSaw, airEndian);
+  hestOptAdd_Mv_Enum(&opt, "ev", "enum1", VMIN, -1, &ev, "little big",
+                     "test of hestOptAdd_Mv_Enum", &evSaw, airEndian);
   double *pv;
   unsigned int pvSaw;
-  hestOptAdd_Nv_Other(&opt, "pv", "pos1", VMIN, -1, &pv, "1.5,5.25  2.9,9.2",
-                      "test of hestOptAdd_Nv_Other A", &pvSaw, &posCB);
+  hestOptAdd_Mv_Other(&opt, "pv", "pos1", VMIN, -1, &pv, "1.5,5.25  2.9,9.2",
+                      "test of hestOptAdd_Mv_Other A", &pvSaw, &posCB);
   Quat **qv;
   unsigned int qvSaw;
-  hestOptAdd_Nv_Other(&opt, "qv", "quat1", VMIN, -1, &qv, "12.34  43.21",
-                      "test of hestOptAdd_Nv_Other B", &qvSaw, &quatCB);
+  hestOptAdd_Mv_Other(&opt, "qv", "quat1", VMIN, -1, &qv, "12.34  43.21",
+                      "test of hestOptAdd_Mv_Other B", &qvSaw, &quatCB);
 
   int eret;
   if ((eret = hestParse(opt, argc - 1, argv + 1, NULL, hparm))) {

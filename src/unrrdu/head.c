@@ -85,7 +85,7 @@ unu_headMain(int argc, const char **argv, const char *me, const hestParm *_hparm
   hestOpt *hopt = NULL;
   char **inS;
   uint ninLen;
-  hestOptAdd_Nv_String(&hopt, NULL, "nin1", 1, -1, &inS, "-",
+  hestOptAdd_Mv_String(&hopt, NULL, "nin1", 1, -1, &inS, "-",
                        "input nrrd(s). By default tries to read from stdin", &ninLen);
 
   // (boilerplate for YES some hparm modification)

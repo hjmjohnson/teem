@@ -365,7 +365,7 @@ test_optcheck_valid(char err[AIR_STRLEN_HUGE + 1]) {
     hestOpt *hopt = NULL;
     int *vals = NULL;
     unsigned int saw = 0;
-    hestOptAdd_Nv_Int(&hopt, "x", "val", 1, -1, &vals, "0", "values", &saw);
+    hestOptAdd_Mv_Int(&hopt, "x", "val", 1, -1, &vals, "0", "values", &saw);
     CHECK_VALID("kind-5 flagged variadic ints");
   }
 
@@ -374,7 +374,7 @@ test_optcheck_valid(char err[AIR_STRLEN_HUGE + 1]) {
     hestOpt *hopt = NULL;
     char **fnames = NULL;
     unsigned int saw = 0;
-    hestOptAdd_Nv_String(&hopt, "i", "file", 1, -1, &fnames, NULL, "input files", &saw);
+    hestOptAdd_Mv_String(&hopt, "i", "file", 1, -1, &fnames, NULL, "input files", &saw);
     CHECK_VALID("kind-5 flagged variadic strings");
   }
 
@@ -384,7 +384,7 @@ test_optcheck_valid(char err[AIR_STRLEN_HUGE + 1]) {
     hestOpt *hopt = NULL;
     char **args = NULL;
     unsigned int saw = 0;
-    hestOptAdd_Nv_String(&hopt, NULL, "arg", 1, -1, &args, NULL, "positional args",
+    hestOptAdd_Mv_String(&hopt, NULL, "arg", 1, -1, &args, NULL, "positional args",
                          &saw);
     CHECK_VALID("kind-5 unflagged variadic strings");
   }
@@ -398,7 +398,7 @@ test_optcheck_valid(char err[AIR_STRLEN_HUGE + 1]) {
     unsigned int saw = 0;
     hestOptAdd_Flag(&hopt, "v", &v, "verbose");
     hestOptAdd_1_Float(&hopt, "x", "val", &f, "0", "a float");
-    hestOptAdd_Nv_Float(&hopt, "xs", "vals", 1, -1, &fs, "0", "floats", &saw);
+    hestOptAdd_Mv_Float(&hopt, "xs", "vals", 1, -1, &fs, "0", "floats", &saw);
     CHECK_VALID("mixed flag + fixed + variadic");
   }
 
@@ -494,13 +494,57 @@ test_optcheck_invalid(char err[AIR_STRLEN_HUGE + 1]) {
     if (expect_invalid(hopt, "kind-2 with no name", err)) return 1;
   }
 
+  /* not allowed to repeat a flag */
+  {
+    hestOpt *hopt = NULL;
+    int n = 0;
+    hestOptAdd_1_Int(&hopt, "n", "int", &n, "1", "count");
+    hestOptAdd_1_Int(&hopt, "n", "int2", &n, "2", "count2");
+    if (expect_invalid(hopt, "short flag repeated", err)) return 1;
+  }
+  {
+    hestOpt *hopt = NULL;
+    int n = 0;
+    hestOptAdd_1_Int(&hopt, "n,nn", "int", &n, "1", "count");
+    hestOptAdd_1_Int(&hopt, "m,nn", "int2", &n, "2", "count2");
+    if (expect_invalid(hopt, "long flag repeated", err)) return 1;
+  }
+  {
+    hestOpt *hopt = NULL;
+    int n = 0;
+    hestOptAdd_1_Int(&hopt, "n,foo", "int", &n, "1", "count");
+    hestOptAdd_1_Int(&hopt, "bar,n", "int2", &n, "2", "count2");
+    if (expect_invalid(hopt, "short/long flag repeated", err)) return 1;
+  }
+  {
+    hestOpt *hopt = NULL;
+    int n = 0;
+    hestOptAdd_1_Int(&hopt, "n,foo", "int", &n, "1", "count");
+    hestOptAdd_1_Int(&hopt, "foo,m", "int2", &n, "2", "count2");
+    if (expect_invalid(hopt, "long/short flag repeated", err)) return 1;
+  }
+
   /* Flag starting with '-': confusing and forbidden. */
   {
     hestOpt *hopt = NULL;
     int n = 0;
     hestOptAdd_nva(&hopt, "-n", "count", airTypeInt, 1, 1, &n, "0", "count", NULL, NULL,
                    NULL);
-    if (expect_invalid(hopt, "flag starting with '-'", err)) return 1;
+    if (expect_invalid(hopt, "short flag starting with '-'", err)) return 1;
+  }
+  {
+    hestOpt *hopt = NULL;
+    int n = 0;
+    hestOptAdd_nva(&hopt, "-", "count", airTypeInt, 1, 1, &n, "0", "count", NULL, NULL,
+                   NULL);
+    if (expect_invalid(hopt, "short flag is '-'", err)) return 1;
+  }
+  {
+    hestOpt *hopt = NULL;
+    int n = 0;
+    hestOptAdd_nva(&hopt, "n,-", "count", airTypeInt, 1, 1, &n, "0", "count", NULL, NULL,
+                   NULL);
+    if (expect_invalid(hopt, "long flag starting with '-'", err)) return 1;
   }
 
   /* Empty flag string. */

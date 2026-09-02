@@ -34,7 +34,7 @@ unu_mrmapMain(int argc, const char **argv, const char *me, const hestParm *hparm
   hestOpt *hopt = NULL;
   Nrrd **_nmmap;
   uint _nmmapLen;
-  hestOptAdd_Nv_Other(&hopt, "m,map", "mmap", 1, -1, &_nmmap, NULL,
+  hestOptAdd_Mv_Other(&hopt, "m,map", "mmap", 1, -1, &_nmmap, NULL,
                       "one nrrd of regular maps to map input nrrd through, or, "
                       "list of nrrds which contain the individual entries of the map "
                       "at each voxel, which will be joined together.",

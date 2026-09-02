@@ -46,7 +46,7 @@ unu_resampleMain(int argc, const char **argv, const char *me, const hestParm *_h
                   "use the old nrrdSpatialResample implementation");
   double *scale;
   uint scaleLen;
-  hestOptAdd_Nv_Other(&hopt, "s,size", "sz0", 1, -1, &scale, NULL,
+  hestOptAdd_Mv_Other(&hopt, "s,size", "sz0", 1, -1, &scale, NULL,
                       "For each axis, information about how many samples in output:\n "
                       "\b\bo \"=\": leave this axis completely untouched: no "
                       "resampling whatsoever\n "
@@ -68,7 +68,7 @@ unu_resampleMain(int argc, const char **argv, const char *me, const hestParm *_h
                       &scaleLen, &unrrduUnuHestScaleCB);
   double *off;
   uint offLen;
-  hestOptAdd_Nv_Double(&hopt, "off,offset", "off0", 0, -1, &off, "",
+  hestOptAdd_Mv_Double(&hopt, "off,offset", "off0", 0, -1, &off, "",
                        "For each axis, an offset or shift to the position (in index "
                        "space) of the lower end of the sampling domain. "
                        "Either -off can be used, or -min and -max "
@@ -77,13 +77,13 @@ unu_resampleMain(int argc, const char **argv, const char *me, const hestParm *_h
                        &offLen);
   double *min, *max;
   uint minLen, maxLen;
-  hestOptAdd_Nv_Double(&hopt, "min,minimum", "min0", 0, -1, &min, "",
+  hestOptAdd_Mv_Double(&hopt, "min,minimum", "min0", 0, -1, &min, "",
                        "For each axis, the lower end (in index space) of the domain "
                        "of the resampling. Either -off can be used, or -min and -max "
                        "together, or none of these (so that, by default, the full "
                        "domain of the axis is resampled).",
                        &minLen);
-  hestOptAdd_Nv_Double(&hopt, "max,maximum", "max0", 0, -1, &max, "",
+  hestOptAdd_Mv_Double(&hopt, "max,maximum", "max0", 0, -1, &max, "",
                        "For each axis, the upper end (in index space) of the domain "
                        "of the resampling. Either -off can be used, or -min and -max "
                        "together, or none of these, so that (by default), the full "

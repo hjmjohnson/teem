@@ -34,7 +34,7 @@ static int
 unu_acropMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   uint *axes, axesLen;
-  hestOptAdd_Nv_UInt(&hopt, "a,axes", "ax0", 0, -1, &axes, "",
+  hestOptAdd_Mv_UInt(&hopt, "a,axes", "ax0", 0, -1, &axes, "",
                      "the axes (if any) that should NOT be cropped", &axesLen);
   int measr;
   hestOptAdd_1_Enum(&hopt, "m,measure", "measr", &measr, NULL,

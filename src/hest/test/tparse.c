@@ -47,19 +47,19 @@ main(int argc, const char **argv) {
   /*
   int *size;
   uint slen;
-  hestOptAdd_Nv_Int(&opt, "s,sizes", "sx sy", 2, -1, &size, NULL, "image resolutions",
+  hestOptAdd_Mv_Int(&opt, "s,sizes", "sx sy", 2, -1, &size, NULL, "image resolutions",
                     &slen);
                     */
   char **kvp;
   uint kvpLen;
-  hestOptAdd_Nv_String(&opt, "kvp", "k0", 0, -1, &kvp, "",
+  hestOptAdd_Mv_String(&opt, "kvp", "k0", 0, -1, &kvp, "",
                        "what \"kind\" is each axis, from the nrrdKind airEnum "
                        "(e.g. space, time, 3-vector, 3D-masked-symmetric-matrix, "
                        "or \"none\" to signify no kind)",
                        &kvpLen);
   double *off;
   uint offLen;
-  hestOptAdd_Nv_Double(&opt, "off,offset", "off0", 0, -1, &off, "",
+  hestOptAdd_Mv_Double(&opt, "off,offset", "off0", 0, -1, &off, "",
                        "For each axis, an offset or shift to the position (in index "
                        "space) of the lower end of the sampling domain. "
                        "Either -off can be used, or -min and -max "
@@ -70,7 +70,7 @@ main(int argc, const char **argv) {
   uint opiA = hestOptAdd_2_Int(&opt, NULL, "A0 A1", unpA, "0 1", "unflagged A");
   int *unpB;
   uint sawB;
-  uint opiB = hestOptAdd_Nv_Int(&opt, NULL, "B0", 2, -1, &unpB, "23 34", "unflagged B",
+  uint opiB = hestOptAdd_Mv_Int(&opt, NULL, "B0", 2, -1, &unpB, "23 34", "unflagged B",
                                 &sawB);
   int unpC[2];
   uint opiC = hestOptAdd_2_Int(&opt, NULL, "C C", unpC, /* "dfltC0 dfltC1" */ NULL,
@@ -79,7 +79,7 @@ main(int argc, const char **argv) {
   // to test disallowance of >1 one unflagged variadic option
   int *unpC;
   uint sawC;
-  hestOptAdd_Nv_Int(&opt, NULL, "C0 C1", 1, 2, &unpC, NULL, "unflagged C", &sawC);
+  hestOptAdd_Mv_Int(&opt, NULL, "C0 C1", 1, 2, &unpC, NULL, "unflagged C", &sawC);
 #endif
 
   hestParseOrExit(opt, argc - 1, argv + 1, hparm, argv[0], "info about tparse");

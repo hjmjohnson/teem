@@ -237,7 +237,7 @@ MY_UNRRDU_MAP(MY_UNRRDU_DECLARE)
 
 /* int *var; int saw */
 #define MY_OPT_ADD_BOUND(name, needmin, var, deflt, desc, saw)                          \
-  hestOptAdd_Nv_Other(&hopt, name, "pos0", needmin, -1, &(var), deflt, desc, &(saw),    \
+  hestOptAdd_Mv_Other(&hopt, name, "pos0", needmin, -1, &(var), deflt, desc, &(saw),    \
                       &unrrduUnuHestPosCB)
 
 /* int var */

@@ -34,7 +34,7 @@ unu_jhistoMain(int argc, const char **argv, const char *me, const hestParm *hpar
   hestOpt *hopt = NULL;
   size_t *bin;
   uint binLen;
-  hestOptAdd_Nv_Size_t(&hopt, "b,bin", "bins0 bins1", 2, -1, &bin, NULL,
+  hestOptAdd_Mv_Size_t(&hopt, "b,bin", "bins0 bins1", 2, -1, &bin, NULL,
                        "bins<i> is the number of bins to use along axis i (of joint "
                        "histogram), which represents the values of nin<i> ",
                        &binLen);
@@ -47,11 +47,11 @@ unu_jhistoMain(int argc, const char **argv, const char *me, const hestParm *hpar
                      nrrdHestNrrdNoTTY);
   double *min, *max;
   uint minLen, maxLen;
-  hestOptAdd_Nv_Double(&hopt, "min,minimum", "min0 min1", 2, -1, &min, "nan nan",
+  hestOptAdd_Mv_Double(&hopt, "min,minimum", "min0 min1", 2, -1, &min, "nan nan",
                        "min<i> is the low range of values to be quantized along "
                        "axis i; use \"nan\" to represent lowest value present ",
                        &minLen);
-  hestOptAdd_Nv_Double(&hopt, "max,maximum", "max0 max1", 2, -1, &max, "nan nan",
+  hestOptAdd_Mv_Double(&hopt, "max,maximum", "max0 max1", 2, -1, &max, "nan nan",
                        "max<i> is the high range of values to be quantized along "
                        "axis i; use \"nan\" to represent highest value present ",
                        &maxLen);
@@ -63,7 +63,7 @@ unu_jhistoMain(int argc, const char **argv, const char *me, const hestParm *hpar
                   "uint");
   Nrrd **nin;
   uint ninLen;
-  hestOptAdd_Nv_Other(&hopt, "i,input", "nin0 [nin1]", 1, -1, &nin, "-",
+  hestOptAdd_Mv_Other(&hopt, "i,input", "nin0 [nin1]", 1, -1, &nin, "-",
                       "list of nrrds (one for each axis of joint histogram), "
                       "or, single nrrd that will be sliced along specified axis.",
                       &ninLen, nrrdHestNrrdNoTTY);

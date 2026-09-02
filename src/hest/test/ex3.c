@@ -61,13 +61,13 @@ main(int argc, const char **argv) {
    */
   int *ints;
   unsigned int numN;
-  hestOptAdd_Nv_Int(&hopt, "ints", "N", 1, -1, &ints, "10 20 30", "a list of integers",
+  hestOptAdd_Mv_Int(&hopt, "ints", "N", 1, -1, &ints, "10 20 30", "a list of integers",
                     &numN);
   int res[2];
   hestOptAdd_2_Int(&hopt, "res", "sx sy", res, NULL, "image resolution");
   char **in;
   unsigned int numIn;
-  hestOptAdd_Nv_String(&hopt, NULL, "input", 1, -1, &in, NULL, "input image file(s)",
+  hestOptAdd_Mv_String(&hopt, NULL, "input", 1, -1, &in, NULL, "input image file(s)",
                        &numIn);
   // hparm->orExitWithoutNewerFeatures = AIR_TRUE;
   hestParseOrExit(hopt, argc - 1, argv + 1, hparm, argv[0], info);

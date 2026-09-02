@@ -32,7 +32,7 @@ static int
 unu_axmergeMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   uint *axes, axesLen;
-  hestOptAdd_Nv_UInt(&hopt, "a,axis", "ax0", 1, -1, &axes, NULL,
+  hestOptAdd_Mv_UInt(&hopt, "a,axis", "ax0", 1, -1, &axes, NULL,
                      "axis (or axes) to merge.  Each axis index identified is the "
                      "lower of the pair of axes that will be merged.  Saying \"-a 2\" "
                      "means to merge axis 2 and axis 3 into axis 2.  If multiple "

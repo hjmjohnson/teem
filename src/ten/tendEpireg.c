@@ -38,7 +38,7 @@ epiregMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
 
   Nrrd **nin;
   uint ninLen;
-  hestOptAdd_Nv_Other(&hopt, "i", "dwi0 dwi1", 1, -1, &nin, NULL,
+  hestOptAdd_Mv_Other(&hopt, "i", "dwi0 dwi1", 1, -1, &nin, NULL,
                       "all the diffusion-weighted images (DWIs), as separate 3D nrrds, "
                       "**OR**: one 4D nrrd of all DWIs stacked along axis 0",
                       &ninLen, nrrdHestNrrd);

@@ -42,7 +42,7 @@ main(int argc, const char **argv) {
   hestOptAdd_1_String(&opt, "out", "file", &out, "output.ppm", "PPM image output");
   char **in;
   unsigned int numIn;
-  hestOptAdd_Nv_String(&opt, NULL, "input", 1, -1, &in, NULL, "input image file(s)",
+  hestOptAdd_Mv_String(&opt, NULL, "input", 1, -1, &in, NULL, "input image file(s)",
                        &numIn);
 
   if (1 == argc) {

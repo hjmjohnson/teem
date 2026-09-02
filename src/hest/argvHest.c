@@ -320,8 +320,8 @@ hestArgVecPrint(const char *caller, const char *info, const hestArgVec *havec) {
     'r', // 2: hestSourceResponseFile
     'd', // 3: hestSourceDefault
   };
-  printf("%s%s%s hestArgVec %p has %u args:\n   ", airStrlen(caller) ? caller : "", //
-         airStrlen(caller) ? ": " : "",                                             //
+  printf("%s%s%s hestArgVec %p has %u args: ", airStrlen(caller) ? caller : "", //
+         airStrlen(caller) ? ": " : "",                                         //
          info, AIR_CVOIDP(havec), havec->len);
   for (uint idx = 0; idx < havec->hargArr->len; idx++) {
     const hestArg *harg;
@@ -331,11 +331,13 @@ hestArgVecPrint(const char *caller, const char *info, const hestArgVec *havec) {
     printf(" %u%c:<%s>", idx, srcch[harg->source], harg->str);
   }
   printf("\n");
+  /*
   char *ppargs = hestArgVecSprint(havec, AIR_FALSE);
   printf("%s%s%s OR hestArgVec pretty-printed is:\n%s\n",
          airStrlen(caller) ? caller : "", //
          airStrlen(caller) ? ": " : "", info, ppargs);
   free(ppargs);
+  */
   return;
 }
 

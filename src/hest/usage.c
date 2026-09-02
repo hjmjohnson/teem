@@ -57,7 +57,8 @@ hsetBuf(char *_buff, size_t _buffSize, const hestOpt *hopt, /* */
       SN_COPY(buff, buffSize, "\t");
     }
   }
-  if (!hopt->min && max) {
+  int dobrack = (hopt->flag && !hopt->min && max) || (!hopt->flag && hopt->dflt);
+  if (dobrack) {
     SN_COPY(buff, buffSize, "[");
   }
   if (hopt->min || max) {
@@ -67,7 +68,7 @@ hsetBuf(char *_buff, size_t _buffSize, const hestOpt *hopt, /* */
     }
     SN_COPY(buff, buffSize, ">");
   }
-  if (!hopt->min && max) {
+  if (dobrack) {
     SN_COPY(buff, buffSize, "]");
   }
   return;
@@ -214,13 +215,14 @@ hestUsage(FILE *file, const hestOpt *hopt, const char *argv0, const hestParm *_h
   }
   for (uint opi = 0; opi < numOpts; opi++) {
     SN_COPY(buff, buffSize, " ");
-    if (1 == hopt[opi].kind || (hopt[opi].flag && hopt[opi].dflt)) {
+    int dobrack = (1 == hopt[opi].kind || (hopt[opi].flag && hopt[opi].dflt));
+    if (dobrack) {
       SN_COPY(buff, buffSize, "[");
     }
     hsetBuf(buff, buffSize, hopt + opi, /* */
             AIR_TRUE /* showshort */, AIR_TRUE /* showlong */);
     SN_INCR(buff, buffSize);
-    if (1 == hopt[opi].kind || (hopt[opi].flag && hopt[opi].dflt)) {
+    if (dobrack) {
       SN_COPY(buff, buffSize, "]");
     }
   }

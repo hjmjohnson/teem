@@ -79,7 +79,7 @@ unu_fftMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
                     "(\"back\", \"b\") transform ",
                     direction_ae);
   uint *axes, axesLen;
-  hestOptAdd_Nv_UInt(&hopt, "a,axes", "ax0", 1, -1, &axes, NULL,
+  hestOptAdd_Mv_UInt(&hopt, "a,axes", "ax0", 1, -1, &axes, NULL,
                      "the one or more axes that should be transformed", &axesLen);
   int rigor;
   hestOptAdd_1_Enum(&hopt, "pr,planrigor", "pr", &rigor, "est",

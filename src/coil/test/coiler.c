@@ -44,7 +44,7 @@ main(int argc, const char *argv[]) {
                     "what kind of filtering to perform", coilMethodType);
   double *_parm;
   unsigned int _parmLen;
-  hestOptAdd_Nv_Double(&hopt, "p", "parms", 1, -1, &_parm, NULL,
+  hestOptAdd_Mv_Double(&hopt, "p", "parms", 1, -1, &_parm, NULL,
                        "all the parameters required for filtering method", //
                        &_parmLen);
   int radius;

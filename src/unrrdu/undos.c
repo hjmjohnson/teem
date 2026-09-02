@@ -275,7 +275,7 @@ unu_undosMain(int argc, const char **argv, const char *me, const hestParm *hparm
                      "it is probably not a text file at all. ");
   char **name;
   uint lenName;
-  hestOptAdd_Nv_String(&hopt, NULL, "file", 1, -1, &name, NULL,
+  hestOptAdd_Mv_String(&hopt, NULL, "file", 1, -1, &name, NULL,
                        "all the files to convert.  Each file will be over-written "
                        "with its converted contents.  Use \"-\" to read from stdin "
                        "and write to stdout",

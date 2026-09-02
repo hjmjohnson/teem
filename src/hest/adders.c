@@ -81,7 +81,7 @@ enum values, the airFP_* enum values, and nrrdWrap_nva, nrrdAlloc_nva ... (and t
 snake_case ell and tijk libraries). The "hestOptAdd" prefix needs to stay the same (we're
 not going to have both hestOptAdd() and hest_opt_add_*() in one library, when other
 necessary functions like hestOptFree() are not going to change. So then the question is:
-which is more reader-friendly: hestOptAddNvUInt or hestOptAdd_Nv_UInt?  Obviously the
+which is more reader-friendly: hestOptAddMvUInt or hestOptAdd_Mv_UInt?  Obviously the
 second, and that matters more that superficial consistency.
 */
 
@@ -108,6 +108,10 @@ _1 = single parameter, either fixed (kind 2) or variadic (kind 4)
 _M = 2, 3, or 4 = COMPILE-TIME fixed # of parameters (kind 3)
      (these exist as a convenience, covering many common hest uses)
 _N = RUN_TIME user-given fixed # of parameters (still kind 3)
+     (unfortunately this use of "M" vs "N" is at odds with the conventions
+      adopted in the hest documentation, and the use of "_Mv_" in the API
+      for multiple variadic functions.  Fortunately this confusion is
+      entirely internal to this file.)
 _V = RUN_TIME variadic # of parameters (kind 5)
 
 */
@@ -257,7 +261,7 @@ _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V
 */
 
 #define DCL_T_V(_, ATYP, CTYP)                                                          \
-  unsigned int hestOptAdd_Nv_##ATYP(hestOpt **hoptP, const char *flag,                  \
+  unsigned int hestOptAdd_Mv_##ATYP(hestOpt **hoptP, const char *flag,                  \
                                     const char *name, unsigned int min, int max,        \
                                     CTYP **valueP, const char *dflt, const char *info,  \
                                     unsigned int *sawP)
@@ -270,7 +274,7 @@ _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V
 #define DEF_T_V(M, ATYP, CTYP) DCL_T_V(M, ATYP, CTYP) IMP_T_V(M, ATYP, CTYP)
 /* copy-pasta for Enum -------------- */
 #define DCL_E_V(_)                                                                      \
-  unsigned int hestOptAdd_Nv_Enum(hestOpt **hoptP, const char *flag, /* */              \
+  unsigned int hestOptAdd_Mv_Enum(hestOpt **hoptP, const char *flag, /* */              \
                                   const char *name, unsigned int min, int max,          \
                                   int **valueP, const char *dflt, const char *info,     \
                                   unsigned int *sawP, const airEnum *enm)
@@ -283,7 +287,7 @@ _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V _V
 #define DEF_E_V(_) DCL_E_V(_) IMP_E_V(_)
 /* copy-pasta for Other -------------- */
 #define DCL_O_V(_)                                                                      \
-  unsigned int hestOptAdd_Nv_Other(hestOpt **hoptP, const char *flag, /* */             \
+  unsigned int hestOptAdd_Mv_Other(hestOpt **hoptP, const char *flag, /* */             \
                                    const char *name, unsigned int min, int max,         \
                                    void *valueP, const char *dflt, const char *info,    \
                                    unsigned int *sawP, const hestCB *CB)

@@ -50,7 +50,7 @@ main(int argc, const char *argv[]) {
   hparm->respectDashDashHelp = AIR_TRUE;
 
   me = argv[0];
-  hestOptAdd_Nv_UInt(&hopt, "s", "sx sy", 2, 3, &size, "128 128",
+  hestOptAdd_Mv_UInt(&hopt, "s", "sx sy", 2, 3, &size, "128 128",
                      "size of texture, and also determines its dimension", &sizeLen);
   hestOptAdd_1_UInt(&hopt, "srand", "N", &srnd, "42",
                     "number to seed random number generator with.  This uses "

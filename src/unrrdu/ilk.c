@@ -240,7 +240,7 @@ unu_ilkMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
                      mossHestOrigin);
   double **matList;
   uint matListLen;
-  hestOptAdd_Nv_Other(
+  hestOptAdd_Mv_Other(
     &hopt, "t", "xform0", 1, -1, &matList, NULL,
     "transform(s) to apply to image, applied in the order in which they appear. "
     "All these are non-perspective homogeneous coordinate transforms, which "
@@ -289,7 +289,7 @@ unu_ilkMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
   double *_bkg;
   uint _bkgLen,
     bkgIdx
-    = hestOptAdd_Nv_Double(&hopt, "bg", "bg0 bg1", 1, -1, &_bkg, "nan",
+    = hestOptAdd_Mv_Double(&hopt, "bg", "bg0 bg1", 1, -1, &_bkg, "nan",
                            "background color to use with boundary behavior \"pad\". "
                            "Defaults to all zeroes.",
                            &_bkgLen);

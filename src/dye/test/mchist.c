@@ -80,7 +80,7 @@ main(int argc, const char *argv[]) {
   hestOpt *hopt = NULL;
   char **ninStr;
   unsigned int ninLen;
-  hestOptAdd_Nv_String(&hopt, "i", "images", 1, -1, &ninStr, NULL,
+  hestOptAdd_Mv_String(&hopt, "i", "images", 1, -1, &ninStr, NULL,
                        "input image sequence", &ninLen);
   unsigned int sH;
   hestOptAdd_1_UInt(&hopt, "sh", "histo size", &sH, "500", "histogram size");

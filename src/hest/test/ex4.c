@@ -58,7 +58,7 @@ main(int argc, const char **argv) {
   */
   double *many;
   unsigned howMany;
-  hestOptAdd_Nv_Other(&opt, "D", "nx,ny", 1, -1, &many, "8,8 7,7", "testing D", &howMany,
+  hestOptAdd_Mv_Other(&opt, "D", "nx,ny", 1, -1, &many, "8,8 7,7", "testing D", &howMany,
                       &cbinfo);
   int N;
   hestOptAdd_1_Int(&opt, "int", "N", &N, NULL, "an integer");

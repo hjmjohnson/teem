@@ -376,7 +376,7 @@ main(int argc, const char *argv[]) {
                      "overrides \"-pg\": probes at this list of 3-vec or "
                      "4-vec positions",
                      nrrdHestNrrd);
-  hestOptAdd_Nv_Double(&hopt, "pp", "pos", 3, 4, &pntPos, "nan nan nan",
+  hestOptAdd_Mv_Double(&hopt, "pp", "pos", 3, 4, &pntPos, "nan nan nan",
                        "overrides \"-pi\": only sample at this specified point",
                        &pntPosNum);
   hestOptAdd_1_Double(&hopt, "eps", "epsilon", &eps, "0",

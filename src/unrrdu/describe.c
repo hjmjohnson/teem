@@ -83,7 +83,7 @@ unu_describeMain(int argc, const char **argv, const char *me, const hestParm *_h
                     "then don't print it");
   char **inS;
   unsigned int inLen;
-  hestOptAdd_Nv_String(&hopt, NULL, "nin1", 1, -1, &inS, "-", "input nrrd filename(s)",
+  hestOptAdd_Mv_String(&hopt, NULL, "nin1", 1, -1, &inS, "-", "input nrrd filename(s)",
                        &inLen);
 
   // (boilerplate for YES some hparm modification)

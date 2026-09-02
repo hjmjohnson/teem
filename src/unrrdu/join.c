@@ -39,7 +39,7 @@ unu_joinMain(int argc, const char **argv, const char *me, const hestParm *_hparm
   hestOpt *hopt = NULL;
   Nrrd **nin;
   uint ninLen;
-  hestOptAdd_Nv_Other(&hopt, "i,input", "nin0", 1, -1, &nin, NULL,
+  hestOptAdd_Mv_Other(&hopt, "i,input", "nin0", 1, -1, &nin, NULL,
                       "everything to be joined together", &ninLen, nrrdHestNrrdNoTTY);
   uint axis;
   MY_OPT_ADD_AXIS(axis, "axis to join along");

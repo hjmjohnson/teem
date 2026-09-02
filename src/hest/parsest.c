@@ -518,7 +518,8 @@ but this does interpret the tokens just enough to implement:
    (what)                     (allowed sources)
  - commenting with -{ , }-    all (even a default string, may regret this)
  - ask for --help or --usage  command-line
- - response files             command-line, response file (not default string)
+ - response files             command-line or response file (not default string)
+ - stopping at --             command-line or response file (not default string)
 since these are the things that histProcNextArg does not understand (it just produces
 finished tokens). On the other hand, we do NOT know anything about individual hestOpts
 and their flags, which is why they weren't passed to us (--help,--usage is special).
@@ -543,7 +544,9 @@ histProcess(hestArgVec *havec, int *helpWantedP, hestArg *tharg, hestInputStack 
   // initialize destination havec
   airArrayLenSet(havec->hargArr, 0);
   /* We `return` directly from this loop ONLY when we MUST stop processing the stack,
-     because of an error, or because of user asking for help.
+     because of an error,
+     or because of user asking for help,
+     or because of seeing "--"
      Otherwise, we loop again. */
   while (1) {
     iters += 1;
@@ -836,16 +839,27 @@ optAllPrint(const char *func, const char *ctx, const hestOpt *hoptall) {
   return;
 }
 
-#define BIFF_GIVEN_ARGV(HAVSTR, SHOWIDX)                                                \
+#define BIFF_GIVEN_ARGV(HAVSTR, WUT, SHOWIDX)                                           \
   if (airStrlen((HAVSTR))) {                                                            \
     if (SHOWIDX) {                                                                      \
-      biffAddf(HEST, "%s%swith (index: labeled) args=|%s|", MY_ME, (HAVSTR));           \
+      biffAddf(HEST, "%s%s%s (index: labeled) args: %s", MY_ME, (WUT), (HAVSTR));       \
     } else {                                                                            \
-      biffAddf(HEST, "%s%swith args=|%s|", MY_ME, (HAVSTR));                            \
+      biffAddf(HEST, "%s%s%s args: %s", MY_ME, (WUT), (HAVSTR));                        \
     }                                                                                   \
   } else {                                                                              \
-    biffAddf(HEST, "%s%swith *no* args", MY_ME);                                        \
+    biffAddf(HEST, "%s%s%s *no* args", MY_ME, (WUT));                                   \
   }
+
+static uint /* Biff: nope */
+flagOptNum(const hestOpt *hopt) {
+  uint ret = 0, optNum = hopt->arrLen;
+  for (uint opi = 0; opi < optNum; opi++) {
+    if (hopt[opi].flag) {
+      ret += 1;
+    }
+  }
+  return ret;
+}
 
 /* havecExtractFlagged
 Extracts the parameter args associated with all flagged options from the given
@@ -863,20 +877,32 @@ flagged opts are removed, so that later work can extract args for unflagged opts
 For variadic parameter options, the sawP information is not set here, since it is better
 set at the final value parsing time, which happens after defaults are enstated.
 
-This is where, thanks to the action of whichOptFlag(), "--" (and only "--" due to
-MY_VAR_PARM_STOP_FLAG) is used as a marker for the end of a flagged variadic parameter
-option.  AND, the "--" marker is removed from `havec`.
-*/
+This is where "-." (and only "-." due to MY_VAR_PARM_END_FLAG) is used as a marker for
+the end of a flagged variadic parameter option.  AND, the "-." marker is removed from
+`havec`. */
 static int /* Biff: 1 */
 havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
   char *havStr, ident1[AIR_STRLEN_SMALL + 1], ident2[AIR_STRLEN_SMALL + 1];
+  uint len0 = havec->len;          // original number of args
+  uint optNum = hopt->arrLen;      // number of options (flagged or unflagged)
+  uint foptNum = flagOptNum(hopt); // number of unflagged options
+  if (!foptNum) {
+    if (hparm->verbose > 1) {
+      printf("%s: no flagged options; finishing up\n", __func__);
+    }
+    goto flagfinish;
+  }
+
   uint argIdx = 0;
   hestOpt *theOpt = NULL;
+  const char VPE[3] = {'-', MY_VAR_PARM_END_FLAG, '\0'};
   while (argIdx < havec->len) { // NOTE: havec->len may decrease within an interation!
     if (hparm->verbose > 1) {
       printf("%s: ------------- argIdx = %u (of %u) -> argv[argIdx] = |%s|\n", __func__,
              argIdx, havec->len, havec->harg[argIdx]->str);
     }
+    /* If current arg is "-." that's ok: it could be ending of variadic parms for
+       an unflagged option. It will not be recognized as any flagged options flag */
     uint optIdx = whichOptFlag(hopt, havec->harg[argIdx]->str, hparm);
     if (UINT_MAX == optIdx) {
       // havec->harg[argIdx]->str is not a flag for any option, move on to next arg
@@ -896,10 +922,10 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     if (hparm->verbose) printf("%s: any associated parms?\n", __func__);
     int hitEnd = AIR_FALSE;
     int varParm = (5 == hopt[optIdx].kind);
-    const char VPS[3] = {'-', MY_VAR_PARM_STOP_FLAG, '\0'};
-    int hitVPS = AIR_FALSE;
+    int hitVPE = AIR_FALSE;
     uint nextOptIdx = 0, // what is index of option who's flag we hit next
       parmNum = 0,       // how many parm args have we counted up
+      txfNum = 0,        // # options transferred (double-counting repeats)
       pai;               // tmp parm arg index
 
     while ( // parmNum is plausible # parms
@@ -907,8 +933,8 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
       // and looking ahead by parmNum still gives us a valid index pai
       && !(hitEnd = !((pai = argIdx + 1 + parmNum) < havec->len))
       // and either this isn't a flagged variadic opt
-      && (!varParm || // or, it is a varparm opt, and we aren't looking at "--"
-          !(hitVPS = !strcmp(VPS, havec->harg[pai]->str)))
+      && (!varParm || // or, it is a varparm opt, and we aren't looking at "-."
+          !(hitVPE = !strcmp(VPE, havec->harg[pai]->str)))
       && UINT_MAX // and we aren't looking at start of another flagged option
            == (nextOptIdx = whichOptFlag(hopt, havec->harg[pai]->str, hparm))) {
       if (hparm->verbose)
@@ -918,27 +944,26 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     }
     /* we stopped because we got the max number of parameters, or
        we hitEnd, or
-       varParm and we hitVPS, or
+       varParm and we hitVPE, or
        we hit the start of another flagged option (indicated by nextOptIdx) */
     if (hparm->verbose)
       printf("%s: optIdx %u |%s|: stopped w/ "
-             "parmNum=%u hitEnd=%d hitVPS=%d nextOptIdx=%u\n",
-             __func__, optIdx, theOpt->flag, parmNum, hitEnd, hitVPS, nextOptIdx);
+             "parmNum=%u hitEnd=%d hitVPE=%d nextOptIdx=%u\n",
+             __func__, optIdx, theOpt->flag, parmNum, hitEnd, hitVPE, nextOptIdx);
     if (parmNum < theOpt->min) { // didn't get required min # parameters
       int shwi = AIR_FALSE;
       havStr = hestArgVecSprint(havec, shwi);
-      BIFF_GIVEN_ARGV(havStr, shwi);
       if (hitEnd) {
         biffAddf(HEST,
                  "%s%shit end of args before getting %u parameter%s "
                  "for %s (got %u)",
                  MY_ME, theOpt->min, theOpt->min > 1 ? "s" : "",
                  identStr(ident1, sizeof(ident1), theOpt), parmNum);
-      } else if (hitVPS) {
+      } else if (hitVPE) {
         biffAddf(HEST,
-                 "%s%shit \"-%c\" (variadic-parameter-stop flag) before getting %u "
+                 "%s%shit \"-%c\" (variadic-parameter-end flag) before getting %u "
                  "parameter%s for %s (got %u)",
-                 MY_ME, MY_VAR_PARM_STOP_FLAG, theOpt->min, theOpt->min > 1 ? "s" : "",
+                 MY_ME, MY_VAR_PARM_END_FLAG, theOpt->min, theOpt->min > 1 ? "s" : "",
                  identStr(ident1, sizeof(ident1), theOpt), parmNum);
       } else if (UINT_MAX != nextOptIdx) {
         biffAddf(HEST, "%s%ssaw %s before getting %u parameter%s for %s (got %u)", MY_ME,
@@ -952,6 +977,9 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
                  MY_ME, theOpt->min, theOpt->min > 1 ? "s" : "",
                  identStr(ident1, sizeof(ident1), theOpt), parmNum);
       }
+      biffAddf(HEST, "%s%safter getting %u args for %u other flagged option%s", MY_ME,
+               len0 - havec->len, txfNum, 1 == txfNum ? "" : "s");
+      BIFF_GIVEN_ARGV(havStr, "from", shwi);
       free(havStr);
       return 1;
     }
@@ -970,13 +998,14 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     hestArgNix(havecRemove(havec, argIdx));
     havStr = hestArgVecSprint(havec, AIR_TRUE);
     if (havecTransfer(theOpt, havec, argIdx, parmNum, hparm)) {
-      BIFF_GIVEN_ARGV(havStr, AIR_TRUE); // copying from 2 lines above
+      BIFF_GIVEN_ARGV(havStr, "from", AIR_TRUE); // copying from 2 lines above
       biffAddf(HEST, "%s%strouble transferring %u args for %s", MY_ME, parmNum,
                identStr(ident1, sizeof(ident1), theOpt));
       return (free(havStr), 1);
     }
+    txfNum += 1;
     airFree(havStr);
-    if (hitVPS) {
+    if (hitVPE) {
       // lose the variadic-parameter-stop flag
       hestArgNix(havecRemove(havec, argIdx));
     }
@@ -993,7 +1022,6 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
   }
 
   /* make sure that flagged options without default were given */
-  uint optNum = hopt->arrLen;
   for (uint opi = 0; opi < optNum; opi++) {
     theOpt = hopt + opi;
     if (theOpt->flag) { // this is a flagged option we should have handled above
@@ -1013,6 +1041,7 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     }
   }
 
+flagfinish:
   if (hparm->verbose) {
     optAllPrint(__func__, "end of havecExtractFlagged", hopt);
     hestArgVecPrint(__func__, "end of havecExtractFlagged", havec);
@@ -1026,12 +1055,12 @@ from the given `hestArgVec *havec` and (like havecExtractFlagged) extracts those
 saves them in the corresponding hopt[].havec
 
 This is the function that has to handle the tricky logic of allowing there to be
-multiple unflagged options, only one of which may have a variadic number of parms; that
-one has to be extracted last.
+multiple unflagged options, only one of which may have a variadic number of parms
+(and that one has to be extracted last).
 */
 static int /* Biff: 1 */
 havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
-  char *havStr = NULL, ident[AIR_STRLEN_SMALL + 1];
+  char *gotStr = NULL, ident[AIR_STRLEN_SMALL + 1];
   uint optNum = hopt->arrLen; // number of options (flagged or unflagged)
   uint ufOptNum = 0;          // number of unflagged options
   for (uint opi = 0; opi < optNum; opi++) {
@@ -1039,182 +1068,201 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
       ufOptNum += 1;
     }
   }
-  /* simplify indexing into unflagged options, forward and backward,
-   with a little Nx2 array ufOpi2 of option indices */
-  uint *ufOpi2 = NULL;
+  int shwi = AIR_FALSE;
+  airArray *mop = airMopNew();
+  gotStr = hestArgVecSprint(havec, shwi);
+  airMopAdd(mop, gotStr, airFree, airMopAlways);
   if (!ufOptNum) {
-    /* no unflagged options; we're done-ish */
+    // no unflagged options; we're done-ish
     goto finishingup;
   }
-  ufOpi2 = AIR_CALLOC(2 * ufOptNum, uint);
-  assert(ufOpi2);
-  uint upii = 0; // index into ufOpi2
+  // else we have unflagged options
+  uint *ufOpi = AIR_CALLOC(ufOptNum, uint);
+  assert(ufOpi);
+  // airMopAdd(mop, ufOpi, airFree, airMopAlways);
+  uint upii = 0;            // index into ufOpi
+  int haveVari = AIR_FALSE; // we have an unflagged variadic parm option
+  uint ufVariOpi = optNum;  // index (haveVari) of the unflagged variadic parm option
   for (uint opi = 0; opi < optNum; opi++) {
     if (!hopt[opi].flag) {
-      ufOpi2[2 * upii + 0] = opi;
+      /* starting at beginning of option list,
+         store option indices of unflagged options in ufOpi[] */
+      if (5 == hopt[opi].kind) {
+        // but stop at (single) variadic one
+        haveVari = AIR_TRUE;
+        ufVariOpi = opi;
+        break;
+      }
+      ufOpi[upii] = opi;
       upii++;
     }
   }
-  for (upii = 0; upii < ufOptNum; upii++) {
-    // fill in backward side
-    ufOpi2[2 * upii + 1] = ufOpi2[2 * (ufOptNum - 1 - upii) + 0];
+  if (haveVari) {
+    // have to finish ufOpi[] by working from end of option list
+    for (uint ipo = 0; ipo < optNum; ipo++) {
+      uint opi = optNum - 1 - ipo;
+      if (!hopt[opi].flag && upii < ufOptNum) {
+        // this option is unflagged, and we haven't stored all the unflagged options
+        ufOpi[upii] = opi;
+        upii++;
+      }
+    }
   }
   if (hparm->verbose) {
-    printf("%s: ufOpi2 helper array:\n up:", __func__);
+    printf("%s: ufOpi helper array:", __func__);
     for (upii = 0; upii < ufOptNum; upii++) {
-      printf(" \t%u", ufOpi2[2 * upii + 0]);
-    }
-    printf("\n down:");
-    for (upii = 0; upii < ufOptNum; upii++) {
-      printf(" \t%u", ufOpi2[2 * upii + 1]);
+      printf("  %s:%u", ufOpi[upii] < ufVariOpi ? "up" : "dn", ufOpi[upii]);
     }
     printf("\n");
   }
-  uint ufVarOpi = optNum; // index (if < optNum) of the unflagged variadic parm option
-  for (upii = 0; upii < ufOptNum; upii++) {
-    uint opi = ufOpi2[2 * upii + 0];
-    if (5 == hopt[opi].kind) { // (unflagged) multiple variadic parm
-      ufVarOpi = opi;
-      break;
+  /* now, if there is an unflagged variadic option (NOTE that hest__OPCheck()
+     ensured that there is at most one of these), then ufVariOpi is its index in opt[].
+     If there is no unflagged variadic option, ufVariOpi is optNum. */
+  if (hparm->verbose) {
+    if (haveVari) {
+      printf("%s: DO have unflagged variadic and ufVariOpi = %u\n", __func__, ufVariOpi);
+    } else {
+      printf("%s: do NOT have unflagged variadic\n", __func__);
     }
   }
-  /* now, if there is an unflagged variadic option (NOTE that hest__OPCheck()
-     ensured that there is at most one of these), then ufVarOpi is its index in opt[].
-     If there is no unflagged variadic option, ufVarOpi is optNum. */
-  if (hparm->verbose) {
-    printf("%s: ufVarOpi = %u %s\n", __func__, ufVarOpi,
-           (ufVarOpi == optNum ? "==> there is no unflagged variadic opt"
-                               : "is index of single unflagged variadic opt"));
-  }
 
-  // grab parameters for all unflagged opts before hopt[ufVarOpi]
+  // grab parameters for all unflagged opts EXCEPT the variadic
+  uint len0 = havec->len;
+  int E = 0;
   for (upii = 0; upii < ufOptNum; upii++) {
-    uint opi = ufOpi2[2 * upii + 0]; // 0: increasing index direction
-    if (opi == ufVarOpi) {
+    uint opi = ufOpi[upii];
+    if (opi == ufVariOpi) {
       break;
     }
     if (hparm->verbose) {
       printf("%s: looking at opi = %u kind %d\n", __func__, opi, hopt[opi].kind);
     }
-    /* Either we have enough args to satisfy this option (and thus don't care if it has a
-    default), or, we do *not* have enough args and hence want to use the default.  In the
-    later case, if we don't have a default, that's a problem that needs an error message.
-    So, either way, we try extracting the args and report any problems encountered,
-    including mention of whether we have a default. Recall that hest__OPCheck enforces
-    non-variadic unflagged options have min > 1. NOTE THAT WE DO NOT TRY TO COUNT the
-    number of tokens in the default: we assume that if there is a default, the user knew
-    how to set it to satisfy hopt[opi].min. It is only later (optProcessDefaults) that
-    the default string is actually processed. */
-    if (hopt[opi].min /* == max */ < havec->len || !hopt[opi].dflt) {
-      int shwi = AIR_TRUE;
-      havStr = hestArgVecSprint(havec, shwi);
-      if (havecTransfer(hopt + opi, havec, 0, hopt[opi].min, hparm)) {
-        BIFF_GIVEN_ARGV(havStr, shwi);
-        biffAddf(HEST, "%s%strouble getting args for %s%s[%u]", MY_ME,
-                 !hopt[opi].dflt ? "default-less " : "",
-                 identStr(ident, sizeof(ident), hopt + opi), opi);
-        return (free(havStr), free(ufOpi2), 1);
+    /* 2026 revisit simplified the previous confusingly subtle logic, in which whether an
+    unflagged option consumed args depended on whether it has a default (which seemed to
+    hinge on the unflagged variadic min being > 0 ??).
+    Now: if there are enough args in havec to meet our minimum, we consume them.
+    If there are args but not enough, that's an error.
+    If there are no args, that's not an error but will be later (in `finishingup:` below)
+    if options don't have defaults. */
+    if (havec->len) {
+      char *nowStr = hestArgVecSprint(havec, shwi);
+      airMopAdd(mop, nowStr, airFree, airMopAlways);
+      if (hopt[opi].min /* == max */ <= havec->len) {
+        // we have enough or more than enough
+        uint fromIdx;
+        if (opi < ufVariOpi) {
+          /* either ufVariOpi==optNum because we have no variadic option,
+          in which case we only consume from the beginning, or we do have a
+          variadic option and we're working up to it */
+          fromIdx = 0;
+        } else {
+          fromIdx = havec->len - hopt[opi].min;
+        }
+        if (hparm->verbose > 1) hestArgVecPrint(__func__, "before transfer", havec);
+        if (havecTransfer(hopt + opi, havec, fromIdx, hopt[opi].min, hparm)) {
+          biffAddf(HEST, "%s%strouble getting %u args for %s%s[%u]", MY_ME,
+                   hopt[opi].min, !hopt[opi].dflt ? "default-less " : "",
+                   identStr(ident, sizeof(ident), hopt + opi), opi);
+          E = 1;
+          break;
+        }
+        if (hparm->verbose > 1) hestArgVecPrint(__func__, "after transfer", havec);
+      } else {
+        biffAddf(HEST,
+                 "%s%s cannot get %u args for %s%s[%u] from only %u remaining arg%s: %s",
+                 MY_ME, hopt[opi].min, !hopt[opi].dflt ? "default-less " : "",
+                 identStr(ident, sizeof(ident), hopt + opi), opi, havec->len,
+                 1 == havec->len ? "" : "s", nowStr);
+        E = 1;
+        break;
       }
-      havStr = airFree(havStr);
     }
   }
-  if (ufVarOpi == optNum) {
-    // if there is no unflagged multiple variadic option, we're done-ish
-    goto finishingup;
+  if (E) {
+    biffAddf(HEST, "%s%safter getting %u args for %u other unflagged option%s", MY_ME,
+             len0 - havec->len, upii, 1 == upii ? "" : "s");
+    BIFF_GIVEN_ARGV(gotStr, "after extracting flagged options,", shwi);
+    airMopError(mop);
+    return 1;
   }
-  /* else we do have an unflagged multiple variadic option, so we work down to it
-   from other end of arg vec */
-  // HEY COPY-PASTA
-  for (upii = 0; upii < ufOptNum; upii++) {
-    uint opi = ufOpi2[2 * upii + 1]; // 1: decreasing index direction
-    if (opi == ufVarOpi) {
-      break;
+  // now handle the unflagged variadic
+  if (haveVari) {
+    hestOpt *variOpt = hopt + ufVariOpi;
+    uint minArg = variOpt->min; /* min < max for sure */
+    uint maxArg = hest__Max(variOpt->max);
+    if ((!minArg && !variOpt->dflt && !havec->len)) {
+      /* We meet the very particular circumstance where having no args should be
+         taken to mean "I'm giving you 0 args" */
+      hestArgVecReset(variOpt->havec);
+      variOpt->source = hestSourceCommandLine; // actually just a guess!
+      goto finishingup;
+    } else if (!havec->len) {
+      /* Otherwise having no args means there's really thing to do */
+      goto finishingup;
     }
+    // start by resetting the per-option havec, and setting the source
+    hestArgVecReset(variOpt->havec);
+    variOpt->source = havec->harg[0]->source;
     if (hparm->verbose) {
-      printf("%s: looking at (later) opi = %u kind %d\n", __func__, opi, hopt[opi].kind);
+      printf("%s: ufVariOpi=%u   min, have, max = %u %u %d (source now %s)\n", __func__,
+             ufVariOpi, minArg, havec->len, maxArg,
+             airEnumStr(hestSource, variOpt->source));
     }
-    // same logic as above
-    if (hopt[opi].min /* == max */ < havec->len || !hopt[opi].dflt) {
-      uint idx0 = (hopt[opi].min < havec->len     // index of first arg for this option
-                     ? havec->len - hopt[opi].min //
-                     : 0);
-      int shwi = AIR_TRUE;
-      havStr = hestArgVecSprint(havec, shwi);
-      if (havecTransfer(hopt + opi, havec, idx0, hopt[opi].min, hparm)) {
-        BIFF_GIVEN_ARGV(havStr, shwi);
-        biffAddf(HEST, "%s%strouble getting args for (later) %s%s[%u]", MY_ME,
-                 !hopt[opi].dflt ? "default-less " : "",
-                 identStr(ident, sizeof(ident), hopt + opi), opi);
-        return (free(havStr), free(ufOpi2), 1);
+    const char VPE[3] = {'-', MY_VAR_PARM_END_FLAG, '\0'}; // should be "-."
+    for (uint ai = 0; ai < minArg; ai++) {
+      // (try to) consume the min args we need
+      int noMore = !havec->len;
+      int hitEnd = !noMore && !strcmp(VPE, havec->harg[0]->str);
+      if (noMore || hitEnd) {
+        biffAddf(HEST,
+                 "%s%s %s%s "
+                 "before getting (min) %u args (from %s) for %s%s[%u]",
+                 MY_ME, //
+                 noMore ? "ran out of args" : "hit end-of-args marker ",
+                 noMore ? "" : VPE, minArg, airEnumStr(hestSource, variOpt->source),
+                 !(variOpt->dflt) ? "default-less " : "",
+                 identStr(ident, sizeof(ident), variOpt), ufVariOpi);
+        biffAddf(HEST, "%s%safter getting %u args for %u other unflagged options", MY_ME,
+                 len0 - havec->len, upii);
+        BIFF_GIVEN_ARGV(gotStr, "after extracting flagged options,", shwi);
+        airMopError(mop);
+        return 1;
       }
-      havStr = airFree(havStr);
+      hestArg *harg = havecRemove(havec, 0);
+      hestArgVecAppendArg(variOpt->havec, harg);
+      variOpt->source = harg->source;
+    }
+    // consume any remaining args, up to max
+    for (uint ai = 0; ai < maxArg - minArg && havec->len; ai++) {
+      hestArg *harg = havecRemove(havec, 0);
+      if (strcmp(VPE, harg->str)) {
+        // as long as this arg is not "-." save it
+        hestArgVecAppendArg(variOpt->havec, harg);
+        variOpt->source = harg->source;
+      } else {
+        /* else it is "-.": we consume but don't store it,
+           but break now so that we only consume one "-." */
+        break;
+      }
     }
   }
-
-  // We're here because there is an unflagged variadic option (index ufVarOpi < optNum)
-  if (hparm->verbose) {
-    printf("%s: ufVarOpi=%u   min, have, max = %u %u %d\n", __func__, ufVarOpi,
-           hopt[ufVarOpi].min, havec->len, hest__Max(hopt[ufVarOpi].max));
-  }
-  uint minArg = hopt[ufVarOpi].min; /* min < max for sure */
-  if (minArg > havec->len && !hopt[ufVarOpi].dflt) {
-    int shwi = AIR_TRUE;
-    havStr = hestArgVecSprint(havec, shwi);
-    BIFF_GIVEN_ARGV(havStr, shwi);
-    biffAddf(HEST,
-             "%s%shave %s%u args left but need %u for "
-             "(default-less) variadic %s[%u]",
-             MY_ME, havec->len ? "only " : "", havec->len, minArg,
-             identStr(ident, sizeof(ident), hopt + ufVarOpi), ufVarOpi);
-    return (free(havStr), free(ufOpi2), 1);
-  }
-  // else minArg <= havec->len, or, minArg > havec->len and do have default
-  if (minArg <= havec->len) {
-    // can satisfy option from havec, no need to use default
-    uint getArg = havec->len;       // want to grab as many args as possible
-    if (-1 != hopt[ufVarOpi].max) { // but no more than the option asks for
-      getArg = AIR_MIN(getArg, AIR_UINT(hopt[ufVarOpi].max));
-    }
-    if (havecTransfer(hopt + ufVarOpi, havec, 0, getArg, hparm)) {
-      int shwi = AIR_TRUE;
-      havStr = hestArgVecSprint(havec, shwi);
-      BIFF_GIVEN_ARGV(havStr, shwi);
-      biffAddf(HEST, "%s%strouble getting args for variadic %s[%u]", MY_ME,
-               identStr(ident, sizeof(ident), hopt + ufVarOpi), ufVarOpi);
-      return (free(havStr), free(ufOpi2), 1);
-    }
-    if (!minArg) {
-      /* The sole unflagged option is allowed to be variadic with min==0.
-         In that case, we consider getting 0 args to be satisfying the option,
-         so we do record a source here to prevent the immediately following complaint
-         "didn't get required (default-less) unflagged". BUT WHAT IS THE SOURCE
-         OF NOTHING (NO ARGS)?  This weirdness is part of why the 2025 re-write initially
-         disallowed any min=0 unflagged variadic.  We thus cross our fingers and hope
-         we're not lying when we say that the source was the command-line. */
-      (hopt + ufVarOpi)->source = hestSourceCommandLine;
-    }
-  }
-  /* else minArg > havec->len so can't satisfy from havec, but that's ok for
-  hopt[ufVarOpi] since it has default. The erroneous presence of extraneous args will be
-  caught next */
-
 finishingup:
 
   // make sure that unflagged options without default were given
   for (upii = 0; upii < ufOptNum; upii++) {
-    uint opi = ufOpi2[2 * upii + 0];
+    uint opi = ufOpi[upii];
     if (!(hopt[opi].dflt) && hestSourceUnknown == hopt[opi].source) {
       biffAddf(HEST, "%s%sdidn't get required (default-less) %s[%u]", MY_ME,
                identStr(ident, sizeof(ident), hopt + opi), opi);
-      return (free(ufOpi2), 1);
+      biffAddf(HEST, "%s%safter getting %u args for %u unflagged options", MY_ME,
+               len0 - havec->len, upii);
+      BIFF_GIVEN_ARGV(gotStr, "after extracting flagged options,", shwi);
+      airMopError(mop);
+      return 1;
     }
   }
   // currently it's an error to have un-accounted-for args left over
   if (havec->len) {
-    int shwi = AIR_FALSE;
-    havStr = hestArgVecSprint(havec, shwi);
-    BIFF_GIVEN_ARGV(havStr, shwi);
-    // fprintf(stderr, "!%s: haveStr=|%s|\n", __func__, havStr);
     if (ufOptNum) {
       biffAddf(HEST,
                "%s%safter getting %u unflagged opts, have %u unexpected arg%s "
@@ -1226,15 +1274,17 @@ finishingup:
                havec->len > 1 ? "s," : "", havec->len > 1 ? "starting with " : "",
                havec->harg[0]->str);
     }
-    // fprintf(stderr, "!%s: have added to biff about unexpected arg(s)\n", __func__);
-    return (free(havStr), airFree(ufOpi2), 1);
+    BIFF_GIVEN_ARGV(gotStr, "after flagged option extraction", shwi);
+    airMopError(mop);
+    return 1;
   }
 
   if (hparm->verbose) {
     optAllPrint(__func__, "end of havecExtractUnflagged", hopt);
     hestArgVecPrint(__func__, "end of havecExtractUnflagged", havec);
   }
-  return (airFree(havStr), airFree(ufOpi2), 0);
+  airMopOkay(mop);
+  return 0;
 }
 
 /* optProcessDefaults
@@ -1543,7 +1593,7 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
   return 0;
 }
 
-/* hestParse  (the 2025 hestParse re-write)
+/* hestParse  (the 2025/2026 hestParse re-write)
 Parse the `argc`,`argv` commandline according to the hestOpt array `hopt`, and as
 tweaked by settings in (if non-NULL) the given `hestParm *_hparm`.  If there is an
 error, an error message string describing it in detail is generated and
@@ -1607,7 +1657,7 @@ hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
   // error string songs and dances
 #define DO_ERR2(WUT, ARGVS)                                                             \
   if ((ARGVS)) {                                                                        \
-    biffAddf(HEST, "from command-line=|%s|", (char *)(ARGVS));                          \
+    biffAddf(HEST, "from original command-line: %s", (char *)(ARGVS));                  \
   }                                                                                     \
   biffAddf(HEST, "%s%s" WUT, MY_MEV(HPARM->verbose));                                   \
   char *err = biffGetDone(HEST);                                                        \

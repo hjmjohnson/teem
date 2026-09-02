@@ -33,7 +33,7 @@ static int
 unu_sliceMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   uint *axis, axisNum;
-  hestOptAdd_Nv_UInt(&hopt, "a,axis", "axis", 1, -1, &axis, NULL,
+  hestOptAdd_Mv_UInt(&hopt, "a,axis", "axis", 1, -1, &axis, NULL,
                      "single axis or multiple axes to slice along.  "
                      "Giving multiple axes here leads to doing multiple slices "
                      "(at the corresponding positions "
@@ -45,7 +45,7 @@ unu_sliceMain(int argc, const char **argv, const char *me, const hestParm *hparm
                      &axisNum);
   long int *_pos;
   uint posNum;
-  hestOptAdd_Nv_Other(&hopt, "p,position", "pos", 1, -1, &_pos, NULL,
+  hestOptAdd_Mv_Other(&hopt, "p,position", "pos", 1, -1, &_pos, NULL,
                       "position(s) to slice at:\n "
                       "\b\bo <int> gives 0-based index\n "
                       "\b\bo M-<int> give index relative "

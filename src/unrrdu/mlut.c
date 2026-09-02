@@ -34,7 +34,7 @@ unu_mlutMain(int argc, const char **argv, const char *me, const hestParm *hparm)
   hestOpt *hopt = NULL;
   Nrrd **_nmlut;
   uint _nmlutLen;
-  hestOptAdd_Nv_Other(&hopt, "m,map", "mlut", 1, -1, &_nmlut, NULL,
+  hestOptAdd_Mv_Other(&hopt, "m,map", "mlut", 1, -1, &_nmlut, NULL,
                       "one nrrd of lookup tables to map input nrrd through, or, "
                       "list of nrrds which contain the individual entries of "
                       "the lookup table at each voxel, which will be joined together.",

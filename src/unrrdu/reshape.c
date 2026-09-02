@@ -33,7 +33,7 @@ unu_reshapeMain(int argc, const char **argv, const char *me, const hestParm *hpa
   hestOpt *hopt = NULL;
   size_t *size;
   uint sizeLen;
-  hestOptAdd_Nv_Size_t(&hopt, "s,size", "sz0 sz1 ", 1, -1, &size, NULL, "new axes sizes",
+  hestOptAdd_Mv_Size_t(&hopt, "s,size", "sz0 sz1 ", 1, -1, &size, NULL, "new axes sizes",
                        &sizeLen);
   Nrrd *nin;
   MY_OPT_ADD_NIN(nin, "input nrrd");

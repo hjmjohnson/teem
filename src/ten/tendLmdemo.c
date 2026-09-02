@@ -365,7 +365,7 @@ lmdemoMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   char *perr, *err;
 
   bagOstate bag[1]; // allocate one bag-o-state; can access member m with bag->m
-  hestOptAdd_Nv_Double(&hopt, "tp", "true poly coeffs", 1, -1, &(bag->tp), NULL,
+  hestOptAdd_Mv_Double(&hopt, "tp", "true poly coeffs", 1, -1, &(bag->tp), NULL,
                        "coefficients of (ground-truth) polynomial to sample, to "
                        "synthsize the data to later fit. \"-tp A B C\" means "
                        "A + Bx + Cx^2.  These coefficients are the _M_ "

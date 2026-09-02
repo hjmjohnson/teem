@@ -100,7 +100,7 @@ unu_minmaxMain(int argc, const char **argv, const char *me, const hestParm *_hpa
     "the input filename is printed first on the per-input single line.");
   char **inS;
   uint ninLen;
-  hestOptAdd_Nv_String(&hopt, NULL, "nin1", 1, -1, &inS, "-", "input nrrd(s)", &ninLen);
+  hestOptAdd_Mv_String(&hopt, NULL, "nin1", 1, -1, &inS, "-", "input nrrd(s)", &ninLen);
 
   // (boilerplate for YES some hparm modification)
   hestParm *hparm = hestParmCopy(_hparm);

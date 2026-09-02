@@ -114,7 +114,7 @@ estimMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
                     "\b\bo if \"false\": there may or may not be diffusion-weighted "
                     "images among the input; the B=0 image value is going to be "
                     "estimated along with the diffusion model");
-  hestOptAdd_Nv_Other(&hopt, "i", "dwi0 dwi1", 1, -1, &nin, "-",
+  hestOptAdd_Mv_Other(&hopt, "i", "dwi0 dwi1", 1, -1, &nin, "-",
                       "all the diffusion-weighted images (DWIs), as separate 3D nrrds, "
                       "**OR**: One 4D nrrd of all DWIs stacked along axis 0",
                       &ninLen, nrrdHestNrrd);

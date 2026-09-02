@@ -82,7 +82,12 @@ typedef unsigned int uint; /* uint is just more concise */
 // removing magic constants, so that's the role of these #define's now.
 #define MY_RESPONSE_FILE_FLAG    '@'
 #define MY_RESPONSE_FILE_COMMENT '#'
-#define MY_VAR_PARM_STOP_FLAG    '-'
+/* 2026 revisit renamed this from MY_VAR_PARM_STOP_FLAG to MY_VAR_PARM_END_FLAG, and
+   changed value from '-' to '.' i.e. the way to terminate variadic parms changed from
+   "--" to "-.", because we decided to respect POSIX convention for "--" */
+#define MY_VAR_PARM_END_FLAG     '.'
+/* 2026 revisit introduced this as way to respect POSIX convention for "--" */
+#define MY_STOP_PARSING_FLAG     '-'
 #define MY_MULTI_FLAG_SEP        ','
 
 /* normally this would be in the main lib.h, but hest is unusual in that its

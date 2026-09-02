@@ -37,7 +37,7 @@ evecMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   float thresh, *edata, *tdata, eval[3], evec[9], scl;
   size_t N, I, sx, sy, sz;
 
-  hestOptAdd_Nv_UInt(&hopt, "c", "c0 ", 1, 3, &comp, NULL,
+  hestOptAdd_Mv_UInt(&hopt, "c", "c0 ", 1, 3, &comp, NULL,
                      "which eigenvalues should be saved out. \"0\" for the "
                      "largest, \"1\" for the middle, \"2\" for the smallest, "
                      "\"0 1\", \"1 2\", \"0 1 2\" or similar for more than one",

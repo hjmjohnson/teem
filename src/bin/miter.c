@@ -58,7 +58,7 @@ main(int argc, const char *argv[]) {
                      "input vector volume to render", nrrdHestNrrd);
   hestOptAdd_1_Other(&hopt, "ti", "ntin", &(muu->ntin), "",
                      "input tensor volume to render", nrrdHestNrrd);
-  hestOptAdd_Nv_Other(&hopt, "txf", "nin", 1, -1, &(muu->ntxf), NULL,
+  hestOptAdd_Mv_Other(&hopt, "txf", "nin", 1, -1, &(muu->ntxf), NULL,
                       "one or more transfer functions", &(muu->ntxfNum), nrrdHestNrrd);
   limnHestCameraOptAdd(&hopt, muu->hctx->cam, NULL, "0 0 0", "0 0 1", NULL, NULL, NULL,
                        "nan nan", "nan nan", "20");
