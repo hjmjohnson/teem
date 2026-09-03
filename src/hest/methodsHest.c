@@ -904,7 +904,7 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
       return 1;
     }
     if (!(hopt[opi].valueP)) {
-      biffAddf(HEST, "%s%sopt[%u]'s valueP is NULL!", MY_ME, opi);
+      biffAddf(HEST, "%s%sopt[%u]'s valueP is NULL", MY_ME, opi);
       airMopError(mop);
       return 1;
     }
@@ -1126,7 +1126,7 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
         return 1;
       }
       if (!(hopt[opi].CB->parse)) {
-        biffAddf(HEST, "%s%sopt[%u]'s \"parse\" callback NULL", MY_ME, opi);
+        biffAddf(HEST, "%s%sopt[%u]'s \"parse\" callback is NULL", MY_ME, opi);
         airMopError(mop);
         return 1;
       }

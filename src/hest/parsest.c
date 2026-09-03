@@ -1500,13 +1500,13 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
         strsrc = hopt[opi].havec->harg[0]->str;
         invert = AIR_FALSE;
       } else {
-        biffAddf(HEST, "%s%sconfused by (kind 4) %s[%u] source %s and havec->len %u",
+        biffAddf(HEST, "%s%sconfused by (kind=4) %s[%u] source %s and havec->len %u",
                  MY_ME, ident, opi, airEnumStr(hestSource, hopt[opi].source),
                  hopt[opi].havec->len);
         return 1;
       }
       if ((pret = hest__ParseSingle[type](valueP, strsrc, hpp))) {
-        biffAddf(HEST, "%s%sfor (kind 4) %s[%u] could not parse |%s| as single %s",
+        biffAddf(HEST, "%s%sfor (kind=4) %s[%u] could not parse |%s| as single %s",
                  MY_ME, ident, opi, strsrc, hest__TypeStr[type]);
         hopt[opi].parseErr = pret;
         hopt->parseErrOptIdx = AIR_INT(opi);
@@ -1523,8 +1523,8 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
       if ((pret = hest__ParseSingle[type](valueP, hopt[opi].havec->harg[0]->str, hpp))) {
         // hpp->err as just generated can have newlines
         // (from %s) . . .  airEnumStr(hestSource, hopt[opi].source)
-        biffAddf(HEST, "%s%sproblem parsing for %s[%u]: %s", MY_ME, ident, opi,
-                 hpp->err);
+        biffAddf(HEST, "%s%s%s", MY_ME, hpp->err);
+        biffAddf(HEST, "%s%sproblem parsing for %s[%u]", MY_ME, ident, opi);
         hopt[opi].parseErr = pret;
         hopt->parseErrOptIdx = AIR_INT(opi);
         return pret;
@@ -1536,8 +1536,9 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
       for (uint argi = 0; argi < hopt[opi].havec->len; argi++) {
         if ((pret = hest__ParseSingle[type](cvalueP + size * argi,
                                             hopt[opi].havec->harg[argi]->str, hpp))) {
-          biffAddf(HEST, "%s%sproblem parsing arg[%u] (of %u) for %s[%u]: %s", MY_ME,
-                   argi, hopt[opi].havec->len, ident, opi, hpp->err);
+          biffAddf(HEST, "%s%s%s", MY_ME, hpp->err);
+          biffAddf(HEST, "%s%sproblem parsing arg[%u] (of %u) for %s[%u]", MY_ME, argi,
+                   hopt[opi].havec->len, ident, opi);
           hopt[opi].parseErr = pret;
           hopt->parseErrOptIdx = AIR_INT(opi);
           return pret;
@@ -1572,8 +1573,9 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
       for (uint argi = 0; argi < hopt[opi].havec->len; argi++) {
         if ((pret = hest__ParseSingle[type](cvalueP + size * argi,
                                             hopt[opi].havec->harg[argi]->str, hpp))) {
-          biffAddf(HEST, "%s%sproblem parsing arg[%u] (of %u) for (kind 5) %s[%u]: %s",
-                   MY_ME, argi, hopt[opi].havec->len, ident, opi, hpp->err);
+          biffAddf(HEST, "%s%s%s", MY_ME, hpp->err);
+          biffAddf(HEST, "%s%sproblem parsing arg[%u] (of %u) for (kind=5) %s[%u]",
+                   MY_ME, argi, hopt[opi].havec->len, ident, opi);
           hopt[opi].parseErr = pret;
           hopt->parseErrOptIdx = AIR_INT(opi);
           return pret;
