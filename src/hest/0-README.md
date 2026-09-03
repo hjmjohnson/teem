@@ -76,7 +76,7 @@ The special-case `kind`=6 is not really an option, but a container for a label (
 - `nargs=*` is `kind`=5 with `min`=0 and `max`=-1
 - `nargs=+` is `kind`=5 with `min`=1 and `max`=-1
 
-Most of the time the details of `kind` will not matter. The `hest` API for creating a `hest`-based program does not involve `kind`, and end-users don't have to understand `kind` to use a `hest`-based program. Still, knowing the different `kind`s is useful for understanding `hest`'s behavior, implementation, and sometimes its error messages. Some further notes on `kind`:
+Most of the time the details of `kind` will not matter. The `hest` API for creating a `hest`-based program does not involve `kind`, and end-users don't have to understand `kind` to use a `hest`-based program. Still, knowing the different `kind`s is useful for understanding `hest`'s behavior and sometimes its error messages. Some further notes on `kind`:
 
 - The `kind` of option is independent of being _optional_ (due to the `hestOpt` having a default string) versus _required_ (because no default string is given). `kind`=1 stand-alone flags have no default, but set an `int` variable to 1 or 0 if the user opted to include the flag on the command-line.
 - `kind` is mostly independent of whether an option is flagged or unflagged (i.e. positional). Flags are required for `kind`=1 stand-alone flags (or else it would make no sense) and for `kind`=4 options that take zero or one parm. The unusual semantics of `kind`=4 options, which involve logical negation with C's unary `!` of a required default value, deserve explicit indication on the command-line, rather than looking like the "zero or more" collection of values in a `kind`=5 option.
