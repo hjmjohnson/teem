@@ -40,6 +40,7 @@ main(int argc, const char **argv) {
   hestParm *hparm = hestParmNew();
   hparm->responseFileEnable = AIR_TRUE;
   hparm->respectDashDashHelp = AIR_TRUE;
+  th_getenvInt(&(hparm->verbose), "TH_VERBOSE");
   // ENEFD == elide non-exist float default
   int testThing = 0;
   th_getenvInt(&testThing, "TH_ENEFD");
