@@ -36,7 +36,6 @@ Options:
   --only PATTERN     Run only tests whose name contains PATTERN (substring)
   --coverage         Compile with and run llvm source-based code coverage
   --valgrind         Wrap each execution with valgrind --leak-check=full
-  --keep-temps       Do not delete temporary response files after the run
 """
 
 import argparse
@@ -56,7 +55,7 @@ AIR_ENDIAN_LITTLE = 1234
 AIR_ENDIAN_BIG = 4321
 
 # (GLK) anticipating airEnumStr(hestSource, src)
-# no need for 'commmand-line': that is the assumed default source
+# no need for 'commmand-line': that is the assumed source unless otherwise noted
 SRC_RF = 'response-file'
 SRC_DF = 'default'
 
@@ -344,15 +343,23 @@ def test_list(args):
             exe='th_flagged_scalars',
             name='scalars: response file with double-quoted string containing space',
             response_files={'quoted.txt': '-s "hello world"'},
-            argv='@quoted.txt',
+            argv=['-s', 'good morning', '@squoted.txt'],
             expected={'s': 'hello world', 's.src': SRC_RF},
         ),
         dict(
             exe='th_flagged_scalars',
             name='scalars: response file with single-quoted string',
             response_files={'squoted.txt': "-s 'one two'"},
-            argv='@squoted.txt',
+            argv=['-s', 'not this', '@squoted.txt'],
             expected={'s': 'one two', 's.src': SRC_RF},
+        ),
+        dict(
+            exe='th_flagged_scalars',
+            name='scalars: response file cannot recurse',
+            # unfortunately here have to hard-code response file directory
+            response_files={'recurse.txt': '-n 999 @resp/recurse.txt'},
+            argv=['-s', 'hi there', '@recurse.txt'],
+            expect_fail=True,
         ),
         # ==========================================================================
         # th_fixed_multi — kind=3 fixed-multiple parms
@@ -1095,91 +1102,90 @@ def run_one(test: dict, args, build_dir: Path) -> tuple:
     expect_fail = test.get('expect_fail', False)
     rf_specs = test.get('response_files', {})
 
-    tmp_dir = None
-    try:
-        #### materialise response files
-        if rf_specs:
-            tmp_dir = tempfile.mkdtemp(prefix='hest_test_')
-            # Rewrite "@FILENAME" argv elements where FILENAME is a known rf key.
-            for idx, arg in enumerate(argv):
-                if arg.startswith('@'):
-                    fname = arg[1:]
-                    if fname in rf_specs:
-                        fpath = os.path.join(tmp_dir, fname)
-                        with open(fpath, 'w') as fh:
-                            fh.write(rf_specs[fname])
-                        print(f'with response file {fpath}:')
-                        for line in rf_specs[fname].splitlines():
-                            print(f'{INDENT}{line}')
-                        argv[idx] = f'@{fpath}'
+    rfdir = None
+    #### materialise response files
+    if rf_specs:
+        rfdir = 'resp'   # pre-existing directory for this purpose
+        # Rewrite "@FILENAME" argv elements where FILENAME is a known rf key.
+        for idx, arg in enumerate(argv):
+            if arg.startswith('@'):
+                # inject the 'resp/' into the @arg identifying the response file
+                fname = arg[1:]
+                if fname in rf_specs:
+                    fpath = os.path.join(rfdir, fname)
+                    with open(fpath, 'w') as fh:
+                        fh.write(rf_specs[fname])
+                    print(f'with response file {fpath}:')
+                    for line in rf_specs[fname].splitlines():
+                        print(f'{INDENT}{line}')
+                    argv[idx] = f'@{fpath}'
 
-        #### assemble the argv for running the program
-        binary = str(build_dir / exe)
-        cmd = [binary] + argv
-        if args.valgrind:
-            cmd = [
-                'valgrind',
-                '--leak-check=full',
-                '--show-leak-kinds=all',
-                '--error-exitcode=42',
-                '--quiet',
-            ] + cmd
+    #### assemble the argv for running the program
+    binary = str(build_dir / exe)
+    cmd = [binary] + argv
+    if args.valgrind:
+        cmd = [
+            'valgrind',
+            '--leak-check=full',
+            '--show-leak-kinds=all',
+            '--error-exitcode=42',
+            '--quiet',
+        ] + cmd
 
-        #### execute
-        print('running: ', end='')
-        # generate a copy-paste-able command-line by using shell syntax
-        # for building up an environment in which a command is run
-        if envdict:
-            MYENV = ENV.copy()
-            for envvar, envval in envdict.items():
-                print(f'{envvar}="{envval}"  ', end='')
-                MYENV[envvar] = envval
-        else:
-            MYENV = ENV
-        # then print the command itself
-        print(f'{shlex.join(cmd)}')
-        # run it
-        result = subprocess.run(cmd, capture_output=True, text=True, env=MYENV)
-        exit_code = result.returncode
-        errlog = f'stderr:\n{textwrap.indent(result.stderr.strip(), INDENT)}'
+    #### execute
+    print('running: ', end='')
+    # generate a copy-paste-able command-line by using shell syntax
+    # for building up an environment in which a command is run
+    if envdict:
+        MYENV = ENV.copy()
+        for envvar, envval in envdict.items():
+            print(f'{envvar}="{envval}"  ', end='')
+            MYENV[envvar] = envval
+    else:
+        MYENV = ENV
+    # then print the command itself
+    print(f'{shlex.join(cmd)}')
+    # run it
+    # added encoding='latin1' (h/t https://stackoverflow.com/a/76384840)
+    # because otherwise got surprising error message (where previously it worked fine):
+    # UnicodeDecodeError: 'utf-8' codec can't decode byte 0xbb in position 85: invalid start byte
+    result = subprocess.run(cmd, capture_output=True, text=True, encoding='latin1', env=MYENV)
+    exit_code = result.returncode
+    errlog = f'stderr:\n{textwrap.indent(result.stderr.strip(), INDENT)}'
+    outlog = f'stdout:\n{textwrap.indent(result.stdout.strip(), INDENT)}'
+
+    #### If supposed to not run, verify that
+    if expect_fail:
+        if exit_code == 0:
+            return False, 'expected failure/non-zero exit but got 0\n' + outlog
+        return True, errlog
+
+    #### Else supposed to run, verify that
+    if exit_code:
+        return False, f'unexpected failure/non-zero exit code {exit_code}\n' + errlog
+
+    #### Supposed to run and did run; did it run correctly?
+    print(outlog)
+    actual = parse_kv(result.stdout)
+    failures = []
+    for key, exp_val in expected.items():
+        if key not in actual:
+            failures.append(f'  missing key {key!r}')
+            continue
+        act_val = actual[key]
+        if not _values_match(key, act_val, exp_val):
+            failures.append(f'  {key}: got {act_val!r}, expected {exp_val!r}')
+
+    if failures:
+        detail = 'value mismatch(es):\n' + '\n'.join(failures)
         outlog = f'stdout:\n{textwrap.indent(result.stdout.strip(), INDENT)}'
+        detail += f'\nfull binary output:' + outlog
+        return False, detail
 
-        #### If supposed to not run, verify that
-        if expect_fail:
-            if exit_code == 0:
-                return False, 'expected failure/non-zero exit but got 0\n' + outlog
-            return True, errlog
-
-        #### Else supposed to run, verify that
-        if exit_code:
-            return False, f'unexpected failure/non-zero exit code {exit_code}\n' + errlog
-
-        #### Supposed to run and did run; did it run correctly?
-        print(outlog)
-        actual = parse_kv(result.stdout)
-        failures = []
-        for key, exp_val in expected.items():
-            if key not in actual:
-                failures.append(f'  missing key {key!r}')
-                continue
-            act_val = actual[key]
-            if not _values_match(key, act_val, exp_val):
-                failures.append(f'  {key}: got {act_val!r}, expected {exp_val!r}')
-
-        if failures:
-            detail = 'value mismatch(es):\n' + '\n'.join(failures)
-            outlog = f'stdout:\n{textwrap.indent(result.stdout.strip(), INDENT)}'
-            detail += f'\nfull binary output:' + outlog
-            return False, detail
-
-        # if all went well, we do not include stdout: in the case of turning up hparm->verbose,
-        # via setting envvar TH_VERBOSE, stdout is very long and tedious
-        # (but still generated for the sake of coverage)
-        return True, ''
-
-    finally:
-        if tmp_dir and not args.keep_temps:
-            shutil.rmtree(tmp_dir, ignore_errors=True)
+    # if all went well, we do not include stdout: in the case of turning up hparm->verbose,
+    # via setting envvar TH_VERBOSE, stdout is very long and tedious
+    # (but still generated for the sake of coverage)
+    return True, ''
 
 
 # Main
