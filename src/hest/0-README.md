@@ -67,7 +67,7 @@ max          |                 |                 |
     min >    0                 1                 2
 ```
 
-The special-case `kind`=6 is not really an option, but a container for a label (created with `hestOptAdd_Separator`) used to visually separate subsets of options in very long option arrays. Parameterizing options with `min` and `max` allows you to specify an option that needs, for example, 3 or more arguments, or between 1 and 4 arguments. This is useful for various technical settings, but is not as straightforward in something like Python's `argparse`. Relative to `argparse` and its `nargs` argument to `.add_argument()`:
+The special-case `kind`=6 is not really an option, but a container for a label (created with `hestOptAdd_Separator`) for visually separating subsets of options in the glossaries of very long option arrays. Parameterizing options with `min` and `max` allows you to specify an option that needs, for example, 3 or more arguments, or between 1 and 4 arguments. This is useful for various technical settings, but is not as straightforward in something like Python's `argparse`. Relative to `argparse` and its `nargs` argument to `.add_argument()`:
 
 - `nargs=N` with `N`>1 is hest's `kind`=3
 - `nargs=1` is `kind`=2
