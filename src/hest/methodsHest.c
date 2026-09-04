@@ -952,6 +952,11 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
     if (hopt[opi].flag) {
       const char *flag = hopt[opi].flag;
       size_t fslen = strlen(flag);
+      if (!fslen) {
+        biffAddf(HEST, "%s%sopt[%u].flag is empty", MY_ME, opi);
+        airMopError(mop);
+        return 1;
+      }
       /* This strlen constraint is leveraged by usage.c/hsetBuff() */
       if (fslen >= AIR_STRLEN_SMALL / 2) {
         biffAddf(HEST, "%s%sstrlen(opt[%u].flag) %zu is too big", MY_ME, opi, fslen);
@@ -1060,11 +1065,6 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
         assert(lgfl[opi]);
         airMopAdd(mop, lgfl[opi], airFree, airMopAlways);
       } else {
-        if (!strlen(hopt[opi].flag)) {
-          biffAddf(HEST, "%s%sopt[%u].flag is zero length", MY_ME, opi);
-          airMopError(mop);
-          return 1;
-        }
         // remember (short) flag
         shfl[opi] = airStrdup(hopt[opi].flag);
         assert(shfl[opi]);

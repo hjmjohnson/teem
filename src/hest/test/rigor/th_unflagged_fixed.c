@@ -198,6 +198,8 @@ main(int argc, const char **argv) {
     hoptStr->flag[4] += 100;             hestOptCheck(hopt, NULL);
     // flag with space character
     hoptStr->flag[4] = ' ';              hestOptCheck(hopt, NULL); free(hoptStr->flag);
+    // zero-length
+    hoptStr->flag = airStrdup("");       hestOptCheck(hopt, NULL); free(hoptStr->flag);
     // zero-length long form
     hoptStr->flag = airStrdup("ss,");    hestOptCheck(hopt, NULL); free(hoptStr->flag);
     // zero-length short form
@@ -212,8 +214,12 @@ main(int argc, const char **argv) {
     hoptStr->flag = airStrdup("{");      hestOptParmCheck(hopt, hparm, NULL); free(hoptStr->flag);
     // (short) flag would look like -.
     hoptStr->flag = airStrdup(".");      hestOptParmCheck(hopt, hparm, NULL); free(hoptStr->flag);
+    // (short) flag would look like negative number
+    hoptStr->flag = airStrdup("8");      hestOptParmCheck(hopt, hparm, NULL); free(hoptStr->flag);
     // (long) flag would look like -.
     hoptStr->flag = airStrdup("f,.");    hestOptParmCheck(hopt, hparm, NULL); free(hoptStr->flag);
+    // (long) flag would look like negative number
+    hoptStr->flag = airStrdup("f,8");    hestOptParmCheck(hopt, hparm, NULL); free(hoptStr->flag);
     // (long) flag would look like -{
     hoptStr->flag = airStrdup("f,}");    hestOptParmCheck(hopt, hparm, NULL); free(hoptStr->flag);
     // (long) flag would look like -}
