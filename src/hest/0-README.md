@@ -112,7 +112,18 @@ unu slice: error:
 [hest] didn't get required (default-less) "-a,--axis" option[0]
 ```
 
-Printing the error message to `stderr` is done here by `hestParseOrExit`, but you can write your own wrapper around `hestParse` to handle the error message differently.
+Supporting response files, with their need for shell-like tokenization, involves somewhat complicated logic, which is nonetheless fastidious about reporting its various possible errors. Here is an example from a different test program:
+
+```
+error: [hest] problem with initial processing of command-line
+[hest] from original command-line: -s "hi there" @resp/bad-dqescape.txt
+[hest] (iter 5, on response-file) unable to get next arg
+[hest] trouble getting next arg
+[hest] trouble at character 13 of response-file "resp/bad-dqescape.txt"
+[hest] hit input end after \ escape from double-quoted string
+```
+
+Some of this error message is more helpful to a developer than to the end-user, but the last two lines give actionable info for the user, and all of it is useful for debugging. Printing the error message to `stderr` is done here by `hestParseOrExit`, but you can write your own wrapper around `hestParse` to handle the error message differently.
 
 If there are no variadic options (i.e. limiting oneself to kinds 1, 2, and 3), then the assignment of a command-line arg to a `hestOpt` is straight-forward, even with unflagged options and even with flagged options being able to appear on the command-line in any order. Variadic parameters do complicate the mapping of args to options. Considering the "`mv *.txt dir`" example: what if instead of just a single destination "`dir`" there were multiple "`dir1 dir2 ...`" directories (all of which were to get copies of the `.txt` files)? There would be no trivial way for `mv` to know when the "`*.txt`" args end and the "`dir`_`I`_" args begin. With this context, some further limitations and details of `hest`'s processing can be outlined, including the role of special flags "`--`" and "`-.`":
 
@@ -122,7 +133,7 @@ If there are no variadic options (i.e. limiting oneself to kinds 1, 2, and 3), t
 - Inspired by [POSIX Utility Guidelines](https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02): the "`--`" flag tells `hestParse` to stop processing arguments (including detecting flags for flagged options), and to leave subsequent arguments for something else outside of `hest` to process. Absent "`--`", however, `hestParse` will attempt to consume and process the **entire** given `argc,argv` command-line as options and their values. It is currently an error to have extra args that cannot be attributed to any option.
 - Parameters for options (flagged or unflagged) can only come from the end-user or from the option's default string, but not from some mix of both: there is no way to supplement arguments from the user with more from the default string or vice versa. Though it may be more confusing than helpful, the user can set options from a mix of the command-line and response files, since response files are expanded (in Phase 2) into a new effective command-line prior to any per-option processing.
 - As noted above, there currently can be at most one _unflagged_ multiple variadic option (`kind`=5). Having more than one will likely create user confusion about which args belong to which option. There is no limit on the number of _flagged_ multiple variadic options. It is also okay to have one unflagged multiple variadic option alongside other unflagged options with multiple _fixed_ parms.
-- For any multiple variadic option, _flagged or unflagged_, "`-.`" can be used to explicitly mark the end of args for the option. This use of "`-.`" can often be avoided: the end of the command-line also marks the end of any variadic args, and any other option flag marks the end of variadic args for a flagged option. For an unflagged multiple variadic option _with_ a default and with `min`=0 (i.e. the option can take zero or more parms), a lone "`-.`" argument is how the user explicitly says "I am passing zero arguments, and overriding the default". On the other hand, not giving any args for the option means "I am not setting this option, and want the default". Though unconventional, "`-.`" resolves annoying ambiguities around this corner case in other command-line parsers.
+- For any multiple variadic option, _flagged or unflagged_, "`-.`" can be used to explicitly mark the end of args for the option. This use of "`-.`" can often be avoided: the end of the command-line also marks the end of any variadic args, and any other option flag marks the end of variadic args for a flagged option. For an unflagged multiple variadic option _with_ a default and with `min`=0 (i.e. the option can take zero or more parms), a lone "`-.`" argument is how the user explicitly says "I am passing zero arguments, and overriding the default". On the other hand, not giving any args for such an option means "I am not setting this option, and want the default". Though unconventional, "`-.`" resolves annoying ambiguities around this corner case in other command-line parsers.
 - For an unflagged multiple variadic option with _no_ default and with `min`=0, giving no arguments also works to say "I am passing zero arguments", rather than being an error. For a flagged multiple variadic option with `min`=0, the presence of the flag alone, with no following parms, is what communicates "I am passing zero arguments (overriding the default if there is one)". Thus for multiple variadic option with `min`=0 with flag "`f`", both "`-f -.`" and "`-f`" (with no non-flag arg following) both mean "I am passing zero arguments".
 
 ## `hestParse` orderings of arguments and options
