@@ -57,11 +57,15 @@ https://claude.ai/chat/753238c4-c4d1-4241-824a-c1a310956286
       exit(1);                                                                          \
     }                                                                                   \
     if (opt->helpWanted) {                                                              \
-      hestInfo(stdout, argv[0], info, NULL_HPARM ? NULL : (hparm));                     \
+      int hw = opt->helpWanted;                                                         \
+      if (hw == 1) hestInfo(stdout, argv[0], info, NULL_HPARM ? NULL : (hparm));        \
+      /* hw == 1 (--help) or 2 (--usage) */                                             \
       hestUsage(stdout, opt, argv[0], NULL_HPARM ? NULL : (hparm), AIR_FALSE);          \
-      printf("(again with oneLine=true for coverage)\n");                               \
-      hestUsage(stdout, opt, argv[0], NULL_HPARM ? NULL : (hparm), AIR_TRUE);           \
-      hestGlossary(stdout, opt, NULL_HPARM ? NULL : (hparm));                           \
+      if (hw == 1) {                                                                    \
+        printf("(again with oneLine=true for coverage)\n");                             \
+        hestUsage(stdout, opt, argv[0], NULL_HPARM ? NULL : (hparm), AIR_TRUE);         \
+        hestGlossary(stdout, opt, NULL_HPARM ? NULL : (hparm));                         \
+      }                                                                                 \
       exit(0);                                                                          \
     }                                                                                   \
   } while (0)

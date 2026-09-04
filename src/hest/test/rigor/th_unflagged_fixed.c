@@ -179,18 +179,20 @@ main(int argc, const char **argv) {
     fprintf(stderr, "%s: ... coverage theater continues 1 ...\n", argv[0]);
     // clang-format off
     // invalid type
-    hoptStr->type += 100;     hestOptCheck(hopt, NULL);   hoptStr->type -= 100;
+    hoptStr->type += 100;     hestOptCheck(hopt, NULL);
+    hoptStr->type -= 200;     hestOptCheck(hopt, NULL);
+    hoptStr->type += 100; // back to where we started
     // NULL value pointer
-    char *tmpStr = hoptStr->valueP; hoptStr->valueP = NULL;
-    hestOptCheck(hopt, NULL);       hoptStr->valueP = tmpStr;
+    char *saveStr = hoptStr->valueP;
+    hoptStr->valueP = NULL;   hestOptCheck(hopt, NULL);   hoptStr->valueP = saveStr;
     // too-long flag
-    tmpStr = hoptStr->flag; // save flag
+    saveStr = hoptStr->flag; // save flag
     char longflag[] = ("this is way too long to be a reasonable flag. "
                        "this is way too long to be a reasonable flag. "
                        "this is way too long to be a reasonable flag. "
                        "this is way too long to be a reasonable flag. "
                        "this is way too long to be a reasonable flag. ");
-    hoptStr->flag = longflag;   hestOptCheck(hopt, NULL);
+    hoptStr->flag = airStrdup(longflag); hestOptCheck(hopt, NULL); free(hoptStr->flag);
     // flag with non-printing character
     hoptStr->flag = airStrdup("shortflag");
     hoptStr->flag[4] += 100;             hestOptCheck(hopt, NULL);
@@ -206,16 +208,23 @@ main(int argc, const char **argv) {
     hoptStr->flag = airStrdup("s,-l");   hestOptCheck(hopt, NULL); free(hoptStr->flag);
     // long form would act like --help
     hoptStr->flag = airStrdup("s,help"); hestOptParmCheck(hopt, hparm, NULL); free(hoptStr->flag);
-    // flag would look like comment
-    hoptStr->flag = airStrdup("{");      hestOptParmCheck(hopt, hparm, NULL);
+    // (short) flag would look like comment
+    hoptStr->flag = airStrdup("{");      hestOptParmCheck(hopt, hparm, NULL); free(hoptStr->flag);
+    // (short) flag would look like -.
+    hoptStr->flag = airStrdup(".");      hestOptParmCheck(hopt, hparm, NULL); free(hoptStr->flag);
+    // (long) flag would look like -.
+    hoptStr->flag = airStrdup("f,.");    hestOptParmCheck(hopt, hparm, NULL); free(hoptStr->flag);
+    // (long) flag would look like -{
+    hoptStr->flag = airStrdup("f,}");    hestOptParmCheck(hopt, hparm, NULL); free(hoptStr->flag);
+    // (long) flag would look like -}
+    hoptStr->flag = airStrdup("f,}");    hestOptParmCheck(hopt, hparm, NULL); /* keep it for the next thing */
     // again with own error message buffer
     char *myerr = NULL;
     hestOptParmCheck(hopt, hparm, &myerr);
     fprintf(stderr, "%s: optparmcheck fail: myerr=%p:\n%s\n", argv[0], (void*)myerr, myerr);
-    myerr = airFree(myerr);
-    free(hoptStr->flag); // cleanup bogus flag
+    myerr = airFree(myerr); free(hoptStr->flag); // cleanup bogus flag
     // restore flag
-    hoptStr->flag = tmpStr;
+    hoptStr->flag = saveStr;
     // non-NULL sawP for something not variadic
     hoptStr->sawP = &sopi;    hestOptCheck(hopt, NULL);  hoptStr->sawP = NULL;
     // non-NULL enm for something not an enum
@@ -239,7 +248,7 @@ main(int argc, const char **argv) {
     hestOptParmCheck(hopt, hparm, NULL);
     hestOptParmCheck(hopt, hparm, &myerr);
     // clang-format on
-    fprintf(stderr, "%s: ... end coverage theater\n", argv[0]);
+    fprintf(stderr, "%s: ... end coverage theater\n\n", argv[0]);
     // if (!selfMop) hestParmUnmop(hparm); // forgot where this should go
   }
   if (selfMop) {

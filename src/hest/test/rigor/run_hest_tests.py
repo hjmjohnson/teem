@@ -88,8 +88,10 @@ TYvals = {
 TYs = list(TYvals.keys())
 # FLAGS: all the -TY (e.g. "-SI") flags for th_kind* programs
 FLAGS = {f'TH_{TY}_FLAG': '' for TY in TYs}
-# TYsNumeric: all the "numeric" TY, but really: ones for which C "!" makes sense
-TYsNumeric = [TY for TY in TYs if TY not in ['CH', 'SS', 'EE', 'XY', 'CO']]
+# all the TY for which kind=4 is not (no longer) supported
+TYsNonnumeric = ['CH', 'SS', 'EE', 'XY', 'CO']
+# TYsNumeric: all the "numeric" TY, but really: ones valid for kind=4 ("!" makes sense)
+TYsNumeric = [TY for TY in TYs if TY not in TYsNonnumeric]
 
 
 def DFLT(I):
@@ -283,20 +285,26 @@ def test_list(args):
         ),
         dict(
             exe='th_flagged_scalars',
-            name='scalars: nested -{ -{ }- }- comments',
+            name='scalars: nested -{ }- comments',
             argv='-n 5 -{ -n 10 -{ bingo banana }- }-',
             expected={'n': 5},
         ),
         dict(
             exe='th_flagged_scalars',
-            name='scalars: badly nested -{ -{ }- }- comments 1',
+            name='scalars: badly nested -{ }- comments 1',
             argv='-n 5 -{ -n 10 -{ bingo banana }- }- }-',
             expect_fail=True,
         ),
         dict(
             exe='th_flagged_scalars',
-            name='scalars: badly nested -{ -{ }- }- comments 2',
+            name='scalars: badly nested -{ }- comments 2',
             argv='-n 5 -{ -n 10 -{ bingo banana }- }- -{',
+            expect_fail=True,
+        ),
+        dict(
+            exe='th_flagged_scalars',
+            name='scalars: badly nested -{ }- comments 3',
+            argv='-n 5 -{ -n 10 -{ bingo banana',
             expect_fail=True,
         ),
         dict(
@@ -308,7 +316,7 @@ def test_list(args):
         dict(
             exe='th_flagged_scalars',
             name='scalars: from response file',
-            response_files={'opts.txt': '-n 77 -s from-file'},
+            response_files={'opts.txt': '-n 77 -s from-file\n'},
             argv=['@opts.txt'],
             expected={
                 'n': 77,
@@ -324,7 +332,7 @@ def test_list(args):
         dict(
             exe='th_flagged_scalars',
             name='scalars: response file then cmdline override',
-            response_files={'base.txt': '-n 77 -s from-file'},
+            response_files={'base.txt': '-n 77 -s from-file\n'},
             argv='@base.txt -n 99',
             expected={
                 'n': 99,
@@ -335,21 +343,89 @@ def test_list(args):
         dict(
             exe='th_flagged_scalars',
             name='scalars: response file with # comment line',
-            response_files={'commented.txt': '# this whole line is a comment\n-n 55'},
+            response_files={'commented.txt': '# this whole line is a comment\n-n 55\n'},
             argv='@commented.txt',
             expected={'n': 55, 'n.src': SRC_RF},
         ),
         dict(
             exe='th_flagged_scalars',
+            name='scalars: response file w/ balanced -{ }- comments',
+            response_files={'bracecmt.txt': '-n -{ goober }- 789\n'},
+            argv='@bracecmt.txt',
+            expected={'n': 789, 'n.src': SRC_RF},
+        ),
+        dict(
+            exe='th_flagged_scalars',
+            name='scalars: response file w/ UNbalanced -{ }- comments',
+            response_files={'bad-bracecmt.txt': '-n -{ goober 789\n'},
+            argv='@bad-bracecmt.txt',
+            expect_fail=True,
+        ),
+        dict(
+            exe='th_flagged_scalars',
+            name='scalars: malformed response file invocation',
+            argv='@ resp/doesnotexist.txt',
+            expect_fail=True,
+        ),
+        dict(
+            exe='th_flagged_scalars',
+            name='scalars: missing response file',
+            argv='@doesnotexist.txt',
+            expect_fail=True,
+        ),
+        dict(
+            exe='th_flagged_scalars',
+            name='scalars: response file cant ask for --help',
+            response_files={'bad-help.txt': '--help'},
+            argv='@bad-help.txt',
+            expect_fail=True,
+        ),
+        dict(
+            exe='th_flagged_scalars',
+            name='scalars: response file cant ask for --usage',
+            response_files={'bad-usage.txt': '--usage'},
+            argv='@bad-usage.txt',
+            expect_fail=True,
+        ),
+        dict(
+            env=dict(TH_N_DFLT='--help'),
+            exe='th_flagged_scalars',
+            name='scalars: default string file cant ask for --help',
+            argv=[],
+            expect_fail=True,
+        ),
+        dict(
+            env=dict(TH_N_DFLT='--usage'),
+            exe='th_flagged_scalars',
+            name='scalars: default string file cant ask for --usage',
+            argv=[],
+            expect_fail=True,
+        ),
+        dict(
+            env=dict(TH_N_DFLT='@bogus.txt'),
+            exe='th_flagged_scalars',
+            name='scalars: default string file cant invoke response file',
+            argv=[],
+            expect_fail=True,
+        ),
+        dict(
+            exe='th_flagged_scalars',
             name='scalars: response file with double-quoted string containing space',
-            response_files={'quoted.txt': '-s "hello world"'},
-            argv=['-s', 'good morning', '@squoted.txt'],
+            response_files={'dquoted.txt': '-s "hello world"\n'},
+            argv=['-s', 'good morning', '@dquoted.txt'],
             expected={'s': 'hello world', 's.src': SRC_RF},
         ),
         dict(
             exe='th_flagged_scalars',
+            name='scalars: response file with double-quoted string with line continuation and other escapes',
+            response_files={'dquoted-lc.txt': '-s "hello \\\nworld \$ \\` \\" \\\\ \\x "\n'},
+            argv=['-s', 'good morning', '@dquoted-lc.txt'],
+            expected={'s': 'hello world $ ` " \\ \\x ', 's.src': SRC_RF},
+        ),
+        dict(
+            exe='th_flagged_scalars',
             name='scalars: response file with single-quoted string',
-            response_files={'squoted.txt': "-s 'one two'"},
+            response_files={'squoted.txt': "-s 'one two'"},  # not using newline, for variety
             argv=['-s', 'not this', '@squoted.txt'],
             expected={'s': 'one two', 's.src': SRC_RF},
         ),
@@ -357,8 +433,70 @@ def test_list(args):
             exe='th_flagged_scalars',
             name='scalars: response file cannot recurse',
             # unfortunately here have to hard-code response file directory
-            response_files={'recurse.txt': '-n 999 @resp/recurse.txt'},
+            response_files={'recurse.txt': '-n 999 @resp/recurse.txt\n'},
             argv=['-s', 'hi there', '@recurse.txt'],
+            expect_fail=True,
+        ),
+        dict(
+            exe='th_flagged_scalars',
+            name='scalars: response file can nest some',
+            # unfortunately here have to hard-code response file directory
+            response_files={
+                'nest1a.txt': '-n 901 @resp/nest2a.txt\n',
+                'nest2a.txt': '-n 902 @resp/nest3a.txt\n',
+                'nest3a.txt': '-n 903 #no more nesting',
+            },
+            argv=['-n', '900', '@nest1a.txt'],
+            expected={'n': 903, 'n.src': SRC_RF},
+        ),
+        dict(
+            exe='th_flagged_scalars',
+            name='scalars: response file cannot nest too much',
+            # unfortunately here have to hard-code response file directory
+            response_files={
+                'nest1b.txt': '-n 901 @resp/nest2b.txt\n',
+                'nest2b.txt': '-n 902 @resp/nest3b.txt\n',
+                'nest3b.txt': '-n 903 @resp/nest4b.txt\n',
+                'nest4b.txt': '-n 904 @resp/nest5b.txt\n',
+                'nest5b.txt': '-n 905 @resp/nest6b.txt\n',
+                'nest6b.txt': '-n 906 #no more nesting',
+            },
+            argv=['-n', '900', '@nest1b.txt'],
+            expect_fail=True,
+        ),
+        dict(
+            exe='th_flagged_scalars',
+            name='scalars: response file doesnt close double-quote string',
+            response_files={'bad-sq.txt': '-s "we have unfinished'},
+            argv=['-s', 'hi there', '@bad-sq.txt'],
+            expect_fail=True,
+        ),
+        dict(
+            exe='th_flagged_scalars',
+            name='scalars: response file doesnt close single-quote string',
+            response_files={'bad-sq.txt': "-s 'we have unfinished"},
+            argv=['-s', 'hi there', '@bad-sq.txt'],
+            expect_fail=True,
+        ),
+        dict(
+            exe='th_flagged_scalars',
+            name='scalars: response file escapes space and concats quotes',
+            response_files={'escape-space.txt': '-s \\ th"i"s\\ wo\'r\'ks'},
+            argv=['-s', 'hi there', '@escape-space.txt'],
+            expected={'s': ' this works', 's.src': SRC_RF},
+        ),
+        dict(
+            exe='th_flagged_scalars',
+            name='scalars: response file doesnt finish escape',
+            response_files={'bad-escape.txt': '-s this\\ bad\\'},
+            argv=['-s', 'hi there', '@bad-escape.txt'],
+            expect_fail=True,
+        ),
+        dict(
+            exe='th_flagged_scalars',
+            name='scalars: response file doesnt finish double-quoted escape',
+            response_files={'bad-dqescape.txt': '-s "this bad\\'},
+            argv=['-s', 'hi there', '@bad-dqescape.txt'],
             expect_fail=True,
         ),
         # ==========================================================================
@@ -434,6 +572,12 @@ def test_list(args):
         ),
         dict(
             exe='th_unflagged_fixed',
+            name='unflagged-fixed: ones and spaces values plus bad extra',
+            argv=['1', '1', 'one and done', '1.0,1.00', 'unwanted'],
+            expect_fail=True,
+        ),
+        dict(
+            exe='th_unflagged_fixed',
             name='unflagged-fixed: ones and spaces values',
             argv=['1', '1', 'one and done', '1.0,1.00'],
             expected={'A': [1, 1], 'B': 'one and done', 'C': '(1,1)'},
@@ -468,7 +612,7 @@ def test_list(args):
         # th_variadic — A:two fixed, B:one variadic, C:single fixed, D:two fixed
         dict(
             exe='th_variadic',
-            name='variadic: three strings in middle',
+            name='variadic: three strings in middle (all unflagged)',
             argv=['10', '20', 'p', 'happy path', 'r', '33', '44', '55'],
             expected={
                 'A': [10, 20],
@@ -476,6 +620,47 @@ def test_list(args):
                 'C': 33,
                 'D': [44, 55],
             },
+        ),
+        dict(
+            env={f'TH_FLAG_{L}': 'true' for L in ['A', 'B', 'C', 'D']},
+            exe='th_variadic',
+            name='variadic: one string in middle (all flagged)',
+            argv='-A 10 20 -B happy -C 33 -D 44 55',
+            expected={
+                'A': [10, 20],
+                'B': ['happy'],
+                'C': 33,
+                'D': [44, 55],
+            },
+        ),
+        dict(
+            env={'TH_A_DFLT': '111 222', **{f'TH_FLAG_{L}': 'true' for L in ['A', 'B', 'C', 'D']}},
+            exe='th_variadic',
+            name='variadic: one string in middle (all flagged) with -A default',
+            argv='-B happy -C 33 -D 44 55',
+            expected={
+                'A': [111, 222],
+                'B': ['happy'],
+                'C': 33,
+                'D': [44, 55],
+            },
+        ),
+        dict(
+            env={'TH_A_DFLT': '111', **{f'TH_FLAG_{L}': 'true' for L in ['A', 'B', 'C', 'D']}},
+            exe='th_variadic',
+            name='variadic: one string in middle (all flagged) with -A bad default (only 1 of 2 ints)',
+            argv='-B happy -C 33 -D 44 55',
+            expect_fail=True,
+        ),
+        dict(
+            env={
+                'TH_A_DFLT': '111 oops',
+                **{f'TH_FLAG_{L}': 'true' for L in ['A', 'B', 'C', 'D']},
+            },
+            exe='th_variadic',
+            name='variadic: one string in middle (all flagged) with -A bad default (bad 2nd int)',
+            argv='-B happy -C 33 -D 44 55',
+            expect_fail=True,
         ),
         dict(
             exe='th_variadic',
@@ -489,9 +674,110 @@ def test_list(args):
             },
         ),
         dict(
+            env={
+                'TH_B_VMIN': '0',
+                'TH_B_DFLT': 'hydrogen helium',
+                **{f'TH_FLAG_{L}': 'true' for L in ['A', 'C', 'D']},
+            },
+            exe='th_variadic',
+            name='variadic: exactly B (unflagged w/default) vmin=0 string, got 2 (all else flagged)',
+            argv='-A 101 202 -C 303 -D 404 505',
+            expected={
+                'A': [101, 202],
+                'B': ['hydrogen', 'helium'],
+                'C': 303,
+                'D': [404, 505],
+            },
+        ),
+        dict(
+            env={
+                'TH_B_VMIN': '0',
+                'TH_B_DFLT': '"hydrogen" "hel i um"',
+                **{f'TH_FLAG_{L}': 'true' for L in ['A', 'C', 'D']},
+            },
+            exe='th_variadic',
+            name='variadic: exactly B (unflagged w/default) vmin=0 string, got 2 quoted (all else flagged)',
+            argv='-A 101 202 -C 303 -D 404 505',
+            expected={
+                'A': [101, 202],
+                'B': ['hydrogen', 'hel i um'],
+                'C': 303,
+                'D': [404, 505],
+            },
+        ),
+        dict(
+            env={
+                'TH_B_VMIN': '0',
+                'TH_B_DFLT': '"hydrogen" -{ move_along }- "helium"',
+                **{f'TH_FLAG_{L}': 'true' for L in ['A', 'C', 'D']},
+            },
+            exe='th_variadic',
+            name='variadic: exactly B (unflagged w/default) vmin=0 string, got 2 quoted w/comments (all else flagged)',
+            argv='-A 101 202 -C 303 -D 404 505',
+            expected={
+                'A': [101, 202],
+                'B': ['hydrogen', 'helium'],
+                'C': 303,
+                'D': [404, 505],
+            },
+        ),
+        dict(
+            env={
+                'TH_B_VMIN': '0',
+                'TH_B_DFLT': '"hydrogen" -{ move_along "helium"',
+                **{f'TH_FLAG_{L}': 'true' for L in ['A', 'C', 'D']},
+            },
+            exe='th_variadic',
+            name='variadic: exactly B (unflagged w/default) vmin=0 string, got 2 quoted w/ busted comment (all else flagged)',
+            argv='-A 101 202 -C 303 -D 404 505',
+            expect_fail=True,
+        ),
+        dict(
+            env={
+                'TH_B_VMIN': '0',
+                **{f'TH_FLAG_{L}': 'true' for L in ['A', 'C', 'D']},
+            },
+            exe='th_variadic',
+            name='variadic: exactly B (unflagged defaultless) vmin=0 string, 0 given (all else flagged)',
+            argv='-A 101 202 -C 303 -D 404 505',
+            expected={
+                'A': [101, 202],
+                'B': [],
+                'C': 303,
+                'D': [404, 505],
+            },
+        ),
+        dict(
+            env={
+                'TH_B_VMIN': '0',
+                'TH_B_DFLT': 'hydrogen\\ helium',
+                **{f'TH_FLAG_{L}': 'true' for L in ['A', 'C', 'D']},
+            },
+            exe='th_variadic',
+            name='variadic: exactly B (unflagged w/default) vmin=0 string, 1 given w/space (all else flagged)',
+            argv='-A 101 202 -C 303 -D 404 505',
+            expected={
+                'A': [101, 202],
+                'B': ['hydrogen helium'],
+                'C': 303,
+                'D': [404, 505],
+            },
+        ),
+        dict(
+            env={
+                'TH_B_VMIN': '0',
+                'TH_B_DFLT': 'hydrogen\\ helium \\',
+                **{f'TH_FLAG_{L}': 'true' for L in ['A', 'C', 'D']},
+            },
+            exe='th_variadic',
+            name='variadic: exactly B (unflagged w/default) vmin=0 string, busted 1 given (all else flagged)',
+            argv='-A 101 202 -C 303 -D 404 505',
+            expect_fail=True,
+        ),
+        dict(
             env=dict(TH_B_VMIN='0'),
             exe='th_variadic',
-            name='variadic: minimum B (exactly vmin=0 string in middle)',
+            name='variadic: minimum B (exactly vmin=0 string in middle) (all unflagged)',
             argv='10 20 33 44 55',
             expected={
                 'A': [10, 20],
@@ -720,6 +1006,20 @@ def test_list(args):
             argv=[],
             expected={TY: P(TY, TYvals[TY][0]) for TY in TYsNumeric},
         ),
+        *[
+            dict(
+                env={
+                    f'TH_KIND4_{TZ}': '',
+                    **DFLT([0]),  # harmlessly sets defaults for non-existent options
+                    **FLAGS,  # harmlessly turns on flags for non-existent options
+                },
+                exe='th_kind4',
+                name=f'kind4 (with req flags+defaults) set from dflt, plus bad TY={TZ}',
+                argv=[],
+                expect_fail=True,
+            )
+            for TZ in TYsNonnumeric
+        ],
         dict(
             env={
                 **DFLT([0]),
@@ -750,6 +1050,24 @@ def test_list(args):
             argv=[x for TY in TYsNumeric for x in [f'-{TY}', TYvals[TY][1]]],
             expected={f'{TY}': TYvals[TY][1] for TY in TYsNumeric},
         ),
+        *[
+            dict(
+                env={
+                    **DFLT([0]),
+                    **FLAGS,
+                },
+                exe='th_kind4',
+                name=f'kind4 (with required flags+defaults) set args but bad {TZ}',
+                argv=[
+                    x
+                    for TY in TYsNumeric
+                    # perturb only the passed TZ value
+                    for x in [f'-{TY}', 'sewage' if TY == TZ else TYvals[TY][1]]
+                ],
+                expect_fail=True,
+            )
+            for TZ in TYsNumeric
+        ],
     ]
     ###################### kind5
     tlist += [
@@ -1106,6 +1424,14 @@ def run_one(test: dict, args, build_dir: Path) -> tuple:
     #### materialise response files
     if rf_specs:
         rfdir = 'resp'   # pre-existing directory for this purpose
+        # write the files
+        for fname in rf_specs:
+            fpath = os.path.join(rfdir, fname)
+            with open(fpath, 'w') as fh:
+                fh.write(rf_specs[fname])
+            print(f'with response file {fpath}:')
+            for line in rf_specs[fname].splitlines():
+                print(f'{INDENT}{line}')
         # Rewrite "@FILENAME" argv elements where FILENAME is a known rf key.
         for idx, arg in enumerate(argv):
             if arg.startswith('@'):
@@ -1113,11 +1439,6 @@ def run_one(test: dict, args, build_dir: Path) -> tuple:
                 fname = arg[1:]
                 if fname in rf_specs:
                     fpath = os.path.join(rfdir, fname)
-                    with open(fpath, 'w') as fh:
-                        fh.write(rf_specs[fname])
-                    print(f'with response file {fpath}:')
-                    for line in rf_specs[fname].splitlines():
-                        print(f'{INDENT}{line}')
                     argv[idx] = f'@{fpath}'
 
     #### assemble the argv for running the program
@@ -1235,7 +1556,8 @@ def main() -> int:
     )
     args = ap.parse_args()
 
-    # for better coverage, crank up verbosity (not that we actually check the resulting output)
+    # for better coverage (it makes a big difference in parsest.c)
+    # crank up verbosity (not that we actually check the resulting output)
     if args.coverage:
         ENV['TH_VERBOSE'] = '11'
 
@@ -1287,11 +1609,12 @@ def main() -> int:
     if args.coverage:
         #### run --help on everything
         # GLK added: helper function for running --help
-        def run_help(thebinary, thenv, stdin=None):
+        def run_help(thebinary, thenv, stdin=None, usage=False):
+            ddwut = '--usage' if usage else '--help'
             result = subprocess.run(
-                [str(thebinary), '--help'], capture_output=True, text=True, stdin=stdin, env=thenv
+                [str(thebinary), ddwut], capture_output=True, text=True, stdin=stdin, env=thenv
             )
-            print(f'./{build_dir}/{exe} --help:')
+            print(f'./{build_dir}/{exe} {ddwut}:')
             if result.returncode == 0:
                 print(textwrap.indent(result.stdout, INDENT))
             else:
@@ -1306,6 +1629,7 @@ def main() -> int:
             run_help(binary, dict(TH_NULL_HPARM='1', **ENV))
             if 'th_variadic' == exe:
                 # this one has extra switches set by envvar
+                run_help(binary, ENV, usage=True)
                 myenv = dict(**{f'TH_FLAG_{L}': 'true' for L in ['A', 'B', 'C', 'D']}, **ENV)
                 print('--help with TH_FLAG_{A,B,C,D}=true')
                 run_help(binary, myenv)

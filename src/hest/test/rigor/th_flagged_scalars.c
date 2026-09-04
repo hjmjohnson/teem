@@ -51,11 +51,16 @@ main(int argc, const char **argv) {
   int n = 0;
   // hestOptAdd_1_Int(&opt, "n", "count", &n, "99", "an integer");
   // using old hestOptAdd for coverage
-  hestOptAdd(&opt, "n", "count", airTypeInt, 1, 1, &n, "99", "an integer");
+  hestOptAdd(&opt, "n", "count", airTypeInt, 1, 1, &n,
+             // forgive the two calls to getenv
+             getenv("TH_N_DFLT") ? getenv("TH_N_DFLT") : "99", "an integer");
   double x = 0.0;
   hestOptAdd_1_Double(&opt, "x", "val", &x, testThing ? "nan" : "1.0", "a double");
   char *s = NULL;
-  hestOptAdd_1_String(&opt, "s", "str", &s, "sunk cost", "a string");
+  hestOptAdd_1_String(&opt, "s", "str", &s,
+                      // forgive the two calls to getenv
+                      getenv("TH_S_DFLT") ? getenv("TH_S_DFLT") : "sunk cost",
+                      "a string");
   int b = 0;
   hestOptAdd_1_Bool(&opt, "b", "flag", &b, "false", "a boolean");
   int e = 0;
