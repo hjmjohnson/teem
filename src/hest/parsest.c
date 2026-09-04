@@ -35,15 +35,6 @@ hopt  = hestOpt
 // histPopt pops one hestInput from the `hist` stack
 static int /* Biff: 1 */
 histPop(hestInputStack *hist, const hestParm *hparm) {
-  if (!(hist && hparm)) {
-    biffAddf(HEST, "%s%sgot NULL pointer (hist %p hparm %p)", MY_ME, AIR_VOIDP(hist),
-             AIR_CVOIDP(hparm));
-    return 1;
-  }
-  if (!(hist->len)) {
-    biffAddf(HEST, "%s%scannot pop from input stack height 0", MY_ME);
-    return 1;
-  }
   hestInput *topHin = hist->hin + hist->len - 1;
   if (topHin->dashBraceComment) {
     biffAddf(HEST,
@@ -135,6 +126,8 @@ argstGo(int *nastP, hestArg *tharg, int *stateP, int source, int icc, int vrbo) 
     printf("%s: hello: getting %d=|%c| in state=%s\n", __func__, icc, cc,
            airEnumStr(&argst_aenum, *stateP));
   }
+  // initialize to nastUnknown to say "still working"
+  *nastP = nastUnknown;
   // hitting end of input is special enough to handle separately
   if (EOF == icc) {
     int ret;
@@ -183,13 +176,12 @@ argstGo(int *nastP, hestArg *tharg, int *stateP, int source, int icc, int vrbo) 
     }
     return ret;
   }
-  // else not at input end, use nastUnknown as default state of "still working"
-  *nastP = nastUnknown;
+  // else not at input end
   switch (*stateP) {
   case argstStart:
-    /* "The behavior is undefined if the value of ch is not representable as unsigned
-    char and is not equal to EOF." https://en.cppreference.com/c/string/byte/isspace */
-    if (!isspace(AIR_CAST(unsigned char, cc))) { // if is space, we stay in argstStart
+    // if we got a space, we're still waiting for arg to start (stay in argstStart)
+    if (!hest__isspace(icc)) {
+      // we got non-space
       if ('\'' == cc) {
         *stateP = argstSingleQ;
       } else if ('"' == cc) {
@@ -202,10 +194,11 @@ argstGo(int *nastP, hestArg *tharg, int *stateP, int source, int icc, int vrbo) 
         hestArgAddChar(tharg, cc);
         *stateP = argstInside;
       }
-    } // if !isspace(cc)
+    } // (else got space)
     break;
   case argstInside:
-    if (isspace(AIR_CAST(unsigned char, cc))) { // this is the natural end to an arg
+    if (hest__isspace(icc)) {
+      // whitespace is the natural end to an arg
       *nastP = nastBehold;
       *stateP = argstStart; // prepare for next arg
     } else if ('\'' == cc) {
@@ -217,7 +210,7 @@ argstGo(int *nastP, hestArg *tharg, int *stateP, int source, int icc, int vrbo) 
     } else { // add to existing arg EVEN IF IT is a '#'
       hestArgAddChar(tharg, cc);
       // state stays at argstInside
-    } // else !isspace(cc)
+    }
     break;
   case argstSingleQ:
     if ('\'' == cc) {
@@ -252,7 +245,7 @@ argstGo(int *nastP, hestArg *tharg, int *stateP, int source, int icc, int vrbo) 
   case argstEscapeDQ:
     if ('\n' == cc) {
       // like above: line continuation; ignore \ and \n
-    } else if ('$' == cc || '\'' == cc || '\"' == cc || '\\' == cc) {
+    } else if ('$' == cc || '`' == cc || '\"' == cc || '\\' == cc) {
       // add escaped character to arg
       hestArgAddChar(tharg, cc);
     } else {
@@ -287,11 +280,6 @@ also exhausted (instead we say "try again").
 static int /* Biff: 1 */
 histProcNextArgTry(int *nastP, hestArg *tharg, hestInputStack *hist,
                    const hestParm *hparm) {
-  if (!(nastP && tharg && hist && hparm)) {
-    biffAddf(HEST, "%s%sgot NULL pointer (nastP %p tharg %p hist %p hparm %p)", MY_ME,
-             AIR_VOIDP(nastP), AIR_VOIDP(tharg), AIR_VOIDP(hist), AIR_CVOIDP(hparm));
-    return 1;
-  }
   // printf("!%s: hello hist->len %u\n", __func__, hist->len);
   hestArgReset(tharg);
   *nastP = nastUnknown;
@@ -325,6 +313,7 @@ histProcNextArgTry(int *nastP, hestArg *tharg, hestInputStack *hist,
       *nastP = nastTryAgain;
     }
   } else if (hestSourceResponseFile == hin->source || hestSourceDefault == hin->source) {
+    // this is a source that is not already tokenized; we do the tokenizing here
     int icc; // the next character we read as int
     int state = argstStart;
     do {
@@ -335,12 +324,13 @@ histProcNextArgTry(int *nastP, hestArg *tharg, hestInputStack *hist,
         } else {
           icc = EOF;
         }
-      } else if (hestSourceResponseFile == hin->source) {
-        icc = fgetc(hin->rfile); // may be EOF
       } else {
-        biffAddf(HEST, "%s%sconfused by input source %d", MY_ME, hin->source);
-        return 1;
+        assert(hestSourceResponseFile == hin->source);
+        icc = fgetc(hin->rfile); // may be EOF
       }
+      // printf("!%s: icc(%s) = '%c' = %d --> argstGo --> *nastP = %s; tharg:|%s|\n",
+      //        __func__, airEnumStr(hestSource, hin->source), icc, icc,
+      //        airEnumStr(&nast_aenum, *nastP), tharg->str);
       if (argstGo(nastP, tharg, &state, hin->source, icc, hparm->verbose > 4)) {
         if (hestSourceResponseFile == hin->source) {
           biffAddf(HEST, "%s%strouble at character %u of %s \"%s\"", MY_ME, hin->carIdx,
@@ -351,12 +341,10 @@ histProcNextArgTry(int *nastP, hestArg *tharg, hestInputStack *hist,
         }
         return 1;
       }
-      /* printf("!%s: icc = %d --> argstGo --> *nastP = %s; tharg:|%s|\n", __func__, icc,
-                airEnumStr(&nast_aenum, *nastP), tharg->str); */
       if (EOF != icc) {
         hin->carIdx++;
       } else {
-        // we're at end; pop input; *nastP already set to nastTryAgain by argstGo()
+        // EOF == icc so we're done with this char source
         if (histPop(hist, hparm)) {
           if (hestSourceResponseFile == hin->source) {
             biffAddf(HEST, "%s%strouble popping %s \"%s\"", MY_ME,
@@ -373,6 +361,9 @@ histProcNextArgTry(int *nastP, hestArg *tharg, hestInputStack *hist,
     biffAddf(HEST, "%s%sconfused about hin->source %d", MY_ME, hin->source);
     return 1;
   }
+  /* previous possible call to hestArgSetString internally calls hestArgReset (which
+     unsets source), so we know reinstate the source */
+  tharg->source = hin->source;
   return 0;
 }
 
@@ -397,15 +388,11 @@ histProcNextArg(int *nastP, hestArg *tharg, hestInputStack *hist,
 static int /* Biff: 1 */
 histPushCommandLine(hestInputStack *hist, int argc, const char **argv,
                     const hestParm *hparm) {
-  if (!(hist && argv && hparm)) {
-    biffAddf(HEST, "%s%sgot NULL pointer (hist %p, argv %p, hparm %p)", MY_ME,
-             AIR_VOIDP(hist), AIR_CVOIDP(argv), AIR_CVOIDP(hparm));
-    return 1;
-  }
-  if (HIST_DEPTH_MAX == hist->len) {
-    biffAddf(HEST, "%s%sinput stack depth already at max %u", MY_ME, HIST_DEPTH_MAX);
-    return 1;
-  }
+  /** this isn't actually reachable is it?
+   * if (HIST_DEPTH_MAX == hist->len) {
+   *   biffAddf(HEST, "%s%sinput stack depth already at max %u", MY_ME, HIST_DEPTH_MAX);
+   *   return 1;
+   * } */
   if (hparm->verbose) {
     printf("%s: changing stack height: %u --> %u with argc=%d,argv=%p; "
            "setting argIdx to 0\n",
@@ -424,11 +411,6 @@ histPushCommandLine(hestInputStack *hist, int argc, const char **argv,
 
 static int /* Biff: 1 */
 histPushResponseFile(hestInputStack *hist, const char *rfname, const hestParm *hparm) {
-  if (!(hist && rfname && hparm)) {
-    biffAddf(HEST, "%s%sgot NULL pointer (hist %p, rfname %p, hparm %p)", MY_ME,
-             AIR_VOIDP(hist), AIR_CVOIDP(rfname), AIR_CVOIDP(hparm));
-    return 1;
-  }
   if (HIST_DEPTH_MAX == hist->len) {
     // HEY test this error
     biffAddf(HEST, "%s%sinput stack depth already at max %u", MY_ME, HIST_DEPTH_MAX);
@@ -441,22 +423,6 @@ histPushResponseFile(hestInputStack *hist, const char *rfname, const hestParm *h
              "but no filename followed",
              MY_ME, MY_RESPONSE_FILE_FLAG);
     return 1;
-  }
-  // have we seen rfname before?
-  if (hist->len) {
-    uint topHinIdx = hist->len - 1;
-    for (uint hidx = 0; hidx < topHinIdx; hidx++) {
-      hestInput *oldHin = hist->hin + hidx;
-      if (hestSourceResponseFile == oldHin->source //
-          && !strcmp(oldHin->rfname, rfname)) {
-        // HEY test this error
-        biffAddf(HEST,
-                 "%s%salready reading \"%s\" as response file; "
-                 "cannot recursively read it again",
-                 MY_ME, rfname);
-        return 1;
-      }
-    }
   }
   // are we trying to read stdin twice?
   if (!strcmp("-", rfname) && hist->stdinRead) {
@@ -489,15 +455,11 @@ histPushResponseFile(hestInputStack *hist, const char *rfname, const hestParm *h
 
 static int /* Biff: 1 */
 histPushDefault(hestInputStack *hist, const char *dflt, const hestParm *hparm) {
-  if (!(hist && dflt && hparm)) {
-    biffAddf(HEST, "%s%sgot NULL pointer (hist %p, dflt %p, hparm %p)", MY_ME,
-             AIR_CVOIDP(hist), AIR_CVOIDP(dflt), AIR_CVOIDP(hparm));
-    return 1;
-  }
-  if (HIST_DEPTH_MAX == hist->len) {
-    biffAddf(HEST, "%s%sinput stack depth already at max %u", MY_ME, HIST_DEPTH_MAX);
-    return 1;
-  }
+  /** this isn't actually reachable is it?
+   * if (HIST_DEPTH_MAX == hist->len) {
+   *   biffAddf(HEST, "%s%sinput stack depth already at max %u", MY_ME, HIST_DEPTH_MAX);
+   *   return 1;
+   * } */
   if (hparm->verbose) {
     printf("%s: changing stack height: %u --> %u with dflt=|%s|; "
            "dfltLen %u, dfltIdx 0\n",
@@ -533,10 +495,7 @@ even for the tmp arg holder `tharg`; that is passed in here and cleaned up calle
 static int /* Biff: 1 */
 histProcess(hestArgVec *havec, int *helpWantedP, hestArg *tharg, hestInputStack *hist,
             const hestParm *hparm) {
-  if (!hist->len) {
-    biffAddf(HEST, "%s%scannot process zero-height stack", MY_ME);
-    return 1;
-  }
+  airArray *mop = airMopNew();
   if (helpWantedP) *helpWantedP = AIR_FALSE;
   int nast = nastUnknown;
   uint iters = 0;
@@ -554,10 +513,18 @@ histProcess(hestArgVec *havec, int *helpWantedP, hestArg *tharg, hestInputStack 
     hestInput *topHin = hist->hin + hist->len - 1;
     int srcval = topHin->source;
     const char *srcstr = airEnumStr(hestSource, srcval);
+    // In case of being in response file, remember its filename before histProcNextArg
+    // might pop it, so that we can later detect response-file recursion
+    char *rfnameCurr = NULL;
+    if (hestSourceResponseFile == srcval) {
+      rfnameCurr = airStrdup(topHin->rfname);
+      airMopAdd(mop, rfnameCurr, airFree, airMopAlways);
+    }
     // read next arg into tharg
     if (histProcNextArg(&nast, tharg, hist, hparm)) {
       biffAddf(HEST, "%s%s(iter %u, on %s) unable to get next arg", MY_ME, iters,
                srcstr);
+      airMopError(mop);
       return 1;
     }
     if (nastEmpty == nast) {
@@ -578,6 +545,7 @@ histProcess(hestArgVec *havec, int *helpWantedP, hestArg *tharg, hestInputStack 
       if (!topHin) {
         biffAddf(HEST, "%s%s(iter %u, on %s) unexpected empty stack (0)", MY_ME, iters,
                  srcstr);
+        airMopError(mop);
         return 1;
       }
       if (topHin->dashBraceComment) {
@@ -592,6 +560,7 @@ histProcess(hestArgVec *havec, int *helpWantedP, hestArg *tharg, hestInputStack 
                  "%s%s(iter %u, on %s) end comment marker \"}-\" not "
                  "balanced by prior \"-{\"",
                  MY_ME, iters, srcstr);
+        airMopError(mop);
         return 1;
       }
     }
@@ -600,6 +569,7 @@ histProcess(hestArgVec *havec, int *helpWantedP, hestArg *tharg, hestInputStack 
       if (!topHin) {
         biffAddf(HEST, "%s%s(iter %u, on %s) unexpected empty stack (1)", MY_ME, iters,
                  srcstr);
+        airMopError(mop);
         return 1;
       }
       topHin->dashBraceComment += 1;
@@ -624,25 +594,18 @@ histProcess(hestArgVec *havec, int *helpWantedP, hestArg *tharg, hestInputStack 
         && ((helpWant = !strcmp("--help", tharg->str))             /* */
             || (/* usageWant = */ !strcmp("--usage", tharg->str))) /* */
     ) {
-      if (!topHin) {
-        biffAddf(HEST, "%s%s(iter %u, on %s) unexpected empty stack (2)", MY_ME, iters,
-                 srcstr);
-        return 1;
-      }
-      if (hestSourceCommandLine == topHin->source) {
+      if (hestSourceCommandLine == tharg->source) {
         /* user asking for help halts further parsing work: user is not looking
            for parsing results nor error messages about that process */
-        if (!helpWantedP) {
-          biffAddf(HEST, "%s%s(iter %u, on %s) saw \"%s\" but have NULL helpWantedP",
-                   MY_ME, iters, srcstr, helpWant ? "--help" : "--usage");
-          return 1;
-        }
         // HERE is where we set the magic numbers 1 for --help, 2 for --usage
         *helpWantedP = helpWant ? 1 : 2;
+        airMopOkay(mop);
         return 0;
       } else {
-        biffAddf(HEST, "%s%s(iter %u, on %s) \"%s\" not handled in this source", MY_ME,
-                 iters, srcstr, helpWant ? "--help" : "--usage");
+        biffAddf(HEST, "%s%s(iter %u, on %s) \"%s\" not supported in a %s source", MY_ME,
+                 iters, srcstr, helpWant ? "--help" : "--usage",
+                 airEnumStr(hestSource, tharg->source));
+        airMopError(mop);
         return 1;
       }
     }
@@ -652,21 +615,29 @@ histProcess(hestArgVec *havec, int *helpWantedP, hestArg *tharg, hestInputStack 
              srcstr, tharg->str);
     }
     if (hparm->responseFileEnable && tharg->str[0] == MY_RESPONSE_FILE_FLAG) {
-      if (!topHin) {
-        biffAddf(HEST, "%s%s(iter %u, on %s) unexpected empty stack (3)", MY_ME, iters,
-                 srcstr);
-        return 1;
-      }
-      if (hestSourceDefault == topHin->source) {
+      if (hestSourceDefault == tharg->source) {
         biffAddf(HEST,
-                 "%s%s(iter %u, on %s) %s response files not handled in this source",
-                 MY_ME, iters, srcstr, tharg->str);
+                 "%s%s(iter %u, on %s) \"%s\" response file not handled in %s source",
+                 MY_ME, iters, srcstr, tharg->str,
+                 airEnumStr(hestSource, tharg->source));
+        airMopError(mop);
         return 1;
       } else {
-        // tharg->str is asking to open a response file; try pushing it
-        if (histPushResponseFile(hist, tharg->str + 1, hparm)) {
+        // tharg->str is asking to open response file named `tharg->str + 1`
+        // make sure we're not already reading it
+        const char *rfname = tharg->str + 1;
+        if (rfnameCurr && !strcmp(rfnameCurr, rfname)) {
+          biffAddf(HEST,
+                   "%s%s(iter %u, on %s) already reading response file \"%s\"; cannot "
+                   "recursively re-read it",
+                   MY_ME, iters, srcstr, rfname);
+          airMopError(mop);
+          return 1;
+        }
+        if (histPushResponseFile(hist, rfname, hparm)) {
           biffAddf(HEST, "%s%s(iter %u, on %s) unable to process response file %s",
                    MY_ME, iters, srcstr, tharg->str);
+          airMopError(mop);
           return 1;
         }
         // have just added response file to stack, next iter will start reading from it
@@ -686,11 +657,12 @@ histProcess(hestArgVec *havec, int *helpWantedP, hestArg *tharg, hestInputStack 
       break;
     }
   }
-  if (hist->len && nast == nastEmpty) {
-    biffAddf(HEST, "%s%snon-empty stack (depth %u) can't generate args???", MY_ME,
-             hist->len);
-    return 1;
-  }
+  /** seem to never reach this, thankfully
+   * if (hist->len && nast == nastEmpty) {
+   *   biffAddf(HEST, "%s%snon-empty stack (depth %u) can't generate args???", MY_ME,
+   *            hist->len);
+   *   return 1;
+   * } */
   return 0;
 }
 
@@ -787,11 +759,6 @@ remembered is the source of the *last* argument of the option. */
 static int /* Biff: 1 */
 havecTransfer(hestOpt *hopt, hestArgVec *hvsrc, uint srcIdx, uint num,
               const hestParm *hparm) {
-  if (!(hopt && hvsrc)) {
-    biffAddf(HEST, "%s%sgot NULL hopt %p or hvsrc %p", MY_ME, AIR_VOIDP(hopt),
-             AIR_VOIDP(hvsrc));
-    return 1;
-  }
   if (num) {
     if (!(srcIdx < hvsrc->len)) {
       biffAddf(HEST, "%s%sstarting index %u in source beyond its length %u", MY_ME,
@@ -970,13 +937,14 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
                  identStr(ident2, sizeof(ident2), hopt + nextOptIdx), theOpt->min,
                  theOpt->min > 1 ? "s" : "", identStr(ident1, sizeof(ident1), theOpt),
                  parmNum);
-      } else {
-        biffAddf(HEST,
-                 "%s%ssorry, confused about not getting %u "
-                 "parameter%s for %s (got %u)",
-                 MY_ME, theOpt->min, theOpt->min > 1 ? "s" : "",
-                 identStr(ident1, sizeof(ident1), theOpt), parmNum);
-      }
+      } /** seems to be unreachable, thankfully
+         * else {
+         *  biffAddf(HEST,
+         *           "%s%ssorry, confused about not getting %u "
+         *           "parameter%s for %s (got %u)",
+         *           MY_ME, theOpt->min, theOpt->min > 1 ? "s" : "",
+         *           identStr(ident1, sizeof(ident1), theOpt), parmNum);
+         * } */
       biffAddf(HEST, "%s%safter getting %u args for %u other flagged option%s", MY_ME,
                len0 - havec->len, txfNum, 1 == txfNum ? "" : "s");
       BIFF_GIVEN_ARGV(havStr, "from", shwi);

@@ -32,6 +32,21 @@ const int hestPresent = 42;
 
 const char *const hest__BiffKey = "hest";
 
+// These exist to help avoid undefined behavior: the documentation for both
+// isspace and isdigit says (e.g. https://en.cppreference.com/c/string/byte/isdigit)
+//    The behavior is undefined if the value of ch is
+//    not representable as unsigned char and is not equal to EOF
+// which is annoying (and maybe there is locale dependence?),
+// so we create strchr-based replacements.
+int
+hest__isspace(int ch) {
+  return !!strchr(AIR_WHITESPACE, ch);
+}
+int
+hest__isdigit(int ch) {
+  return !!strchr("0123456789", ch);
+}
+
 // see note in hest.h about why airType things are here, renamed as hest
 /* clang-format off */
 const char
@@ -522,7 +537,7 @@ hestParmColumnsIoctl(hestParm *hparm, unsigned int nonIoctlColumns) {
 #ifdef _WIN32
   CONSOLE_SCREEN_BUFFER_INFO csbi;
   int ret = 1; /* default if all attempts fail */
-  unsigned int sanemin = AIR_MAX(20, hestDefaultColumns / 2);
+  unsigned int sanemin = hestDefaultColumns / 2;
   HANDLE hands[3] = {GetStdHandle(STD_INPUT_HANDLE), GetStdHandle(STD_OUTPUT_HANDLE),
                      GetStdHandle(STD_ERROR_HANDLE)};
   for (int hi = 0; hi < 3; ++hi) {
@@ -554,7 +569,7 @@ hestParmColumnsIoctl(hestParm *hparm, unsigned int nonIoctlColumns) {
     /* the "- 2" here may be the sign of a hest bug; sometimes it seems the "\" for line
     continuation (in generated usage info) causes a line wrap when it shouldn't */
     hparm->columns = wsz.ws_col - 2;
-    sanemin = AIR_MAX(20, hestDefaultColumns / 2);
+    sanemin = hestDefaultColumns / 2;
     if (hparm->columns < sanemin) {
       /* will ignore the too-small value ioctl produced */
       hparm->columns = sanemin;
@@ -846,7 +861,7 @@ hestOptFree(hestOpt *hopt) {
 AIR_MOPPER(hestOptFree)
 
 /* hest__OPCheck
-New biff-based container for all logic that originated in hest__OptCheck (which is the
+New biff-based container for all logic that originated in hest__OptCheck (which was the
 2025 rename of what had long been called hest__Panic): the validation of the given
 hestOpt array `hopt` itself (but *not* anything about the command-line or its parsing),
 relative to the given hestParm `hparm` (if non-NULL).
@@ -854,7 +869,7 @@ relative to the given hestParm `hparm` (if non-NULL).
 Pre-2025, hest did not depend on biff, and this instead took a 'char *err' that somehow
 magically had to be allocated for the size of any possible error message generated here.
 The 2025 re-write recognized that biff is the right way to accumulate error messages, but
-the use of biff is internal to hest, and not (unusually for Teem) part of the expected
+the use of biff is internal to hest, and (unusually for Teem) not part of the expected
 use of hest's API. Thus, public functions hestOptCheck() and hestOptParmCheck(), which
 are the expected way to access the functionality herein, take a `char **errP` arg into
 which a message is sprintf'ed, after allocation.
@@ -866,8 +881,8 @@ biff message.
 
 Prior to 2023 code revisit: this (when named hest__Panic, of all things) used to set the
 "kind" in all the opts, but now that is more appropriately done at the time the option is
-added. This particular change closes off the possibility of doing an argtable-style
-static creation of a hestOpt array, sigh.
+added. This particular change closes off the possibility of doing an argtable(v1)-style
+static creation of a hestOpt array, alas.  Thanks to argtable(v1) for inspiring hest!
 */
 int /* Biff: (private) 1 */
 hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
@@ -944,7 +959,25 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
         return 1;
       }
       if ('-' == flag[0]) {
-        biffAddf(HEST, "%s%sopt[%u].flag \"%s\" starts with '-', which is confusing",
+        biffAddf(HEST,
+                 "%s%sopt[%u].flag \"%s\" itself starts with '-', "
+                 "which seems confused",
+                 MY_ME, opi, flag);
+        airMopError(mop);
+        return 1;
+      }
+      if ('.' == flag[0]) {
+        biffAddf(HEST,
+                 "%s%sopt[%u].flag \"%s\" starts with '.', "
+                 "which could be confused with \"-.\" end variadic parms flag",
+                 MY_ME, opi, flag);
+        airMopError(mop);
+        return 1;
+      }
+      if (hest__isdigit(flag[0])) {
+        biffAddf(HEST,
+                 "%s%sopt[%u].flag \"%s\" starts with digit, "
+                 "which could create confusion with a negative number",
                  MY_ME, opi, flag);
         airMopError(mop);
         return 1;
@@ -988,8 +1021,24 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
         }
         if ('-' == (sep + 1)[0]) {
           biffAddf(HEST,
-                   "%s%slong flag \"%s\" (part of \"%s\") of opt[%u] starts with '-', "
-                   "which is confusing",
+                   "%s%slong flag \"%s\" (part of \"%s\") of opt[%u] itself "
+                   "starts with '-', which seems confused",
+                   MY_ME, sep + 1, flag, opi);
+          airMopError(mop);
+          return 1;
+        }
+        if ('.' == (sep + 1)[0]) {
+          biffAddf(HEST,
+                   "%s%slong flag \"%s\" (part of \"%s\") of opt[%u] starts with '.', "
+                   "which could be confused with \"-.\" end variadic parms flag",
+                   MY_ME, sep + 1, flag, opi);
+          airMopError(mop);
+          return 1;
+        }
+        if (hest__isdigit((sep + 1)[0])) {
+          biffAddf(HEST,
+                   "%s%slong flag \"%s\" (part of \"%s\") of opt[%u] starts with "
+                   "a digit, which could create confusion with a negative number",
                    MY_ME, sep + 1, flag, opi);
           airMopError(mop);
           return 1;
@@ -1021,11 +1070,10 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
         assert(shfl[opi]);
         airMopAdd(mop, shfl[opi], airFree, airMopAlways);
       }
-      if (hparm && hparm->respectDashBraceComments
-          && (strchr(flag, '{') || strchr(flag, '}'))) {
+      if (strchr(flag, '{') || strchr(flag, '}')) {
         biffAddf(HEST,
-                 "%s%srequested hparm->respectDashBraceComments but opt[%u]'s flag "
-                 "\"%s\" confusingly contains '{' or '}'",
+                 "%s%sopt[%u]'s flag \"%s\" contains '{' or '}' "
+                 "which could be confused with -{ }- hest comment flags",
                  MY_ME, opi, flag);
         airMopError(mop);
         return 1;
@@ -1036,7 +1084,7 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
       if (4 == hopt[opi].kind) {
         if (!hopt[opi].min) {
           biffAddf(HEST, "%s%s single variadic opt[%u] (name %s) must be flagged", MY_ME,
-                   opi, hopt[opi].name ? hopt[opi].name : "not set");
+                   opi, hopt[opi].name);
           airMopError(mop);
           return 1;
         }

@@ -72,6 +72,7 @@ hestArgReset(hestArg *harg) {
   airArrayLenSet(harg->strArr, 0);
   /* initialize with \0 so that harg->str is "" */
   airArrayLenIncr(harg->strArr, 1);
+  harg->source = hestSourceUnknown;
   return;
 }
 
