@@ -889,7 +889,7 @@ formatNRRD_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
         dataFile = airFclose(dataFile);
       }
       data += valsPerPiece * nrrdElementSize(nrrd);
-      if (nioStateDataFileIterNext(&dataFile, nio, AIR_TRUE)) {
+      if (nioStateDataFileIterNext(&dataFile, nio, AIR_FALSE)) {
         biffAddf(NRRD, "%s: couldn't get the next datafile", me);
         airMopError(mop);
         return 1;
