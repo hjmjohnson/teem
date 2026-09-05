@@ -38,13 +38,51 @@ const char *const hest__BiffKey = "hest";
 //    not representable as unsigned char and is not equal to EOF
 // which is annoying (and maybe there is locale dependence?),
 // so we create strchr-based replacements.
-int
+int /* Biff: nope */
 hest__isspace(int ch) {
+  // actually, side-step UB of isspace()
   return !!strchr(AIR_WHITESPACE, ch);
 }
-int
+int /* Biff: nope */
 hest__isdigit(int ch) {
+  // actually, side-step UB of isdigit()
   return !!strchr("0123456789", ch);
+}
+int /* Biff: nope */
+hest__isprint(int ch) {
+  // we bite the bullet here
+  if (ch != AIR_INT(AIR_UCHAR(ch))) {
+    // includes ch==EOF since EOF is negative
+    return AIR_FALSE;
+  }
+  // else ch is representable as an unsigned char
+  return isprint(ch);
+}
+
+/* The 2026 revisit decided that counting the two kinds of options is important
+   enough to capture in utility functions */
+uint /* Biff: nope */
+hest__flagOptNum(const hestOpt *hopt) {
+  uint optNum = hopt->arrLen;
+  uint ret = 0;
+  for (uint opi = 0; opi < optNum; opi++) {
+    if (hopt[opi].flag) {
+      ret += 1;
+    }
+  }
+  return ret;
+}
+
+uint /* Biff: nope */
+hest__unflagOptNum(const hestOpt *hopt) {
+  uint optNum = hopt->arrLen;
+  uint ret = 0;
+  for (uint opi = 0; opi < optNum; opi++) {
+    if (!hopt[opi].flag) {
+      ret += 1;
+    }
+  }
+  return ret;
 }
 
 // see note in hest.h about why airType things are here, renamed as hest
@@ -988,7 +1026,7 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
         return 1;
       }
       for (uint chi = 0; chi < AIR_UINT(fslen); chi++) {
-        if (!isprint(flag[chi])) {
+        if (!hest__isprint(flag[chi])) {
           biffAddf(HEST, "%s%sopt[%u].flag \"%s\" char %u '%c' non-printing", MY_ME, opi,
                    flag, chi, flag[chi]);
           airMopError(mop);

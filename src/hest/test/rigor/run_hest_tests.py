@@ -159,6 +159,12 @@ def test_list(args):
     #   name            str   human-readable label printed in results
     #   num             int   added by later code: a stable numbering of each test
     #
+    # these three are used with th_variadic below
+    flagABCD = {f'TH_FLAG_{L}': 'true' for L in ['A', 'B', 'C', 'D']}
+    flagA_CD = {f'TH_FLAG_{L}': 'true' for L in ['A', 'C', 'D']}
+    expACD_XOX = {'A': [101, 202], 'C': 303, 'D': [404, 505]}
+    dfltACD_XOX = {'TH_A_DFLT': '101 202', 'TH_C_DFLT': '303', 'TH_D_DFLT': '404 505'}
+
     tlist = [
         # ==========================================================================
         # th_flag — stand-alone flag (kind 1)
@@ -315,6 +321,20 @@ def test_list(args):
         ),
         dict(
             exe='th_flagged_scalars',
+            name='scalars: response file from stdin',
+            stdin_content='-n 222 -{ that should stick }-\n',
+            argv='-n 111 @-',
+            expected={'n': 222, 'n.src': SRC_RF},
+        ),
+        dict(
+            exe='th_flagged_scalars',
+            name='scalars: response file from stdin: cant read stdin twice',
+            stdin_content='-n 222 -{ that should stick }-\n',
+            argv='-n 111 @- @-',
+            expect_fail=True,
+        ),
+        dict(
+            exe='th_flagged_scalars',
             name='scalars: from response file',
             response_files={'opts.txt': '-n 77 -s from-file\n'},
             argv=['@opts.txt'],
@@ -431,10 +451,21 @@ def test_list(args):
         ),
         dict(
             exe='th_flagged_scalars',
-            name='scalars: response file cannot recurse',
+            name='scalars: response file cannot directly recurse',
             # unfortunately here have to hard-code response file directory
-            response_files={'recurse.txt': '-n 999 @resp/recurse.txt\n'},
+            response_files={'recurse.txt': '-n 999 @resp/recurse.txt'},
             argv=['-s', 'hi there', '@recurse.txt'],
+            expect_fail=True,
+        ),
+        dict(
+            exe='th_flagged_scalars',
+            name='scalars: response file cannot indirectly recurse',
+            # unfortunately here have to hard-code response file directory
+            response_files={
+                'recurse2a.txt': '-n 999 @resp/recurse2b.txt\n',
+                'recurse2b.txt': '-n 888 @resp/recurse2a.txt\n',
+            },
+            argv=['-s', 'hi there', '@recurse2a.txt'],
             expect_fail=True,
         ),
         dict(
@@ -442,7 +473,7 @@ def test_list(args):
             name='scalars: response file can nest some',
             # unfortunately here have to hard-code response file directory
             response_files={
-                'nest1a.txt': '-n 901 @resp/nest2a.txt\n',
+                'nest1a.txt': '-n 901 @resp/nest2a.txt',
                 'nest2a.txt': '-n 902 @resp/nest3a.txt\n',
                 'nest3a.txt': '-n 903 #no more nesting',
             },
@@ -454,11 +485,11 @@ def test_list(args):
             name='scalars: response file cannot nest too much',
             # unfortunately here have to hard-code response file directory
             response_files={
-                'nest1b.txt': '-n 901 @resp/nest2b.txt\n',
+                'nest1b.txt': '-n 901 @resp/nest2b.txt',
                 'nest2b.txt': '-n 902 @resp/nest3b.txt\n',
-                'nest3b.txt': '-n 903 @resp/nest4b.txt\n',
+                'nest3b.txt': '-n 903 @resp/nest4b.txt',
                 'nest4b.txt': '-n 904 @resp/nest5b.txt\n',
-                'nest5b.txt': '-n 905 @resp/nest6b.txt\n',
+                'nest5b.txt': '-n 905 @resp/nest6b.txt',
                 'nest6b.txt': '-n 906 #no more nesting',
             },
             argv=['-n', '900', '@nest1b.txt'],
@@ -610,214 +641,578 @@ def test_list(args):
         ),
         # ==========================================================================
         # th_variadic — A:two fixed, B:one variadic, C:single fixed, D:two fixed
-        dict(
-            exe='th_variadic',
-            name='variadic: three strings in middle (all unflagged)',
-            argv=['10', '20', 'p', 'happy path', 'r', '33', '44', '55'],
-            expected={
-                'A': [10, 20],
-                'B': ['p', 'happy path', 'r'],
-                'C': 33,
-                'D': [44, 55],
-            },
-        ),
-        dict(
-            env={f'TH_FLAG_{L}': 'true' for L in ['A', 'B', 'C', 'D']},
-            exe='th_variadic',
-            name='variadic: one string in middle (all flagged)',
-            argv='-A 10 20 -B happy -C 33 -D 44 55',
-            expected={
-                'A': [10, 20],
-                'B': ['happy'],
-                'C': 33,
-                'D': [44, 55],
-            },
-        ),
-        dict(
-            env={'TH_A_DFLT': '111 222', **{f'TH_FLAG_{L}': 'true' for L in ['A', 'B', 'C', 'D']}},
-            exe='th_variadic',
-            name='variadic: one string in middle (all flagged) with -A default',
-            argv='-B happy -C 33 -D 44 55',
-            expected={
-                'A': [111, 222],
-                'B': ['happy'],
-                'C': 33,
-                'D': [44, 55],
-            },
-        ),
-        dict(
-            env={'TH_A_DFLT': '111', **{f'TH_FLAG_{L}': 'true' for L in ['A', 'B', 'C', 'D']}},
-            exe='th_variadic',
-            name='variadic: one string in middle (all flagged) with -A bad default (only 1 of 2 ints)',
-            argv='-B happy -C 33 -D 44 55',
-            expect_fail=True,
-        ),
-        dict(
-            env={
-                'TH_A_DFLT': '111 oops',
-                **{f'TH_FLAG_{L}': 'true' for L in ['A', 'B', 'C', 'D']},
-            },
-            exe='th_variadic',
-            name='variadic: one string in middle (all flagged) with -A bad default (bad 2nd int)',
-            argv='-B happy -C 33 -D 44 55',
-            expect_fail=True,
-        ),
-        dict(
-            exe='th_variadic',
-            name='variadic: minimum B (exactly vmin=1 string in middle)',
-            argv='10 20 only 33 44 55',
-            expected={
-                'A': [10, 20],
-                'B': ['only'],
-                'C': 33,
-                'D': [44, 55],
-            },
-        ),
-        dict(
-            env={
-                'TH_B_VMIN': '0',
-                'TH_B_DFLT': 'hydrogen helium',
-                **{f'TH_FLAG_{L}': 'true' for L in ['A', 'C', 'D']},
-            },
-            exe='th_variadic',
-            name='variadic: exactly B (unflagged w/default) vmin=0 string, got 2 (all else flagged)',
-            argv='-A 101 202 -C 303 -D 404 505',
-            expected={
-                'A': [101, 202],
-                'B': ['hydrogen', 'helium'],
-                'C': 303,
-                'D': [404, 505],
-            },
-        ),
-        dict(
-            env={
-                'TH_B_VMIN': '0',
-                'TH_B_DFLT': '"hydrogen" "hel i um"',
-                **{f'TH_FLAG_{L}': 'true' for L in ['A', 'C', 'D']},
-            },
-            exe='th_variadic',
-            name='variadic: exactly B (unflagged w/default) vmin=0 string, got 2 quoted (all else flagged)',
-            argv='-A 101 202 -C 303 -D 404 505',
-            expected={
-                'A': [101, 202],
-                'B': ['hydrogen', 'hel i um'],
-                'C': 303,
-                'D': [404, 505],
-            },
-        ),
-        dict(
-            env={
-                'TH_B_VMIN': '0',
-                'TH_B_DFLT': '"hydrogen" -{ move_along }- "helium"',
-                **{f'TH_FLAG_{L}': 'true' for L in ['A', 'C', 'D']},
-            },
-            exe='th_variadic',
-            name='variadic: exactly B (unflagged w/default) vmin=0 string, got 2 quoted w/comments (all else flagged)',
-            argv='-A 101 202 -C 303 -D 404 505',
-            expected={
-                'A': [101, 202],
-                'B': ['hydrogen', 'helium'],
-                'C': 303,
-                'D': [404, 505],
-            },
-        ),
-        dict(
-            env={
-                'TH_B_VMIN': '0',
-                'TH_B_DFLT': '"hydrogen" -{ move_along "helium"',
-                **{f'TH_FLAG_{L}': 'true' for L in ['A', 'C', 'D']},
-            },
-            exe='th_variadic',
-            name='variadic: exactly B (unflagged w/default) vmin=0 string, got 2 quoted w/ busted comment (all else flagged)',
-            argv='-A 101 202 -C 303 -D 404 505',
-            expect_fail=True,
-        ),
-        dict(
-            env={
-                'TH_B_VMIN': '0',
-                **{f'TH_FLAG_{L}': 'true' for L in ['A', 'C', 'D']},
-            },
-            exe='th_variadic',
-            name='variadic: exactly B (unflagged defaultless) vmin=0 string, 0 given (all else flagged)',
-            argv='-A 101 202 -C 303 -D 404 505',
-            expected={
-                'A': [101, 202],
-                'B': [],
-                'C': 303,
-                'D': [404, 505],
-            },
-        ),
-        dict(
-            env={
-                'TH_B_VMIN': '0',
-                'TH_B_DFLT': 'hydrogen\\ helium',
-                **{f'TH_FLAG_{L}': 'true' for L in ['A', 'C', 'D']},
-            },
-            exe='th_variadic',
-            name='variadic: exactly B (unflagged w/default) vmin=0 string, 1 given w/space (all else flagged)',
-            argv='-A 101 202 -C 303 -D 404 505',
-            expected={
-                'A': [101, 202],
-                'B': ['hydrogen helium'],
-                'C': 303,
-                'D': [404, 505],
-            },
-        ),
-        dict(
-            env={
-                'TH_B_VMIN': '0',
-                'TH_B_DFLT': 'hydrogen\\ helium \\',
-                **{f'TH_FLAG_{L}': 'true' for L in ['A', 'C', 'D']},
-            },
-            exe='th_variadic',
-            name='variadic: exactly B (unflagged w/default) vmin=0 string, busted 1 given (all else flagged)',
-            argv='-A 101 202 -C 303 -D 404 505',
-            expect_fail=True,
-        ),
-        dict(
-            env=dict(TH_B_VMIN='0'),
-            exe='th_variadic',
-            name='variadic: minimum B (exactly vmin=0 string in middle) (all unflagged)',
-            argv='10 20 33 44 55',
-            expected={
-                'A': [10, 20],
-                'B': [],
-                'C': 33,
-                'D': [44, 55],
-            },
-        ),
-        # dict(
-        #    env=dict(TH_B_VMIN='0', TH_B_DFLT='beta gamma'),
-        #    exe='th_variadic',
-        #    name='variadic: with B default and minimum B (exactly vmin=0 string in middle)',
-        #    argv='10 20 -- 33 44 55',
-        #    expected={
-        #        'A': [10, 20],
-        #        'B': [],
-        #        'C': 33,
-        #        'D': [44, 55],
-        #    },
-        # ),
-        dict(
-            env=dict(TH_TWO_VARI='true'),
-            exe='th_variadic',
-            name='variadic: cant have two unflagged variadic',
-            argv='1 2 100 200 300 -33 -44 -55',
-            expect_fail=True,
-        ),
-        dict(
-            env=dict(TH_TWO_VARI='true', TH_SELFMOP='true'),
-            exe='th_variadic',
-            name='variadic: (self-mopping) cant have two unflagged variadic',
-            argv='1 2 100 200 300 -33 -44 -55',
-            expect_fail=True,
-        ),
-        dict(
-            env=dict(TH_SELFMOP='true'),
-            exe='th_variadic',
-            name='variadic: (self-mopping) --usage',
-            argv='--usage',
-        ),
+        # GLK notes that this test program (originally LLM-generated) has since gained
+        # lots of envvar-configurable features, so it has become the vehicle to test
+        # many more things than it was originally meant for
+        *[
+            {**weed, 'exe': 'th_variadic'}  # weed = wee (smaller) dictionary
+            for weed in [
+                dict(
+                    name='variadic: three strings in middle (all unflagged)',
+                    argv=['10', '20', 'p', 'happy little tree', 'r', '33', '44', '55'],
+                    expected={
+                        'A': [10, 20],
+                        'B': ['p', 'happy little tree', 'r'],
+                        'C': 33,
+                        'D': [44, 55],
+                    },
+                ),
+                dict(
+                    env={'TH_DROP_B': 'true'},
+                    # weirdly this is (still?) the ONLY test with unflagged opts but none variadic
+                    name='variadic: no B so zero strings in middle (all unflagged)',
+                    argv=['10', '20', '33', '44', '55'],
+                    expected={
+                        'A': [10, 20],
+                        'C': 33,
+                        'D': [44, 55],
+                    },
+                ),
+                dict(
+                    env=flagABCD,
+                    name='variadic: one string in middle (all flagged)',
+                    argv='-D 44 55 -C 33 -B happy -A 10 20',
+                    expected={
+                        'A': [10, 20],
+                        'B': ['happy'],
+                        'C': 33,
+                        'D': [44, 55],
+                    },
+                ),
+                dict(
+                    env={
+                        'TH_A_DFLT': '111 222',
+                        **flagABCD,
+                    },
+                    name='variadic: one string in middle (all flagged) with -A default',
+                    argv='-B happy -C 33 -D 44 55',
+                    expected={
+                        'A': [111, 222],
+                        'B': ['happy'],
+                        'C': 33,
+                        'D': [44, 55],
+                    },
+                ),
+                dict(
+                    env={
+                        'TH_A_DFLT': '111',
+                        **flagABCD,
+                    },
+                    name='variadic: one string in middle (all flagged) with -A bad default (only 1 of 2 ints)',
+                    argv='-B happy -C 33 -D 44 55',
+                    expect_fail=True,
+                ),
+                dict(
+                    env={
+                        'TH_A_DFLT': '119 229',
+                        'TH_C_DFLT': '339',
+                        'TH_D_DFLT': '449 559',
+                        **flagA_CD,
+                    },
+                    name='variadic: repeated strings in middle from repeated response file',
+                    response_files={'bongo.txt': 'bongo -{ a word to repeat }- '},
+                    argv='@bongo.txt @bongo.txt',
+                    expected={
+                        'A': [119, 229],
+                        'B': ['bongo', 'bongo'],
+                        'C': 339,
+                        'D': [449, 559],
+                    },
+                ),
+                dict(
+                    env={
+                        'TH_A_DFLT': '111 oops',
+                        **flagABCD,
+                    },
+                    name='variadic: one string in middle (all flagged) with -A bad default (bad 2nd int)',
+                    argv='-B happy -C 33 -D 44 55',
+                    expect_fail=True,
+                ),
+                dict(
+                    name='variadic: minimum B (exactly vmin=1 string in middle) (all unflagged)',
+                    argv='10 20 only 33 44 55',
+                    expected={
+                        'A': [10, 20],
+                        'B': ['only'],
+                        'C': 33,
+                        'D': [44, 55],
+                    },
+                ),
+                dict(
+                    env={
+                        'TH_B_VMIN': '0',
+                        'TH_B_DFLT': '',  # the default is the empty string (not NULL)
+                        **flagA_CD,
+                    },
+                    # from 0-README.md:
+                    # For `kind`=5 (multiple variadic) options with `min`=0, a non-NULL empty default string `""` means: 0 arguments, _even for string-type options_.
+                    name='variadic: no (unflagged) B vmin=0 strings given, has empty string default to say: zero args (all else flagged)',
+                    argv='-A 101 202 -C 303 -D 404 505',
+                    expected={'B': [], **expACD_XOX},
+                ),
+                dict(
+                    env={
+                        'TH_B_VMIN': '0',
+                        'TH_B_DFLT': "''",  # the default is a quoted empty string
+                        **flagA_CD,
+                    },
+                    # from 0-README.md:
+                    # If the type is string, use `"''"` to indicate a default value of a single empty string.
+                    name='variadic: no (unflagged) B vmin=0 strings given, has single empty as default (all else flagged)',
+                    argv='-A 101 202 -C 303 -D 404 505',
+                    expected={
+                        'B': [''],
+                        **expACD_XOX,
+                    },
+                ),
+                dict(
+                    env={
+                        'TH_B_VMIN': '0',
+                        'TH_B_DFLT': 'coffee grounds',
+                        **flagA_CD,
+                    },
+                    # from 0-README.md:
+                    # For an unflagged multiple variadic option with a default and with min=0 (i.e. the option can take zero or more parms),
+                    # a lone “-.” argument is how the user explicitly says “I am passing zero arguments, and overriding the default”.
+                    name='variadic: (unflagged) B vmin=0 getting only -. (all else flagged)',
+                    argv='-A 101 202 -C 303 -D 404 505 -.',
+                    expected={'B': [], **expACD_XOX},
+                ),
+                dict(
+                    env={
+                        'TH_B_VMIN': '0',
+                        'TH_B_DFLT': 'coffee grounds',
+                        **flagA_CD,
+                    },
+                    # from 0-README.md:
+                    # On the other hand, not giving any args for the [unflagged multiple variadic _with_ a default and with `min`=0]
+                    # option means “I am not setting this option, and want the default”
+                    name='variadic: (unflagged) B vmin=0 getting nothing (to use default) (all else flagged)',
+                    argv='-A 101 202 -C 303 -D 404 505',
+                    expected={'B': ['coffee', 'grounds'], **expACD_XOX},
+                ),
+                dict(
+                    env={
+                        'TH_B_VMIN': '0',
+                        **flagA_CD,
+                    },
+                    # from 0-README.md:
+                    # For an unflagged multiple variadic option with no default and with min=0,
+                    # giving no arguments also works to say “I am passing zero arguments”, rather than being an error.
+                    name='variadic: exactly B (unflagged defaultless) vmin=0 string, 0 given (all else flagged)',
+                    argv='-A 101 202 -C 303 -D 404 505',
+                    expected={'B': [], **expACD_XOX},
+                ),
+                dict(
+                    env={
+                        'TH_B_VMIN': '1',
+                        **flagA_CD,
+                    },
+                    # in constrast to above, now vmin=1, but none given; not okay
+                    name='variadic: B (unflagged defaultless) vmin=1 but 0 given (all else flagged)',
+                    argv='-A 101 202 -C 303 -D 404 505',
+                    expect_fail=True,
+                ),
+                dict(
+                    env={
+                        'TH_B_VMIN': '0',
+                        'TH_B_DFLT': 'hydrogen helium',
+                        **flagA_CD,
+                    },
+                    name='variadic: no (unflagged) B vmin=0 strings given but has default w/ 2 (all else flagged)',
+                    argv='-A 101 202 -C 303 -D 404 505',
+                    expected={'B': ['hydrogen', 'helium'], **expACD_XOX},
+                ),
+                dict(
+                    env={
+                        'TH_B_VMIN': '2',
+                        'TH_B_DFLT': 'hydrogen helium',
+                        **flagA_CD,
+                    },
+                    name='variadic: no (unflagged) B vmin=2 strings given but has default w/ 2 (all else flagged)',
+                    argv='-A 101 202 -C 303 -D 404 505',
+                    expected={'B': ['hydrogen', 'helium'], **expACD_XOX},
+                ),
+                dict(
+                    env={
+                        'TH_B_VMIN': '3',
+                        'TH_B_DFLT': 'hydrogen helium',
+                        **flagA_CD,
+                    },
+                    name='variadic: no (unflagged) B vmin=3 strings given but has default w/ ONLY 2 (all else flagged)',
+                    argv='-A 101 202 -C 303 -D 404 505',
+                    expect_fail=True,
+                ),
+                dict(
+                    env={
+                        'TH_B_VMIN': '3',
+                        'TH_B_DFLT': 'hydrogen helium lithium',
+                        **flagA_CD,
+                    },
+                    name='variadic: (unflagged) B vmin=3 but ONLY 2 strings given (all else flagged)',
+                    argv='-A 101 202 cats dogs -C 303 -D 404 505',
+                    expect_fail=True,
+                ),
+                dict(
+                    env={
+                        'TH_B_VMIN': '2',
+                        **flagA_CD,
+                    },
+                    name='variadic: (unflagged) B vmin=2 with 2 strings and -. (all else flagged)',
+                    argv='-A 101 202 cats dogs -. -C 303 -D 404 505',
+                    expected={'B': ['cats', 'dogs'], **expACD_XOX},
+                ),
+                dict(
+                    env={
+                        'TH_B_VMIN': '2',
+                        **flagA_CD,
+                    },
+                    name='variadic: (unflagged) B vmin=2 with 3 strings (all else flagged)',
+                    argv='-A 101 202 cats dogs fish -C 303 -D 404 505',
+                    expected={'B': ['cats', 'dogs', 'fish'], **expACD_XOX},
+                ),
+                dict(
+                    env={
+                        'TH_B_VMIN': '2',
+                        **flagA_CD,
+                    },
+                    name='variadic: (unflagged) B vmin=2 with 3 strings and -. (all else flagged)',
+                    argv='-A 101 202 cats dogs fish -. -C 303 -D 404 505',
+                    expected={'B': ['cats', 'dogs', 'fish'], **expACD_XOX},
+                ),
+                dict(
+                    env={
+                        'TH_B_VMIN': '3',
+                        **flagA_CD,
+                    },
+                    name='variadic: (unflagged defaultless) B vmin=3 but ONLY 2 strings given (all else flagged)',
+                    argv='-A 101 202 cats dogs -C 303 -D 404 505',
+                    expect_fail=True,
+                ),
+                dict(
+                    env={
+                        'TH_B_VMIN': '3',
+                        **flagA_CD,
+                    },
+                    name='variadic: (unflagged defaultless) B vmin=3 but ONLY 2 strings w/ -. given (all else flagged)',
+                    argv='-A 101 202 cats dogs -. -C 303 -D 404 505',
+                    expect_fail=True,
+                ),
+                dict(
+                    env={
+                        'TH_B_VMIN': '0',
+                        'TH_B_DFLT': '"hydrogen" "hel i um"',
+                        **flagA_CD,
+                    },
+                    name='variadic: exactly (unflagged) B vmin=0 string but has default w/ 2 quoted (all else flagged)',
+                    argv='-A 101 202 -C 303 -D 404 505',
+                    expected={'B': ['hydrogen', 'hel i um'], **expACD_XOX},
+                ),
+                dict(
+                    env={
+                        'TH_B_VMIN': '0',
+                        'TH_B_DFLT': '"hydrogen" -{ move_along }- "helium"',
+                        **flagA_CD,
+                    },
+                    name='variadic: exactly B (unflagged w/default) vmin=0 string, got 2 quoted w/comments (all else flagged)',
+                    argv='-A 101 202 -C 303 -D 404 505',
+                    expected={'B': ['hydrogen', 'helium'], **expACD_XOX},
+                ),
+                dict(
+                    env={
+                        'TH_B_VMIN': '0',
+                        'TH_B_DFLT': '"hydrogen" -{ move_along "helium"',
+                        **flagA_CD,
+                    },
+                    name='variadic: exactly B (unflagged w/default) vmin=0 string, got 2 quoted w/ busted comment (all else flagged)',
+                    argv='-A 101 202 -C 303 -D 404 505',
+                    expect_fail=True,
+                ),
+                dict(
+                    env={
+                        'TH_B_VMIN': '0',
+                        'TH_B_DFLT': 'hydrogen\\ helium',
+                        **flagA_CD,
+                    },
+                    name='variadic: exactly B (unflagged w/default) vmin=0 string, 1 given w/space (all else flagged)',
+                    argv='-A 101 202 -C 303 -D 404 505',
+                    expected={'B': ['hydrogen helium'], **expACD_XOX},
+                ),
+                dict(
+                    env={
+                        'TH_B_VMIN': '0',
+                        'TH_B_DFLT': 'hydrogen\\ helium \\',
+                        **flagA_CD,
+                    },
+                    name='variadic: exactly B (unflagged w/default) vmin=0 string, busted 1 given (all else flagged)',
+                    argv='-A 101 202 -C 303 -D 404 505',
+                    expect_fail=True,
+                ),
+                dict(
+                    env=dict(TH_B_VMIN='0'),
+                    name='variadic: minimum B (exactly vmin=0 string in middle) (all unflagged)',
+                    argv='10 20 33 44 55',
+                    expected={
+                        'A': [10, 20],
+                        'B': [],
+                        'C': 33,
+                        'D': [44, 55],
+                    },
+                ),
+                # ---------- from 0-README.md
+                # For an flagged multiple variadic option with min=0, the presence of the flag alone.
+                # with no following parms, is what communicates “I am passing zero arguments
+                # (overriding the default if there is one)”.
+                # --------------------------- first with default
+                # more from 0-README.md:
+                # Thus for multiple variadic option with min=0 with flag “f”,
+                # both “-f -.” and “-f” (with no non-flag arg following)
+                # both mean “I am passing zero arguments”.
+                dict(  # withOUT -.
+                    env={
+                        'TH_B_VMIN': '0',
+                        'TH_B_DFLT': 'mister rogers',
+                        **flagABCD,
+                    },
+                    name='variadic: vmin=0 B getting 0, over-riding default (all flagged)',
+                    argv='-A 101 202 -B -C 303 -D 404 505',
+                    expected={'B': [], **expACD_XOX},
+                ),
+                dict(  # WITH -.
+                    env={
+                        'TH_B_VMIN': '0',
+                        'TH_B_DFLT': 'mister rogers',
+                        **flagABCD,
+                    },
+                    name='variadic: vmin=0 B getting just -., over-riding default (all flagged)',
+                    argv='-A 101 202 -B -. -C 303 -D 404 505',
+                    expected={'B': [], **expACD_XOX},
+                ),
+                # ---- then without default
+                dict(  # withOUT -.
+                    env={
+                        'TH_B_VMIN': '0',
+                        **flagABCD,
+                    },
+                    name='variadic: vmin=0 B getting 0 (no default) (all flagged)',
+                    argv='-A 101 202 -B -C 303 -D 404 505',
+                    expected={'B': [], **expACD_XOX},
+                ),
+                dict(  # WITH -.
+                    env={
+                        'TH_B_VMIN': '0',
+                        **flagABCD,
+                    },
+                    name='variadic: vmin=0 B getting just -. (no default) (all flagged)',
+                    argv='-A 101 202 -B -. -C 303 -D 404 505',
+                    expected={'B': [], **expACD_XOX},
+                ),
+                # --------------------------- end demo
+                dict(
+                    env=flagABCD,
+                    name='variadic: not giving strings to default-less -B (all flagged)',
+                    argv='-A 11 22 -C 33 -D 44 55',
+                    expect_fail=True,
+                ),
+                dict(
+                    env=flagABCD,
+                    name='variadic: not giving ints to default-less -D (all flagged)',
+                    argv='-A 11 22 -B eat food -C 33',
+                    expect_fail=True,
+                ),
+                dict(
+                    env={
+                        'TH_B_VMIN': '2',
+                        'TH_B_DFLT': 'mister rogers',
+                        **flagABCD,
+                    },
+                    name='variadic: vmin=2 B not appearing, accepting default (all flagged)',
+                    argv='-A 11 22 -C 33 -D 44 55',
+                    expected={
+                        'A': [11, 22],
+                        'B': ['mister', 'rogers'],
+                        'C': 33,
+                        'D': [44, 55],
+                    },
+                ),
+                dict(
+                    env={
+                        'TH_B_VMIN': '2',
+                        'TH_B_DFLT': 'mister rogers',
+                        **flagABCD,
+                    },
+                    name='variadic: vmin=2 B appearing with only 1 arg (all flagged)',
+                    argv='-A 11 22 -B Pastore -C 33 -D 44 55',
+                    expect_fail=True,
+                ),
+                dict(
+                    env={
+                        'TH_B_VMIN': '2',
+                        'TH_B_DFLT': 'mister rogers',
+                        **flagABCD,
+                    },
+                    name='variadic: vmin=2 B appearing with only 1 arg and then -. (all flagged)',
+                    argv='-A 11 22 -B Pastore -. -C 33 -D 44 55',
+                    expect_fail=True,
+                ),
+                # ------------- From 0-README.md:
+                # For any multiple variadic option, flagged or unflagged,
+                # "-." can be used to explicitly mark the end of args for the option.
+                #  ------ so: first two with B flagged
+                dict(
+                    env={
+                        'TH_B_VMIN': '2',
+                        'TH_B_DFLT': 'mister rogers',
+                        **flagABCD,
+                    },
+                    name='variadic: vmin=2 B appearing with enough args and then -. (all flagged)',
+                    argv='-A 101 202 -B Pastore was won over -. -C 303 -D 404 505',
+                    expected={'B': ['Pastore', 'was', 'won', 'over'], **expACD_XOX},
+                ),
+                dict(
+                    env={
+                        'TH_B_VMIN': '2',
+                        'TH_B_DFLT': 'mister rogers',
+                        **flagABCD,
+                    },
+                    name='variadic: vmin=2 B appearing with enough args and then -C (all flagged)',
+                    argv='-A 101 202 -B Pastore was won over -C 303 -D 404 505',
+                    expected={'B': ['Pastore', 'was', 'won', 'over'], **expACD_XOX},
+                ),
+                #  ------ then, two with B unflagged
+                dict(
+                    env={
+                        'TH_B_VMIN': '2',
+                        'TH_B_DFLT': 'mister rogers',
+                        **flagA_CD,
+                    },
+                    name='variadic: vmin=2 B appearing with enough args and then -. (all flagged)',
+                    argv='-A 101 202 Pastore was won over -. -C 303 -D 404 505',
+                    expected={'B': ['Pastore', 'was', 'won', 'over'], **expACD_XOX},
+                ),
+                dict(
+                    env={
+                        'TH_B_VMIN': '2',
+                        'TH_B_DFLT': 'mister rogers',
+                        **flagA_CD,
+                    },
+                    name='variadic: vmin=2 B appearing with enough args and then -C (all flagged)',
+                    argv='-A 101 202 Pastore was won over -C 303 -D 404 505',
+                    expected={'B': ['Pastore', 'was', 'won', 'over'], **expACD_XOX},
+                ),
+                # ----------- end verification of -. behavior
+                #
+                # -------------------------- from 0-README.md:
+                # Within the consumption order just described, each unflagged option asks:
+                # "are there remaining command-line arguments for me to consume?"
+                # ---------- WITH variadic
+                dict(  ##### give A B C D   WITH variadic
+                    env={
+                        'TH_B_DFLT': 'mister rogers',
+                        **dfltACD_XOX,
+                    },
+                    name='variadic: unflagged option consumption order w/ variadic: give ABCD',
+                    argv='119 229 micro tonal 339 449 559',
+                    expected={
+                        'A': [119, 229],
+                        'B': ['micro', 'tonal'],
+                        'C': 339,
+                        'D': [449, 559],
+                    },
+                ),
+                dict(  ##### give A _ C D   WITH variadic
+                    env={
+                        'TH_B_DFLT': 'mister rogers',
+                        **dfltACD_XOX,
+                    },
+                    name='variadic: unflagged option consumption order w/ variadic: give A_CD',
+                    argv='119 229 339 449 559',
+                    expected={
+                        'A': [119, 229],
+                        'B': ['mister', 'rogers'],
+                        'B.src': SRC_DF,
+                        'C': 339,
+                        'D': [449, 559],
+                    },
+                ),
+                dict(  ##### give A _ _ D   WITH variadic
+                    env={
+                        'TH_B_DFLT': 'mister rogers',
+                        **dfltACD_XOX,
+                    },
+                    name='variadic: unflagged option consumption order w/ variadic: give A__D',
+                    argv='119 229 449 559',
+                    expected={
+                        'A': [119, 229],
+                        'B': ['mister', 'rogers'],
+                        'B.src': SRC_DF,
+                        'C': 303,
+                        'C.src': SRC_DF,
+                        'D': [449, 559],
+                    },
+                ),
+                dict(  ##### give A _ _ _   WITH variadic
+                    env={
+                        'TH_B_DFLT': 'mister rogers',
+                        **dfltACD_XOX,
+                    },
+                    name='variadic: unflagged option consumption order w/ variadic: give A___',
+                    argv='119 229',
+                    expected={
+                        'A': [119, 229],
+                        'B': ['mister', 'rogers'],
+                        'B.src': SRC_DF,
+                        'C': 303,
+                        'C.src': SRC_DF,
+                        'D': [404, 505],
+                        'D.src': SRC_DF,
+                    },
+                ),
+                dict(  ##### give _ _ _ _   WITH variadic
+                    env={
+                        'TH_B_DFLT': 'mister rogers',
+                        **dfltACD_XOX,
+                    },
+                    name='variadic: unflagged option consumption order w/ variadic: give ____',
+                    argv=[],
+                    expected={
+                        'A': [101, 202],
+                        'A.src': SRC_DF,
+                        'B': ['mister', 'rogers'],
+                        'B.src': SRC_DF,
+                        'C': 303,
+                        'C.src': SRC_DF,
+                        'D': [404, 505],
+                        'D.src': SRC_DF,
+                    },
+                ),
+                # ---------- withOUT variadic
+                # HEY put back in here
+                # -------------- end of test of unflagged consumption order
+                dict(
+                    env=dict(TH_TWO_VARI='true'),
+                    name='variadic: cant have two unflagged variadic',
+                    argv='1 2 100 200 300 -33 -44 -55',
+                    expect_fail=True,
+                ),
+                dict(
+                    env=dict(TH_TWO_VARI='true', TH_SELFMOP='true'),
+                    name='variadic: (self-mopping) cant have two unflagged variadic',
+                    argv='1 2 100 200 300 -33 -44 -55',
+                    expect_fail=True,
+                ),
+                dict(
+                    env=dict(TH_SELFMOP='true'),
+                    name='variadic: (self-mopping) --usage',
+                    argv='--usage',
+                ),
+                dict(
+                    env=dict(TH_SELFMOP='true'),
+                    name='variadic: (self-mopping) --help',
+                    argv='--help',
+                ),
+            ]
+        ],
         ## NOTE: all of the above have been with all 3 options being *unflagged*
         # dict(
         #    env=dict(TH_B_VMIN='0', TH_FLAG_A='true', TH_FLAG_C='true'),
@@ -1419,6 +1814,7 @@ def run_one(test: dict, args, build_dir: Path) -> tuple:
     expected = test.get('expected', {})
     expect_fail = test.get('expect_fail', False)
     rf_specs = test.get('response_files', {})
+    stdin_content = test.get('stdin_content', None)   # GLK added
 
     rfdir = None
     #### materialise response files
@@ -1470,7 +1866,9 @@ def run_one(test: dict, args, build_dir: Path) -> tuple:
     # added encoding='latin1' (h/t https://stackoverflow.com/a/76384840)
     # because otherwise got surprising error message (where previously it worked fine):
     # UnicodeDecodeError: 'utf-8' codec can't decode byte 0xbb in position 85: invalid start byte
-    result = subprocess.run(cmd, capture_output=True, text=True, encoding='latin1', env=MYENV)
+    result = subprocess.run(
+        cmd, capture_output=True, text=True, encoding='latin1', input=stdin_content, env=MYENV
+    )
     exit_code = result.returncode
     errlog = f'stderr:\n{textwrap.indent(result.stderr.strip(), INDENT)}'
     outlog = f'stdout:\n{textwrap.indent(result.stdout.strip(), INDENT)}'
@@ -1498,7 +1896,12 @@ def run_one(test: dict, args, build_dir: Path) -> tuple:
             failures.append(f'  {key}: got {act_val!r}, expected {exp_val!r}')
 
     if failures:
-        detail = 'value mismatch(es):\n' + '\n'.join(failures)
+        detail = (
+            'X X X X X X X X X X X X X X X\n'
+            + ' value mismatch(es):\n'  #
+            + 'X X X X X X X X X X X X X X X\n'  #
+            + '\n'.join(failures)  #
+        )
         outlog = f'stdout:\n{textwrap.indent(result.stdout.strip(), INDENT)}'
         detail += f'\nfull binary output:' + outlog
         return False, detail

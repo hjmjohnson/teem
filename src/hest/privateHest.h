@@ -97,6 +97,10 @@ typedef unsigned int uint; /* uint is just more concise */
 /* methodsHest.c */
 extern int hest__isspace(int ch);
 extern int hest__isdigit(int ch);
+extern int hest__isprint(int ch);
+extern uint hest__flagOptNum(const hestOpt *hopt);
+extern uint hest__unflagOptNum(const hestOpt *hopt);
+
 /*
  * These were moved not just from air.h (see note there) but also from public hest.h,
  * with a air --> hest renaming, since these are only used to implement hest functions.
@@ -128,6 +132,9 @@ extern int hest__OPCheck(const hestOpt *hopt, const hestParm *parm);
 // argvHest.c
 extern int hest__PlainWord(const char *s);
 
+/* "#if 1" for more context in biff error messages,
+   "#if 0" for fewer uncovered branches in coverage testing */
+#if 0
 /* wacky hack to use with biffAddf(HEST), for debugging, so that normal hest users,
    who haven't cranked up hestParm->verbose to debug hest itself, don't get error
    messages prefixed by a lot of weird internal hest function names.
@@ -135,17 +142,16 @@ extern int hest__PlainWord(const char *s);
      biffAddf(HEST, "%s%shit a problem", MY_ME, ... )
    Note the "%s%s" start, with NO following space.
    Or if its not hparm but some other source `verb` of a verbosity level
-     biffAddf(HEST, "%s%sthis is the error", MY_MEV(verb), ... )
-
-#define MY_ME                                                                           \
-  ((hparm) && (hparm)->verbose ? __func__ : ""),                                        \
-    ((hparm) && (hparm)->verbose ? ": " : "")
-#define MY_MEV(V) ((V) ? __func__ : ""), ((V) ? ": " : "")
-
-*/
-// Stub versions of the above, in the interest of reducing uncovered branches
-#define MY_ME     "", ""
-#define MY_MEV(V) "", ""
+     biffAddf(HEST, "%s%sthis is the error", MY_MEV(verb), ... ) */
+#  define MY_ME                                                                         \
+    ((hparm) && (hparm)->verbose ? __func__ : ""),                                      \
+      ((hparm) && (hparm)->verbose ? ": " : "")
+#  define MY_MEV(V) ((V) ? __func__ : ""), ((V) ? ": " : "")
+#else
+// Stub versions of the above
+#  define MY_ME     "", ""
+#  define MY_MEV(V) "", ""
+#endif
 
 #ifdef __cplusplus
 }

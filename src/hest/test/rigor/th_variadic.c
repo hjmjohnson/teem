@@ -12,21 +12,6 @@ static const char *info
      "flagged variadic options, which Claude missed testing when it generated all "
      "this.");
 
-/*
-** (the following is just about *unflagged* variadic options)
-**   Pass 1 (forward): fixed options that appear BEFORE the variadic in
-**     definition order consume args from the beginning of the command line.
-**   Pass 2 (backward): fixed options that appear AFTER the variadic in
-**     definition order consume args from the end of the command line.
-**   Variadic fill: the single unflagged variadic option gets the middle.
-**
-** Definition order (critical — determines which pass each option participates in):
-**   position 0: A[2] ints   — fixed (kind 3)
-**   position 1: B[] strings — variadic (kind 5)
-**   position 2: C int       — fixed (kind 2)
-**   position 3: D[2] ints   - fixed (kind 3)
-*/
-
 #include <stdio.h> /* for snprintf */
 #include "thcommon.h"
 
@@ -41,6 +26,7 @@ main(int argc, const char **argv) {
   // if ioctl() fails (and testing will force that, once) small number of column
   hestParmColumnsIoctl(hparm, 70);
   hparm->respectDashDashHelp = AIR_TRUE;
+  hparm->responseFileEnable = AIR_TRUE;
 
   // export TH_FLAG_A=true to flag the non-variadic=fixed option "A"
   int FLAG_A = AIR_FALSE; // by default, do not flag "A" (how this file started)
@@ -48,6 +34,8 @@ main(int argc, const char **argv) {
   // export TH_FLAG_B=true to flag the variadic option "B"
   int FLAG_B = AIR_FALSE; // by default, do not flag "B" (how this file started)
   th_getenvBool(&FLAG_B, "TH_FLAG_B");
+  int DROP_B = AIR_FALSE; // by default, do create "B" option (how this file started)
+  th_getenvBool(&DROP_B, "TH_DROP_B");
   // export TH_FLAG_C=true to flag the non-variadic=fixed option "C"
   int FLAG_C = AIR_FALSE; // by default, do not flag "C" (how this file started)
   th_getenvBool(&FLAG_C, "TH_FLAG_C");
@@ -59,23 +47,30 @@ main(int argc, const char **argv) {
   hestOptAdd_2_Int(&hopt, FLAG_A ? "A" : NULL, "A0 A1", A, getenv("TH_A_DFLT"),
                    "two leading ints");
 
-  char **B = NULL;
-  unsigned int sawB = 0;
-
-  int eGot;
   // export TH_B_VMIN=0 to trigger a particular hest failure
   int B_VMIN = 1; // by default, min # args is 1
   th_getenvInt(&B_VMIN, "TH_B_VMIN");
+  int B_VMAX = -1; // by default, # args is unbounded
+  th_getenvInt(&B_VMAX, "TH_B_VMAX");
+  if (B_VMIN == B_VMAX) {
+    fprintf(stderr, "%s: NOPE cannot work with B vmin == vmax == %d\n", argv[0], B_VMIN);
+    // because then it is kind 3 not kind 5, and then the value pointer passed is wrong
+    exit(1);
+  }
   // hestOptAdd_Mv_String(&hopt, FLAG_VARI ? "B" : NULL, "Bvar", B_VMIN, -1, &B, NULL,
   //                      "variable # of middle strings\n "
   //                      "(including a second line)",
   //                      &sawB);
-  // using old hestOptAdd just for coverage
-  hestOptAdd(&hopt, FLAG_B ? "B" : NULL, "Bvar", airTypeString, B_VMIN, -1, &B,
-             getenv("TH_B_DFLT"),
-             "variable # of middle strings\n "
-             "(including a second line)",
-             getenv("TH_NULL_SAW") ? NULL : &sawB);
+  // using old hestOptAdd for coverage
+  char **B = NULL;
+  unsigned int sawB = 0;
+  if (!DROP_B) {
+    hestOptAdd(&hopt, FLAG_B ? "B" : NULL, "Bvar", airTypeString, B_VMIN, B_VMAX, &B,
+               getenv("TH_B_DFLT"),
+               "variable # of middle strings\n "
+               "(including a second line)",
+               getenv("TH_NULL_SAW") ? NULL : &sawB);
+  }
 
   int C = 0;
   hestOptAdd_1_Int(&hopt, FLAG_C ? "C" : NULL, "C", &C, getenv("TH_C_DFLT"),
@@ -105,13 +100,25 @@ main(int argc, const char **argv) {
   printf("A=[%d;%d;]\n", A[0], A[1]);
   THPRINT_SOURCE("A", hopt, 0);
 
-  printf("B=[");
-  for (unsigned int ii = 0; ii < sawB; ii++) {
-    printf("%s;", B[ii]);
+  if (!DROP_B) {
+    printf("B=[");
+    for (unsigned int ii = 0; ii < sawB; ii++) {
+      printf("%s;", B[ii]);
+    }
+    printf("]\n");
+    /* doing this check here in C rather than creating a new convention for communicating
+       it to the Python driver
+       From 0-README.md:
+       In the case of multiple variadic strings, a final NULL entry is added to the
+       `(*vvP)[]` array to mimic the NULL-terminated structure of `argv` itself. */
+    if (B[sawB] != NULL) {
+      fprintf(stderr,
+              "%s: OOOooooops: parsed multiple variadic strings should be capped with "
+              "NULL (but B[%u]=%p)\n",
+              argv[0], sawB, AIR_CVOIDP(B[sawB]));
+    }
+    THPRINT_SOURCE("B", hopt, 1);
   }
-  printf("]\n");
-  THPRINT_SOURCE("B", hopt, 1);
-
   printf("C=%d\n", C);
   THPRINT_SOURCE("C", hopt, 2);
 
