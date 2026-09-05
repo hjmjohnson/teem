@@ -4,7 +4,7 @@
 
 Like other command-line parsers, `hest` creates a command-line interface to a C program according to a set of command-line option specifications. With its C89 API, `hest` thereby bridges from the `argc`/`argv` command-line to a collection of C variables that need to be given values, so that a C program can usefully run. Unlike with other C command-line parsers, the variables can be of any type (boolean, `int`, `float`, `char *` strings, plus user-defined types), and the variables can hold single values (such as `float thresh`) or multiple values (such as `float RGBA[4]`), including having the number of values be learned at run-time. `hest` underlies Teem's command-line tools like `unu`. To the extent that `hest` bridges the command-line with compiled C code, it approaches some of the roles that in other contexts are served by higher-level languages with C extensions: `hest`-using programs can run complex computations, even more so with shell scripts around `hest`-using programs. (Still, TeemV2 does include a Python extension wrapping all of Teem's libraries.)
 
-I (GLK) created `hest` in 2002 out of frustration with limitations of other C command-line parsing libraries. The [`argtable` (version 1)](https://argtable.sourceforge.io/) library came closest to the needed feature set. It directly inspired `hest`'s array-of-per-option-structs approach, and early versions of `hest` supported `argtable`-style static definition of the `hestOpt` array (though current `hest` usage requires dynamic creation of the option array). The newer [Argtable3](https://www.argtable.org/) looks great, but does not seem to easily support flagged multiple and variadic options (multiple values after one flag), tokenizing multiple values from default strings, or response files. The `hest` code was revisited in 2023 to add long-overdue support for `--help`, and to add typed functions for specifying options like `hestOptAdd_4_Float`. Entirely rewriting the code in 2025 fixed long-standing bugs with how quoted strings were handled and how response files were parsed. The rewrite also added `-{`, `}-` command-line comments and other new features. Revisiting the re-write in 2026 (prior to the TeemV2 release) created rigorous testing, added some final features (parsing priority, option separators), and resolved some long-standing ambiguities about handling options with zero or more parameters.
+I (GLK) created `hest` in 2002 out of frustration with limitations of other C command-line parsing libraries. The [`argtable` (version 1)](https://argtable.sourceforge.io/) library came closest to the needed feature set. It directly inspired `hest`'s array-of-per-option-structs approach, and early versions of `hest` supported `argtable`-style static definition of the `hestOpt` array (though current `hest` usage requires dynamic creation of the option array). The newer [Argtable3](https://www.argtable.org/) looks great, but does not seem to easily support flagged multiple and variadic options (multiple values after one flag), tokenizing multiple values from default strings, or response files. The `hest` code was revisited in 2023 to add long-overdue support for `--help`, and to add typed functions for specifying options like `hestOptAdd_4_Float`. Entirely rewriting the code in 2025 fixed long-standing bugs with how quoted strings were handled and how response files were parsed. The rewrite also added `-{`, `}-` command-line comments and other new features. Revisiting the re-write in 2026 (prior to the TeemV2 release) created rigorous testing, added some final features (like parsing priority), and resolved some long-standing ambiguities about handling options with zero or more parameters (helped by new `-.` variadic end flag).
 
 `hest` is powerful and not simple. This note attempts to give a technical description useful for anyone considering using `hest`, as well as anyone trying wrap their head around the `hest` source code, including GLK. The `teem-src/src/hest/hest.h` header file includes lovingly written and detailed explanatory comments. The implementation of `hest` uses C99 (but should compile everywhere, including on Windows) and is well-commented.
 
@@ -57,17 +57,17 @@ After recognizing the expressivity of parameterizing options in terms of `min` a
  1--|     variadic    |      fixed      |
     |       parm      |      parm       |
     |     hOA_1v_T    |     hOA_1_T     |
-    |.................|.................|.................|
-    | (1) stand-alone |                 |   (6) option    |
- 0--|      flag;      |                 |     listing     |
-    |    no parms     |                 |    separator    |
-    |    hOA_Flag     |                 |     hOA_Sep     |
- ^  |________ ________|_________________|_________________|_. .
+    |.................|.................|
+    | (1) stand-alone |
+ 0--|      flag;      |
+    |    no parms     |
+    |    hOA_Flag     |
+ ^  |________ ________|_________________|_________________|__..
 max          |                 |                 |
     min >    0                 1                 2
 ```
 
-The special-case `kind`=6 is not really an option, but a container for a label (created with `hestOptAdd_Separator`) for visually separating subsets of options in the glossaries of very long option arrays. Parameterizing options with `min` and `max` allows you to specify an option that needs, for example, 3 or more arguments, or between 1 and 4 arguments. This is useful for various technical settings, but is not as straightforward in something like Python's `argparse`. Relative to `argparse` and its `nargs` argument to `.add_argument()`:
+Parameterizing options with `min` and `max` allows you to specify an option that needs, for example, 3 or more arguments, or between 1 and 4 arguments. This is useful for various technical settings, but is not as straightforward in something like Python's `argparse`. Relative to `argparse` and its `nargs` argument to `.add_argument()`:
 
 - `nargs=N` with `N`>1 is hest's `kind`=3
 - `nargs=1` is `kind`=2
