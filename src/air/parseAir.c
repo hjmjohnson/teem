@@ -49,11 +49,17 @@
 #  if TEEM_PTHREAD
 #    include <pthread.h>
 #  endif
-/* Cached "C" locale for locale-independent strtod_l; created once. */
+/* Cached locale for locale-independent strtod_l; created once.  Only
+   LC_NUMERIC is "C": the other categories follow the global locale so a
+   uselocale() swap does not change ctype or collation behavior. */
 static locale_t _airCLocale = (locale_t)0;
 static void
 _airCLocaleInit(void) {
-  _airCLocale = newlocale(LC_NUMERIC_MASK, "C", (locale_t)0);
+  locale_t base = duplocale(LC_GLOBAL_LOCALE);
+  _airCLocale = newlocale(LC_NUMERIC_MASK, "C", base);
+  if (!_airCLocale && base) {
+    freelocale(base);
+  }
 }
 static locale_t
 _airGetCLocale(void) {
