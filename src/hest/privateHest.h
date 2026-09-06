@@ -132,9 +132,10 @@ extern int hest__OPCheck(const hestOpt *hopt, const hestParm *parm);
 // argvHest.c
 extern int hest__PlainWord(const char *s);
 
-/* "#if 1" for more context in biff error messages,
-   "#if 0" for fewer uncovered branches in coverage testing */
-#if 0
+/*                    1 for more context in biff error messages,
+                      0 for fewer uncovered branches in coverage testing */
+#define MY_ME_VERBOSE 0
+#if MY_ME_VERBOSE
 /* wacky hack to use with biffAddf(HEST), for debugging, so that normal hest users,
    who haven't cranked up hestParm->verbose to debug hest itself, don't get error
    messages prefixed by a lot of weird internal hest function names.
@@ -152,6 +153,13 @@ extern int hest__PlainWord(const char *s);
 #  define MY_ME     "", ""
 #  define MY_MEV(V) "", ""
 #endif
+
+/* when displaying argv via hestArgVecSprint for error messages, what
+   should we pass for final showIndex argument that enables "i:arg" labeling
+   (making this a #define instead of a variable seems to increase branch coverage)
+                0 : no labels
+                1 : yes labels */
+#define MY_SHAI 0
 
 #ifdef __cplusplus
 }

@@ -86,8 +86,8 @@ TYvals = {
 }
 # TYs: all the TY
 TYs = list(TYvals.keys())
-# FLAGS: all the -TY (e.g. "-SI") flags for th_kind* programs
-FLAGS = {f'TH_{TY}_FLAG': '' for TY in TYs}
+# TY_FLAGS: all the -TY (e.g. "-SI") flags for th_kind* programs
+TY_FLAGS = {f'TH_{TY}_FLAG': '' for TY in TYs}
 # all the TY for which kind=4 is not (no longer) supported
 TYsNonnumeric = ['CH', 'SS', 'EE', 'XY', 'CO']
 # TYsNumeric: all the "numeric" TY, but really: ones valid for kind=4 ("!" makes sense)
@@ -444,6 +444,13 @@ def test_list(args):
         ),
         dict(
             exe='th_flagged_scalars',
+            name='scalars: response file with unquoted string with line continuation',
+            response_files={'dquoted-lc.txt': '-s hellow\\\norld'},
+            argv=['-s', 'good morning', '@dquoted-lc.txt'],
+            expected={'s': 'helloworld', 's.src': SRC_RF},
+        ),
+        dict(
+            exe='th_flagged_scalars',
             name='scalars: response file with single-quoted string',
             response_files={'squoted.txt': "-s 'one two'"},  # not using newline, for variety
             argv=['-s', 'not this', '@squoted.txt'],
@@ -659,14 +666,82 @@ def test_list(args):
                 ),
                 dict(
                     env={'TH_DROP_B': 'true'},
-                    # weirdly this is (still?) the ONLY test with unflagged opts but none variadic
+                    # weirdly this is the ONLY way we're testingh unflagged opts but none variadic
                     name='variadic: no B so zero strings in middle (all unflagged)',
-                    argv=['10', '20', '33', '44', '55'],
+                    argv='10 20 33 44 55',
                     expected={
                         'A': [10, 20],
                         'C': 33,
                         'D': [44, 55],
                     },
+                ),
+                dict(
+                    env={
+                        'TH_DROP_B': 'true',
+                        'TH_A_LEN3': 'true',
+                    },
+                    # (still weirdly)
+                    name='variadic: dropB so 0 strings BUT LEN(A)=3 (all unflagged)',
+                    argv='10 15 20 33 44 55',
+                    expected={
+                        'A': [10, 15, 20],
+                        'C': 33,
+                        'D': [44, 55],
+                    },
+                ),
+                dict(
+                    env={
+                        'TH_DROP_B': 'true',
+                        'TH_A_LEN3': 'true',
+                        'TH_C_DFLT': '33',
+                        'TH_D_DFLT': '44 55',
+                    },
+                    # (still weirdly)
+                    name='variadic: dropB so 0 strings BUT only LEN(A)=3 given, rest by default (all unflagged)',
+                    argv='10 15 20',
+                    expected={
+                        'A': [10, 15, 20],
+                        'C': 33,
+                        'C.src': SRC_DF,
+                        'D': [44, 55],
+                        'D.src': SRC_DF,
+                    },
+                ),
+                dict(
+                    env={
+                        'TH_DROP_B': 'true',
+                        'TH_A_LEN3': 'true',
+                        'TH_C_DFLT': '33',
+                        'TH_D_DFLT': '44 55',
+                    },
+                    # (still weirdly)
+                    # BTW this is JUST to exercise a singular/plural branch ... fml
+                    name='variadic: dropB so 0 strings BUT only 2 < LEN(A) given, rest by default (all unflagged)',
+                    argv='10 15',
+                    expect_fail=True,
+                ),
+                dict(
+                    env={
+                        'TH_B_VMIN': '2',
+                        'TH_C_DFLT': '33',
+                        'TH_D_DFLT': '44 55',
+                    },
+                    # (still weirdly)
+                    # BTW this is JUST to exercise a different singular/plural branch ... fml
+                    name='variadic: giving only 1 < Bvmin string (all unflagged)',
+                    argv='111 222 singular',
+                    expect_fail=True,
+                ),
+                dict(
+                    env={
+                        'TH_DROP_B': 'true',
+                        'TH_A_LEN3': 'true',
+                        **flagA_CD,
+                    },
+                    # (still weirdly)
+                    name='variadic: dropB so 0 strings BUT LEN(A)=3 and only given 2 (all flagged)',
+                    argv='-C 33 -D 44 55 -A 10 15',
+                    expect_fail=True,
                 ),
                 dict(
                     env=flagABCD,
@@ -1105,6 +1180,9 @@ def test_list(args):
                 # -------------------------- from 0-README.md:
                 # Within the consumption order just described, each unflagged option asks:
                 # "are there remaining command-line arguments for me to consume?"
+                # If yes, that option consumes them, and thereby overrides its default string.
+                # Whether an unflagged option has default string does **not** inform
+                # whether the option tries to consume args from the command-line.
                 # ---------- WITH variadic
                 dict(  ##### give A B C D   WITH variadic
                     env={
@@ -1187,7 +1265,64 @@ def test_list(args):
                     },
                 ),
                 # ---------- withOUT variadic
-                # HEY put back in here
+                dict(  ##### give A C D   withOUT variadic
+                    env={
+                        'TH_DROP_B': 'true',
+                        **dfltACD_XOX,
+                    },
+                    name='variadic: unflagged option consumption order w/OUT variadic: give ACD',
+                    argv='119 229 339 449 559',
+                    expected={
+                        'A': [119, 229],
+                        'C': 339,
+                        'D': [449, 559],
+                    },
+                ),
+                dict(  ##### give A C _   withOUT variadic
+                    env={
+                        'TH_DROP_B': 'true',
+                        **dfltACD_XOX,
+                    },
+                    name='variadic: unflagged option consumption order w/OUT variadic: give AC_',
+                    argv='119 229 339',
+                    expected={
+                        'A': [119, 229],
+                        'C': 339,
+                        'D': [404, 505],
+                        'D.src': SRC_DF,
+                    },
+                ),
+                dict(  ##### give A _ _   withOUT variadic
+                    env={
+                        'TH_DROP_B': 'true',
+                        **dfltACD_XOX,
+                    },
+                    name='variadic: unflagged option consumption order w/OUT variadic: give A__',
+                    argv='119 229',
+                    expected={
+                        'A': [119, 229],
+                        'C': 303,
+                        'C.src': SRC_DF,
+                        'D': [404, 505],
+                        'D.src': SRC_DF,
+                    },
+                ),
+                dict(  ##### give _ _ _   withOUT variadic
+                    env={
+                        'TH_DROP_B': 'true',
+                        **dfltACD_XOX,
+                    },
+                    name='variadic: unflagged option consumption order w/OUT variadic: give ___',
+                    argv=[],
+                    expected={
+                        'A': [101, 202],
+                        'A.src': SRC_DF,
+                        'C': 303,
+                        'C.src': SRC_DF,
+                        'D': [404, 505],
+                        'D.src': SRC_DF,
+                    },
+                ),
                 # -------------- end of test of unflagged consumption order
                 dict(
                     env=dict(TH_TWO_VARI='true'),
@@ -1227,7 +1362,7 @@ def test_list(args):
         dict(
             env={
                 **{f'TH_{TY}_DEFAULT': TYvals[TY][0] for TY in TYs},
-                **FLAGS,
+                **TY_FLAGS,
             },
             exe='th_kind2',
             name='kind2 (with flags, with defaults) --help',
@@ -1237,7 +1372,7 @@ def test_list(args):
         # dict(
         #    env={
         #        **{f'TH_{TY}_DEFAULT': TYvals[TY][0] for TY in TYs},
-        #        **FLAGS,
+        #        **TY_FLAGS,
         #    },
         #    exe='th_kind2',
         #    name='kind2 (with flags, with defaults) set from default',
@@ -1251,7 +1386,7 @@ def test_list(args):
             expected={TY: P(TY, TYvals[TY][1]) for TY in TYs},
         ),
         dict(
-            env=FLAGS,
+            env=TY_FLAGS,
             exe='th_kind2',
             name='kind2 (with flags, NO defaults) set from args',
             argv=[wut for TY in TYs for wut in [f'-{TY}', TYvals[TY][1]]],
@@ -1261,7 +1396,7 @@ def test_list(args):
         # dict(
         #    env={
         #        **{f'TH_{TY}_DEFAULT': TYvals[TY][0] for TY in TYs},
-        #        **FLAGS,
+        #        **TY_FLAGS,
         #    },
         #    exe='th_kind2',
         #    name='kind2 (with flags, with defaults) set from args',
@@ -1272,7 +1407,7 @@ def test_list(args):
         dict(
             env={
                 **{f'TH_{TY}_DEFAULT': f'{Q(TYvals[TY][0])} {Q(TYvals[TY][1])}' for TY in TYs},
-                **FLAGS,
+                **TY_FLAGS,
             },
             exe='th_kind3_n2',
             name='kind3_n2 (with flags, with defaults) --help',
@@ -1293,7 +1428,7 @@ def test_list(args):
         ),
         # this increases air/array.c coverage but not hest coverage?
         dict(
-            env=FLAGS,
+            env=TY_FLAGS,
             exe='th_kind3_n2',
             name='kind3_n2 (with flags, NO defaults) set from args',
             argv=[x for TY in TYs for x in [f'-{TY}', TYvals[TY][1], TYvals[TY][2]]],
@@ -1305,7 +1440,7 @@ def test_list(args):
         dict(
             env={
                 **DFLT([0, 1, 2]),
-                **FLAGS,
+                **TY_FLAGS,
             },
             exe='th_kind3_n3',
             name='kind3_n3 (with flags, with defaults) --help',
@@ -1320,7 +1455,7 @@ def test_list(args):
             expected=EXPT([0, 1, 2]),
         ),
         dict(
-            env=FLAGS,
+            env=TY_FLAGS,
             exe='th_kind3_n3',
             name='kind3_n3 (with flags, NO defaults) set from args',
             argv=ARGV([0, 1, 2]),
@@ -1332,7 +1467,7 @@ def test_list(args):
         dict(
             env={
                 **DFLT([0, 1, 2, 0]),
-                **FLAGS,
+                **TY_FLAGS,
             },
             exe='th_kind3_n4',
             name='kind3_n4 (with flags, with defaults) --help',
@@ -1347,7 +1482,7 @@ def test_list(args):
             expected=EXPT([0, 1, 2, 0]),
         ),
         dict(
-            env=FLAGS,
+            env=TY_FLAGS,
             exe='th_kind3_n4',
             name='kind3_n4 (with flags, NO defaults) set from args',
             argv=ARGV([0, 1, 2, 0]),
@@ -1359,7 +1494,7 @@ def test_list(args):
         dict(
             env={
                 **DFLT([0, 1, 2, 1, 0]),
-                **FLAGS,
+                **TY_FLAGS,
             },
             exe='th_kind3_n5',
             name='kind3_n5 (with flags, with defaults) --help',
@@ -1385,7 +1520,7 @@ def test_list(args):
         dict(
             env={
                 **DFLT([0]),
-                **FLAGS,
+                **TY_FLAGS,
             },
             exe='th_kind4',
             name='kind4 (with required flags+defaults) --help',
@@ -1394,7 +1529,7 @@ def test_list(args):
         dict(
             env={
                 **DFLT([0]),  # harmlessly sets defaults for non-existent options
-                **FLAGS,  # harmlessly turns on flags for non-existent options
+                **TY_FLAGS,  # harmlessly turns on flags for non-existent options
             },
             exe='th_kind4',
             name='kind4 (with required flags+defaults) set from defaults',
@@ -1406,19 +1541,33 @@ def test_list(args):
                 env={
                     f'TH_KIND4_{TZ}': '',
                     **DFLT([0]),  # harmlessly sets defaults for non-existent options
-                    **FLAGS,  # harmlessly turns on flags for non-existent options
+                    **TY_FLAGS,  # harmlessly turns on flags for non-existent options
                 },
                 exe='th_kind4',
-                name=f'kind4 (with req flags+defaults) set from dflt, plus bad TY={TZ}',
+                name=f'kind4 (with req flags+defaults) set from dflt, plus invalid TY={TZ} for kind4',
                 argv=[],
                 expect_fail=True,
             )
             for TZ in TYsNonnumeric
         ],
+        *[
+            dict(
+                env={
+                    **DFLT([0]),  # harmlessly sets defaults for non-existent options
+                    **TY_FLAGS,  # harmlessly turns on flags for non-existent options
+                    f'TH_{TZ}_DEFAULT': 'slippery',
+                },
+                exe='th_kind4',
+                name=f'kind4 (with req flags+defaults) set from dflt, but TY={TZ} gets invalid value',
+                argv=[],
+                expect_fail=True,
+            )
+            for TZ in TYsNumeric
+        ],
         dict(
             env={
                 **DFLT([0]),
-                **FLAGS,
+                **TY_FLAGS,
             },
             exe='th_kind4',
             name='kind4 (with required flags+defaults) set by kind4-specific inversion 1->0',
@@ -1428,7 +1577,7 @@ def test_list(args):
         dict(
             env={
                 **{f'TH_{TY}_DEFAULT': ('false' if TY == 'BB' else '0') for TY in TYsNumeric},
-                **FLAGS,
+                **TY_FLAGS,
             },
             exe='th_kind4',
             name='kind4 (with required flags+defaults) set by kind4-specific inversion 0->1',
@@ -1438,18 +1587,22 @@ def test_list(args):
         dict(
             env={
                 **DFLT([0]),
-                **FLAGS,
+                **TY_FLAGS,
             },
             exe='th_kind4',
             name='kind4 (with required flags+defaults) set args',
             argv=[x for TY in TYsNumeric for x in [f'-{TY}', TYvals[TY][1]]],
             expected={f'{TY}': TYvals[TY][1] for TY in TYsNumeric},
         ),
-        *[
+        *[  # above tested given a bad ("slippery") value in the default, which actually
+            # forces it to (try to) be parsed. With the 2026 modest cleverness in kind=4
+            # arg consumption, values that can't be parsed as boolean/numeric are never
+            # even consumed (because a parse test fails but generates no error message),
+            # so the error here is "have 1 unexpected arg" rather than unparsable value
             dict(
                 env={
                     **DFLT([0]),
-                    **FLAGS,
+                    **TY_FLAGS,
                 },
                 exe='th_kind4',
                 name=f'kind4 (with required flags+defaults) set args but bad {TZ}',
@@ -1469,7 +1622,7 @@ def test_list(args):
         dict(
             env={
                 **DFLT([0, 1]),
-                **FLAGS,
+                **TY_FLAGS,
             },
             exe='th_kind5',
             name='kind5 (with flags, with defaults) --help',
@@ -1478,18 +1631,32 @@ def test_list(args):
         dict(
             env={
                 **DFLT([0, 1]),
-                **FLAGS,
+                **TY_FLAGS,
             },
             exe='th_kind5',
             name='kind5 (with flags, with defaults) set from defaults',
             argv=[],
             expected=EXPT([0, 1]),
         ),
+        *[
+            dict(
+                env={
+                    **DFLT([0, 1]),
+                    **TY_FLAGS,
+                },
+                exe='th_kind5',
+                name=f'kind5 (with flags, with defaults) set from defaults except for bad passed TY={TZ}',
+                argv=f'-{TZ} bedeezer',
+                expect_fail=True,
+            )
+            for TZ in TYs
+            if TZ != 'SS'  # because any string is still parsable as a string
+        ],
         # HEY would be nicer if we actually exercised having a variable number of parms
         # i.e. with different number of parms for different options; it would demonstrate
         # correctness but would not increase coverage
         dict(
-            env=FLAGS,
+            env=TY_FLAGS,
             exe='th_kind5',
             name='kind5 (with flags, NO defaults) set from args',
             argv=ARGV([1, 2]),
@@ -1548,7 +1715,7 @@ def test_list(args):
             expect_fail=True,
         ),
         dict(
-            env=FLAGS,  # oops no defaults (harmlessly turns on flags for non-existent options)
+            env=TY_FLAGS,  # oops no defaults (harmlessly turns on flags for non-existent options)
             exe='th_kind4',
             name='kind=4 (single variadic) missing required defaults',
             argv=[],
@@ -1557,7 +1724,7 @@ def test_list(args):
         dict(
             env={
                 **DFLT([0]),  # harmlessly sets defaults for non-existent options
-                **{kk: vv for kk, vv in FLAGS.items() if kk != 'TH_SI_FLAG'},
+                **{kk: vv for kk, vv in TY_FLAGS.items() if kk != 'TH_SI_FLAG'},
             },
             exe='th_kind4',
             name='kind4 with required defaults but missing SI flag',
@@ -1566,7 +1733,7 @@ def test_list(args):
         ),
         *[  # each dict has one flag passed a bad value, to test parsing error handling
             dict(
-                env=FLAGS,
+                env=TY_FLAGS,
                 exe='th_kind2',
                 name=f'kind=2 with a non-parsable {TY=} value',
                 argv=ARGV([0]) + [f'-{TY}', 'entropy'],
@@ -1925,13 +2092,13 @@ def main() -> int:
     ap.add_argument(
         '--cflags',
         default='-DTEEM_NON_CMAKE -I../../../../built/include -std=c99',
-        metavar='FLAGS',
+        metavar='iflags',
         help='compiler flags (include paths, -std=c99, etc.)',
     )
     ap.add_argument(
         '--ldflags',
         default='-L../../../../built/lib -lhest -lbiff -lair',
-        metavar='FLAGS',
+        metavar='lflags',
         help='linker flags (-L paths, -l libs, or path to .a)',
     )
     ap.add_argument(

@@ -142,9 +142,6 @@ argstGo(int *tokenDone, hestArg *tharg, int *stateP, int icc, int vrbo) {
                MY_MEV(vrbo));
       ret = 1;
       break;
-    default:
-      biffAddf(HEST, "%s%shit input end in unknown state %d", MY_MEV(vrbo), *stateP);
-      ret = 1;
     }
     return ret;
   }
@@ -724,9 +721,8 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
   char ident1[AIR_STRLEN_SMALL + 1], ident2[AIR_STRLEN_SMALL + 1];
   uint len0 = havec->len;     // original number of args
   uint optNum = hopt->arrLen; // number of options (flagged or unflagged)
-  int shwi = AIR_FALSE;       // are argv displays shown with 0-based indexing
   airArray *mop = airMopNew();
-  char *gotArgsStr = hestArgVecSprint(havec, shwi);
+  char *gotArgsStr = hestArgVecSprint(havec, MY_SHAI);
   airMopAdd(mop, gotArgsStr, airFree, airMopAlways);
 
   uint argIdx = 0;
@@ -805,7 +801,6 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
              "parmNum=%u sawEnd=%d sawVPE=%d nextOptIdx=%u\n",
              __func__, optIdx, theOpt->flag, parmNum, sawEnd, sawVPE, nextOptIdx);
     if (parmNum < theOpt->min) { // didn't see required min # parms
-      int shwi = AIR_FALSE;
       biffAddf(HEST, "%s%sbefore getting %u parameter%s for %s (got only %u)", MY_ME,
                theOpt->min, theOpt->min > 1 ? "s" : "",
                identStr(ident1, sizeof(ident1), theOpt), parmNum);
@@ -818,12 +813,12 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
                  identStr(ident2, sizeof(ident2), hopt + nextOptIdx));
       }
       if (txfNum) {
-        char *haveArgStr = hestArgVecSprint(havec, shwi);
+        char *haveArgStr = hestArgVecSprint(havec, MY_SHAI);
         airMopAdd(mop, haveArgStr, airFree, airMopAlways);
         biffAddf(HEST, "%s%sin remaining %sargv: %s", MY_ME,
-                 shwi ? "(index: labeled) " : "", haveArgStr);
+                 MY_SHAI ? "(index: labeled) " : "", haveArgStr);
       }
-      goto sideways;
+      goto sidewaysF;
     }
     if (hparm->verbose) {
       printf("%s: ________ argv[%u]=|%s|: optIdx %u |%s| followed by %u parms\n",
@@ -874,7 +869,7 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     if (needing && hestSourceUnknown == theOpt->source) {
       biffAddf(HEST, "%s%sdidn't get required (default-less) %s[%u]", MY_ME,
                identStr(ident1, sizeof(ident1), theOpt), opi);
-      goto sideways;
+      goto sidewaysF;
     }
   }
 
@@ -886,13 +881,17 @@ haveNoFlaggedOptions:
   }
   return 0;
 
-sideways:
+sidewaysF:
+  /* There was previously so much repetition of biff calls, to give context to a
+     just-detected error and prior to the return 1, that it was moved here.
+     Weird but now the code can be much more concise. Same dubious trick used
+     in other functions in this file. */
   if (txfNum) {
     biffAddf(HEST, "%s%safter getting %u args for %u other flagged option%s", MY_ME,
              len0 - havec->len, txfNum, 1 == txfNum ? "" : "s");
   }
-  biffAddf(HEST, "%s%sstarting with %sargv: %s", MY_ME, shwi ? "(index: labeled) " : "",
-           gotArgsStr);
+  biffAddf(HEST, "%s%sstarting with %sargv: %s", MY_ME,
+           MY_SHAI ? "(index: labeled) " : "", gotArgsStr);
   airMopError(mop);
   return 1;
 }
@@ -912,13 +911,12 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
   uint optNum = hopt->arrLen; // number of options (flagged or unflagged)
   uint Foptnum = hest__flagOptNum(hopt);
   uint UFoptnum = hest__unflagOptNum(hopt); // number of unflagged options
-  int shwi = AIR_FALSE;
   airArray *mop = airMopNew();
-  char *gotArgsStr = hestArgVecSprint(havec, shwi);
+  char *gotArgsStr = hestArgVecSprint(havec, MY_SHAI);
   airMopAdd(mop, gotArgsStr, airFree, airMopAlways);
   if (!UFoptnum) {
     // no unflagged options; we're done-ish
-    goto unflagfinish;
+    goto finishUF;
   }
   // else we have unflagged options
   uint *ufOpi = AIR_CALLOC(UFoptnum, uint);
@@ -987,10 +985,10 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     complicated by needing vmin > 0, or else how can you say who said that there are 0
     parms given). Now: if there are enough args in havec to meet our minimum, we consume
     them. If there are args but not enough, that's an error. If there are no args, that's
-    not an error but will be later (in `unflagfinish:` below) if options don't have
+    not an error but will be later (in `finishUF:` below) if options don't have
     defaults. */
     if (havec->len) {
-      char *nowStr = hestArgVecSprint(havec, shwi);
+      char *nowStr = hestArgVecSprint(havec, MY_SHAI);
       airMopAdd(mop, nowStr, airFree, airMopAlways);
       if (hopt[opi].min /* == max */ <= havec->len) {
         // we have enough or more than enough
@@ -1021,7 +1019,7 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
   if (E) {
     biffAddf(HEST, "%s%safter getting %u args for %u other unflagged option%s", MY_ME,
              len0 - havec->len, upii, 1 == upii ? "" : "s");
-    goto sideways;
+    goto sidewaysUF;
   }
   // now handle the single unflagged variadic, if we have it
   if (haveVari) {
@@ -1034,10 +1032,10 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
          taken to mean "I'm giving you 0 args" */
       hestArgVecReset(variOpt->havec);
       variOpt->source = hestSourceCommandLine; // actually just a guess!
-      goto unflagfinish;
+      goto finishUF;
     } else if (!havec->len) {
       /* Otherwise having no args means there's really thing to do */
-      goto unflagfinish;
+      goto finishUF;
     }
     // else havec->len > 0: we have args to collect for the unflagged variadic
     // start by resetting the per-option havec, and setting the source
@@ -1055,7 +1053,7 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
       int hitEnd = !noMore && !strcmp(VPE, havec->harg[0]->str);
       if (noMore || hitEnd) {
         biffAddf(HEST,
-                 "%s%s %s%s "
+                 "%s%s%s%s "
                  "before getting (min) %u args (from %s) for %s%s[%u]",
                  MY_ME, //
                  noMore ? "ran out of args" : "hit end-of-args marker ",
@@ -1063,7 +1061,7 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
                  minArg, airEnumStr(hestSource, variOpt->source),
                  !(variOpt->dflt) ? "default-less " : "",
                  identStr(ident, sizeof(ident), variOpt), ufVariOpi);
-        goto sideways;
+        goto sidewaysUF;
       }
       hestArg *harg = havecRemove(havec, 0);
       hestArgVecAppendArg(variOpt->havec, harg);
@@ -1084,14 +1082,14 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     }
   }
 
-unflagfinish:
+finishUF:
   // make sure that unflagged options without default were given
   for (upii = 0; upii < UFoptnum; upii++) {
     uint opi = ufOpi[upii];
     if (!(hopt[opi].dflt) && hestSourceUnknown == hopt[opi].source) {
       biffAddf(HEST, "%s%sdidn't get required (default-less) %s[%u]", MY_ME,
                identStr(ident, sizeof(ident), hopt + opi), opi);
-      goto sideways;
+      goto sidewaysUF;
     }
   }
   // currently it's an error to have un-accounted-for args left over
@@ -1102,7 +1100,7 @@ unflagfinish:
     if (UFoptnum) {
       biffAddf(HEST, "%s%safter getting %u unflagged opts", MY_ME, UFoptnum);
     }
-    goto sideways;
+    goto sidewaysUF;
   }
 
   if (hparm->verbose) {
@@ -1112,13 +1110,10 @@ unflagfinish:
   airMopOkay(mop);
   return 0;
 
-sideways: // things have gone sideways
-  /* There was previously so much repetition of biff calls, to give context to a
-     just-detected error and prior to the return 1, that it was moved here.
-     Weird but now the code can be much more concise */
+sidewaysUF: // things have gone sideways
   if (airStrlen(gotArgsStr)) {
     biffAddf(HEST, "%s%sgot %s%sargv: %s", MY_ME, Foptnum ? "remaining " : "",
-             shwi ? "(index: labeled) " : "", gotArgsStr);
+             MY_SHAI ? "(index: labeled) " : "", gotArgsStr);
   } else {
     biffAddf(HEST, "%s%sgot empty argv", MY_ME);
   }
@@ -1223,16 +1218,13 @@ optProcessDefaults(hestOpt *hopt, hestArg *tharg, hestInputStack *hist,
       optPrint(hopt + opi, opi);
     }
   }
+  /* actually this seems to be entirely unreachable, but keeping for posterity
   for (uint opi = 0; opi < optNum; opi++) {
     identStr(ident, sizeof(ident), hopt + opi);
-    if (hestSourceUnknown == hopt[opi].source) {
-      biffAddf(HEST, "%s%s%s[%u] does not have a source set?", MY_ME, ident, opi);
-      return 1;
-    }
-    /* (Yes, half of this test is redundant with check above on whether the default
+    / * (Yes, half of this test is redundant with check above on whether the default
     string supplied at least hopt[opi].min args, but erring with doing more checks).
     Now that we've made a hopt[opi].havec array, and will soon parse strings to set
-    values, we can check that the number of args matches what the option needs */
+    values, we can check that the number of args matches what the option needs * /
     int maxArg = hest__Max(hopt[opi].max);
     int haveArg = AIR_INT(hopt[opi].havec->len);
     if (!(AIR_INT(hopt[opi].min) <= haveArg && haveArg <= maxArg)) {
@@ -1242,7 +1234,7 @@ optProcessDefaults(hestOpt *hopt, hestArg *tharg, hestInputStack *hist,
                MY_ME, ident, opi, hopt[opi].havec->len, hopt[opi].min, maxArg);
       return 1;
     }
-  }
+  } */
   return 0;
 }
 
@@ -1339,12 +1331,13 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
         // option flag appears, with single parm
         strsrc = hopt[opi].havec->harg[0]->str;
         invert = AIR_FALSE;
-      } else {
-        biffAddf(HEST, "%s%sconfused by (kind=4) %s[%u] source %s and havec->len %u",
-                 MY_ME, ident, opi, airEnumStr(hestSource, hopt[opi].source),
-                 hopt[opi].havec->len);
-        return 1;
-      }
+      } /* actually unreachable given all the other prior tests
+         else {
+           biffAddf(HEST, "%s%sconfused by (kind=4) %s[%u] source %s and havec->len %u",
+                    MY_ME, ident, opi, airEnumStr(hestSource, hopt[opi].source),
+                    hopt[opi].havec->len);
+           return 1;
+         } */
       if ((pret = hest__ParseSingle[type](valueP, strsrc, hpp))) {
         biffAddf(HEST, "%s%sfor (kind=4) %s[%u] could not parse |%s| as single %s",
                  MY_ME, ident, opi, strsrc, hest__TypeStr[type]);
@@ -1446,13 +1439,13 @@ error, an error message string describing it in detail is generated and
 The main phases of parsing are (this is the same numbering as in 0-README.md):
 
 1) Error checking on given `hopt` array.  If this fails (i.e. because the previous
-calls to hestOptAdd were malformed), the return is -1, not the 1 returned from errors in
-most of the subsequent steps
+calls to hestOptAdd were malformed), the return is -1, which is distict from
+possible returns due to errors in later steps.
 
 2) Generate internal representation of command-line that includes expanding any
 response files; this all goes into the `hestArgVec *havec`.
 
-3) From `havec`, extract the args that are attributable to flagged ...
+3) From `havec`, extract/consume the args that are attributable to flagged ...
 4) ... and unflagged options, moving each `hestArg` out of main `havec` and into
 the per-hestOpt opt->havec
 
@@ -1477,6 +1470,16 @@ hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
   }
   // how to const-correctly use hparm or _hparm in an expression
 #define HPARM (_hparm ? _hparm : hparm)
+#if MY_ME_VERBOSE
+// tweak of same "wacky hack" in privateHest.h, ~ using HPARM instead of hparm
+#  define PME     ((HPARM)->verbose ? __func__ : ""), ((HPARM)->verbose ? ": " : "")
+#  define PMEV(V) ((V) ? __func__ : ""), ((V) ? ": " : "")
+#else
+// Stub versions of the above
+#  define PME     "", ""
+#  define PMEV(V) "", ""
+#endif
+
   if (HPARM->verbose > 1) {
     printf("%s: (%s) hparm->verbose %d\n", __func__, _hparm ? "given" : "default",
            HPARM->verbose);
@@ -1497,34 +1500,20 @@ hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
   }
 #endif
 
-  // error string songs and dances
-#define DO_ERR2(WUT, ARGVS)                                                             \
-  if ((ARGVS)) {                                                                        \
-    biffAddf(HEST, "from original command-line: %s", (char *)(ARGVS));                  \
-  }                                                                                     \
-  biffAddf(HEST, "%s%s" WUT, MY_MEV(HPARM->verbose));                                   \
-  char *err = biffGetDone(HEST);                                                        \
-  if (errP) {                                                                           \
-    *errP = err;                                                                        \
-  } else {                                                                              \
-    fprintf(stderr, "%s: problem:\n%s", __func__, err);                                 \
-    free(err);                                                                          \
-  }                                                                                     \
-  if (-5 == hopt->parseErrOptIdx) hopt->parseErrOptIdx = -10 * phase
-#define DO_ERR(WUT) DO_ERR2(WUT, NULL)
-
+  int eret = 0;
+  char *argvstr = NULL, *estr = NULL;
   // --1--1--1--1--1-- check on validity of the hestOpt array
   int phase = 1;
   if (hest__OPCheck(hopt, HPARM)) {
-    DO_ERR("problem with given hestOpt array");
-    airMopError(mop);
-    return -1;
+    biffAddf(HEST, "%s%sproblem with given hestOpt array (phase 1)", PME);
+    eret = -1;
+    goto sidewaysParse;
   }
   if (HPARM->verbose > 1) {
     printf("%s: hest__OPCheck passed\n", __func__);
   }
   /* initialize things indicating parse error to say "none known"
-     the magic -5 is used by DO_ERR above to avoid clobbering
+     the magic -5 is used by the sidewaysParse exit code below, to avoid clobbering
      info about a phase 6 parse error with -10 times the failing phase */
   hopt->parseErrOptIdx = -5;
   for (uint opi = 0; opi < hopt->arrLen; opi++) {
@@ -1538,7 +1527,7 @@ hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
   airMopAdd(mop, havec, hestArgVecNix_mop, airMopAlways);
   hestArg *tharg = hestArgNew(); // tmp hestArg
   airMopAdd(mop, tharg, hestArgNix_mop, airMopAlways);
-  char *argvstr = hestArgcArgvSprint(argc, argv, AIR_FALSE);
+  argvstr = hestArgcArgvSprint(argc, argv, AIR_FALSE);
   airMopAdd(mop, argvstr, airFree, airMopAlways);
   /* in case we have a parsing error, we make ourselves responsible for
      cleaning up the things allocated by parsing, prior to the error */
@@ -1551,9 +1540,9 @@ hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
   phase = 2;
   if (histPushCommandLine(hist, argc, argv, HPARM)
       || histProcess(havec, &(hopt->helpWanted), tharg, hist, HPARM)) {
-    DO_ERR2("problem with initial processing of command-line", argvstr);
-    airMopError(mop);
-    return 1;
+    biffAddf(HEST, "%s%sproblem with initial processing of command-line (phase 2)", PME);
+    eret = 1;
+    goto sidewaysParse;
   }
   if (HPARM->verbose > 1) {
     // have finished input stack, what argvec did it leave us with?
@@ -1575,31 +1564,49 @@ hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
   // this will detect extraneous args after unflagged opts are extracted
   if (!EE) EE = havecExtractUnflagged(hopt, havec, HPARM);
   if (EE) {
-    DO_ERR2("problem extracting args for options", argvstr);
-    airMopError(mop);
-    return 1;
+    biffAddf(HEST, "%s%sproblem extracting args for %sflagged options (phase %u)", PME,
+             4 == phase ? "un" : "", phase);
+    eret = 1;
+    goto sidewaysParse;
   }
 
   /* --5--5--5--5--5-- process defaults strings for opts that weren't user-supplied
      Like havecExtract{,Un}Flagged, this builds up hopt->havec, but does not parse it */
   phase = 5;
   if (optProcessDefaults(hopt, tharg, hist, HPARM)) {
-    DO_ERR("problem with processing defaults");
-    airMopError(mop);
-    return 1;
+    biffAddf(HEST, "%s%sproblem with processing defaults (phase 5)", PME);
+    eret = 1;
+    goto sidewaysParse;
   }
 
   // --6--6--6--6--6-- Finally, parse the args and set values
   phase = 6;
   if ((pret = optSetValues(hopt, HPARM))) {
-    DO_ERR("problem with parsing and setting values");
-    airMopError(mop);
-    return pret;
+    biffAddf(HEST, "%s%sproblem with parsing and setting values (phase 6)", PME);
+    eret = 1;
+    goto sidewaysParse;
   }
 
-#undef DO_ERR
-#undef HPARM
   hopt->parseErrOptIdx = -1;
   airMopOkay(mop);
   return 0;
+
+sidewaysParse:
+  if (argvstr) {
+    biffAddf(HEST, "%s%sinitial given command-line: %s", PME, argvstr);
+  }
+  estr = biffGetDone(HEST);
+  if (errP) {
+    *errP = estr;
+    // caller frees it, not us
+  } else {
+    fprintf(stderr, "%s: problem:\n%s", __func__, estr);
+    airMopAdd(mop, estr, airFree, airMopAlways);
+  }
+  if (-5 == hopt->parseErrOptIdx) hopt->parseErrOptIdx = -10 * phase;
+  airMopError(mop);
+  return eret;
+#undef PMEV
+#undef PME
+#undef HPARM
 }

@@ -43,9 +43,31 @@ main(int argc, const char **argv) {
   int FLAG_D = AIR_FALSE; // by default, do not flag "D"
   th_getenvBool(&FLAG_D, "TH_FLAG_D");
 
-  int A[2];
-  hestOptAdd_2_Int(&hopt, FLAG_A ? "A" : NULL, "A0 A1", A, getenv("TH_A_DFLT"),
-                   "two leading ints");
+  /* redonkulous game just to exercise a singular/plural branch for coverage */
+  int A_LEN3 = AIR_FALSE;
+  th_getenvBool(&A_LEN3, "TH_A_LEN3");
+  int A2val[2];
+  int A3val[3];
+  int *A;
+  char A2name[] = "A0 A1";
+  char A3name[] = "A0 A1 A2";
+  char *Aname;
+  unsigned int Alen;
+  unsigned int (*Ahoa)(hestOpt **hoptP, const char *flag, const char *name,
+                       int valueP[2], const char *dflt, const char *info);
+  if (A_LEN3) {
+    A = A3val;
+    Alen = 3;
+    Aname = A3name;
+    Ahoa = hestOptAdd_3_Int;
+  } else {
+    A = A2val;
+    Alen = 2;
+    Aname = A2name;
+    Ahoa = hestOptAdd_2_Int;
+  }
+  unsigned int Aopi = (*Ahoa)(&hopt, FLAG_A ? "A" : NULL, Aname, A, getenv("TH_A_DFLT"),
+                              "some leading ints");
 
   // export TH_B_VMIN=0 to trigger a particular hest failure
   int B_VMIN = 1; // by default, min # args is 1
@@ -64,17 +86,18 @@ main(int argc, const char **argv) {
   // using old hestOptAdd for coverage
   char **B = NULL;
   unsigned int sawB = 0;
+  unsigned int Bopi = (unsigned int)-1;
   if (!DROP_B) {
-    hestOptAdd(&hopt, FLAG_B ? "B" : NULL, "Bvar", airTypeString, B_VMIN, B_VMAX, &B,
-               getenv("TH_B_DFLT"),
-               "variable # of middle strings\n "
-               "(including a second line)",
-               getenv("TH_NULL_SAW") ? NULL : &sawB);
+    Bopi = hestOptAdd(&hopt, FLAG_B ? "B" : NULL, "Bvar", airTypeString, B_VMIN, B_VMAX,
+                      &B, getenv("TH_B_DFLT"),
+                      "variable # of middle strings\n "
+                      "(including a second line)",
+                      getenv("TH_NULL_SAW") ? NULL : &sawB);
   }
 
   int C = 0;
-  hestOptAdd_1_Int(&hopt, FLAG_C ? "C" : NULL, "C", &C, getenv("TH_C_DFLT"),
-                   "trailing int");
+  unsigned int Copi = hestOptAdd_1_Int(&hopt, FLAG_C ? "C" : NULL, "C", &C,
+                                       getenv("TH_C_DFLT"), "trailing int");
 
   // export TH_TWO_VARI=true (but not TH_FLAG_VARI) to trigger a different particular
   // hest failure
@@ -83,12 +106,13 @@ main(int argc, const char **argv) {
   int **fakeD = NULL;
   unsigned int sawD = 0;
   int D[2];
+  unsigned int Dopi = (unsigned int)-1;
   if (TWO_VARI) {
-    hestOptAdd_Mv_Int(&hopt, FLAG_D ? "D" : NULL, "Dvar", 1, -1, &fakeD,
-                      getenv("TH_D_DFLT"), "one-or-more final ints", &sawD);
+    Dopi = hestOptAdd_Mv_Int(&hopt, FLAG_D ? "D" : NULL, "Dvar", 1, -1, &fakeD,
+                             getenv("TH_D_DFLT"), "one-or-more final ints", &sawD);
   } else {
-    hestOptAdd_2_Int(&hopt, FLAG_D ? "D" : NULL, "D0 D1", D, getenv("TH_D_DFLT"),
-                     "two final ints");
+    Dopi = hestOptAdd_2_Int(&hopt, FLAG_D ? "D" : NULL, "D0 D1", D, getenv("TH_D_DFLT"),
+                            "two final ints");
   }
 
   if (selfMop) {
@@ -97,8 +121,12 @@ main(int argc, const char **argv) {
     TH_PARSE(hopt, info, hparm, argc - 1, argv + 1);
   }
 
-  printf("A=[%d;%d;]\n", A[0], A[1]);
-  THPRINT_SOURCE("A", hopt, 0);
+  if (A_LEN3) {
+    printf("A=[%d;%d;%d;]\n", A[0], A[1], A[2]);
+  } else {
+    printf("A=[%d;%d;]\n", A[0], A[1]);
+  }
+  THPRINT_SOURCE("A", hopt, Aopi);
 
   if (!DROP_B) {
     printf("B=[");
@@ -117,13 +145,13 @@ main(int argc, const char **argv) {
               "NULL (but B[%u]=%p)\n",
               argv[0], sawB, AIR_CVOIDP(B[sawB]));
     }
-    THPRINT_SOURCE("B", hopt, 1);
+    THPRINT_SOURCE("B", hopt, Bopi);
   }
   printf("C=%d\n", C);
-  THPRINT_SOURCE("C", hopt, 2);
+  THPRINT_SOURCE("C", hopt, Copi);
 
   printf("D=[%d;%d;]\n", D[0], D[1]);
-  THPRINT_SOURCE("D", hopt, 3);
+  THPRINT_SOURCE("D", hopt, Dopi);
 
   TH_CLEANUP(hopt, hparm);
   return 0;
