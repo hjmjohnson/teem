@@ -99,17 +99,19 @@ def DFLT(I):
     return {f'TH_{TY}_DEFAULT': ' '.join(Q(TYvals[TY][i]) for i in I) for TY in TYs}
 
 
-def EXPT(I):
+def EXPT(I, forTYs=TYs):
     """build up expected value dict from indexed value(s)"""
     return {
         TY: ([P(TY, TYvals[TY][i]) for i in I] if isinstance(I, list) else P(TY, TYvals[TY][I]))
-        for TY in TYs
+        for TY in forTYs
     }
 
 
-def ARGV(I, noflag=False):
+def ARGV(I, noflag=False, forTYs=TYs):
     """build up argv to pass indexed values (without the -TY flags if `noflag`)"""
-    return [x for TY in TYs for x in ([] if noflag else [f'-{TY}']) + [TYvals[TY][i] for i in I]]
+    return [
+        x for TY in forTYs for x in ([] if noflag else [f'-{TY}']) + [TYvals[TY][i] for i in I]
+    ]
 
 
 def P(TY, given):   # (GLK added)
@@ -743,6 +745,29 @@ def test_list(args):
                     argv='-C 33 -D 44 55 -A 10 15',
                     expect_fail=True,
                 ),
+                *[
+                    dict(
+                        env={
+                            'TH_DROP_B': 'true',
+                            **flagA_CD,
+                        },
+                        # (still weirdly)
+                        name=f'variadic: dropB and using -C {fpv} to test FP special value parsing',
+                        argv=f'-D 44 55 -A 11 22 -C {fpv}',
+                        expected={
+                            'A': [11, 22],
+                            'C': {
+                                '0.1': '0.1',
+                                'pi': '3.14159274',
+                                'inf': 'inf',
+                                '-inf': '-inf',
+                                'nan': 'NaN',
+                            }[fpv],
+                            'D': [44, 55],
+                        },
+                    )
+                    for fpv in ['0.1', 'pi', 'inf', '-inf', 'nan']
+                ],
                 dict(
                     env=flagABCD,
                     name='variadic: one string in middle (all flagged)',
@@ -813,6 +838,62 @@ def test_list(args):
                         'D': [44, 55],
                     },
                 ),
+                ###########  begin ------------ respectDashDashMeansStop aka RDDMS
+                dict(
+                    env={'TH_RDDMS': 'false'},
+                    name='variadic: B vmin=1 string in middle, no RDDMS, no --',
+                    argv='10 20 only 33 44 55',
+                    expected={
+                        'A': [10, 20],
+                        'B': ['only'],
+                        'C': 33,
+                        'D': [44, 55],
+                        'remain': 'NULL',
+                    },
+                ),
+                dict(
+                    env={'TH_RDDMS': 'true'},
+                    name='variadic: B vmin=1 string in middle, yes RDDMS, no --',
+                    argv='10 20 only 33 44 55',
+                    expected={
+                        'A': [10, 20],
+                        'B': ['only'],
+                        'C': 33,
+                        'D': [44, 55],
+                        'remain': [],
+                    },
+                ),
+                dict(
+                    env={'TH_RDDMS': 'true'},
+                    name='variadic: B vmin=1 string in middle, yes RDDMS, yes -- but nothing',
+                    argv='10 20 only 33 44 55 --',
+                    expected={
+                        'A': [10, 20],
+                        'B': ['only'],
+                        'C': 33,
+                        'D': [44, 55],
+                        'remain': [],
+                    },
+                ),
+                dict(
+                    env={'TH_RDDMS': 'true'},
+                    name='variadic: B vmin=1 string in middle, yes RDDMS, -- and then some',
+                    argv='10 20 only 33 44 55 -- and then some',
+                    expected={
+                        'A': [10, 20],
+                        'B': ['only'],
+                        'C': 33,
+                        'D': [44, 55],
+                        'remain': ['and', 'then', 'some'],
+                    },
+                ),
+                dict(
+                    env={'TH_RDDMS': 'false'},
+                    name='variadic: B vmin=1 string in middle, no RDDMS, but (oops) -- and then some',
+                    argv='10 20 only 33 44 55 -- and then some',
+                    expect_fail=True,
+                ),
+                ###########  end ------------ respectDashDashMeansStop aka RDDMS
                 dict(
                     env={
                         'TH_B_VMIN': '0',
@@ -1348,14 +1429,6 @@ def test_list(args):
                 ),
             ]
         ],
-        ## NOTE: all of the above have been with all 3 options being *unflagged*
-        # dict(
-        #    env=dict(TH_B_VMIN='0', TH_FLAG_A='true', TH_FLAG_C='true'),
-        #    exe='th_variadic',
-        #    name='variadic: CAN have vmin=0 with other two flagged',
-        #    argv=['10', '20', '99'],
-        #    expect_fail=True,
-        # ),
     ]
     tlist += [
         # th_kind2 (NO flags, with defaults) --help did not increase coverage
@@ -1652,16 +1725,36 @@ def test_list(args):
             for TZ in TYs
             if TZ != 'SS'  # because any string is still parsable as a string
         ],
-        # HEY would be nicer if we actually exercised having a variable number of parms
-        # i.e. with different number of parms for different options; it would demonstrate
-        # correctness but would not increase coverage
-        dict(
-            env=TY_FLAGS,
-            exe='th_kind5',
-            name='kind5 (with flags, NO defaults) set from args',
-            argv=ARGV([1, 2]),
-            expected=EXPT([1, 2]),
-        ),
+        *[
+            dict(
+                env={**TY_FLAGS, f'TH_{TZ}_VMIN': '0'},
+                exe='th_kind5',
+                name=f'kind5 (w/ flags, NO dflt) set from args w/ 2 vals but {TZ} gets 1',
+                argv=(
+                    ARGV([1, 2], forTYs=[ty for ty in TYs if ty != TZ])
+                    + [f'-{TZ}']
+                    + [TYvals[TZ][0]]
+                ),
+                expected={
+                    **EXPT([1, 2], forTYs=[ty for ty in TYs if ty != TZ]),
+                    **EXPT([0], forTYs=[TZ]),
+                },
+            )
+            for TZ in TYs
+        ],
+        *[
+            dict(
+                env={**TY_FLAGS, f'TH_{TZ}_VMIN': '0'},
+                exe='th_kind5',
+                name=f'kind5 (w/ flags, NO dflt) set from args w/ 2 vals but {TZ} gets 0',
+                argv=(ARGV([1, 2], forTYs=[ty for ty in TYs if ty != TZ]) + [f'-{TZ}']),
+                expected={
+                    **EXPT([1, 2], forTYs=[ty for ty in TYs if ty != TZ]),
+                    TZ: [],
+                },
+            )
+            for TZ in TYs
+        ],
     ]
     # ==========================================================================
     # expected parse failures

@@ -690,6 +690,8 @@ optInit(hestOpt *hopt) {
   hopt->source = hestSourceUnknown;
   hopt->parmStr = NULL;
   hopt->helpWanted = AIR_FALSE;
+  hopt->remainArgv = NULL;
+  hopt->remainArgc = 0;
 }
 
 /*

@@ -384,39 +384,47 @@ histPushDefault(hestInputStack *hist, const char *dflt, const hestParm *hparm) {
 }
 
 /* histProcess
-Consumes args (tokens) from the stack `hist`, mostly just copying them into `havec`,
-but this does interpret the tokens just enough to implement:
-   (what)                     (allowed sources)
- - commenting with -{ , }-    all (even a default string, may regret this)
- - ask for --help or --usage  command-line
- - response files             command-line or response file (not default string)
- - stopping at --             command-line or response file (not default string)
-since these are the things that histProcNextArg does not understand (it just produces
-finished tokens). On the other hand, we do NOT know anything about individual hestOpts
-and their flags, which is why they weren't passed to us (--help,--usage is special).
-Upon seeing a request for a response file, we push it to the input stack.  This
-function never pops from the input stack (that is the responsibility of
-histProcNextArg).
+Consumes args (tokens) from the stack `hist` as they are produced by histNextArg,
+usually mostly just copying them into `havec`. However, there are some tokens that
+are interpret here:
+  (what)                   (allowed sources)              (controlling hestParm field)
+- commenting with -{ , }-  all (even a default string)    respectDashBraceComments
+- response files           command-line or response file  responseFileEnable
+- ask for --help, --usage  command-line only              respectDashDashHelp
+- stopping at --           command-line only              respectDashDashMeansStop
+These are interpreted here because they are not specific to any hestOpt. The -.
+flag to end variadic parms is recognized by havecExtractFlagged and havecExtractUnlagged,
+and we do not understand or know anything about any particular hestOpt. Upon seeing a
+request for a response file, we push it to the input stack and the next call to
+histNextArg will read from it.
 
-This function takes no ownership of anything so avoids any mopping responsibility, not
-even for the tmp arg holder `tharg`; that is passed in here and cleaned up caller.
+Other command-line parsers that implement response files may recognize -- as the "stop
+processing here" flag even when it appears within a response file, but it seems more
+likely that extra non-hest args will show up on the command-line than in a file (and with
+this distinction, response files offer a tunnel for -- to appear as parms for other
+hest options).
+
+This function studiously avoids taking ownership of anything.  The tmp arg holder `tharg`
+is passed in here and cleaned up by caller, and airArray *remainArr accumulates args
+appearing after "--".
 */
 static int /* Biff: 1 */
-histProcess(hestArgVec *havec, int *helpWantedP, hestArg *tharg, hestInputStack *hist,
-            const hestParm *hparm) {
+histProcess(hestArgVec *havec, int *helpWantedP, airArray *remainArr, hestArg *tharg,
+            hestInputStack *hist, const hestParm *hparm) {
   if (helpWantedP) *helpWantedP = AIR_FALSE;
   uint iters = 0;
   // printf("!%s: hello hist->len %u\n", __func__, hist->len);
   // initialize destination havec
   airArrayLenSet(havec->hargArr, 0);
   /* We `return` directly from this loop ONLY when we MUST stop processing the stack,
-     because of an error,
-     or because of user asking for help,
-     or because of seeing "--"
+     because of an error, or because of user asking for help.
      Otherwise, we loop again. */
+  int remaining = AIR_FALSE; /* we saw -- and hparm->respectDashDashMeansStop so now all
+                                tokens are being shunted to remainArr */
+  airPtrPtrUnion appu;
   while (hist->hin) {
     iters += 1;
-    // learn ways to describe current input source
+    // various ways to describe current input source
     hestInput *topHin = hist->hin + hist->len - 1;
     int srcval = topHin->source;
     const char *srcstr = airEnumStr(hestSource, srcval);
@@ -431,10 +439,28 @@ histProcess(hestArgVec *havec, int *helpWantedP, hestArg *tharg, hestInputStack 
       // we didn't get a token, then we skip over code to contemplate token
       goto maybepop;
     }
-    // printf("!%s: post histNextArg: popit=%d  tokenDone=%d  tharg->str=|%s|\n",
-    // __func__,
-    //        popit, tokenDone, tharg->str);
-    // we have a token; is it turning off commenting?
+    if (remaining) {
+      /* just collecting the remaining args. for simplicity only the airArray was passed
+         to us, so we have to relearn the char ** pointer each time */
+      char *rstr = airStrdup(tharg->str);
+      assert(rstr);
+      unsigned int ridx = airArrayLenIncr(remainArr, 1);
+      assert(remainArr->data);
+      appu.v = remainArr->dataP;
+      (*appu.cp)[ridx] = rstr;
+      // go back for more
+      goto maybepop;
+    }
+    /* only got non-NULL remainArr for command-line with hparm->respectDashDashMeansStop
+       but we might now be on a response file */
+    if (remainArr && !strcmp("--", tharg->str)
+        && hestSourceCommandLine == tharg->source) {
+      // turning on remaining and go back for more
+      remaining = AIR_TRUE;
+      goto maybepop;
+    }
+    // else we have a token that we either interpret or accumulate
+    // is it turning off commenting?
     if (hparm->respectDashBraceComments && !strcmp("}-", tharg->str)) {
       if (topHin->dashBraceComment) {
         topHin->dashBraceComment -= 1;
@@ -542,7 +568,7 @@ histProcess(hestArgVec *havec, int *helpWantedP, hestArg *tharg, hestInputStack 
         return 1;
       }
     }
-  }
+  } // while (hist->hin)
   return 0;
 }
 
@@ -636,26 +662,12 @@ takes `hestOpt *hopt` instead of `hopt->havec` so that we can also set `hopt->so
 according to the incoming `hvsrc->harg[]->source`. To minimize cleverness, we set
 `hopt->source` with every transferred argument, which means that the per-option source
 remembered is the source of the *last* argument of the option.
+
 This is only called from two functions havecExtractFlagged and havecExtractUnflagged,
 both of which have already carefully ensured that there are enough args to transfer */
 void
-havecTransfer(hestOpt *hopt, hestArgVec *hvsrc, uint srcIdx, uint num,
-              const hestParm *hparm) {
-  AIR_UNUSED(hparm); // here just for possible expansion in ME_ME
+havecTransfer(hestOpt *hopt, hestArgVec *hvsrc, uint srcIdx, uint num) {
   if (num) {
-    /*
-    if (!(srcIdx < hvsrc->len)) {
-      biffAddf(HEST, "%s%sstarting index %u in source beyond its length %u", MY_ME,
-               srcIdx, hvsrc->len);
-      return 1;
-    }
-    if (!(srcIdx + num <= hvsrc->len)) {
-      biffAddf(HEST, "%s%shave only %u args but want %u starting at index %u", MY_ME,
-               hvsrc->len, num, srcIdx);
-      return 1;
-    }
-    */
-    // okay now do the work, starting with emptying destination havec
     hestArgVecReset(hopt->havec);
     for (uint ai = 0; ai < num; ai++) {
       hestArg *harg = havecRemove(hvsrc, srcIdx);
@@ -707,9 +719,9 @@ flagged opts are removed, so that later work can extract args for unflagged opts
 For variadic parameter options, the sawP information is not set here, since it is better
 set at the final value parsing time, which happens after defaults are enstated.
 
-This is where "-." (and only "-." due to MY_VAR_PARM_END_FLAG) is used as a marker for
-the end of a flagged variadic parameter option.  AND, the "-." marker is removed from
-`havec`. */
+If hparm->respectDashPeriodMeansEnd, this is where "-." (see MY_VAR_PARM_END_FLAG in
+privateHest.h) is recognized as a marker for the end of a flagged variadic parameter
+option (in which case the "-." marker is removed from `havec`. */
 static int /* Biff: 1 */
 havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
   if (!hest__flagOptNum(hopt)) {
@@ -833,7 +845,7 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     theOpt->source = havec->harg[argIdx]->source;
     // lose the flag argument, then transfer the parm args
     hestArgNix(havecRemove(havec, argIdx));
-    havecTransfer(theOpt, havec, argIdx, parmNum, hparm);
+    havecTransfer(theOpt, havec, argIdx, parmNum);
     txfNum += 1;
     if (sawVPE) {
       // lose the variadic-parameter-stop flag
@@ -899,12 +911,16 @@ sidewaysF:
 /* havecExtractUnflagged()
 Extracts the parameter args associated with all unflagged options (of `hestOpt *hopt`)
 from the given `hestArgVec *havec` and (like havecExtractFlagged) extracts those args and
-saves them in the corresponding hopt[].havec
+saves them in the corresponding hopt[].havec.  This also looks for -. as the end of
+variadic parms.
 
 This is the function that has to handle the tricky logic of allowing there to be
 multiple unflagged options, only one of which may have a variadic number of parms
 (and that one has to be extracted last).
-*/
+
+If hparm->respectDashPeriodMeansEnd, this is where "-." (see MY_VAR_PARM_END_FLAG in
+privateHest.h) is recognized as a marker for the end of a unflagged variadic parameter
+option (in which case the "-." marker is removed from `havec`. */
 static int /* Biff: 1 */
 havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
   char ident[AIR_STRLEN_SMALL + 1];
@@ -1003,7 +1019,7 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
           fromIdx = havec->len - hopt[opi].min;
         }
         if (hparm->verbose > 1) hestArgVecPrint(__func__, "before transfer", havec);
-        havecTransfer(hopt + opi, havec, fromIdx, hopt[opi].min, hparm);
+        havecTransfer(hopt + opi, havec, fromIdx, hopt[opi].min);
         if (hparm->verbose > 1) hestArgVecPrint(__func__, "after transfer", havec);
       } else {
         biffAddf(HEST,
@@ -1196,7 +1212,7 @@ optProcessDefaults(hestOpt *hopt, hestArg *tharg, hestInputStack *hist,
     } else {
       // the option's default string should be processed like normal
       if (histPushDefault(hist, hopt[opi].dflt, hparm)
-          || histProcess(hopt[opi].havec, NULL, tharg, hist, hparm)) {
+          || histProcess(hopt[opi].havec, NULL, NULL, tharg, hist, hparm)) {
         biffAddf(HEST, "%s%sproblem tokenizing %s[%u] default string", MY_ME, ident,
                  opi);
         return 1;
@@ -1505,7 +1521,8 @@ hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
   // --1--1--1--1--1-- check on validity of the hestOpt array
   int phase = 1;
   if (hest__OPCheck(hopt, HPARM)) {
-    biffAddf(HEST, "%s%sproblem with given hestOpt array (phase 1)", PME);
+    biffAddf(HEST, "%s%sproblem with given hestOpt array%s", PME,
+             HPARM->verbose ? " (phase 1)" : "");
     eret = -1;
     goto sidewaysParse;
   }
@@ -1538,9 +1555,21 @@ hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
 
   // --2--2--2--2--2-- initialize input stack w/ given argc,argv, process it
   phase = 2;
+  // create the way to store argv remaining after "--"
+  char **rmnArgv = NULL; // NOTE: NOT NULL-terminated, but hopt[0].remainArgv needs to be
+  unsigned int rmnArgc;
+  airPtrPtrUnion appu;
+  appu.cp = &rmnArgv;
+  airArray *remainArr = NULL;
+  if (HPARM->respectDashDashMeansStop) {
+    remainArr = airArrayNew(appu.v, &rmnArgc, sizeof(char *), 8);
+    airMopAdd(mop, remainArr, airArrayNuke_mop, airMopAlways);
+  }
+  // else remainArr remains NULL to say: ignore "--"
   if (histPushCommandLine(hist, argc, argv, HPARM)
-      || histProcess(havec, &(hopt->helpWanted), tharg, hist, HPARM)) {
-    biffAddf(HEST, "%s%sproblem with initial processing of command-line (phase 2)", PME);
+      || histProcess(havec, &(hopt->helpWanted), remainArr, tharg, hist, HPARM)) {
+    biffAddf(HEST, "%s%sproblem with initial processing of command-line%s", PME,
+             HPARM->verbose ? " (phase 2)" : "");
     eret = 1;
     goto sidewaysParse;
   }
@@ -1564,8 +1593,13 @@ hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
   // this will detect extraneous args after unflagged opts are extracted
   if (!EE) EE = havecExtractUnflagged(hopt, havec, HPARM);
   if (EE) {
-    biffAddf(HEST, "%s%sproblem extracting args for %sflagged options (phase %u)", PME,
-             4 == phase ? "un" : "", phase);
+    if (HPARM->verbose) {
+      biffAddf(HEST, "%s%sproblem extracting args for %sflagged options (phase %u)", PME,
+               4 == phase ? "un" : "", phase);
+    } else {
+      biffAddf(HEST, "%s%sproblem extracting args for %sflagged options", PME,
+               4 == phase ? "un" : "");
+    }
     eret = 1;
     goto sidewaysParse;
   }
@@ -1574,7 +1608,8 @@ hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
      Like havecExtract{,Un}Flagged, this builds up hopt->havec, but does not parse it */
   phase = 5;
   if (optProcessDefaults(hopt, tharg, hist, HPARM)) {
-    biffAddf(HEST, "%s%sproblem with processing defaults (phase 5)", PME);
+    biffAddf(HEST, "%s%sproblem with processing defaults%s", PME,
+             HPARM->verbose ? " (phase 5)" : "");
     eret = 1;
     goto sidewaysParse;
   }
@@ -1582,12 +1617,26 @@ hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
   // --6--6--6--6--6-- Finally, parse the args and set values
   phase = 6;
   if ((pret = optSetValues(hopt, HPARM))) {
-    biffAddf(HEST, "%s%sproblem with parsing and setting values (phase 6)", PME);
+    biffAddf(HEST, "%s%sproblem with parsing and setting values%s", PME,
+             HPARM->verbose ? " (phase 6)" : "");
     eret = 1;
     goto sidewaysParse;
   }
 
-  hopt->parseErrOptIdx = -1;
+  // if we got remaining args, record them in hopt[0]
+  if (rmnArgv) {
+    hopt[0].remainArgv = AIR_CALLOC(rmnArgc + 1 /* + 1 for NULL termination */, char *);
+    assert(hopt[0].remainArgv);
+    for (unsigned int ri = 0; ri < rmnArgc; ri++) {
+      hopt[0].remainArgv[ri] = rmnArgv[ri];
+    }
+    hopt[0].remainArgv[rmnArgc] = NULL;
+    hopt[0].remainArgc = rmnArgc;
+  } else {
+    hopt[0].remainArgv = NULL;
+    hopt[0].remainArgc = 0;
+  }
+  hopt->parseErrOptIdx = -1; // "there was no error on any option"
   airMopOkay(mop);
   return 0;
 

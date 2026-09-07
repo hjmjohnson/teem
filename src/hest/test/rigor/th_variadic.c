@@ -27,6 +27,9 @@ main(int argc, const char **argv) {
   hestParmColumnsIoctl(hparm, 70);
   hparm->respectDashDashHelp = AIR_TRUE;
   hparm->responseFileEnable = AIR_TRUE;
+  int RDDMS = AIR_TRUE;
+  th_getenvBool(&RDDMS, "TH_RDDMS");
+  hparm->respectDashDashMeansStop = RDDMS;
 
   // export TH_FLAG_A=true to flag the non-variadic=fixed option "A"
   int FLAG_A = AIR_FALSE; // by default, do not flag "A" (how this file started)
@@ -95,15 +98,15 @@ main(int argc, const char **argv) {
                       getenv("TH_NULL_SAW") ? NULL : &sawB);
   }
 
-  int C = 0;
-  unsigned int Copi = hestOptAdd_1_Int(&hopt, FLAG_C ? "C" : NULL, "C", &C,
-                                       getenv("TH_C_DFLT"), "trailing int");
+  float C = 0;
+  unsigned int Copi = hestOptAdd_1_Float(&hopt, FLAG_C ? "C" : NULL, "C", &C,
+                                         getenv("TH_C_DFLT"), "middling float");
 
   // export TH_TWO_VARI=true (but not TH_FLAG_VARI) to trigger a different particular
   // hest failure
   int TWO_VARI = AIR_FALSE; // by default, do not use extra unflagged variadic
   th_getenvBool(&TWO_VARI, "TH_TWO_VARI");
-  int **fakeD = NULL;
+  int *fakeD = NULL;
   unsigned int sawD = 0;
   int D[2];
   unsigned int Dopi = (unsigned int)-1;
@@ -147,11 +150,31 @@ main(int argc, const char **argv) {
     }
     THPRINT_SOURCE("B", hopt, Bopi);
   }
-  printf("C=%d\n", C);
+  airSinglePrintf(stdout, NULL, 0, "C=%g\n", C);
   THPRINT_SOURCE("C", hopt, Copi);
 
   printf("D=[%d;%d;]\n", D[0], D[1]);
   THPRINT_SOURCE("D", hopt, Dopi);
+
+  if ((!!hopt[0].remainArgc + !!hopt[0].remainArgv) % 2) {
+    fprintf(stderr, "%s: NOOOO remainArgc %u!=0  disagrees with remainArgv!=NULL\n",
+            argv[0], hopt[0].remainArgc, AIR_CVOIDP(hopt[0].remainArgv));
+    return 1;
+  }
+  if (RDDMS) {
+    printf("remain=[");
+    for (unsigned int ri = 0; ri < hopt[0].remainArgc; ri++) {
+      printf("%s;", hopt[0].remainArgv[ri]);
+    }
+    if (hopt[0].remainArgc && NULL != hopt[0].remainArgv[hopt[0].remainArgc]) {
+      fprintf(stderr, "%s: what the heck, remainArgc = %u but remainArgv[%u] NOT NULL\n",
+              argv[0], hopt[0].remainArgc);
+      return 1;
+    }
+    printf("]\n");
+  } else {
+    printf("remain=NULL\n");
+  }
 
   TH_CLEANUP(hopt, hparm);
   return 0;
