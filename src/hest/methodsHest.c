@@ -341,7 +341,7 @@ hestSourceUser(int src) {
 
 /* INCR is like airArray->incr: granularity with which we (linearly) reallocate the
 hestOpt array. Very few uses of hest within Teem use more than 32 options. Hopefully
-this avoids all the reallocations in the past action of hestOptAdd and the like. */
+this avoids all the reallocations in the past action of hestOptAdd() and the like. */
 #define INCR 32
 
 // for debugging allocation and especially hestParm->selfMop usage
@@ -376,7 +376,7 @@ hestParmNew(void) {
   - non-zero has meant that there was an error parsing the command-line arguments
   But seeing and recognizing "--help" means that options have NOT had values
   set, and, that's not an error: this is outside the error/no-error binary.
-  But that binary is the precedent, so we have to work with that by default.
+  But that binary is the precedent, so we have to work within that by default.
   Now, with parm->respectDashDashHelp, upon seeing "--help", hestParse returns 0,
   and sets helpWanted in the first hestOpt, and the caller will have to know
   to check for that.  This logic is handled by hestParse but maybe in the future there
@@ -393,15 +393,17 @@ hestParmNew(void) {
   /* With all the hand-wringing about not respecting "--help" by default, you might
   think that respecting "--" as "stop processing here" marker would also not be on
   by default. But correctly handling "--help" is subtle, and handling "--" is simple,
-  and, the precedent for "--" is older than for "--help".  The 2026 rewrite/revisit
-  recognized that respecting "--" in a way that matches the world's expectations is
-  very over-due. */
+  and, the POSIX precedent for what "--" means is older than conventions for "--help".
+  The 2026 rewrite/revisit recognized that respecting "--" in a way that matches the
+  world's expectations is necessary and very over-due. */
   hparm->respectDashDashMeansStop = AIR_TRUE;
-  /* The chances that an existing hest programmer or user will be confused by "-."
-  meaning "end of variadic parms" is low enough to enable it by default (and hopefully
-  there is no existing expectation this clashes with). */
+  /* The chances are (GLK hopes) very low that an existing hest-using program (or the
+  human user of it) will be stumped or thwarted by "-." meaning "end of variadic parms",
+  or by "-{" and "}-" creating a command-line commenting mechanism. Thus, these two are
+  also on by default. */
   hparm->respectDashPeriodMeansEnd = AIR_TRUE;
   hparm->respectDashBraceComments = AIR_TRUE;
+  /* these older options fall back on default global variables */
   hparm->noArgsIsNoProblem = hestDefaultNoArgsIsNoProblem;
   hparm->cleverPluralizeOtherY = hestDefaultCleverPluralizeOtherY;
   /* this mimics pre-TeemV2 behavior of always preventing line wrapping */
@@ -413,9 +415,14 @@ hestParmNew(void) {
   // hparm->responseFileComment = hestDefaultRespFileComment;
   // hparm->varParamStopFlag = hestDefaultVarParamStopFlag;
   // hparm->multiFlagSep = hestDefaultMultiFlagSep;
+  /* The point of hestParseOrExit is to be a one-stop place for getting hest stuff done,
+  and that historically have been off or not done by default. Currently, that is:
+      hestParmColumnsIoctl(hparm, hestDefaultColumns);
+      hparm->respectDashDashHelp = AIR_TRUE;
+  Turning this next field on says: "no thanks, no such conveniences wanted" */
   hparm->orExitWithoutNewerFeatures = AIR_FALSE;
   hparm->selfMop = NULL; /* handling this is subtle: see hestParmMopNew,
-                             hestParmUnmop, hestParmCopy, and hestParmFree */
+                            hestParmUnmop, hestParmCopy, and hestParmFree */
   hparm->quietQuit = NULL;
   return hparm;
 }

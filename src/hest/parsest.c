@@ -98,8 +98,7 @@ static const airEnum argst_aenum = {.name = "tokenizer-state",
 Implements the DFA (deterministic finite automaton) that tokenizes a character sequence
 into arguments: the thing that the shell does for you to convert the command-line you
 type into an array argv[] of args. This gets one character `icc` at a time, and a pointer
-to the current DFA state `*stateP`, and builds up the output token in `tharg`.
-The Next Arg STatus Pointer `nastP` is used to signal when a token is finished. */
+to the current DFA state `*stateP`, and builds up the output token in `tharg`. */
 static int /* Biff: 1 */
 argstGo(int *tokenDone, hestArg *tharg, int *stateP, int icc, int vrbo) {
   char cc = (char)icc;
@@ -1331,7 +1330,8 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
              --> value is set from the default
            - option flag appears, but with no parm
              --> default is parsed, say, as value V, then the value is set to !V
-                (*this* is the mysterious "inversion" mentioned at places in the code)
+                (*this* is the mysterious "inversion" mentioned at various places in
+                 the old code)
            - option flag appears, with single parm
              --> value is set from parsing that parm
          In any case, some string has to be parsed; we call it `strsrc` */
@@ -1532,7 +1532,7 @@ hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
   /* initialize things indicating parse error to say "none known"
      the magic -5 is used by the sidewaysParse exit code below, to avoid clobbering
      info about a phase 6 parse error with -10 times the failing phase */
-  hopt->parseErrOptIdx = -5;
+  hopt[0].parseErrOptIdx = -5;
   for (uint opi = 0; opi < hopt->arrLen; opi++) {
     hopt[opi].parseErr = 0;
   }
@@ -1636,7 +1636,7 @@ hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
     hopt[0].remainArgv = NULL;
     hopt[0].remainArgc = 0;
   }
-  hopt->parseErrOptIdx = -1; // "there was no error on any option"
+  hopt[0].parseErrOptIdx = -1; // "there was no error on any option"
   airMopOkay(mop);
   return 0;
 
@@ -1652,7 +1652,7 @@ sidewaysParse:
     fprintf(stderr, "%s: problem:\n%s", __func__, estr);
     airMopAdd(mop, estr, airFree, airMopAlways);
   }
-  if (-5 == hopt->parseErrOptIdx) hopt->parseErrOptIdx = -10 * phase;
+  if (-5 == hopt[0].parseErrOptIdx) hopt[0].parseErrOptIdx = -10 * phase;
   airMopError(mop);
   return eret;
 #undef PMEV

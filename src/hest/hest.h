@@ -203,7 +203,7 @@ typedef struct {
  ******** hestOpt struct
  *
  * information which specifies one command-line option, records state used during
- * parsing, and provides summary output info following parsing.
+ * hestParse(), and provides summary output info following parsing.
  */
 /* Note in nrrd.h above NrrdAxisInfo gives rationale for comment structure below */
 typedef struct {
@@ -291,7 +291,7 @@ typedef struct {
                          much like an airArray, but without the burden of extra calls for
                          the user (like airArrayLenIncr), nor new kinds of containers for
                          hest and its users to manage: it is still just an array of
-                         hestOpt structs */
+                         hestOpt structs. */
 
   /* ------------------- Output fields set/allocated by hestParse. */
   /* - - - - - Things specific to this very hestOpt - - - - - */
@@ -320,12 +320,14 @@ typedef struct {
      to be set only in the *first* hestOpt passed to hestParse(), despite how profligate
      that may seem. */
   int parseErrOptIdx;
-  /*                     (new for TeemV2) If >= 0: index into hestOpt[] of first option
-                         with a parse error, specifically during the final phase (#6) of
-                         hestParse parsest.c/optSetValues(), when strings (whatever their
-                         source) are parsed to `void *valueP`. negative values mean: no
-                         parse error known, and currently the negative value set by
-                         hestParse() is related to the pre-phase-6 phase that failed */
+  /*                     (new for TeemV2) If hestParse() finishes without problems, this
+                         is set to -1. Otherwise, if >= 0: this is index into hestOpt[]
+                         of first option with a parse error, specifically during the
+                         final phase (#6) of hestParse parsest.c/optSetValues(), when
+                         strings (whatever their source) are parsed to `void *valueP`.
+                         Otherwise, no specific parse error is known, and is currently
+                         set to -10 times the pre-phase-6 phase that failed (e.g. -20 or
+                         for phase 2). */
   int helpWanted;
   /*                     (new for TeemV2) Indicates that hestParse() saw something in one
                          of the given arguments that looks like a call for help, and that
