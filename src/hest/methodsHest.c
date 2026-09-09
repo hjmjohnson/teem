@@ -1148,12 +1148,10 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
       // hopt[opi] is unflagged
       // unflagged kind=1 is already checked above
       if (4 == hopt[opi].kind) {
-        if (!hopt[opi].min) {
-          biffAddf(HEST, "%s%s single variadic opt[%u] (name %s) must be flagged", MY_ME,
-                   opi, hopt[opi].name);
-          airMopError(mop);
-          return 1;
-        }
+        biffAddf(HEST, "%s%s single variadic opt[%u] (name %s) must be flagged", MY_ME,
+                 opi, hopt[opi].name);
+        airMopError(mop);
+        return 1;
       }
       // else it's a fixed (non-variadic) unflagged option; cool
     }
