@@ -773,8 +773,8 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
        opt is a single variadic): don't consume an arg that obviously isn't valid for
        kind=4, since it probably belongs to an unflagged option. This goes against the
        general principle that extracting/consuming args is a game of moving strings
-       around prior to any parsing.  Here (for a kind=4 opt) we may still be moving a
-       string around, but we sneakily already parsed it once. */
+       around prior to any parsing.  For this kind=4 opt, we will still move a parm arg
+       string around, but only if our sneaky parsing succeeded. */
     int kind4 = (4 == theOpt->kind);
     hest__PPair k4pp;
     k4pp.hopt = kind4 ? hopt : NULL;
@@ -784,28 +784,29 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     int varParm = (kind4 || 5 == theOpt->kind);
     int sawVPE = AIR_FALSE; // caring about -. and saw it
     uint nextOptIdx,        // what is index of option who's flag we saw next
-      parmNum = 0,          // how many parm args have we see that plausibly belong to us
-      pai;                  // tmp parm arg index
-    const char *pastr;      // tmp parm arg string
+      parmNum = 0;          // how many parm args have we see that plausibly belong to us
     int sawEnd = AIR_FALSE; // saw end of havec
     // compute parmNum by looking at but not moving args
-    while ( // we have less than the max number
-      AIR_INT(parmNum) < hest__Max(theOpt->max)
-      // and looking ahead by parmNum still gives us a valid index pai
-      && !(sawEnd = !((pai = argIdx + 1 + parmNum) < havec->len))
-      // (and here is the string we'll contemplate further)
-      && (pastr = havec->harg[pai]->str)
-      // and either this isn't a flagged variadic opt
-      && (!varParm || // or it is a varparm opt, and
-          (!(sawVPE = (lookVPE
-                       && !strcmp(VPE, pastr)))  // this isn't a "-." to respect and
-           && (!kind4                            // its not kind4, or it is and
-               || !k4parse(k4v, pastr, &k4pp)))) // we had no problem parsing it
-      // and we aren't looking at start of another flagged option
-      && UINT_MAX == (nextOptIdx = whichOptFlag(hopt, pastr, hparm))) {
+    // (while we have less than the max number)
+    while (AIR_INT(parmNum) < hest__Max(theOpt->max)) {
+      // npai = next possible parm's arg index
+      uint npai = argIdx + 1 + parmNum;
+      // stop if we hit end of havec
+      if ((sawEnd = !(npai < havec->len))) break;
+      char *pastr = havec->harg[npai]->str; // candidate parm arg string
+      if (varParm) {
+        // stop if next arg is a "-." we need to respect
+        if ((sawVPE = (lookVPE && !strcmp(VPE, pastr)))) break;
+        // stop if is a kind=4 option and next arg doesn't parse as its type
+        if (kind4 && k4parse(k4v, pastr, &k4pp)) break;
+      }
+      nextOptIdx = whichOptFlag(hopt, pastr, hparm);
+      // stop if we're looking at start of another flagged option
+      if (UINT_MAX != nextOptIdx) break;
+      // finally: this passes as another parm arg for this option
       if (hparm->verbose)
         printf("%s: optIdx %u |%s|; argIdx %u < %u |%s| --> parmNum --> %u\n", __func__,
-               optIdx, theOpt->flag, argIdx, pai, pastr, parmNum + 1);
+               optIdx, theOpt->flag, argIdx, npai, pastr, parmNum + 1);
       parmNum++;
     }
     // we've counted parmNum, stopping for any of the reasons described above
@@ -912,8 +913,8 @@ sidewaysF:
 
 /* havecExtractUnflagged()
 Extracts the parameter args associated with all unflagged options (of `hestOpt *hopt`)
-from the given `hestArgVec *havec` and (like havecExtractFlagged) extracts those args and
-saves them in the corresponding hopt[].havec.  This also looks for -. as the end of
+from the given `hestArgVec *havec` and (like havecExtractFlagged) extracts those args
+and saves them in the corresponding hopt[].havec.  This also looks for -. as the end of
 variadic parms.
 
 This is the function that has to handle the tricky logic of allowing there to be
@@ -998,13 +999,13 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     if (hparm->verbose) {
       printf("%s: looking at opi = %u kind %d\n", __func__, opi, hopt[opi].kind);
     }
-    /* 2026 revisit simplified the previous confusingly subtle logic, in which whether an
-    unflagged option consumed args depended on whether it had a default (and was
+    /* 2026 revisit simplified the previous confusingly subtle logic, in which whether
+    an unflagged option consumed args depended on whether it had a default (and was
     complicated by needing vmin > 0, or else how can you say who said that there are 0
-    parms given). Now: if there are enough args in havec to meet our minimum, we consume
-    them. If there are args but not enough, that's an error. If there are no args, that's
-    not an error but will be later (in `finishUF:` below) if options don't have
-    defaults. */
+    parms given). Now: if there are enough args in havec to meet our minimum, we
+    consume them. If there are args but not enough, that's an error. If there are no
+    args, that's not an error but will be later (in `finishUF:` below) if options don't
+    have defaults. */
     if (havec->len) {
       char *nowStr = hestArgVecSprint(havec, MY_SHAI);
       airMopAdd(mop, nowStr, airFree, airMopAlways);
@@ -1147,8 +1148,8 @@ sidewaysUF: // things have gone sideways
 All the command-line arguments (and any response files invoked therein) should now be
 processed (by transferring the arguments to per-option hopt->havec arrays), but we need
 to ensure that every option has information from which to set values. The per-option
-hopt->dflt string is what we look to now, to finish setting per-option hopt->havec arrays
-for all the options for which hopt->havec have not already been set.  We use
+hopt->dflt string is what we look to now, to finish setting per-option hopt->havec
+arrays for all the options for which hopt->havec have not already been set.  We use
 `!hopt->source` (aka hestSourceUnknown) as the indicator of not already being set.
 */
 static int /* Biff: 1 */
@@ -1184,19 +1185,19 @@ optProcessDefaults(hestOpt *hopt, hestArg *tharg, hestInputStack *hist,
     }
     /* printf("!%s: hopt[%u].havec %p   havec->len = %u\n", __func__, opi,
        hopt[opi].havec, hopt[opi].havec->len); */
-    /* Getting args from default strings is a little nuanced because of some exceptions,
-       handled here, which side-step calling histProcess */
+    /* Getting args from default strings is a little nuanced because of some
+       exceptions, handled here, which side-step calling histProcess */
     if (5 == hopt[opi].kind && 0 == hopt[opi].min && !strlen(hopt[opi].dflt)) {
       /* A multiple variadic option allowing min==0 is getting its value from an empty
       (non-NULL) default string. An established hest idiom (certainly used by unu, e.g.
       unu resample -off) for variadic options with min=0 is to give a default as the ""
-      empty string to mean: 0 values. In the old (pre-2025) code based on strtok: strtok
-      would look at "" and see zero tokens and say: 0 values. Even if the intent (for,
-      say, string-type values) was to say "the default value is 1 empty string", that can
-      be expressed as "''" instead of "", which is clearer anyway. So we directly assert
-      that we have 0 args. Also, this is why we set hopt[opi].source above to
-      hestSourceDefault, so that we'd know the source even if it isn't apparent in any of
-      the (non-existant) args. */
+      empty string to mean: 0 values. In the old (pre-2025) code based on strtok:
+      strtok would look at "" and see zero tokens and say: 0 values. Even if the intent
+      (for, say, string-type values) was to say "the default value is 1 empty string",
+      that can be expressed as "''" instead of "", which is clearer anyway. So we
+      directly assert that we have 0 args. Also, this is why we set hopt[opi].source
+      above to hestSourceDefault, so that we'd know the source even if it isn't
+      apparent in any of the (non-existant) args. */
       if (hparm->verbose > 1) {
         printf("%s: empty default string for min=0 a multiple "
                "variadic option ==> 0 args\n",
@@ -1204,12 +1205,13 @@ optProcessDefaults(hestOpt *hopt, hestArg *tharg, hestInputStack *hist,
       }
       airArrayLenSet(hopt[opi].havec->hargArr, 0);
     } else if (2 == hopt[opi].kind && airTypeString == hopt[opi].type) {
-      /* We want exactly 1 string. While it is tempting to say for consistency "then get
-      on the hist stack and tokenize your single string just like everyone else does",
-      it is arguably more straightforward, for this single string (because there is no
-      tokenization needed!), to just take the default string as it is be the single arg.
-      This seems to mostly replicate pre-2025 hest behavior, but now we respect leading
-      white-space (the old code only respected one out of multiple leading spaces) */
+      /* We want exactly 1 string. While it is tempting to say for consistency "then
+      get on the hist stack and tokenize your single string just like everyone else
+      does", it is arguably more straightforward, for this single string (because there
+      is no tokenization needed!), to just take the default string as it is be the
+      single arg. This seems to mostly replicate pre-2025 hest behavior, but now we
+      respect leading white-space (the old code only respected one out of multiple
+      leading spaces) */
       airArrayLenSet(hopt[opi].havec->hargArr, 0);
       hestArgVecAppendString(hopt[opi].havec, hopt[opi].dflt);
     } else {
@@ -1221,9 +1223,9 @@ optProcessDefaults(hestOpt *hopt, hestArg *tharg, hestInputStack *hist,
         return 1;
       }
     }
-    /* havecExtractFlagged and havecExtractUnflagged have done the work of ensuring that
-    the minimum number of parm args have been extracted for each option. We should do
-    something analogous for args tokenized from the default strings. */
+    /* havecExtractFlagged and havecExtractUnflagged have done the work of ensuring
+    that the minimum number of parm args have been extracted for each option. We should
+    do something analogous for args tokenized from the default strings. */
     if (hopt[opi].havec->len < hopt[opi].min) {
       biffAddf(
         HEST, "%s%s %s[%u] default string \"%s\" supplied %u arg%s but need at least %u",
@@ -1258,13 +1260,13 @@ optProcessDefaults(hestOpt *hopt, hestArg *tharg, hestInputStack *hist,
 }
 
 /* optSetValues
-Finally: the parsing of hopt[opi].havec to set values in whatever hopt[opi].valueP points
-to. No caller or parent mop is passed anymore, since the new per-hestOpt parseMop can
-remember what needs to be freed. The return value from this is (except for an instance of
-hestOpt kind confusion) in turn the return value from whichever hest__ParseSingle[]
-function first returned non-zero to indicate a parsing error. That return could be
-anything non-zero, but the Biff: annotations currently do not have a way of expressing
-that. */
+Finally: the parsing of hopt[opi].havec to set values in whatever hopt[opi].valueP
+points to. No caller or parent mop is passed anymore, since the new per-hestOpt
+parseMop can remember what needs to be freed. The return value from this is (except for
+an instance of hestOpt kind confusion) in turn the return value from whichever
+hest__ParseSingle[] function first returned non-zero to indicate a parsing error. That
+return could be anything non-zero, but the Biff: annotations currently do not have a
+way of expressing that. */
 static int /* Biff: 1 # BUT Actually maybe not; see above */
 optSetValues(hestOpt *hopt, const hestParm *hparm) {
   char ident[AIR_STRLEN_SMALL + 1];
@@ -1374,8 +1376,8 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
         invert = AIR_FALSE;
       } /* actually unreachable given all the other prior tests
          else {
-           biffAddf(HEST, "%s%sconfused by (kind=4) %s[%u] source %s and havec->len %u",
-                    MY_ME, ident, opi, airEnumStr(hestSource, hopt[opi].source),
+           biffAddf(HEST, "%s%sconfused by (kind=4) %s[%u] source %s and havec->len
+         %u", MY_ME, ident, opi, airEnumStr(hestSource, hopt[opi].source),
                     hopt[opi].havec->len);
            return 1;
          } */
@@ -1633,7 +1635,8 @@ hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
   }
 
   /* --5--5--5--5--5-- process defaults strings for opts that weren't user-supplied
-     Like havecExtract{,Un}Flagged, this builds up hopt->havec, but does not parse it */
+     Like havecExtract{,Un}Flagged, this builds up hopt->havec, but does not parse it
+   */
   phase = 5;
   if (optProcessDefaults(hopt, tharg, hist, HPARM)) {
     biffAddf(HEST, "%s%sproblem with processing defaults%s", PME,
