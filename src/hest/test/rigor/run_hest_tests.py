@@ -94,26 +94,6 @@ TYsNonnumeric = ['CH', 'SS', 'EE', 'XY', 'CO']
 TYsNumeric = [TY for TY in TYs if TY not in TYsNonnumeric]
 
 
-def DFLT(I):
-    """build up default env dict from indexed values"""
-    return {f'TH_{TY}_DEFAULT': ' '.join(Q(TYvals[TY][i]) for i in I) for TY in TYs}
-
-
-def EXPT(I, forTYs=TYs):
-    """build up expected value dict from indexed value(s)"""
-    return {
-        TY: ([P(TY, TYvals[TY][i]) for i in I] if isinstance(I, list) else P(TY, TYvals[TY][I]))
-        for TY in forTYs
-    }
-
-
-def ARGV(I, noflag=False, forTYs=TYs):
-    """build up argv to pass indexed values (without the -TY flags if `noflag`)"""
-    return [
-        x for TY in forTYs for x in ([] if noflag else [f'-{TY}']) + [TYvals[TY][i] for i in I]
-    ]
-
-
 def P(TY, given):   # (GLK added)
     """when a value of type `TY` is passed to hest as `given`, this
     shows how the value should be printed after hestParse"""
@@ -136,6 +116,26 @@ def Q(dd):   # (GLK added)
     if ' ' in dd:
         return "'" + dd + "'"
     return dd
+
+
+def DFLT(I):
+    """build up default env dict from indexed values"""
+    return {f'TH_{TY}_DEFAULT': ' '.join(Q(TYvals[TY][i]) for i in I) for TY in TYs}
+
+
+def EXPT(I, forTYs=TYs):
+    """build up expected value dict from indexed value(s)"""
+    return {
+        TY: ([P(TY, TYvals[TY][i]) for i in I] if isinstance(I, list) else P(TY, TYvals[TY][I]))
+        for TY in forTYs
+    }
+
+
+def ARGV(I, noflag=False, forTYs=TYs):
+    """build up argv to pass indexed values (without the -TY flags if `noflag`)"""
+    return [
+        x for TY in forTYs for x in ([] if noflag else [f'-{TY}']) + [TYvals[TY][i] for i in I]
+    ]
 
 
 def test_list(args):
@@ -440,7 +440,7 @@ def test_list(args):
         dict(
             exe='th_flagged_scalars',
             name='scalars: response file with double-quoted string with line continuation and other escapes',
-            response_files={'dquoted-lc.txt': '-s "hello \\\nworld \$ \\` \\" \\\\ \\x "\n'},
+            response_files={'dquoted-lc.txt': '-s "hello \\\nworld \\$ \\` \\" \\\\ \\x "\n'},
             argv=['-s', 'good morning', '@dquoted-lc.txt'],
             expected={'s': 'hello world $ ` " \\ \\x ', 's.src': SRC_RF},
         ),
@@ -839,61 +839,101 @@ def test_list(args):
                     },
                 ),
                 ###########  begin ------------ respectDashDashMeansStop aka RDDMS
-                dict(
-                    env={'TH_RDDMS': 'false'},
-                    name='variadic: B vmin=1 string in middle, no RDDMS, no --',
-                    argv='10 20 only 33 44 55',
-                    expected={
-                        'A': [10, 20],
-                        'B': ['only'],
-                        'C': 33,
-                        'D': [44, 55],
-                        'remain': 'NULL',
-                    },
-                ),
+                ##########               and   respectDashPeriodMeansEnd aka RDPME
+                *[
+                    dict(env=tdict['env'],
+                         name=tdict['name'],
+                         argv=tdict['argv'],
+                         expect_fail=tdict['expect_fail'],
+                         expect={'A': [10, 20],
+                                 'B': ['only','-.'] if (not RDPME and useDE) else ['only'],
+                                 'C': 33,
+                                 'D': [44, 55],
+                                 'remain': tdict['rmain']})
+                    for RDPME in [True, False]
+                    for useDE in [True, False]
+                    for tdict in (
+                        dict(
+                            env={'TH_RDDMS': 'false', 'TH_RDPME' : RDPME},
+                            name=f'variadic: B vmin=1 string in middle, no RDDMS, {RDPME=}, {useDE=}, no --',
+                            argv=f'10 20 only {"-. " if useDE else ""}33 44 55',
+                            expect_fail=False,
+                            rmain='NULL',
+                        ),
+                        dict(
+                            env={'TH_RDDMS': 'true', 'TH_RDPME' : RDPME},
+                            name=f'variadic: B vmin=1 string in middle, yes RDDMS, {RDPME=}, {useDE=}, no --',
+                            argv=f'10 20 only {"-. " if useDE else ""}33 44 55',
+                            expect_fail=False,
+                            rmain=[],
+                        ),
+                        dict(
+                            env={'TH_RDDMS': 'true', 'TH_RDPME' : RDPME},
+                            name=f'variadic: B vmin=1 string in middle, yes RDDMS, {RDPME=}, {useDE=}, yes -- but nothing',
+                            argv=f'10 20 only {"-. " if useDE else ""}33 44 55 --',
+                            expect_fail=False,
+                            rmain=[],
+                        ),
+                        dict(
+                            env={'TH_RDDMS': 'true', 'TH_RDPME' : RDPME},
+                            name=f'variadic: B vmin=1 string in middle, yes RDDMS, {RDPME=}, {useDE=}, -- and then some',
+                            argv=f'10 20 only {"-. " if useDE else ""}33 44 55 -- and then some',
+                            expect_fail=False,
+                            rmain=['and', 'then', 'some'],
+                        ),
+                        dict(
+                            env={'TH_RDDMS': 'false', 'TH_RDPME' : RDPME},
+                            name=f'variadic: B vmin=1 string in middle, no RDDMS, {RDPME=}, {useDE=}, but (oops) -- and then some',
+                            argv=f'10 20 only {"-. " if useDE else ""}33 44 55 -- and then some',
+                            expect_fail=True,
+                            rmain=[]
+                        ),
+                    )
+                ],
                 dict(
                     env={'TH_RDDMS': 'true'},
-                    name='variadic: B vmin=1 string in middle, yes RDDMS, no --',
-                    argv='10 20 only 33 44 55',
+                    name='variadic: B including -- in smuggled via response file despite RDDMS (all unflagged)',
+                    argv='10 20 only @smuggle.txt 33 44 55',
+                    response_files={'smuggle.txt': '-- is just --\n'},
                     expected={
                         'A': [10, 20],
-                        'B': ['only'],
+                        'B': ['only', '--', 'is', 'just', '--'],
                         'C': 33,
                         'D': [44, 55],
-                        'remain': [],
                     },
                 ),
                 dict(
-                    env={'TH_RDDMS': 'true'},
-                    name='variadic: B vmin=1 string in middle, yes RDDMS, yes -- but nothing',
-                    argv='10 20 only 33 44 55 --',
+                    env={'TH_RDDMS': 'true', 'TH_B_DFLT': '-- still just --'},
+                    name='variadic: B including -- in smuggled via default despite RDDMS (all unflagged)',
+                    argv='10 20 33 44 55',
                     expected={
                         'A': [10, 20],
-                        'B': ['only'],
+                        'B': ['--', 'still', 'just', '--'],
+                        'B.src': SRC_DF,
                         'C': 33,
                         'D': [44, 55],
-                        'remain': [],
                     },
-                ),
-                dict(
-                    env={'TH_RDDMS': 'true'},
-                    name='variadic: B vmin=1 string in middle, yes RDDMS, -- and then some',
-                    argv='10 20 only 33 44 55 -- and then some',
-                    expected={
-                        'A': [10, 20],
-                        'B': ['only'],
-                        'C': 33,
-                        'D': [44, 55],
-                        'remain': ['and', 'then', 'some'],
-                    },
-                ),
-                dict(
-                    env={'TH_RDDMS': 'false'},
-                    name='variadic: B vmin=1 string in middle, no RDDMS, but (oops) -- and then some',
-                    argv='10 20 only 33 44 55 -- and then some',
-                    expect_fail=True,
                 ),
                 ###########  end ------------ respectDashDashMeansStop aka RDDMS
+                dict( # specific test that Claude suggested for branch coverage (does make a difference)
+                    env={
+                        'TH_A_DFLT': '10 20',
+                        'TH_B_VMIN': '0',       # min=0
+                        # No TH_B_DFLT → dflt=NULL (no default, but min=0 so zero args is ok too)
+                        'TH_C_DFLT': '30',
+                        'TH_D_DFLT': '40 50',
+                    },
+                    name='variadic: unflagged min=0 no-dflt, args available → consumed not zero-shortcut',
+                    argv='119 229 hello world 339 449 559',
+                    # A (2 fixed) consumes 119,229; B (variadic min=0) consumes middle strings;
+                    # D (2 fixed, backward pass) consumes 449,559; C consumes 339
+                    expected={
+                        'A': [119, 229],
+                        'B': ['hello', 'world'],
+                        'C': 339,
+                        'D': [449, 559]
+                    },
+                ),
                 dict(
                     env={
                         'TH_B_VMIN': '0',
@@ -1705,6 +1745,16 @@ def test_list(args):
             env={
                 **DFLT([0, 1]),
                 **TY_FLAGS,
+                'TH_BB_VMIN' : '0',
+            },
+            exe='th_kind5',
+            name='kind5 (with flags, with defaults, some vmin=0) --help',
+            argv=['--help'],
+        ),
+        dict(
+            env={
+                **DFLT([0, 1]),
+                **TY_FLAGS,
             },
             exe='th_kind5',
             name='kind5 (with flags, with defaults) set from defaults',
@@ -1725,6 +1775,81 @@ def test_list(args):
             for TZ in TYs
             if TZ != 'SS'  # because any string is still parsable as a string
         ],
+        #dict( # specific test that Claude suggested for branch coverage, but made no difference
+        #    env={**TY_FLAGS, 'TH_SI_VMIN': '0'},
+        #    exe='th_kind5',
+        #    name='kind5 (with flags, no SI dflt): SI vmin=0, gets 0 args → havec->len==0 in alloc',
+        #    argv=ARGV([1, 2], forTYs=[ty for ty in TYs if ty != 'SI']) + ['-SI'],
+        #    expected={
+        #        **EXPT([1, 2], forTYs=[ty for ty in TYs if ty != 'SI']),
+        #        'SI': [],
+        #    },
+        #),
+        ######  BEGIN priority testing ..............
+        *[
+            dict(
+                env={
+                    **TY_FLAGS,
+                    'TH_PRIORITY': pp['ph'],
+                    'TH_XY_PRIORITY': pp['XYp'],
+                    'TH_CO_PRIORITY': pp['COp'],
+                },
+                exe='th_kind5',
+                name=f'kind5 (w/ flags w/out dflt) set from args: priority={pp['ph']} XY.p={pp['XYp']} CO.p={pp['COp']}',
+                argv=ARGV([1, 2]),
+                expect_fail=pp['efail'],
+                expected={
+                    **EXPT([1, 2], forTYs=[ty for ty in TYs if not ty in ['XY', 'CO']]),
+                    'XY': pp['XYe'],
+                    'CO': pp['COe'],
+                },
+            )
+            for pp in [
+                {  ## regular definition order, no priority hacking
+                    'ph': 'false',
+                    'XYp': '0',
+                    'COp': '0',
+                    # sorry we are hardcoding the original expected values for better
+                    # legibility in comparison with priority hacking on
+                    'XYe': ['(0,0)', '(-49,7.5)'],
+                    'COe': ['"0.1"->0.1', '"-5.125"->-5.125'],
+                    'efail' : False,
+                },
+                {  ## same definition order (XY before CO), but now with priority hacking
+                    'ph': 'true',
+                    'XYp': '0',
+                    'COp': '0',
+                    'XYe': ['(0,0)', '(-49,107.5)'],
+                    'COe': ['"0.1"->200.1', '"-5.125"->294.875'],
+                    'efail' : False,
+                },
+                {  ## prioritizing to match definition order (XY before CO)
+                    'ph': 'true',
+                    'XYp': '2',
+                    'COp': '1',
+                    'XYe': ['(0,0)', '(-49,107.5)'],
+                    'COe': ['"0.1"->200.1', '"-5.125"->294.875'],
+                    'efail' : False,
+                },
+                {  ## prioritizing to swap definition order (CO before XY)
+                    'ph': 'true',
+                    'XYp': '-2',
+                    'COp': '2',
+                    'COe': ['"0.1"->0.1', '"-5.125"->94.875'],
+                    'XYe': ['(0,200)', '(-49,307.5)'],
+                    'efail' : False,
+                },
+                {  ## prioritizing gone wild
+                    'ph': 'true',
+                    'XYp': '-2000',
+                    'COp': '2000',
+                    'COe': ['"0.1"->0.1', '"-5.125"->94.875'],
+                    'XYe': ['(0,200)', '(-49,307.5)'],
+                    'efail' : True, # too wide a range of [min,max] priorities
+                },
+            ]
+        ],
+        ######  .............. priority testing END
         *[
             dict(
                 env={**TY_FLAGS, f'TH_{TZ}_VMIN': '0'},
@@ -1747,7 +1872,7 @@ def test_list(args):
                 env={**TY_FLAGS, f'TH_{TZ}_VMIN': '0'},
                 exe='th_kind5',
                 name=f'kind5 (w/ flags, NO dflt) set from args w/ 2 vals but {TZ} gets 0',
-                argv=(ARGV([1, 2], forTYs=[ty for ty in TYs if ty != TZ]) + [f'-{TZ}']),
+                argv=ARGV([1, 2], forTYs=[ty for ty in TYs if ty != TZ]) + [f'-{TZ}'],
                 expected={
                     **EXPT([1, 2], forTYs=[ty for ty in TYs if ty != TZ]),
                     TZ: [],
@@ -1755,6 +1880,13 @@ def test_list(args):
             )
             for TZ in TYs
         ],
+        dict(
+            env={**TY_FLAGS, **{f'TH_{TY}_VMAX': '4' for TY in TYs}},
+            exe='th_kind5',
+            name=f'kind5 (w/ flags, NO dflt) set from args twice w/ 4 then 2 vals',
+            argv=ARGV([0, 2, 1, 0]) + ARGV([1, 2]),
+            expected=EXPT([1, 2]),
+        )
     ]
     # ==========================================================================
     # expected parse failures
@@ -2117,6 +2249,11 @@ def run_one(test: dict, args, build_dir: Path) -> tuple:
         MYENV = ENV.copy()
         for envvar, envval in envdict.items():
             print(f'{envvar}="{envval}"  ', end='')
+            # sneak/hack to simplify parameterizing sets of tests
+            if (True == envval):
+                envval = 'true'
+            elif (False == envval):
+                envval = 'false'
             MYENV[envvar] = envval
     else:
         MYENV = ENV
@@ -2274,6 +2411,7 @@ def main() -> int:
         # GLK added: helper function for running --help
         def run_help(thebinary, thenv, stdin=None, usage=False):
             ddwut = '--usage' if usage else '--help'
+            # print(f' . . . . . . {thenv=}')
             result = subprocess.run(
                 [str(thebinary), ddwut], capture_output=True, text=True, stdin=stdin, env=thenv
             )
@@ -2297,11 +2435,21 @@ def main() -> int:
                 print('--help with TH_FLAG_{A,B,C,D}=true')
                 run_help(binary, myenv)
                 print('--help with TH_FLAG_{A,B,C,D}=true, TH_B_VMIN=0')
-                run_help(binary, myenv)
+                run_help(binary, {**myenv, 'TH_B_VMIN': '0'})
             elif 'th_kind2' == exe:
                 print('--help with all defaults on')
-                run_help(binary, {f'TH_{TY}_DEFAULT': TYvals[TY][0] for TY in TYs})
+                run_help(binary, {**ENV, **{f'TH_{TY}_DEFAULT': TYvals[TY][0] for TY in TYs}})
                 if args.coverage:
+                    print('--help with all defaults but eliding some types')
+                    run_help(binary, {**ENV, 'TH_ESEOT': 'true', **{f'TH_{TY}_DEFAULT': TYvals[TY][0] for TY in TYs}})
+                    for ESNEOD in ['true', 'false']:
+                        print(f'--help with all defaults but for eliding some defaults {ESNEOD=}')
+                        run_help(binary, {**ENV,
+                                        'TH_ESNEOD': ESNEOD,
+                                        **{f'TH_{TY}_DEFAULT': TYvals[TY][0] for TY in TYs if not TY in ['FL', 'SS']},
+                                        'TH_FL_DEFAULT': 'nan',
+                                        'TH_SS_DEFAULT': '',
+                                        })
                     print('--help with thwarted ioctl and 65 columns')
                     run_help(binary, dict(TH_COLUMNS='65', **ENV), stdin=subprocess.DEVNULL)
                     print('--help with fake ioctl thinking it has only 20 columns')
@@ -2321,20 +2469,20 @@ def main() -> int:
                 print(
                     '--help with TH_ENEFD 1: nonfinite dflt and !elideSingleNonExistFloatDefault'
                 )
-                run_help(binary, {'TH_ENEFD': '1'})
+                run_help(binary, {**ENV, 'TH_ENEFD': '1'})
                 print('--help with TH_ENEFD 2: nonfinite dflt and elideSingleNonExistFloatDefault')
-                run_help(binary, {'TH_ENEFD': '2'})
+                run_help(binary, {**ENV, 'TH_ENEFD': '2'})
             elif 'th_fixed_multi' == exe:
                 # from the --help output it is clear this is working as intended,
                 # but GLK cannot figure out why these tests do not increase coverage
                 print(
                     '--help with TH_ENEFD 1: nonfinite dflt and !elideMultipleNonExistFloatDefault'
                 )
-                run_help(binary, {'TH_ENEFD': '1'})
+                run_help(binary, {**ENV, 'TH_ENEFD': '1'})
                 print(
                     '--help with TH_ENEFD 2: nonfinite dflt and elideMultipleNonExistFloatDefault'
                 )
-                run_help(binary, {'TH_ENEFD': '2'})
+                run_help(binary, {**ENV, 'TH_ENEFD': '2'})
 
     #### run
     total = passed = failed = 0

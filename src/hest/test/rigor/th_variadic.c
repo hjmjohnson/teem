@@ -30,6 +30,9 @@ main(int argc, const char **argv) {
   int RDDMS = AIR_TRUE;
   th_getenvBool(&RDDMS, "TH_RDDMS");
   hparm->respectDashDashMeansStop = RDDMS;
+  int RDPME = AIR_TRUE;
+  th_getenvBool(&RDPME, "TH_RDPME");
+  hparm->respectDashPeriodMeansEnd = RDPME;
 
   // export TH_FLAG_A=true to flag the non-variadic=fixed option "A"
   int FLAG_A = AIR_FALSE; // by default, do not flag "A" (how this file started)

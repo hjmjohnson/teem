@@ -239,6 +239,27 @@ typedef struct {
   /*                     used ONLY for airTypeEnum options */
   const hestCB *CB;
   /*                     used ONLY for airTypeOther options */
+  int priority;
+  /*                     (new in TeemV2) After each hestOpt option consumes its args from
+                         the user (command-line or response file), or else gets its args
+                         from the default, then the final phase 6 hestParse() will parse
+                         the per-option vector of args (in `havec`, below), to set
+                         value(s) in *valueP above. Previously in hest, the order of
+                         option parsing was exactly the definition order hestOpts within
+                         their array. This `priority` allows some options to appear
+                         earlier in option usage and glossary info (wherein ordering is
+                         entirely according to definition order), but actually be parsed
+                         later (e.g. you might want a "-i" input data option to come
+                         first in option listing, but actually be parsed last, because
+                         reading in a big data file should only happen after verifying
+                         that all the other non-data-intensive options could be parsed
+                         without problem).  Higher `priority` means parse earlier, lower
+                         `priority` means parse later. The parsing order is determined by
+                         first traversing all priority levels used (from high to low),
+                         and then within one priority level, the definition order
+                         determines the parse order. `priority` defaults to 0, and is not
+                         set via any hestOptAdd_ function; you set it manually prior to
+                         calling hestParse. */
 
   /* ------------------- Internal fields to support hestParse
                          These are set by hest functions to remember state for the sake
@@ -536,10 +557,6 @@ HEST_EXPORT hestParm *hestParmFree(hestParm *hparm);
 HEST_EXPORT void *hestParmFree_mop(void *);
 HEST_EXPORT const hestParm *hestParmMopDone(const hestParm *hparm);
 HEST_EXPORT int hestParmColumnsIoctl(hestParm *hparm, unsigned int nonIoctlColumns);
-HEST_EXPORT void hestOptSingleSet(hestOpt *hopt, const char *flag, const char *name,
-                                  int type, unsigned int min, int max, void *valueP,
-                                  const char *dflt, const char *info, unsigned int *sawP,
-                                  const airEnum *enm, const hestCB *CB);
 /* Notes on how a hestOpt has been set-up, and how to do it now:
 - In the early days of hest, you could *statically* create the hestOpt *opt array; just
 like with the https://argtable.sourceforge.io argtable library that inspired hest. With

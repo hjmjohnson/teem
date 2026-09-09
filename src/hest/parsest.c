@@ -584,9 +584,9 @@ whichOptFlag(const hestOpt *hopt, const char *flarg, const hestParm *hparm) {
     printf("%s: looking for maybe-is-flag |%s| in optNum=%u options\n", __func__, flarg,
            optNum);
   for (uint optIdx = 0; optIdx < optNum; optIdx++) {
-    if (hparm->verbose > 3)
-      printf("%s:      optIdx %u |%s| ?\n", __func__, optIdx,
-             hopt[optIdx].flag ? hopt[optIdx].flag : "(nullflag)");
+    // if (hparm->verbose > 3)
+    //   printf("%s:      optIdx %u |%s| ?\n", __func__, optIdx,
+    //          hopt[optIdx].flag ? hopt[optIdx].flag : "(nullflag)");
     const char *optFlag = hopt[optIdx].flag;
     if (!optFlag) continue; // it can't be for this unflagged option
     if (strchr(optFlag, MY_MULTI_FLAG_SEP)) {
@@ -738,7 +738,8 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
 
   uint argIdx = 0;
   hestOpt *theOpt = NULL;
-  const char VPE[3] = {'-', MY_VAR_PARM_END_FLAG, '\0'};
+  const char VPE[3] = {'-', MY_VAR_PARM_END_FLAG, '\0'}; // should be "-."
+  int lookVPE = hparm->respectDashPeriodMeansEnd;
   /* txfNum is # of time args have been transferred to a flagged option but not
      # of options seen (which could be less; an option might have been repeated) */
   uint txfNum = 0;
@@ -781,7 +782,7 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
                    hest__PPair *) = (kind4 ? hest__ParseSingle[theOpt->type] : NULL);
     double k4v[2]; // bigger than needed to store largest possible kind=4 value
     int varParm = (kind4 || 5 == theOpt->kind);
-    int sawVPE = AIR_FALSE; // saw -.
+    int sawVPE = AIR_FALSE; // caring about -. and saw it
     uint nextOptIdx,        // what is index of option who's flag we saw next
       parmNum = 0,          // how many parm args have we see that plausibly belong to us
       pai;                  // tmp parm arg index
@@ -795,8 +796,9 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
       // (and here is the string we'll contemplate further)
       && (pastr = havec->harg[pai]->str)
       // and either this isn't a flagged variadic opt
-      && (!varParm ||                            // or it is a varparm opt, and
-          (!(sawVPE = !strcmp(VPE, pastr))       // we aren't looking at "-." and
+      && (!varParm || // or it is a varparm opt, and
+          (!(sawVPE = (lookVPE
+                       && !strcmp(VPE, pastr)))  // this isn't a "-." to respect and
            && (!kind4                            // its not kind4, or it is and
                || !k4parse(k4v, pastr, &k4pp)))) // we had no problem parsing it
       // and we aren't looking at start of another flagged option
@@ -809,8 +811,9 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     // we've counted parmNum, stopping for any of the reasons described above
     if (hparm->verbose)
       printf("%s: optIdx %u |%s|: stopped w/ "
-             "parmNum=%u sawEnd=%d sawVPE=%d nextOptIdx=%u\n",
-             __func__, optIdx, theOpt->flag, parmNum, sawEnd, sawVPE, nextOptIdx);
+             "parmNum=%u sawEnd=%d lookVPE=%d sawVPE=%d nextOptIdx=%u\n",
+             __func__, optIdx, theOpt->flag, parmNum, sawEnd, lookVPE, sawVPE,
+             nextOptIdx);
     if (parmNum < theOpt->min) { // didn't see required min # parms
       biffAddf(HEST, "%s%sbefore getting %u parameter%s for %s (got only %u)", MY_ME,
                theOpt->min, theOpt->min > 1 ? "s" : "",
@@ -1038,6 +1041,8 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
   }
   // now handle the single unflagged variadic, if we have it
   if (haveVari) {
+    const char VPE[3] = {'-', MY_VAR_PARM_END_FLAG, '\0'}; // should be "-."
+    int lookVPE = hparm->respectDashPeriodMeansEnd;
     hestOpt *variOpt = hopt + ufVariOpi;
     uint minArg = variOpt->min; /* min < max for sure */
     uint maxArg = hest__Max(variOpt->max);
@@ -1061,11 +1066,10 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
              ufVariOpi, minArg, havec->len, maxArg,
              airEnumStr(hestSource, variOpt->source));
     }
-    const char VPE[3] = {'-', MY_VAR_PARM_END_FLAG, '\0'}; // should be "-."
     for (uint ai = 0; ai < minArg; ai++) {
       // (try to) consume the min args we need
       int noMore = !havec->len;
-      int hitEnd = !noMore && !strcmp(VPE, havec->harg[0]->str);
+      int hitEnd = !noMore && (lookVPE && !strcmp(VPE, havec->harg[0]->str));
       if (noMore || hitEnd) {
         biffAddf(HEST,
                  "%s%s%s%s "
@@ -1085,8 +1089,8 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     // consume any remaining args, up to max
     for (uint ai = 0; ai < maxArg - minArg && havec->len; ai++) {
       hestArg *harg = havecRemove(havec, 0);
-      if (strcmp(VPE, harg->str)) {
-        // as long as this arg is not "-." save it
+      if (strcmp(VPE, harg->str) || !lookVPE) {
+        // as long as this arg is not a consequential "-." save it
         hestArgVecAppendArg(variOpt->havec, harg);
         variOpt->source = harg->source;
       } else {
@@ -1267,7 +1271,28 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
   void *valueP;
   uint optNum = hopt->arrLen;
 
-  for (uint opi = 0; opi < optNum; opi++) {
+  airArray *mop = airMopNew();
+  uint ooi = 0, *optOrder = AIR_CALLOC(optNum, uint);
+  airMopAdd(mop, optOrder, airFree, airMopAlways);
+  int priMin, priMax;
+  hest__optPriorityMinMax(&priMin, &priMax, hopt);
+  // hest__OPCheck has ensured that [priMin,priMax] range is reasonable
+  for (int pri = priMax; pri >= priMin; pri--) {
+    for (uint opi = 0; opi < optNum; opi++) {
+      if (pri == hopt[opi].priority) {
+        optOrder[ooi++] = opi;
+      }
+    }
+  }
+  if (hparm->verbose > 1 && priMin != priMax) {
+    printf("%s: option parsing order:\n", __func__);
+    for (uint ooi = 0; ooi < optNum; ooi++) {
+      printf("   %u : %u\n", ooi, optOrder[ooi]);
+    }
+  }
+
+  for (uint ooi = 0; ooi < optNum; ooi++) {
+    uint opi = optOrder[ooi];
     int pret;
     identStr(ident, sizeof(ident), hopt + opi);
     // hopt[opi].source has already been set
@@ -1359,6 +1384,7 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
                  MY_ME, ident, opi, strsrc, hest__TypeStr[type]);
         hopt[opi].parseErr = pret;
         hopt->parseErrOptIdx = AIR_INT(opi);
+        airMopError(mop);
         return pret;
       }
       if (invert) {
@@ -1376,6 +1402,7 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
         biffAddf(HEST, "%s%sproblem parsing for %s[%u]", MY_ME, ident, opi);
         hopt[opi].parseErr = pret;
         hopt->parseErrOptIdx = AIR_INT(opi);
+        airMopError(mop);
         return pret;
       }
       break;
@@ -1390,6 +1417,7 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
                    hopt[opi].havec->len, ident, opi);
           hopt[opi].parseErr = pret;
           hopt->parseErrOptIdx = AIR_INT(opi);
+          airMopError(mop);
           return pret;
         }
       }
@@ -1405,12 +1433,10 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
         *((void **)valueP) = calloc(hopt[opi].havec->len + 1, size);
       } else if (hopt[opi].havec->len) {
         // only allocate if there's a need to
-        if (hopt[opi].havec->len) {
-          *((void **)valueP) = calloc(hopt[opi].havec->len, size);
-        }
+        *((void **)valueP) = calloc(hopt[opi].havec->len, size);
       }
       if (*((void **)valueP)) {
-        if (!hopt[opi].parseMop) hopt[opi].parseMop = airMopNew();
+        hopt[opi].parseMop = airMopNew();
         airMopMem(hopt[opi].parseMop, valueP, airMopAlways);
       }
       if (hopt[opi].sawP) {
@@ -1427,6 +1453,7 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
                    MY_ME, argi, hopt[opi].havec->len, ident, opi);
           hopt[opi].parseErr = pret;
           hopt->parseErrOptIdx = AIR_INT(opi);
+          airMopError(mop);
           return pret;
         }
       }
@@ -1441,6 +1468,7 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
     } break;
     } // end switch
   } // for opi ...
+  airMopOkay(mop);
   return 0;
 }
 
