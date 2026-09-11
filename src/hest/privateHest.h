@@ -100,6 +100,11 @@ extern int hest__isdigit(int ch);
 extern int hest__isprint(int ch);
 extern uint hest__flagOptNum(const hestOpt *hopt);
 extern uint hest__unflagOptNum(const hestOpt *hopt);
+extern void hest__optSingleSet(hestOpt *hopt, const char *flag, const char *name,
+                               int type, unsigned int min, int max, void *valueP,
+                               const char *dflt, const char *info, unsigned int *sawP,
+                               const airEnum *enm, const hestCB *CB);
+extern void hest__optPriorityMinMax(int *minP, int *maxP, const hestOpt *hopt);
 
 /*
  * These were moved not just from air.h (see note there) but also from public hest.h,

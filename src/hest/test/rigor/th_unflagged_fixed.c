@@ -14,6 +14,10 @@ typedef struct {
 } hest__PPair;
 extern int (*const hest__ParseSingle[MY_HEST_TYPE_MAX + 1])(void *, const char *,
                                                             hest__PPair *);
+extern void hest__optSingleSet(hestOpt *hopt, const char *flag, const char *name,
+                               int type, unsigned int min, int max, void *valueP,
+                               const char *dflt, const char *info, unsigned int *sawP,
+                               const airEnum *enm, const hestCB *CB);
 
 static const char *info
   = ("unflagged fixed positional options. "
@@ -135,7 +139,9 @@ main(int argc, const char **argv) {
                                          /* newline forces default onto its own line */
                                          "optional combo\n more info on new line",
                                          &comboCB);
-
+  /* yes, a single variadic option in "th_unflagged_fixed"; same story as above */
+  int vari;
+  unsigned int vopi = hestOptAdd_1v_Int(&hopt, "V", "vari", &vari, "0", "sample kind=4");
   int breakPOE = 0;
   th_getenvInt(&breakPOE, "TH_BREAK_POE");
   if (1 == breakPOE) {
@@ -170,8 +176,8 @@ main(int argc, const char **argv) {
     hestOptAdd(NULL, "flag", "name", airTypeInt, 1, 1, NULL, "default", "info");
     hestOptAdd_nva(NULL, "flag", "name", airTypeInt, 1, 1, NULL, "default", "info", NULL,
                    NULL, NULL);
-    hestOptSingleSet(NULL, "flag", "name", airTypeInt, 1, 1, NULL, "default", "info",
-                     NULL, NULL, NULL);
+    hest__optSingleSet(NULL, "flag", "name", airTypeInt, 1, 1, NULL, "default", "info",
+                       NULL, NULL, NULL);
     hestOptFree(NULL);
     hestParmCopy(NULL);
     hestParmMopDone(NULL);
@@ -235,6 +241,8 @@ main(int argc, const char **argv) {
     hoptStr->sawP = &sopi;    hestOptCheck(hopt, NULL);  hoptStr->sawP = NULL;
     // non-NULL enm for something not an enum
     hoptStr->enm = airEndian; hestOptCheck(hopt, NULL);  hoptStr->enm = NULL;
+    // same but for kind=4
+    hopt[vopi].enm = airEndian; hestOptCheck(hopt, NULL);  hopt[vopi].enm = NULL;
     // handling "other"
     const hestCB *cbSave = hoptPos->CB;
     // non-NULL hestCB for something not an other
