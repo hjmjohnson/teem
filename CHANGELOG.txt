@@ -12,7 +12,7 @@ tl;dr list of breaking-est changes for TeemV2 relative to previous release v1.11
 - hestUsage() has new additional final bool-ish argument `oneline`
 - Renamed nrrdSanityOrDie() --> nrrdSanityOrExit()
 - The global variable nrrdStateVerboseIO is gone,
-  replaced by NrrdIoState->verbose (usually nio->verbose in code)
+  replaced by NrrdIoState->verbose (usually `nio->verbose` in code)
 - Renamed unrrduCmdMain() --> unrrduMainOrExit()
   and removed the final `FILE *fusage` argument
 - How AIR_STRLEN_SMALL, AIR_STRLEN_MEDIUM, AIR_STRLEN_LARGE, and
@@ -69,19 +69,19 @@ is some combination of reverse chronological (later changes described earlier in
 and ordering changes from most interesting/important to least so.  Search for "BUG" to
 see info about bugs fixed. Search for "API CHANGE" to see changes to the APIs of the
 libraries (in particular: biff, hest, unrrdu, bane, gage, seek, moss, and meet). Also
-noted are "ABI CHANGE"s (e.g. where a struct has changed size).
+noted are "ABI CHANGE"s (e.g. where a struct has changed size).  As part of assembling
+this change log for TeemV2, I opted to also include whatever I had written about changes
+for previous Teem releases, going back to Teem v1.5 in 2003.
 
 Since March 2001, Teem code version control has been hosted on Sourceforge, which has
-been more or less reliable over more than *two decades*.  Version control on Sourceforge
+been more or less reliable for more than a *25 years*.  Version control on Sourceforge
 has transitioned from using svn to using git, thanks to Hans Johnson.  The awful DevShare
 malware stuff that Sourceforge started (under new ownership) in 2012 was stopped (under
 different new ownership) in 2016, and their server reliability issues are fully resolved,
 as far as I can tell.  Teem code will continue to be hosted on Sourceforge for the time
-being, even after GitHub has subsumed the open source mindshare. I have deep reservations
-about GitHub's corporate owner.  See https://githubcopilotlitigation.com/. Also note that
-GitHub is now a leaderless component of an AI platform:
-https://www.theverge.com/news/757461/microsoft-github-thomas-dohmke-resignation-coreai-team-transition
-This is a worrying shift from the exciting birth of GitHub.
+being, even after GitHub has subsumed the open source mindshare.  I have deep reservations
+about GitHub's corporate owner. Being a leaderless component of an AI platform has not
+improved Github's quality of service.
 
 ========= use of CMake and GNUmake =========
 
@@ -107,8 +107,8 @@ ChatGPT. The updated files are:
 This is the first time I've really tried to understand the CMake files, and the first
 time I've tried anything non-trivial with ChatGPT. Current generative AI tools tend to
 normalize and mechanize intellectual property theft, with a huge carbon footprint. In
-this case my deep reservations about ChatGPT were overcome by my deeper distaste for
-CMake. ChatGPT's training likely consumed all findable CMakeLists.txt files and all
+this case my reservations about ChatGPT were overcome by my deeper distaste for CMake.
+ChatGPT's training likely consumed all findable CMakeLists.txt files and all
 available online discussion about CMake. I apologize to all those people whose past
 generous CMake online activity empowers ChatGPT but who receive no compensation from
 OpenAI.
@@ -128,7 +128,7 @@ options exposed have been renamed to be more idiomatic (API CHANGE):
  * USER_DIRECTIO --> X                   (removed all remnants of SGI DirectIO support)
  * Teem_USE_LIB_INSTALL_SUBDIR --> Teem_INSTALL_VERSIONED_PREFIX
    (in install directory, create a subdir named with Teem version number; see below)
--- A Teem install via old CMake files would create files in
+-- A Teem install via the *old* CMake files would create files in
     installdir/lib/cmake/teem  (note "t")
       TeemBuildSettings.cmake
       TeemConfig.cmake
@@ -137,7 +137,7 @@ options exposed have been renamed to be more idiomatic (API CHANGE):
       TeemUse.cmake
 A find_package(Teem) would set variables like Teem_USE_FILE, Teem_EXECUTABLE_DIRS,
 Teem_LIBRARY_DIRS, Teem_INCLUDE_DIRS, Teem_LIBRARIES, etc. This was adhoc.
-Now, a Teem install via the new Cmake files puts things in
+Now, a Teem install via the *new* Cmake files puts things in
     installdir/lib/cmake/Teem/  (note "T")
       TeemConfig.cmake
       TeemConfigVersion.cmake
@@ -189,7 +189,7 @@ by the new CMake install process.
 -- Header locations are exported as a FILE_SET for the sake of IDEs.
 -- How Teem uses CTest has also been modernized. The `teem/Testing/` directory that
 previously held everything about using CTest is now (API CHANGE?): `teem/tests/ctest/`
-to recognize that Python tests are now possible with the CFFI wrappers. It is likely
+to recognize the wide possible world of testing tools (Python, shell, etc). It is likely
 that the CTest files were not actually working anymore (the top-level CMakeLists.txt has
 made BUILD_TESTING default to OFF), but now all existing tests are running again. The
 newly re-written teem/tests/ctest/CMakeLists.txt use (via a new mini library testutil)
@@ -327,7 +327,7 @@ many things that were awkward-looking in 80 columns look cleaner in 90 columns a
 clang reformatting. 100 columns might make even more sense (and changing 90-->100 columns
 will be a smaller change than 80-->90); time will tell.
 
-========= all or many libraries in general =========
+========= affecting all or many libraries in general =========
 
 • Wed Nov 26 10:04:13 2025 -0600 git commit: 9f160880
 API CHANGE: in some libraries (see below), but that's not the main point.
@@ -440,8 +440,8 @@ which will generate a _teem Python extension module as a .so shared object, whic
 will want to link (at run-time) with the cmake-compiled libteem shared library. Then, the
 already-existing teem.py wraps _teem, with the benefit of new machinery for turning biff
 error messages into Python exceptions (something the ctypes wrappers were always
-missing). build_teem.py depends on exult.py: CFFI EXtension module Utilities for
-Libraries depending on Teem in the same directory, which also facilitates creating
+missing). build_teem.py depends on exult.py: CFFI *EX*tension module *U*tilities for
+*L*ibraries depending on *T*eem in the same directory, which also facilitates creating
 extension modules for other libraries that depend on Teem.
 
 As part of working on the new CFFI python wrappers, a new systematic effort was made to
@@ -487,10 +487,10 @@ gageDefGenerateErrStr --> gageDefaultGenerateErrStr
 gageDefTwoDimZeroZ --> gageDefaultTwoDimZeroZ
 
 REMOVED: gageDefDefaultCenter (rather than rename to gageDefaultDefaultCenter):.
-This was getting silly.  This variable had a greater role when volume data genuinely had no idea
-what its sample centerings were and nrrdCenterNode was just as likely as nrrdCenterCell.
-Real-world imaging is nrrdCenterCell (which is how gageDefDefaultCenter was initialized),
-so that is used instead of a default variable.
+This was getting silly.  This variable had a greater role when volume data genuinely had
+no idea what its sample centerings were and nrrdCenterNode was just as likely as
+nrrdCenterCell. Real-world imaging is nrrdCenterCell (which is how gageDefDefaultCenter
+was initialized), so that is used instead of a default variable.
 REMOVED: gageDefStackUse (though gageParm->stackUse remains).
 This default never made any sense.  As noted in defaultsGage.c:
         /* GLK doesn't see any reasonable circumstance
@@ -502,10 +502,10 @@ This default also never made any sense.  As noted in defaultsGage.c:
 REMOVED: gageDefStackNormalizeRecon (though gageParm->stackNormalizeRecon remains)
 REMOVED: gageDefStackNormalizeDeriv (though gageParm->stackNormalizeDeriv remains)
 REMOVED: gageDefStackNormalizeDerivBias (though gageParm->stackNormalizeDerivBias remains)
-There is no reason to have global default variables for such incredibly niche aspects of gage behavior,
-which were only added for very experimental purposes.
-For the gageParm elements that now lack default global variables, gageParmReset initializes them
-to the value of how the default global variable was initialized.
+There is no reason to have global default variables for such incredibly niche aspects
+of gage behavior, which were only added for very experimental purposes.
+For the gageParm elements that now lack default global variables, gageParmReset
+initializes them to the value of how the default global variable was initialized.
 
 * bane:
 baneDefVerbose --> baneDefaultVerbose
@@ -547,6 +547,15 @@ miteDefOpacMatters --> miteDefaultOpacMatters
 
 ========= air =========
 
+• Wed Aug 26 14:04:12 2026 -0500 git commit ad42d9b0
+- BUG FIX: using airSingleSscanf("%zu") to parse a size_t had numerous serious
+  bugs: not being careful with given NULL pointers, looking at memory after the
+  string end because of a bad character test, not ignoring leading whitespace,
+  and letting numerical values overflow.  Mysterious how the old function stayed
+  so busted for so long, alas.
+- API CHANGE: removed airAtod().  It was used only in hest, so now hest has its own
+  private/static version of the function.
+
 • Wed Dec 31 06:20:50 2025 -0600 git commit a11f70d5 and
   Wed Dec 31 06:08:17 2025 -0600 git commit 2d0a828c:
     API NEW: airStrcat3 allocates the concatenation of the three given strings
@@ -587,18 +596,18 @@ and `(airMopper)` casts have been removed.
 API NEW: added airMultiLinify() which is mostly like airOneLinify, except that isolated
 newlines in the interior of the string are preserved. Like in airOneLinify, all trailing
 whitespace (including newlines) is removed from the end of the string, and whitespace
-before or after i nterior newlines are dropped (and repeated contiguous newlines are
+before or after interior newlines are dropped (and repeated contiguous newlines are
 collapsed to one newline).
 
 • Sat Oct 25 07:07:14 2025 -0500 git commit: 9b821d47
-BUG FIXES / behavior change in airSinglePrintf: The purpose of the function is to be like
-printf (either fprintf to FILE* or sprintf to char*, depending on which given pointer is
-non-NULL), with the harsh limit that there can only be a Single "%" conversion sequence
-(hence the name), but with useful handling of floating point (FP) values: ensuring that
-IEEE754 values are printed consistently, and some provision for printing FP values so
-that upon sscanf parsing you get back the value you started with (called round-trip
-accuracy). The FP-specific behavior was triggered by using conversion sequences %e, %f,
-%g, %le, %lf, or %lg.
+BUG FIXES / behavior change in airSinglePrintf: The purpose of the function is to be
+like printf (either fprintf to FILE* or sprintf to char*, depending on which given
+pointer is non-NULL), with the harsh limit that there can only be a Single "%"
+conversion sequence (hence the name), but with useful handling of floating point (FP)
+values: ensuring that IEEE754 values are printed consistently, and some provision for
+printing FP values so that upon sscanf parsing you get back the value you started with
+(called round-trip accuracy). The FP-specific behavior was triggered by using conversion
+sequences %e, %f, %g, %le, %lf, or %lg.
 
 HOWEVER, the code had the mistaken belief that %f,%lf print `double`-type values with
 round-trip accuracy (they do not), and the logic for detecting inaccuracy in the case of
@@ -623,8 +632,8 @@ This means possible changes in the string or printed output of the following:
 * (unrrdu/minmax.c) "unu minmax"
 * (nrrd/iter.c) nrrdIterContent() sprintf string for content of NrrdIter
 * (nrrd/accessors.c)
-  the nrrdSprint[NRRD_TYPE_MAX+1])(char *, const void *) and
-      nrrdFprint[NRRD_TYPE_MAX+1])(FILE *, const void *) arrays of value printers.
+  the nrrdSprint[NRRD_TYPE_MAX+1](char *, const void *) and
+      nrrdFprint[NRRD_TYPE_MAX+1](FILE *, const void *) arrays of value printers.
   nrrdFprint[] is not used in Teem (but fixed BUG: used "%.8g" for floats(!) now "%g")
   nrrdSprint[] is used in
   - nrrd/formatText.c/_nrrdFormatText_write() (part of nrrdFormatText)
@@ -720,7 +729,7 @@ since it is moot now.
 The functions airDioTest(), airDioMalloc(), airDioRead(), and airDioWrite() involved
 calls to fcntl(fd, F_DIOINFO, &dioinfo) with a struct dioattr dioinfo to learn the
 DirectI/O specifics (of data size and pointer aligment), before calling fcntl(fd,
-F_SETFL, ... FDIRECT)) to enable it prior to read() and write() calls.  This API was
+F_SETFL, ... FDIRECT) to enable it prior to read() and write() calls.  This API was
 different from and predates using the O_DIRECT flag to open(), which is current practice
 on Linux (at least). Given current differences in how various platforms do fast I/O, it
 would be nice if Teem had some functions for handling that in a platform-independent way.
@@ -1032,8 +1041,75 @@ uniformly created.
 
 ========= hest =========
 
-* ... option section dividers ? ....
-* ... priority modifiers .....
+• (many commits in Aug and Sept 2026)
+Most of hest was re-written in 2025, but there are still loose ends in specifying the
+behavior of multiple unflagged options with defaults (mainly who consumed what from the
+command-line, when).  The hest/0-README.md is now a readable and correct account of how
+hest works (more up-to-date than any previous web page). Hest functionality was mostly
+frozen in time for decades mainly because the code was complicated, and it was scary to
+modify something that didn't have a testing framework. The 2026 revisit of the 2025 re-
+write has now addressed that: hest/test/rigor has run_hest_tests.py which exercises all
+of hest. The (hacky) driver script 0-go.sh can turn this into coverage testing: now hest
+has 100% line coverage, and essentially complete branch coverage. Fuzz testing would be
+a better next step than chasing 100% branch coverage. The testing framework provided a
+way to verify the claims about behavior made in hest/0-README.md, and to carefully
+implement "-." variadic parm ending, "--" parse stopping, and option priority ordering.
+Future enhancements to hest will hopefully also be sped up thanks to this.
+
+• Wed Sep 9 05:07:23 2026 -0500 git commit c94909b3
+API CHANGE: added `priority` to the `hestOpt`
+For a long time the following has been in hest/TODO.txt:
+    currently the "input nrrd" option to unu comes last as a way of allowing
+    hest to do error checking on all other (more error prone) options.  But
+    it would be nice to indicate a parsing order seperate from the option order.
+This functionality is now implemented.  As described in the lovingly written
+hest/0-README.md, there are actually three different orderings among the hestOpts in the
+`hestOpt *hopt` array: definition order (the ordering within `hopt`), consumption order
+(when the option consumes arguments from the given comand-line), and parsing order (when
+the option parses its consumed args to set C variable values).  Hest has always had
+separate definition and consumption orders, but parsing order was always exactly the
+same as definition order.  Now they can differ: you set hestOpt.priority to, e.g., -1
+for an option that should be parsed later than all the options for which priority is 0
+or higher.
+
+• Mon Sep 7 03:58:45 2026 -0500 git commit 951f63e7
+API CHANGE: added handling of "--" as command-line flag meaning: stop parsing here.
+This is a long-overdue capability to respect a long-standing command-line conventions
+(POSIX): https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02
+Now, when the `respectDashDashMeansStop` field in a `hestParm *hparm` is non-zero, a "--"
+that appears on the commnd-line will cause hestParse() to stop any efforts to interpret
+the following command-line `argv` args; they will all instead by accumulated in
+hopt[0].remainArgv, and the count of them will be in hopt[0].remainArgc.
+hest/methodsHest.c:hestParmNew() initializes hparm->respectDashDashMeansStop to non-zero,
+but you can turn it off if you want in your hparm.  Also, "--" is not recognized as
+meaning "stop parsing" when coming from a response file, or from a default string.
+
+• Wed Sep 2 16:33:37 2026 -0500 git commit 7aea95af
+* API CHANGE: Renamed all the hestOptAdd_Nv_<type> functions to hestOptAdd_Mv_<type>
+"Mv" looks more like the "multiple variadic" that it represents, and facilitates "M"
+(for number of args learned at run-time) being distinct from "N" (number of args set
+at compile-time) in descriptions and documentation.
+* API CHANGE and BEHAVIOR CHANGE (this may have been finished in a later commit):
+For awhile (not sure starting when) has has used "--" in a weirdly specific way:
+an optional mark for the end of parms for one variadic option. The 2026 hest code
+revisit recognized that "--" should be handled in a more conventional way (see
+next commit, above), and that something else should be the marker for ending multiple
+variadic parms, settling on "-.".  Now, when the `respectDashPeriodMeansEnd` field
+in `hestParm *hparm` is non-zero, a "-." (appearing in command-line, response file,
+or default) is a way of saying: the variadic parms end here.
+
+• Tue Aug 25 18:00:40 2026 -0500 git commit: 597ca99a
+API CHANGE: coverage testing in 2026 revealed that 4 functions could be called but the
+resulting hestOpt would be unusable:
+   hestOptAdd_1v_Char
+   hestOptAdd_1v_String
+   hestOptAdd_1v_Enum
+   hestOptAdd_1v_Other.
+The unary logical negation semantics of kind=4 options cannot be sensibly applied to
+these non-numeric types (even though pre-TeemV2 did partially support them, but GLK could
+not make sense of it in 2026).  Now these functions are removed from the C pre-processor
+party in adder.c and hence removed from hest.h, and the descriptions of the API are now
+fixed: there are 95 (not 99) typed alternatives to hestOptAdd/hestOptAdd_nva,
 
 • Wed Dec 3 01:35:15 2025 -0600 git commit: 403f148f
 API NEW: hestArgcArgvSprint for (allocing and) sprinting a given argc,argv
@@ -1079,10 +1155,11 @@ API NEW in hest:
 
 • Thu Oct 16 13:31:03 2025 -0500 git commit: f081c284
 API CHANGE: hestParm->verbosity is now hestParm->verbose. Long ago all the other Teem
-libraries stopped using "verbosity" for their verbosity variables and instead used "verbose",
-hest for some reason was never updated. Time to fix it.
+libraries stopped using "verbosity" for their verbosity variables and instead used
+"verbose", hest for some reason was never updated. Time to fix it.
 
 • Wed Oct 15 15:22:09 2025 -0500 git commit: eb02fd9b
+(note from future: hestParseOrDie renamed hestParseOrExit, see d1472dcf above)
 Having revisited hestParse (below), attention turned next to hestParseOrDie, which
 over the years had accumulated some weirdly complicated logic. Time to clean it up.
 * API CHANGE! hestParseOrDie had 3 final args doInfo, doUsage, doGlossary.
@@ -1136,8 +1213,8 @@ I admit that as a grad student writing hest, I did not actually understand what 
 was doing when tokenizing the typed command-line into argc,argv, and did not appreciate
 the value of keeping those arguments as they came. Instead, stupidly, hest would take all
 the arguments for an option and sprint them back into a single space-delimited string,
-and then use the strtok()-work-alike airStrtok to try to re-tokenize them. But that was
-stupid, and various hacks developed to try to compensate for args containing spaces, namely
+and then use the strtok()-work-alike airStrtok to try to re-tokenize them. Amidst the
+stupidity, various hacks developed to try to compensate for args containing spaces, namely
 hestParm->greedySingleString and global variable (!) airStrtokQuoting, which changed the
 behavior of airStrtok. It seemed to work for things like `unu make -t "unsigned char"`,
 but it never really worked completely (witness the key/value problems above).
@@ -1203,7 +1280,7 @@ What changed about how hest appears to users as a result of this work:
   the new -{ ... }- comments, which are respected if hestParm->respectDashBraceComments
   (which is true by default).
 * New Feature: now @resp.txt response files can invoke other response files (but a
-  response files can not recursively invoke itself).
+  response files can not recursively invoke itself, directly or indirectly).
 
 • 2025-09-22 20:35:11 +0000 (Mon, 22 Sep 2025) svn Revision: 7467
 API CHANGE: hestMinNumArgs removed, because it was an old too-clever function,
@@ -1262,6 +1339,7 @@ affects lots of Teem-using code. This is part of the currently-ongoing rewrite o
 hestParse.
 
 • 2023-07-11 21:18:05 +0000 (Tue, 11 Jul 2023) svn Revision: 7071
+(note from future: actually should be 95 functions, not 99, see 597ca99a above)
 API NEW:Many (99, to be exact) non-var-args alternatives to hestOptAdd, also usefully
 type-specific for the type of value to be parsed in a way that (non-var-args)
 hestOptAdd_nva cannot match.  These capture all the common uses (and them some) of hest
@@ -1408,7 +1486,7 @@ was hit incessantly by the same value.
 So for TeemV2:
 (1) keeping better track of "steady" per-bin: it used to be that all knowledge of being
 incessantly hit was lost if the bin saw some later different values, but maybe the big
-background region is earliar in the value sweep than later. Now the "steady" can only
+background region is earlier in the value sweep than later. Now the "steady" can only
 increase with repeated values, and is not reset to 0 on different values.
 (2) only ignoring bins (with smart > 0) if they were incessantly hit: Turning on the
 "smart" handling should be harmless if it turns out there isn't a constant value
