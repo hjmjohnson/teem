@@ -135,7 +135,7 @@ extern const hestCB unrrduHestMaybeTypeCB; // not unu specific
 extern const unrrduCmd *const unrrduUnuCmdList[];
 /* these next three functions can be used by command-line tools like unu */
 extern airArray *unrrduMopNew(hestOpt *hopt, hestParm *hparm);
-extern int unrrduUsage(const char *argv0, const char *prog, const char *title,
+extern int unrrduUsage(const char *prog, const char *title,
                               const unrrduCmd *const *cmdList, const hestParm *hparm);
 extern int unrrduMainOrExit(int argc, const char **argv, const char *cmd,
                                    const char *title, const unrrduCmd *const *cmdList,
