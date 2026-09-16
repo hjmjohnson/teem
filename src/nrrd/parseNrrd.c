@@ -262,7 +262,7 @@ static int /* Biff: maybe:4:1 */
 rnParse_sizes(FILE *file, Nrrd *nrrd, NrrdIoState *nio, int useBiff) {
   static const char me[] = "rnParse_sizes";
   unsigned int ret;
-  size_t val[NRRD_DIM_MAX];
+  size_t val[NRRD_DIM_MAX + 1];
   char *info;
 
   AIR_UNUSED(file);
@@ -288,7 +288,7 @@ static int /* Biff: maybe:4:1 */
 rnParse_spacings(FILE *file, Nrrd *nrrd, NrrdIoState *nio, int useBiff) {
   static const char me[] = "rnParse_spacings";
   unsigned int ret;
-  double val[NRRD_DIM_MAX];
+  double val[NRRD_DIM_MAX + 1];
   char *info;
 
   AIR_UNUSED(file);
@@ -314,7 +314,7 @@ static int /* Biff: maybe:4:1 */
 rnParse_thicknesses(FILE *file, Nrrd *nrrd, NrrdIoState *nio, int useBiff) {
   static const char me[] = "rnParse_thicknesses";
   unsigned int ret;
-  double val[NRRD_DIM_MAX];
+  double val[NRRD_DIM_MAX + 1];
   char *info;
 
   AIR_UNUSED(file);
@@ -340,7 +340,7 @@ static int /* Biff: maybe:4:1 */
 rnParse_axis_mins(FILE *file, Nrrd *nrrd, NrrdIoState *nio, int useBiff) {
   static const char me[] = "rnParse_axis_mins";
   unsigned int ret;
-  double val[NRRD_DIM_MAX];
+  double val[NRRD_DIM_MAX + 1];
   char *info;
 
   AIR_UNUSED(file);
@@ -366,7 +366,7 @@ static int /* Biff: maybe:4:1 */
 rnParse_axis_maxs(FILE *file, Nrrd *nrrd, NrrdIoState *nio, int useBiff) {
   static const char me[] = "rnParse_axis_maxs";
   unsigned int ret;
-  double val[NRRD_DIM_MAX];
+  double val[NRRD_DIM_MAX + 1];
   char *info;
 
   AIR_UNUSED(file);
