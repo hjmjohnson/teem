@@ -38,31 +38,31 @@ typedef float echoCol_t;
 #define ECHO_LEN_SMALL_ENOUGH 5       /* to control splitting for split objects */
 #define ECHO_THREAD_MAX 512 /* max number of threads */
 typedef struct {
-  int jitterType,         /* from echoJitter* enum below */
-    reuseJitter,          /* don't recompute jitter offsets per pixel */
-    permuteJitter,        /* properly permute the various jitter arrays */
-    textureNN,            /* use nearest-neighbor for texture lookups
-                             (rather than bilinear interpolation) */
-    numSamples,           /* rays per pixel */
-    imgResU, imgResV,     /* horz. and vert. image resolution */
-    maxRecDepth,          /* max recursion depth */
-    renderLights,         /* render the area lights */
-    renderBoxes,          /* faintly render bounding boxes */
-    seedRand,             /* call airSrandMT() (don't if repeatability wanted) */
-    sqNRI,                /* how many iterations of newton-raphson we allow for
-                             finding superquadric root (within tolorance sqTol) */
-    numThreads;           /* number of threads to spawn per rendering */
-  echoPos_t sqTol;        /* how close newtwon-raphson must get to zero */
-  echoCol_t shadow,       /* the extent to which shadows are seen:
-                             0: no shadow rays cast
-                             >0: shadow rays cast, results weighed by shadow
-                             1: full shadowing */
-    glassC;               /* should really be an additional material parameter:
-                             Beer's law attenuation in glass */
-  float aperture,         /* shallowness of field */
-    timeGamma,            /* gamma for values in time image */
-    boxOpac;              /* opacity of bounding boxes with renderBoxes */
-  echoCol_t maxRecCol[3]; /* color of max recursion depth being hit */
+  int jitterType,          /* from echoJitter* enum below */
+    reuseJitter,           /* don't recompute jitter offsets per pixel */
+    permuteJitter,         /* properly permute the various jitter arrays */
+    textureNN,             /* use nearest-neighbor for texture lookups
+                              (rather than bilinear interpolation) */
+    renderLights,          /* render the area lights */
+    renderBoxes,           /* faintly render bounding boxes */
+    seedRand;              /* call airSrandMT() (don't if repeatability wanted) */
+  unsigned int numSamples, /* rays per pixel */
+    imgResU, imgResV,      /* horz. and vert. image resolution */
+    maxRecDepth,           /* max recursion depth */
+    sqNRI,                 /* how many iterations of newton-raphson we allow for
+                              finding superquadric root (within tolorance sqTol) */
+    numThreads;            /* number of threads to spawn per rendering */
+  echoPos_t sqTol;         /* how close newtwon-raphson must get to zero */
+  echoCol_t shadow,        /* the extent to which shadows are seen:
+                              0: no shadow rays cast
+                              >0: shadow rays cast, results weighed by shadow
+                              1: full shadowing */
+    glassC;                /* should really be an additional material parameter:
+                              Beer's law attenuation in glass */
+  float aperture,          /* shallowness of field */
+    timeGamma,             /* gamma for values in time image */
+    boxOpac;               /* opacity of bounding boxes with renderBoxes */
+  echoCol_t maxRecCol[3];  /* color of max recursion depth being hit */
 } echoRTParm;
 struct echoScene_t;
 typedef struct {
@@ -70,17 +70,17 @@ typedef struct {
   double time; /* time it took to render image */
   Nrrd *nraw;  /* copies of arguments to echoRTRender */
   limnCamera *cam;
-  struct echoScene_t *scene;
-  echoRTParm *parm;
-  int workIdx;               /* next work assignment (such as a scanline) */
+  const struct echoScene_t *scene;
+  const echoRTParm *parm;
+  unsigned int workIdx;      /* next work assignment (such as a scanline) */
   airThreadMutex *workMutex; /* mutex around work assignment */
 } echoGlobalState;
 typedef struct {
   airThread *thread; /* my thread */
   echoGlobalState *gstate;
   int verbose,            /* blah blah blah */
-    threadIdx,            /* my thread index */
-    depth;                /* how many recursion levels are we at */
+    threadIdx;            /* my thread index */
+  unsigned int depth;     /* how many recursion levels are we at */
   Nrrd *nperm,            /* ECHO_JITTABLE_NUM x parm->numSamples array
                              of ints, each column is a (different) random
                              permutation of [0 .. parm->numSamples-1], each
@@ -185,19 +185,20 @@ enum {
   echoTypeUnknown = -1,
   echoTypeSphere,     /*  0 */
   echoTypeCylinder,   /*  1 */
-  echoTypeSuperquad,  /*  2 */
-  echoTypeCube,       /*  3 */
-  echoTypeTriangle,   /*  4 */
-  echoTypeRectangle,  /*  5 */
-  echoTypeTriMesh,    /*  6: only triangles in the mesh */
-  echoTypeIsosurface, /*  7 */
-  echoTypeAABBox,     /*  8 */
-  echoTypeSplit,      /*  9 */
-  echoTypeList,       /* 10 */
-  echoTypeInstance,   /* 11 */
+  echoTypeCone,       /*  2 */
+  echoTypeSuperquad,  /*  3 */
+  echoTypeCube,       /*  4 */
+  echoTypeTriangle,   /*  5 */
+  echoTypeRectangle,  /*  6: only triangles in the mesh */
+  echoTypeTriMesh,    /*  7 */
+  echoTypeIsosurface, /*  8 */
+  echoTypeAABBox,     /*  9 */
+  echoTypeSplit,      /* 10 */
+  echoTypeList,       /* 11 */
+  echoTypeInstance,   /* 12 */
   echoTypeLast
 };
-#define ECHO_TYPE_NUM 12
+#define ECHO_TYPE_NUM 13
 /*
 ******** echoObject (generic) and all other object structs
 **
@@ -219,6 +220,10 @@ typedef struct {
   unsigned char matter; echoCol_t rgba[4]; echoCol_t mat[ECHO_MATTER_PARM_NUM]; Nrrd *ntext;
   int axis;
 } echoCylinder;
+typedef struct {
+  signed char type;
+  unsigned char matter; echoCol_t rgba[4]; echoCol_t mat[ECHO_MATTER_PARM_NUM]; Nrrd *ntext;
+} echoCone;
 typedef struct {
   signed char type;
   unsigned char matter; echoCol_t rgba[4]; echoCol_t mat[ECHO_MATTER_PARM_NUM]; Nrrd *ntext;
@@ -399,33 +404,33 @@ extern void echoMatterTextureSet(echoScene *scene, echoObject *obj, Nrrd *ntext)
 extern void echoLightPosition(echoPos_t pos[3], echoObject *light,
                                    echoThreadState *tstate);
 extern void echoLightColor(echoCol_t rgb[3], echoPos_t Ldist, echoObject *light,
-                                echoRTParm *parm, echoThreadState *tstate);
+                                const echoRTParm *parm, echoThreadState *tstate);
 extern void echoEnvmapLookup(echoCol_t rgb[3], echoPos_t norm[3], Nrrd *envmap);
 /* color.c ------------------------------------------- */
 extern void echoTextureLookup(echoCol_t rgba[4], Nrrd *ntext, echoPos_t u,
-                                   echoPos_t v, echoRTParm *parm);
+                                   echoPos_t v, const echoRTParm *parm);
 extern void echoIntxMaterialColor(echoCol_t rgba[4], echoIntx *intx,
-                                       echoRTParm *parm);
+                                       const echoRTParm *parm);
 extern void echoIntxLightColor(echoCol_t ambi[3], echoCol_t diff[3],
                                     echoCol_t spec[3], echoCol_t sp, echoIntx *intx,
-                                    echoScene *scene, echoRTParm *parm,
+                                    const echoScene *scene, const echoRTParm *parm,
                                     echoThreadState *tstate);
 extern void echoIntxFuzzify(echoIntx *intx, echoCol_t fuzz,
                                  echoThreadState *tstate);
 /* intx.c ------------------------------------------- */
-extern int echoRayIntx(echoIntx *intx, echoRay *ray, echoScene *scene,
-                            echoRTParm *parm, echoThreadState *tstate);
-extern void echoIntxColor(echoCol_t rgba[4], echoIntx *intx, echoScene *scene,
-                               echoRTParm *parm, echoThreadState *tstate);
+extern int echoRayIntx(echoIntx *intx, echoRay *ray, const echoScene *scene,
+                            const echoRTParm *parm, echoThreadState *tstate);
+extern void echoIntxColor(echoCol_t rgba[4], echoIntx *intx, const echoScene *scene,
+                               const echoRTParm *parm, echoThreadState *tstate);
 /* renderEcho.c ---------------------------------------- */
 extern int echoThreadStateInit(int threadIdx, echoThreadState *tstate,
-                                    echoRTParm *parm, echoGlobalState *gstate);
-extern void echoJitterCompute(echoRTParm *parm, echoThreadState *state);
-extern void echoRayColor(echoCol_t rgba[4], echoRay *ray, echoScene *scene,
-                              echoRTParm *parm, echoThreadState *tstate);
-extern void echoChannelAverage(echoCol_t *img, echoRTParm *parm,
+                                    const echoRTParm *parm, echoGlobalState *gstate);
+extern void echoJitterCompute(const echoRTParm *parm, echoThreadState *state);
+extern void echoRayColor(echoCol_t rgba[4], echoRay *ray, const echoScene *scene,
+                              const echoRTParm *parm, echoThreadState *tstate);
+extern void echoChannelAverage(echoCol_t *img, const echoRTParm *parm,
                                     echoThreadState *tstate);
-extern int echoRTRenderCheck(Nrrd *nraw, limnCamera *cam, echoScene *scene,
-                                  echoRTParm *parm, echoGlobalState *gstate);
-extern int echoRTRender(Nrrd *nraw, limnCamera *cam, echoScene *scene,
-                             echoRTParm *parm, echoGlobalState *gstate);
+extern int echoRTRenderCheck(Nrrd *nraw, limnCamera *cam, const echoScene *scene,
+                                  const echoRTParm *parm, echoGlobalState *gstate);
+extern int echoRTRender(Nrrd *nraw, limnCamera *cam, const echoScene *scene,
+                             const echoRTParm *parm, echoGlobalState *gstate);

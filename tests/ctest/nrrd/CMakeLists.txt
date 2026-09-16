@@ -24,3 +24,5 @@ teem_add_test(nrrd_bspec ARGS -bs bleed wrap pad:42)
 
 teem_create_test_bin(nrrd_origin torigin.c)
 teem_add_test(nrrd_origin)
+teem_create_test_bin(nrrd_parseoverflow tparseoverflow.c)
+teem_add_test(nrrd_parseoverflow)
