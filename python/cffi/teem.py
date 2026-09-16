@@ -583,7 +583,7 @@ _BIFF_DICT = {  # contents here are filled in by teem/python/cffi/exult.py Tffi.
     'limnObjectFaceReverse': (_equals_one, 0, b'limn', 'limn/transform.c:333'),
     'echoThreadStateInit': (_equals_one, 0, b'echo', 'echo/renderEcho.c:24'),
     'echoRTRenderCheck': (_equals_one, 0, b'echo', 'echo/renderEcho.c:132'),
-    'echoRTRender': (_equals_one, 0, b'echo', 'echo/renderEcho.c:407'),
+    'echoRTRender': (_equals_one, 0, b'echo', 'echo/renderEcho.c:406'),
     'hooverContextCheck': (_equals_one, 0, b'hoover', 'hoover/methodsHoover.c:54'),
     'hooverRender': ((lambda rv: _teem.lib.hooverErrInit == rv), 0, b'hoover', 'hoover/rays.c:358'),
     'seekExtract': (_equals_one, 0, b'seek', 'seek/extract.c:934'),

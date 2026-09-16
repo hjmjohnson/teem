@@ -203,7 +203,7 @@ typedef struct {
  ******** hestOpt struct
  *
  * information which specifies one command-line option, records state used during
- * parsing, and provides summary output info following parsing.
+ * hestParse(), and provides summary output info following parsing.
  */
 /* Note in nrrd.h above NrrdAxisInfo gives rationale for comment structure below */
 typedef struct {
@@ -239,6 +239,27 @@ typedef struct {
   /*                     used ONLY for airTypeEnum options */
   const hestCB *CB;
   /*                     used ONLY for airTypeOther options */
+  int priority;
+  /*                     (new in TeemV2) After each hestOpt option consumes its args from
+                         the user (command-line or response file), or else gets its args
+                         from the default, then the final phase 6 hestParse() will parse
+                         the per-option vector of args (in `havec`, below), to set
+                         value(s) in *valueP above. Previously in hest, the order of
+                         option parsing was exactly the definition order hestOpts within
+                         their array. This `priority` allows some options to appear
+                         earlier in option usage and glossary info (wherein ordering is
+                         entirely according to definition order), but actually be parsed
+                         later (e.g. you might want a "-i" input data option to come
+                         first in option listing, but actually be parsed last, because
+                         reading in a big data file should only happen after verifying
+                         that all the other non-data-intensive options could be parsed
+                         without problem).  Higher `priority` means parse earlier, lower
+                         `priority` means parse later. The parsing order is determined by
+                         first traversing all priority levels used (from high to low),
+                         and then within one priority level, the definition order
+                         determines the parse order. `priority` defaults to 0, and is not
+                         set via any hestOptAdd_ function; you set it manually prior to
+                         calling hestParse. */
 
   /* ------------------- Internal fields to support hestParse
                          These are set by hest functions to remember state for the sake
@@ -260,18 +281,21 @@ typedef struct {
                          This is set by hest functions as part of building up an array of
                          hestOpt, and informs the later action of hestOptFree */
   airArray *parseMop;
-  /*                     If non-NULL: remembers what was allocated at or behind *valueP
-                         as a result of running hestParse(). Free'ing or destroy'ing
-                         callbacks are added here (by _hestParseSingle[type]) with
-                         when=airMopAlways. With the 2025 rewrite, this replaces the
+  /*                     (new for TeemV2) If non-NULL: remembers what was allocated at or
+                         behind *valueP as a result of running hestParse(). Free'ing or
+                         destroy'ing callbacks are added here (by _hestParseSingle[type])
+                         with when=airMopAlways. With the 2025 rewrite, this replaces the
                          previous `int alloc` field with special values 0,1,2,3, which
-                         had fussy semantics that complicated hestParseFree()'s work.
-                         Now hestParseFree just calls airMopDone on all these per-option
+                         had fussy semantics that complicated hestParseFree()'s work. Now
+                         hestParseFree just calls airMopDone on all these per-option
                          parseMops (when non-NULL) */
   hestArgVec *havec;
-  /*                     The (non-flag) parm args attributed to this option */
+  /*                     (new for TeemV2) The (non-flag) parm args attributed to this
+                         option */
   unsigned int arrAlloc, arrLen;
-  /*                     Since hest's beginning in 2002, the basic container for a list
+  /*                     (new for TeemV2) (these are two other fields that are set in 0th
+                         hestOpt to describe whole array, see also final fields below)
+                         Since hest's beginning in 2002, the basic container for a list
                          of options was an array of hestOpt structs (not pointers to
                          them, which rules out argv-style NULL-termination of the array),
                          also unfortunately with no other top-level container or
@@ -288,44 +312,46 @@ typedef struct {
                          much like an airArray, but without the burden of extra calls for
                          the user (like airArrayLenIncr), nor new kinds of containers for
                          hest and its users to manage: it is still just an array of
-                         hestOpt structs */
+                         hestOpt structs. */
 
   /* ------------------- Output fields set/allocated by hestParse. */
   /* - - - - - Things specific to this very hestOpt - - - - - */
   int source;
-  /*                     From the hestSource* enum; from whence was this information
-                         learned. Can use hestSourceUser(opt->source) to test for the
-                         sources associated with the user: hestSourceCommandLine or
-                         hestSourceResponseFile */
+  /*                     (new for TeemV2) From the hestSource* enum; from whence was this
+                         information learned. Can use hestSourceUser(opt->source) to test
+                         for the sources associated with the user: hestSourceCommandLine
+                         or hestSourceResponseFile */
   char *parmStr;
-  /*                     If parseStr is non-NULL: a string (freed by hestParseFree) that
-                         is a lot like the string (storing zero or many parameters), from
-                         which hestParse ultimately parsed whatever values were set in
-                         *valueP above. Internally, hest maintains an argc,argv-like
-                         representation of the info to parse, but here it is joined back
-                         together into a space-delimited single string. Note that in the
-                         case of single variadic parameter options used without a
-                         parameter, the value stored will be "inverted" (in the boolean
-                         sense of V --> !V) from the value parsed from the string saved
-                         here. */
+  /*                     (new for TeemV2) If parseStr is non-NULL: a string (freed by
+                         hestParseFree) that is a lot like the string (storing zero or
+                         many parameters), from which hestParse ultimately parsed
+                         whatever values were set in *valueP above. Internally, hest
+                         maintains an argc,argv-like representation of the info to parse,
+                         but here it is joined back together into a space-delimited
+                         single string. Note that in the case of single variadic
+                         parameter options used without a parameter, the value stored
+                         will be "inverted" (in the boolean sense of V --> !V) from the
+                         value parsed from the string saved here. */
   int parseErr;
-  /*                     The return value of the parsing function (not the value parsed)
-   */
-  /* - - - - - Things set in 0th hestOpt to describe whole array - - - - -
-     (as noted above there is unfortunately no other top-level output container for info
-     generated by hestParse(), so these fields are going to be set only in the *first*
-     hestOpt passed to hestParse(), despite how illogical that may seem) */
+  /*                     (new for TeemV2) The return value of the parsing function (not
+                         the value parsed) */
+  /* - - - - - Outputs set in 0th hestOpt to describe whole array - - - - -
+     As noted above there is unfortunately no other top-level output channel for info
+     generated by hestParse(), so these fields (like arrAlloc and arrLen above) are going
+     to be set only in the *first* hestOpt passed to hestParse(), despite how profligate
+     that may seem. */
   int parseErrOptIdx;
-  /*                     If >= 0: index into hestOpt[] of first option with a parse
-                         error, specifically during the final phase (#6) of hestParse
-                         parsest.c/optSetValues(), when strings (whatever their
-                         source) are parsed to `void *valueP`.
-                         negative values mean: no parse error known, and currently
-                         the negative value set by hestParse() is related to the
-                         pre-phase-6 phase that failed */
+  /*                     (new for TeemV2) If hestParse() finishes without problems, this
+                         is set to -1. Otherwise, if >= 0: this is index into hestOpt[]
+                         of first option with a parse error, specifically during the
+                         final phase (#6) of hestParse parsest.c/optSetValues(), when
+                         strings (whatever their source) are parsed to `void *valueP`.
+                         Otherwise, no specific parse error is known, and is currently
+                         set to -10 times the pre-phase-6 phase that failed (e.g. -20 or
+                         for phase 2). */
   int helpWanted;
-  /*                     Indicates that hestParse() saw something in one of the given
-                         arguments that looks like a call for help, and that
+  /*                     (new for TeemV2) Indicates that hestParse() saw something in one
+                         of the given arguments that looks like a call for help, and that
                          respectDashDashHelp is set in the hestParm (hparm).
                          0: saw neither --help nor --usage
                          1: saw --help
@@ -338,6 +364,15 @@ typedef struct {
                          interpreting function returns: non-zero error return means
                          error, zero means no error. Thus this flag is the needed extra
                          channel of communication. */
+  char **remainArgv;
+  unsigned int remainArgc;
+  /*                     (new for TeemV2) when hestParse has been called with a hestParm
+                         hparm for which hparm->respectDashDashMeansStop, and if "--"
+                         appears in the given argv[], then hestParse will stop parsing,
+                         and everything after -- is accumulated in these two fields.
+                         These are newly allocated strings (remainArgc of them), not just
+                         copies of the argv[] pointers, and are freed by hestParseFree.
+                         Like argv[], the remainArgv[] array is NULL-terminated */
 } hestOpt;
 
 /* (new for TeemV2) The kind of function (pointer) that can be set in hestParm->quietQuit
@@ -522,10 +557,6 @@ HEST_EXPORT hestParm *hestParmFree(hestParm *hparm);
 HEST_EXPORT void *hestParmFree_mop(void *);
 HEST_EXPORT const hestParm *hestParmMopDone(const hestParm *hparm);
 HEST_EXPORT int hestParmColumnsIoctl(hestParm *hparm, unsigned int nonIoctlColumns);
-HEST_EXPORT void hestOptSingleSet(hestOpt *hopt, const char *flag, const char *name,
-                                  int type, unsigned int min, int max, void *valueP,
-                                  const char *dflt, const char *info, unsigned int *sawP,
-                                  const airEnum *enm, const hestCB *CB);
 /* Notes on how a hestOpt has been set-up, and how to do it now:
 - In the early days of hest, you could *statically* create the hestOpt *opt array; just
 like with the https://argtable.sourceforge.io argtable library that inspired hest. With

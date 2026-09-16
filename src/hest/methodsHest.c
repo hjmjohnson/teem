@@ -341,7 +341,7 @@ hestSourceUser(int src) {
 
 /* INCR is like airArray->incr: granularity with which we (linearly) reallocate the
 hestOpt array. Very few uses of hest within Teem use more than 32 options. Hopefully
-this avoids all the reallocations in the past action of hestOptAdd and the like. */
+this avoids all the reallocations in the past action of hestOptAdd() and the like. */
 #define INCR 32
 
 // for debugging allocation and especially hestParm->selfMop usage
@@ -376,7 +376,7 @@ hestParmNew(void) {
   - non-zero has meant that there was an error parsing the command-line arguments
   But seeing and recognizing "--help" means that options have NOT had values
   set, and, that's not an error: this is outside the error/no-error binary.
-  But that binary is the precedent, so we have to work with that by default.
+  But that binary is the precedent, so we have to work within that by default.
   Now, with parm->respectDashDashHelp, upon seeing "--help", hestParse returns 0,
   and sets helpWanted in the first hestOpt, and the caller will have to know
   to check for that.  This logic is handled by hestParse but maybe in the future there
@@ -393,15 +393,17 @@ hestParmNew(void) {
   /* With all the hand-wringing about not respecting "--help" by default, you might
   think that respecting "--" as "stop processing here" marker would also not be on
   by default. But correctly handling "--help" is subtle, and handling "--" is simple,
-  and, the precedent for "--" is older than for "--help".  The 2026 rewrite/revisit
-  recognized that respecting "--" in a way that matches the world's expectations is
-  very over-due. */
+  and, the POSIX precedent for what "--" means is older than conventions for "--help".
+  The 2026 rewrite/revisit recognized that respecting "--" in a way that matches the
+  world's expectations is necessary and very over-due. */
   hparm->respectDashDashMeansStop = AIR_TRUE;
-  /* The chances that an existing hest programmer or user will be confused by "-."
-  meaning "end of variadic parms" is low enough to enable it by default (and hopefully
-  there is no existing expectation this clashes with). */
+  /* The chances are (GLK hopes) very low that an existing hest-using program (or the
+  human user of it) will be stumped or thwarted by "-." meaning "end of variadic parms",
+  or by "-{" and "}-" creating a command-line commenting mechanism. Thus, these two are
+  also on by default. */
   hparm->respectDashPeriodMeansEnd = AIR_TRUE;
   hparm->respectDashBraceComments = AIR_TRUE;
+  /* these older options fall back on default global variables */
   hparm->noArgsIsNoProblem = hestDefaultNoArgsIsNoProblem;
   hparm->cleverPluralizeOtherY = hestDefaultCleverPluralizeOtherY;
   /* this mimics pre-TeemV2 behavior of always preventing line wrapping */
@@ -413,9 +415,14 @@ hestParmNew(void) {
   // hparm->responseFileComment = hestDefaultRespFileComment;
   // hparm->varParamStopFlag = hestDefaultVarParamStopFlag;
   // hparm->multiFlagSep = hestDefaultMultiFlagSep;
+  /* The point of hestParseOrExit is to be a one-stop place for getting hest stuff done,
+  and that historically have been off or not done by default. Currently, that is:
+      hestParmColumnsIoctl(hparm, hestDefaultColumns);
+      hparm->respectDashDashHelp = AIR_TRUE;
+  Turning this next field on says: "no thanks, no such conveniences wanted" */
   hparm->orExitWithoutNewerFeatures = AIR_FALSE;
   hparm->selfMop = NULL; /* handling this is subtle: see hestParmMopNew,
-                             hestParmUnmop, hestParmCopy, and hestParmFree */
+                            hestParmUnmop, hestParmCopy, and hestParmFree */
   hparm->quietQuit = NULL;
   return hparm;
 }
@@ -543,7 +550,7 @@ AIR_MOPPER(hestParmFree)
 const hestParm * /* Biff: nope */
 hestParmMopDone(const hestParm *hparm) {
   if (hparm && hparm->selfMop) {
-    /* if this in in fact properly self-mopping running mop will clean up the same
+    /* if this is in fact properly self-mopping, running mop will clean up the same
     `hparm` that we can't call hestParmFree on because for us `hparm` is const. It seems
     like maybe we should have a special 2nd arg to airMopDone to mean "everything": to
     call callback on pointer even if it was added only airMopOnError or airMopOnOkay. But
@@ -682,6 +689,7 @@ optInit(hestOpt *hopt) {
   hopt->sawP = NULL;
   hopt->enm = NULL;
   hopt->CB = NULL;
+  hopt->priority = 0;
   hopt->sawP = NULL;
   hopt->kind = 0;        // means that this hestOpt has not been set
   hopt->parseMop = NULL; // will create with airMopNew() only as needed
@@ -690,6 +698,8 @@ optInit(hestOpt *hopt) {
   hopt->source = hestSourceUnknown;
   hopt->parmStr = NULL;
   hopt->helpWanted = AIR_FALSE;
+  hopt->remainArgv = NULL;
+  hopt->remainArgc = 0;
 }
 
 /*
@@ -745,15 +755,19 @@ optarrIncr(hestOpt **optP) {
 }
 
 /*
-hestOptSingleSet: a completely generic setter for a single hestOpt
+hest__optSingleSet: a completely generic setter for a single hestOpt
 Note that this makes no attempt at error-checking; that is all in hest__OPCheck.
 *THIS* is the function that sets opt->kind.
+
+2026: opted to *not* add priority as a thing that could be set here, because
+it is quite niche, and did not want to break parity between what is set via
+hest__optSingleSet and all the other hestOptAdd functions.
 */
 void
-hestOptSingleSet(hestOpt *hopt, const char *flag, const char *name, int type,
-                 unsigned int min, int max, void *valueP, const char *dflt,
-                 const char *info, unsigned int *sawP, const airEnum *enm,
-                 const hestCB *CB) {
+hest__optSingleSet(hestOpt *hopt, const char *flag, const char *name, int type,
+                   unsigned int min, int max, void *valueP, const char *dflt,
+                   const char *info, unsigned int *sawP, const airEnum *enm,
+                   const hestCB *CB) {
 
   if (!hopt) return;
   hopt->flag = airStrdup(flag);
@@ -789,8 +803,8 @@ hestOptSingleSet(hestOpt *hopt, const char *flag, const char *name, int type,
 /*
 hestOptAdd_nva: A new (as of 2023) non-var-args ("_nva") version of hestOptAdd;
 The per-hestOpt logic (including setting opt->kind) has now been moved to
-hestOptSingleSet. The venerable var-args hestOptAdd is now a wrapper around this.
-and all the 99 non-var-args fully typed hestOptAdd_* functions also call this.
+hest__optSingleSet. The venerable var-args hestOptAdd is now a wrapper around this.
+and all the 95 non-var-args fully typed hestOptAdd_* functions also call this.
 
 Like hestOptAdd has done since 2013: returns UINT_MAX in case of error.
 
@@ -815,9 +829,9 @@ hestOptAdd_nva(hestOpt **hoptP, const char *flag, const char *name, int type,
   /* increment logical length of hestOpt array; return index of opt being set here */
   retIdx = optarrIncr(hoptP);
   /* set all elements of the opt */
-  hestOptSingleSet(*hoptP + retIdx, flag, name, type, min, max, /* */
-                   valueP, dflt, info,                          /* */
-                   sawP, enm, CB);
+  hest__optSingleSet(*hoptP + retIdx, flag, name, type, min, max, /* */
+                     valueP, dflt, info,                          /* */
+                     sawP, enm, CB);
   return retIdx;
 }
 
@@ -898,6 +912,20 @@ hestOptFree(hestOpt *hopt) {
 }
 AIR_MOPPER(hestOptFree)
 
+void
+hest__optPriorityMinMax(int *minP, int *maxP, const hestOpt *hopt) {
+  uint optNum = hopt->arrLen;
+  for (uint opi = 0; opi < optNum; opi++) {
+    if (!opi) {
+      *minP = *maxP = hopt[opi].priority;
+    } else {
+      *minP = AIR_MIN(*minP, hopt[opi].priority);
+      *maxP = AIR_MAX(*maxP, hopt[opi].priority);
+    }
+  }
+  return;
+}
+
 /* hest__OPCheck
 New biff-based container for all logic that originated in hest__OptCheck (which was the
 2025 rename of what had long been called hest__Panic): the validation of the given
@@ -949,7 +977,7 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
       airMopError(mop);
       return 1;
     }
-    // `kind` set by hestOptSingleSet
+    // `kind` set by hest__optSingleSet
     if (-1 == hopt[opi].kind) {
       biffAddf(HEST, "%s%sopt[%u]'s min (%u) and max (%d) incompatible", MY_ME, opi,
                hopt[opi].min, hopt[opi].max);
@@ -1120,12 +1148,10 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
       // hopt[opi] is unflagged
       // unflagged kind=1 is already checked above
       if (4 == hopt[opi].kind) {
-        if (!hopt[opi].min) {
-          biffAddf(HEST, "%s%s single variadic opt[%u] (name %s) must be flagged", MY_ME,
-                   opi, hopt[opi].name);
-          airMopError(mop);
-          return 1;
-        }
+        biffAddf(HEST, "%s%s single variadic opt[%u] (name %s) must be flagged", MY_ME,
+                 opi, hopt[opi].name);
+        airMopError(mop);
+        return 1;
       }
       // else it's a fixed (non-variadic) unflagged option; cool
     }
@@ -1275,6 +1301,17 @@ hest__OPCheck(const hestOpt *hopt, const hestParm *hparm) {
   if (ufvarNum > 1) {
     biffAddf(HEST, "%s%scan have at most 1 unflagged variadic options, not %u", MY_ME,
              ufvarNum);
+    airMopError(mop);
+    return 1;
+  }
+  int minPri, maxPri;
+  hest__optPriorityMinMax(&minPri, &maxPri, hopt);
+  if (maxPri - minPri > AIR_INT(10 * optNum)) {
+    biffAddf(HEST,
+             "%s%spriority range [%d,%d] is more than 10 times wider than "
+             "the # of options, which is certainly excessive for asserting a "
+             "parsing order",
+             MY_ME, minPri, maxPri);
     airMopError(mop);
     return 1;
   }

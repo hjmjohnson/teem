@@ -20,7 +20,7 @@ CFFI, within its many limitations, specifically lacking a C pre-processor
   You should have received a copy of the GNU Lesser General Public License
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
-// and see privateHest.h for why we internally also use biff
+/* and see privateHest.h for why we internally also use biff */
 /*
  * Some basic hest terminology, around usage/help information:
  * "Info": either, top-level description of the whole command, which is
@@ -40,11 +40,11 @@ CFFI, within its many limitations, specifically lacking a C pre-processor
  * The blissfully-type-unaware hestOptAdd() has always relied on the airTypeT enum values
  * below. Since that function is not being removed, to avoid needless code breakage with
  * TeemV2, these values now live in this hest header. However, hest users should instead
- * be using one of the 99 properly typed hestOptAdd_X_T functions from adder.c (see
+ * be using one of the 95 properly typed hestOptAdd_X_T functions from adder.c (see
  * below), which have no need for airType pseudo-types.
  *
  * Other things that used to be in air, but which really only mattered to implement hest
- * functions have been moved into privateHest.h, but with air --> _hest renaming:
+ * functions have been moved into privateHest.h, but with airX --> hest__X renaming:
  *    #define AIR_TYPE_MAX
  *    const char airTypeStr[AIR_TYPE_MAX + 1][AIR_STRLEN_SMALL + 1];
  *    const size_t airTypeSize[AIR_TYPE_MAX + 1];
@@ -98,48 +98,48 @@ TeemV2 rewrite of hestParse, to fix bugs and limits on how the code previously w
   other args, these are left intact by sh, bash, and zsh (csh and tcsh get confused).
   They must be kept as separate args to avoid brace expansion.
 */
-// hestArg: for building up and representing one argument string
+/* hestArg: for building up and representing one argument string */
 typedef struct {
-  char *str;        // the argument string
-  unsigned int len; // NOT strlen(); this includes '\0'-termination
-  airArray *strArr; // (manages str and len)
-  int source;       // from hestSource* enum
+  char *str;        /* the argument string */
+  unsigned int len; /* NOT strlen(); this includes '\0'-termination */
+  airArray *strArr; /* (manages str and len) */
+  int source;       /* from hestSource* enum */
 } hestArg;
-// hestArgVec: for building up a "vector" of arguments
+/* hestArgVec: for building up a "vector" of arguments */
 typedef struct {
-  hestArg **harg;    // array of pointers to hestArg structs
-  unsigned int len;  // number of arguments in this vector
-  airArray *hargArr; // (manages harg and len)
+  hestArg **harg;    /* array of pointers to hestArg structs */
+  unsigned int len;  /* number of arguments in this vector */
+  airArray *hargArr; /* (manages harg and len) */
 } hestArgVec;
-// hestInput: what is the thing we're processing now to build up a hestArgVec
+/* hestInput: what is the thing we're processing now to build up a hestArgVec */
 typedef struct {
-  int source; // from the hestSource* enum
-  // ------ if source == hestSourceCommandLine ------
+  int source; /* from the hestSource* enum */
+  /* ------ if source == hestSourceCommandLine ------ */
   unsigned int argc;
-  const char **argv; // we do NOT own
+  const char **argv; /* we do NOT own */
   unsigned int argIdx;
-  // ------ if source == hestSourceResponseFile ------
-  char *rfname; // we DO own
-  FILE *rfile;  // user opens and closes this
-  // ------ if source == hestSourceDefault ------
-  const char *dfltStr;  // we do NOT own
-  unsigned int dfltLen; // strlen(dfltStr)
-  // for both hestSourceResponseFile and hestSourceDefault
-  unsigned int carIdx; // which character are we on
-  // ------ general for all inputs ------
+  /* ------ if source == hestSourceResponseFile ------ */
+  char *rfname; /* we DO own */
+  FILE *rfile;  /* user opens and closes this */
+  /* ------ if source == hestSourceDefault ------ */
+  const char *dfltStr;  /* we do NOT own */
+  unsigned int dfltLen; /* strlen(dfltStr) */
+  /* for both hestSourceResponseFile and hestSourceDefault */
+  unsigned int carIdx; /* which character are we on */
+  /* ------ general for all inputs ------ */
   unsigned int dashBraceComment; /* not a boolean: how many -{ }- comment levels
                                     deep are we currently; tracked this way to
                                     permit nested commenting */
 } hestInput;
 /* hestInputStack: a way of remembering what more needs to be processed to build
-   up a hestArgVec. This full stack may be overkill, but is is the right tool for
+   up a hestArgVec. This full stack may be overkill, but it is the right tool for
    handling the expansion of a @opts.txt response file, especially with the possibility
    that response files can be expanded inside of other response files */
 typedef struct {
-  hestInput *hin;   // array of hestInputs
-  unsigned int len; // size of stack of hestInputs
-  airArray *hinArr; // (manages hin and len)
-  int stdinRead;    // while processing this stack we have read in "-" aka stdin
+  hestInput *hin;   /* array of hestInputs */
+  unsigned int len; /* size of stack of hestInputs */
+  airArray *hinArr; /* (manages hin and len) */
+  int stdinRead;    /* while processing this stack we have read in "-" aka stdin */
 } hestInputStack;
 /*
  ******** hestCB struct
@@ -157,18 +157,18 @@ typedef struct {
   const char *type; /* used by hestGlossary() to describe the type */
   int (*parse)(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]);
   /* how to parse one thing from a string.  This will be called multiple times for
-     multiple parameter options.  A non-zero return value is considered an error.  Error
-     message goes in the err string */
+     multiple parameter options.  A non-zero return value is considered an error.
+     Error message goes in the err string. */
   void *(*destroy)(void *ptr);
   /* if non-NULL, the destructor that will be called by hestParseFree() (or by
      hestParse() if there is an error during parsing). The argument is NOT the same as
-     passed to parse(): it is the result of dereferencing the argument to parse() */
+     passed to parse(): it is the result of dereferencing the argument to parse(). */
 } hestCB;
 /*
  ******** hestOpt struct
  *
  * information which specifies one command-line option, records state used during
- * parsing, and provides summary output info following parsing.
+ * hestParse(), and provides summary output info following parsing.
  */
 /* Note in nrrd.h above NrrdAxisInfo gives rationale for comment structure below */
 typedef struct {
@@ -177,7 +177,11 @@ typedef struct {
                          of the various functions (like hestOptAdd or hestOptAdd_nva or
                          hestOptSingleSet ... ) */
   char *flag;
-  /*                     how the option is identified on the cmd line */
+  /*                     how the option is identified on the cmd line. If one ',' occurs
+                         in this string, it separates the short and long forms that will
+                         be recognized. If `flag` is "s,size", then either "-s" or
+                         "--size" will work to identify the option.  The role of ',' is
+                         via the MY_MULTI_FLAG_SEP #define in privateHest.h. */
   char *name;
   /*                     simple description of option's parameter(s) */
   int type;
@@ -200,6 +204,27 @@ typedef struct {
   /*                     used ONLY for airTypeEnum options */
   const hestCB *CB;
   /*                     used ONLY for airTypeOther options */
+  int priority;
+  /*                     (new in TeemV2) After each hestOpt option consumes its args from
+                         the user (command-line or response file), or else gets its args
+                         from the default, then the final phase 6 hestParse() will parse
+                         the per-option vector of args (in `havec`, below), to set
+                         value(s) in *valueP above. Previously in hest, the order of
+                         option parsing was exactly the definition order hestOpts within
+                         their array. This `priority` allows some options to appear
+                         earlier in option usage and glossary info (wherein ordering is
+                         entirely according to definition order), but actually be parsed
+                         later (e.g. you might want a "-i" input data option to come
+                         first in option listing, but actually be parsed last, because
+                         reading in a big data file should only happen after verifying
+                         that all the other non-data-intensive options could be parsed
+                         without problem).  Higher `priority` means parse earlier, lower
+                         `priority` means parse later. The parsing order is determined by
+                         first traversing all priority levels used (from high to low),
+                         and then within one priority level, the definition order
+                         determines the parse order. `priority` defaults to 0, and is not
+                         set via any hestOptAdd_ function; you set it manually prior to
+                         calling hestParse. */
   /* ------------------- Internal fields to support hestParse
                          These are set by hest functions to remember state for the sake
                          of other hest functions. It may be a drawback of the simple
@@ -220,18 +245,21 @@ typedef struct {
                          This is set by hest functions as part of building up an array of
                          hestOpt, and informs the later action of hestOptFree */
   airArray *parseMop;
-  /*                     If non-NULL: remembers what was allocated at or behind *valueP
-                         as a result of running hestParse(). Free'ing or destroy'ing
-                         callbacks are added here (by _hestParseSingle[type]) with
-                         when=airMopAlways. With the 2025 rewrite, this replaces the
+  /*                     (new for TeemV2) If non-NULL: remembers what was allocated at or
+                         behind *valueP as a result of running hestParse(). Free'ing or
+                         destroy'ing callbacks are added here (by _hestParseSingle[type])
+                         with when=airMopAlways. With the 2025 rewrite, this replaces the
                          previous `int alloc` field with special values 0,1,2,3, which
-                         had fussy semantics that complicated hestParseFree()'s work.
-                         Now hestParseFree just calls airMopDone on all these per-option
+                         had fussy semantics that complicated hestParseFree()'s work. Now
+                         hestParseFree just calls airMopDone on all these per-option
                          parseMops (when non-NULL) */
   hestArgVec *havec;
-  /*                     The (non-flag) parm args attributed to this option */
+  /*                     (new for TeemV2) The (non-flag) parm args attributed to this
+                         option */
   unsigned int arrAlloc, arrLen;
-  /*                     Since hest's beginning in 2002, the basic container for a list
+  /*                     (new for TeemV2) (these are two other fields that are set in 0th
+                         hestOpt to describe whole array, see also final fields below)
+                         Since hest's beginning in 2002, the basic container for a list
                          of options was an array of hestOpt structs (not pointers to
                          them, which rules out argv-style NULL-termination of the array),
                          also unfortunately with no other top-level container or
@@ -248,48 +276,68 @@ typedef struct {
                          much like an airArray, but without the burden of extra calls for
                          the user (like airArrayLenIncr), nor new kinds of containers for
                          hest and its users to manage: it is still just an array of
-                         hestOpt structs */
-  // ------------------- Output fields set/allocated by hestParse.
-  // - - - - - Things specific to this very hestOpt - - - - -
+                         hestOpt structs. */
+  /* ------------------- Output fields set/allocated by hestParse. */
+  /* - - - - - Things specific to this very hestOpt - - - - - */
   int source;
-  /*                     From the hestSource* enum; from whence was this information
-                         learned. Can use hestSourceUser(opt->source) to test for the
-                         sources associated with the user: hestSourceCommandLine or
-                         hestSourceResponseFile */
+  /*                     (new for TeemV2) From the hestSource* enum; from whence was this
+                         information learned. Can use hestSourceUser(opt->source) to test
+                         for the sources associated with the user: hestSourceCommandLine
+                         or hestSourceResponseFile */
   char *parmStr;
-  /*                     If parseStr is non-NULL: a string (freed by hestParseFree) that
-                         is a lot like the string (storing zero or many parameters), from
-                         which hestParse ultimately parsed whatever values were set in
-                         *valueP above. Internally, hest maintains an argc,argv-like
-                         representation of the info to parse, but here it is joined back
-                         together into a space-delimited single string. Note that in the
-                         case of single variadic parameter options used without a
-                         parameter, the value stored will be "inverted" (in the boolean
-                         sense of V --> !V) from the value parsed from the string saved
-                         here. */
+  /*                     (new for TeemV2) If parseStr is non-NULL: a string (freed by
+                         hestParseFree) that is a lot like the string (storing zero or
+                         many parameters), from which hestParse ultimately parsed
+                         whatever values were set in *valueP above. Internally, hest
+                         maintains an argc,argv-like representation of the info to parse,
+                         but here it is joined back together into a space-delimited
+                         single string. Note that in the case of single variadic
+                         parameter options used without a parameter, the value stored
+                         will be "inverted" (in the boolean sense of V --> !V) from the
+                         value parsed from the string saved here. */
   int parseErr;
-  //                     The return value of the parsing function (not the value parsed)
-  /* - - - - - things set in 0th hestOpt to describe whole array - - - - -
-     (as noted above there is unfortunately no other top-level output container for info
-     generated by hestParse(), so these fields are going to be set only in the *first*
-     hestOpt passed to hestParse(), despite how illogical that may seem) */
+  /*                     (new for TeemV2) The return value of the parsing function (not
+                         the value parsed) */
+  /* - - - - - Outputs set in 0th hestOpt to describe whole array - - - - -
+     As noted above there is unfortunately no other top-level output channel for info
+     generated by hestParse(), so these fields (like arrAlloc and arrLen above) are going
+     to be set only in the *first* hestOpt passed to hestParse(), despite how profligate
+     that may seem. */
   int parseErrOptIdx;
-  /*                     If >= 0: index into hestOpt[] of first option with a parse
-                         error, specifically during the final phase (#6) of hestParse
-                         parsest.c/optSetValues(), when strings (whatever their
-                         source) are parsed to `void *valueP`.
-                         negative values mean: no parse error known, and currently
-                         the negative value set by hestParse() is related to the
-                         pre-phase-6 phase that failed */
+  /*                     (new for TeemV2) If hestParse() finishes without problems, this
+                         is set to -1. Otherwise, if >= 0: this is index into hestOpt[]
+                         of first option with a parse error, specifically during the
+                         final phase (#6) of hestParse parsest.c/optSetValues(), when
+                         strings (whatever their source) are parsed to `void *valueP`.
+                         Otherwise, no specific parse error is known, and is currently
+                         set to -10 times the pre-phase-6 phase that failed (e.g. -20 or
+                         for phase 2). */
   int helpWanted;
-  /*                     Indicates that hestParse() saw something in one of the given
-                         arguments that looks like a call for help, and that
-                         respectDashDashHelp is set in the hestParm.
+  /*                     (new for TeemV2) Indicates that hestParse() saw something in one
+                         of the given arguments that looks like a call for help, and that
+                         respectDashDashHelp is set in the hestParm (hparm).
                          0: saw neither --help nor --usage
                          1: saw --help
-                         2: saw --usage */
+                         2: saw --usage
+                         As explained in a lengthy note in methodsHest.c,
+                         hparm->respectDashDashHelp is *not* on by default: seeing --help
+                         or --usage is neither error nor success for hestParse (there's
+                         no problem to describe on stderr, but options were not assigned
+                         values), which thwarts the simple binary convention of
+                         interpreting function returns: non-zero error return means
+                         error, zero means no error. Thus this flag is the needed extra
+                         channel of communication. */
+  char **remainArgv;
+  unsigned int remainArgc;
+  /*                     (new for TeemV2) when hestParse has been called with a hestParm
+                         hparm for which hparm->respectDashDashMeansStop, and if "--"
+                         appears in the given argv[], then hestParse will stop parsing,
+                         and everything after -- is accumulated in these two fields.
+                         These are newly allocated strings (remainArgc of them), not just
+                         copies of the argv[] pointers, and are freed by hestParseFree.
+                         Like argv[], the remainArgv[] array is NULL-terminated */
 } hestOpt;
-/* (new for TeemV2) The kind of function (pointer) that be set in hestParm->quietQuit
+/* (new for TeemV2) The kind of function (pointer) that can be set in hestParm->quietQuit
    for the hestParm passed to hestParseOrExit, to enable it to quiet quit after a
    hestParse() error. Such a function returns non-zero if hestParseOrExit should "quiet
    quit" i.e. silently `exit(1)` instead of (like it otherwise would) fprintf(stderr)
@@ -297,7 +345,7 @@ typedef struct {
    from this, to avoid multiple unu instances complaining about failing to read the `-i`
    input because they hit EOF (on the closed pipe). It was, however, implemented in a
    very hacky/fragile way (hiding inside the unrrdu/privateUnrrdu.h `PARSE` macro); now
-   we can support it in a more explicit and flexible way. This kind of function . */
+   we can support it in a more explicit and flexible way. */
 typedef int (*hestQuietQuitTest)(const char *parseErrStr, const hestOpt *hopt);
 /*
  ******** hestParm struct
@@ -309,7 +357,7 @@ typedef int (*hestQuietQuitTest)(const char *parseErrStr, const hestOpt *hopt);
  * GK: Don't even think about storing per-parse state in here.
  */
 typedef struct {
-  // --------------------------- Controls on hestParse, hestUsage, hestGlossary
+  /* --------------------------- Controls on hestParse, hestUsage, hestGlossary */
   int verbose;
   /*                             Verbosity level of diagnostic messages to stdout */
   int responseFileEnable;
@@ -344,15 +392,33 @@ typedef struct {
                                  set, hestParse recognizes hest-specific "-{" and "}-"
                                  args as comment delimiters: these args and all args they
                                  enclose are ignored. These must be stand-alone args, and
-                                 cannot be touching anything else, lest brace expansion
-                                 kick in. */
+                                 cannot be touching anything else, to keep the shell's
+                                 brace expansion from kicking in. */
+  int respectDashDashMeansStop;
+  /*                             (new in TeemV2) Following POSIX convention and behavior
+                                 of other command-line parsers: Respect "--" on its own
+                                 as indicator that hest should not attempt to interpret
+                                 anything afterwards as an option or arg of any option */
+  int respectDashPeriodMeansEnd;
+  /*                             (new in TeemV2) Enabling this solves some ambiguity
+                                 problems with variadic options. If a flagged variadic
+                                 option is followed on the command-line by an unflagged
+                                 option, how do you know where flagged option ends?  This
+                                 allows "-." to be that marker. If an unflagged variadic
+                                 option can take 0 args, and it has a multi-argument
+                                 default, how can the user say "I want to pass 0 args and
+                                 thereby override the default", as distinct from "I am
+                                 not setting the option"?  This allows "-." to
+                                 communicate the former, while having nothing on the
+                                 command-line communictes the latter. */
   int noArgsIsNoProblem;
-  /*                             If non-zero, having no arguments to parse is not in and
-                                 of itself a problem; this means that if all options have
-                                 defaults, it would be *ok* to invoke the problem without
-                                 any further command-line options. This is counter to
-                                 pre-Teem-1.11 behavior (for which no arguments *always*
-                                 meant "show me usage info"). */
+  /*                             Specifically for hestParseOrExit (previously known as
+                                 hestParseOrDie): if non-zero, having no arguments to
+                                 parse is not in and of itself a problem; this means that
+                                 if all options have defaults, it would be *ok* to invoke
+                                 the problem without any further command-line options.
+                                 This is counter to pre-TeemV2 behavior (for which no
+                                 arguments *always* meant "show me usage info"). */
   int cleverPluralizeOtherY;
   /*                             When printing the type for airTypeOther, when the min
                                  number of items is > 1, and the type string ends with
@@ -376,28 +442,29 @@ typedef struct {
   /*                             Do not let hestParseOrExit turn on respectDashDashHelpor
                                  or use hestParmColumnsIoctl to set columns, or other
                                  TeemV2 or later functionality */
-  airArray *_selfMop;
-  /*                             If non-NULL, this is a self-mopping hestParm. `_selfMop`
-                                 should *only* contain (hestParm*,hestParmFree) pairs,
-                                 including a pointer to this hestParm. YOU SHOULD NOT BE
-                                 DIRECTLY ADDING ANYTHING TO THIS MOP; it is maintained
-                                 for you by the hestParm functions. This mop is the
-                                 dubiously clever solution to reconciling const
-                                 correctness (input parms should be const) and memory
-                                 cleanliness (should not leak memory and should not have
-                                 any memory-in-use at exit) while using hestParseOrExit,
-                                 which has a `const hestParm*` parameter and can call
-                                 exit() (when hestParse isn't called or fails).
-                                 hestParseOrExit can call hestParmFree indirectly, via
-                                 this mop. See also: hestParmMopNew, hestParmUnmop and
-                                 hestParmMopDone */
+  airArray *selfMop;
+  /*                             If non-NULL, this is a self-mopping hestParm. `selfMop`
+                                 is intended to contain a (hestParm*,hestParmFree) pair,
+                                 including a pointer to this hestParm. This is not meant
+                                 to be a general-purpose mop; it is intended for use by
+                                 the hestParm functions. If you know what you're doing,
+                                 this may be helpful for mopping resources allocated
+                                 prior to hestParse. This mop is the dubiously clever
+                                 solution to reconciling const correctness (input parms
+                                 should be const) and memory cleanliness (should not leak
+                                 memory and should not have any memory-in-use at exit)
+                                 while using hestParseOrExit, which has a `const
+                                 hestParm*` parameter and can call exit() when hestParse
+                                 isn't called or fails. hestParseOrExit can call
+                                 hestParmFree indirectly, via this mop. See also:
+                                 hestParmMopNew, hestParmUnmop and hestParmMopDone */
   hestQuietQuitTest quietQuit;
   /*                             (See description above of this typedef)
                                  If non-NULL, hestParseOrExit calls this and a non-zero
                                  return means that any error messages are supressed (but
                                  the mop above is still processed) */
 } hestParm;
-// defaultsHest.c
+/* defaultsHest.c */
 extern int hestDefaultVerbose;
 extern int hestDefaultResponseFileEnable;
 extern int hestDefaultElideSingleEnumType;
@@ -411,7 +478,7 @@ extern int hestDefaultNoArgsIsNoProblem;
 extern int hestDefaultCleverPluralizeOtherY;
 extern unsigned int hestDefaultColumns;
 extern unsigned int hestDefaultIndent;
-// argvHest.c
+/* argvHest.c */
 extern hestArg *hestArgNew(void);
 extern hestArg *hestArgNix(hestArg *harg);
 extern void *hestArgNix_mop(void *);
@@ -423,19 +490,20 @@ extern hestArgVec *hestArgVecNew(void);
 extern void hestArgVecReset(hestArgVec *havec);
 extern hestArgVec *hestArgVecNix(hestArgVec *havec);
 extern void *hestArgVecNix_mop(void *);
-extern hestArg *hestArgVecRemove(hestArgVec *havec, unsigned int popIdx);
 extern char *hestArgVecSprint(const hestArgVec *havec, int showIndices);
 extern char *hestArgcArgvSprint(int argc, const char **argv, int showIdx);
 extern void hestArgVecAppendString(hestArgVec *havec, const char *str);
 extern void hestArgVecAppendArg(hestArgVec *havec, hestArg *harg);
 extern void hestArgVecPrint(const char *caller, const char *info,
                                  const hestArgVec *havec);
-extern hestInput *hestInputNew(void);
-extern hestInput *hestInputNix(hestInput *hin);
+/* actually, no useful API for a single hestInput; they are always used within a
+ * hestInputStack, and already managed fine that way.
+ * HEST_EXPORT hestInput *hestInputNew(void);
+ * HEST_EXPORT hestInput *hestInputNix(hestInput *hin); */
 extern hestInputStack *hestInputStackNew(void);
 extern hestInputStack *hestInputStackNix(hestInputStack *hist);
 extern void *hestInputStackNix_mop(void *);
-// methodsHest.c
+/* methodsHest.c */
 extern const int hestPresent;
 extern const airEnum *const hestSource;
 extern int hestSourceUser(int src);
@@ -447,10 +515,6 @@ extern hestParm *hestParmFree(hestParm *hparm);
 extern void *hestParmFree_mop(void *);
 extern const hestParm *hestParmMopDone(const hestParm *hparm);
 extern int hestParmColumnsIoctl(hestParm *hparm, unsigned int nonIoctlColumns);
-extern void hestOptSingleSet(hestOpt *hopt, const char *flag, const char *name,
-                                  int type, unsigned int min, int max, void *valueP,
-                                  const char *dflt, const char *info, unsigned int *sawP,
-                                  const airEnum *enm, const hestCB *CB);
 /* Notes on how a hestOpt has been set-up, and how to do it now:
 - In the early days of hest, you could *statically* create the hestOpt *opt array; just
 like with the https://argtable.sourceforge.io argtable library that inspired hest. With
@@ -463,11 +527,11 @@ being part of calling hestParse() to being part of run-time hestOpt initializati
 "missing initializer" warnings from the hestOpt struct not being fully initialized.
 This was no issue for Teem code, which had been using hestOptAdd_nva() (non-var-args
 but still with void* valueP typeless mayhem) or hestOptAdd() (var-args for additional
-typeless mayhem). Btw now Teem uses one of the 99 type-checked variants.
+typeless mayhem). Btw now Teem uses one of the 95 type-checked variants.
 - Despite how long its used lasted in Teem code, as of 2023 there is no reason to use
 hestOptAdd().  There is no kind of hestOpt that you can create with hestOptAdd() that
-cannot be also created by one of the 99 type-checked hestOptAdd_*_T() variants listed
-with adders.c below */
+cannot be also created by one of the 95 type-checked hestOptAdd_*_T() variants listed
+after "adders.c" below */
 extern unsigned int hestOptAdd_nva(hestOpt **optP, const char *flag,
                                         const char *name, int type, unsigned int min,
                                         int max, void *valueP, const char *dflt,
@@ -487,7 +551,7 @@ extern void *hestOptFree_mop(void *);
 extern int hestOptCheck(const hestOpt *hopt, char **errP);
 extern int hestOptParmCheck(const hestOpt *hopt, const hestParm *hparm,
                                  char **errP);
-// parseHest.c
+/* parseHest.c */
 extern hestOpt *hestParseFree(hestOpt *hopt);
 extern void *hestParseFree_mop(void *);
 extern int hestParseOrExit(hestOpt *hopt, int argc, const char **argv,
@@ -496,37 +560,41 @@ extern int hestParseOrExit(hestOpt *hopt, int argc, const char **argv,
    - does not have the final `doInfo`, `doUsage`, `doGlossary` args since they were
      always passed as AIR_TRUE within Teem code
    - adds new functionality with new fields in hestParm */
-// parsest.c
+/* parsest.c */
 extern int hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
                           const hestParm *hparm);
-// usage.c
+/* usage.c */
 extern void hestPrintStr(FILE *file, size_t indent, size_t already, size_t width,
                               const char *_str, int bslash);
+extern void hestInfo(FILE *file, const char *argv0, const char *info,
+                          const hestParm *hparm);
 extern void hestUsage(FILE *file, const hestOpt *hopt, const char *argv0,
                            const hestParm *hparm, int oneline);
 extern void hestGlossary(FILE *file, const hestOpt *hopt, const hestParm *hparm);
-extern void hestInfo(FILE *file, const char *argv0, const char *info,
-                          const hestParm *hparm);
-// adders.c
+/* adders.c */
 extern void hestOptAddDeclsPrint(FILE *f);
-/* The 99 (!) alternatives to hestOptAdd that enable type checking on the specific type
-of value that is to be parsed for the option. In fact, *all* possible ways of using hest
+/* The 95 alternatives to hestOptAdd that enable type checking on the specific type of
+value that is to be parsed for the option. In fact, *all* possible ways of using hest
 are covered here, due to the enumeration over "kind" and over type T, which determines
 the function name as follows:
 kind  min, max             function family         description
  1    min == max == 0      hestOptAdd_Flag         (stand-alone flag; no parameters)
  2    min == max == 1      hestOptAdd_1_T          single fixed parameter
  3    min == max >= 2      hestOptAdd_{2,3,4,N}_T  multiple fixed parameters
- 4    min == 0; max == 1   hestOptAdd_1v_T         single variadic parameter
- 5    min < max; max >= 2  hestOptAdd_Nv_T         multiple variadic parameters
+ 4    min == 0; max == 1   hestOptAdd_1v_T  [**]   single variadic parameter
+ 5    min < max; max >= 2  hestOptAdd_Mv_T         multiple variadic parameters
 The type T can be (one for each airType enum value): Bool, Short, UShort, Int, UInt,
 Long, ULong, Size_t, Float, Double, Char, String, Enum, or Other. An `airEnum *enm` is
 passed with the T=Enum functions. A `hestCB *CB` is passed for the T=Other functions. The
-number of parms `int *sawP` that hestParm saw on the command-line is passed for the _Nv_
+number of parms `int *sawP` that hestParm saw on the command-line is passed for the _Mv_
 options.
-For each of the 14 different `_T` types, there are 7 different families for `_1`
-(kind=2), `_2`,`_3`,`_4`,`_N` (kind=3),`_1v` (kind=4), and `_Nv` (kind=5).
-14 * 7 = 98, plus hestOptAdd_Flag makes 99 functions.
+With one exception, for each of the 14 different `_T` types, there are 7 different
+families for `_1` (kind=2), `_2`,`_3`,`_4`,`_N` (kind=3),`_1v` (kind=4), and `_Mv`
+(kind=5). The [**] exception is that hestOptAdd_1v_T is *not* supported for non-numeric
+types Char, String, Enum, or Other: the semantics of this option hinge on a logical
+negation of the (required) default value, via "!".  Earlier versions of hest tried
+to support this for non-numeric types but it stopped making sense in the v2 rewrite.
+So 14*7 - 4 == 98 - 4 = 94, plus hestOptAdd_Flag makes 95 functions.
 All declarations below were automatically generated via hest/test/decls (which calls
 hestOptAddDeclsPrint), followed by clang-format. */
 extern unsigned int hestOptAdd_Flag(hestOpt **optP, const char *flag, int *valueP,
@@ -562,20 +630,6 @@ extern unsigned int hestOptAdd_1v_Float(hestOpt **hoptP, const char *flag,
 extern unsigned int hestOptAdd_1v_Double(hestOpt **hoptP, const char *flag,
                                               const char *name, double *valueP,
                                               const char *dflt, const char *info);
-extern unsigned int hestOptAdd_1v_Char(hestOpt **hoptP, const char *flag,
-                                            const char *name, char *valueP,
-                                            const char *dflt, const char *info);
-extern unsigned int hestOptAdd_1v_String(hestOpt **hoptP, const char *flag,
-                                              const char *name, char **valueP,
-                                              const char *dflt, const char *info);
-extern unsigned int hestOptAdd_1v_Enum(hestOpt **hoptP, const char *flag,
-                                            const char *name, int *valueP,
-                                            const char *dflt, const char *info,
-                                            const airEnum *enm);
-extern unsigned int hestOptAdd_1v_Other(hestOpt **hoptP, const char *flag,
-                                             const char *name, void *valueP,
-                                             const char *dflt, const char *info,
-                                             const hestCB *CB);
 extern unsigned int hestOptAdd_1_Bool(hestOpt **hoptP, const char *flag,
                                            const char *name, int *valueP,
                                            const char *dflt, const char *info);
@@ -813,62 +867,62 @@ extern unsigned int hestOptAdd_N_Other(hestOpt **hoptP, const char *flag,
                                             const char *name, unsigned int N,
                                             void *valueP, const char *dflt,
                                             const char *info, const hestCB *CB);
-extern unsigned int hestOptAdd_Nv_Bool(hestOpt **hoptP, const char *flag,
+extern unsigned int hestOptAdd_Mv_Bool(hestOpt **hoptP, const char *flag,
                                             const char *name, unsigned int min, int max,
                                             int **valueP, const char *dflt,
                                             const char *info, unsigned int *sawP);
-extern unsigned int hestOptAdd_Nv_Short(hestOpt **hoptP, const char *flag,
+extern unsigned int hestOptAdd_Mv_Short(hestOpt **hoptP, const char *flag,
                                              const char *name, unsigned int min, int max,
                                              short int **valueP, const char *dflt,
                                              const char *info, unsigned int *sawP);
-extern unsigned int hestOptAdd_Nv_UShort(hestOpt **hoptP, const char *flag,
+extern unsigned int hestOptAdd_Mv_UShort(hestOpt **hoptP, const char *flag,
                                               const char *name, unsigned int min,
                                               int max, unsigned short int **valueP,
                                               const char *dflt, const char *info,
                                               unsigned int *sawP);
-extern unsigned int hestOptAdd_Nv_Int(hestOpt **hoptP, const char *flag,
+extern unsigned int hestOptAdd_Mv_Int(hestOpt **hoptP, const char *flag,
                                            const char *name, unsigned int min, int max,
                                            int **valueP, const char *dflt,
                                            const char *info, unsigned int *sawP);
-extern unsigned int hestOptAdd_Nv_UInt(hestOpt **hoptP, const char *flag,
+extern unsigned int hestOptAdd_Mv_UInt(hestOpt **hoptP, const char *flag,
                                             const char *name, unsigned int min, int max,
                                             unsigned int **valueP, const char *dflt,
                                             const char *info, unsigned int *sawP);
-extern unsigned int hestOptAdd_Nv_Long(hestOpt **hoptP, const char *flag,
+extern unsigned int hestOptAdd_Mv_Long(hestOpt **hoptP, const char *flag,
                                             const char *name, unsigned int min, int max,
                                             long int **valueP, const char *dflt,
                                             const char *info, unsigned int *sawP);
-extern unsigned int hestOptAdd_Nv_ULong(hestOpt **hoptP, const char *flag,
+extern unsigned int hestOptAdd_Mv_ULong(hestOpt **hoptP, const char *flag,
                                              const char *name, unsigned int min, int max,
                                              unsigned long int **valueP,
                                              const char *dflt, const char *info,
                                              unsigned int *sawP);
-extern unsigned int hestOptAdd_Nv_Size_t(hestOpt **hoptP, const char *flag,
+extern unsigned int hestOptAdd_Mv_Size_t(hestOpt **hoptP, const char *flag,
                                               const char *name, unsigned int min,
                                               int max, size_t **valueP, const char *dflt,
                                               const char *info, unsigned int *sawP);
-extern unsigned int hestOptAdd_Nv_Float(hestOpt **hoptP, const char *flag,
+extern unsigned int hestOptAdd_Mv_Float(hestOpt **hoptP, const char *flag,
                                              const char *name, unsigned int min, int max,
                                              float **valueP, const char *dflt,
                                              const char *info, unsigned int *sawP);
-extern unsigned int hestOptAdd_Nv_Double(hestOpt **hoptP, const char *flag,
+extern unsigned int hestOptAdd_Mv_Double(hestOpt **hoptP, const char *flag,
                                               const char *name, unsigned int min,
                                               int max, double **valueP, const char *dflt,
                                               const char *info, unsigned int *sawP);
-extern unsigned int hestOptAdd_Nv_Char(hestOpt **hoptP, const char *flag,
+extern unsigned int hestOptAdd_Mv_Char(hestOpt **hoptP, const char *flag,
                                             const char *name, unsigned int min, int max,
                                             char **valueP, const char *dflt,
                                             const char *info, unsigned int *sawP);
-extern unsigned int hestOptAdd_Nv_String(hestOpt **hoptP, const char *flag,
+extern unsigned int hestOptAdd_Mv_String(hestOpt **hoptP, const char *flag,
                                               const char *name, unsigned int min,
                                               int max, char ***valueP, const char *dflt,
                                               const char *info, unsigned int *sawP);
-extern unsigned int hestOptAdd_Nv_Enum(hestOpt **hoptP, const char *flag,
+extern unsigned int hestOptAdd_Mv_Enum(hestOpt **hoptP, const char *flag,
                                             const char *name, unsigned int min, int max,
                                             int **valueP, const char *dflt,
                                             const char *info, unsigned int *sawP,
                                             const airEnum *enm);
-extern unsigned int hestOptAdd_Nv_Other(hestOpt **hoptP, const char *flag,
+extern unsigned int hestOptAdd_Mv_Other(hestOpt **hoptP, const char *flag,
                                              const char *name, unsigned int min, int max,
                                              void *valueP, const char *dflt,
                                              const char *info, unsigned int *sawP,
