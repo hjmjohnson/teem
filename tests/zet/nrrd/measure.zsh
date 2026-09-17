@@ -3,7 +3,7 @@
 source ${0:A:h}/../zet-lib.zsh # set up the zet "library"
 setopt err_exit                # exit on error
 setopt pipe_fail               # propagate pipeline errors
-if (( $+commands[unu] )); then
+if (($+commands[unu])); then
     print "${0} using unu = $(which unu)\n"
 else
     zet_die "unu not found, bye"
@@ -14,13 +14,14 @@ Setup() {
     # starting with one linear ramp
     echo "1  1 -1 -1" | unu reshape -s 2 2 | unu convert -t double |
         unu resample -s $szX $szY -c node -k tent |
-        unu basinfo -c yramp -o yramp.nrrd; zet_junk yramp.nrrd
+        unu basinfo -c yramp -o yramp.nrrd
+    zet_junk yramp.nrrd
     zet_inf_begin 'rows%s.nrrd' ######## BEGIN input file creation
     # make xramp, apply different powers, and then add in yramp
     local tenpow outf
     for tenpow in 08 10 13; do # the powers, times 10
         zet_inf $tenpow outf
-        local pow=$(( $tenpow / 10.0 ))
+        local pow=$(($tenpow / 10.0))
         echo "0  1  0  1" | unu reshape -s 2 2 | unu convert -t double |
             unu resample -s $szX $szY -c node -k tent |
             unu basinfo -c xramp |
@@ -31,16 +32,18 @@ Setup() {
     local ike
     for ike in $ZET_IKE; do
         local inf=$(zet_inf $ike)
-        zet_inf ${ike}U outf; unu 2op + $inf 10000 -o $outf
-        zet_inf ${ike}D outf; unu 2op - $inf 10000 -o $outf
+        zet_inf ${ike}U outf
+        unu 2op + $inf 10000 -o $outf
+        zet_inf ${ike}D outf
+        unu 2op - $inf 10000 -o $outf
     done
     # inserting span of constant values in the middle
     for ike in $ZET_IKE; do
         local inf=$(zet_inf $ike)
         zet_inf ${ike}C outf
-        unu slice -i $inf -a 0 -p $(( szX/2 )) |
-            unu axinsert -a 0 -s $(( szX/25 )) |
-            unu inset -i $inf -s - -min $(( szX/2 - szX/50 )) 0 -o $outf
+        unu slice -i $inf -a 0 -p $((szX / 2)) |
+            unu axinsert -a 0 -s $((szX / 25)) |
+            unu inset -i $inf -s - -min $((szX / 2 - szX / 50)) 0 -o $outf
     done
     # histograms of all of these
     for ike in $ZET_IKE; do
@@ -88,8 +91,8 @@ zet_begin ####### BEGIN testing
 
 Test() {
     local MM=(min max mean median mode prod sum L1 L2 L4 nL2
-              rms Linf var stdv cov skew slope intc error
-              hmin hmax hmean hmedian hmode hproduct hsum hL2 hvar hstdv)
+        rms Linf var stdv cov skew slope intc error
+        hmin hmax hmean hmedian hmode hproduct hsum hL2 hvar hstdv)
     local ike
     for ike in $ZET_IKE; do
         local mm

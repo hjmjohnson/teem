@@ -37,6 +37,9 @@
 # scripting. Many technical zsh details were learned thanks to ChatGPT, but the structure
 # of files and functions here is all hand-crafted.
 #
+# This and all other zet .zsh scripts are formatted with shfmt version 3.14.1,
+# see https://github.com/mvdan/sh for more info.
+#
 # No relation to all the other software already named Zet:
 # http://zaytsev.com/
 # https://github.com/yarrow/zet
@@ -86,13 +89,13 @@ readonly PWD OLDPWD RANDOM SECONDS
 ##
 
 ####### ZET_ROOT: absolute directory containing this Zet library file
-if (( ${+ZET_ROOT} )); then
+if ((${+ZET_ROOT})); then
     print -u2 "ZET_ROOT already set to $ZET_ROOT"
     print -u2 "ZET_ROOT/zet-lib.zsh should be source'd only once"
     exit 1
 fi
 typeset -g ZET_ROOT
-ZET_ROOT=${(%):-%x}       # get the path of this file
+ZET_ROOT=${(%):-%x} # get the path of this file
 #               %x  = path of the current script file
 #        ${(%):-  } = expands %x to string we can save
 ZET_ROOT=${ZET_ROOT:A:h}
@@ -131,7 +134,7 @@ typeset -g ZET_INF_NAME
 ####### ZET_TSET: top-level description of current test set
 # (only one tset at a time can be actively running)
 # used with zet_{begin,test,end} functions below
-typeset -g -A ZET_TSET  # -A : associative array or *hash* (term used here)
+typeset -g -A ZET_TSET # -A : associative array or *hash* (term used here)
 # (Ideally all the following arrays could also hang off of ZET_TSET
 #  e.g. ZET_TSET[comd] instead of ZET_COMD, but sadly zsh cannot nest hashes)
 ####### ZET_COMD, ZET_CHEK, ZET_WANT: maps from test/file names to more details
@@ -141,7 +144,7 @@ typeset -g -A ZET_CHEK
 typeset -g -A ZET_WANT
 ####### ZET_PASS, ZET_FAIL: arrays of passing/failing test/file names
 typeset -g -a ZET_PASS # -a: regular array
-if (( ${+ZET_FAIL} )); then unset ZET_FAIL; fi
+if ((${+ZET_FAIL})); then unset ZET_FAIL; fi
 typeset -g -a ZET_FAIL
 ####### ZET_FAIL_COMD, ZET_FAIL_RSLT, ZET_FAIL_WANT
 # maps from test that failed to command `comd` to re-run,
@@ -177,7 +180,7 @@ _zet_arrays_reset() {
 zet_junk() {
     setopt localoptions no_warn_nested_var # we're here to modify globals
     # HEY maybe should avoid redundantly adding the same file multiple times
-    ZET_JUNK+=("$@");
+    ZET_JUNK+=("$@")
 }
 ####### zet_unjunk file1 file2 ...
 # says that (oops) actually these files should stick around
@@ -217,8 +220,8 @@ _zet_cleanup() {
         ZET_DCMD=""
     fi
     # we're done if have no junk
-    (( ${#ZET_JUNK[@]} == 0 )) && return 0
-    if (( ! ${+ZET_UNJUNK} )); then
+    ((${#ZET_JUNK[@]} == 0)) && return 0
+    if ((! ${+ZET_UNJUNK})); then
         # else remove it (unless ZET_UNJUNK)
         print "(_zet_cleanup rm'ing $#ZET_JUNK files)"
         rm -rf -- "${ZET_JUNK[@]}"
@@ -245,8 +248,8 @@ add-zsh-hook zshexit _zet_cleanup
 ####### zet_die line1 line2 ...
 # verbose way to bail from script
 zet_die() {
-    local where  # where are we being called from?
-    if (( ${#funcstack[@]} > 1 )); then
+    local where # where are we being called from?
+    if ((${#funcstack[@]} > 1)); then
         # inside a function (funcstack[1] = zet_die itself)
         where="ERROR in ${funcstack[2]}() called from ${funcfiletrace[2]}:"
     else
@@ -285,7 +288,7 @@ _zet_unspace() {
     emulate -L zsh
     unsetopt WARN_CREATE_GLOBAL
     unsetopt ERR_EXIT
-    setopt extended_glob  # ensure extended globbing for pattern matching
+    setopt extended_glob # ensure extended globbing for pattern matching
     local str="$1"
     # collapse 2+ internal spaces to a single space
     str="${str//  +/ }"
@@ -318,12 +321,12 @@ _zet_enbrace() {
 zet_assert_cksum() {
     local want="$1" fname="$2"
     local rslt="$(cksum $fname)" # actually 3 words, ending with filename
-    rslt=${${=rslt}[1,2]} # get first two words: cksum and size
+    rslt=${${=rslt}[1,2]}        # get first two words: cksum and size
     if [[ "$rslt" != "$want" ]]; then
         zet_unjunk $fname
         zet_die "problem at ${funcfiletrace[1]}" \
-                "\"cat $fname | cksum\" supposed to say: $want" \
-                "but actually got: $rslt\n"
+            "\"cat $fname | cksum\" supposed to say: $want" \
+            "but actually got: $rslt\n"
     fi
     # else rslt == want; continue
 }
@@ -335,12 +338,12 @@ zet_assert_out() {
     local want comd rslt
     want="$1"
     shift
-    comd=("$@")       # store the command and all its arguments in an array
-    rslt="$("${comd[@]}")"  # run the command safely and capture stdout
+    comd=("$@")            # store the command and all its arguments in an array
+    rslt="$("${comd[@]}")" # run the command safely and capture stdout
     if [[ "$rslt" != "$want" ]]; then
         zet_die "problem at ${funcfiletrace[1]}" \
-                "\"$comd\" supposed to say: $want" \
-                "but actually got: $rslt"
+            "\"$comd\" supposed to say: $want" \
+            "but actually got: $rslt"
     fi
     # else rslt == want; continue
 }
@@ -382,9 +385,9 @@ zet_assert_out() {
 # sets ZET_INF_FMT and resets ZET_IKE
 zet_inf_begin() {
     setopt localoptions no_warn_nested_var # we're here (in part) to modify globals
-    if (( $#ZET_INF_FMT )); then
+    if (($#ZET_INF_FMT)); then
         zet_die "ZET_INF_FMT already set to $ZET_INF_FMT" \
-                "zet_inf_begin calls cannot be nested"
+            "zet_inf_begin calls cannot be nested"
     fi
     local fmt="$1"
     if [[ "$fmt" == *[[:space:]]* ]]; then
@@ -418,7 +421,7 @@ zet_inf_begin() {
 # the output filename is printed.
 zet_inf() {
     setopt localoptions no_warn_nested_var # we're here (in part) to modify globals
-    if (( ! $#ZET_INF_FMT )); then
+    if ((! $#ZET_INF_FMT)); then
         zet_die "Not currently defining an inf list"
     fi
     local ike="$1"
@@ -429,21 +432,21 @@ zet_inf() {
     #print -u2 "zet_inf: ike=$ike"
     #print -u2 "zet_inf: #ZET_INF_NAME=$#ZET_INF_NAME"
     #print -u2 "zet_inf: ZET_IKE[(I)$ike]=${ZET_IKE[(I)$ike]}"
-    if (( ${+2} )); then
+    if ((${+2})); then
         # apparently namerefs don't work on Mac zsh??
         # typeset -n out="$2" # -n nameref
         local outvar="$2"
         if [[ "$outvar" == *[[:space:]]* ]]; then
             zet_die "Given output variable name \"$outvar\" contains whitespace"
         fi
-        if (( ! $#outvar )); then
+        if ((! $#outvar)); then
             zet_die "Got empty output variable"
         fi
-        if (( ZSH_SUBSHELL > 0 )); then
+        if ((ZSH_SUBSHELL > 0)); then
             zet_die "Should not be using output variable name with subshell call"
         fi
     fi
-    if (( $#ZET_INF_NAME && ! ${ZET_IKE[(I)$ike]} && ! ZSH_SUBSHELL )); then
+    if (($#ZET_INF_NAME && ! ${ZET_IKE[(I)$ike]} && ! ZSH_SUBSHELL)); then
         # we're learning ikes
         # and we have not see this ike before,
         # and we're not in a subshell (which makes modifying globals pointless)
@@ -453,12 +456,12 @@ zet_inf() {
         #print -u2 "zet_inf: 11 $(typeset -p ZET_IKE)"
         zet_junk $ret
     fi
-    if [[ -v outvar ]]; then  # if `outvar` was set
+    if [[ -v outvar ]]; then # if `outvar` was set
         # eval because we don't have namerefs
         eval "$outvar=$ret"
     else
         # $out is empty; print if we're in a subshell
-        if (( ZSH_SUBSHELL > 0 )); then
+        if ((ZSH_SUBSHELL > 0)); then
             print -n $ret
         fi
     fi
@@ -475,36 +478,36 @@ zet_inf() {
 # learning the ike list.
 zet_inf_end() {
     setopt localoptions no_warn_nested_var # we're here (in part) to modify globals
-    if (( ! $#ZET_INF_FMT )); then
+    if ((! $#ZET_INF_FMT)); then
         zet_die "Not currently defining an inf list"
     fi
-    if (( ! $#ZET_INF_NAME )); then
+    if ((! $#ZET_INF_NAME)); then
         zet_die "Inf list name unset; was zet_inf_end already called?"
     fi
     if [[ $ZET_INF_FMT != "$1" ]]; then
         zet_die "Current inf list (with fmt \"ZET_INF_FMT\" inconsistent with arg \"$1\""
     fi
     # print -u2 "zet_inf_end: $(typeset -p ZET_IKE)"
-    if (( ! ${#ZET_IKE} )); then
+    if ((! ${#ZET_IKE})); then
         zet_die "ZET_IKE is empty; was zet_inf ever called?"
     fi
     local ichname="$ZET_INF_NAME-ich.txt"
     local ike
-    if (( ${+ZET_GEN_ICH} )); then
-        print "$ZET_PFX Variable ZET_GEN_ICH is set ==> *Generating* $ichname"
+    if ((${+ZET_GEN_ICH})); then
+        print "$ZET_PFX Variable ZET_GEN_ICH is set ==> *Generating* input checksums in $ichname"
         rm -f $ichname
         touch $ichname
         for ike in $ZET_IKE; do
             local inf=$(zet_inf $ike)
-            print $(cksum $inf) >> $ichname
+            print $(cksum $inf) >>$ichname
         done
     else
-        print "$ZET_PFX Variable ZET_GEN_ICH *not* set ==> checking against $ichname"
+        print "$ZET_PFX Variable ZET_GEN_ICH *not* set ==> checking against input checksums in $ichname"
         if [[ ! -f $ichname ]]; then
             zet_die "Input checksum file \"$ichname\" does not exist." \
-                    "Need to run first with: ZET_GEN_ICH= ./$ZET_INF_NAME.zsh"
+                "Need to run first with: ZET_GEN_ICH= ./$ZET_INF_NAME.zsh"
         fi
-        exec 3< "$ichname"    # open file descriptor 3 for reading
+        exec 3<"$ichname" # open file descriptor 3 for reading
         # We don't make any effort to parse the file (e.g. ignoring comments)
         # and we entirely rely on the ZET_IKE traversal here at read time
         # being identical to how it worked at write time.
@@ -515,16 +518,15 @@ zet_inf_end() {
             read -r line <&3
             if [[ "$ich" != "$line" ]]; then
                 zet_die "For input file $inf (for input key $ike)" \
-                        "computed \"$ich\" but $ichname says \"$line\""
+                    "computed \"$ich\" but $ichname says \"$line\""
             fi
         done
-        exec 3<&-  # close descriptor 3
+        exec 3<&- # close descriptor 3
     fi
     # Keep ZET_INF_FMT and ZET_IKE as is for future $(zet_inf $ike) calls,
     # but signal that we're done learning about input files
     ZET_INF_NAME=""
 }
-
 
 ########################################################################
 ##
@@ -572,46 +574,46 @@ _zet_read_reff() {
     local lineno=0
     local fname rest0 rest1 rest2 rest3 comd chek want
     while IFS= read -r line; do
-        (( ++lineno ))
+        ((++lineno))
         # Skip blank lines and comment lines
         [[ -z $line || $line == '#'* ]] && continue
         line=${line%%\#*} # handle #-comments within line
         # (trying to be faster with less =~ pattern matching)
         # Expected format: `fname :: comd ;; chek => want`
-        fname=${${line%%::*}// /}  # what's before ::, / / killing all space
-        rest0=${line#*::} # after ::  -->  rest0 = comd ;; chek => want
+        fname=${${line%%::*}// /} # what's before ::, / / killing all space
+        rest0=${line#*::}         # after ::  -->  rest0 = comd ;; chek => want
         # print "\nfname=|$fname|    rest0=|$rest0|"
-        if (( ${#fname} == 0 || ${#rest0} == ${#line} )); then
+        if ((${#fname} == 0 || ${#rest0} == ${#line})); then
             zet_die "line $lineno of ${reffile:A}:" \
-                    "   $line" \
-                    "missing \"::\" separating \`fname\` from \`rest\`" \
-                    "in expected: \"fname :: comd ;; chek => want\""
+                "   $line" \
+                "missing \"::\" separating \`fname\` from \`rest\`" \
+                "in expected: \"fname :: comd ;; chek => want\""
         fi
         rest1=${${(S)rest0}//\{\}/$fname} # change `{}` --> $fname
-        comd=${rest1%%;;*} # (all before ;;)
-        rest2=${rest1#*;;} # (all after ;;) -->  rest2 = chek => want
+        comd=${rest1%%;;*}                # (all before ;;)
+        rest2=${rest1#*;;}                # (all after ;;) -->  rest2 = chek => want
         # print "comd=|$comd|   rest2=|$rest2|"
-        if (( ${#comd} == 0 || ${#rest2} == ${#rest1} )); then
+        if ((${#comd} == 0 || ${#rest2} == ${#rest1})); then
             zet_die "line $lineno of ${reffile:A}:" \
-                    "   $line" \
-                    "missing \";;\" separating \`comd\` from \`chek\`" \
-                    "in expected: \"fname :: comd ;; chek => want\""
+                "   $line" \
+                "missing \";;\" separating \`comd\` from \`chek\`" \
+                "in expected: \"fname :: comd ;; chek => want\""
         fi
         chek=${rest2%%=>*} # (all before =>)
         rest3=${rest2#*=>} # (all after =>) -->  rest2 = want
         #print "\nchek=|$chek|   rest3=|$rest3|"
-        if (( ${#chek} == 0 || ${#rest3} == ${#rest2} )); then
+        if ((${#chek} == 0 || ${#rest3} == ${#rest2})); then
             zet_die "line $lineno of ${reffile:A}:" \
-                    "   $line" \
-                    "missing \"=>\" separating \`chek\` from \`want\`" \
-                    "in expected: \"fname :: comd ;; chek => want\""
+                "   $line" \
+                "missing \"=>\" separating \`chek\` from \`want\`" \
+                "in expected: \"fname :: comd ;; chek => want\""
         fi
-        want=${rest3##[ ]#}  # removing any leading spaces
-        if (( ${#want} == 0 )); then
+        want=${rest3##[ ]#} # removing any leading spaces
+        if ((${#want} == 0)); then
             zet_die "line $lineno of ${reffile:A}:" \
-                    "   $line" \
-                    "has empty \`want\`" \
-                    "in expected: \"fname :: comd ;; chek => want\""
+                "   $line" \
+                "has empty \`want\`" \
+                "in expected: \"fname :: comd ;; chek => want\""
         fi
         # finally, assign recovered vals to global arrays
         if [[ -v "ZET_COMD[$fname]" ]]; then
@@ -620,14 +622,14 @@ _zet_read_reff() {
         ZET_COMD[$fname]="$comd"
         ZET_CHEK[$fname]="$chek"
         ZET_WANT[$fname]="$want"
-    done < "$reffile"
+    done <"$reffile"
 }
 
 #__#__# _zet_init_reff
 # Either starts writing $ZET_TSET[reff] if ZET_GEN_REF,
 # else reads it with _zet_read_reff
 _zet_init_reff() {
-    if (( ! ${#ZET_TSET[@]} )); then
+    if ((! ${#ZET_TSET[@]})); then
         zet_die "Not currently running any test set"
     fi
     local reffile=$ZET_TSET[reff]
@@ -658,14 +660,14 @@ _zet_init_reff() {
 # and `subname` is either given, else is the filename base of caller
 zet_begin() {
     setopt localoptions no_warn_nested_var # we're here to modify globals
-    if (( ${#ZET_TSET[@]} )); then
+    if ((${#ZET_TSET[@]})); then
         zet_die "$ZET_PFX Seem to be already running test set \"${ZET_TSET[name]}\""
     fi
     # From what file are we being called
     local given subname caller_file caller_file_raw=${funcfiletrace[1]%:*}
-    if (( ${+1} )); then
-        given="$1"  # remember how zet_begin was called
-        subname="$1"  # use given argument as subname
+    if ((${+1})); then
+        given="$1"   # remember how zet_begin was called
+        subname="$1" # use given argument as subname
         # subname can't be crazy
         setopt localoptions extended_glob
         if [[ ! "$subname" == ([A-Za-z][A-Za-z0-9._-]##) ]]; then
@@ -673,7 +675,7 @@ zet_begin() {
             zet_die "$ZET_PFX Given set subname=\"$subname\" looks unlikely"
         fi
     else
-        given=""  # remember how zet_begin was called
+        given="" # remember how zet_begin was called
         # default: use base filename (without directory and extension)
         subname=${${caller_file_raw:t}%.*}
     fi
@@ -690,16 +692,16 @@ zet_begin() {
     # Finally, an absolute path to the caller
     caller_file=${caller_file:A}
     # Find `subpath` relative to ZET_ROOT
-    local subpath=${caller_file#$ZET_ROOT/}  # strip ZET_ROOT prefix
-    subpath=${subpath##/}                    # remove leading slash if any
-    subpath=${subpath:h}                     # keep directory only
+    local subpath=${caller_file#$ZET_ROOT/} # strip ZET_ROOT prefix
+    subpath=${subpath##/}                   # remove leading slash if any
+    subpath=${subpath:h}                    # keep directory only
     # hard reset on all the global arrays
     _zet_arrays_reset
     # Initialize test set hash
     ZET_TSET[name]=$subpath/$subname
     ZET_TSET[given]=$given
     ZET_TSET[reff]="${caller_file_raw%.*}-ref.txt"
-    if (( ${+ZET_GEN_REF} )); then
+    if ((${+ZET_GEN_REF})); then
         print -n "$ZET_PFX Variable ZET_GEN_REF is set ==> "
         # *Writing* reffile
         ZET_TSET[mode]="write"
@@ -709,7 +711,7 @@ zet_begin() {
         print -n "$ZET_PFX Variable ZET_GEN_REF *not* set ==> "
         if [[ ! -f $ZET_TSET[reff] ]]; then
             zet_die "Reference file \"${ZET_TSET[reff]}\" does not exist." \
-                    "Need to run first with: ZET_GEN_REF="
+                "Need to run first with: ZET_GEN_REF="
         fi
         ZET_TSET[mode]="read"
         # we will be recording test results in these:
@@ -729,8 +731,8 @@ _zet_run_comd() {
     local comd="$1" fname="$2"
     if [[ -f $fname ]]; then
         zet_die "problem with ${funcfiletrace[1]}:" \
-                "File \"$fname\" already exists so will not run:" \
-                "$comd"
+            "File \"$fname\" already exists so will not run:" \
+            "$comd"
     fi
     # junk file first (more reliably erases it upon interrupt)
     zet_junk $fname
@@ -742,13 +744,13 @@ _zet_run_comd() {
     # hence the next line:
     setopt localoptions no_err_exit
     # now run the command
-    zsh -c "$comd" -- > /dev/null
+    zsh -c "$comd" -- >/dev/null
     # re-enable manually for the remainder
     setopt err_exit
     if [[ ! -f $fname ]]; then
         zet_die "problem with ${funcfiletrace[1]}:" \
-                "File \"$fname\" not created by:" \
-                "$comd"
+            "File \"$fname\" not created by:" \
+            "$comd"
     fi
 }
 
@@ -761,7 +763,7 @@ _zet_run_comd() {
 #    circumstances of a failure.
 zet_test() {
     setopt localoptions no_warn_nested_var # we're here (in part) to modify globals
-    if (( ! ${#ZET_TSET[@]} )); then
+    if ((! ${#ZET_TSET[@]})); then
         zet_die "Not currently running any test set"
     fi
     local fout="$1" comd="$2" fin="$3" chek="$4" reffile=$ZET_TSET[reff]
@@ -773,7 +775,7 @@ zet_test() {
         fi
         local want=$(eval $chek) # run the output checker
         local rest=$(_zet_enbrace "$comd ;; $chek => $want" "$fout")
-        echo "$fout :: $rest" >> $reffile
+        echo "$fout :: $rest" >>$reffile
         print -n "o"
     else
         if [[ -z ${ZET_CHEK[$fout]+_} ]]; then
@@ -803,13 +805,13 @@ zet_test() {
 # Declares that we are done with test set `name`,
 # summarizes all the failing tests
 zet_end() {
-    if (( ! ${#ZET_TSET[@]} )); then
+    if ((! ${#ZET_TSET[@]})); then
         zet_die "Not currently running any test set"
     fi
     print "" # end line of progress indication
     # we use `given` to avoid replicating the heinous logic of setting $ZET_TSET[name]
     local given
-    if (( ${+1} )); then
+    if ((${+1})); then
         given="$1"
     else
         given=""
@@ -820,7 +822,7 @@ zet_end() {
     print "$ZET_PFX Ending test set $ZET_TSET[name]"
     if [[ $ZET_TSET[mode] == "read" ]]; then
         print -n "$ZET_PFX $ZET_TSET[name] results: $#ZET_PASS passed, $#ZET_FAIL failed"
-        if (( $#ZET_FAIL )); then
+        if (($#ZET_FAIL)); then
             #( # of elements in ZET_FAIL array )
             print ", as follows:" # finishing previous line
             local fout

@@ -3,7 +3,7 @@
 source ${0:A:h}/../zet-lib.zsh # set up the zet "library"
 setopt err_exit                # exit on error
 setopt pipe_fail               # propagate pipeline errors
-if (( $+commands[unu] )); then
+if (($+commands[unu])); then
     print "${0} using unu = $(which unu)\n"
 else
     zet_die "unu not found, bye"
@@ -11,7 +11,7 @@ fi
 
 Setup() {
     # some sort of non-trivial terrain
-    cat > hght.txt <<'EOF'
+    cat >hght.txt <<'EOF'
 0 0 0 0 1
 0 2 2 2 1
 0 2 4 3 1
@@ -28,14 +28,19 @@ EOF
         unu resample -s x15 x15 -k bspln3 |
         unu dnorm -o $out
     # some different aspect ratios
-    zet_inf a13 out; unu resample -i hght-a11.nrrd -s  =   /3 -k tent -o $out
-    zet_inf a21 out; unu resample -i hght-a11.nrrd -s /2.2  = -k tent -o $out
+    zet_inf a13 out
+    unu resample -i hght-a11.nrrd -s = /3 -k tent -o $out
+    zet_inf a21 out
+    unu resample -i hght-a11.nrrd -s /2.2 = -k tent -o $out
     local nn
     for nn in 11 13 21; do
         inn=hght-a$nn.nrrd
-        zet_inf b$nn out; unu swap -i $inn -a 0 1 -o $out
-        zet_inf c$nn out; unu swap -i $inn -a 0 1 | unu flip -a 0 -o $out
-        zet_inf d$nn out; unu flip -i $inn -a 0 | unu flip -a 1 -o $out
+        zet_inf b$nn out
+        unu swap -i $inn -a 0 1 -o $out
+        zet_inf c$nn out
+        unu swap -i $inn -a 0 1 | unu flip -a 0 -o $out
+        zet_inf d$nn out
+        unu flip -i $inn -a 0 | unu flip -a 1 -o $out
     done
     zet_inf_end hght-%s.nrrd ######## END input file creation
 }
@@ -58,7 +63,8 @@ Test() {
                         #        [-sgn] [-inv] [-i,--input <nin>] [-o,--output <nout>]
                         opts=(-th $th -b $bi $sgn $inv)
                         obase=${(j::)opts} # join without spaces
-                        fin=$(zet_inf $ike); fout=${fin/.nrrd/$obase.nrrd}
+                        fin=$(zet_inf $ike)
+                        fout=${fin/.nrrd/$obase.nrrd}
                         comd="unu dist -i $fin ${opts[@]} -o $fout"
                         zet_test "$fout" "$comd" "$fin" "cksum"
                     done
