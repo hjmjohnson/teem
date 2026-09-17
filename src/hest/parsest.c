@@ -1204,14 +1204,18 @@ optProcessDefaults(hestOpt *hopt, hestArg *tharg, hestInputStack *hist,
                __func__);
       }
       airArrayLenSet(hopt[opi].havec->hargArr, 0);
-    } else if (2 == hopt[opi].kind && airTypeString == hopt[opi].type) {
-      /* We want exactly 1 string. While it is tempting to say for consistency "then
-      get on the hist stack and tokenize your single string just like everyone else
-      does", it is arguably more straightforward, for this single string (because there
-      is no tokenization needed!), to just take the default string as it is be the
-      single arg. This seems to mostly replicate pre-2025 hest behavior, but now we
-      respect leading white-space (the old code only respected one out of multiple
-      leading spaces) */
+    } else if (2 == hopt[opi].kind
+               && (airTypeString == hopt[opi].type || airTypeOther == hopt[opi].type)) {
+      /* We want exactly 1 string or "other". While it is tempting to say for consistency
+      "then get on the hist stack and tokenize (with histProcess) your single string just
+      like everyone else does", it is arguably more straightforward, for this single
+      string (because there is no tokenization needed!) to just take the default string
+      as it is be the single arg. This seems to mostly replicate pre-2025 hest behavior,
+      but now we respect leading white-space (the old code only respected one out of
+      multiple leading spaces). Side-stepping histProcess has the effect of allowing an
+      empty (but non-NULL) string to be a single default value, which matters for how
+      some unu commands use an empty string to mean "no value given" (i.e. to make a
+      hestOpt actually optional) */
       airArrayLenSet(hopt[opi].havec->hargArr, 0);
       hestArgVecAppendString(hopt[opi].havec, hopt[opi].dflt);
     } else {
@@ -1227,10 +1231,10 @@ optProcessDefaults(hestOpt *hopt, hestArg *tharg, hestInputStack *hist,
     that the minimum number of parm args have been extracted for each option. We should
     do something analogous for args tokenized from the default strings. */
     if (hopt[opi].havec->len < hopt[opi].min) {
-      biffAddf(
-        HEST, "%s%s %s[%u] default string \"%s\" supplied %u arg%s but need at least %u",
-        MY_ME, ident, opi, hopt[opi].dflt, hopt[opi].havec->len,
-        hopt[opi].havec->len > 1 ? "s" : "", hopt[opi].min);
+      biffAddf(HEST,
+               "%s%s%s[%u] default string \"%s\" supplied %u arg%s but need at least %u",
+               MY_ME, ident, opi, hopt[opi].dflt, hopt[opi].havec->len,
+               hopt[opi].havec->len > 1 ? "s" : "", hopt[opi].min);
       return 1;
     }
   nextopt:

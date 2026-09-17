@@ -3,7 +3,7 @@
 source ${0:A:h}/../zet-lib.zsh # set up the zet "library"
 setopt err_exit                # exit on error
 setopt pipe_fail               # propagate pipeline errors
-if (( $+commands[unu] )); then
+if (($+commands[unu])); then
     print "${0} using unu = $(which unu)\n"
 else
     zet_die "unu not found, bye"
@@ -17,19 +17,19 @@ fi
 Setup() {
     local szX=600 szY=100 # size of ramp array
     # an amount of padding with area ~1/3 of interior
-    local szP=$(( (szX*szY/(2*szX + 2*szY))/3 ))
+    local szP=$(((szX * szY / (2 * szX + 2 * szY)) / 3))
     zet_inf_begin 'ramp%s.nrrd' ######## BEGIN input file creation
     # starting with one linear ramp
     local outf
     zet_inf _10 outf
-    echo "1  $szY   0  $(( szY - 1 ))" | unu 2op / - $szY | unu reshape -s 2 2 |
+    echo "1  $szY   0  $((szY - 1))" | unu 2op / - $szY | unu reshape -s 2 2 |
         unu resample -s $szX $szY -c node -k tent |
         unu basinfo -c ramp -o $outf
 
     # raising linear ramp to various exponents
     local tenpow
     for tenpow in 03 05 20 33; do # the exponents, times 10
-        local pow=$(( $tenpow / 10.0 ))
+        local pow=$(($tenpow / 10.0))
         zet_inf "_${tenpow}" outf
         unu 2op pow ramp_10.nrrd $pow -o $outf
         ## actually maybe just one warping; this test set size is getting out of hand
@@ -42,14 +42,14 @@ Setup() {
     for ike in $ZET_IKE; do
         local tppval
         for tppval in $tppvals; do
-            local padval=$(( (tppval-1.0) / 10.0 ))
+            local padval=$(((tppval - 1.0) / 10.0))
             local ikeP="${ike}p${tppval}"
             zet_inf $ikeP outf
             unu pad -i $(zet_inf $ike) -b pad -v $padval -min -$szP -$szP -max M+$szP M+$szP -o $outf
             # *N*ested copy of above loop, for more padding
             local tppvalN
             for tppvalN in $tppvals; do
-                padval=$(( (tppvalN-1.0) / 10.0 ))
+                padval=$(((tppvalN - 1.0) / 10.0))
                 local outN
                 zet_inf "${ikeP}p${tppvalN}" outN
                 unu pad -i $outf -b pad -v $padval -min -$szP -$szP -max M+$szP M+$szP -o $outN
@@ -77,7 +77,7 @@ Test() {
                     local obase=${(j::)opts} # join without spaces
                     if [[ $ike =~ '^_05' && $bin == 100 ]]; then
                         # for only this ramp and this $bin, we do try the different -a amounts
-                        local amount=$(( tamount/10.0 ))
+                        local amount=$((tamount / 10.0))
                         opts+=(-a $amount)
                         obase+="-a${tamount}"
                     else
@@ -85,7 +85,7 @@ Test() {
                         # don't record it in the filename. But we don't want to run the
                         # same command multiple times, so we bail if not at ~"-a 1"
                         # (thus mooting the `for tamount` loop)
-                        if [[ $tamount != 10  ]]; then
+                        if [[ $tamount != 10 ]]; then
                             continue
                         fi
                     fi

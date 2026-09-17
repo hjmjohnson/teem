@@ -775,8 +775,34 @@ formatNRRD_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
     }
   }
 
-  /* comments and key/value pairs are written before the fields so that
-     a LIST-form "data file:" field remains the last line of the header */
+  /* This is where the majority of the header printing happens.
+  The nrrdField_data_file field is excluded from this loop so that a
+  LIST-form "data file:" field remains the last line of the header (see below) */
+  for (ii = 1; ii <= NRRD_FIELD_MAX; ii++) {
+    if (ii != nrrdField_data_file && nrrd__FieldInteresting(nrrd, nio, ii)) {
+      if (file) {
+        nrrd__FprintFieldInfo(file, "", nrrd, nio, ii, AIR_FALSE);
+      } else if (nio->headerStringWrite) {
+        /* with each call strptr points to a newly allocated string */
+        nrrd__SprintFieldInfo(&strptr, "", nrrd, nio, ii, AIR_FALSE);
+        if (strptr) {
+          snprintf(hsw, hswSize, "%s\n", strptr);
+          SN_INCR(hsw, hswSize);
+          free(strptr);
+          strptr = NULL;
+        }
+      } else {
+        nrrd__SprintFieldInfo(&strptr, "", nrrd, nio, ii, AIR_FALSE);
+        if (strptr) {
+          nio->headerStrlen += AIR_UINT(strlen(strptr) + strlen("\n"));
+          free(strptr);
+          strptr = NULL;
+        }
+      }
+    }
+  }
+
+  /* comments and key/value pairs handled differently */
   for (jj = 0; jj < nrrd->cmtArr->len; jj++) {
     char *strtmp;
     strtmp = airOneLinify(airStrdup(nrrd->cmt[jj]));
@@ -827,27 +853,25 @@ formatNRRD_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
     }
   }
 
-  /* this is where the majority of the header printing happens */
-  for (ii = 1; ii <= NRRD_FIELD_MAX; ii++) {
-    if (nrrd__FieldInteresting(nrrd, nio, ii)) {
-      if (file) {
-        nrrd__FprintFieldInfo(file, "", nrrd, nio, ii, AIR_FALSE);
-      } else if (nio->headerStringWrite) {
-        /* with each call strptr points to a newly allocated string */
-        nrrd__SprintFieldInfo(&strptr, "", nrrd, nio, ii, AIR_FALSE);
-        if (strptr) {
-          snprintf(hsw, hswSize, "%s\n", strptr);
-          SN_INCR(hsw, hswSize);
-          free(strptr);
-          strptr = NULL;
-        }
-      } else {
-        nrrd__SprintFieldInfo(&strptr, "", nrrd, nio, ii, AIR_FALSE);
-        if (strptr) {
-          nio->headerStrlen += AIR_UINT(strlen(strptr) + strlen("\n"));
-          free(strptr);
-          strptr = NULL;
-        }
+  /* We finally print the data file field last, if needed (sorry copy-pasta) */
+  if (nrrd__FieldInteresting(nrrd, nio, nrrdField_data_file)) {
+    if (file) {
+      nrrd__FprintFieldInfo(file, "", nrrd, nio, nrrdField_data_file, AIR_FALSE);
+    } else if (nio->headerStringWrite) {
+      /* with each call strptr points to a newly allocated string */
+      nrrd__SprintFieldInfo(&strptr, "", nrrd, nio, nrrdField_data_file, AIR_FALSE);
+      if (strptr) {
+        snprintf(hsw, hswSize, "%s\n", strptr);
+        SN_INCR(hsw, hswSize);
+        free(strptr);
+        strptr = NULL;
+      }
+    } else {
+      nrrd__SprintFieldInfo(&strptr, "", nrrd, nio, nrrdField_data_file, AIR_FALSE);
+      if (strptr) {
+        nio->headerStrlen += AIR_UINT(strlen(strptr) + strlen("\n"));
+        free(strptr);
+        strptr = NULL;
       }
     }
   }
