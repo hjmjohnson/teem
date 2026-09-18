@@ -120,6 +120,8 @@ hestParseOrExit(hestOpt *hopt,          // what to parse from command-line
     2025 re-write decided print an error message here. */
     fprintf(stderr, "%s: got NULL pointer (hopt %p, argv %p, me %p); can't proceed\n",
             __func__, AIR_VOIDP(hopt), AIR_CVOIDP(argv), AIR_CVOIDP(me));
+    hestOptFree(hopt);   // NULL hopt is fine
+    hestParmMopDone(_hparm); // NULL _hparm is fine
     exit(1); // (in hestParseOrExit)
   }
   char *optErrStr = NULL;

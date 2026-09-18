@@ -125,9 +125,7 @@ combo_print(FILE *file, Combo *co) {
 
 int
 main(int argc, const char **argv) {
-  airArray *mop = airMopNew();
   hestParm *hparm = hestParmNew();
-  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hparm->respectDashDashHelp = AIR_TRUE;
   unsigned int ncol = 70;
   // if TH_COLUMNS is set, it will over-ride the (small!) default above
