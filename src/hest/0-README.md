@@ -218,6 +218,7 @@ I (GLK) wrote all the C code within the `hest` _library_, in the sense that I cr
 - 2025 ChatGPT (free): (`parsest.c`) prototyping the tokenization DFA of `argstGo()`
 - 2025 ChatGPT (free): (`argvHest.c`) prototyping the "does this arg need quoting" testing in `hest__PlainWord()` and the quoting itself in `argAddQuotedString()`
 - 2026 Claude (Sonnet 4.6): (`parsest.c`) helped with debugging interactions of token production and input stack operations, but only within 2025 GLK's framework of a second implicit DFA for handling that. Then 2026 GLK realized that design was misbegotten, ripped it out, and handled it all with `popit` and `tokenDone` flags passed between `argsGo()`, `histNextArg()`, and `histProcess()`.
+- 2026 Claude (Sonnet 4.6): (`parsest.c`, `parseHest.c`) helped with diagnosing memory leaks as revealed by valgrind.
 
 The following _testing_ code was initially written by LLM. The Teem copyright notice is not applied to it, since subsequent GLK edits do not constitute anything that could stand on its own as copyrightable work.
 
