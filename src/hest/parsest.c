@@ -778,8 +778,8 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     int kind4 = (4 == theOpt->kind);
     hest__PPair k4pp;
     k4pp.hopt = kind4 ? hopt : NULL;
-    int (*k4parse)(void *, const char *,
-                   hest__PPair *) = (kind4 ? hest__ParseSingle[theOpt->type] : NULL);
+    int (*k4parse)(void *, const char *, hest__PPair *)
+      = (kind4 ? hest__ParseSingle[theOpt->type] : NULL);
     double k4v[2]; // bigger than needed to store largest possible kind=4 value
     int varParm = (kind4 || 5 == theOpt->kind);
     int sawVPE = AIR_FALSE; // caring about -. and saw it
@@ -1089,14 +1089,15 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     }
     // consume any remaining args, up to max
     for (uint ai = 0; ai < maxArg - minArg && havec->len; ai++) {
-      hestArg *harg = havecRemove(havec, 0);
+      hestArg *harg = havecRemove(havec, 0); // we own briefly harg before ...
       if (strcmp(VPE, harg->str) || !lookVPE) {
         // as long as this arg is not a consequential "-." save it
-        hestArgVecAppendArg(variOpt->havec, harg);
+        hestArgVecAppendArg(variOpt->havec, harg); // ... handing it off to opt's havec
         variOpt->source = harg->source;
       } else {
-        /* else it is "-.": we consume but don't store it,
-           but break now so that we only consume one "-." */
+        // ... else it is "-.": we consume but don't store it; we have to free it.
+        hestArgNix(harg);
+        // break now so that we only consume one "-."
         break;
       }
     }
