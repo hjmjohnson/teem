@@ -128,6 +128,8 @@ hestParseOrExit(hestOpt *hopt,          // what to parse from command-line
     fprintf(stderr, "%s(%s): ERROR in given hestOpt setup:\n%s\n", __func__, me,
             optErrStr);
     free(optErrStr);
+    hestParmMopDone(_hparm);
+    hestOptFree(hopt);
     exit(1); // (in hestParseOrExit)
   }
 
