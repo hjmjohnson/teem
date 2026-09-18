@@ -46,6 +46,16 @@ hestParseFree(hestOpt *hopt) {
         hopt[opi].parseMop = airMopOkay(hopt[opi].parseMop);
       }
     }
+    /* free remainArgv if it was used
+       (since our job here is to free anything allocated by hestParse) */
+    if (hopt[0].remainArgv) {
+      for (uint ri = 0; ri < hopt[0].remainArgc; ri++) {
+        free(hopt[0].remainArgv[ri]);
+      }
+      free(hopt[0].remainArgv);
+      hopt[0].remainArgv = NULL;
+      hopt[0].remainArgc = 0;
+    }
   }
   return hopt;
 }
