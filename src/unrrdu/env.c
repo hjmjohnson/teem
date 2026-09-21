@@ -205,7 +205,7 @@ unu_envMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
                 "because an input nrrd read immediately hit EOF (as often "
                 "happens when many unu invocations are piped "
                 "together). " UNRRDU_TEEM_KVP_HISTORY_TRACE_ENV " "
-                "controls whether unu commands "
+                "controls whether unu (plus any Teem-based CLI tools) commands "
                 "accumulate a history of their use inside output nrrd "
                 "key/value pairs."),
                AIR_FALSE);
