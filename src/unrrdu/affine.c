@@ -117,7 +117,7 @@ unu_affineMain(int argc, const char **argv, const char *me, const hestParm *hpar
       return 1;
     }
     unrrduUnuHistoryClear(nout);
-    if (getenv(UNRRDU_UNU_HISTORY_TRACE_ENV)) {
+    if (getenv(UNRRDU_TEEM_KVP_HISTORY_TRACE_ENV)) {
       // HEY how to make all this less clunky?
       unrrduUnuOutNSPair onsp = {.nout = nout, .name = hopt[outHidx].parmStr};
       NrrdIter *inItr[5] = {minIn, in, maxIn, minOut, maxOut};

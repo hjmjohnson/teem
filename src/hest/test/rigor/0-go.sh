@@ -8,7 +8,7 @@ function cleanup { rm -rf $JUNK; }
 trap cleanup err exit int term
 # https://devmanual.gentoo.org/tools-reference/bash/
 unset UNU_QUIET_QUIT
-unset UNU_HISTORY_TRACE
+unset TEEM_KVP_HISTORY_TRACE
 
 # put together based on info from (GLK account assumed)
 # https://claude.ai/chat/753238c4-c4d1-4241-824a-c1a310956286

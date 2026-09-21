@@ -139,7 +139,7 @@ unu_3opMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
   }
 
   unrrduUnuHistoryClear(nout);
-  if (getenv(UNRRDU_UNU_HISTORY_TRACE_ENV)) {
+  if (getenv(UNRRDU_TEEM_KVP_HISTORY_TRACE_ENV)) {
     // HEY copy-pasta from 2op.c
     // (it is a big bummer than handling history is so clunky ...)
     unrrduUnuOutNSPair onsp = {.nout = nout, .name = hopt[outHidx].parmStr};

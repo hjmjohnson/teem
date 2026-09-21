@@ -79,7 +79,7 @@ unu_insetMain(int argc, const char **argv, const char *me, const hestParm *hparm
   }
 
   unrrduUnuHistoryClear(nout);
-  if (getenv(UNRRDU_UNU_HISTORY_TRACE_ENV)) {
+  if (getenv(UNRRDU_TEEM_KVP_HISTORY_TRACE_ENV)) {
     unrrduUnuOutNSPair onsp = {.nout = nout, .name = hopt[outHidx].parmStr};
     unrrduUnuInNSPair insp = {.nin = nin, .name = hopt[inHidx].parmStr};
     unrrduUnuInNSPair snsp = {.nin = nsub, .name = hopt[subHidx].parmStr};
