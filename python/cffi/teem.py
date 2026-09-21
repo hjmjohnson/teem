@@ -344,7 +344,7 @@ _BIFF_DICT = {  # contents here are filled in by teem/python/cffi/exult.py Tffi.
     'nrrdPPM': (_equals_one, 0, b'nrrd', 'nrrd/methodsNrrd.c:1397'),
     'nrrdPGM': (_equals_one, 0, b'nrrd', 'nrrd/methodsNrrd.c:1417'),
     'nrrdSpaceVectorParse': (_equals_one, 4, b'nrrd', 'nrrd/parseNrrd.c:519'),
-    'nrrdIoDataFNCheck': (_equals_one, 3, b'nrrd', 'nrrd/parseNrrd.c:1198'),
+    'nrrdIoDataFNCheck': (_equals_one, 3, b'nrrd', 'nrrd/parseNrrd.c:1201'),
     'nrrdRangePercentileSet': (_equals_one, 0, b'nrrd', 'nrrd/range.c:108'),
     'nrrdRangePercentileFromStringSet': (_equals_one, 0, b'nrrd', 'nrrd/range.c:210'),
     'nrrdOneLine': (_equals_one, 0, b'nrrd', 'nrrd/read.c:96'),

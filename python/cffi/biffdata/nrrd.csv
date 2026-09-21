@@ -86,7 +86,7 @@ nrrdCompare,int,1,0,nrrd,nrrd/methodsNrrd.c:1207
 nrrdPPM,int,1,0,nrrd,nrrd/methodsNrrd.c:1397
 nrrdPGM,int,1,0,nrrd,nrrd/methodsNrrd.c:1417
 nrrdSpaceVectorParse,int,1,4,nrrd,nrrd/parseNrrd.c:519
-nrrdIoDataFNCheck,int,1,3,nrrd,nrrd/parseNrrd.c:1198
+nrrdIoDataFNCheck,int,1,3,nrrd,nrrd/parseNrrd.c:1201
 nrrdRangePercentileSet,int,1,0,nrrd,nrrd/range.c:108
 nrrdRangePercentileFromStringSet,int,1,0,nrrd,nrrd/range.c:210
 nrrdOneLine,int,1,0,nrrd,nrrd/read.c:96
