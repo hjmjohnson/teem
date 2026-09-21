@@ -1,12 +1,12 @@
 #!/usr/bin/env zsh
 
-source ${0:A:h}/../zet-lib.zsh # set up the zet "library"
-#       $0 path of me
-#         :A made absolute
-#           :h head = drop my filename to get path
-#              /../ = parent directory
-setopt err_exit  # exit on error
-setopt pipe_fail # propagate pipeline errors
+cd ${0:A:h} # get to directory of this script
+#   $0 path of me
+#     :A made absolute
+#       :h head = drop my filename to get path
+source ../zet-lib.zsh # set up the zet "library"
+setopt err_exit       # exit on error
+setopt pipe_fail      # propagate pipeline errors
 if (($+commands[unu])); then
     print "${0} using unu = $(which unu)\n"
 else
