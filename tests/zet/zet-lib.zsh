@@ -101,6 +101,11 @@ ZET_ROOT=${(%):-%x} # get the path of this file
 ZET_ROOT=${ZET_ROOT:A:h}
 #                  :A resolves to absolute
 #                    :h takes directory
+# For doing only every Nth test for spot checks; N=ZET_TSTRIDE; defaults to 1
+# example usage: ZET_TSTRIDE=3 nrrd/dist.zsh
+typeset -g -i ZET_TSTRIDE=${ZET_TSTRIDE:-1} # run every Nth test; 1 = all
+# Count of tests executed
+typeset -g -i ZET_TCOUNT=0 # test counter within current set
 
 ####### ZET_PFX: way of marking lines originating from these functions
 typeset -g ZET_PFX
@@ -700,7 +705,10 @@ zet_begin() {
     # Initialize test set hash
     ZET_TSET[name]=$subpath/$subname
     ZET_TSET[given]=$given
-    ZET_TSET[reff]="${caller_file_raw%.*}-ref.txt"
+    #ZET_TSET[reff]="${caller_file_raw%.*}-ref.txt"
+    ZET_TSET[reff]="${caller_file_raw:t:r}-ref.txt"
+    #                                :t strips the directory
+    #                                  :r strips the extension
     if ((${+ZET_GEN_REF})); then
         print -n "$ZET_PFX Variable ZET_GEN_REF is set ==> "
         # *Writing* reffile
@@ -718,9 +726,15 @@ zet_begin() {
         ZET_PASS=() # regular array
         ZET_FAIL=() # regular array
     fi
+    if ((ZET_TSTRIDE > 1 && ${+ZET_GEN_REF})); then
+        zet_die "Cannot generate reference files with ZET_TSTRIDE == $ZET_TSTRIDE != 1"
+    fi
     _zet_init_reff # will start by finishing "print -n" line above
     print "$ZET_PFX $ZET_DLM"
-    print -n "$ZET_PFX Running test set $ZET_TSET[name]: "
+    ZET_TCOUNT=0 # re-set test count
+    local stride_note=""
+    if ((ZET_TSTRIDE > 1)); then stride_note=" (but with stride=$ZET_TSTRIDE)"; fi
+    print -n "$ZET_PFX Running test set $ZET_TSET[name]${stride_note}: "
     # -n so that progress indication can continue same line
 }
 
@@ -765,6 +779,12 @@ zet_test() {
     setopt localoptions no_warn_nested_var # we're here (in part) to modify globals
     if ((! ${#ZET_TSET[@]})); then
         zet_die "Not currently running any test set"
+    fi
+    # increment test count, and bail if it should be skipped
+    ((++ZET_TCOUNT))
+    if ((ZET_TSTRIDE > 1 && (ZET_TCOUNT - 1) % ZET_TSTRIDE != 0)); then
+        print -n -- "-"
+        return 0
     fi
     local fout="$1" comd="$2" fin="$3" chek="$4" reffile=$ZET_TSET[reff]
     _zet_run_comd "$comd" "$fout"
