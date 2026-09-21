@@ -228,11 +228,13 @@ _zet_cleanup() {
     ((${#ZET_JUNK[@]} == 0)) && return 0
     if ((! ${+ZET_UNJUNK})); then
         # else remove it (unless ZET_UNJUNK)
-        print "(_zet_cleanup rm'ing $#ZET_JUNK files)"
+        print "(_zet_cleanup rm'ing $#ZET_JUNK files; avoid by setting ZET_UNJUNK)"
         rm -rf -- "${ZET_JUNK[@]}"
         # clear junk list in case of repeated calls
         setopt localoptions no_warn_nested_var
         ZET_JUNK=()
+    else
+        print "ZET_UNJUNK set: NOT rm'ing $#ZET_JUNK files"
     fi
 }
 # Ensure trap works for ordinary exits and signals
