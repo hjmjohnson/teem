@@ -863,12 +863,13 @@ NRRD_EXPORT const char *const nrrdEnvVarStateMeasureModeBins;
 NRRD_EXPORT const char *const nrrdEnvVarStateMeasureHistoType;
 NRRD_EXPORT const char *const nrrdEnvVarStateGrayscaleImage3D;
 NRRD_EXPORT const char *const nrrdEnvVarStateEncodingAsciiCommaAllow;
-NRRD_EXPORT int nrrdGetenvBool(int *val, char **envStr, const char *envVar);
-NRRD_EXPORT int nrrdGetenvEnum(int *val, char **envStr, const airEnum *enm,
+NRRD_EXPORT int nrrdGetenvBool(int *val, const char **envStr, const char *envVar);
+NRRD_EXPORT int nrrdGetenvEnum(int *val, const char **envStr, const airEnum *enm,
                                const char *envVar);
-NRRD_EXPORT int nrrdGetenvInt(int *val, char **envStr, const char *envVar);
-NRRD_EXPORT int nrrdGetenvUInt(unsigned int *val, char **envStr, const char *envVar);
-NRRD_EXPORT int nrrdGetenvDouble(double *val, char **envStr, const char *envVar);
+NRRD_EXPORT int nrrdGetenvInt(int *val, const char **envStr, const char *envVar);
+NRRD_EXPORT int nrrdGetenvUInt(unsigned int *val, const char **envStr,
+                               const char *envVar);
+NRRD_EXPORT int nrrdGetenvDouble(double *val, const char **envStr, const char *envVar);
 NRRD_EXPORT int nrrdGetenvString(const char **envStr, const char *envVar);
 NRRD_EXPORT void nrrdDefaultGetenv(void);
 NRRD_EXPORT void nrrdStateGetenv(void);

@@ -142,8 +142,8 @@ const char *const nrrdEnvVarStateEncodingAsciiCommaAllow
 */
 
 int /* Biff: nope */
-nrrdGetenvBool(int *val, char **envStr, const char *envVar) {
-  char *env;
+nrrdGetenvBool(int *val, const char **envStr, const char *envVar) {
+  const char *env;
   int tmp;
 
   if (!(val && envVar)) {
@@ -171,8 +171,8 @@ nrrdGetenvBool(int *val, char **envStr, const char *envVar) {
 }
 
 int /* Biff: nope */
-nrrdGetenvEnum(int *val, char **envStr, const airEnum *enm, const char *envVar) {
-  char *env;
+nrrdGetenvEnum(int *val, const char **envStr, const airEnum *enm, const char *envVar) {
+  const char *env;
   int tmp;
 
   if (!(val && envVar)) {
@@ -195,8 +195,8 @@ nrrdGetenvEnum(int *val, char **envStr, const airEnum *enm, const char *envVar) 
 }
 
 int /* Biff: nope */
-nrrdGetenvUInt(unsigned int *val, char **envStr, const char *envVar) {
-  char *env;
+nrrdGetenvUInt(unsigned int *val, const char **envStr, const char *envVar) {
+  const char *env;
   unsigned int tmp;
 
   if (!(val && envVar)) {
@@ -218,8 +218,8 @@ nrrdGetenvUInt(unsigned int *val, char **envStr, const char *envVar) {
 }
 
 int /* Biff: nope */
-nrrdGetenvInt(int *val, char **envStr, const char *envVar) {
-  char *env;
+nrrdGetenvInt(int *val, const char **envStr, const char *envVar) {
+  const char *env;
   int tmp;
 
   if (!(val && envVar)) {
@@ -241,8 +241,8 @@ nrrdGetenvInt(int *val, char **envStr, const char *envVar) {
 }
 
 int /* Biff: nope */
-nrrdGetenvDouble(double *val, char **envStr, const char *envVar) {
-  char *env;
+nrrdGetenvDouble(double *val, const char **envStr, const char *envVar) {
+  const char *env;
   double tmp;
 
   if (!(val && envVar)) {
