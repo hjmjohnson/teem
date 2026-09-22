@@ -154,7 +154,7 @@ nrrdBoundarySpecParse(NrrdBoundarySpec *bspec, const char *_str) {
       return 1;
     }
     if (!AIR_EXISTS(bspec->padValue)) {
-      biffAddf(NRRD, "%s: need existant pad value (not %g)", me, bspec->padValue);
+      biffAddf(NRRD, "%s: need existent pad value (not %g)", me, bspec->padValue);
       airMopError(mop);
       return 1;
     }

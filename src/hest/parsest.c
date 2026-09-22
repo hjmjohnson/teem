@@ -778,8 +778,8 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     int kind4 = (4 == theOpt->kind);
     hest__PPair k4pp;
     k4pp.hopt = kind4 ? hopt : NULL;
-    int (*k4parse)(void *, const char *, hest__PPair *)
-      = (kind4 ? hest__ParseSingle[theOpt->type] : NULL);
+    int (*k4parse)(void *, const char *,
+                   hest__PPair *) = (kind4 ? hest__ParseSingle[theOpt->type] : NULL);
     double k4v[2]; // bigger than needed to store largest possible kind=4 value
     int varParm = (kind4 || 5 == theOpt->kind);
     int sawVPE = AIR_FALSE; // caring about -. and saw it
@@ -1198,7 +1198,7 @@ optProcessDefaults(hestOpt *hopt, hestArg *tharg, hestInputStack *hist,
       that can be expressed as "''" instead of "", which is clearer anyway. So we
       directly assert that we have 0 args. Also, this is why we set hopt[opi].source
       above to hestSourceDefault, so that we'd know the source even if it isn't
-      apparent in any of the (non-existant) args. */
+      apparent in any of the (non-existent) args. */
       if (hparm->verbose > 1) {
         printf("%s: empty default string for min=0 a multiple "
                "variadic option ==> 0 args\n",
