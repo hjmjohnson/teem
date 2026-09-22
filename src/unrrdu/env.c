@@ -31,7 +31,7 @@ static void
 envBool(FILE *file, const char *envKey, int currVal, const char *varName,
         const char *desc, int columns) {
   int val, ret;
-  char *envVal;
+  const char *envVal;
 
   fprintf(file, "%s (bool): ", envKey);
   ret = nrrdGetenvBool(&val, &envVal, envKey);
@@ -64,7 +64,7 @@ static void
 envEnum(FILE *file, const airEnum *enm, const char *envKey, int currVal,
         const char *varName, const char *desc, int columns) {
   int val, ret;
-  char *envVal;
+  const char *envVal;
 
   /* !!! HEY: CUT + PASTE !!! */
   fprintf(file, "%s (%s enum): ", envKey, enm->name);
@@ -99,7 +99,7 @@ static void
 envInt(FILE *file, const char *envKey, int currVal, const char *varName,
        const char *desc, int columns) {
   int val, ret;
-  char *envVal;
+  const char *envVal;
 
   /* !!! HEY: CUT + PASTE !!! */
   fprintf(file, "%s (int): ", envKey);
@@ -134,7 +134,7 @@ envUInt(FILE *file, const char *envKey, unsigned int currVal, const char *varNam
         const char *desc, int columns) {
   int ret;
   unsigned int val;
-  char *envVal;
+  const char *envVal;
 
   /* !!! HEY: CUT + PASTE !!! */
   fprintf(file, "%s (unsigned int): ", envKey);
