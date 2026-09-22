@@ -52,7 +52,7 @@ typedef unsigned int uint; /* uint is just more concise */
 
 /*
  * unu-specific usage printer: prints out a little banner, and a listing of all
- * available unu commands with their one-line descriptions Would use unrrduUsage but
+ * available unu commands with their one-line descriptions. Would use unrrduUsage but
  * have to handle hidden commands and the possible non-availability of "fft"
  */
 static void
