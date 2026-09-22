@@ -58,14 +58,14 @@ AllExterns := PNG ZLIB BZIP2 LEVMAR FFTW3 PTHREAD
 ## Or, construct an elaborate alias that you use for Teem work, such as GLK's
 ##   alias tmake="TEEM_PTHREAD= \
 ##     TEEM_PNG= \
-##     TEEM_PNG_IPATH=/opt/homebrew/Cellar/libpng/1.6.50/include \
-##     TEEM_PNG_LPATH=/opt/homebrew/Cellar/libpng/1.6.50/lib \
+##     TEEM_PNG_IPATH=/opt/homebrew/opt/libpng/include \
+##     TEEM_PNG_LPATH=/opt/homebrew/opt/libpng/lib \
 ##     TEEM_ZLIB= \
 ##     TEEM_ZLIB_IPATH=/opt/homebrew/opt/zlib/include \
 ##     TEEM_ZLIB_LPATH=/opt/homebrew/opt/zlib/lib \
 ##     TEEM_FFTW3= \
-##     TEEM_FFTW3_IPATH=/opt/homebrew/Cellar/fftw/3.3.10_2/include \
-##     TEEM_FFTW3_LPATH=/opt/homebrew/Cellar/fftw/3.3.10_2/lib \
+##     TEEM_FFTW3_IPATH=/opt/homebrew/opt/fftw/include \
+##     TEEM_FFTW3_LPATH=/opt/homebrew/opt/fftw/lib \
 ##     TEEM_LEVMAR= \
 ##     TEEM_LEVMAR_IPATH=/Users/me/src/levmar-2.6 \
 ##     TEEM_LEVMAR_LPATH=/Users/me/src/levmar-2.6 \
