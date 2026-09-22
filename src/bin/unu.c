@@ -169,6 +169,10 @@ main(int argc, const char **argv) {
      instead of hacky macros hiding in unrrdu/privateUnrrdu.h */
   hparm->quietQuit = unrrduUnuQuietQuitTest;
 
+  /* To help debug hest issues exposed by unu, enable setting hparm->verbose based
+     on an environment variable */
+  nrrdGetenvInt(&(hparm->verbose), NULL, HEST_VERBOSE_ENV);
+
   /* if there are no arguments, or "unu list" (or "unu all" shhh), then we give general
   usage information */
   listAll = (2 == argc && !strcmp("all", argv[1]));

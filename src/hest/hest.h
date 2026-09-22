@@ -47,6 +47,16 @@
 extern "C" {
 #endif
 
+/* Programs using hest may reveal issues in hest, and debugging that will be easier
+if hparm->verbose (with hestParm *hparm) could be cranked up, and environment variables
+offer a way to control things without recompiling. However, code within hest probably
+should only read hparm->verbose rather than modify it, to entirely avoid the risk of
+overriding some user-specified setting. That means that hest-using programs are
+responsible, after creating an hparm, to set hparm->verbose based on an environment
+variable. We try to enforce some uniformity in how this is done by defining the
+environment variable that can be passed to nrrdGetenvInt. */
+#define HEST_VERBOSE_ENV "HEST_VERBOSE"
+
 /*
  * Some basic hest terminology, around usage/help information:
  * "Info": either, top-level description of the whole command, which is
