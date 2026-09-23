@@ -50,6 +50,7 @@ int nrrdPeripheralCopy(Nrrd *nout, const Nrrd *nin) {
 */
 
 /* ---- BEGIN non-NrrdIO */
+#include <assert.h>
 const int nrrdPresent = 42;
 
 /* ------------------------------------------------------------ */
@@ -113,7 +114,8 @@ nrrdBoundarySpecCheck(const NrrdBoundarySpec *bspec) {
 }
 
 int /* Biff: 1 */
-nrrdBoundarySpecParse(NrrdBoundarySpec *bspec, const char *_str) {
+nrrdBoundarySpecParse(NrrdBoundarySpec *bspec, const char *_str,
+                      int allowMissingPadValue) {
   static const char me[] = "nrrdBoundarySpecParse";
   char *str, *parm;
   airArray *mop;
@@ -121,6 +123,16 @@ nrrdBoundarySpecParse(NrrdBoundarySpec *bspec, const char *_str) {
   if (!(bspec && _str)) {
     biffAddf(NRRD, "%s: got NULL pointer", me);
     return 1;
+  }
+  if (allowMissingPadValue) {
+    if (nrrdBoundaryPad == airEnumVal(nrrdBoundary, _str)) {
+      /* with allowMissingPadValue, we accept mere "pad",
+         which is missing the ":<val>" part */
+      bspec->boundary = nrrdBoundaryPad;
+      bspec->padValue = AIR_NAN;
+      /* and we're done! (mop not created yet) */
+      return 0;
+    }
   }
   str = airStrdup(_str);
   if (!str) {
@@ -148,16 +160,20 @@ nrrdBoundarySpecParse(NrrdBoundarySpec *bspec, const char *_str) {
       airMopError(mop);
       return 1;
     }
-    if (1 != sscanf(parm, "%lg", &(bspec->padValue))) {
+    if (1 != airSingleSscanf(parm, "%lg", &(bspec->padValue))) {
       biffAddf(NRRD, "%s: couldn't parse \"%s\" as double", me, parm);
       airMopError(mop);
       return 1;
     }
-    if (!AIR_EXISTS(bspec->padValue)) {
-      biffAddf(NRRD, "%s: need existent pad value (not %g)", me, bspec->padValue);
-      airMopError(mop);
-      return 1;
-    }
+    /* for TeemV2: decided that there isn't actually a reason that the given
+     * padding value must be existent: padding with nan or +inf or -inf is
+     * conceivably useful, but this check prevented it.
+     * if (!AIR_EXISTS(bspec->padValue)) {
+     *   biffAddf(NRRD, "%s: need existent pad value (not %g)", me, bspec->padValue);
+     *   airMopError(mop);
+     *   return 1;
+     * }
+     */
   } else {
     if (nrrdBoundaryPad == bspec->boundary) {
       biffAddf(NRRD, "%s: need padValue parm for %s", me,
@@ -236,6 +252,60 @@ nrrdBoundarySpecCompare(const NrrdBoundarySpec *aa, const NrrdBoundarySpec *bb,
     }
   }
   *differ = 0;
+  return 0;
+}
+
+/* nrrdHestBoundarySpecFinish is the new place for TeemV2 to put cleverness for
+situations (like unu pad) that have long had a "-b <boundary>" option and an optional
+"-v <padvalue>" option, but now want to also support the self-contained nrrdBoundarySpec
+which supports "pad:<val>". Both the old ("-b pad -v <val>") and the new ("-b pad:<val>")
+usage patterns have to be supported, but we want to do as much error checking and/or
+warning as possible */
+int /* Biff: 1 */
+nrrdHestBoundarySpecFinish(NrrdBoundarySpec *bsp, const hestOpt *bspHopt, double pv,
+                           const hestOpt *pvHopt, const char *warnOnMootPadValueMe) {
+  static const char me[] = "nrrdHestBoundarySpecFinish";
+  if (!(bsp && bspHopt && pvHopt)) {
+    biffAddf(NRRD, "%s: got NULL bsp %p or bspHopt %p or padValueHopt %p", me,
+             AIR_CVOIDP(bsp), AIR_CVOIDP(bspHopt), AIR_CVOIDP(pvHopt));
+    return 1;
+  }
+  char bspIdent[ASP1_S], pvIdent[ASP1_S];
+  hestOptIdentStr(bspIdent, ASP1_S, bspHopt);
+  hestOptIdentStr(pvIdent, ASP1_S, pvHopt);
+  if (hestSourceDefault == pvHopt->source) {
+    // the user did not give this option so `pv` was set from the default
+    if (nrrdBoundaryPad == airEnumVal(nrrdBoundary, bspHopt->parmStr)) {
+      biffAddf(NRRD,
+               "%s: padding value %s not used, but boundary spec "
+               "%s didn't set padding value with \"%s\"",
+               me, pvIdent, bspIdent, bspHopt->parmStr);
+      return 1;
+    }
+    /* else user/default was "pad:<val>" or non-pad boundary;
+       either way bsp is complete as is */
+  } else {
+    // user (by command-line or response file) explicitly set pad value
+    assert(hestSourceUser(pvHopt->source));
+    if (nrrdBoundaryPad == airEnumVal(nrrdBoundary, bspHopt->parmStr)) {
+      // finish boundary spec with separately passed padding value
+      bsp->padValue = pv;
+    } else if (nrrdBoundaryPad == bsp->boundary) {
+      /* which means it was given as "pad:<value>". Even if pv == bsp->padValue,
+         using both like that just feels all kinds of wrong. */
+      biffAddf(NRRD,
+               "%s: padding value %s used with \"%s\", but boundary spec "
+               "%s also set padding value with \"%s\"",
+               me, pvIdent, pvHopt->parmStr, bspIdent, bspHopt->parmStr);
+      return 1;
+    } else if (warnOnMootPadValueMe) {
+      fprintf(stderr,
+              "%s: WARNING: padding value %s used (\"%s\"), but moot "
+              "with boundary %s \"%s\"\n",
+              warnOnMootPadValueMe, pvIdent, pvHopt->parmStr, bspIdent,
+              bspHopt->parmStr);
+    }
+  }
   return 0;
 }
 

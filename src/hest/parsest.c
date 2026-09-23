@@ -617,10 +617,10 @@ whichOptFlag(const hestOpt *hopt, const char *flarg, const hestParm *hparm) {
   return UINT_MAX;
 }
 
-/* identStr sprints into `ident` (and returns same `ident`)
+/* hestOptIdentStr sprints into `ident` (and returns same `ident`)
    a way to identify `hopt` in error and usage messages */
-static char * /* Biff: nope */
-identStr(char *ident, size_t identSize, const hestOpt *hopt) {
+char * /* Biff: nope */
+hestOptIdentStr(char *ident, size_t identSize, const hestOpt *hopt) {
   if (hopt->flag) {
     if (strchr(hopt->flag, MY_MULTI_FLAG_SEP)) {
       char *fcopy = airStrdup(hopt->flag);
@@ -818,14 +818,14 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     if (parmNum < theOpt->min) { // didn't see required min # parms
       biffAddf(HEST, "%s%sbefore getting %u parameter%s for %s (got only %u)", MY_ME,
                theOpt->min, theOpt->min > 1 ? "s" : "",
-               identStr(ident1, sizeof(ident1), theOpt), parmNum);
+               hestOptIdentStr(ident1, sizeof(ident1), theOpt), parmNum);
       if (sawEnd) {
         biffAddf(HEST, "%s%shit end of args", MY_ME);
       } else if (sawVPE) {
         biffAddf(HEST, "%s%shit \"%s\" (variadic-parameter-end flag)", MY_ME, VPE);
       } else if (UINT_MAX != nextOptIdx) {
         biffAddf(HEST, "%s%ssaw %s flag", MY_ME,
-                 identStr(ident2, sizeof(ident2), hopt + nextOptIdx));
+                 hestOptIdentStr(ident2, sizeof(ident2), hopt + nextOptIdx));
       }
       if (txfNum) {
         char *haveArgStr = hestArgVecSprint(havec, MY_SHAI);
@@ -883,7 +883,7 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
     // if needs to be set but hasn't been
     if (needing && hestSourceUnknown == theOpt->source) {
       biffAddf(HEST, "%s%sdidn't get required (default-less) %s[%u]", MY_ME,
-               identStr(ident1, sizeof(ident1), theOpt), opi);
+               hestOptIdentStr(ident1, sizeof(ident1), theOpt), opi);
       goto sidewaysF;
     }
   }
@@ -1028,7 +1028,7 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
         biffAddf(HEST,
                  "%s%scannot get %u args for %s%s[%u] from only %u remaining arg%s: %s",
                  MY_ME, hopt[opi].min, !hopt[opi].dflt ? "default-less " : "",
-                 identStr(ident, sizeof(ident), hopt + opi), opi, havec->len,
+                 hestOptIdentStr(ident, sizeof(ident), hopt + opi), opi, havec->len,
                  1 == havec->len ? "" : "s", nowStr);
         E = 1;
         break;
@@ -1080,7 +1080,7 @@ havecExtractUnflagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
                  noMore ? "" : VPE, //
                  minArg, airEnumStr(hestSource, variOpt->source),
                  !(variOpt->dflt) ? "default-less " : "",
-                 identStr(ident, sizeof(ident), variOpt), ufVariOpi);
+                 hestOptIdentStr(ident, sizeof(ident), variOpt), ufVariOpi);
         goto sidewaysUF;
       }
       hestArg *harg = havecRemove(havec, 0);
@@ -1109,7 +1109,7 @@ finishUF:
     uint opi = ufOpi[upii];
     if (!(hopt[opi].dflt) && hestSourceUnknown == hopt[opi].source) {
       biffAddf(HEST, "%s%sdidn't get required (default-less) %s[%u]", MY_ME,
-               identStr(ident, sizeof(ident), hopt + opi), opi);
+               hestOptIdentStr(ident, sizeof(ident), hopt + opi), opi);
       goto sidewaysUF;
     }
   }
@@ -1176,7 +1176,7 @@ optProcessDefaults(hestOpt *hopt, hestArg *tharg, hestInputStack *hist,
          signal that the flag was not given by user */
       goto nextopt;
     }
-    identStr(ident, sizeof(ident), hopt + opi);
+    hestOptIdentStr(ident, sizeof(ident), hopt + opi);
     /* havecExtractFlagged/havecExtractUnflagged have already given an error
     if there was a flagged/unflagged option without a default that was not given,
     so we don't need to check again if we have a default (we know we do) */
@@ -1246,7 +1246,7 @@ optProcessDefaults(hestOpt *hopt, hestArg *tharg, hestInputStack *hist,
   }
   /* actually this seems to be entirely unreachable, but keeping for posterity
   for (uint opi = 0; opi < optNum; opi++) {
-    identStr(ident, sizeof(ident), hopt + opi);
+    hestOptIdentStr(ident, sizeof(ident), hopt + opi);
     / * (Yes, half of this test is redundant with check above on whether the default
     string supplied at least hopt[opi].min args, but erring with doing more checks).
     Now that we've made a hopt[opi].havec array, and will soon parse strings to set
@@ -1301,7 +1301,7 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
   for (uint ooi = 0; ooi < optNum; ooi++) {
     uint opi = optOrder[ooi];
     int pret;
-    identStr(ident, sizeof(ident), hopt + opi);
+    hestOptIdentStr(ident, sizeof(ident), hopt + opi);
     // hopt[opi].source has already been set
     /* 2023 GLK notes that r6388 2020-05-14 GLK was asking:
          How is it that, once the command-line has been parsed, there isn't an

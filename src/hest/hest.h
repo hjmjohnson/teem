@@ -615,6 +615,7 @@ HEST_EXPORT int hestParseOrExit(hestOpt *hopt, int argc, const char **argv,
    - adds new functionality with new fields in hestParm */
 
 /* parsest.c */
+HEST_EXPORT char *hestOptIdentStr(char *ident, size_t identSize, const hestOpt *hopt);
 HEST_EXPORT int hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
                           const hestParm *hparm);
 
