@@ -1,3 +1,4 @@
+# 3161390697 4484 dist.zsh
 hght-a11-th0.5-b0.nrrd :: unu dist -i hght-a11.nrrd -th 0.5 -b 0 -o {} ;; cksum {} => 3368507103 202760 {}
 hght-a13-th0.5-b0.nrrd :: unu dist -i hght-a13.nrrd -th 0.5 -b 0 -o {} ;; cksum {} => 3641339846 67803 {}
 hght-a21-th0.5-b0.nrrd :: unu dist -i hght-a21.nrrd -th 0.5 -b 0 -o {} ;; cksum {} => 2402338809 92139 {}

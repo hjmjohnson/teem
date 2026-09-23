@@ -1,3 +1,4 @@
+# 2871267256 7905 cmedian.zsh
 data1c8-r1-b100-w1-c.nrrd :: unu cmedian -i data1c8.nrrd -r 1 -b 100 -w 1 -c -o {} ;; cksum {} => 2916031853 5015 {}
 data1c8-r1-b100-w1-p-c.nrrd :: unu cmedian -i data1c8.nrrd -r 1 -b 100 -w 1 -p -c -o {} ;; cksum {} => 7516166 5015 {}
 data1c8-r1-b100-w1-mode-c.nrrd :: unu cmedian -i data1c8.nrrd -r 1 -b 100 -w 1 -mode -c -o {} ;; cksum {} => 2941547220 5015 {}

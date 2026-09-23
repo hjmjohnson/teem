@@ -1,3 +1,4 @@
+# 1500760130 4357 heq.zsh
 ramp_10-b30-s0.nrrd :: unu heq -i ramp_10.nrrd -b 30 -s 0 -o {} ;; cksum {} => 1321309 240218 {}
 ramp_10-b30-s1.nrrd :: unu heq -i ramp_10.nrrd -b 30 -s 1 -o {} ;; cksum {} => 2429071364 240218 {}
 ramp_10-b30-s2.nrrd :: unu heq -i ramp_10.nrrd -b 30 -s 2 -o {} ;; cksum {} => 627836504 240218 {}

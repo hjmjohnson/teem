@@ -23,14 +23,15 @@ Setup() {
     # an amount of padding with area ~1/3 of interior
     local szP=$(((szX * szY / (2 * szX + 2 * szY)) / 3))
     zet_inf_begin 'ramp%s.nrrd' ######## BEGIN input file creation
-    # starting with one linear ramp
+    zet_inf_sec "starting with one linear ramp"
     local outf
     zet_inf _10 outf
-    echo "1  $szY   0  $((szY - 1))" | unu 2op / - $szY | unu reshape -s 2 2 |
+    echo 1 $szY 0 $((szY - 1)) |
+        (TEEM_KVP_HISTORY_STDIN="echo 1 $szY 0 $((szY - 1))" unu 2op / - $szY) |
+        unu reshape -s 2 2 |
         unu resample -s $szX $szY -c node -k tent |
         unu basinfo -c ramp -o $outf
-
-    # raising linear ramp to various exponents
+    zet_inf_sec "raising linear ramp to various exponents"
     local tenpow
     for tenpow in 03 05 20 33; do # the exponents, times 10
         local pow=$(($tenpow / 10.0))
@@ -40,7 +41,7 @@ Setup() {
         #zet_inf "n${tenpow}" outf
         #unu 2op - 1 ramp_10.nrrd | unu 2op pow - $pow | unu 2op - 1 - -o $outf
     done
-    # for all ramps make so far, add various paddings
+    zet_inf_sec "for all ramps make so far, add various paddings"
     local tppvals=(00 06 12) # various pad values (-0.1, 0.5, 1.1), times 10, plus 1
     local ike padval
     for ike in $ZET_IKE; do
