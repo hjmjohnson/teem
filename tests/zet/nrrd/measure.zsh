@@ -21,19 +21,17 @@ Setup() {
     echo 1 1 -1 -1 |
         (TEEM_KVP_HISTORY_STDIN="echo 1  1 -1 -1" unu reshape -s 2 2) |
         unu convert -t double |
-        unu resample -s $szX $szY -c node -k tent |
-        unu basinfo -c yramp -o yramp.nrrd
+        unu resample -s $szX $szY -c node -k tent -o yramp.nrrd
     zet_junk yramp.nrrd
     zet_inf_sec make xramp, apply different powers, and then add in yramp
     local tenpow outf
-    for tenpow in 08 10 13; do # the powers, times 10
+    for tenpow in 08 10 13; do # the powers times 10
         zet_inf $tenpow outf
         local pow=$(($tenpow / 10.0))
         echo 0 1 0 1 |
             (TEEM_KVP_HISTORY_STDIN="echo 0 1 0 1" unu reshape -s 2 2) |
             unu convert -t double |
             unu resample -s $szX $szY -c node -k tent |
-            unu basinfo -c xramp |
             unu 2op pow - $pow |
             unu 2op + - yramp.nrrd -o $outf
     done
@@ -101,7 +99,9 @@ zet_begin ####### BEGIN testing
 Test() {
     local MM=(min max mean median mode prod sum L1 L2 L4 nL2
         rms Linf var stdv cov skew slope intc error
-        hmin hmax hmean hmedian hmode hproduct hsum hL2 hvar hstdv)
+        hmin hmax hmean hmedian hmode hproduct hsum hL2 hvar hsd)
+    # NOTE: "histo-stdv" is a newer alias for histo-sd but for compatability
+    # with testing old code, use old histo-sd name, hence "hsd" above not "hstdv"
     local ike
     for ike in $ZET_IKE; do
         local mm

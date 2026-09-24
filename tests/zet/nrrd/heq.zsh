@@ -29,8 +29,7 @@ Setup() {
     echo 1 $szY 0 $((szY - 1)) |
         (TEEM_KVP_HISTORY_STDIN="echo 1 $szY 0 $((szY - 1))" unu 2op / - $szY) |
         unu reshape -s 2 2 |
-        unu resample -s $szX $szY -c node -k tent |
-        unu basinfo -c ramp -o $outf
+        unu resample -s $szX $szY -c node -k tent -o $outf
     zet_inf_sec "raising linear ramp to various exponents"
     local tenpow
     for tenpow in 03 05 20 33; do # the exponents, times 10
