@@ -176,7 +176,7 @@ typeset -g -a ZET_FAIL
 typeset -g -A ZET_FAIL_COMD
 typeset -g -A ZET_FAIL_RSLT
 typeset -g -A ZET_FAIL_WANT
-####### ZET_END_ON_FAIL: if set by caller (e.g. ZET_END_ON_FAIL= ./dist.zsh):
+####### ZET_BAIL_ON_FAIL: if set by caller (e.g. ZET_BAIL_ON_FAIL= ./dist.zsh):
 # on first test failure, do things to diagnose circumstances of failure and
 # immediately zet_end then bail
 
@@ -944,9 +944,9 @@ zet_test() {
             ZET_FAIL_WANT[$fout]="$want"
             # preserve the input to the failed command
             zet_unjunk $fin # HEY should make this handle multiple inputs
-            if ((${+ZET_END_ON_FAIL})); then
+            if ((${+ZET_BAIL_ON_FAIL})); then
                 print ""
-                print "$ZET_PFX ######## ZET_END_ON_FAIL --> BAILING ########"
+                print "$ZET_PFX ######## ZET_BAIL_ON_FAIL --> BAILING ########"
                 print "v.v.v.v.v.v.v  which unu  v.v.v.v.v.v.v"
                 which unu
                 print "^'^'^'^'^'^'^  which unu  ^'^'^'^'^'^'^"
@@ -1006,7 +1006,7 @@ zet_end() {
     fi
     print "$ZET_PFX $ZET_DLM"
     _zet_arrays_reset
-    if ((${+ZET_END_ON_FAIL})); then
+    if ((${+ZET_BAIL_ON_FAIL})); then
         # send ourselves untrappable SIGKILL (like kill -9) to really bail
         kill -KILL $$
     fi
