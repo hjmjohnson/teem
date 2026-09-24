@@ -1041,6 +1041,17 @@ uniformly created.
 
 ========= hest =========
 
+• Wed Sep 23 02:52:05 2026 -0500 git commit 2cd82b4e
+API NEW: hestOptIdentStr has previously been a static function
+hest/parsest.c:identStr(), but is now part of API so that it can be used in things like
+nrrdHestBoundarySpecFinish, or anything else that needs to textually describe hest options.
+
+• Tue Sep 22 04:00:20 2026 -0500 git commit ab7ac164
+API NEW: #define HEST_VERBOSE_ENV "HEST_VERBOSE" is the environment variable that many
+command-line tools (currently: miter, puller, tend, unu) now check when they've started,
+so that you can debug hest issues in the context of these tools, without recompiling
+in order to change hparm->verbose
+
 • (many commits in Aug and Sept 2026)
 Most of hest was re-written in 2025, but there are still loose ends in specifying the
 behavior of multiple unflagged options with defaults (mainly who consumed what from the
@@ -1476,6 +1487,34 @@ should have been taking a const char * as a second arg (various files in other l
 updated to conform).
 
 ========= nrrd =========
+
+• Thu Sep 24 03:09:53 2026 -0500 git commit 4790cfbb
+BUG FIX: nrrd arithmetic functions nrrdArithBinaryOp, nrrdArithIterBinaryOpSelect,
+nrrdArithTernaryOp, nrrdArithIterTernaryOpSelect (including those accessed via unu
+2op, unu 3op, unu affine) were not respecting the value of (global! flag)
+nrrdStateAlwaysSetContent: if it is false, then the output content should be set only
+when all input input contents are set. But this functions *always* set content, even
+when one of the input contents was not set. This bug was depressingly old.
+
+• Wed Sep 23 02:52:05 2026 -0500 git commit 2cd82b4e
+* API CHANGE: nrrdBoundarySpecParse now takes a final boolean-ish argument
+  allowMissingPadValue, to control whether "pad" will be allowed (and parsed as if it was
+  "pad:nan") or disallowed.  This is part of bridging older "-b pad -p <val>" with newer
+  "-b pad:<val>" hest usage, used in (for now) "unu pad" and "unu resample".
+* BEHAVIOR CHANGE:
+  (1) nrrdBoundarySpecParse now internally uses airSingleSscanf instead of sscanf
+      to parse the double value and
+  (2) nrrdBoundarySpecParse now allows non-existent padding values like nan and inf,
+      which were previously rejected as erroneous
+* API NEW: nrrdHestBoundarySpecAllowMissingPadValue is new hestCB for parsing
+  nrrdBoundarySpec, but allowing incomplete "pad" form (instead of rejecting it since it
+  should be "pad:val"
+* API NEW: nrrdHestBoundarySpecFinish is the new place for TeemV2 to put cleverness for
+  situations (like unu pad) that have long had a "-b <boundary>" option and an optional
+  "-v <padvalue>" option, but now want to also support the self-contained nrrdBoundarySpec
+  which supports "pad:<val>". Both the old ("-b pad -v <val>") and the new
+  ("-b pad:<val>") usage patterns should be supported, but we want to do as much error
+  checking and/or warning as possible.
 
 • Sun Dec 7 07:20:10 2025 -0600 git commit: 13c42407
 BEHAVIOR CHANGE in nrrdHistoEq (basis of "unu heq"): how "smart" is handled has been
@@ -1943,20 +1982,33 @@ input histogram was all zeros, the output value is nan
 
 ========= unrrdu / unu =========
 
+• Wed Sep 23 02:52:05 2026 -0500 git commit 2cd82b4e
+BEHAVIOR CHANGE: Finally!!! "unu pad" and "unu resample" can use "-b pad:<val>" for
+padding with a specific value, as well as long-established "-b pad -p <val>".  Handling
+both is enabled by API CHANGEd nrrdBoundarySpecParse and API NEW
+nrrdHestBoundarySpecAllowMissingPadValue, nrrdHestBoundarySpecFinish
+"unu ilk" is not yet covered, because that supports a whole vector of background values
+(which nrrdBoundarySpec does not yet support)
+
 • Fri Jan 2 07:19:11 2026 -0600 git commit 9c0144f5
+• Mon Sep 21 17:23:57 2026 -0500 git commit e5122202
 API NEW and new command "unu history".  New in unrrdu:
    void unrrduUnuHistoryClear(Nrrd *nout);
    airArray *unrrduUnuHistoryGet(const Nrrd *nin, const char *fname,
                                  int commentIfNone);
    int unrrduUnuHistoryAdd(unrrduUnuOutNSPair onsp, int argc,
                            const char **argv, unrrduUnuInNSPair insp);
-These are used to implement a new history tracing capability in unu,
-which is enabled by setting environment variable "UNU_HISTORY_TRACE"
-(the value of UNRRDU_UNU_HISTORY_TRACE_ENV).  The goal is to create
+These are used to implement a new history tracing capability in unu
+(and other Teem-based command-line tools that speak Nrrd files),
+which is enabled by setting environment variable "TEEM_KVP_HISTORY_TRACE"
+(the value of UNRRDU_TEEM_KVP_HISTORY_TRACE_ENV).  The goal is to create
 a reproducible log of how a nrrd was created, if it was created by
-pure unu hacking, stored in the key/value pairs of a nrrd.  The new
-"unu history" command shows the log for a given file. See
+pure unu et alia hacking, stored in the key/value pairs of a nrrd.
+The new "unu history" command shows the log for a given file. See
 "unu history --help" for more details and a usage example.
+The Sept '26 commit renamed UNU_HISTORY_TRACE to TEEM_KVP_HISTORY_TRACE
+and UNRRDU_UNU_HISTORY_TRACE_ENV to UNRRDU_TEEM_KVP_HISTORY_TRACE_ENV
+in anticipation of tend and other Teem-based CLI tools adopting this.
 
 • Mon Dec 29 20:37:25 2025 -0600 git commit 19f2ca19
 API CHANGE and unu BEHAVIOR NEW:
@@ -2560,6 +2612,25 @@ option. Related: added -srgb intent to "unu quantize"
 • fixed use of uninitialized variable in src/bin/vprobe.c
 
 • fixed memory leak in nrrd's use of FFTW (hadn't been calling fftw_destroy_plan)
+
+========= other command-line tools =========
+
+• many git commits in 2026:
+Teem has a new testing framework called "zet" for Z-Shell Enabled Testing,
+in the spirit of "golden file" testing. See tests/zet/zet-lib.zsh.
+Quoting from a comment there:
+  Written by GLK for TeemV2 with recognition that once you have a command-line parser
+  (like hest) and once you have command-line wrappers around your C programs (like unu
+  around nrrd) shell scripts will be much faster to whip up, and more probably concise,
+  than CTest tests. CTest is still obviously very important, but maybe there are easier
+  ways to test some things. The acute need for creating Zet was the uncertainty around
+  the correctness of the modernization to teem/src/nrrd/filt.c and its myriad ways of
+  filtering data 1D, 2D, 3D, and 4D data ...
+The striking difference from CTest is that basic shell-script looping in a zet .zsh
+script allows you to do *MANY* more tests per line of testing code than with CTest:
+for example zet/nrrd/cmedian.zsh has 156 lines, and runs 1440 tests (!). More tests
+are being created for TeemV2 release, but already there are thousands of zet tests,
+and 40 CTest tests.
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 Teem 1.11.0 (2012-12-21) https://sourceforge.net/projects/teem/files/teem/1.11.0/
