@@ -120,6 +120,18 @@ unu_projectMain(int argc, const char **argv, const char *me, const hestParm *hpa
         return 1;
       }
     }
+    // adapted from privateUnrrdu.h:#define MY_HISTORY(NOUT, NIN)
+    unrrduUnuHistoryClear(nout); /* needed since likely at some point earlier did
+                                    nrrdCopy(nout, nin) */
+    if (unrrduUnuHistoryAdd((unrrduUnuOutNSPair){.nout = nout, .name = out[outIdx]},
+                            argc + 1, argv - 1,
+                            (unrrduUnuInNSPair){.nin = nin,
+                                                .name = hopt[inHidx].parmStr})) {
+      airMopAdd(mop, err = biffGetDone(UNRRDU), airFree, airMopAlways);
+      fprintf(stderr, "%s: error adding history %s\n", me, err);
+      airMopError(mop);
+      return 1;
+    }
     MY_SAVE(out[outIdx], nout, NULL);
   }
 
