@@ -96,6 +96,7 @@ ZET_PFX="(zet):"
 
 ####### ZET_ROOT: absolute directory containing this Zet library file
 if ((${+ZET_ROOT})); then
+    # ((${+FOO})) true if FOO is set, at all, else false
     # print -u2 == print to stderr
     print -u2 "ZET_ROOT already set to $ZET_ROOT"
     print -u2 "ZET_ROOT/zet-lib.zsh should be source'd only once"
@@ -117,6 +118,7 @@ typeset -g ZET_TSET_TIME0="0"
 # For doing only every Nth test for spot checks; N=ZET_TSET_STRIDE; defaults to 1
 # example usage: ZET_TSET_STRIDE=3 nrrd/dist.zsh
 typeset -g -i ZET_TSET_STRIDE=${ZET_TSET_STRIDE:-1} # run every Nth test; 1 = all
+#                                   fall back to 1 if variable not already set
 # Count of tests executed
 typeset -g -i ZET_TSET_COUNT=0 # test counter within current set
 
@@ -146,6 +148,12 @@ typeset -g ZET_INF_NAME
 ####### ZET_INF_PRINT
 # turned on by zet_inf_sec, to print input files as they are registered
 typeset -g -i ZET_INF_PRINT=0
+####### ZET_INF_BIN: if set, between zet_inf_begin and zet_inf_end, this directory
+# is prepended to PATH so that input file creation can use different tools (e.g. recent
+# unu with TEEM_KVP_HISTORY_TRACE support), separate from $PATH unu being tested
+typeset -g ZET_INF_BIN=${ZET_INF_BIN:-""}
+#                       fall back to empty string if not already set
+typeset -g ZET_INF_BIN_PATH_SAVE="" # (saved PATH during begin/end)
 
 ####### ZET_TSET: top-level description of current test set
 # (only one tset at a time can be actively running)
@@ -168,6 +176,9 @@ typeset -g -a ZET_FAIL
 typeset -g -A ZET_FAIL_COMD
 typeset -g -A ZET_FAIL_RSLT
 typeset -g -A ZET_FAIL_WANT
+####### ZET_END_ON_FAIL: if set by caller (e.g. ZET_END_ON_FAIL= ./dist.zsh):
+# on first test failure, do things to diagnose circumstances of failure and
+# immediately zet_end then bail
 
 #__#__# _zet_arrays_reset
 # a helper function to (re)initialize these global arrays. Despite the
@@ -431,8 +442,26 @@ zet_inf_begin() {
     ZET_INF_NAME=${fbase:t} # t = tail = end of path
     ZET_INF_FMT=$fmt
     ZET_IKE=()
+    # enstate new PATH with $ZET_INF_BIN pre-pended
+    if [[ -n $ZET_INF_BIN ]]; then
+        if [[ ! -d $ZET_INF_BIN ]]; then
+            zet_die "ZET_INF_BIN=\"$ZET_INF_BIN\" is not a directory"
+        fi
+        ZET_INF_BIN_PATH_SAVE="$PATH"
+        export PATH="$ZET_INF_BIN:$PATH"
+        print "$ZET_PFX ZET_INF_BIN=$ZET_INF_BIN prepended to PATH for input file creation"
+        if (($+commands[unu])); then
+            print "$ZET_PFX --> using unu = $(which unu)\n"
+        fi
+    else
+        print "$ZET_PFX (ZET_INF_BIN not set --> same PATH for input file creation and testing)"
+    fi
     # For the input files, we do want to record how they were generated
     export TEEM_KVP_HISTORY_TRACE=yes
+    # For everything (we won't undo this later), stop inventing content!
+    # This is not NRRD_STATE_DISABLE_CONTENT=true, but it prevents a bigger
+    # content string from being built around an empty ("???") one.
+    export NRRD_STATE_ALWAYS_SET_CONTENT=false
 }
 
 zet_inf_sec() {
@@ -530,6 +559,12 @@ zet_inf_end() {
     if ((ZET_INF_PRINT)); then
         print "$ZET_PFX --- $ZET_INF_FMT input --- DONE creating input files"
     fi
+    # restore PATH if ZET_INF_BIN had been prepended
+    if [[ -n $ZET_INF_BIN ]]; then
+        export PATH="$ZET_INF_BIN_PATH_SAVE"
+        ZET_INF_BIN_PATH_SAVE=""
+        print "$ZET_PFX ZET_INF_BIN=$ZET_INF_BIN: PATH restored for testing"
+    fi
     # this diagnostic doesn't logically belong in zet_inf_end, but chronologically
     # this makes it show up in a sensible place
     if ((ZET_TSET_STRIDE > 1)); then
@@ -539,8 +574,9 @@ zet_inf_end() {
     fi
     local ichname="$ZET_INF_NAME-ich.txt"
     local ike
+    local time0=$EPOCHREALTIME
     if ((${+ZET_GEN_ICH})); then
-        print "$ZET_PFX Variable ZET_GEN_ICH is set ==> *Generating* input checksums in $ichname"
+        print -n "$ZET_PFX Variable ZET_GEN_ICH is set ==> *Generating* input checksums in $ichname ... "
         rm -f $ichname
         print "# $(cksum $ZET_INF_NAME.zsh)" >$ichname
         for ike in $ZET_IKE; do
@@ -548,7 +584,7 @@ zet_inf_end() {
             print $(cksum $inf) >>$ichname
         done
     else
-        print "$ZET_PFX Variable ZET_GEN_ICH *not* set ==> checking against input checksums in $ichname"
+        print -n "$ZET_PFX Variable ZET_GEN_ICH *not* set ==> checking against input checksums in $ichname ... "
         if [[ ! -f $ichname ]]; then
             zet_die "Input checksum file \"$ichname\" does not exist." \
                 "Need to run first with: ZET_GEN_ICH= ./$ZET_INF_NAME.zsh"
@@ -556,7 +592,7 @@ zet_inf_end() {
         exec 3<"$ichname" # open file descriptor 3 for reading
         # First line must be the script cksum header
         local hdr scrcksum
-        local regenhow="Regenerate (both -ich and -ref) with: ZET_GEN_ICH= ZET_GEN_REF= ./$ZET_INF_NAME.zsh"
+        local regenhow="Regenerate (both -{ich,ref}.txt files) with: ZET_GEN_ICH= ZET_GEN_REF= ./$ZET_INF_NAME.zsh"
         IFS= read -r hdr <&3
         if [[ "$hdr" != '#'* ]]; then
             zet_die "Input checksum file \"$ichname\" has no script cksum header." \
@@ -564,10 +600,15 @@ zet_inf_end() {
         fi
         scrcksum="$(cksum $ZET_INF_NAME.zsh)"
         if [[ "$hdr" != "# $scrcksum" ]]; then
-            zet_die "Test script $ZET_INF_NAME.zsh has changed since $ichname was generated." \
-                "  ${hdr#'# '}  <-- top of $ichname" \
-                "  $scrcksum  <-- current cksum result" \
-                "$regenhow"
+            if ((${+ZET_IGNORE_HDR_CKSUM})); then
+                print -n "\n (ZET_IGNORE_HDR_CKSUM is set to doing that for $ichname) ... "
+            else
+                zet_die "Test script $ZET_INF_NAME.zsh has changed since $ichname was generated." \
+                    "  ${hdr#'# '}  <-- top of $ichname" \
+                    "  $scrcksum  <-- current cksum result" \
+                    "(set ZET_IGNORE_HDR_CKSUM to ignore this check)" \
+                    "$regenhow"
+            fi
         fi
         local line
         for ike in $ZET_IKE; do
@@ -581,6 +622,7 @@ zet_inf_end() {
         done
         exec 3<&- # close descriptor 3
     fi
+    print "done ($(_zet_dtime $time0))"
     # Keep ZET_INF_FMT and ZET_IKE as is for future $(zet_inf $ike) calls,
     # but signal that we're done learning about input files
     ZET_INF_NAME=""
@@ -644,10 +686,15 @@ _zet_read_reff() {
         fi
         local scrcksum="$(cksum $scrname)"
         if [[ "$hdr_line" != "# $scrcksum" ]]; then
-            zet_die "Test script $scrname has changed since $reffile was generated." \
-                "  ${hdr_line#'# '}  <-- top of $reffile" \
-                "  $scrcksum  <-- current cksum result" \
-                "$regenhow"
+            if ((${+ZET_IGNORE_HDR_CKSUM})); then
+                print -n "\n (ZET_IGNORE_HDR_CKSUM is set to doing that for $reffile) ... "
+            else
+                zet_die "Test script $scrname has changed since $reffile was generated." \
+                    "  ${hdr_line#'# '}  <-- top of $reffile" \
+                    "  $scrcksum  <-- current cksum result" \
+                    "(set ZET_IGNORE_HDR_CKSUM to ignore this check)" \
+                    "$regenhow"
+            fi
         fi
     } <"$reffile"
     while IFS= read -r line; do
@@ -809,6 +856,8 @@ zet_begin() {
     fi
     _zet_init_reff # will start by finishing "print -n" line above
     print "$ZET_PFX $ZET_DLM"
+    # the point of zet is not to test the ability to propagate key/value pairs
+    export NRRD_STATE_KEYVALUEPAIRS_PROPAGATE=false
     ZET_TSET_COUNT=0 # re-set test count
     print -n "$ZET_PFX Running test set $ZET_TSET[name]: "
     #     -n so that progress indication can continue same line
@@ -895,6 +944,26 @@ zet_test() {
             ZET_FAIL_WANT[$fout]="$want"
             # preserve the input to the failed command
             zet_unjunk $fin # HEY should make this handle multiple inputs
+            if ((${+ZET_END_ON_FAIL})); then
+                print ""
+                print "$ZET_PFX ######## ZET_END_ON_FAIL --> BAILING ########"
+                print "v.v.v.v.v.v.v  which unu  v.v.v.v.v.v.v"
+                which unu
+                print "^'^'^'^'^'^'^  which unu  ^'^'^'^'^'^'^"
+                print "v.v.v.v.v.v.v  unu env  v.v.v.v.v.v.v"
+                unu env
+                print "^'^'^'^'^'^'^  unu env  ^'^'^'^'^'^'^"
+                #print "v.v.v.v.v.v.v  set  v.v.v.v.v.v.v"
+                #set
+                #print "^'^'^'^'^'^'^  set  ^'^'^'^'^'^'^"
+                #print "v.v.v.v.v.v.v  unu head fin=$fin  v.v.v.v.v.v.v"
+                #unu head $fin
+                #print "^'^'^'^'^'^'^  unu head fin=$fin  ^'^'^'^'^'^'^"
+                #print "v.v.v.v.v.v.v  unu head fout=$fout  v.v.v.v.v.v.v"
+                #unu head $fout
+                #print "^'^'^'^'^'^'^  unu head fout=$fout  ^'^'^'^'^'^'^"
+                zet_end
+            fi
         fi
     fi
 }
@@ -937,6 +1006,10 @@ zet_end() {
     fi
     print "$ZET_PFX $ZET_DLM"
     _zet_arrays_reset
+    if ((${+ZET_END_ON_FAIL})); then
+        # send ourselves untrappable SIGKILL (like kill -9) to really bail
+        kill -KILL $$
+    fi
 }
 
 # TODO:
