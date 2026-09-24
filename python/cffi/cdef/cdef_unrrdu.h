@@ -63,9 +63,9 @@ when the unrrdu library was entirely unu-specific, and "UNRRDU_QUIET_QUIT" appea
 many shell scripts so that variable name must still be supported, even though the more
 consistent "UNU_QUIET_QUIT" is now (for TeemV2) also supported.
 */
-/* for controlling whether to build up command history for unu and other related tools
+/* For controlling whether to build up command history for unu and other related tools
 in the key/value pairs of a nrrd. TEEM_KVP_HISTORY_TRACE is the Sept 2026 rename of what
-started (Jan 2026) as UNU_HISTORY_TRACE, but because other unrrdu-based tools like
+started (Jan 2026) as UNU_HISTORY_TRACE.  Because other unrrdu-based tools like
 "tend" also have a command history that should be consistently recorded, the name was
 changed to avoid unu-specificity, and also to be more specific about where this history
 is stored (in the key-value pairs aka kvp) */

@@ -21,6 +21,14 @@ CFFI, within its many limitations, specifically lacking a C pre-processor
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 /* and see privateHest.h for why we internally also use biff */
+/* Programs using hest may reveal issues in hest, and debugging that will be easier
+if hparm->verbose (with hestParm *hparm) could be cranked up, and environment variables
+offer a way to control things without recompiling. However, code within hest probably
+should only read hparm->verbose rather than modify it, to entirely avoid the risk of
+overriding some user-specified setting. That means that hest-using programs are
+responsible, after creating an hparm, to set hparm->verbose based on an environment
+variable. We try to enforce some uniformity in how this is done by defining the
+environment variable that can be passed to nrrdGetenvInt. */
 /*
  * Some basic hest terminology, around usage/help information:
  * "Info": either, top-level description of the whole command, which is
@@ -561,6 +569,7 @@ extern int hestParseOrExit(hestOpt *hopt, int argc, const char **argv,
      always passed as AIR_TRUE within Teem code
    - adds new functionality with new fields in hestParm */
 /* parsest.c */
+extern char *hestOptIdentStr(char *ident, size_t identSize, const hestOpt *hopt);
 extern int hestParse(hestOpt *hopt, int argc, const char **argv, char **errP,
                           const hestParm *hparm);
 /* usage.c */
