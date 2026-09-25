@@ -914,6 +914,7 @@ AIR_MOPPER(hestOptFree)
 
 void
 hest__optPriorityMinMax(int *minP, int *maxP, const hestOpt *hopt) {
+  *minP = *maxP = 0; // adddresses "may be used uninitialized" warnings
   uint optNum = hopt->arrLen;
   for (uint opi = 0; opi < optNum; opi++) {
     if (!opi) {
