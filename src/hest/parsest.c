@@ -782,8 +782,8 @@ havecExtractFlagged(hestOpt *hopt, hestArgVec *havec, const hestParm *hparm) {
                    hest__PPair *) = (kind4 ? hest__ParseSingle[theOpt->type] : NULL);
     double k4v[2]; // bigger than needed to store largest possible kind=4 value
     int varParm = (kind4 || 5 == theOpt->kind);
-    int sawVPE = AIR_FALSE; // caring about -. and saw it
-    uint nextOptIdx,        // what is index of option who's flag we saw next
+    int sawVPE = AIR_FALSE;     // caring about -. and saw it
+    uint nextOptIdx = UINT_MAX, // what is index of option who's flag we saw next
       parmNum = 0;          // how many parm args have we see that plausibly belong to us
     int sawEnd = AIR_FALSE; // saw end of havec
     // compute parmNum by looking at but not moving args
@@ -1353,8 +1353,8 @@ optSetValues(hestOpt *hopt, const hestParm *hparm) {
       hopt[opi].parseErr = 0; /* no parser actually called but plausible fib */
     } break;
     case 4: { // -------- optional single variadics --------
-      const char *strsrc;
-      int invert;
+      const char *strsrc = NULL;
+      int invert = AIR_FALSE;
       /* 2025 hest__OPCheck now restricts possible types; these are no longer allowed:
          airTypeChar, airTypeString, airTypeEnum, airTypeOther. As for the semantics,
          the old web page seems to be clear (though we now disallow unflagged kind 4):
