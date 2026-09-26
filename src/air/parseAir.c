@@ -52,39 +52,39 @@
 /* Cached locale for locale-independent strtod_l; created once.  Only
    LC_NUMERIC is "C": the other categories follow the global locale so a
    uselocale() swap does not change ctype or collation behavior. */
-static locale_t _airCLocale = (locale_t)0;
+static locale_t myCLocale = (locale_t)0;
 static void
-_airCLocaleInit(void) {
+myCLocaleInit(void) {
   locale_t base = duplocale(LC_GLOBAL_LOCALE);
-  _airCLocale = newlocale(LC_NUMERIC_MASK, "C", base);
-  if (!_airCLocale && base) {
+  myCLocale = newlocale(LC_NUMERIC_MASK, "C", base);
+  if (!myCLocale && base) {
     freelocale(base);
   }
 }
 static locale_t
-_airGetCLocale(void) {
+myCLocaleGet(void) {
 #  if TEEM_PTHREAD
   static pthread_once_t once = PTHREAD_ONCE_INIT;
-  pthread_once(&once, _airCLocaleInit);
+  pthread_once(&once, myCLocaleInit);
 #  else
   /* without pthreads a first-use race can only create a second, identical "C"
      locale object, which is harmless */
-  if (!_airCLocale) {
-    _airCLocaleInit();
+  if (!myCLocale) {
+    myCLocaleInit();
   }
 #  endif
-  return _airCLocale;
+  return myCLocale;
 }
 #elif defined(TEEM_HAS_STRTOD_L_WIN)
 /* Cached "C" locale published exactly once via an atomic pointer CAS, so
    concurrent first use is race-free: the losing thread frees its duplicate. */
-static void *volatile _airCLocale = NULL;
+static void *volatile myCLocale = NULL;
 static _locale_t
-_airGetCLocale(void) {
-  _locale_t loc = (_locale_t)_airCLocale;
+myCLocaleGet(void) {
+  _locale_t loc = (_locale_t)myCLocale;
   if (!loc) {
     _locale_t created = _create_locale(LC_NUMERIC, "C");
-    void *prev = _InterlockedCompareExchangePointer(&_airCLocale, created, NULL);
+    void *prev = _InterlockedCompareExchangePointer(&myCLocale, created, NULL);
     if (prev) {
       _free_locale(created);
       loc = (_locale_t)prev;
@@ -102,7 +102,7 @@ _airGetCLocale(void) {
 void *
 air__CLocale(void) {
 #if defined(TEEM_HAS_STRTOD_L) || defined(TEEM_HAS_STRTOD_L_WIN)
-  return (void *)_airGetCLocale();
+  return (void *)myCLocaleGet();
 #else
   return NULL;
 #endif
@@ -198,9 +198,9 @@ airSingleSscanf(const char *str, const char *fmt, void *ptr) {
       char *endptr = NULL;
       double dval = 0.0;
 #  if defined(TEEM_HAS_STRTOD_L)
-      locale_t cloc = _airGetCLocale();
+      locale_t cloc = myCLocaleGet();
 #  else
-      _locale_t cloc = _airGetCLocale();
+      _locale_t cloc = myCLocaleGet();
 #  endif
       /* a null "C" locale means we cannot parse locale-independently:
          fail the parse rather than risk a silently wrong value */
