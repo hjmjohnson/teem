@@ -1493,7 +1493,7 @@ BUG FIX: nrrd arithmetic functions nrrdArithBinaryOp, nrrdArithIterBinaryOpSelec
 nrrdArithTernaryOp, nrrdArithIterTernaryOpSelect (including those accessed via unu
 2op, unu 3op, unu affine) were not respecting the value of (global! flag)
 nrrdStateAlwaysSetContent: if it is false, then the output content should be set only
-when all input input contents are set. But this functions *always* set content, even
+when all input input contents are set. But these functions *always* set content, even
 when one of the input contents was not set. This bug was depressingly old.
 
 • Wed Sep 23 02:52:05 2026 -0500 git commit 2cd82b4e
@@ -1534,7 +1534,6 @@ count has to be at least 0.5% of the number of values in the array for the bin t
 ignored.
 
 • Thu Dec 4 22:09:01 2025 -0600 git commit: fa93ea7a
-
 API CHANGE: nrrdCheapMedian (basis of "unu cmedian") needs an additional argument (now at
 end) for controlling whether it does verbose progress indication for slow filtering
 computations (currently, for any 3D or 4D volume). Now called because this goes to stderr
