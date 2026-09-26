@@ -54,8 +54,7 @@
    does not fit; these restore the C99 snprintf contract that the rest of
    nrrdSprint[] follows (always terminate, return the would-be length). */
 static int
-_airVsnprintfCLoc(char *str, size_t strSize, const char *fmt, _locale_t cloc,
-                  va_list ap) {
+myVsnprintfCLoc(char *str, size_t strSize, const char *fmt, _locale_t cloc, va_list ap) {
   va_list ap2;
   int ret;
   va_copy(ap2, ap);
@@ -71,11 +70,11 @@ _airVsnprintfCLoc(char *str, size_t strSize, const char *fmt, _locale_t cloc,
 }
 
 static int
-_airSnprintfCLoc(char *str, size_t strSize, const char *fmt, _locale_t cloc, ...) {
+mySnprintfCLoc(char *str, size_t strSize, const char *fmt, _locale_t cloc, ...) {
   va_list ap;
   int ret;
   va_start(ap, cloc);
-  ret = _airVsnprintfCLoc(str, strSize, fmt, cloc, ap);
+  ret = myVsnprintfCLoc(str, strSize, fmt, cloc, ap);
   va_end(ap);
   return ret;
 }
@@ -319,7 +318,7 @@ airSinglePrintf(FILE *file, char *str, size_t strSize, const char *_fmt, ...) {
 #  define PRINT(F, S, C, V)                                                             \
     ((F) /* */                                                                          \
        ? _fprintf_l((F), (C), _aspCloc, (V))                                            \
-       : _airSnprintfCLoc((S), strSize, (C), _aspCloc, (V)))
+       : mySnprintfCLoc((S), strSize, (C), _aspCloc, (V)))
 #else
 #  define PRINT(F, S, C, V)                                                             \
     ((F) /* */                                                                          \
@@ -332,7 +331,7 @@ airSinglePrintf(FILE *file, char *str, size_t strSize, const char *_fmt, ...) {
 #  define PROBE_SPRINT(B, BS, C, V) snprintf_l((B), (BS), _aspCloc, (C), (V))
 #  define PROBE_STRTOD(B)           strtod_l((B), NULL, _aspCloc)
 #elif defined(TEEM_HAS_PRINTF_L_WIN)
-#  define PROBE_SPRINT(B, BS, C, V) _airSnprintfCLoc((B), (BS), (C), _aspCloc, (V))
+#  define PROBE_SPRINT(B, BS, C, V) mySnprintfCLoc((B), (BS), (C), _aspCloc, (V))
 #  define PROBE_STRTOD(B)           _strtod_l((B), NULL, _aspCloc)
 #else
 /* TEEM_HAS_USELOCALE: this whole function already runs in the "C" locale */
@@ -456,7 +455,7 @@ airSinglePrintf(FILE *file, char *str, size_t strSize, const char *_fmt, ...) {
                : vsnprintf_l(str, strSize, _aspCloc, _fmt, ap);
 #elif defined(TEEM_HAS_PRINTF_L_WIN)
     ret = file ? _vfprintf_l(file, _fmt, _aspCloc, ap) /* */
-               : _airVsnprintfCLoc(str, strSize, _fmt, _aspCloc, ap);
+               : myVsnprintfCLoc(str, strSize, _fmt, _aspCloc, ap);
 #else
     ret = file ? vfprintf(file, _fmt, ap) : vsnprintf(str, strSize, _fmt, ap);
 #endif
