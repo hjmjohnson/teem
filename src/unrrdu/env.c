@@ -31,7 +31,7 @@ static void
 envBool(FILE *file, const char *envKey, int currVal, const char *varName,
         const char *desc, int columns) {
   int val, ret;
-  char *envVal;
+  const char *envVal;
 
   fprintf(file, "%s (bool): ", envKey);
   ret = nrrdGetenvBool(&val, &envVal, envKey);
@@ -64,7 +64,7 @@ static void
 envEnum(FILE *file, const airEnum *enm, const char *envKey, int currVal,
         const char *varName, const char *desc, int columns) {
   int val, ret;
-  char *envVal;
+  const char *envVal;
 
   /* !!! HEY: CUT + PASTE !!! */
   fprintf(file, "%s (%s enum): ", envKey, enm->name);
@@ -99,7 +99,7 @@ static void
 envInt(FILE *file, const char *envKey, int currVal, const char *varName,
        const char *desc, int columns) {
   int val, ret;
-  char *envVal;
+  const char *envVal;
 
   /* !!! HEY: CUT + PASTE !!! */
   fprintf(file, "%s (int): ", envKey);
@@ -134,7 +134,7 @@ envUInt(FILE *file, const char *envKey, unsigned int currVal, const char *varNam
         const char *desc, int columns) {
   int ret;
   unsigned int val;
-  char *envVal;
+  const char *envVal;
 
   /* !!! HEY: CUT + PASTE !!! */
   fprintf(file, "%s (unsigned int): ", envKey);
@@ -204,8 +204,8 @@ unu_envMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
                 "quietly (without error and usage info) when it fails "
                 "because an input nrrd read immediately hit EOF (as often "
                 "happens when many unu invocations are piped "
-                "together). " UNRRDU_UNU_HISTORY_TRACE_ENV " "
-                "controls whether unu commands "
+                "together). " UNRRDU_TEEM_KVP_HISTORY_TRACE_ENV " "
+                "controls whether unu (plus any Teem-based CLI tools) commands "
                 "accumulate a history of their use inside output nrrd "
                 "key/value pairs."),
                AIR_FALSE);
@@ -231,13 +231,13 @@ unu_envMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
   }
   fprintf(out, "\n");
 
-  fprintf(out, "%s: ", UNRRDU_UNU_HISTORY_TRACE_ENV);
-  if (getenv(UNRRDU_UNU_HISTORY_TRACE_ENV)) {
+  fprintf(out, "%s: ", UNRRDU_TEEM_KVP_HISTORY_TRACE_ENV);
+  if (getenv(UNRRDU_TEEM_KVP_HISTORY_TRACE_ENV)) {
     fprintf(out, "is set (to what doesn't matter) **********************\n"
-                 "   ==> will trace unu history\n");
+                 "   ==> will trace unu et al history\n");
   } else {
     fprintf(out, "is NOT set\n"
-                 "   ==> will NOT trace unu history\n");
+                 "   ==> will NOT trace unu et al history\n");
   }
   fprintf(out, "\n");
 

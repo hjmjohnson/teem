@@ -686,7 +686,7 @@ gageStackBlurParmParse(gageStackBlurParm *sbp,
         pval = stok + strlen(xeq);
         bspec = nrrdBoundarySpecNew();
         airMopAdd(mop, bspec, nrrdBoundarySpecNix_mop, airMopAlways);
-        if (nrrdBoundarySpecParse(bspec, pval)) {
+        if (nrrdBoundarySpecParse(bspec, pval, AIR_FALSE /* allowMissingPadValue */)) {
           biffMovef(GAGE, NRRD, "%s: couldn't parse \"%s\" as boundary", me, pval);
           airMopError(mop);
           return 1;

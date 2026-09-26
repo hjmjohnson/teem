@@ -52,7 +52,7 @@ typedef unsigned int uint; /* uint is just more concise */
 
 /*
  * unu-specific usage printer: prints out a little banner, and a listing of all
- * available unu commands with their one-line descriptions Would use unrrduUsage but
+ * available unu commands with their one-line descriptions. Would use unrrduUsage but
  * have to handle hidden commands and the possible non-availability of "fft"
  */
 static void
@@ -168,6 +168,10 @@ main(int argc, const char **argv) {
   /* New for TeemV2: a more explicit way to support quiet quitting,
      instead of hacky macros hiding in unrrdu/privateUnrrdu.h */
   hparm->quietQuit = unrrduUnuQuietQuitTest;
+
+  /* To help debug hest issues exposed by unu, enable setting hparm->verbose based
+     on an environment variable */
+  nrrdGetenvInt(&(hparm->verbose), NULL, HEST_VERBOSE_ENV);
 
   /* if there are no arguments, or "unu list" (or "unu all" shhh), then we give general
   usage information */

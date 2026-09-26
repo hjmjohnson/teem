@@ -58,7 +58,7 @@ unrrduUnuQuietQuitTest(const char *parseErrStr, const hestOpt *errOpt) {
 // setter-from-env-far for unrrduUnuDefaultImplicitLutRmapRescale
 void
 unrrduUnuGetenvDefaultImplicitLutRmapRescale(void) {
-  char *envStr = NULL;
+  const char *envStr = NULL;
   if (AIR_FALSE
       == nrrdGetenvBool(&unrrduUnuDefaultImplicitLutRmapRescale, &envStr,
                         unrrduUnuEnvVarDefaultImplicitLutRmapRescale)) {

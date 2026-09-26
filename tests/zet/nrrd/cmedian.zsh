@@ -1,12 +1,12 @@
 #!/usr/bin/env zsh
 
-source ${0:A:h}/../zet-lib.zsh # set up the zet "library"
-#       $0 path of me
-#         :A made absolute
-#           :h head = drop my filename to get path
-#              /../ = parent directory
-setopt err_exit  # exit on error
-setopt pipe_fail # propagate pipeline errors
+cd ${0:A:h} # get to directory of this script
+#   $0 path of me
+#     :A made absolute
+#       :h head = drop my filename to get path
+source ../zet-lib.zsh # set up the zet "library"
+setopt err_exit       # exit on error
+setopt pipe_fail      # propagate pipeline errors
 if (($+commands[unu])); then
     print "${0} using unu = $(which unu)\n"
 else
@@ -44,15 +44,16 @@ Setup() {
     # (using && to join the zet_inf command and the subsequent piped test command, and the use of
     # -{ }- hest-specific command-line comments, are just to enforce formatting that shfmt will
     # not undo)
-    zet_inf 1gf fout && echo 1 | unu reshape -s -{ ....... }- 1 | unu pad -min -{ ....... }- 0 -max -{ ...................... }- $Mx[1] | valgen 1 -o $fout
-    zet_inf 1cf fout && echo 1 | unu reshape -s -{ ..... }- 1 1 | unu pad -min -{ ..... }- 0 0 -max -{ .................... }- 2 $Mx[1] | valgen 2 -o $fout
-    zet_inf 2gf fout && echo 1 | unu reshape -s -{ ..... }- 1 1 | unu pad -min -{ ..... }- 0 0 -max -{ ............... }- $Mx[2] $Mx[2] | valgen 3 -o $fout
-    zet_inf 2cf fout && echo 1 | unu reshape -s -{ ... }- 1 1 1 | unu pad -min -{ ... }- 0 0 0 -max -{ ............. }- 2 $Mx[2] $Mx[2] | valgen 4 -o $fout
-    zet_inf 3gf fout && echo 1 | unu reshape -s -{ ... }- 1 1 1 | unu pad -min -{ ... }- 0 0 0 -max -{ ........ }- $Mx[3] $Mx[3] $Mx[3] | valgen 5 -o $fout
-    zet_inf 3cf fout && echo 1 | unu reshape -s -{ . }- 1 1 1 1 | unu pad -min -{ . }- 0 0 0 0 -max -{ ...... }- 2 $Mx[3] $Mx[3] $Mx[3] | valgen 6 -o $fout
-    zet_inf 4gf fout && echo 1 | unu reshape -s -{ . }- 1 1 1 1 | unu pad -min -{ . }- 0 0 0 0 -max -{ . }- $Mx[4] $Mx[4] $Mx[4] $Mx[4] | valgen 7 -o $fout
-    zet_inf 4cf fout && echo 1 | unu reshape -s -{ }- 1 1 1 1 1 | unu pad -min -{ }- 0 0 0 0 0 -max -{ }- 2 $Mx[4] $Mx[4] $Mx[4] $Mx[4] | valgen 8 -o $fout
-    # quantize float-type *f.nrrd to uchar *8.nrrd
+    zet_inf_sec "for dimensions 1,2,3,4, creating grayscale (g) and color (c) float-type (f) arrays"
+    zet_inf 1gf fout && echo 1 | (TEEM_KVP_HISTORY_STDIN="echo 1" unu reshape -s -{ ....... }- 1) | unu pad -min -{ ....... }- 0 -max -{ ...................... }- $Mx[1] | valgen 1 -o $fout
+    zet_inf 1cf fout && echo 1 | (TEEM_KVP_HISTORY_STDIN="echo 1" unu reshape -s -{ ..... }- 1 1) | unu pad -min -{ ..... }- 0 0 -max -{ .................... }- 2 $Mx[1] | valgen 2 -o $fout
+    zet_inf 2gf fout && echo 1 | (TEEM_KVP_HISTORY_STDIN="echo 1" unu reshape -s -{ ..... }- 1 1) | unu pad -min -{ ..... }- 0 0 -max -{ ............... }- $Mx[2] $Mx[2] | valgen 3 -o $fout
+    zet_inf 2cf fout && echo 1 | (TEEM_KVP_HISTORY_STDIN="echo 1" unu reshape -s -{ ... }- 1 1 1) | unu pad -min -{ ... }- 0 0 0 -max -{ ............. }- 2 $Mx[2] $Mx[2] | valgen 4 -o $fout
+    zet_inf 3gf fout && echo 1 | (TEEM_KVP_HISTORY_STDIN="echo 1" unu reshape -s -{ ... }- 1 1 1) | unu pad -min -{ ... }- 0 0 0 -max -{ ........ }- $Mx[3] $Mx[3] $Mx[3] | valgen 5 -o $fout
+    zet_inf 3cf fout && echo 1 | (TEEM_KVP_HISTORY_STDIN="echo 1" unu reshape -s -{ . }- 1 1 1 1) | unu pad -min -{ . }- 0 0 0 0 -max -{ ...... }- 2 $Mx[3] $Mx[3] $Mx[3] | valgen 6 -o $fout
+    zet_inf 4gf fout && echo 1 | (TEEM_KVP_HISTORY_STDIN="echo 1" unu reshape -s -{ . }- 1 1 1 1) | unu pad -min -{ . }- 0 0 0 0 -max -{ . }- $Mx[4] $Mx[4] $Mx[4] $Mx[4] | valgen 7 -o $fout
+    zet_inf 4cf fout && echo 1 | (TEEM_KVP_HISTORY_STDIN="echo 1" unu reshape -s -{ }- 1 1 1 1 1) | unu pad -min -{ }- 0 0 0 0 0 -max -{ }- 2 $Mx[4] $Mx[4] $Mx[4] $Mx[4] | valgen 8 -o $fout
+    zet_inf_sec "quantize float-type *f.nrrd to uchar *8.nrrd"
     local dim
     for dim in 1 2 3 4; do
         local w

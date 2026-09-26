@@ -145,6 +145,7 @@ main(int argc, const char **argv) {
   int breakPOE = 0;
   th_getenvInt(&breakPOE, "TH_BREAK_POE");
   if (1 == breakPOE) {
+    hestOptFree(hopt); // to avoid leak
     hestParseOrExit(NULL, argc - 1, argv + 1, hparm, "th_unflagged_fixed", info);
   } else if (2 == breakPOE) {
     hestParseOrExit(hopt, argc - 1, NULL, hparm, "th_unflagged_fixed", info);

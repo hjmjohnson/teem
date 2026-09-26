@@ -882,6 +882,9 @@ rnParse_endian(FILE *file, Nrrd *nrrd, NrrdIoState *nio, int useBiff) {
   return 0;
 }
 
+/* NOTE that this function is an example of why NrrdIoState *nio cannot be const:
+   It sets state in the nio (nio->encoding) that affects later IO, which is entirely
+   in keeping with the NrrdIoState. */
 static int /* Biff: maybe:4:1 */
 rnParse_encoding(FILE *file, Nrrd *nrrd, NrrdIoState *nio, int useBiff) {
   static const char me[] = "rnParse_encoding";

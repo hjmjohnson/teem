@@ -52,7 +52,7 @@ unu_axinsertMain(int argc, const char **argv, const char *me, const hestParm *_h
   NrrdBoundarySpec *bspec;
   hestOptAdd_1_Other(&hopt, "b,boundary", "behavior", &bspec, "bleed",
                      "How to handle samples beyond the input bounds:\n "
-                     "\b\bo \"pad:<val>\": use specified value\n "
+                     "\b\bo \"pad:<V>\": pad with value V\n "
                      "\b\bo \"bleed\": extend border values outward\n "
                      "\b\bo \"mirror\": repeated reflections\n "
                      "\b\bo \"wrap\": wrap-around to other side",

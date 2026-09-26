@@ -140,7 +140,7 @@ nhBoundarySpecParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
   }
   bsp = (NrrdBoundarySpec **)ptr;
   *bsp = nrrdBoundarySpecNew();
-  if (nrrdBoundarySpecParse(*bsp, str)) {
+  if (nrrdBoundarySpecParse(*bsp, str, AIR_FALSE /* allowMissingPadValue */)) {
     nerr = biffGetDone(NRRD);
     airStrcpy(err, ASP1_H, nerr);
     /* HEY: why not freeing bsp? */
@@ -155,6 +155,35 @@ static const hestCB boundarySpec_hcb = {sizeof(NrrdBoundarySpec *),
                                         nrrdBoundarySpecNix_mop};
 
 const hestCB *const nrrdHestBoundarySpec = &boundarySpec_hcb;
+
+static int
+nhBoundarySpecParseAMPV(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
+  NrrdBoundarySpec **bsp;
+  static const char me[] = "nhBoundarySpecParseAMPV";
+  char *nerr;
+
+  if (!(ptr && str)) {
+    snprintf(err, ASP1_H, "%s: got NULL pointer", me);
+    return 1;
+  }
+  bsp = (NrrdBoundarySpec **)ptr;
+  *bsp = nrrdBoundarySpecNew();
+  if (nrrdBoundarySpecParse(*bsp, str, AIR_TRUE /* allowMissingPadValue */)) {
+    nerr = biffGetDone(NRRD);
+    airStrcpy(err, ASP1_H, nerr);
+    /* HEY: why not freeing bsp? */
+    free(nerr);
+    return 1;
+  }
+  return 0;
+}
+
+static const hestCB boundarySpecAMPV_hcb
+  = {sizeof(NrrdBoundarySpec *), "boundary specification (pad value optional)",
+     nhBoundarySpecParseAMPV, nrrdBoundarySpecNix_mop};
+/* we have a goofy long name because the hest callback API is fixed:
+   no side-channel for flags or parameters */
+const hestCB *const nrrdHestBoundarySpecAllowMissingPadValue = &boundarySpecAMPV_hcb;
 
 /* --------------------------- NrrdIter ----------------------------- */
 

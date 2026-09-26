@@ -23,15 +23,16 @@
 #define INFO "Show unu command history (if known) that made an array"
 static const char *unu_historyInfoL
   = (INFO
-     ". When the environment variable " UNRRDU_UNU_HISTORY_TRACE_ENV " "
+     ". When the environment variable " UNRRDU_TEEM_KVP_HISTORY_TRACE_ENV " "
      "is set (to what doesn't matter), unu makes an effort to trace the history "
      "of the unu commands used to generate a nrrd by saving information in "
-     "key/value pairs starting with \"" MY_HISTORY_KEY "_\". This could be of "
-     "interest in settings where unu is being used to do some work on given "
-     "real-world data, but its main purpose is to facilitate reproducibility "
-     "in settings where unu (and only unu) is used to generate synthetic/test "
-     "data from scratch.  Because there is non-trivial work in maintaining that "
-     "list of key/value pairs, this functionality is not enabled by default. "
+     "key/value pairs starting with \"" MY_HISTORY_KEY "_\". Other Teem or Teem-based "
+     "command-line tools may also use this mechanism. This may be helpful "
+     "in settings where unu et alia is being used to do some work on given "
+     "real-world data, but its motivation was to facilitate reproducibility "
+     "in settings where unu et alia is used to generate synthetic/test "
+     "data from scratch.  Because there is some computational expense in maintaining "
+     "the list of key/value pairs, this functionality is not enabled by default. "
      "See \"unu env\" for info about other consequential environment variables. "
      "The key/value pairs could be see with \"unu describe\" or "
      "(from .nrrd files) \"unu head\", but this command prints just the "
@@ -41,9 +42,9 @@ static const char *unu_historyInfoL
      "part of a command-line as well as a (hacky!) way to record the "
      "origin of data coming into stdin that did not originate with unu:\n "
      "\n "
-     "\t\t\t\texport " UNRRDU_UNU_HISTORY_TRACE_ENV "=\n "
+     "\t\t\t\texport " UNRRDU_TEEM_KVP_HISTORY_TRACE_ENV "=\n "
      "\t\t\t\techo 0 1 2 3 |\n "
-     "\t\t\t\t\t\t\t\t(" UNRRDU_UNU_HISTORY_STDIN_ENV
+     "\t\t\t\t\t\t\t\t(" UNRRDU_TEEM_KVP_HISTORY_STDIN_ENV
      "=\"echo 0 1 2 3\" unu reshape -s 2 2) |\n "
      "\t\t\t\t\t\t\t\tunu resample -s 300 300 -k tent -c node -{ bilinear interp }- |\n "
      "\t\t\t\t\t\t\t\tunu quantize -b 8 |\n "
@@ -53,7 +54,8 @@ static const char *unu_historyInfoL
      "\n "
      "The final command should show shell commands that can be copy-pasted to "
      "regenerate the bands.png data (though unfortunately not, because of "
-     "the " UNRRDU_UNU_HISTORY_STDIN_ENV " hack, the same self-contained history).\n\n "
+     "the " UNRRDU_TEEM_KVP_HISTORY_STDIN_ENV " hack, the same self-contained "
+     "history).\n\n "
      "* Uses unrrduUnuHistoryGet");
 
 static int /* Biff: 1 */

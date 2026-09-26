@@ -52,6 +52,10 @@ main(int argc, const char *argv[]) {
   hparm->respectDashDashHelp = AIR_TRUE;
   hparm->responseFileEnable = AIR_TRUE;
   hparm->elideMultipleNonExistFloatDefault = AIR_TRUE;
+  /* To help debug hest issues exposed by unu, enable setting hparm->verbose based
+     on an environment variable */
+  nrrdGetenvInt(&(hparm->verbose), NULL, HEST_VERBOSE_ENV);
+
   hestOptAdd_1_Other(&hopt, "i", "nsin", &(muu->nsin), "",
                      "input scalar volume to render", nrrdHestNrrd);
   hestOptAdd_1_Other(&hopt, "vi", "nvin", &(muu->nvin), "",

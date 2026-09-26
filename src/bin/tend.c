@@ -47,6 +47,10 @@ main(int argc, const char **argv) {
   /* set hparm->columns from ioctl if possible, else use 78 */
   hestParmColumnsIoctl(hparm, 78);
 
+  /* To help debug hest issues exposed by unu, enable setting hparm->verbose based
+     on an environment variable */
+  nrrdGetenvInt(&(hparm->verbose), NULL, HEST_VERBOSE_ENV);
+
   /* if there are no arguments, then we give general usage information */
   if (1 >= argc) {
     unrrduUsage(TEND, tendTitle, tendCmdList, hparm);

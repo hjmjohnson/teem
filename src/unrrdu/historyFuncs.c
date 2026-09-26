@@ -117,7 +117,7 @@ historyGet(unrrduUnuInNSPair insp, int commentIfNone) {
   } else if (insp.name) {
     const char *envhstdin = NULL;
     if (!strcmp("-", insp.name) /* input is stdin */
-        && (envhstdin = getenv(UNRRDU_UNU_HISTORY_STDIN_ENV))) {
+        && (envhstdin = getenv(UNRRDU_TEEM_KVP_HISTORY_STDIN_ENV))) {
       // use given back channel description of history (assuming only single line)
       char *hcmd = airOneLinify(airStrdup(envhstdin));
       assert(hcmd);
@@ -206,7 +206,7 @@ unrrduUnuHistoryAdd(unrrduUnuOutNSPair onsp,
                     int argc,
                     const char **argv,
                     unrrduUnuInNSPair insp) {
-  if (!getenv(UNRRDU_UNU_HISTORY_TRACE_ENV)) {
+  if (!getenv(UNRRDU_TEEM_KVP_HISTORY_TRACE_ENV)) {
     /* see above */
     unrrduUnuHistoryClear(onsp.nout);
     return 0;

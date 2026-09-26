@@ -1,8 +1,12 @@
 #!/usr/bin/env zsh
 
-source ${0:A:h}/../zet-lib.zsh # set up the zet "library"
-setopt err_exit                # exit on error
-setopt pipe_fail               # propagate pipeline errors
+cd ${0:A:h} # get to directory of this script
+#   $0 path of me
+#     :A made absolute
+#       :h head = drop my filename to get path
+source ../zet-lib.zsh # set up the zet "library"
+setopt err_exit       # exit on error
+setopt pipe_fail      # propagate pipeline errors
 if (($+commands[unu])); then
     print "${0} using unu = $(which unu)\n"
 else
@@ -11,24 +15,27 @@ fi
 
 Setup() {
     local szX=1000 szY=5 # size of ramp array
-    # starting with one linear ramp
-    echo "1  1 -1 -1" | unu reshape -s 2 2 | unu convert -t double |
-        unu resample -s $szX $szY -c node -k tent |
-        unu basinfo -c yramp -o yramp.nrrd
-    zet_junk yramp.nrrd
+    # zet_inf_begin triggers kvp history tracing, which we want in yramp.nrrd
     zet_inf_begin 'rows%s.nrrd' ######## BEGIN input file creation
-    # make xramp, apply different powers, and then add in yramp
+    zet_inf_sec starting with one linear ramp yramp.nrrd
+    echo 1 1 -1 -1 |
+        (TEEM_KVP_HISTORY_STDIN="echo 1  1 -1 -1" unu reshape -s 2 2) |
+        unu convert -t double |
+        unu resample -s $szX $szY -c node -k tent -o yramp.nrrd
+    zet_junk yramp.nrrd
+    zet_inf_sec make xramp, apply different powers, and then add in yramp
     local tenpow outf
-    for tenpow in 08 10 13; do # the powers, times 10
+    for tenpow in 08 10 13; do # the powers times 10
         zet_inf $tenpow outf
         local pow=$(($tenpow / 10.0))
-        echo "0  1  0  1" | unu reshape -s 2 2 | unu convert -t double |
+        echo 0 1 0 1 |
+            (TEEM_KVP_HISTORY_STDIN="echo 0 1 0 1" unu reshape -s 2 2) |
+            unu convert -t double |
             unu resample -s $szX $szY -c node -k tent |
-            unu basinfo -c xramp |
             unu 2op pow - $pow |
             unu 2op + - yramp.nrrd -o $outf
     done
-    # shifting values Up and Down
+    zet_inf_sec shifting values Up and Down
     local ike
     for ike in $ZET_IKE; do
         local inf=$(zet_inf $ike)
@@ -37,7 +44,7 @@ Setup() {
         zet_inf ${ike}D outf
         unu 2op - $inf 10000 -o $outf
     done
-    # inserting span of constant values in the middle
+    zet_inf_sec inserting span of constant values in the middle
     for ike in $ZET_IKE; do
         local inf=$(zet_inf $ike)
         zet_inf ${ike}C outf
@@ -45,7 +52,7 @@ Setup() {
             unu axinsert -a 0 -s $((szX / 25)) |
             unu inset -i $inf -s - -min $((szX / 2 - szX / 50)) 0 -o $outf
     done
-    # histograms of all of these
+    zet_inf_sec histograms of all of these
     for ike in $ZET_IKE; do
         local inf=$(zet_inf $ike)
         zet_inf ${ike}H outf
@@ -92,7 +99,9 @@ zet_begin ####### BEGIN testing
 Test() {
     local MM=(min max mean median mode prod sum L1 L2 L4 nL2
         rms Linf var stdv cov skew slope intc error
-        hmin hmax hmean hmedian hmode hproduct hsum hL2 hvar hstdv)
+        hmin hmax hmean hmedian hmode hproduct hsum hL2 hvar hsd)
+    # NOTE: "histo-stdv" is a newer alias for histo-sd but for compatability
+    # with testing old code, use old histo-sd name, hence "hsd" above not "hstdv"
     local ike
     for ike in $ZET_IKE; do
         local mm

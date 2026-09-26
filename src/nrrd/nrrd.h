@@ -863,12 +863,13 @@ NRRD_EXPORT const char *const nrrdEnvVarStateMeasureModeBins;
 NRRD_EXPORT const char *const nrrdEnvVarStateMeasureHistoType;
 NRRD_EXPORT const char *const nrrdEnvVarStateGrayscaleImage3D;
 NRRD_EXPORT const char *const nrrdEnvVarStateEncodingAsciiCommaAllow;
-NRRD_EXPORT int nrrdGetenvBool(int *val, char **envStr, const char *envVar);
-NRRD_EXPORT int nrrdGetenvEnum(int *val, char **envStr, const airEnum *enm,
+NRRD_EXPORT int nrrdGetenvBool(int *val, const char **envStr, const char *envVar);
+NRRD_EXPORT int nrrdGetenvEnum(int *val, const char **envStr, const airEnum *enm,
                                const char *envVar);
-NRRD_EXPORT int nrrdGetenvInt(int *val, char **envStr, const char *envVar);
-NRRD_EXPORT int nrrdGetenvUInt(unsigned int *val, char **envStr, const char *envVar);
-NRRD_EXPORT int nrrdGetenvDouble(double *val, char **envStr, const char *envVar);
+NRRD_EXPORT int nrrdGetenvInt(int *val, const char **envStr, const char *envVar);
+NRRD_EXPORT int nrrdGetenvUInt(unsigned int *val, const char **envStr,
+                               const char *envVar);
+NRRD_EXPORT int nrrdGetenvDouble(double *val, const char **envStr, const char *envVar);
 NRRD_EXPORT int nrrdGetenvString(const char **envStr, const char *envVar);
 NRRD_EXPORT void nrrdDefaultGetenv(void);
 NRRD_EXPORT void nrrdStateGetenv(void);
@@ -920,13 +921,18 @@ NRRD_EXPORT NrrdBoundarySpec *nrrdBoundarySpecNix(NrrdBoundarySpec *bspec);
 NRRD_EXPORT void *nrrdBoundarySpecNix_mop(void *);
 NRRD_EXPORT NrrdBoundarySpec *nrrdBoundarySpecCopy(const NrrdBoundarySpec *bsp);
 NRRD_EXPORT int nrrdBoundarySpecCheck(const NrrdBoundarySpec *bspec);
-NRRD_EXPORT int nrrdBoundarySpecParse(NrrdBoundarySpec *bspec, const char *str);
+NRRD_EXPORT int nrrdBoundarySpecParse(NrrdBoundarySpec *bspec, const char *str,
+                                      int allowMissingPadValue);
 NRRD_EXPORT int nrrdBoundarySpecSprint(char str[AIR_STRLEN_SMALL + 1],
                                        const NrrdBoundarySpec *bspec);
 NRRD_EXPORT int nrrdBoundarySpecCompare(const NrrdBoundarySpec *bspecA,
                                         const NrrdBoundarySpec *bspecB,
                                         int *differ,
                                         char explain[AIR_STRLEN_LARGE + 1]);
+NRRD_EXPORT int nrrdHestBoundarySpecFinish(NrrdBoundarySpec *bsp, const hestOpt *bspHopt,
+                                           double pv, const hestOpt *pvHopt,
+                                           const char *warnOnMootPadValueMe);
+
 /* ---- END non-NrrdIO */
 NRRD_EXPORT NrrdIoState *nrrdIoStateNew(void);
 NRRD_EXPORT void nrrdIoStateInit(NrrdIoState *nio);
@@ -1228,6 +1234,7 @@ NRRD_EXPORT const hestCB *const nrrdHestNrrd;
 NRRD_EXPORT const hestCB *const nrrdHestNrrdNoTTY;
 NRRD_EXPORT const hestCB *const nrrdHestKernelSpec;
 NRRD_EXPORT const hestCB *const nrrdHestBoundarySpec;
+NRRD_EXPORT const hestCB *const nrrdHestBoundarySpecAllowMissingPadValue;
 NRRD_EXPORT const hestCB *const nrrdHestIter;
 
 /******** nrrd value iterator gadget */

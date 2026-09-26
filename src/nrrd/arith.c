@@ -598,11 +598,15 @@ nrrdArithBinaryOp(Nrrd *nout, int op, const Nrrd *ninA, const Nrrd *ninB) {
 
   contA = nrrd__ContentGet(ninA);
   contB = nrrd__ContentGet(ninB);
-  if (nrrd__ContentSet_va(nout, airEnumStr(nrrdBinaryOp, op), contA, "%s", contB)) {
-    biffAddf(NRRD, "%s:", me);
-    free(contA);
-    free(contB);
-    return 1;
+  if (nrrdStateAlwaysSetContent || /* or else we do NOT always set content and */
+      (strcmp(nrrdStateUnknownContent, contA) /* both contents are actually set */
+       && strcmp(nrrdStateUnknownContent, contB))) {
+    if (nrrd__ContentSet_va(nout, airEnumStr(nrrdBinaryOp, op), contA, "%s", contB)) {
+      biffAddf(NRRD, "%s:", me);
+      free(contA);
+      free(contB);
+      return 1;
+    }
   }
   free(contA);
   free(contB);
@@ -682,11 +686,15 @@ nrrdArithIterBinaryOpSelect(Nrrd *nout, int op, NrrdIter *inA, NrrdIter *inB,
   }
   contA = nrrdIterContent(inA);
   contB = nrrdIterContent(inB);
-  if (nrrd__ContentSet_va(nout, airEnumStr(nrrdBinaryOp, op), contA, "%s", contB)) {
-    biffAddf(NRRD, "%s:", me);
-    free(contA);
-    free(contB);
-    return 1;
+  if (nrrdStateAlwaysSetContent || /* or else we do NOT always set content and */
+      (strcmp(nrrdStateUnknownContent, contA) /* both contents are actually set */
+       && strcmp(nrrdStateUnknownContent, contB))) {
+    if (nrrd__ContentSet_va(nout, airEnumStr(nrrdBinaryOp, op), contA, "%s", contB)) {
+      biffAddf(NRRD, "%s:", me);
+      free(contA);
+      free(contB);
+      return 1;
+    }
   }
   if (nout != nin) {
     nrrdAxisInfoCopy(nout, nin, NULL, NRRD_AXIS_INFO_NONE);
@@ -911,13 +919,18 @@ nrrdArithTernaryOp(Nrrd *nout, int op, const Nrrd *ninA, const Nrrd *ninB,
   contA = nrrd__ContentGet(ninA);
   contB = nrrd__ContentGet(ninB);
   contC = nrrd__ContentGet(ninC);
-  if (nrrd__ContentSet_va(nout, airEnumStr(nrrdTernaryOp, op), contA, "%s,%s", contB,
-                          contC)) {
-    biffAddf(NRRD, "%s:", me);
-    free(contA);
-    free(contB);
-    free(contC);
-    return 1;
+  if (nrrdStateAlwaysSetContent || /* or else we do NOT always set content and */
+      (strcmp(nrrdStateUnknownContent, contA) /* all contents are actually set */
+       && strcmp(nrrdStateUnknownContent, contB)
+       && strcmp(nrrdStateUnknownContent, contC))) {
+    if (nrrd__ContentSet_va(nout, airEnumStr(nrrdTernaryOp, op), contA, "%s,%s", contB,
+                            contC)) {
+      biffAddf(NRRD, "%s:", me);
+      free(contA);
+      free(contB);
+      free(contC);
+      return 1;
+    }
   }
   free(contA);
   free(contB);
@@ -997,13 +1010,18 @@ nrrdArithIterTernaryOpSelect(Nrrd *nout, int op, NrrdIter *inA, NrrdIter *inB,
   contA = nrrdIterContent(inA);
   contB = nrrdIterContent(inB);
   contC = nrrdIterContent(inC);
-  if (nrrd__ContentSet_va(nout, airEnumStr(nrrdTernaryOp, op), contA, "%s,%s", contB,
-                          contC)) {
-    biffAddf(NRRD, "%s:", me);
-    free(contA);
-    free(contB);
-    free(contC);
-    return 1;
+  if (nrrdStateAlwaysSetContent || /* or else we do NOT always set content and */
+      (strcmp(nrrdStateUnknownContent, contA) /* all contents are actually set */
+       && strcmp(nrrdStateUnknownContent, contB)
+       && strcmp(nrrdStateUnknownContent, contC))) {
+    if (nrrd__ContentSet_va(nout, airEnumStr(nrrdTernaryOp, op), contA, "%s,%s", contB,
+                            contC)) {
+      biffAddf(NRRD, "%s:", me);
+      free(contA);
+      free(contB);
+      free(contC);
+      return 1;
+    }
   }
   if (nout != nin) {
     nrrdAxisInfoCopy(nout, nin, NULL, NRRD_AXIS_INFO_NONE);
@@ -1130,16 +1148,23 @@ nrrdArithIterAffine(Nrrd *nout, NrrdIter *minIn, NrrdIter *in, NrrdIter *maxIn,
   contC = nrrdIterContent(maxIn);
   contD = nrrdIterContent(maxOut);
   contE = nrrdIterContent(maxOut);
-  /* HEY: same annoyance about order of arguments as in function above */
-  if (nrrd__ContentSet_va(nout, "affine", contA, "%s,%s,%s,%s", contB, contC, contD,
-                          contE)) {
-    biffAddf(NRRD, "%s:", me);
-    free(contA);
-    free(contB);
-    free(contC);
-    free(contD);
-    free(contE);
-    return 1;
+  if (nrrdStateAlwaysSetContent || /* or else we do NOT always set content and */
+      (strcmp(nrrdStateUnknownContent, contA) /* all contents are actually set */
+       && strcmp(nrrdStateUnknownContent, contB)
+       && strcmp(nrrdStateUnknownContent, contC)
+       && strcmp(nrrdStateUnknownContent, contD)
+       && strcmp(nrrdStateUnknownContent, contE))) {
+    /* HEY: same annoyance about order of arguments as in function above */
+    if (nrrd__ContentSet_va(nout, "affine", contA, "%s,%s,%s,%s", contB, contC, contD,
+                            contE)) {
+      biffAddf(NRRD, "%s:", me);
+      free(contA);
+      free(contB);
+      free(contC);
+      free(contD);
+      free(contE);
+      return 1;
+    }
   }
   free(contA);
   free(contB);
