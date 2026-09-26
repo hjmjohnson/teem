@@ -547,6 +547,32 @@ miteDefOpacMatters --> miteDefaultOpacMatters
 
 ========= air =========
 
+• Sat Sep 26 10:17:27 2026 -0500 git commit 436dc5583
+BUG FIX thanks to Hans Johnson. Finally, how floating point numbers are
+printed by src/air/miscAir.c:airSinglePrintf(), and
+parsed by src/air/parseAir.c:airSingleSscanf()
+is not sensitive to locale. Quoting Han's commit message:
+
+    All float parsing funnels through airSingleSscanf() and all float
+    formatting through airSinglePrintf(); both honored the ambient
+    LC_NUMERIC locale, so a decimal-comma locale (e.g. de_DE.UTF-8) parsed
+    "0.878906" as 0 and printed it as "0,878906" -- corrupting NRRD headers
+    and ASCII data in both directions.
+
+    Parse with strtod_l() and print with the printf_l() family (on
+    glibc/musl, which lack printf_l, printf honors the uselocale()
+    thread-local locale, so swap it around the print) against one cached
+    "C" locale shared via privateAir.h. Overflow (ERANGE with +/-HUGE_VAL)
+    and an unobtainable "C" locale fail the operation rather than yielding
+    a wrong value; ERANGE underflow is a valid subnormal or zero and is
+    accepted. Platforms without any of these APIs keep historical behavior.
+
+    tests/ctest/air/locale.c verifies parse and print round trips under
+    installed decimal-comma locales, and skips (exit 77) when none is
+    available.  The "C" locale is created under pthread_once only when
+    Teem is built with pthreads, matching threadAir.c.
+
+
 • Wed Aug 26 14:04:12 2026 -0500 git commit ad42d9b0
 - BUG FIX: using airSingleSscanf("%zu") to parse a size_t had numerous serious
   bugs: not being careful with given NULL pointers, looking at memory after the
@@ -1052,8 +1078,10 @@ command-line tools (currently: miter, puller, tend, unu) now check when they've 
 so that you can debug hest issues in the context of these tools, without recompiling
 in order to change hparm->verbose
 
-• (many commits in Aug and Sept 2026)
-Most of hest was re-written in 2025, but there are still loose ends in specifying the
+• Fri Sep 25 11:36:23 2026 +0000 git commit 914af764
+  Fri Sep 18 06:31:31 2026 +0000 git commit 6494681f
+  (and many other commits in August + September 2026)
+Most of hest was re-written in 2025, but there were still loose ends in specifying the
 behavior of multiple unflagged options with defaults (mainly who consumed what from the
 command-line, when).  The hest/0-README.md is now a readable and correct account of how
 hest works (more up-to-date than any previous web page). Hest functionality was mostly
@@ -1064,8 +1092,11 @@ of hest. The (hacky) driver script 0-go.sh can turn this into coverage testing: 
 has 100% line coverage, and essentially complete branch coverage. Fuzz testing would be
 a better next step than chasing 100% branch coverage. The testing framework provided a
 way to verify the claims about behavior made in hest/0-README.md, and to carefully
-implement "-." variadic parm ending, "--" parse stopping, and option priority ordering.
-Future enhancements to hest will hopefully also be sped up thanks to this.
+test "-." variadic parm ending, "--" parse stopping, and option priority ordering.
+The foundating of rigorous testing will hopefully sped up future hest enhancements.
+The only major missing feature as far as GLK is concerned are section markers: ways of
+visually separating/grouping subsets of options in the glossary when there are many
+many options (like the 50+ options of "tend glyph")
 
 • Wed Sep 9 05:07:23 2026 -0500 git commit c94909b3
 API CHANGE: added `priority` to the `hestOpt`
@@ -1487,6 +1518,14 @@ should have been taking a const char * as a second arg (various files in other l
 updated to conform).
 
 ========= nrrd =========
+
+• Sat Sep 26 07:43:06 2026 -0500 git commit 237b202d
+BUG FIX, BIG THANKS to Hans Johnson.  If a NRRD had comments or key/value pairs and also
+had multiple data files to be named in a "data file: LIST" in a detached header,
+src/nrrd/formatNRRD.c:formatNRRD_write() would write a botched header (!) with the
+comments or key/value pairs coming after "data file: LIST", and hence polluting the list
+of filenames that is supposed to be how the file ends.  This is now exercised with the
+new tests/ctest/nrrd/tdatafilelast.c as well as the new tests/zet/unrrdu/make.zsh
 
 • Thu Sep 24 03:09:53 2026 -0500 git commit 4790cfbb
 BUG FIX: nrrd arithmetic functions nrrdArithBinaryOp, nrrdArithIterBinaryOpSelect,
@@ -1981,8 +2020,11 @@ input histogram was all zeros, the output value is nan
 
 ========= unrrdu / unu =========
 
+• Sat Sep 26 07:47:06 2026 -0500 git commit 23814bbc
+unu BEHAVIOR NEW: "unu make" now accepts -cm/--comment to set comments in NRRD header
+
 • Wed Sep 23 02:52:05 2026 -0500 git commit 2cd82b4e
-BEHAVIOR CHANGE: Finally!!! "unu pad" and "unu resample" can use "-b pad:<val>" for
+unu BEHAVIOR CHANGE: Finally!!! "unu pad" and "unu resample" can use "-b pad:<val>" for
 padding with a specific value, as well as long-established "-b pad -p <val>".  Handling
 both is enabled by API CHANGEd nrrdBoundarySpecParse and API NEW
 nrrdHestBoundarySpecAllowMissingPadValue, nrrdHestBoundarySpecFinish
