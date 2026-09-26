@@ -94,10 +94,16 @@ consistent "UNU_QUIET_QUIT" is now (for TeemV2) also supported.
 */
 #define UNRRDU_UNU_QUIET_QUIT_ENV     "UNU_QUIET_QUIT"
 #define UNRRDU_UNU_QUIET_QUIT_ENV_OLD "UNRRDU_QUIET_QUIT"
-// for controlling whether to build up unu history in key/value pairs
-#define UNRRDU_UNU_HISTORY_TRACE_ENV  "UNU_HISTORY_TRACE"
-// back-channel to specify history of stdin when missing
-#define UNRRDU_UNU_HISTORY_STDIN_ENV  "UNU_HISTORY_STDIN"
+
+/* For controlling whether to build up command history for unu and other related tools
+in the key/value pairs of a nrrd. TEEM_KVP_HISTORY_TRACE is the Sept 2026 rename of what
+started (Jan 2026) as UNU_HISTORY_TRACE.  Because other unrrdu-based tools like
+"tend" also have a command history that should be consistently recorded, the name was
+changed to avoid unu-specificity, and also to be more specific about where this history
+is stored (in the key-value pairs aka kvp) */
+#define UNRRDU_TEEM_KVP_HISTORY_TRACE_ENV "TEEM_KVP_HISTORY_TRACE"
+// back-channel to specify history of whatever generated stdin (if not a nrrd)
+#define UNRRDU_TEEM_KVP_HISTORY_STDIN_ENV "TEEM_KVP_HISTORY_STDIN"
 
 /*
  ******** unrrduCmd

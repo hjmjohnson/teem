@@ -71,13 +71,13 @@ unu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hparm
                   "extension) determined by the options below. The single "
                   "constraint is that detached headers are incompatible with "
                   "using stdin as the data source.");
-  char **dataFileNames;
-  uint nameLen;
-  hestOptAdd_Mv_String(&hopt, "i,input", "file", 1, -1, &dataFileNames, "-",
-                       "Filename(s) of data file(s); use \"-\" for stdin. *OR*, can "
-                       "use sprintf-style format for identifying a range of numbered "
-                       "files, see above for details.",
-                       &nameLen);
+  char **dfns;
+  uint dfnsLen;
+  uint dfnsIdx = hestOptAdd_Mv_String(
+    &hopt, "i,input", "file", 1, -1, &dfns, "-",
+    "Filename(s) of data file(s); use \"-\" for stdin. *OR*, can use sprintf-style "
+    "format for identifying a range of numbered files, see above for details.",
+    &dfnsLen);
   int type;
   hestOptAdd_1_Enum(&hopt, "t,type", "type", &type, NULL,
                     "type of data (e.g. \"uchar\", \"int\", \"float\", "
@@ -96,55 +96,53 @@ unu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hparm
                     "default (not using this option), this dimension is assumed "
                     "to be one less than the whole data dimension. ");
   double *spacing;
-  uint spacingLen, spacingIdx = hestOptAdd_Mv_Double(
-                     &hopt, "sp,spacing", "sp0 sp1", 1, -1, &spacing, "nan",
-                     "spacing between samples on each axis.  Use \"nan\" for "
-                     "any non-spatial axes (e.g. spacing between red, green, and blue "
-                     "along axis 0 of interleaved RGB image data)",
-                     &spacingLen);
+  uint spacingLen;
+  hestOptAdd_Mv_Double(&hopt, "sp,spacing", "sp0 sp1", 0, -1, &spacing, "",
+                       "spacing between samples on each axis.  Use \"nan\" for "
+                       "any non-spatial axes (e.g. spacing between red, green, and blue "
+                       "along axis 0 of interleaved RGB image data)",
+                       &spacingLen);
   /* NB: these are like unu jhisto's -min -max, not like unu crop's */
   double *axmin, *axmax, *thickness;
   uint minLen, maxLen, thicknessLen;
-  uint minIdx = hestOptAdd_Mv_Double(
-    &hopt, "min,axismin", "min0 min1", 1, -1, &axmin, "nan",
-    "When each axis has a distinct meaning (as in a joint "
-    "histogram), the per-axis min is the smallest \"position\" "
-    "associated with the first sample on the axis. Use \"nan\" for "
-    "\"no value to set\" when other axes do have axis min",
-    &minLen);
-  uint maxIdx = hestOptAdd_Mv_Double(
-    &hopt, "max,axismax", "max0 max1", 1, -1, &axmax, "nan",
-    "Goes with -min: the per-axis maximum \"position\". "
-    "-max and -min should probably be used together, and having "
-    "this information logically supersedes the -sp spacing on those "
-    "axes.",
-    &maxLen);
-  uint thicknessIdx = hestOptAdd_Mv_Double(
-    &hopt, "th,thickness", "th0 th1", 1, -1, &thickness, "nan",
-    "thickness of region represented by one sample along each axis. "
-    "  As with -sp spacing, use \"nan\" for "
-    "any non-spatial axes.",
-    &thicknessLen);
+  hestOptAdd_Mv_Double(&hopt, "min,axismin", "min0 min1", 0, -1, &axmin, "",
+                       "When each axis has a distinct meaning (as in a joint "
+                       "histogram), the per-axis min is the smallest \"position\" "
+                       "associated with the first sample on the axis. Use \"nan\" for "
+                       "\"no value to set\" when other axes do have axis min",
+                       &minLen);
+  hestOptAdd_Mv_Double(&hopt, "max,axismax", "max0 max1", 0, -1, &axmax, "",
+                       "Goes with -min: the per-axis maximum \"position\". "
+                       "-max and -min should probably be used together, and having "
+                       "this information logically supersedes the -sp spacing on those "
+                       "axes.",
+                       &maxLen);
+  hestOptAdd_Mv_Double(&hopt, "th,thickness", "th0 th1", 0, -1, &thickness, "",
+                       "thickness of region represented by one sample along each axis. "
+                       "  As with -sp spacing, use \"nan\" for "
+                       "any non-spatial axes.",
+                       &thicknessLen);
   char **kinds;
   uint kindsLen;
-  hestOptAdd_Mv_String(&hopt, "k,kind", "k0 k1", 1, -1, &kinds, "",
-                       "what \"kind\" is each axis, from the nrrdKind airEnum "
-                       "(e.g. space, time, 3-vector, 3D-masked-symmetric-matrix, "
-                       "or \"none\" to signify no kind)",
-                       &kindsLen);
-  char **centerings;
-  uint centeringsLen;
-  hestOptAdd_Mv_String(&hopt, "cn,centering", "c0 c1", 1, -1, &centerings, "",
-                       "kind of centering (node or cell) for each axis, or "
-                       "\"none\" to signify no centering",
-                       &centeringsLen);
+  uint kindIdx = hestOptAdd_Mv_String(
+    &hopt, "k,kind", "k0 k1", 0, -1, &kinds, "",
+    "what \"kind\" is each axis, from the nrrdKind airEnum (e.g. space, time, "
+    "3-vector, 3D-masked-symmetric-matrix, or \"none\" to signify no kind)",
+    &kindsLen);
+  char **centers;
+  uint centersLen;
+  uint centersIdx = hestOptAdd_Mv_String(
+    &hopt, "cn,centering", "c0 c1", 0, -1, &centers, "",
+    "kind of centering (node or cell) for each axis, or \"none\" to signify "
+    "no centering",
+    &centersLen);
   char **label;
   uint labelLen;
-  hestOptAdd_Mv_String(&hopt, "l,label", "lb0 lb1", 1, -1, &label, "",
+  hestOptAdd_Mv_String(&hopt, "l,label", "lb0 lb1", 0, -1, &label, "",
                        "short string labels for each of the axes", &labelLen);
   char **units;
   uint unitsLen;
-  hestOptAdd_Mv_String(&hopt, "u,unit", "un0 un1", 1, -1, &units, "",
+  hestOptAdd_Mv_String(&hopt, "u,unit", "un0 un1", 0, -1, &units, "",
                        "short strings giving units for each of the axes", &unitsLen);
   char *content;
   hestOptAdd_1_String(&hopt, "c,content", "content", &content, "",
@@ -186,15 +184,6 @@ unu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hparm
                     "\"big\" for everyone else (most significant byte first). "
                     "Defaults to endianness of this machine",
                     airEndian);
-  char **kvp;
-  uint kvpLen;
-  hestOptAdd_Mv_String(&hopt, "kv,keyvalue", "key/val", 1, -1, &kvp, "",
-                       "key/value string pairs to be stored in nrrd.  Each key/value "
-                       "pair must be a single string (put it in \"\"s "
-                       "if the key or the value contain spaces).  The format of each "
-                       "pair is \"<key>:=<value>\", with no spaces before or after "
-                       "\":=\".",
-                       &kvpLen);
   char *spcStr;
   hestOptAdd_1_String(&hopt, "spc,space", "space", &spcStr, "",
                       "identify the space (e.g. \"RAS\", \"LPS\") in which the array "
@@ -232,10 +221,26 @@ unu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hparm
                       "world space.");
   char **spunits;
   uint spunitsLen;
-  hestOptAdd_Mv_String(&hopt, "spu,spaceunit", "su0 su1", 1, -1, &spunits, "",
-                       "short strings giving units with which the coefficients of the "
-                       "space origin and direction vectors are measured.",
-                       &spunitsLen);
+  uint spunitsIdx = hestOptAdd_Mv_String(
+    &hopt, "spu,spaceunit", "su0 su1", 0, -1, &spunits, "",
+    "short strings giving units with which the coefficients of the "
+    "space origin and direction vectors are measured.",
+    &spunitsLen);
+  char **kvp;
+  uint kvpLen;
+  hestOptAdd_Mv_String(&hopt, "kv,keyvalue", "key/val", 0, -1, &kvp, "",
+                       "key/value string pairs to be stored in nrrd.  Each key/value "
+                       "pair must be a single string (put it in \"\"s "
+                       "if the key or the value contain spaces).  The format of each "
+                       "pair is \"<key>:=<value>\", with no spaces before or after "
+                       "\":=\".",
+                       &kvpLen);
+  char **cmnt;
+  uint cmntLen;
+  hestOptAdd_Mv_String(&hopt, "cm,comment", "comment", 0, -1, &cmnt, "",
+                       "comments to be stored in nrrd.  Each one must be a single "
+                       "string (put it in \"\"s if it contain spaces).",
+                       &cmntLen);
   char *out;
   hestOptAdd_1_String(&hopt, "o,output", "nout", &out, "-",
                       "output filename.  If \"-h\" has been used, the output file is "
@@ -257,9 +262,9 @@ unu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hparm
 
   // (boilerplate for YES some hparm modification)
   hestParm *hparm = hestParmCopy(_hparm);
-  /* so that long lists of filenames can be read from file */
   // Gone in TeemV2: hparm->greedySingleString = AIR_TRUE;
   // Gone in TeemV2: airStrtokQuoting = AIR_TRUE;
+  /* so that long lists of filenames can be read from file */
   hparm->responseFileEnable = AIR_TRUE;
   hestParseOrExit(hopt, argc, argv, hparm, me, unu_makeInfoL);
   airArray *mop = unrrduMopNew(hopt, hparm);
@@ -267,13 +272,13 @@ unu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hparm
 
   /* ---------------- BEGIN ERROR CHECKING --------------- */
   if (headerOnly) {
-    for (uint ii = 0; ii < nameLen; ii++) {
-      if (!strcmp("-", dataFileNames[ii])) {
+    for (uint ii = 0; ii < dfnsLen; ii++) {
+      if (!strcmp("-", dfns[ii])) {
         fprintf(stderr,
                 "%s: can't use detached headers (\"-h\") "
                 "with stdin (\"-\") as data source "
                 "(filename %u of %u)\n",
-                me, ii + 1, nameLen);
+                me, ii + 1, dfnsLen);
         airMopError(mop);
         return 1;
       }
@@ -283,64 +288,30 @@ unu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hparm
      so as to simulate having read the information from a header */
   if (!(AIR_IN_CL(1, sizeLen, NRRD_DIM_MAX))) {
     fprintf(stderr,
-            "%s: # axis sizes (%u) not in valid nrrd dimension "
+            "%s: # axis sizes (%u) not in currently valid nrrd dimension "
             "range [1,NRRD_DIM_MAX] = [1,%u]\n",
             me, sizeLen, NRRD_DIM_MAX);
     airMopError(mop);
     return 1;
   }
-  int gotSpacing = hestSourceUser(hopt[spacingIdx].source);
-  if (gotSpacing && spacingLen != sizeLen) {
-    fprintf(stderr, "%s: number of spacings (%u) not same as dimension (%u)\n", me,
-            spacingLen, sizeLen);
-    airMopError(mop);
-    return 1;
+#define LEN_CHECK(VAR, WUTS)                                                            \
+  if ((VAR) && (VAR) != sizeLen) {                                                      \
+    fprintf(stderr,                                                                     \
+            "%s: number of %s (%u) not same as dimension (%u) "                         \
+            "(number of axis sizes)\n",                                                 \
+            me, (WUTS), (VAR), sizeLen);                                                \
+    airMopError(mop);                                                                   \
+    return 1;                                                                           \
   }
-  int gotThickness = hestSourceUser(hopt[thicknessIdx].source);
-  if (gotThickness && thicknessLen != sizeLen) {
-    fprintf(stderr, "%s: number of thicknesses (%u) not same as dimension (%u)\n", me,
-            thicknessLen, sizeLen);
-    airMopError(mop);
-    return 1;
-  }
-  int gotMin = hestSourceUser(hopt[minIdx].source);
-  if (gotMin && minLen != sizeLen) {
-    fprintf(stderr, "%s: number of mins (%u) not same as dimension (%u)\n", me, minLen,
-            sizeLen);
-    airMopError(mop);
-    return 1;
-  }
-  int gotMax = hestSourceUser(hopt[maxIdx].source);
-  if (gotMax && maxLen != sizeLen) {
-    fprintf(stderr, "%s: number of maxs (%u) not same as dimension (%u)\n", me, maxLen,
-            sizeLen);
-    airMopError(mop);
-    return 1;
-  }
-  if (airStrlen(label[0]) && sizeLen != labelLen) {
-    fprintf(stderr, "%s: number of labels (%u) not same as dimension (%u)\n", me,
-            labelLen, sizeLen);
-    airMopError(mop);
-    return 1;
-  }
-  if (airStrlen(units[0]) && sizeLen != unitsLen) {
-    fprintf(stderr, "%s: number of units (%u) not same as dimension (%u)\n", me,
-            unitsLen, sizeLen);
-    airMopError(mop);
-    return 1;
-  }
-  if (airStrlen(kinds[0]) && sizeLen != kindsLen) {
-    fprintf(stderr, "%s: number of kinds (%u) not same as dimension (%u)\n", me,
-            kindsLen, sizeLen);
-    airMopError(mop);
-    return 1;
-  }
-  if (airStrlen(centerings[0]) && sizeLen != centeringsLen) {
-    fprintf(stderr, "%s: number of centerings (%u) not same as dimension (%u)\n", me,
-            centeringsLen, sizeLen);
-    airMopError(mop);
-    return 1;
-  }
+  LEN_CHECK(spacingLen, "spacings");
+  LEN_CHECK(thicknessLen, "thicknesses");
+  LEN_CHECK(minLen, "mins");
+  LEN_CHECK(maxLen, "maxs");
+  LEN_CHECK(labelLen, "labels");
+  LEN_CHECK(unitsLen, "units");
+  LEN_CHECK(kindsLen, "kinds");
+  LEN_CHECK(centersLen, "centerings");
+#undef LEN_CHECK
 
   /* ----------------- END ERROR CHECKING ---------------- */
   /* ----------------- BEGIN SETTING INFO ---------------- */
@@ -348,8 +319,6 @@ unu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hparm
   airMopAdd(mop, nio, nrrdIoStateNix_mop, airMopAlways);
   Nrrd *nrrd = nrrdNew();
   airMopAdd(mop, nrrd, nrrdNuke_mop, airMopAlways);
-  char *pbuf; // parseBuf
-  size_t pbufSize;
   unsigned int spaceDim;
 
   nrrd->type = type;
@@ -358,36 +327,22 @@ unu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hparm
   /* have to simulate having parsed this line for error checking in
      nrrdIoDataFNCheck() to not cause problems */
   nio->seen[nrrdField_sizes] = AIR_TRUE;
-  if (nrrdContainsPercentThisAndMore(dataFileNames[0], 'd')) {
+  if (nrrdContainsPercentThisAndMore(dfns[0], 'd')) {
     /* trying to do a formatted filename list */
-    if (nameLen < 4 || nameLen > 5) {
+    if (!(3 == dfnsLen || 4 == dfnsLen)) {
       fprintf(stderr,
-              "%s: formatted list of filenames needs between "
-              "3 and 4 ints after the format (not %u)\n",
-              me, nameLen - 1);
+              "%s: formatted list of filenames needs either "
+              "3 or 4 ints after the format (not %u)\n",
+              me, dfnsLen - 1);
       airMopError(mop);
       return 1;
     }
-    pbufSize = 0;
-    for (uint ii = 0; ii < nameLen; ii++) {
-      pbufSize += strlen(dataFileNames[ii]) + 1;
-    }
-    pbufSize += 1;
-    char *parseBuf = pbuf = AIR_CALLOC(pbufSize, char);
-    airMopAdd(mop, parseBuf, airFree, airMopAlways);
-    pbuf[0] = '\0';
-    for (uint ii = 0; ii < nameLen; ii++) {
-      if (ii) {
-        SN_COPY(pbuf, pbufSize, " ");
-      }
-      SN_COPY(pbuf, pbufSize, dataFileNames[ii]);
-    }
-    nio->line = parseBuf;
+    nio->line = hopt[dfnsIdx].parmStr;
     nio->pos = 0;
     if (nrrdFieldInfoParse[nrrdField_data_file](NULL, nrrd, nio, AIR_TRUE)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
       fprintf(stderr, "%s: trouble with formatted filename list \"%s\":\n%s", me,
-              parseBuf, err);
+              nio->line, err);
       nio->line = NULL;
       airMopError(mop);
       return 1;
@@ -395,14 +350,14 @@ unu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hparm
     nio->line = NULL;
   } else {
     /* single or regular LIST of files */
-    if (nameLen > 1) {
+    if (dfnsLen > 1) {
       nio->dataFileDim = dataFileDim ? dataFileDim : nrrd->dim - 1;
     } else {
       nio->dataFileDim = nrrd->dim;
     }
-    airArrayLenSet(nio->dataFNArr, nameLen);
-    for (uint ii = 0; ii < nameLen; ii++) {
-      nio->dataFN[ii] = airStrdup(dataFileNames[ii]);
+    airArrayLenSet(nio->dataFNArr, dfnsLen);
+    for (uint ii = 0; ii < dfnsLen; ii++) {
+      nio->dataFN[ii] = airStrdup(dfns[ii]);
     }
   }
   if (nrrdIoDataFNCheck(nio, nrrd, AIR_TRUE)) {
@@ -412,19 +367,19 @@ unu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hparm
     return 1;
   }
 
-  if (gotSpacing) {
+  if (spacingLen) {
     nrrdAxisInfoSet_nva(nrrd, nrrdAxisInfoSpacing, spacing);
   }
-  if (gotThickness) {
+  if (thicknessLen) {
     nrrdAxisInfoSet_nva(nrrd, nrrdAxisInfoThickness, thickness);
   }
-  if (gotMin) {
+  if (minLen) {
     nrrdAxisInfoSet_nva(nrrd, nrrdAxisInfoMin, axmin);
   }
-  if (gotMax) {
+  if (maxLen) {
     nrrdAxisInfoSet_nva(nrrd, nrrdAxisInfoMax, axmax);
   }
-  if (airStrlen(label[0])) {
+  if (labelLen) {
     for (uint ii = 0; ii < nrrd->dim; ii++) {
       if (!strcmp(NO_STRING, label[ii])) {
         label[ii][0] = '\0';
@@ -432,7 +387,7 @@ unu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hparm
     }
     nrrdAxisInfoSet_nva(nrrd, nrrdAxisInfoLabel, label);
   }
-  if (airStrlen(units[0])) {
+  if (unitsLen) {
     for (uint ii = 0; ii < nrrd->dim; ii++) {
       if (!strcmp(NO_STRING, units[ii])) {
         units[ii][0] = '\0';
@@ -443,7 +398,7 @@ unu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hparm
   if (airStrlen(content)) {
     nrrd->content = airStrdup(content);
   }
-  if (airStrlen(kvp[0])) {
+  if (kvpLen) {
     for (uint ii = 0; ii < kvpLen; ii++) {
       /* a hack: have to use NrrdIoState->line as the channel to communicate
          the key/value pair, since we have to emulate it having been
@@ -463,54 +418,43 @@ unu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hparm
       nio->line = NULL;
     }
   }
-  if (airStrlen(kinds[0])) {
-    /* have to allocate line then pass it to parsing */
-    pbufSize = 0;
-    for (uint ii = 0; ii < sizeLen; ii++) {
-      pbufSize += airStrlen(" ") + airStrlen(kinds[ii]);
-    }
-    pbufSize += 1;
-    char *parseBuf = pbuf = AIR_CALLOC(pbufSize, char);
-    airMopAdd(mop, parseBuf, airFree, airMopAlways);
-    pbuf[0] = '\0';
-    for (uint ii = 0; ii < sizeLen; ii++) {
-      if (ii) {
-        SN_COPY(pbuf, pbufSize, " ");
+  if (cmntLen) {
+    /* copy-pasta of hack above */
+    for (uint ii = 0; ii < cmntLen; ii++) {
+      nio->line = cmnt[ii];
+      nio->pos = 0;
+      if (nrrdFieldInfoParse[nrrdField_comment](NULL, nrrd, nio, AIR_TRUE)) {
+        airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
+        fprintf(stderr, "%s: trouble with comment %u \"%s\":\n%s", me, ii, cmnt[ii],
+                err);
+        nio->line = NULL;
+        airMopError(mop);
+        return 1;
       }
-      SN_COPY(pbuf, pbufSize, kinds[ii]);
+      nio->line = NULL;
     }
-    nio->line = parseBuf;
+  }
+  /* pre-TeemV2, we allocated buffers here for printing space-separated kinds and
+     centers, and then passed that on to nrrdFieldInfoParse[], but now there's no need:
+     hest gives us a string that already serves that purpose */
+  if (kindsLen) {
+    nio->line = hopt[kindIdx].parmStr;
     nio->pos = 0;
     if (nrrdFieldInfoParse[nrrdField_kinds](NULL, nrrd, nio, AIR_TRUE)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
-      fprintf(stderr, "%s: trouble with kinds \"%s\":\n%s", me, parseBuf, err);
+      fprintf(stderr, "%s: trouble with kinds \"%s\":\n%s", me, nio->line, err);
       nio->line = NULL;
       airMopError(mop);
       return 1;
     }
     nio->line = NULL;
   }
-  if (airStrlen(centerings[0])) {
-    /* have to allocate line then pass it to parsing */
-    pbufSize = 0;
-    for (uint ii = 0; ii < sizeLen; ii++) {
-      pbufSize += airStrlen(" ") + airStrlen(centerings[ii]);
-    }
-    pbufSize += 1;
-    char *parseBuf = pbuf = AIR_CALLOC(pbufSize, char);
-    airMopAdd(mop, parseBuf, airFree, airMopAlways);
-    pbuf[0] = '\0';
-    for (uint ii = 0; ii < sizeLen; ii++) {
-      if (ii) {
-        SN_COPY(pbuf, pbufSize, " ");
-      }
-      SN_COPY(pbuf, pbufSize, centerings[ii]);
-    }
-    nio->line = parseBuf;
+  if (centersLen) {
+    nio->line = hopt[centersIdx].parmStr;
     nio->pos = 0;
     if (nrrdFieldInfoParse[nrrdField_centers](NULL, nrrd, nio, AIR_TRUE)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
-      fprintf(stderr, "%s: trouble with centerings \"%s\":\n%s", me, parseBuf, err);
+      fprintf(stderr, "%s: trouble with centerings \"%s\":\n%s", me, nio->line, err);
       nio->line = NULL;
       airMopError(mop);
       return 1;
@@ -523,10 +467,8 @@ unu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hparm
     if (!space) {
       /* couldn't parse it as space, perhaps its a uint */
       if (1 != sscanf(spcStr, "%u", &spaceDim)) {
-        fprintf(stderr,
-                "%s: couldn't parse \"%s\" as a nrrdSpace "
-                "or as a uint",
-                me, spcStr);
+        fprintf(stderr, "%s: couldn't parse \"%s\" as a nrrdSpace or as a uint", me,
+                spcStr);
         airMopError(mop);
         return 1;
       }
@@ -609,7 +551,7 @@ unu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hparm
     }
     nio->line = NULL;
   }
-  if (airStrlen(spunits[0])) {
+  if (spunitsLen) {
     if (!spaceSet) {
       fprintf(stderr, "%s: can't have space units with no space set\n", me);
       airMopError(mop);
@@ -628,33 +570,21 @@ unu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hparm
         spunits[ii][0] = '\0';
       }
     }
-    /* have to allocate line then pass it to parsing */
-    pbufSize = 0;
-    for (uint ii = 0; ii < nrrd->spaceDim; ii++) {
-      pbufSize += airStrlen(" ") + airStrlen("\"\"") + airStrlen(spunits[ii]);
-    }
-    pbufSize += 1;
-    char *parseBuf = pbuf = AIR_CALLOC(pbufSize, char);
-    airMopAdd(mop, parseBuf, airFree, airMopAlways);
-    pbuf[0] = '\0';
-    for (uint ii = 0; ii < nrrd->spaceDim; ii++) {
-      if (ii) {
-        SN_COPY(pbuf, pbufSize, " ");
-      }
-      SN_PRINTF(pbuf, pbufSize, "\"%s\"", spunits[ii]);
-    }
-    nio->line = parseBuf;
+    /* pre-TeemV2 explicitly "-quoted these units into a new buffer prior to
+       nrrdFieldInfoParse[nrrdField_space_units]; WHY?
+       (now just using the string hest gives us) */
+    nio->line = hopt[spunitsIdx].parmStr;
     nio->pos = 0;
     if (nrrdFieldInfoParse[nrrdField_space_units](NULL, nrrd, nio, AIR_TRUE)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
-      fprintf(stderr, "%s: trouble with space units \"%s\":\n%s", me, parseBuf, err);
+      fprintf(stderr, "%s: trouble with space units \"%s\":\n%s", me, nio->line, err);
       nio->line = NULL;
       airMopError(mop);
       return 1;
     }
     nio->line = NULL;
   }
-  if (nrrdCheckMore(nrrd, AIR_FALSE, AIR_TRUE)) {
+  if (nrrdCheckMore(nrrd, AIR_FALSE /* checkData */, AIR_TRUE /* useBiff */)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: problems with nrrd as set up:\n%s", me, err);
     airMopError(mop);
@@ -668,9 +598,9 @@ unu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hparm
   nio->byteSkip = byteSkip;
   nio->encoding = nrrdEncodingArray[encodingType];
   nio->endian = endian;
-  /* for the sake of reading in data files, this is as good a guess
-     as any as to what the header-relative path to them is.  This
-     assuages concerns that come up even with headerOnly */
+  /* for the sake of reading in data files, this is as good a guess as any of what the
+     header-relative path to them is.  This assuages concerns that come up even with
+     headerOnly */
   nio->path = airStrdup(".");
   if (headerOnly) {
     /* we open and hand off the output FILE* to the nrrd writer, which

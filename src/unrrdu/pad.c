@@ -41,17 +41,25 @@ unu_padMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
                    "there's also:\n "
                    "\b\bo m+<int> give index relative to minimum.",
                    maxLen);
-  int bb;
-  hestOptAdd_1_Enum(&hopt, "b,boundary", "behavior", &bb, "bleed",
-                    "How to handle samples beyond the input bounds:\n "
-                    "\b\bo \"pad\": use some specified value\n "
-                    "\b\bo \"bleed\": extend border values outward\n "
-                    "\b\bo \"mirror\": repeated reflections\n "
-                    "\b\bo \"wrap\": wrap-around to other side",
-                    nrrdBoundary);
+  /* TeemV2 changed this from parsing nrrdBoundary enum value to parsing a
+  nrrdBoundarySpec. To support the many existing scripts that say "-b pad -v <val>", we
+  parse with the nrrdHestBoundarySpecAllowMissingPadValue that accepts "pad" as a
+  boundary spec (with padValue==NaN), even though normally it would need to be
+  "pad:<val>".  Then nrrdHestBoundarySpecFinish finishes the cleverness. */
+  NrrdBoundarySpec *bspec;
+  uint bspecIdx = hestOptAdd_1_Other(&hopt, "b,boundary", "behavior", &bspec, "bleed",
+                                     "How to handle samples beyond the input bounds:\n "
+                                     "\b\bo \"pad\": pad with value specified via -v\n "
+                                     "\b\bo \"pad:<V>\": pad with value V\n "
+                                     "\b\bo \"bleed\": extend border values outward\n "
+                                     "\b\bo \"mirror\": repeated reflections\n "
+                                     "\b\bo \"wrap\": wrap-around to other side",
+                                     nrrdHestBoundarySpecAllowMissingPadValue);
   double padVal;
-  hestOptAdd_1_Double(&hopt, "v,value", "val", &padVal, "0.0",
-                      "for \"pad\" boundary behavior, pad with this value");
+  uint padValIdx
+    = hestOptAdd_1_Double(&hopt, "v,value", "val", &padVal, "0.0",
+                          "[DEPRECATED: use \"-b pad:<V>\" instead.]\n "
+                          "for \"pad\" boundary behavior, pad with this value");
   Nrrd *nin;
   MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
@@ -62,6 +70,12 @@ unu_padMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
   airArray *mop = unrrduMopNew(hopt, NULL);
   char *err;
 
+  if (nrrdHestBoundarySpecFinish(bspec, hopt + bspecIdx, padVal, hopt + padValIdx, me)) {
+    airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
+    fprintf(stderr, "%s: error setting boundary behavior:\n%s", me, err);
+    airMopError(mop);
+    return 1;
+  }
   if (!(minLen == nin->dim && maxLen == nin->dim)) {
     fprintf(stderr,
             "%s: # \"-min\" coords (%u) or \"-max\" coords (%u) given "
@@ -93,7 +107,7 @@ unu_padMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
 
   Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
-  if (nrrdPad_nva(nout, nin, min, max, bb, padVal)) {
+  if (nrrdPad_nva(nout, nin, min, max, bspec->boundary, bspec->padValue)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error padding nrrd:\n%s", me, err);
     airMopError(mop);

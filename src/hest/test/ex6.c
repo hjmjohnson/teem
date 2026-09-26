@@ -77,9 +77,7 @@ main(int argc, const char **argv) {
   hestParm *hparm;
   char *err = NULL;
 
-  airArray *mop = airMopNew();
   hparm = hestParmNew();
-  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hparm->responseFileEnable = AIR_TRUE;
   hparm->respectDashDashHelp = AIR_TRUE;
   hparm->usageDefaultDisplayAvoidsWrapping = AIR_FALSE;

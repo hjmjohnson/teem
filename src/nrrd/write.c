@@ -242,6 +242,7 @@ nrrd__FieldInteresting(const Nrrd *nrrd, NrrdIoState *nio, int field) {
   ret = 0;
   switch (field) {
   case nrrdField_comment:
+  case nrrdField_keyvalue:
     /* comments and key/value pairs are always handled differently (by
        being printed explicity), so they are never "interesting" */
     break;
@@ -344,10 +345,6 @@ nrrd__FieldInteresting(const Nrrd *nrrd, NrrdIoState *nio, int field) {
     break;
   case nrrdField_byte_skip:
     ret = nio->byteSkip != 0;
-    break;
-  case nrrdField_keyvalue:
-    /* comments and key/value pairs are always handled differently (by
-       being printed explicity), so they are never "interesting" */
     break;
   case nrrdField_sample_units:
     ret = !!airStrlen(nrrd->sampleUnits);

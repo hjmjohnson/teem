@@ -76,6 +76,10 @@ main(int argc, const char **argv) {
 
   hparm->responseFileEnable = AIR_TRUE;
   hparm->respectDashDashHelp = AIR_TRUE;
+  /* To help debug hest issues exposed by unu, enable setting hparm->verbose based
+     on an environment variable */
+  nrrdGetenvInt(&(hparm->verbose), NULL, HEST_VERBOSE_ENV);
+
   me = argv[0];
 
   hestOptAdd_1_Enum(&hopt, "int", "int", &interType, "justr",

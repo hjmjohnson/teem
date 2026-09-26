@@ -46,6 +46,16 @@ hestParseFree(hestOpt *hopt) {
         hopt[opi].parseMop = airMopOkay(hopt[opi].parseMop);
       }
     }
+    /* free remainArgv if it was used
+       (since our job here is to free anything allocated by hestParse) */
+    if (hopt[0].remainArgv) {
+      for (uint ri = 0; ri < hopt[0].remainArgc; ri++) {
+        free(hopt[0].remainArgv[ri]);
+      }
+      free(hopt[0].remainArgv);
+      hopt[0].remainArgv = NULL;
+      hopt[0].remainArgc = 0;
+    }
   }
   return hopt;
 }
@@ -110,7 +120,9 @@ hestParseOrExit(hestOpt *hopt,          // what to parse from command-line
     2025 re-write decided print an error message here. */
     fprintf(stderr, "%s: got NULL pointer (hopt %p, argv %p, me %p); can't proceed\n",
             __func__, AIR_VOIDP(hopt), AIR_CVOIDP(argv), AIR_CVOIDP(me));
-    exit(1); // (in hestParseOrExit)
+    hestOptFree(hopt);       // NULL hopt is fine
+    hestParmMopDone(_hparm); // NULL _hparm is fine
+    exit(1);                 // (in hestParseOrExit)
   }
   char *optErrStr = NULL;
   if (hestOptCheck(hopt, &optErrStr)) { /* bad args */
@@ -118,6 +130,8 @@ hestParseOrExit(hestOpt *hopt,          // what to parse from command-line
     fprintf(stderr, "%s(%s): ERROR in given hestOpt setup:\n%s\n", __func__, me,
             optErrStr);
     free(optErrStr);
+    hestParmMopDone(_hparm);
+    hestOptFree(hopt);
     exit(1); // (in hestParseOrExit)
   }
 
@@ -174,7 +188,7 @@ hestParseOrExit(hestOpt *hopt,          // what to parse from command-line
       if (parseErr && hopt->parseErrOptIdx >= 0) {
         // hestParse's error is attributable to failure to parse a particular option
         hestOpt *errOpt = hopt + hopt->parseErrOptIdx;
-        assert(parseErr == errOpt->parseErr); // these should be consistent
+        assert(parseErr && errOpt->parseErr); // these should be logically consistent
         // now, can run quiet quit tester
         if (hparm->quietQuit && hparm->quietQuit(parseErrStr, errOpt)) {
           // we are meeting the caller's conditions for quiet quitting

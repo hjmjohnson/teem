@@ -82,14 +82,22 @@ readonly module_path path prompt psvar reply
 # other things to avoid changing by accident; maybe should be longer
 # (we do need to meddle with IFS)
 readonly PWD OLDPWD RANDOM SECONDS
+# for $EPOCHREALTIME
+zmodload zsh/datetime
 
 ########################################################################
 ##
 ##  Top-level global variables
 ##
 
+####### ZET_PFX: way of marking lines originating from these functions
+typeset -g ZET_PFX
+ZET_PFX="(zet):"
+
 ####### ZET_ROOT: absolute directory containing this Zet library file
 if ((${+ZET_ROOT})); then
+    # ((${+FOO})) true if FOO is set, at all, else false
+    # print -u2 == print to stderr
     print -u2 "ZET_ROOT already set to $ZET_ROOT"
     print -u2 "ZET_ROOT/zet-lib.zsh should be source'd only once"
     exit 1
@@ -101,11 +109,18 @@ ZET_ROOT=${(%):-%x} # get the path of this file
 ZET_ROOT=${ZET_ROOT:A:h}
 #                  :A resolves to absolute
 #                    :h takes directory
-
-####### ZET_PFX: way of marking lines originating from these functions
-typeset -g ZET_PFX
-ZET_PFX="(zet):"
 print "$ZET_PFX Starting with ZET_ROOT=$ZET_ROOT"
+
+####### ZET_TSET_TIME0, ZET_TSET_STRIDE, ZET_TSET_COUNT
+# used for timing, or skipping through, a test set
+# variable to remember when a test set started running
+typeset -g ZET_TSET_TIME0="0"
+# For doing only every Nth test for spot checks; N=ZET_TSET_STRIDE; defaults to 1
+# example usage: ZET_TSET_STRIDE=3 nrrd/dist.zsh
+typeset -g -i ZET_TSET_STRIDE=${ZET_TSET_STRIDE:-1} # run every Nth test; 1 = all
+#                                   fall back to 1 if variable not already set
+# Count of tests executed
+typeset -g -i ZET_TSET_COUNT=0 # test counter within current set
 
 ####### ZET_DLM: visually distinctive things to delimit output
 typeset -g ZET_DLM
@@ -130,6 +145,15 @@ typeset -g -a ZET_IKE
 ####### ZET_INF_NAME
 # set by zet_inf_begin, set to "" by zet_inf_end
 typeset -g ZET_INF_NAME
+####### ZET_INF_PRINT
+# turned on by zet_inf_sec, to print input files as they are registered
+typeset -g -i ZET_INF_PRINT=0
+####### ZET_INF_BIN: if set, between zet_inf_begin and zet_inf_end, this directory
+# is prepended to PATH so that input file creation can use different tools (e.g. recent
+# unu with TEEM_KVP_HISTORY_TRACE support), separate from $PATH unu being tested
+typeset -g ZET_INF_BIN=${ZET_INF_BIN:-""}
+#                       fall back to empty string if not already set
+typeset -g ZET_INF_BIN_PATH_SAVE="" # (saved PATH during begin/end)
 
 ####### ZET_TSET: top-level description of current test set
 # (only one tset at a time can be actively running)
@@ -152,6 +176,9 @@ typeset -g -a ZET_FAIL
 typeset -g -A ZET_FAIL_COMD
 typeset -g -A ZET_FAIL_RSLT
 typeset -g -A ZET_FAIL_WANT
+####### ZET_BAIL_ON_FAIL: if set by caller (e.g. ZET_BAIL_ON_FAIL= ./dist.zsh):
+# on first test failure, do things to diagnose circumstances of failure and
+# immediately zet_end then bail
 
 #__#__# _zet_arrays_reset
 # a helper function to (re)initialize these global arrays. Despite the
@@ -223,11 +250,13 @@ _zet_cleanup() {
     ((${#ZET_JUNK[@]} == 0)) && return 0
     if ((! ${+ZET_UNJUNK})); then
         # else remove it (unless ZET_UNJUNK)
-        print "(_zet_cleanup rm'ing $#ZET_JUNK files)"
+        print "(_zet_cleanup rm'ing $#ZET_JUNK files; avoid by setting ZET_UNJUNK)"
         rm -rf -- "${ZET_JUNK[@]}"
         # clear junk list in case of repeated calls
         setopt localoptions no_warn_nested_var
         ZET_JUNK=()
+    else
+        print "ZET_UNJUNK set: NOT rm'ing $#ZET_JUNK files"
     fi
 }
 # Ensure trap works for ordinary exits and signals
@@ -276,7 +305,7 @@ zet_stop() {
 
 ########################################################################
 ##
-##  String utility functions
+##  String (and time) utility functions
 ##
 
 #__#__# _zet_unspace str
@@ -309,6 +338,15 @@ _zet_enbrace() {
     # why } but not { needs \-escaping is totally mysterious
     rest="${rest//$fname/{\}}"
     print -n "$rest"
+}
+
+#__#__# _zet_dtime time0
+# print a reasonably formatted string for delta from `time0` to now
+_zet_dtime() {
+    emulate -L zsh
+    local time0="$1"
+    local dtime=$((EPOCHREALTIME - time0))
+    printf "%.2fsec" $dtime
 }
 
 ########################################################################
@@ -404,6 +442,32 @@ zet_inf_begin() {
     ZET_INF_NAME=${fbase:t} # t = tail = end of path
     ZET_INF_FMT=$fmt
     ZET_IKE=()
+    # enstate new PATH with $ZET_INF_BIN pre-pended
+    if [[ -n $ZET_INF_BIN ]]; then
+        if [[ ! -d $ZET_INF_BIN ]]; then
+            zet_die "ZET_INF_BIN=\"$ZET_INF_BIN\" is not a directory"
+        fi
+        ZET_INF_BIN_PATH_SAVE="$PATH"
+        export PATH="$ZET_INF_BIN:$PATH"
+        print "$ZET_PFX ZET_INF_BIN=$ZET_INF_BIN prepended to PATH for input file creation"
+        if (($+commands[unu])); then
+            print "$ZET_PFX --> using unu = $(which unu)\n"
+        fi
+    else
+        print "$ZET_PFX (ZET_INF_BIN not set --> same PATH for input file creation and testing)"
+    fi
+    # For the input files, we do want to record how they were generated
+    export TEEM_KVP_HISTORY_TRACE=yes
+    # For everything (we won't undo this later), stop inventing content!
+    # This is not NRRD_STATE_DISABLE_CONTENT=true, but it prevents a bigger
+    # content string from being built around an empty ("???") one.
+    export NRRD_STATE_ALWAYS_SET_CONTENT=false
+}
+
+zet_inf_sec() {
+    emulate -L zsh
+    print "$ZET_PFX --- $ZET_INF_FMT input --- $*"
+    ZET_INF_PRINT=1
 }
 
 ####### zet_inf ike [out]
@@ -414,7 +478,7 @@ zet_inf_begin() {
 # By not being in a subshell, this increments the global list ZET_IKE with `ike`,
 # registers the resulting input filename `inf` with zet_junk, and,
 # if `fname` is given, saves the `inf` (via eval) into `fname.
-# (2):
+# (2): -i
 #      $(zet_inf $ike)
 # In this subshell mode, nothing about ZET_IKE is modified (because it would be
 # futile to modify a global in a subshell), but instead, as a printf work-alike,
@@ -450,10 +514,10 @@ zet_inf() {
         # we're learning ikes
         # and we have not see this ike before,
         # and we're not in a subshell (which makes modifying globals pointless)
-        #print -u2 "zet_inf: learning $ike"
-        #print -u2 "zet_inf: 00 $(typeset -p ZET_IKE)"
+        if ((ZET_INF_PRINT)); then
+            print -u2 "$ZET_PFX added $ike -> $ret"
+        fi
         ZET_IKE+=($ike)
-        #print -u2 "zet_inf: 11 $(typeset -p ZET_IKE)"
         zet_junk $ret
     fi
     if [[ -v outvar ]]; then # if `outvar` was set
@@ -491,26 +555,61 @@ zet_inf_end() {
     if ((! ${#ZET_IKE})); then
         zet_die "ZET_IKE is empty; was zet_inf ever called?"
     fi
+    unset TEEM_KVP_HISTORY_TRACE
+    if ((ZET_INF_PRINT)); then
+        print "$ZET_PFX --- $ZET_INF_FMT input --- DONE creating input files"
+    fi
+    # restore PATH if ZET_INF_BIN had been prepended
+    if [[ -n $ZET_INF_BIN ]]; then
+        export PATH="$ZET_INF_BIN_PATH_SAVE"
+        ZET_INF_BIN_PATH_SAVE=""
+        print "$ZET_PFX ZET_INF_BIN=$ZET_INF_BIN: PATH restored for testing"
+    fi
+    # this diagnostic doesn't logically belong in zet_inf_end, but chronologically
+    # this makes it show up in a sensible place
+    if ((ZET_TSET_STRIDE > 1)); then
+        print "$ZET_PFX Variable ZET_TSET_STRIDE=$ZET_TSET_STRIDE=N ==> will only do 1/N of tests"
+    else
+        print "$ZET_PFX Variable ZET_TSET_STRIDE not > 1, so running all tests"
+    fi
     local ichname="$ZET_INF_NAME-ich.txt"
     local ike
+    local time0=$EPOCHREALTIME
     if ((${+ZET_GEN_ICH})); then
-        print "$ZET_PFX Variable ZET_GEN_ICH is set ==> *Generating* input checksums in $ichname"
+        print -n "$ZET_PFX Variable ZET_GEN_ICH is set ==> *Generating* input checksums in $ichname ... "
         rm -f $ichname
-        touch $ichname
+        print "# $(cksum $ZET_INF_NAME.zsh)" >$ichname
         for ike in $ZET_IKE; do
             local inf=$(zet_inf $ike)
             print $(cksum $inf) >>$ichname
         done
     else
-        print "$ZET_PFX Variable ZET_GEN_ICH *not* set ==> checking against input checksums in $ichname"
+        print -n "$ZET_PFX Variable ZET_GEN_ICH *not* set ==> checking against input checksums in $ichname ... "
         if [[ ! -f $ichname ]]; then
             zet_die "Input checksum file \"$ichname\" does not exist." \
                 "Need to run first with: ZET_GEN_ICH= ./$ZET_INF_NAME.zsh"
         fi
         exec 3<"$ichname" # open file descriptor 3 for reading
-        # We don't make any effort to parse the file (e.g. ignoring comments)
-        # and we entirely rely on the ZET_IKE traversal here at read time
-        # being identical to how it worked at write time.
+        # First line must be the script cksum header
+        local hdr scrcksum
+        local regenhow="Regenerate (both -{ich,ref}.txt files) with: ZET_GEN_ICH= ZET_GEN_REF= ./$ZET_INF_NAME.zsh"
+        IFS= read -r hdr <&3
+        if [[ "$hdr" != '#'* ]]; then
+            zet_die "Input checksum file \"$ichname\" has no script cksum header." \
+                "$regenhow"
+        fi
+        scrcksum="$(cksum $ZET_INF_NAME.zsh)"
+        if [[ "$hdr" != "# $scrcksum" ]]; then
+            if ((${+ZET_IGNORE_HDR_CKSUM})); then
+                print -n "\n (ZET_IGNORE_HDR_CKSUM is set to doing that for $ichname) ... "
+            else
+                zet_die "Test script $ZET_INF_NAME.zsh has changed since $ichname was generated." \
+                    "  ${hdr#'# '}  <-- top of $ichname" \
+                    "  $scrcksum  <-- current cksum result" \
+                    "(set ZET_IGNORE_HDR_CKSUM to ignore this check)" \
+                    "$regenhow"
+            fi
+        fi
         local line
         for ike in $ZET_IKE; do
             local inf=$(zet_inf $ike)
@@ -523,6 +622,7 @@ zet_inf_end() {
         done
         exec 3<&- # close descriptor 3
     fi
+    print "done ($(_zet_dtime $time0))"
     # Keep ZET_INF_FMT and ZET_IKE as is for future $(zet_inf $ike) calls,
     # but signal that we're done learning about input files
     ZET_INF_NAME=""
@@ -535,8 +635,8 @@ zet_inf_end() {
 ##
 
 #__#__# _zet_read_reff reffile
-# Fills in hashes `ZET_COMD`, `ZET_CHEK`, `ZET_WANT`
-# from reference data in file `reffile`, each line of which is formatted as:
+# Fills in hashes `ZET_COMD`, `ZET_CHEK`, `ZET_WANT` from reference file `reffile`.
+# Each line of the reference file is formatted as:
 #       fname :: comd ;; chek => want
 # The `::`, `;;`, and `=>` delimit the `fname`, `comd`, `chek`, and `want`
 # fields, with or without any spaces around the delimiters.
@@ -548,7 +648,7 @@ zet_inf_end() {
 #   than for actually re-generating `fname`. The calling test script has to
 #   already know from context exactly how to generate `fname`.
 #   `comd` is saved in `ZET_COMD[$fname]`
-# * `chek` is the actual command(s) to run to asses something about `fname`,
+# * `chek` is the actual command(s) to run to assess something about `fname`,
 #   to see if it looks like the expected output (does it match `want`).
 #   `chek` is saved to `ZET_CHEK[$fname]`.
 #   NOTE: any extra spaces around delimeters `::`, `;;`, and `=>` may end
@@ -572,12 +672,41 @@ _zet_read_reff() {
     fi
     local line
     local lineno=0
+    local testno=0 # count of data lines = number of zet_test calls
     local fname rest0 rest1 rest2 rest3 comd chek want
+    # Verify script cksum header before parsing
+    local scrname="${reffile/-ref.txt/.zsh}"
+    {
+        local regenhow="Regenerate (both -ich and -ref) with: ZET_GEN_ICH= ZET_GEN_REF= ./$scrname"
+        local hdr_line
+        IFS= read -r hdr_line
+        if [[ "$hdr_line" != '#'* ]]; then
+            zet_die "Reference file \"$reffile\" has no script cksum header." \
+                "$regenhow"
+        fi
+        local scrcksum="$(cksum $scrname)"
+        if [[ "$hdr_line" != "# $scrcksum" ]]; then
+            if ((${+ZET_IGNORE_HDR_CKSUM})); then
+                print -n "\n (ZET_IGNORE_HDR_CKSUM is set to doing that for $reffile) ... "
+            else
+                zet_die "Test script $scrname has changed since $reffile was generated." \
+                    "  ${hdr_line#'# '}  <-- top of $reffile" \
+                    "  $scrcksum  <-- current cksum result" \
+                    "(set ZET_IGNORE_HDR_CKSUM to ignore this check)" \
+                    "$regenhow"
+            fi
+        fi
+    } <"$reffile"
     while IFS= read -r line; do
         ((++lineno))
         # Skip blank lines and comment lines
         [[ -z $line || $line == '#'* ]] && continue
         line=${line%%\#*} # handle #-comments within line
+        ((++testno))
+        # skip entries for tests that won't run due to ZET_TSET_STRIDE
+        if ((ZET_TSET_STRIDE > 1 && (testno - 1) % ZET_TSET_STRIDE != 0)); then
+            continue
+        fi
         # (trying to be faster with less =~ pattern matching)
         # Expected format: `fname :: comd ;; chek => want`
         fname=${${line%%::*}// /} # what's before ::, / / killing all space
@@ -644,12 +773,13 @@ _zet_init_reff() {
         # finishing a line that was started with "print -n" by the caller
         print "$verb reference file \"$reffile\" ..."
         rm -f "$reffile"
-        touch "$reffile"
+        print "# $(cksum ${ZET_TSET[reff]/-ref.txt/.zsh})" >"$reffile"
     else
         # not writing reffile: we're *reading* it
         print -n "reading existing reference file \"$reffile\" ... "
+        local time0=$EPOCHREALTIME
         _zet_read_reff "$reffile"
-        print "done"
+        print "done ($(_zet_dtime $time0))"
     fi
 }
 
@@ -700,7 +830,10 @@ zet_begin() {
     # Initialize test set hash
     ZET_TSET[name]=$subpath/$subname
     ZET_TSET[given]=$given
-    ZET_TSET[reff]="${caller_file_raw%.*}-ref.txt"
+    #ZET_TSET[reff]="${caller_file_raw%.*}-ref.txt"
+    ZET_TSET[reff]="${caller_file_raw:t:r}-ref.txt"
+    #                                :t strips the directory
+    #                                  :r strips the extension
     if ((${+ZET_GEN_REF})); then
         print -n "$ZET_PFX Variable ZET_GEN_REF is set ==> "
         # *Writing* reffile
@@ -718,13 +851,21 @@ zet_begin() {
         ZET_PASS=() # regular array
         ZET_FAIL=() # regular array
     fi
+    if ((ZET_TSET_STRIDE > 1 && ${+ZET_GEN_REF})); then
+        zet_die "Cannot generate reference files with ZET_TSET_STRIDE == $ZET_TSET_STRIDE != 1"
+    fi
     _zet_init_reff # will start by finishing "print -n" line above
     print "$ZET_PFX $ZET_DLM"
+    # the point of zet is not to test the ability to propagate key/value pairs
+    export NRRD_STATE_KEYVALUEPAIRS_PROPAGATE=false
+    ZET_TSET_COUNT=0 # re-set test count
     print -n "$ZET_PFX Running test set $ZET_TSET[name]: "
-    # -n so that progress indication can continue same line
+    #     -n so that progress indication can continue same line
+    # remember when we started running this test set
+    ZET_TSET_TIME0=$EPOCHREALTIME
 }
 
-####### zet_run_comd comd fname
+#__#__# _zet_run_comd comd fname
 # run command `comd` that should create (write to) file `fname`
 # but do so cautiously, and call junk on `fname`
 _zet_run_comd() {
@@ -766,15 +907,24 @@ zet_test() {
     if ((! ${#ZET_TSET[@]})); then
         zet_die "Not currently running any test set"
     fi
+    # increment test count, and bail if it should be skipped
+    ((++ZET_TSET_COUNT))
+    if ((ZET_TSET_STRIDE > 1 && (ZET_TSET_COUNT - 1) % ZET_TSET_STRIDE != 0)); then
+        print -n -- "-"
+        return 0
+    fi
+    # note that inputs $fin can be space-separated multiple input files
     local fout="$1" comd="$2" fin="$3" chek="$4" reffile=$ZET_TSET[reff]
     _zet_run_comd "$comd" "$fout"
     if [[ $ZET_TSET[mode] == "write" ]]; then
-        # Ensure ouput checker $chek includes $fout, or end it with $fout if not
-        if [[ $chek != *" $fout"* ]]; then
-            chek="${chek} ${fout}"
+        # append {} if it isn't already in there
+        if [[ $chek != *'{}'* ]]; then
+            chek="${chek} {}"
         fi
-        local want=$(eval $chek) # run the output checker
-        local rest=$(_zet_enbrace "$comd ;; $chek => $want" "$fout")
+        # resolve {} to actual filename, like _zet_read_reff does at read time
+        local chek_file="${chek//\{\}/$fout}"
+        local want=$(eval $chek_file) # run the output checker
+        local rest=$(_zet_enbrace "$comd ;; $chek_file => $want" "$fout")
         echo "$fout :: $rest" >>$reffile
         print -n "o"
     else
@@ -796,7 +946,27 @@ zet_test() {
             ZET_FAIL_RSLT[$fout]="$rslt"
             ZET_FAIL_WANT[$fout]="$want"
             # preserve the input to the failed command
-            zet_unjunk $fin # HEY should make this handle multiple inputs
+            zet_unjunk ${=fin} # = : word-split on spaces for multiple input files
+            if ((${+ZET_BAIL_ON_FAIL})); then
+                print ""
+                print "$ZET_PFX ######## ZET_BAIL_ON_FAIL --> BAILING ########"
+                print "v.v.v.v.v.v.v  which unu  v.v.v.v.v.v.v"
+                which unu
+                print "^'^'^'^'^'^'^  which unu  ^'^'^'^'^'^'^"
+                print "v.v.v.v.v.v.v  unu env  v.v.v.v.v.v.v"
+                unu env
+                print "^'^'^'^'^'^'^  unu env  ^'^'^'^'^'^'^"
+                #print "v.v.v.v.v.v.v  set  v.v.v.v.v.v.v"
+                #set
+                #print "^'^'^'^'^'^'^  set  ^'^'^'^'^'^'^"
+                #print "v.v.v.v.v.v.v  unu head fin=$fin  v.v.v.v.v.v.v"
+                #unu head $fin
+                #print "^'^'^'^'^'^'^  unu head fin=$fin  ^'^'^'^'^'^'^"
+                #print "v.v.v.v.v.v.v  unu head fout=$fout  v.v.v.v.v.v.v"
+                #unu head $fout
+                #print "^'^'^'^'^'^'^  unu head fout=$fout  ^'^'^'^'^'^'^"
+                zet_end
+            fi
         fi
     fi
 }
@@ -819,7 +989,7 @@ zet_end() {
     if [[ "${ZET_TSET[given]}" != "$given" ]]; then
         zet_die "Current test set \"${ZET_TSET[name]}\" inconsistent with arg \"$given\""
     fi
-    print "$ZET_PFX Ending test set $ZET_TSET[name]"
+    print "$ZET_PFX Ending test set $ZET_TSET[name] ($(_zet_dtime $ZET_TSET_TIME0))"
     if [[ $ZET_TSET[mode] == "read" ]]; then
         print -n "$ZET_PFX $ZET_TSET[name] results: $#ZET_PASS passed, $#ZET_FAIL failed"
         if (($#ZET_FAIL)); then
@@ -839,6 +1009,10 @@ zet_end() {
     fi
     print "$ZET_PFX $ZET_DLM"
     _zet_arrays_reset
+    if ((${+ZET_BAIL_ON_FAIL})); then
+        # send ourselves untrappable SIGKILL (like kill -9) to really bail
+        kill -KILL $$
+    fi
 }
 
 # TODO:

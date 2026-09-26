@@ -1,46 +1,62 @@
 #!/usr/bin/env zsh
 
-source ${0:A:h}/../zet-lib.zsh # set up the zet "library"
-setopt err_exit                # exit on error
-setopt pipe_fail               # propagate pipeline errors
+cd ${0:A:h} # get to directory of this script
+#   $0 path of me
+#     :A made absolute
+#       :h head = drop my filename to get path
+source ../zet-lib.zsh # set up the zet "library"
+setopt err_exit       # exit on error
+setopt pipe_fail      # propagate pipeline errors
 if (($+commands[unu])); then
     print "${0} using unu = $(which unu)\n"
 else
     zet_die "unu not found, bye"
 fi
 
+# This is the little non-trivial terrain we work with:
+#   0 0 0 0 1
+#   0 2 2 2 1
+#   0 2 4 3 1
+#   0 2 3 3 1
+#   0 0 0 0 1
+# but so that this is entirely reproducible from nrrd kvp history,
+# we recreate with unu pad commands
+
 Setup() {
-    # some sort of non-trivial terrain
-    cat >hght.txt <<'EOF'
-0 0 0 0 1
-0 2 2 2 1
-0 2 4 3 1
-0 2 3 3 1
-0 0 0 0 1
-EOF
-    zet_junk hght.txt
-    # upsample it with a bit noise to make it interesting
-    local inn out
+    # so that hght.txt can store its history, putting zet_inf_begin before
+    # creation of hght.txt, even though it is not itself an input file
+    # (zet_inf_begin sets TEEM_KVP_HISTORY_TRACE env var)
     zet_inf_begin 'hght-%s.nrrd' ######## BEGIN input file creation
-    zet_inf a11 out
+    export NRRD_DEFAULT_WRITE_BARE_TEXT=false
+    echo 4 |
+        (TEEM_KVP_HISTORY_STDIN="echo 4" unu pad -min 0 0 -max M+1 M+1 -b pad:3) |
+        unu pad -min -1 -1 -max M M -b pad:2 |
+        unu pad -min -1 -1 -max M M+1 -b pad:0 |
+        unu pad -min 0 0 -max M+1 M -b pad:1 -o hght.txt
+    unset NRRD_DEFAULT_WRITE_BARE_TEXT
+    zet_junk hght.txt
+    zet_inf_sec "upsample hght.txt with a bit noise to make it interesting"
+    local outf
+    zet_inf a11 outf
     unu resample -i hght.txt -s x3 x3 -k box |
         unu 2op nrand - 0.15 -s 53 |
         unu resample -s x15 x15 -k bspln3 |
-        unu dnorm -o $out
-    # some different aspect ratios
-    zet_inf a13 out
-    unu resample -i hght-a11.nrrd -s = /3 -k tent -o $out
-    zet_inf a21 out
-    unu resample -i hght-a11.nrrd -s /2.2 = -k tent -o $out
-    local nn
+        unu dnorm -o $outf
+    zet_inf_sec "some different aspect ratios"
+    zet_inf a13 outf
+    unu resample -i hght-a11.nrrd -s = /3 -k tent -o $outf
+    zet_inf a21 outf
+    unu resample -i hght-a11.nrrd -s /2.2 = -k tent -o $outf
+    zet_inf_sec "with swapped and/or flipped axes"
+    local nn inn
     for nn in 11 13 21; do
         inn=hght-a$nn.nrrd
-        zet_inf b$nn out
-        unu swap -i $inn -a 0 1 -o $out
-        zet_inf c$nn out
-        unu swap -i $inn -a 0 1 | unu flip -a 0 -o $out
-        zet_inf d$nn out
-        unu flip -i $inn -a 0 | unu flip -a 1 -o $out
+        zet_inf b$nn outf
+        unu swap -i $inn -a 0 1 -o $outf
+        zet_inf c$nn outf
+        unu swap -i $inn -a 0 1 | unu flip -a 0 -o $outf
+        zet_inf d$nn outf
+        unu flip -i $inn -a 0 | unu flip -a 1 -o $outf
     done
     zet_inf_end hght-%s.nrrd ######## END input file creation
 }

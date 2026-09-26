@@ -52,7 +52,7 @@ parseFailOrDie(NrrdBoundarySpec *bspec, const char *str, airArray *mop) {
   static const char me[] = "parseFailOrDie";
   char *err;
 
-  if (!nrrdBoundarySpecParse(bspec, str)) {
+  if (!nrrdBoundarySpecParse(bspec, str, AIR_FALSE /* allowMissingPadValue */)) {
     /* what, no error? */
     fprintf(stderr, "%s: did not get expected parse fail on \"%s\"\n", me, str);
     airMopError(mop);
@@ -75,7 +75,8 @@ psLoopOrDie(NrrdBoundarySpec *bsp, const char *str, airArray *mop) {
   char *err;
   char buff[AIR_STRLEN_LARGE + 1];
 
-  if (nrrdBoundarySpecParse(bsp, str) || nrrdBoundarySpecSprint(buff, bsp)) {
+  if (nrrdBoundarySpecParse(bsp, str, AIR_FALSE /* allowMissingPadValue */)
+      || nrrdBoundarySpecSprint(buff, bsp)) {
     err = biffGetDone(NRRD);
     airMopAdd(mop, err, airFree, airMopAlways);
     fprintf(stderr, "%s: error: %s", me, err);
@@ -142,8 +143,9 @@ main(int argc, const char *argv[]) {
   fprintf(stderr, "%s: checking parse failures\n", me);
   parseFailOrDie(bspec, "bingo", mop);
   parseFailOrDie(bspec, "wrap:10", mop);
+  // alas, we're not testing that "pad" is complete if allowMissingPadValue
   parseFailOrDie(bspec, "pad", mop);
-  parseFailOrDie(bspec, "pad:nan", mop);
+  // (actually this is allowed now) parseFailOrDie(bspec, "pad:nan", mop);
   parseFailOrDie(bspec, "pad:bob", mop);
 
   fprintf(stderr, "%s: checking string->bpsec->string\n", me);

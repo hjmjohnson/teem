@@ -136,17 +136,21 @@ unu_resampleMain(int argc, const char **argv, const char *me, const hestParm *_h
                     "\b\bo \"wght\": ignore them and simply use weights of "
                     "existent values",
                     nrrdResampleNonExistent);
-  int bb;
-  hestOptAdd_1_Enum(&hopt, "b,boundary", "behavior", &bb, "bleed",
-                    "How to handle samples beyond the input bounds:\n "
-                    "\b\bo \"pad\": use some specified value\n "
-                    "\b\bo \"bleed\": extend border values outward\n "
-                    "\b\bo \"mirror\": repeated reflections\n "
-                    "\b\bo \"wrap\": wrap-around to other side",
-                    nrrdBoundary);
+  /* Like in unrrdu/pad.c: straddling old "-b pad -v <val>" with new "-b pad:<val>" */
+  NrrdBoundarySpec *bspec;
+  uint bspecIdx = hestOptAdd_1_Other(&hopt, "b,boundary", "behavior", &bspec, "bleed",
+                                     "How to handle samples beyond the input bounds:\n "
+                                     "\b\bo \"pad\": pad with value specified via -v\n "
+                                     "\b\bo \"pad:<V>\": pad with value V\n "
+                                     "\b\bo \"bleed\": extend border values outward\n "
+                                     "\b\bo \"mirror\": repeated reflections\n "
+                                     "\b\bo \"wrap\": wrap-around to other side",
+                                     nrrdHestBoundarySpecAllowMissingPadValue);
   double padVal;
-  hestOptAdd_1_Double(&hopt, "v,value", "value", &padVal, "0.0",
-                      "for \"pad\" boundary behavior, pad with this value");
+  uint padValIdx
+    = hestOptAdd_1_Double(&hopt, "v,value", "value", &padVal, "0.0",
+                          "[DEPRECATED: use \"-b pad:<V>\" instead.]\n "
+                          "for \"pad\" boundary behavior, pad with this value");
   int type;
   hestOptAdd_1_Other(&hopt, "t,type", "type", &type, "default",
                      "type to save OUTPUT as. By default (not using this option), "
@@ -190,6 +194,12 @@ unu_resampleMain(int argc, const char **argv, const char *me, const hestParm *_h
   airArray *mop = unrrduMopNew(hopt, hparm);
   char *err;
 
+  if (nrrdHestBoundarySpecFinish(bspec, hopt + bspecIdx, padVal, hopt + padValIdx, me)) {
+    airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
+    fprintf(stderr, "%s: error setting boundary behavior:\n%s", me, err);
+    airMopError(mop);
+    return 1;
+  }
   if (scaleLen != nin->dim) {
     fprintf(stderr, "%s: # sampling sizes %u != input nrrd dimension %u\n", me, scaleLen,
             nin->dim);
@@ -427,9 +437,9 @@ unu_resampleMain(int argc, const char **argv, const char *me, const hestParm *_h
         }
       }
     }
-    if (!E) E |= nrrdResampleBoundarySet(rsmc, bb);
     if (!E) E |= nrrdResampleTypeOutSet(rsmc, type);
-    if (!E) E |= nrrdResamplePadValueSet(rsmc, padVal);
+    if (!E) E |= nrrdResampleBoundarySet(rsmc, bspec->boundary);
+    if (!E) E |= nrrdResamplePadValueSet(rsmc, bspec->padValue);
     if (!E) E |= nrrdResampleRenormalizeSet(rsmc, !norenorm);
     if (!E) E |= nrrdResampleNonExistentSet(rsmc, neb);
     if (!E) E |= nrrdResampleExecute(rsmc, nout);
@@ -475,9 +485,9 @@ unu_resampleMain(int argc, const char **argv, const char *me, const hestParm *_h
       rinfo->min[ai] = nin->axis[ai].min;
       rinfo->max[ai] = nin->axis[ai].max;
     }
-    rinfo->boundary = bb;
+    rinfo->boundary = bspec->boundary;
     rinfo->type = type;
-    rinfo->padValue = padVal;
+    rinfo->padValue = bspec->padValue;
     rinfo->renormalize = !norenorm;
     if (nrrdSpatialResample(nout, nin, rinfo)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);

@@ -247,7 +247,7 @@ MY_UNRRDU_MAP(MY_UNRRDU_DECLARE)
 // for historyFuncs.c
 #define MY_NULL_INSP   ((unrrduUnuInNSPair){.nin = NULL, .name = NULL})
 // for unu history and historyFuncs.c
-#define MY_HISTORY_KEY "unu_history"
+#define MY_HISTORY_KEY "teem_kvp_history"
 
 /* adds line of key/value pair history, using both
    `inHidx` created by MY_OPT_ADD_NIN and

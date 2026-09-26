@@ -433,8 +433,8 @@ cheapMedian4D(Nrrd *nout, const Nrrd *nin, const NrrdRange *range, uint radius,
                     hist[INDEX(nin, range, lup,
                                SpU(H, W)
                                  + sw * (SpU(I, X) + sx * (SpU(J, Y) + sy * SpU(K, Z))),
-                               bins, val)]
-                      += wt[H + prad] * wt[I + prad] * wt[J + prad] * wt[K + prad];
+                               bins, val)] += wt[H + prad] * wt[I + prad] * wt[J + prad]
+                                            * wt[K + prad];
                   }
                 }
               }

@@ -57,7 +57,8 @@ main(int argc, const char *argv[]) {
   double (*ins)(void *v, size_t I, double d);
   gageStackBlurParm *sbp;
 
-  char hackKeyStr[] = "TEEM_VPROBE_HACK_ZI", *hackValStr;
+  char hackKeyStr[] = "TEEM_VPROBE_HACK_ZI";
+  const char *hackValStr;
   int otype, hackSet;
   char stmp[4][AIR_STRLEN_SMALL + 1];
 

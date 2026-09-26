@@ -147,7 +147,7 @@ unu_2opMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
     return 1;
   }
   unrrduUnuHistoryClear(nout);
-  if (getenv(UNRRDU_UNU_HISTORY_TRACE_ENV)) {
+  if (getenv(UNRRDU_TEEM_KVP_HISTORY_TRACE_ENV)) {
     // HEY copy-pasta to 3op.c
     unrrduUnuOutNSPair onsp = {.nout = nout, .name = hopt[outHidx].parmStr};
     const Nrrd *in1Nrrd = in1->nrrd ? in1->nrrd : (in1->ownNrrd ? in1->ownNrrd : NULL);
