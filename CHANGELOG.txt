@@ -2654,12 +2654,14 @@ option. Related: added -srgb intent to "unu quantize"
 
 • fixed memory leak in nrrd's use of FFTW (hadn't been calling fftw_destroy_plan)
 
-========= other command-line tools =========
+========= other tools =========
 
-• many git commits in 2026:
+• Sat Sep 26 14:36:37 2026 -0500 git commit d68efc3a ...
+  Thu Dec 4 09:39:46 2025 -0600 git commit 986cb821
 Teem has a new testing framework called "zet" for Z-Shell Enabled Testing,
-in the spirit of "golden file" testing. See tests/zet/zet-lib.zsh.
-Quoting from a comment there:
+in the spirit of "golden file" testing. The testing framework is tests/zet/zet-lib.zsh
+and all test sets are tests/zet/*/*.zsh.  tests/zet/zet-run.zsh runs all tests.
+Quoting from a comment in zet-lib.zsh:
   Written by GLK for TeemV2 with recognition that once you have a command-line parser
   (like hest) and once you have command-line wrappers around your C programs (like unu
   around nrrd) shell scripts will be much faster to whip up, and more probably concise,
@@ -2671,7 +2673,7 @@ The striking difference from CTest is that basic shell-script looping in a zet .
 script allows you to do *MANY* more tests per line of testing code than with CTest:
 for example zet/nrrd/cmedian.zsh has 156 lines, and runs 1440 tests (!). More tests
 are being created for TeemV2 release, but already there are thousands of zet tests,
-and 40 CTest tests.
+versus less than 50 CTest tests.
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 Teem 1.11.0 (2012-12-21) https://sourceforge.net/projects/teem/files/teem/1.11.0/
