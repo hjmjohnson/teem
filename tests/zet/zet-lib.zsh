@@ -180,13 +180,13 @@ typeset -g -A ZET_FAIL_WANT
 # (Anything "ZET_R" except for ZET_ROOT is about reviews )
 # A "review" is a different kind of test that does not produce an output file,
 # but assesses previously generated outputs with a command.
-typeset -g -i ZET_RSET_COUNT=0  # count of reviews in current test set
-typeset -g -a ZET_RPASS=()      # reviews that passed
-typeset -g -a ZET_RFAIL=()      # reviews that failed
-typeset -g -A ZET_RFAIL_CHEK=() # chek command for each failed review
-typeset -g -A ZET_RFAIL_RSLT=() # actual result for each failed review
-typeset -g -A ZET_RFAIL_WANT=() # expected result for each failed review
-typeset -g -A ZET_RSEEN=()      # set of review ids seen so far (for uniqueness check)
+typeset -g -i ZET_REVIEW_COUNT=0 # count of reviews in current test set
+typeset -g -a ZET_RPASS=()       # reviews that passed
+typeset -g -a ZET_RFAIL=()       # reviews that failed
+typeset -g -A ZET_RFAIL_CHEK=()  # chek command for each failed review
+typeset -g -A ZET_RFAIL_RSLT=()  # actual result for each failed review
+typeset -g -A ZET_RFAIL_WANT=()  # expected result for each failed review
+typeset -g -A ZET_RSEEN=()       # set of review ids seen so far (for uniqueness check)
 
 ####### ZET_BAIL_ON_FAIL: if set by caller (e.g. ZET_BAIL_ON_FAIL= ./dist.zsh):
 # on first test failure, do things to diagnose circumstances of failure and
@@ -999,7 +999,7 @@ zet_review() {
     if ((! ${#ZET_TSET[@]})); then
         zet_die "Not currently running any test set"
     fi
-    ((++ZET_RSET_COUNT))
+    ((++ZET_REVIEW_COUNT))
     # skip reviews when striding (prerequisites may not have run)
     if ((ZET_TSET_STRIDE > 1)); then
         print -n -- "~"
@@ -1077,9 +1077,9 @@ zet_end() {
             print "." # still have to finish previous line
         fi
         # new review results (only print if any reviews ran)
-        if ((ZET_RSET_COUNT > 0)); then
+        if ((ZET_REVIEW_COUNT > 0)); then
             if ((ZET_TSET_STRIDE > 1)); then
-                print "$ZET_PFX $ZET_TSET[name] ZET_TSET_STRIDE=$ZET_TSET_STRIDE --> all $ZET_RSET_COUNT reviews skipped"
+                print "$ZET_PFX $ZET_TSET[name] ZET_TSET_STRIDE=$ZET_TSET_STRIDE --> all $ZET_REVIEW_COUNT reviews skipped"
             else
                 print -n "$ZET_PFX $ZET_TSET[name] reviews: $#ZET_RPASS passed, $#ZET_RFAIL failed"
                 if (($#ZET_RFAIL)); then
