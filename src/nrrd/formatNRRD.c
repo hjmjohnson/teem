@@ -775,30 +775,42 @@ formatNRRD_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
     }
   }
 
-  /* This is where the majority of the header printing happens.
-  The nrrdField_data_file field is excluded from this loop so that a
-  LIST-form "data file:" field remains the last line of the header (see below) */
+/* prints one field (II from nrrdField_* enum), *ASSUMING* *LOCAL* variables:
+file: file being written to
+strptr: string buffer variable
+hsw, hswSize: points to nio->headerStringWrite, available size left
+nrrd: Nrrd being described
+nio: NrrdIoState managing this */
+#define PRINT_FIELD(II)                                                                 \
+  if (nrrd__FieldInteresting(nrrd, nio, (II))) {                                        \
+    if (file) {                                                                         \
+      nrrd__FprintFieldInfo(file, "", nrrd, nio, (II), AIR_FALSE);                      \
+    } else if (nio->headerStringWrite) {                                                \
+      /* with each call strptr points to a newly allocated string */                    \
+      nrrd__SprintFieldInfo(&strptr, "", nrrd, nio, (II), AIR_FALSE);                   \
+      if (strptr) {                                                                     \
+        snprintf(hsw, hswSize, "%s\n", strptr);                                         \
+        SN_INCR(hsw, hswSize);                                                          \
+        free(strptr);                                                                   \
+        strptr = NULL;                                                                  \
+      }                                                                                 \
+    } else {                                                                            \
+      nrrd__SprintFieldInfo(&strptr, "", nrrd, nio, (II), AIR_FALSE);                   \
+      if (strptr) {                                                                     \
+        nio->headerStrlen += AIR_UINT(strlen(strptr) + strlen("\n"));                   \
+        free(strptr);                                                                   \
+        strptr = NULL;                                                                  \
+      }                                                                                 \
+    }                                                                                   \
+  }
+
+  /* This is where the majority of the header printing happens. Fixing a LONG-standing
+  bug, the nrrdField_data_file field is explicitly excluded from this loop so that a
+  LIST-form "data file:" field remains the last line of the header (done below). Comments
+  and key/value pairs are implicitly excluded because they are never "interesting" */
   for (ii = 1; ii <= NRRD_FIELD_MAX; ii++) {
-    if (ii != nrrdField_data_file && nrrd__FieldInteresting(nrrd, nio, ii)) {
-      if (file) {
-        nrrd__FprintFieldInfo(file, "", nrrd, nio, ii, AIR_FALSE);
-      } else if (nio->headerStringWrite) {
-        /* with each call strptr points to a newly allocated string */
-        nrrd__SprintFieldInfo(&strptr, "", nrrd, nio, ii, AIR_FALSE);
-        if (strptr) {
-          snprintf(hsw, hswSize, "%s\n", strptr);
-          SN_INCR(hsw, hswSize);
-          free(strptr);
-          strptr = NULL;
-        }
-      } else {
-        nrrd__SprintFieldInfo(&strptr, "", nrrd, nio, ii, AIR_FALSE);
-        if (strptr) {
-          nio->headerStrlen += AIR_UINT(strlen(strptr) + strlen("\n"));
-          free(strptr);
-          strptr = NULL;
-        }
-      }
+    if (ii != nrrdField_data_file) {
+      PRINT_FIELD(ii);
     }
   }
 
@@ -853,28 +865,10 @@ formatNRRD_write(FILE *file, const Nrrd *nrrd, NrrdIoState *nio) {
     }
   }
 
-  /* We finally print the data file field last, if needed (sorry copy-pasta) */
-  if (nrrd__FieldInteresting(nrrd, nio, nrrdField_data_file)) {
-    if (file) {
-      nrrd__FprintFieldInfo(file, "", nrrd, nio, nrrdField_data_file, AIR_FALSE);
-    } else if (nio->headerStringWrite) {
-      /* with each call strptr points to a newly allocated string */
-      nrrd__SprintFieldInfo(&strptr, "", nrrd, nio, nrrdField_data_file, AIR_FALSE);
-      if (strptr) {
-        snprintf(hsw, hswSize, "%s\n", strptr);
-        SN_INCR(hsw, hswSize);
-        free(strptr);
-        strptr = NULL;
-      }
-    } else {
-      nrrd__SprintFieldInfo(&strptr, "", nrrd, nio, nrrdField_data_file, AIR_FALSE);
-      if (strptr) {
-        nio->headerStrlen += AIR_UINT(strlen(strptr) + strlen("\n"));
-        free(strptr);
-        strptr = NULL;
-      }
-    }
-  }
+  /* We finally print the data file field last, if needed */
+  PRINT_FIELD(nrrdField_data_file);
+
+#undef PRINT_FIELD
 
   if (file) {
     if (!(nio->detachedHeader || nrrdIoDataFNNumber(nio) > 1)) {
