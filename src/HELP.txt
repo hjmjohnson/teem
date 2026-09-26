@@ -56,8 +56,3 @@ Run Clang's static analyzer:
 innocuous, all the other ones are actually concerning.  Any questions that
 arise in fixing the bugs should be posted to the teem-users Discord:
 https://discord.gg/xBBqZGXkF7
-
-
-(Hest would benefit from some way of accepting comments ...
- For TeemV2 GLK bit bullet and completely rewrote hestParse,
- use that opportunity to add -{ ... }- comments)
