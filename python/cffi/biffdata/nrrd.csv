@@ -151,7 +151,7 @@ nrrdSimplePad_nva,int,1,0,nrrd,nrrd/superset.c:537
 nrrdIoStateSet,int,1,0,nrrd,nrrd/write.c:24
 nrrdIoStateEncodingSet,int,1,0,nrrd,nrrd/write.c:97
 nrrdIoStateFormatSet,int,1,0,nrrd,nrrd/write.c:117
-nrrdWrite,int,1,0,nrrd,nrrd/write.c:994
-nrrdStringWrite,int,1,0,nrrd,nrrd/write.c:1010
-nrrdSave,int,1,0,nrrd,nrrd/write.c:1031
-nrrdSaveMulti,int,1,0,nrrd,nrrd/write.c:1097
+nrrdWrite,int,1,0,nrrd,nrrd/write.c:991
+nrrdStringWrite,int,1,0,nrrd,nrrd/write.c:1007
+nrrdSave,int,1,0,nrrd,nrrd/write.c:1028
+nrrdSaveMulti,int,1,0,nrrd,nrrd/write.c:1094
