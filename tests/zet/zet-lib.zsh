@@ -648,7 +648,7 @@ zet_inf_end() {
 #   than for actually re-generating `fname`. The calling test script has to
 #   already know from context exactly how to generate `fname`.
 #   `comd` is saved in `ZET_COMD[$fname]`
-# * `chek` is the actual command(s) to run to asses something about `fname`,
+# * `chek` is the actual command(s) to run to assess something about `fname`,
 #   to see if it looks like the expected output (does it match `want`).
 #   `chek` is saved to `ZET_CHEK[$fname]`.
 #   NOTE: any extra spaces around delimeters `::`, `;;`, and `=>` may end
@@ -913,15 +913,18 @@ zet_test() {
         print -n -- "-"
         return 0
     fi
+    # note that inputs $fin can be space-separated multiple input files
     local fout="$1" comd="$2" fin="$3" chek="$4" reffile=$ZET_TSET[reff]
     _zet_run_comd "$comd" "$fout"
     if [[ $ZET_TSET[mode] == "write" ]]; then
-        # Ensure ouput checker $chek includes $fout, or end it with $fout if not
-        if [[ $chek != *" $fout"* ]]; then
-            chek="${chek} ${fout}"
+        # append {} if it isn't already in there
+        if [[ $chek != *'{}'* ]]; then
+            chek="${chek} {}"
         fi
-        local want=$(eval $chek) # run the output checker
-        local rest=$(_zet_enbrace "$comd ;; $chek => $want" "$fout")
+        # resolve {} to actual filename, like _zet_read_reff does at read time
+        local chek_file="${chek//\{\}/$fout}"
+        local want=$(eval $chek_file) # run the output checker
+        local rest=$(_zet_enbrace "$comd ;; $chek_file => $want" "$fout")
         echo "$fout :: $rest" >>$reffile
         print -n "o"
     else
@@ -943,7 +946,7 @@ zet_test() {
             ZET_FAIL_RSLT[$fout]="$rslt"
             ZET_FAIL_WANT[$fout]="$want"
             # preserve the input to the failed command
-            zet_unjunk $fin # HEY should make this handle multiple inputs
+            zet_unjunk ${=fin} # = : word-split on spaces for multiple input files
             if ((${+ZET_BAIL_ON_FAIL})); then
                 print ""
                 print "$ZET_PFX ######## ZET_BAIL_ON_FAIL --> BAILING ########"
