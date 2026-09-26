@@ -176,6 +176,18 @@ typeset -g -a ZET_FAIL
 typeset -g -A ZET_FAIL_COMD
 typeset -g -A ZET_FAIL_RSLT
 typeset -g -A ZET_FAIL_WANT
+####### For "review" instead of "test"
+# (Anything "ZET_R" except for ZET_ROOT is about reviews )
+# A "review" is a different kind of test that does not produce an output file,
+# but assesses previously generated outputs with a command.
+typeset -g -i ZET_RSET_COUNT=0  # count of reviews in current test set
+typeset -g -a ZET_RPASS=()      # reviews that passed
+typeset -g -a ZET_RFAIL=()      # reviews that failed
+typeset -g -A ZET_RFAIL_CHEK=() # chek command for each failed review
+typeset -g -A ZET_RFAIL_RSLT=() # actual result for each failed review
+typeset -g -A ZET_RFAIL_WANT=() # expected result for each failed review
+typeset -g -A ZET_RSEEN=()      # set of review ids seen so far (for uniqueness check)
+
 ####### ZET_BAIL_ON_FAIL: if set by caller (e.g. ZET_BAIL_ON_FAIL= ./dist.zsh):
 # on first test failure, do things to diagnose circumstances of failure and
 # immediately zet_end then bail
@@ -194,6 +206,12 @@ _zet_arrays_reset() {
     ZET_FAIL_COMD=()
     ZET_FAIL_RSLT=()
     ZET_FAIL_WANT=()
+    ZET_RPASS=()
+    ZET_RFAIL=()
+    ZET_RFAIL_CHEK=()
+    ZET_RFAIL_RSLT=()
+    ZET_RFAIL_WANT=()
+    ZET_RSEEN=()
 }
 
 ########################################################################
@@ -940,7 +958,7 @@ zet_test() {
             ZET_PASS+=($fout)
         else
             # test fails!
-            print -n "X"
+            print -n "x"
             ZET_FAIL+=($fout)
             ZET_FAIL_COMD[$fout]="$comd"
             ZET_FAIL_RSLT[$fout]="$rslt"
@@ -965,6 +983,58 @@ zet_test() {
                 #print "v.v.v.v.v.v.v  unu head fout=$fout  v.v.v.v.v.v.v"
                 #unu head $fout
                 #print "^'^'^'^'^'^'^  unu head fout=$fout  ^'^'^'^'^'^'^"
+                zet_end
+            fi
+        fi
+    fi
+}
+
+####### zet_review rid chek fin
+# `rid`:  unique string identifying this review (peer to $fout in zet_test)
+# `chek`: command to run; must produce a single-line result; no {} substitution
+# `fin`:  single string naming one or more (space-separated) files to unjunk if review fails
+# With ZET_TSET_STRIDE > 1: reviews are skipped entirely (counted separately)
+zet_review() {
+    setopt localoptions no_warn_nested_var
+    if ((! ${#ZET_TSET[@]})); then
+        zet_die "Not currently running any test set"
+    fi
+    ((++ZET_RSET_COUNT))
+    # skip reviews when striding (prerequisites may not have run)
+    if ((ZET_TSET_STRIDE > 1)); then
+        print -n -- "~"
+        return 0
+    fi
+    local rid="$1" chek="$2" fin="$3"
+    if [[ -v "ZET_RSEEN[$rid]" ]]; then
+        zet_die "Review id \"$rid\" already used in this test set"
+    fi
+    ZET_RSEEN[$rid]=1
+    local rid="$1" chek="$2" fin="$3"
+    local reffile=$ZET_TSET[reff]
+    if [[ $ZET_TSET[mode] == "write" ]]; then
+        local want=$(eval $chek)
+        echo "$rid :: (review) ;; $chek => $want" >>$reffile
+        print -n "O" # capital O to distinguish from zet_test's lowercase "o"
+    else
+        if [[ -z ${ZET_CHEK[$rid]+_} ]]; then
+            zet_die "Review $rid but no reference known (incomplete ref file?)"
+        fi
+        local rslt=$(eval $ZET_CHEK[$rid])
+        local want=$ZET_WANT[$rid]
+        if [[ "$rslt" = "$want" ]]; then
+            print -n ":" # : for review pass (vs . for test pass)
+            ZET_RPASS+=($rid)
+        else
+            print -n "X" # X for review fail (vs x for test fail)
+            ZET_RFAIL+=($rid)
+            ZET_RFAIL_CHEK[$rid]="$chek"
+            ZET_RFAIL_RSLT[$rid]="$rslt"
+            ZET_RFAIL_WANT[$rid]="$want"
+            zet_unjunk ${=fin} # = : word-split on spaces for multiple input files
+            if ((${+ZET_BAIL_ON_FAIL})); then
+                print ""
+                print "$ZET_PFX ######## ZET_BAIL_ON_FAIL --> BAILING ########"
                 zet_end
             fi
         fi
@@ -1005,6 +1075,28 @@ zet_end() {
             done
         else
             print "." # still have to finish previous line
+        fi
+        # new review results (only print if any reviews ran)
+        if ((ZET_RSET_COUNT > 0)); then
+            if ((ZET_TSET_STRIDE > 1)); then
+                print "$ZET_PFX $ZET_TSET[name] ZET_TSET_STRIDE=$ZET_TSET_STRIDE --> all $ZET_RSET_COUNT reviews skipped"
+            else
+                print -n "$ZET_PFX $ZET_TSET[name] reviews: $#ZET_RPASS passed, $#ZET_RFAIL failed"
+                if (($#ZET_RFAIL)); then
+                    print ", as follows:"
+                    local rid
+                    for rid in $ZET_RFAIL; do
+                        print "\n$ZET_PFX $rid ::"
+                        print "${ZET_RFAIL_CHEK[$rid]} =>"
+                        print "   gave: ${ZET_RFAIL_RSLT[$rid]}"
+                        print "!= want: ${ZET_RFAIL_WANT[$rid]}"
+                    done
+                    print "$ZET_PFX warning: failing reviews may have transitive prerequisites;"
+                    print "$ZET_PFX re-run under ZET_UNJUNK= to preserve all files"
+                else
+                    print "."
+                fi
+            fi
         fi
     fi
     print "$ZET_PFX $ZET_DLM"

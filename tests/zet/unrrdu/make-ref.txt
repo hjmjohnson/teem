@@ -1,25 +1,85 @@
-# 2433504890 2529 make.zsh
+# 432188650 3292 make.zsh
 in0-kv0-cm0.nhdr :: unu make -i vals.ptxt -e ascii -t uint -s 4 3   -h -o {} ;; unu save -i {} -f nrrd | unu diff - {} => unu diff: nrrds are the same
+cksum-in0-kv0-cm0.nhdr :: (review) ;; cksum in0-kv0-cm0.nhdr => 40431599 184 in0-kv0-cm0.nhdr
+vals-in0-kv0-cm0.nhdr :: (review) ;; unu 2op - vals.ptxt in0-kv0-cm0.nhdr | unu minmax -sl => 0 0
 in0-kv0-cm0.nrrd :: unu make -i vals.ptxt -e ascii -t uint -s 4 3    -o {} ;; unu save -i {} -f nrrd | unu diff - {} => unu diff: nrrds are the same
+cksum-in0-kv0-cm0.nrrd :: (review) ;; cksum in0-kv0-cm0.nrrd => 2220382383 223 in0-kv0-cm0.nrrd
+vals-in0-kv0-cm0.nrrd :: (review) ;; unu 2op - vals.ptxt in0-kv0-cm0.nrrd | unu minmax -sl => 0 0
+diff-in0-kv0-cm0 :: (review) ;; unu diff in0-kv0-cm0.nhdr in0-kv0-cm0.nrrd => unu diff: nrrds are the same
 in0-kv0-cm1.nhdr :: unu make -i vals.ptxt -e ascii -t uint -s 4 3  -cm 'this is the first comment' 'and this is a 2nd comment' -h -o {} ;; unu save -i {} -f nrrd | unu diff - {} => unu diff: nrrds are the same
+cksum-in0-kv0-cm1.nhdr :: (review) ;; cksum in0-kv0-cm1.nhdr => 855235073 240 in0-kv0-cm1.nhdr
+vals-in0-kv0-cm1.nhdr :: (review) ;; unu 2op - vals.ptxt in0-kv0-cm1.nhdr | unu minmax -sl => 0 0
 in0-kv0-cm1.nrrd :: unu make -i vals.ptxt -e ascii -t uint -s 4 3  -cm 'this is the first comment' 'and this is a 2nd comment'  -o {} ;; unu save -i {} -f nrrd | unu diff - {} => unu diff: nrrds are the same
+cksum-in0-kv0-cm1.nrrd :: (review) ;; cksum in0-kv0-cm1.nrrd => 3039034628 279 in0-kv0-cm1.nrrd
+vals-in0-kv0-cm1.nrrd :: (review) ;; unu 2op - vals.ptxt in0-kv0-cm1.nrrd | unu minmax -sl => 0 0
+diff-in0-kv0-cm1 :: (review) ;; unu diff in0-kv0-cm1.nhdr in0-kv0-cm1.nrrd => unu diff: nrrds are the same
 in0-kv1-cm0.nhdr :: unu make -i vals.ptxt -e ascii -t uint -s 4 3 -kv 'a key:=a value' bkey:=bvalue  -h -o {} ;; unu save -i {} -f nrrd | unu diff - {} => unu diff: nrrds are the same
+cksum-in0-kv1-cm0.nhdr :: (review) ;; cksum in0-kv1-cm0.nhdr => 3400374531 212 in0-kv1-cm0.nhdr
+vals-in0-kv1-cm0.nhdr :: (review) ;; unu 2op - vals.ptxt in0-kv1-cm0.nhdr | unu minmax -sl => 0 0
 in0-kv1-cm0.nrrd :: unu make -i vals.ptxt -e ascii -t uint -s 4 3 -kv 'a key:=a value' bkey:=bvalue   -o {} ;; unu save -i {} -f nrrd | unu diff - {} => unu diff: nrrds are the same
+cksum-in0-kv1-cm0.nrrd :: (review) ;; cksum in0-kv1-cm0.nrrd => 774630779 251 in0-kv1-cm0.nrrd
+vals-in0-kv1-cm0.nrrd :: (review) ;; unu 2op - vals.ptxt in0-kv1-cm0.nrrd | unu minmax -sl => 0 0
+diff-in0-kv1-cm0 :: (review) ;; unu diff in0-kv1-cm0.nhdr in0-kv1-cm0.nrrd => unu diff: nrrds are the same
 in0-kv1-cm1.nhdr :: unu make -i vals.ptxt -e ascii -t uint -s 4 3 -kv 'a key:=a value' bkey:=bvalue -cm 'this is the first comment' 'and this is a 2nd comment' -h -o {} ;; unu save -i {} -f nrrd | unu diff - {} => unu diff: nrrds are the same
+cksum-in0-kv1-cm1.nhdr :: (review) ;; cksum in0-kv1-cm1.nhdr => 61044463 268 in0-kv1-cm1.nhdr
+vals-in0-kv1-cm1.nhdr :: (review) ;; unu 2op - vals.ptxt in0-kv1-cm1.nhdr | unu minmax -sl => 0 0
 in0-kv1-cm1.nrrd :: unu make -i vals.ptxt -e ascii -t uint -s 4 3 -kv 'a key:=a value' bkey:=bvalue -cm 'this is the first comment' 'and this is a 2nd comment'  -o {} ;; unu save -i {} -f nrrd | unu diff - {} => unu diff: nrrds are the same
+cksum-in0-kv1-cm1.nrrd :: (review) ;; cksum in0-kv1-cm1.nrrd => 3258909236 307 in0-kv1-cm1.nrrd
+vals-in0-kv1-cm1.nrrd :: (review) ;; unu 2op - vals.ptxt in0-kv1-cm1.nrrd | unu minmax -sl => 0 0
+diff-in0-kv1-cm1 :: (review) ;; unu diff in0-kv1-cm1.nhdr in0-kv1-cm1.nrrd => unu diff: nrrds are the same
 in1-kv0-cm0.nhdr :: unu make -i line0.ptxt line1.ptxt line2.ptxt -e ascii -t uint -s 4 3   -h -o {} ;; unu save -i {} -f nrrd | unu diff - {} => unu diff: nrrds are the same
+cksum-in1-kv0-cm0.nhdr :: (review) ;; cksum in1-kv0-cm0.nhdr => 3683263847 210 in1-kv0-cm0.nhdr
+vals-in1-kv0-cm0.nhdr :: (review) ;; unu 2op - vals.ptxt in1-kv0-cm0.nhdr | unu minmax -sl => 0 0
 in1-kv0-cm0.nrrd :: unu make -i line0.ptxt line1.ptxt line2.ptxt -e ascii -t uint -s 4 3    -o {} ;; unu save -i {} -f nrrd | unu diff - {} => unu diff: nrrds are the same
+cksum-in1-kv0-cm0.nrrd :: (review) ;; cksum in1-kv0-cm0.nrrd => 2220382383 223 in1-kv0-cm0.nrrd
+vals-in1-kv0-cm0.nrrd :: (review) ;; unu 2op - vals.ptxt in1-kv0-cm0.nrrd | unu minmax -sl => 0 0
+diff-in1-kv0-cm0 :: (review) ;; unu diff in1-kv0-cm0.nhdr in1-kv0-cm0.nrrd => unu diff: nrrds are the same
 in1-kv0-cm1.nhdr :: unu make -i line0.ptxt line1.ptxt line2.ptxt -e ascii -t uint -s 4 3  -cm 'this is the first comment' 'and this is a 2nd comment' -h -o {} ;; unu save -i {} -f nrrd | unu diff - {} => unu diff: nrrds are the same
+cksum-in1-kv0-cm1.nhdr :: (review) ;; cksum in1-kv0-cm1.nhdr => 439160908 266 in1-kv0-cm1.nhdr
+vals-in1-kv0-cm1.nhdr :: (review) ;; unu 2op - vals.ptxt in1-kv0-cm1.nhdr | unu minmax -sl => 0 0
 in1-kv0-cm1.nrrd :: unu make -i line0.ptxt line1.ptxt line2.ptxt -e ascii -t uint -s 4 3  -cm 'this is the first comment' 'and this is a 2nd comment'  -o {} ;; unu save -i {} -f nrrd | unu diff - {} => unu diff: nrrds are the same
+cksum-in1-kv0-cm1.nrrd :: (review) ;; cksum in1-kv0-cm1.nrrd => 3039034628 279 in1-kv0-cm1.nrrd
+vals-in1-kv0-cm1.nrrd :: (review) ;; unu 2op - vals.ptxt in1-kv0-cm1.nrrd | unu minmax -sl => 0 0
+diff-in1-kv0-cm1 :: (review) ;; unu diff in1-kv0-cm1.nhdr in1-kv0-cm1.nrrd => unu diff: nrrds are the same
 in1-kv1-cm0.nhdr :: unu make -i line0.ptxt line1.ptxt line2.ptxt -e ascii -t uint -s 4 3 -kv 'a key:=a value' bkey:=bvalue  -h -o {} ;; unu save -i {} -f nrrd | unu diff - {} => unu diff: nrrds are the same
+cksum-in1-kv1-cm0.nhdr :: (review) ;; cksum in1-kv1-cm0.nhdr => 1232055434 238 in1-kv1-cm0.nhdr
+vals-in1-kv1-cm0.nhdr :: (review) ;; unu 2op - vals.ptxt in1-kv1-cm0.nhdr | unu minmax -sl => 0 0
 in1-kv1-cm0.nrrd :: unu make -i line0.ptxt line1.ptxt line2.ptxt -e ascii -t uint -s 4 3 -kv 'a key:=a value' bkey:=bvalue   -o {} ;; unu save -i {} -f nrrd | unu diff - {} => unu diff: nrrds are the same
+cksum-in1-kv1-cm0.nrrd :: (review) ;; cksum in1-kv1-cm0.nrrd => 774630779 251 in1-kv1-cm0.nrrd
+vals-in1-kv1-cm0.nrrd :: (review) ;; unu 2op - vals.ptxt in1-kv1-cm0.nrrd | unu minmax -sl => 0 0
+diff-in1-kv1-cm0 :: (review) ;; unu diff in1-kv1-cm0.nhdr in1-kv1-cm0.nrrd => unu diff: nrrds are the same
 in1-kv1-cm1.nhdr :: unu make -i line0.ptxt line1.ptxt line2.ptxt -e ascii -t uint -s 4 3 -kv 'a key:=a value' bkey:=bvalue -cm 'this is the first comment' 'and this is a 2nd comment' -h -o {} ;; unu save -i {} -f nrrd | unu diff - {} => unu diff: nrrds are the same
+cksum-in1-kv1-cm1.nhdr :: (review) ;; cksum in1-kv1-cm1.nhdr => 2101009830 294 in1-kv1-cm1.nhdr
+vals-in1-kv1-cm1.nhdr :: (review) ;; unu 2op - vals.ptxt in1-kv1-cm1.nhdr | unu minmax -sl => 0 0
 in1-kv1-cm1.nrrd :: unu make -i line0.ptxt line1.ptxt line2.ptxt -e ascii -t uint -s 4 3 -kv 'a key:=a value' bkey:=bvalue -cm 'this is the first comment' 'and this is a 2nd comment'  -o {} ;; unu save -i {} -f nrrd | unu diff - {} => unu diff: nrrds are the same
+cksum-in1-kv1-cm1.nrrd :: (review) ;; cksum in1-kv1-cm1.nrrd => 3258909236 307 in1-kv1-cm1.nrrd
+vals-in1-kv1-cm1.nrrd :: (review) ;; unu 2op - vals.ptxt in1-kv1-cm1.nrrd | unu minmax -sl => 0 0
+diff-in1-kv1-cm1 :: (review) ;; unu diff in1-kv1-cm1.nhdr in1-kv1-cm1.nrrd => unu diff: nrrds are the same
 in2-kv0-cm0.nhdr :: unu make -i line%d.ptxt 0 2 1 -e ascii -t uint -s 4 3   -h -o {} ;; unu save -i {} -f nrrd | unu diff - {} => unu diff: nrrds are the same
+cksum-in2-kv0-cm0.nhdr :: (review) ;; cksum in2-kv0-cm0.nhdr => 3073819801 190 in2-kv0-cm0.nhdr
+vals-in2-kv0-cm0.nhdr :: (review) ;; unu 2op - vals.ptxt in2-kv0-cm0.nhdr | unu minmax -sl => 0 0
 in2-kv0-cm0.nrrd :: unu make -i line%d.ptxt 0 2 1 -e ascii -t uint -s 4 3    -o {} ;; unu save -i {} -f nrrd | unu diff - {} => unu diff: nrrds are the same
+cksum-in2-kv0-cm0.nrrd :: (review) ;; cksum in2-kv0-cm0.nrrd => 2220382383 223 in2-kv0-cm0.nrrd
+vals-in2-kv0-cm0.nrrd :: (review) ;; unu 2op - vals.ptxt in2-kv0-cm0.nrrd | unu minmax -sl => 0 0
+diff-in2-kv0-cm0 :: (review) ;; unu diff in2-kv0-cm0.nhdr in2-kv0-cm0.nrrd => unu diff: nrrds are the same
 in2-kv0-cm1.nhdr :: unu make -i line%d.ptxt 0 2 1 -e ascii -t uint -s 4 3  -cm 'this is the first comment' 'and this is a 2nd comment' -h -o {} ;; unu save -i {} -f nrrd | unu diff - {} => unu diff: nrrds are the same
+cksum-in2-kv0-cm1.nhdr :: (review) ;; cksum in2-kv0-cm1.nhdr => 3589450216 246 in2-kv0-cm1.nhdr
+vals-in2-kv0-cm1.nhdr :: (review) ;; unu 2op - vals.ptxt in2-kv0-cm1.nhdr | unu minmax -sl => 0 0
 in2-kv0-cm1.nrrd :: unu make -i line%d.ptxt 0 2 1 -e ascii -t uint -s 4 3  -cm 'this is the first comment' 'and this is a 2nd comment'  -o {} ;; unu save -i {} -f nrrd | unu diff - {} => unu diff: nrrds are the same
+cksum-in2-kv0-cm1.nrrd :: (review) ;; cksum in2-kv0-cm1.nrrd => 3039034628 279 in2-kv0-cm1.nrrd
+vals-in2-kv0-cm1.nrrd :: (review) ;; unu 2op - vals.ptxt in2-kv0-cm1.nrrd | unu minmax -sl => 0 0
+diff-in2-kv0-cm1 :: (review) ;; unu diff in2-kv0-cm1.nhdr in2-kv0-cm1.nrrd => unu diff: nrrds are the same
 in2-kv1-cm0.nhdr :: unu make -i line%d.ptxt 0 2 1 -e ascii -t uint -s 4 3 -kv 'a key:=a value' bkey:=bvalue  -h -o {} ;; unu save -i {} -f nrrd | unu diff - {} => unu diff: nrrds are the same
+cksum-in2-kv1-cm0.nhdr :: (review) ;; cksum in2-kv1-cm0.nhdr => 2004371535 218 in2-kv1-cm0.nhdr
+vals-in2-kv1-cm0.nhdr :: (review) ;; unu 2op - vals.ptxt in2-kv1-cm0.nhdr | unu minmax -sl => 0 0
 in2-kv1-cm0.nrrd :: unu make -i line%d.ptxt 0 2 1 -e ascii -t uint -s 4 3 -kv 'a key:=a value' bkey:=bvalue   -o {} ;; unu save -i {} -f nrrd | unu diff - {} => unu diff: nrrds are the same
+cksum-in2-kv1-cm0.nrrd :: (review) ;; cksum in2-kv1-cm0.nrrd => 774630779 251 in2-kv1-cm0.nrrd
+vals-in2-kv1-cm0.nrrd :: (review) ;; unu 2op - vals.ptxt in2-kv1-cm0.nrrd | unu minmax -sl => 0 0
+diff-in2-kv1-cm0 :: (review) ;; unu diff in2-kv1-cm0.nhdr in2-kv1-cm0.nrrd => unu diff: nrrds are the same
 in2-kv1-cm1.nhdr :: unu make -i line%d.ptxt 0 2 1 -e ascii -t uint -s 4 3 -kv 'a key:=a value' bkey:=bvalue -cm 'this is the first comment' 'and this is a 2nd comment' -h -o {} ;; unu save -i {} -f nrrd | unu diff - {} => unu diff: nrrds are the same
+cksum-in2-kv1-cm1.nhdr :: (review) ;; cksum in2-kv1-cm1.nhdr => 991007324 274 in2-kv1-cm1.nhdr
+vals-in2-kv1-cm1.nhdr :: (review) ;; unu 2op - vals.ptxt in2-kv1-cm1.nhdr | unu minmax -sl => 0 0
 in2-kv1-cm1.nrrd :: unu make -i line%d.ptxt 0 2 1 -e ascii -t uint -s 4 3 -kv 'a key:=a value' bkey:=bvalue -cm 'this is the first comment' 'and this is a 2nd comment'  -o {} ;; unu save -i {} -f nrrd | unu diff - {} => unu diff: nrrds are the same
+cksum-in2-kv1-cm1.nrrd :: (review) ;; cksum in2-kv1-cm1.nrrd => 3258909236 307 in2-kv1-cm1.nrrd
+vals-in2-kv1-cm1.nrrd :: (review) ;; unu 2op - vals.ptxt in2-kv1-cm1.nrrd | unu minmax -sl => 0 0
+diff-in2-kv1-cm1 :: (review) ;; unu diff in2-kv1-cm1.nhdr in2-kv1-cm1.nrrd => unu diff: nrrds are the same

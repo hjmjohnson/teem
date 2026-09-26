@@ -32,6 +32,9 @@ Setup
 
 zet_begin ####### BEGIN testing
 
+# to silence the "formatNRRD_read: reading <encoding> data ... done" diagnostics
+export NRRD_DEFAULT_IO_VERBOSE=0
+
 Test() {
     # chek is how we check a single output; here we are doing a round-trip comparison with ourself
     local chek="unu save -i {} -f nrrd | unu diff - {}"
@@ -54,8 +57,15 @@ Test() {
                 for ooI in 1 2; do
                     local fout=$fnbase.$sfxA[$ooI]
                     zet_test $fout "unu make -i $fin $bargs $kvA[$kvI] $cmA[$cmI] $dashhA[$ooI] -o $fout" "$fin" "$chek"
+                    # also do a cksum on file as a whole (this is not really purpose of a "review"
+                    # but we don't otherwise have a way of running multiple checks on one output file)
+                    zet_review cksum-$fout "cksum $fout" $fout
+                    # there should be no difference in values between original vals.ptxt and $fout
+                    zet_review vals-$fout "unu 2op - vals.ptxt $fout | unu minmax -sl" "vals.ptxt $fout"
                 done
-                # HERE, want to run a command to compare $fnbase.nhdr and $fnbase.nrrd
+                # (this is the context that motivated creating zet_review)
+                # there should be no difference between Nrrd read from .nhdr vs .nrrd
+                zet_review diff-$fnbase "unu diff $fnbase.nhdr $fnbase.nrrd" "$fnbase.nhdr $fnbase.nrrd"
             done
         done
     done
