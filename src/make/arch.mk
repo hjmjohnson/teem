@@ -116,5 +116,5 @@ BIN_CFLAGS :=
 
 # more flags to try:
 # -std=c99 -pedantic -Wno-long-long -Wno-overlength-strings -Wstrict-aliasing=2 -Wstrict-overflow=5
-# -Weverything -Wno-poison-system-directories -Wno-padded -Wno-format-nonliteral -Wno-float-equal -Wno-reserved-id-macro
+# -Weverything -Wno-poison-system-directories -Wno-padded -Wno-format-nonliteral -Wno-float-equal
 ## for trying undefined behavior flagging  -fsanitize=undefined

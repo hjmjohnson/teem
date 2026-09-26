@@ -17,7 +17,96 @@
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 
+/* Enable the POSIX-2008 thread-safe locale API (newlocale/strtod_l) where
+   available; must precede the first system-header include (air.h pulls in
+   <stdlib.h>).  TEEM_HAS_STRTOD_L selects a locale-independent numeric parse
+   in airSingleSscanf(); platforms lacking it keep the historical sscanf(). */
+#if defined(__APPLE__) || defined(__FreeBSD__) || defined(__NetBSD__)                   \
+  || defined(__OpenBSD__) || defined(__DragonFly__)
+#  include <xlocale.h>
+#  define TEEM_HAS_STRTOD_L 1
+#elif defined(__linux__)
+/* __GLIBC__ comes from <features.h>, not a compiler predefine, so it is unset
+   at this pre-include point; key off __linux__ (glibc, and musl >= 1.2.1,
+   provide newlocale/strtod_l under _GNU_SOURCE). */
+#  ifndef _GNU_SOURCE
+#    define _GNU_SOURCE 1
+#  endif
+#  include <locale.h>
+#  define TEEM_HAS_STRTOD_L 1
+#elif defined(_MSC_VER)
+#  include <locale.h>
+#  include <intrin.h>
+#  define TEEM_HAS_STRTOD_L_WIN 1
+#endif
+
 #include "air.h"
+#include "privateAir.h"
+
+#include <errno.h>
+
+#if defined(TEEM_HAS_STRTOD_L)
+#  if TEEM_PTHREAD
+#    include <pthread.h>
+#  endif
+/* Cached locale for locale-independent strtod_l; created once.  Only
+   LC_NUMERIC is "C": the other categories follow the global locale so a
+   uselocale() swap does not change ctype or collation behavior. */
+static locale_t myCLocale = (locale_t)0;
+static void
+myCLocaleInit(void) {
+  locale_t base = duplocale(LC_GLOBAL_LOCALE);
+  myCLocale = newlocale(LC_NUMERIC_MASK, "C", base);
+  if (!myCLocale && base) {
+    freelocale(base);
+  }
+}
+static locale_t
+myCLocaleGet(void) {
+#  if TEEM_PTHREAD
+  static pthread_once_t once = PTHREAD_ONCE_INIT;
+  pthread_once(&once, myCLocaleInit);
+#  else
+  /* without pthreads a first-use race can only create a second, identical "C"
+     locale object, which is harmless */
+  if (!myCLocale) {
+    myCLocaleInit();
+  }
+#  endif
+  return myCLocale;
+}
+#elif defined(TEEM_HAS_STRTOD_L_WIN)
+/* Cached "C" locale published exactly once via an atomic pointer CAS, so
+   concurrent first use is race-free: the losing thread frees its duplicate. */
+static void *volatile myCLocale = NULL;
+static _locale_t
+myCLocaleGet(void) {
+  _locale_t loc = (_locale_t)myCLocale;
+  if (!loc) {
+    _locale_t created = _create_locale(LC_NUMERIC, "C");
+    void *prev = _InterlockedCompareExchangePointer(&myCLocale, created, NULL);
+    if (prev) {
+      _free_locale(created);
+      loc = (_locale_t)prev;
+    } else {
+      loc = created;
+    }
+  }
+  return loc;
+}
+#endif
+
+/* Cached "C" LC_NUMERIC locale as an opaque pointer (locale_t or _locale_t);
+   NULL when the platform lacks the thread-safe locale API or creation failed.
+   Shared with airSinglePrintf (miscAir.c) via privateAir.h. */
+void *
+air__CLocale(void) {
+#if defined(TEEM_HAS_STRTOD_L) || defined(TEEM_HAS_STRTOD_L_WIN)
+  return (void *)myCLocaleGet();
+#else
+  return NULL;
+#endif
+}
 
 /* clang-format off */
 static const char *
@@ -102,12 +191,55 @@ airSingleSscanf(const char *str, const char *fmt, void *ptr) {
     } else if (strstr(tmp, "inf")) {
       val = (double)AIR_POS_INF;
     } else {
-      /* nothing special matched; pass it off to sscanf() */
-      /* (save setlocale here) */
-      ret = sscanf(str, fmt, ptr);
-      /* (return setlocale here) */
+      /* nothing special matched; parse one floating-point value with a
+         locale-independent "C" parse so the '.' decimal separator is honored
+         regardless of the process/thread LC_NUMERIC setting. */
+#if defined(TEEM_HAS_STRTOD_L) || defined(TEEM_HAS_STRTOD_L_WIN)
+      char *endptr = NULL;
+      double dval = 0.0;
+#  if defined(TEEM_HAS_STRTOD_L)
+      locale_t cloc = myCLocaleGet();
+#  else
+      _locale_t cloc = myCLocaleGet();
+#  endif
+      /* a null "C" locale means we cannot parse locale-independently:
+         fail the parse rather than risk a silently wrong value */
+      ret = 0;
+      if (cloc) {
+        errno = 0;
+#  if defined(TEEM_HAS_STRTOD_L)
+        dval = strtod_l(str, &endptr, cloc);
+#  else
+        dval = _strtod_l(str, &endptr, cloc);
+#  endif
+        /* accept a conversion unless it overflowed (ERANGE with +/-HUGE_VAL);
+           ERANGE underflow is a valid subnormal or zero */
+        if (endptr != str
+            && !(ERANGE == errno && (HUGE_VAL == dval || -HUGE_VAL == dval))) {
+          ret = 1;
+        }
+      }
+      /* in double range but overflows the requested float: AIR_FLOAT would
+         narrow to infinity, which is the same silent wrong value that the
+         ERANGE test above rejects */
+      if (ret && fmt[1] != 'l' && (dval > FLT_MAX || dval < -FLT_MAX)) {
+        ret = 0;
+      }
+      if (ret) {
+        if (fmt[1] == 'l') {
+          *((double *)(ptr)) = dval;
+        } else {
+          *((float *)(ptr)) = AIR_FLOAT(dval);
+        }
+      }
       free(tmp);
       return ret;
+#else
+      /* fallback: historical locale-dependent behavior, unchanged */
+      ret = sscanf(str, fmt, ptr);
+      free(tmp);
+      return ret;
+#endif
     }
     /* else we matched "nan", "-inf", or "inf"; now set val accordingly */
     if (fmt[1] == 'l') {

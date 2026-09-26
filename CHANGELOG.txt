@@ -339,12 +339,12 @@ concern.
 Quoting from new src/CODING.txt:
 
 * Names must not encroach on reserved identifiers in C (e.g. compiling with
-`-Wreserved-identifier` should not generated any additional warnings).  See
-https://en.cppreference.com/w/c/language/identifier.html for details. This
-rules out external symbols starting with `_`, or any identifier starting with
-either `_` and then a capital letter, or starting with `__`. The many many
-offending names that Teem has long had were fixed for TeemV2, and a six-fold
-naming scheme was created and enforced:
+clang `-Wreserved-identifier -Wreserved-id-macro` should not generated any
+additional warnings). https://en.cppreference.com/w/c/language/identifier.html
+gives the details. This rules out external symbols starting with `_`, or any
+identifier starting with either `_` and then a capital letter, or starting with
+`__`. The many many offending names that Teem has long had were fixed for
+TeemV2, and a six-fold naming scheme was created and enforced:
 
 (1) external symbols: start with `lib`, always. Most libraries use camelCase
     naming, but ell and tijk use snake_case, so following `lib` may be at most
