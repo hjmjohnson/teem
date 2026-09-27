@@ -1,3 +1,5 @@
+anything more to do to help bridging to imantodes?
+
 reading response files should keep track of fraction of non-printing
 characters, and bail if it exceeds some value
 
