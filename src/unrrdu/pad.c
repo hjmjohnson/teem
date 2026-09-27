@@ -27,6 +27,8 @@ static const char *unu_padInfoL = (INFO ".\n "
 static int
 unu_padMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   long int *minOff, *maxOff;
   uint minLen, maxLen;
   MY_OPT_ADD_BOUND("min,minimum", 1, minOff, NULL,
@@ -60,8 +62,6 @@ unu_padMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
     = hestOptAdd_1_Double(&hopt, "v,value", "val", &padVal, "0.0",
                           "[DEPRECATED: use \"-b pad:<V>\" instead.]\n "
                           "for \"pad\" boundary behavior, pad with this value");
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

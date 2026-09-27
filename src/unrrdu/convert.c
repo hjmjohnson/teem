@@ -35,10 +35,10 @@ static const char *unu_convertInfoL
 static int
 unu_convertMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
-  int type;
-  MY_OPT_ADD_TYPE(type, "type to convert to", NULL);
   Nrrd *nin;
   MY_OPT_ADD_NIN(nin, "input nrrd");
+  int type;
+  MY_OPT_ADD_TYPE(type, "type to convert to", NULL);
   int doClamp;
   hestOptAdd_Flag(&hopt, "clamp", &doClamp,
                   "clamp input values to representable range of values of "

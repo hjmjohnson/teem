@@ -34,6 +34,8 @@ static const char *unu_distInfoL
 static int
 unu_distMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   double thresh, bias;
   hestOptAdd_1_Double(&hopt, "th,thresh", "val", &thresh, NULL,
                       "threshold value to separate inside from outside");
@@ -51,8 +53,6 @@ unu_distMain(int argc, const char **argv, const char *me, const hestParm *hparm)
                   "values *below* threshold are considered interior to object. "
                   "By default (not using this option), values above threshold "
                   "are considered interior. ");
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

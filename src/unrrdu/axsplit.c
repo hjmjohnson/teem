@@ -30,14 +30,14 @@ static const char *unu_axsplitInfoL
 static int
 unu_axsplitMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   uint axis;
   MY_OPT_ADD_AXIS(axis, "dimension (axis index) to split at");
   size_t size[2];
   hestOptAdd_2_Size_t(&hopt, "s,size", "fast, slow sizes", size, NULL,
                       "fast and slow axis sizes to produce as result of splitting "
                       "given axis.");
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

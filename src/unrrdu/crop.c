@@ -27,6 +27,8 @@ static const char *unu_cropInfoL = (INFO ".\n "
 static int
 unu_cropMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   /* one might think this is a candidate for hparm->noArgsIsNoProblem, but really
   the "-b" option is an alternative to -min,-max: it is not the case that neither
   one can be used. It is a weakness of hest that we can't say: "either -b, or,
@@ -54,8 +56,6 @@ unu_cropMain(int argc, const char **argv, const char *me, const hestParm *hparm)
                      "\"m\" and \"M\" semantics (above) are currently not "
                      "supported in the bounds file.",
                      nrrdHestNrrdNoTTY);
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

@@ -33,6 +33,11 @@ static const char *unu_dnormInfoL
 static int
 unu_dnormMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-",
+                                   "input image. By default reads from stdin",
+                                   nrrdHestNrrdNoTTY);
+  hopt[inHidx].priority -= 10;
   int headerOnly;
   hestOptAdd_Flag(&hopt, "h,header", &headerOnly,
                   "output header of nrrd file only, not the data itself");
@@ -56,10 +61,6 @@ unu_dnormMain(int argc, const char **argv, const char *me, const hestParm *_hpar
                       "when having to contrive orientation information and there's "
                       "no per-axis min/max or spacing, this is the sample spacing "
                       "to assert");
-  Nrrd *nin;
-  uint inHidx = hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-",
-                                   "input image. By default reads from stdin",
-                                   nrrdHestNrrdNoTTY);
   char *outS;
   MY_OPT_ADD_NOUT(outS, "output filename");
 

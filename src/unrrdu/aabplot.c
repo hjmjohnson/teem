@@ -28,6 +28,9 @@ static const char *unu_aabplotInfoL
 static int
 unu_aabplotMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *_nin;
+  MY_OPT_ADD_NIN(_nin, "input nrrd");
+  // (no attempt to save history here)
   uint plen;
   hestOptAdd_1_UInt(&hopt, "l", "len", &plen, "78", "number of characters in box plot");
   double vrange[2];
@@ -37,9 +40,6 @@ unu_aabplotMain(int argc, const char **argv, const char *me, const hestParm *hpa
   int rshow, medshow;
   hestOptAdd_1_Bool(&hopt, "rs", "show", &rshow, "false", "show range above plots");
   hestOptAdd_1_Bool(&hopt, "ms", "show", &medshow, "false", "print the median value");
-  Nrrd *_nin;
-  MY_OPT_ADD_NIN(_nin, "input nrrd");
-  AIR_UNUSED(inHidx); // (no attempt to save history here)
   Nrrd *_nsingle;
   hestOptAdd_1_Other(&hopt, "s", "single", &_nsingle, "",
                      "if given a 1D nrrd here that matches the number of "

@@ -28,6 +28,15 @@ static const char *unu_spliceInfoL
 static int
 unu_spliceMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd.  This is the nrrd into which the slice is "
+                      "inserted");
+  Nrrd *nslice;
+  uint slcHidx
+    = hestOptAdd_1_Other(&hopt, "s,slice", "nslice", &nslice, NULL,
+                         "slice nrrd.  This is the slice to insert into \"nin\"",
+                         nrrdHestNrrdNoTTY);
+  hopt[slcHidx].priority -= 10;
   uint axis;
   MY_OPT_ADD_AXIS(axis, "axis to splice along");
   long int _pos[2];
@@ -37,14 +46,6 @@ unu_spliceMain(int argc, const char **argv, const char *me, const hestParm *hpar
                      "\b\bo M-<int> give index relative "
                      "to the last sample on the axis (M == #samples-1).",
                      &unrrduUnuHestPosCB);
-  Nrrd *nslice;
-  uint slcHidx
-    = hestOptAdd_1_Other(&hopt, "s,slice", "nslice", &nslice, NULL,
-                         "slice nrrd.  This is the slice to insert into \"nin\"",
-                         nrrdHestNrrdNoTTY);
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd.  This is the nrrd into which the slice is "
-                      "inserted");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

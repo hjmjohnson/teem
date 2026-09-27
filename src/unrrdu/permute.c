@@ -30,11 +30,11 @@ static const char *unu_permuteInfoL
 static int
 unu_permuteMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   uint *perm, permLen;
   hestOptAdd_Mv_UInt(&hopt, "p,permute", "ax0 ax1", 1, -1, &perm, NULL,
                      "new axis ordering", &permLen);
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

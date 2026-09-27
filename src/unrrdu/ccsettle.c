@@ -31,6 +31,7 @@ unu_ccsettleMain(int argc, const char **argv, const char *me, const hestParm *_h
   uint inHidx = hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-",
                                    "input nrrd. By default try to read from stdin",
                                    nrrdHestNrrdNoTTY);
+  hopt[inHidx].priority -= 10;
   char *valS;
   hestOptAdd_1_String(&hopt, "v,values", "filename", &valS, "",
                       "Giving a filename here allows you to save out the mapping "

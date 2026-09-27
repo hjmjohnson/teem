@@ -27,11 +27,11 @@ static const char *unu_swapInfoL = (INFO ". Special case of \"unu\tpermute\".\n 
 static int
 unu_swapMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   uint ax[2];
   hestOptAdd_2_UInt(&hopt, "a,axis", "axisA axisB", ax, NULL,
                     "the two axes to switch (0-based numbering)");
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

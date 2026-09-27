@@ -31,6 +31,8 @@ static const char *unu_axmergeInfoL
 static int
 unu_axmergeMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   uint *axes, axesLen;
   hestOptAdd_Mv_UInt(&hopt, "a,axis", "ax0", 1, -1, &axes, NULL,
                      "axis (or axes) to merge.  Each axis index identified is the "
@@ -39,8 +41,6 @@ unu_axmergeMain(int argc, const char **argv, const char *me, const hestParm *hpa
                      "merges are to be done, the indices listed here are for "
                      "the axes prior to any merging.",
                      &axesLen);
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

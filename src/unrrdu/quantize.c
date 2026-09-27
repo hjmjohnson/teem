@@ -36,6 +36,8 @@ static const char *unu_quantizeInfoL
 static int
 unu_quantizeMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   uint bits;
   hestOptAdd_1_Other(&hopt, "b,bits", "bits", &bits, NULL,
                      "Number of bits to quantize down to; determines the type "
@@ -103,8 +105,6 @@ unu_quantizeMain(int argc, const char **argv, const char *me, const hestParm *hp
                     "if not using \"-min\" or \"-max\", whether to know "
                     "the range of 8-bit data blindly (uchar is always [0,255], "
                     "signed char is [-128,127])");
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

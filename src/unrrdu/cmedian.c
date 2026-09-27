@@ -37,6 +37,10 @@ static const char *unu_cmedianInfoL
 static int
 unu_cmedianMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-", "input nrrd",
+                                   nrrdHestNrrdNoTTY);
+  hopt[inHidx].priority -= 10;
   uint radius;
   hestOptAdd_1_UInt(&hopt, "r,radius", "radius", &radius, "1",
                     "how big a window to filter over. \"-r 1\" leads to a "
@@ -79,9 +83,6 @@ unu_cmedianMain(int argc, const char **argv, const char *me, const hestParm *_hp
                   "useful. The standard place to send verbose diagnostics is stdout, "
                   "but because unu commands are typically piped, we defy conventions "
                   "and (if this \"-ve\" option is used) we print it to stderr");
-  Nrrd *nin;
-  uint inHidx = hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-", "input nrrd",
-                                   nrrdHestNrrdNoTTY);
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

@@ -145,6 +145,7 @@ unu_gridMain(int argc, const char **argv, const char *me, const hestParm *_hparm
   char *inS;
   uint inHidx = hestOptAdd_1_String(&hopt, "i,input", "nin", &inS, "-",
                                     "input nrrd. By default reads from stdin");
+  hopt[inHidx].priority -= 10;
   int psz;
   hestOptAdd_Flag(&hopt, "ps", &psz,
                   "instead of the default behavior of flattening all but the "

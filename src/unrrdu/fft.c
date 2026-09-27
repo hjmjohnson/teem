@@ -73,6 +73,13 @@ unu_fftMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
   }
 #endif
   hestOpt *hopt = NULL;
+  Nrrd *_nin;
+  MY_OPT_ADD_NIN(_nin, "input nrrd");
+  int realInput;
+  hestOptAdd_Flag(&hopt, "ri,realinput", &realInput,
+                  "input is real-valued, so insert new length-2 axis 0 "
+                  "and set complex component to 0.0.  Axes to transform "
+                  "(indicated by \"-a\") will be incremented accordingly.");
   int sign;
   hestOptAdd_1_Enum(&hopt, NULL, "dir", &sign, NULL,
                     "forward (\"forw\", \"f\") or backward/inverse "
@@ -101,13 +108,6 @@ unu_fftMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
                       "after the transform.  By default (not using this option), "
                       "no wisdom is read or saved. Note: no wisdom is gained "
                       "(that is, learned by FFTW) with planning rigor \"estimate\".");
-  Nrrd *_nin;
-  MY_OPT_ADD_NIN(_nin, "input nrrd");
-  int realInput;
-  hestOptAdd_Flag(&hopt, "ri,realinput", &realInput,
-                  "input is real-valued, so insert new length-2 axis 0 "
-                  "and set complex component to 0.0.  Axes to transform "
-                  "(indicated by \"-a\") will be incremented accordingly.");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

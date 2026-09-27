@@ -38,6 +38,8 @@ static const char *unu_projectInfoL
 static int
 unu_projectMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   uint *axis, axisLen;
   hestOptAdd_Mv_UInt(&hopt, "a,axis", "axis", 1, -1, &axis, NULL,
                      "axis or axes to project along", &axisLen);
@@ -54,9 +56,6 @@ unu_projectMain(int argc, const char **argv, const char *me, const hestParm *hpa
                      "type to use for output. By default (not using this option), "
                      "the output type is determined auto-magically",
                      &unrrduHestMaybeTypeCB);
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
-  AIR_UNUSED(inHidx); // TODO handle history; hard because of multiple outs
   char **out;
   uint outLen;
   hestOptAdd_Mv_String(&hopt, "o,output", "nout", 1, -1, &out, "-",

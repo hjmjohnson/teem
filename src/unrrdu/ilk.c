@@ -230,6 +230,10 @@ ilkGo(airArray *mop, Nrrd *nout, Nrrd *nin, mossSampler *msp, int bound,
 static int
 unu_ilkMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i,input", "image", &nin, "-",
+                                   "input 2D image", nrrdHestNrrdNoTTY);
+  hopt[inHidx].priority -= 10;
   double *origInfo;
   hestOptAdd_1_Other(&hopt, "0", "origin", &origInfo, "p:0,0",
                      "where to location (0,0) prior to applying transforms.\n "
@@ -304,9 +308,6 @@ unu_ilkMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
   hestOptAdd_2_Int(&hopt, "db", "x y", debug, "-1 -1",
                    "if both non-negative, turn on verbose debugging for this output "
                    "image pixel");
-  Nrrd *nin;
-  uint inHidx = hestOptAdd_1_Other(&hopt, "i,input", "image", &nin, "-",
-                                   "input 2D image", nrrdHestNrrdNoTTY);
   char *outS;
   MY_OPT_ADD_NOUT(outS, "output image");
 

@@ -36,6 +36,7 @@ unu_blockMain(int argc, const char **argv, const char *me, const hestParm *_hpar
   Nrrd *nin;
   uint inHidx
     = hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-", "input nrrd", nrrdHestNrrdNoTTY);
+  hopt[inHidx].priority -= 10;
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

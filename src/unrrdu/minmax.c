@@ -77,6 +77,9 @@ minmaxDoit(const char *me, char *inS, int blind8BitRange, int singleLine, FILE *
 static int
 unu_minmaxMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
+  char **inS;
+  uint ninLen;
+  hestOptAdd_Mv_String(&hopt, NULL, "nin1", 1, -1, &inS, "-", "input nrrd(s)", &ninLen);
 #define B8DEF "false"
   int blind8BitRange;
   hestOptAdd_1_Bool(&hopt, "blind8", "bool", &blind8BitRange,
@@ -98,9 +101,6 @@ unu_minmaxMain(int argc, const char **argv, const char *me, const hestParm *_hpa
     "and max, possibly followed by the single word \"non-existent\" if and "
     "only if there were non-existent values. If there are multiple inputs, "
     "the input filename is printed first on the per-input single line.");
-  char **inS;
-  uint ninLen;
-  hestOptAdd_Mv_String(&hopt, NULL, "nin1", 1, -1, &inS, "-", "input nrrd(s)", &ninLen);
 
   // (boilerplate for YES some hparm modification)
   hestParm *hparm = hestParmCopy(_hparm);

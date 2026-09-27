@@ -32,6 +32,8 @@ static const char *unu_mlutInfoL
 static int
 unu_mlutMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   Nrrd **_nmlut;
   uint _nmlutLen;
   hestOptAdd_Mv_Other(&hopt, "m,map", "mlut", 1, -1, &_nmlut, NULL,
@@ -69,8 +71,6 @@ unu_mlutMain(int argc, const char **argv, const char *me, const hestParm *hparm)
                      "By default (not using this option), the output type "
                      "is the lut's type",
                      &unrrduHestMaybeTypeCB);
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

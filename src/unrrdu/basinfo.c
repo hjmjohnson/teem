@@ -30,6 +30,8 @@ static const char *unu_basinfoInfoL
 static int
 unu_basinfoMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   /* no point in invoking this if no options are used, so even though every option has a
      default, we refrain from setting hparm->noArgsIsNoProblem */
   char *spcStr;
@@ -68,8 +70,6 @@ unu_basinfoMain(int argc, const char **argv, const char *me, const hestParm *hpa
                                      "Specifies the content string of the nrrd, which "
                                      "is built upon by many nrrd function to record a "
                                      "history of operations");
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

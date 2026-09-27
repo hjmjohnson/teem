@@ -32,6 +32,10 @@ static const char *unu_ccmergeInfoL
 static int
 unu_ccmergeMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-", "input nrrd",
+                                   nrrdHestNrrdNoTTY);
+  hopt[inHidx].priority -= 10;
   int dir;
   hestOptAdd_1_Int(&hopt, "d,directed", "dir", &dir, "0",
                    "do value-driven merging.  Using (positive) \"1\" says that "
@@ -59,9 +63,6 @@ unu_ccmergeMain(int argc, const char **argv, const char *me, const hestParm *_hp
                   "If this hoption is given, then after the merging, the CCs "
                   "are re-assigned their original datavalues, as given by "
                   "the \"-v\" option");
-  Nrrd *nin;
-  uint inHidx = hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-", "input nrrd",
-                                   nrrdHestNrrdNoTTY);
   Nrrd *nval;
   hestOptAdd_1_Other(&hopt, "v,values", "values", &nval, "",
                      "result of using \"ccfind -v\", the record of which values "

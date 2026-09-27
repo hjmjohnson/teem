@@ -39,8 +39,10 @@ unu_joinMain(int argc, const char **argv, const char *me, const hestParm *_hparm
   hestOpt *hopt = NULL;
   Nrrd **nin;
   uint ninLen;
-  hestOptAdd_Mv_Other(&hopt, "i,input", "nin0", 1, -1, &nin, NULL,
-                      "everything to be joined together", &ninLen, nrrdHestNrrdNoTTY);
+  uint inHidx = hestOptAdd_Mv_Other(&hopt, "i,input", "nin0", 1, -1, &nin, NULL,
+                                    "everything to be joined together", &ninLen,
+                                    nrrdHestNrrdNoTTY);
+  hopt[inHidx].priority -= 10;
   uint axis;
   MY_OPT_ADD_AXIS(axis, "axis to join along");
   int incrDim;

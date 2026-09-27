@@ -31,6 +31,8 @@ static const char *unu_gammaInfoL
 static int
 unu_gammaMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *GammaS;
   hestOptAdd_1_String(&hopt, "g,gamma", "gamma", &GammaS, NULL,
                       "gamma > 1.0 brightens; gamma < 1.0 darkens. "
@@ -49,8 +51,6 @@ unu_gammaMain(int argc, const char **argv, const char *me, const hestParm *hparm
                     nrrdStateBlind8BitRange ? "true" : "false",
                     "Whether to know the range of 8-bit data blindly "
                     "(uchar is always [0,255], signed char is [-128,127]).");
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

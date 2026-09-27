@@ -33,6 +33,8 @@ static const char *unu_saveInfoL
 static int
 unu_saveMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   char fmtInfo[AIR_STRLEN_HUGE + 1];
   char *fmt = fmtInfo;
   size_t fmtSize = sizeof(fmtInfo);
@@ -88,8 +90,6 @@ unu_saveMain(int argc, const char **argv, const char *me, const hestParm *hparm)
                     "friends; \"big\" for everyone else. "
                     "Defaults to endianness of this machine",
                     airEndian);
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
   char *outData;

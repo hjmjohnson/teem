@@ -31,14 +31,14 @@ static const char *unu_axdeleteInfoL
 static int
 unu_axdeleteMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   /* really needs to be signed int, because of hack */
   int _axis;
   hestOptAdd_1_Int(&hopt, "a,axis", "axis", &_axis, NULL,
                    "dimension (axis index) of the axis to remove. As a total hack, if "
                    "you give -1 as the axis, this will do a matlab-style \"squeeze\", "
                    "in which any and all singleton axes are removed.");
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

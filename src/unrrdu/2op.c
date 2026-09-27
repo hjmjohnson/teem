@@ -65,6 +65,8 @@ unu_2opMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
   uint in2Hidx = hestOptAdd_1_Other(&hopt, NULL, "in2", &in2, NULL,
                                     "Second input.  Can be a single value or a nrrd.",
                                     nrrdHestIter);
+  hopt[in1Hidx].priority -= 10;
+  hopt[in2Hidx].priority -= 10;
   uint seed;
   uint seedOI = hestOptAdd_1_UInt(&hopt, "s,seed", "seed", &seed, "0",
                                   "seed value for random number generator (RNG), to "

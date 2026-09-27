@@ -30,14 +30,14 @@ static const char *unu_unblockInfoL
 static int
 unu_unblockMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   int type;
   MY_OPT_ADD_TYPE(type, "type to unblock to", NULL);
   size_t blockSize;
   hestOptAdd_1_Size_t(&hopt, "bs", "blocksize", &blockSize, "0",
                       "Useful only if *output* type is also block: the size of "
                       "blocks in output nrrd");
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

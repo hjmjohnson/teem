@@ -27,10 +27,10 @@ static const char *unu_flipInfoL = (INFO ". Special case of \"unu\tshuffle\".\n 
 static int
 unu_flipMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
-  uint axis;
-  MY_OPT_ADD_AXIS(axis, "axis to flip along");
   Nrrd *nin;
   MY_OPT_ADD_NIN(nin, "input nrrd");
+  uint axis;
+  MY_OPT_ADD_AXIS(axis, "axis to flip along");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

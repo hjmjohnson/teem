@@ -72,6 +72,9 @@ unu_3opMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
   uint in3Hidx = hestOptAdd_1_Other(&hopt, NULL, "in3", &in3, NULL,
                                     "Third input.  Can be a single value or a nrrd.",
                                     nrrdHestIter);
+  hopt[in1Hidx].priority -= 10;
+  hopt[in2Hidx].priority -= 10;
+  hopt[in3Hidx].priority -= 10;
   int type;
   hestOptAdd_1_Other(&hopt, "t,type", "type", &type, "default",
                      "type to convert all nrrd inputs to, prior to "

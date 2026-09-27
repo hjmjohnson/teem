@@ -30,6 +30,8 @@ static const char *unu_axinsertInfoL
 static int
 unu_axinsertMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   uint axis;
   MY_OPT_ADD_AXIS(axis, "dimension (axis index) at which to insert the new axis");
   char *label;
@@ -57,8 +59,6 @@ unu_axinsertMain(int argc, const char **argv, const char *me, const hestParm *_h
                      "\b\bo \"mirror\": repeated reflections\n "
                      "\b\bo \"wrap\": wrap-around to other side",
                      nrrdHestBoundarySpec);
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

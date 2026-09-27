@@ -33,6 +33,8 @@ static const char *unu_heqInfoL
 static int
 unu_heqMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   uint bins;
   hestOptAdd_1_UInt(&hopt, "b,bin", "bins", &bins, NULL,
                     "# bins to use in histogram that is created in order to "
@@ -56,8 +58,6 @@ unu_heqMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
                       "represented by a univariate regular map.  By giving a filename "
                       "here, that map can be saved out and applied to other nrrds "
                       "with \"unu rmap\"");
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

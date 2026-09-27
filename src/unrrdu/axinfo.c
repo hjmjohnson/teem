@@ -29,6 +29,8 @@ static const char *unu_axinfoInfoL
 static int
 unu_axinfoMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   uint *axes, axesLen;
   hestOptAdd_Mv_UInt(&hopt, "a,axes", "ax0", 1, -1, &axes, NULL,
                      "the one or more axes that should be modified", &axesLen);
@@ -65,8 +67,6 @@ unu_axinfoMain(int argc, const char **argv, const char *me, const hestParm *hpar
   hestOptAdd_1_String(&hopt, "k,kind", "kind", &kindStr, "",
                       "axis kind. Not using this option "
                       "leaves the kind as it is on input");
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

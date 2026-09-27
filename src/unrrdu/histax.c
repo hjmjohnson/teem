@@ -27,6 +27,8 @@ static const char *unu_histaxInfoL = (INFO ".\n "
 static int
 unu_histaxMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   uint axis;
   MY_OPT_ADD_AXIS(axis, "axis to histogram along");
   uint bins;
@@ -67,8 +69,6 @@ unu_histaxMain(int argc, const char **argv, const char *me, const hestParm *hpar
                     nrrdStateBlind8BitRange ? "true" : "false",
                     "Whether to know the range of 8-bit data blindly "
                     "(uchar is always [0,255], signed char is [-128,127]).");
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

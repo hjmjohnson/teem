@@ -224,7 +224,10 @@ MY_UNRRDU_MAP(MY_UNRRDU_DECLARE)
 /* Nrrd *var */
 #define MY_OPT_ADD_NIN(var, desc)                                                       \
   uint inHidx = hestOptAdd_1_Other(&hopt, "i,input", "nin", &(var), "-", desc,          \
-                                   nrrdHestNrrdNoTTY)
+                                   nrrdHestNrrdNoTTY);                                  \
+  /* TeemV2 hestOpt.priority separates option parsing order from definition order;      \
+     this allows the -i input to be early in definition order but parsed last */        \
+  hopt[inHidx].priority -= 10
 
 /* char *var
    NOTE this also creates `outHidx`: the index into `hopt` of the output option */

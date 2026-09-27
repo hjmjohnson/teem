@@ -32,6 +32,14 @@ static const char *unu_jhistoInfoL
 static int
 unu_jhistoMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd **nin;
+  uint ninLen;
+  uint inHidx
+    = hestOptAdd_Mv_Other(&hopt, "i,input", "nin0 [nin1]", 1, -1, &nin, "-",
+                          "list of nrrds (one for each axis of joint histogram), "
+                          "or, single nrrd that will be sliced along specified axis.",
+                          &ninLen, nrrdHestNrrdNoTTY);
+  hopt[inHidx].priority -= 10;
   size_t *bin;
   uint binLen;
   hestOptAdd_Mv_Size_t(&hopt, "b,bin", "bins0 bins1", 2, -1, &bin, NULL,
@@ -61,12 +69,6 @@ unu_jhistoMain(int argc, const char **argv, const char *me, const hestParm *hpar
                   "counts in the joint histogram).  Clamping is done on hit "
                   "counts so that they never overflow a fixed-point type",
                   "uint");
-  Nrrd **nin;
-  uint ninLen;
-  hestOptAdd_Mv_Other(&hopt, "i,input", "nin0 [nin1]", 1, -1, &nin, "-",
-                      "list of nrrds (one for each axis of joint histogram), "
-                      "or, single nrrd that will be sliced along specified axis.",
-                      &ninLen, nrrdHestNrrdNoTTY);
   uint diceax;
   hestOptAdd_1_UInt(&hopt, "a,axis", "axis", &diceax, "0",
                     "axis to slice along when working with single nrrd. ");

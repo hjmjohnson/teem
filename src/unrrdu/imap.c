@@ -35,6 +35,8 @@ static const char *unu_imapInfoL
 static int
 unu_imapMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   Nrrd *nmap;
   hestOptAdd_1_Other(&hopt, "m,map", "map", &nmap, NULL,
                      "irregular map to map input nrrd through", nrrdHestNrrdNoTTY);
@@ -69,8 +71,6 @@ unu_imapMain(int argc, const char **argv, const char *me, const hestParm *hparm)
                      "nrrd. By default (not using this option), the output type "
                      "is the map's type",
                      &unrrduHestMaybeTypeCB);
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

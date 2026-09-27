@@ -29,6 +29,8 @@ static const char *unu_histoInfoL
 static int
 unu_histoMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   uint bins;
   hestOptAdd_1_UInt(&hopt, "b,bins", "num", &bins, NULL, "# of bins in histogram");
   Nrrd *nwght;
@@ -68,8 +70,6 @@ unu_histoMain(int argc, const char **argv, const char *me, const hestParm *hparm
                     "(uchar is always [0,255], signed char is [-128,127]).");
   int type;
   MY_OPT_ADD_TYPE(type, "type to use for bins in output histogram", "uint");
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

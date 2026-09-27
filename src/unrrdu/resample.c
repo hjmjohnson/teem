@@ -40,6 +40,8 @@ static const char *unu_resampleInfoL
 static int
 unu_resampleMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   int older;
   hestOptAdd_Flag(&hopt, "old", &older,
                   "instead of using the new nrrdResampleContext implementation, "
@@ -182,8 +184,6 @@ unu_resampleMain(int argc, const char **argv, const char *me, const hestParm *_h
   int verbose;
   hestOptAdd_1_Int(&hopt, "verbose", "v", &verbose, "0",
                    "(not available with \"-old\") verbosity level");
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

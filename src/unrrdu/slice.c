@@ -32,6 +32,8 @@ static const char *unu_sliceInfoL
 static int
 unu_sliceMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   uint *axis, axisNum;
   hestOptAdd_Mv_UInt(&hopt, "a,axis", "axis", 1, -1, &axis, NULL,
                      "single axis or multiple axes to slice along.  "
@@ -51,8 +53,6 @@ unu_sliceMain(int argc, const char **argv, const char *me, const hestParm *hparm
                       "\b\bo M-<int> give index relative "
                       "to the last sample on the axis (M == #samples-1).",
                       &posNum, &unrrduUnuHestPosCB);
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

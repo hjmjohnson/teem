@@ -30,12 +30,12 @@ static const char *unu_hackInfoL
 static int
 unu_hackMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
-  char *what;
-  hestOptAdd_1_String(&hopt, NULL, "what", &what, NULL, "what hack to do");
   Nrrd *nin;
   MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
+  char *what;
+  hestOptAdd_1_String(&hopt, NULL, "what", &what, NULL, "what hack to do");
 
   // (boilerplate for no hparm modification)
   hestParseOrExit(hopt, argc, argv, hparm, me, unu_hackInfoL);

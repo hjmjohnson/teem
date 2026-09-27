@@ -44,6 +44,7 @@ unu_unquantizeMain(int argc, const char **argv, const char *me, const hestParm *
   Nrrd *nin;
   uint inHidx = hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-", "input nrrd",
                                    nrrdHestNrrdNoTTY);
+  hopt[inHidx].priority -= 10;
   double oldMin, oldMax;
   hestOptAdd_1_Double(&hopt, "min,minimum", "value", &oldMin, "nan",
                       "Lowest value prior to quantization.  Defaults to "

@@ -36,6 +36,8 @@ static const char *unu_shuffleInfoL
 static int
 unu_shuffleMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   uint *perm, permLen;
   hestOptAdd_Mv_UInt(&hopt, "p,permute", "slc0 slc1", 1, -1, &perm, NULL,
                      "new slice ordering", &permLen);
@@ -43,8 +45,6 @@ unu_shuffleMain(int argc, const char **argv, const char *me, const hestParm *_hp
   hestOptAdd_Flag(&hopt, "inv,inverse", &inverse, "use inverse of given permutation");
   uint axis;
   MY_OPT_ADD_AXIS(axis, "axis to shuffle along");
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

@@ -32,6 +32,8 @@ static const char *unu_mrmapInfoL
 static int
 unu_mrmapMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   Nrrd **_nmmap;
   uint _nmmapLen;
   hestOptAdd_Mv_Other(&hopt, "m,map", "mmap", 1, -1, &_nmmap, NULL,
@@ -73,8 +75,6 @@ unu_mrmapMain(int argc, const char **argv, const char *me, const hestParm *hparm
                      "By default (not using this option), the output type "
                      "is the map's type",
                      &unrrduHestMaybeTypeCB);
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

@@ -31,12 +31,12 @@ static const char *unu_reshapeInfoL
 static int
 unu_reshapeMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   size_t *size;
   uint sizeLen;
   hestOptAdd_Mv_Size_t(&hopt, "s,size", "sz0 sz1 ", 1, -1, &size, NULL, "new axes sizes",
                        &sizeLen);
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

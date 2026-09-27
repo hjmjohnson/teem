@@ -33,11 +33,11 @@ static const char *unu_substInfoL
 static int
 unu_substMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   Nrrd *nsubst;
   hestOptAdd_1_Other(&hopt, "s,subst", "subst", &nsubst, NULL,
                      "substition table to map input nrrd through", nrrdHestNrrd);
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

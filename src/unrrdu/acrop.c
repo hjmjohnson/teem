@@ -33,6 +33,8 @@ static const char *unu_acropInfoL
 static int
 unu_acropMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   uint *axes, axesLen;
   hestOptAdd_Mv_UInt(&hopt, "a,axes", "ax0", 0, -1, &axes, "",
                      "the axes (if any) that should NOT be cropped", &axesLen);
@@ -66,8 +68,6 @@ unu_acropMain(int argc, const char **argv, const char *me, const hestParm *hparm
                       "as a 2-D array; first scanline is for -min, second is for -max. "
                       "Unfortunately nothing using the \"m\" and \"M\" semantics "
                       "(above) can currently be saved in the bounds file.");
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

@@ -328,9 +328,10 @@ static int
 unu_ninspectMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
   Nrrd *nin;
-  hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-",
-                     "input nrrd to project.  Must be three dimensional.",
-                     nrrdHestNrrdNoTTY);
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-",
+                                   "input nrrd to project.  Must be three dimensional.",
+                                   nrrdHestNrrdNoTTY);
+  hopt[inHidx].priority -= 10;
   float heqamount;
   hestOptAdd_1_Float(&hopt, "amt", "heq", &heqamount, "0.5",
                      "how much to apply histogram equalization to projection images");

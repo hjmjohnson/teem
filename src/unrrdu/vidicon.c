@@ -29,8 +29,10 @@ static int
 unu_vidiconMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
   Nrrd *nin;
-  hestOptAdd_1_Other(&hopt, "i", "input", &nin, NULL,
-                     "input image. Should be grayscale PNG.", nrrdHestNrrdNoTTY);
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i", "input", &nin, NULL,
+                                   "input image. Should be grayscale PNG.",
+                                   nrrdHestNrrdNoTTY);
+  hopt[inHidx].priority -= 10;
   double rescale;
   hestOptAdd_1_Double(&hopt, "rs", "rescale", &rescale, "0.75",
                       "how to rescale (downsample) the image prior to processing, "

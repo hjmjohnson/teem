@@ -34,6 +34,8 @@ static const char *unu_tileInfoL
 static int
 unu_tileMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   uint axes[3];
   hestOptAdd_3_UInt(&hopt, "a,axis", "axSplit ax0 ax1", axes, NULL,
                     "axSplit is divided and merged with ax0 and ax1");
@@ -41,8 +43,6 @@ unu_tileMain(int argc, const char **argv, const char *me, const hestParm *hparm)
   hestOptAdd_2_Size_t(&hopt, "s,size", "fast slow", size, NULL,
                       "fast and slow axis sizes to produce as result of splitting "
                       "the axSplit axis.");
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

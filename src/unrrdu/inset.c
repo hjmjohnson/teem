@@ -28,6 +28,8 @@ static const char *unu_insetInfoL = (INFO
 static int
 unu_insetMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   long int *minOff;
   uint minLen;
   MY_OPT_ADD_BOUND("min,minimum", 1, minOff, NULL,
@@ -42,8 +44,6 @@ unu_insetMain(int argc, const char **argv, const char *me, const hestParm *hparm
     = hestOptAdd_1_Other(&hopt, "s,subset", "nsub", &nsub, NULL,
                          "sub-region nrrd.  This the data to be inset in \"nin\"",
                          nrrdHestNrrdNoTTY);
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

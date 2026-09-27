@@ -29,6 +29,8 @@ static const char *unu_dhistoInfoL
 static int
 unu_dhistoMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   uint size;
   hestOptAdd_1_UInt(&hopt, "h,height", "height", &size, NULL,
                     "height of output image (horizontal size is determined by "
@@ -46,8 +48,6 @@ unu_dhistoMain(int argc, const char **argv, const char *me, const hestParm *hpar
                       "is higher or lower than the actual maximum bin count.  By "
                       "not using this option (the default), the actual maximum bin "
                       "count is used");
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

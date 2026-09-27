@@ -29,6 +29,10 @@ static const char *unu_ccfindInfoL
 static int
 unu_ccfindMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-", "input nrrd",
+                                   nrrdHestNrrdNoTTY);
+  hopt[inHidx].priority -= 10;
   char *valS;
   hestOptAdd_1_String(&hopt, "v,values", "filename", &valS, "",
                       "Giving a filename here allows you to save out the values "
@@ -48,9 +52,6 @@ unu_ccfindMain(int argc, const char **argv, const char *me, const hestParm *_hpa
                     "what kind of connectivity to use: the number of coordinates "
                     "that vary in order to traverse the neighborhood of a given "
                     "sample.  In 2D: \"1\": 4-connected, \"2\": 8-connected");
-  Nrrd *nin;
-  uint inHidx = hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-", "input nrrd",
-                                   nrrdHestNrrdNoTTY);
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

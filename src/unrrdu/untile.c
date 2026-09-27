@@ -35,6 +35,8 @@ static const char *unu_untileInfoL
 static int
 unu_untileMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   uint axes[3];
   hestOptAdd_3_UInt(&hopt, "a,axis", "axMerge ax0 ax1", axes, NULL,
                     "the slow parts of axes ax0 and ax1 are merged into a (new) "
@@ -44,8 +46,6 @@ unu_untileMain(int argc, const char **argv, const char *me, const hestParm *hpar
                       "the slow parts of axes ax0 and ax1 are taken to have size "
                       "size0 and size1, respectively, and axis axMerge will have "
                       "size size0*size1.");
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

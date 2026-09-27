@@ -27,6 +27,8 @@ static const char *unu_deringInfoL = (INFO
 static int
 unu_deringMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   double center[2];
   hestOptAdd_2_Double(&hopt, "c,center", "x y", center, NULL,
                       "center of rings, in index space of fastest two axes");
@@ -69,8 +71,6 @@ unu_deringMain(int argc, const char **argv, const char *me, const hestParm *_hpa
   hestOptAdd_1_Double(&hopt, "b,back", "val", &backval, "0.0",
                       "when using a mask (\"-m\"), the background value to "
                       "lerp with.");
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

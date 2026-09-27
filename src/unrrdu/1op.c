@@ -27,6 +27,8 @@ static const char *unu_1opInfoL = (INFO ".\n "
 static int
 unu_1opMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
+  Nrrd *nin;
+  MY_OPT_ADD_NIN(nin, "input nrrd");
   int op;
   hestOptAdd_1_Enum(&hopt, NULL, "operator", &op, NULL,
                     "Unary operator. Possibilities include:\n "
@@ -65,8 +67,6 @@ unu_1opMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
                      "(not using this option), the types of "
                      "the input nrrds are left unchanged.",
                      &unrrduHestMaybeTypeCB);
-  Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 

@@ -44,6 +44,7 @@ unu_unorientMain(int argc, const char **argv, const char *me, const hestParm *_h
   uint inHidx = hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-",
                                    "input nrrd. By default reads from stdin",
                                    nrrdHestNrrdNoTTY);
+  hopt[inHidx].priority -= 10;
   int setMinsFromOrigin;
   hestOptAdd_Flag(&hopt, "smfo", &setMinsFromOrigin,
                   "set some axis mins based on space origin (hack)");
