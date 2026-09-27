@@ -147,60 +147,64 @@ helixDoit(Nrrd *nout, double bnd, double orig[3], double i2w[9], double mf[9], d
 
 static int
 helixMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  int pret;
   hestOpt *hopt = NULL;
-  char *perr, *err;
-  airArray *mop;
-
-  int nit, verbose;
   unsigned int size[3];
-  Nrrd *nout;
-  double R, r, S, bnd, angle, ev[3], ip[3], iq[4], mp[3], mq[4], tmp[9], orig[3], i2w[9],
-    rot[9], mf[9], spd[4][3], bge;
-  char *outS;
-
   hestOptAdd_3_UInt(&hopt, "s", "size", size, NULL,
                     "sizes along fast, medium, and slow axes of the sampled volume, "
                     "often called \"X\", \"Y\", and \"Z\".  It is best to use "
                     "slightly different sizes here, to expose errors in interpreting "
                     "axis ordering (e.g. \"-s 39 40 41\")");
+  double ip[3];
   hestOptAdd_3_Double(&hopt, "ip", "image orientation", ip, "0 0 0",
                       "quaternion quotient space orientation of image");
+  double mp[3];
   hestOptAdd_3_Double(&hopt, "mp", "measurement orientation", mp, "0 0 0",
                       "quaternion quotient space orientation of measurement frame");
+  double bnd;
   hestOptAdd_1_Double(&hopt, "b", "boundary", &bnd, "10",
                       "parameter governing how fuzzy the boundary between high and "
                       "low anisotropy is. Use \"-b 0\" for no fuzziness");
+  double r;
   hestOptAdd_1_Double(&hopt, "r", "little radius", &r, "30",
                       "(minor) radius of cylinder tracing helix");
+  double R;
   hestOptAdd_1_Double(&hopt, "R", "big radius", &R, "50",
                       "(major) radius of helical turns");
+  double S;
   hestOptAdd_1_Double(&hopt, "S", "spacing", &S, "100",
                       "spacing between turns of helix (along its axis)");
+  double angle;
   hestOptAdd_1_Double(&hopt, "a", "angle", &angle, "60",
                       "maximal angle of twist of tensors along path.  There is no "
                       "twist at helical core of path, and twist increases linearly "
                       "with radius around this path.  Positive twist angle with "
                       "positive spacing resulting in a right-handed twist around a "
                       "right-handed helix. ");
+  int nit;
   hestOptAdd_Flag(&hopt, "nit", &nit,
                   "changes behavior of twist angle as function of distance from "
                   "center of helical core: instead of increasing linearly as "
                   "describe above, be at a constant angle");
+  double ev[3];
   hestOptAdd_3_Double(&hopt, "ev", "eigenvalues", ev, "0.006 0.002 0.001",
                       "eigenvalues of tensors (in order) along direction of coil, "
                       "circumferential around coil, and radial around coil. ");
+  double bge;
   hestOptAdd_1_Double(&hopt, "bg", "background", &bge, "0.5",
                       "eigenvalue of isotropic background");
+  int verbose;
   hestOptAdd_1_Int(&hopt, "v", "verbose", &verbose, "1", "verbose output");
+  char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output file");
 
-  mop = airMopNew();
+  airArray *mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  int pret;
+  char *perr, *err;
   USAGE_JUSTPARSE(helixInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (nrrdMaybeAlloc_va(nout, nrrdTypeFloat, 4, AIR_SIZE_T(7), AIR_SIZE_T(size[0]),
                         AIR_SIZE_T(size[1]), AIR_SIZE_T(size[2]))) {
@@ -210,24 +214,30 @@ helixMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
     return 1;
   }
 
+  double iq[4], rot[9];
   ELL_4V_SET(iq, 1.0, ip[0], ip[1], ip[2]);
   ell_q_to_3m_d(rot, iq);
+  double orig[3];
   ELL_3V_SET(orig,
              -2 * R + 2 * R / size[0],
              -2 * R + 2 * R / size[1],
              -2 * R + 2 * R / size[2]);
+  double i2w[9];
   ELL_3M_ZERO_SET(i2w);
   ELL_3M_DIAG_SET(i2w, 4 * R / size[0], 4 * R / size[1], 4 * R / size[2]);
+  double tmp[9];
   ELL_3MV_MUL(tmp, rot, orig);
   ELL_3V_COPY(orig, tmp);
   ELL_3M_MUL(tmp, rot, i2w);
   ELL_3M_COPY(i2w, tmp);
+  double mq[4], mf[9];
   ELL_4V_SET(mq, 1.0, mp[0], mp[1], mp[2]);
   ell_q_to_3m_d(mf, mq);
   helixDoit(nout, bnd, orig, i2w, mf, r, R, S, angle * AIR_PI / 180, !nit, ev, bge,
             verbose);
   nrrdSpaceSet(nout, nrrdSpaceRightAnteriorSuperior);
   nrrdSpaceOriginSet(nout, orig);
+  double spd[4][3];
   ELL_3V_SET(spd[0], AIR_NAN, AIR_NAN, AIR_NAN);
   ELL_3MV_COL0_GET(spd[1], i2w);
   ELL_3MV_COL1_GET(spd[2], i2w);

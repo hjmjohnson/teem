@@ -32,38 +32,37 @@ static const char *evqInfoL
 
 static int
 evqMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  int pret;
   hestOpt *hopt = NULL;
-  char *perr, *err;
-  airArray *mop;
-
-  int aniso, dontScaleByAniso;
-  unsigned int which;
-  Nrrd *nin, *nout;
-  char *outS;
-
+  Nrrd *nin;
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-",
+                                   "input diffusion tensor volume", nrrdHestNrrd);
+  hopt[inHidx].priority -= 10;
+  uint which;
   hestOptAdd_1_UInt(&hopt, "c", "evec index", &which, "0",
                     "Which eigenvector should be quantized: \"0\" for the "
                     "direction of fastest diffusion (eigenvector associated "
                     "with largest eigenvalue), \"1\" or \"2\" for other two "
                     "eigenvectors (associated with middle and smallest eigenvalue)");
+  int aniso;
   hestOptAdd_1_Enum(&hopt, "a", "aniso", &aniso, NULL,
                     "Scale the eigenvector with this anisotropy metric. " TEN_ANISO_DESC,
                     tenAniso);
+  int dontScaleByAniso;
   hestOptAdd_Flag(&hopt, "ns", &dontScaleByAniso,
                   "Don't attenuate the color by anisotropy.  By default (not "
                   "using this option), regions with low or no anisotropy are "
                   "very dark colors or black");
-  hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-", "input diffusion tensor volume",
-                     nrrdHestNrrd);
+  char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output image (floating point)");
 
-  mop = airMopNew();
+  airArray *mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  int pret;
+  char *perr, *err;
   USAGE_PARSE(evqInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (tenEvqVolume(nout, nin, which, aniso, !dontScaleByAniso)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);

@@ -27,29 +27,27 @@ static const char *anvolInfoL
 
 static int
 anvolMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  int pret;
   hestOpt *hopt = NULL;
-  char *perr, *err;
-  airArray *mop;
-
+  Nrrd *nin;
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-",
+                                   "input diffusion tensor volume", nrrdHestNrrd);
+  hopt[inHidx].priority -= 10;
   int aniso;
-  Nrrd *nin, *nout;
-  char *outS;
-  float thresh;
-
   hestOptAdd_1_Enum(&hopt, "a", "aniso", &aniso, NULL,
                     "Which anisotropy metric to plot.  " TEN_ANISO_DESC, tenAniso);
+  float thresh;
   hestOptAdd_1_Float(&hopt, "t", "thresh", &thresh, "0.5", "confidence threshold");
-  hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-", "input diffusion tensor volume",
-                     nrrdHestNrrd);
+  char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output image (floating point)");
 
-  mop = airMopNew();
+  airArray *mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  int pret;
+  char *perr, *err;
   USAGE_PARSE(anvolInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (tenAnisoVolume(nout, nin, aniso, thresh)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);

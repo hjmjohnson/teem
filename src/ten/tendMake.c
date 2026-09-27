@@ -28,24 +28,22 @@ static const char *makeInfoL
 
 static int
 makeMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  int pret;
   hestOpt *hopt = NULL;
-  char *perr, *err;
-  airArray *mop;
-
-  Nrrd *nin[3], *nout;
+  Nrrd *nin[3];
+  uint inHidx = hestOptAdd_3_Other(&hopt, "i", "conf evals evecs", nin, NULL,
+                                   "input diffusion tensor volume", nrrdHestNrrd);
+  hopt[inHidx].priority -= 10;
   char *outS;
-
-  hestOptAdd_3_Other(&hopt, "i", "conf evals evecs", nin, NULL,
-                     "input diffusion tensor volume", nrrdHestNrrd);
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output image (floating point)");
 
-  mop = airMopNew();
+  airArray *mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  int pret;
+  char *perr, *err;
   USAGE_JUSTPARSE(makeInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (tenMake(nout, nin[0], nin[1], nin[2])) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);

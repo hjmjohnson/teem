@@ -36,27 +36,20 @@ static const char *gradsInfoL
 
 static int
 gradsMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  int pret;
   hestOpt *hopt = NULL;
-  char *perr, *err;
-  airArray *mop;
 
-  int num, E;
-  Nrrd *nin, *nout;
-  char *outS;
-  tenGradientParm *tgparm;
-  unsigned int seed;
-
-  mop = airMopNew();
-  tgparm = tenGradientParmNew();
+  airArray *mop = airMopNew();
+  tenGradientParm *tgparm = tenGradientParmNew();
   airMopAdd(mop, tgparm, tenGradientParmNix_mop, airMopAlways);
-
-  hestOptAdd_1_Int(&hopt, "n", "# dir", &num, "6",
-                   "desired number of diffusion gradient directions");
+  uint num;
+  hestOptAdd_1_UInt(&hopt, "n", "# dir", &num, "6",
+                    "desired number of diffusion gradient directions");
+  Nrrd *nin;
   hestOptAdd_1_Other(&hopt, "i", "grads", &nin, "",
                      "initial gradient directions to start with, instead "
                      "of default random initial directions (overrides \"-n\")",
                      nrrdHestNrrd);
+  uint seed;
   hestOptAdd_1_UInt(&hopt, "seed", "value", &seed, "42",
                     "seed value to used with airSrandMT()");
   hestOptAdd_1_Double(&hopt, "step", "step", &(tgparm->initStep), "1.0",
@@ -96,14 +89,15 @@ gradsMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
                       "the balancing phase");
   hestOptAdd_1_Bool(&hopt, "izv", "insert", &(tgparm->insertZeroVec), "false",
                     "adding zero vector at beginning of grads");
+  char *outS;
   hestOptAdd_1_String(&hopt, "o", "filename", &outS, "-",
                       "file to write output nrrd to");
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  int pret;
+  char *perr, *err;
   USAGE(gradsInfoL);
   JUSTPARSE(gradsInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
-  nout = nrrdNew();
-  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   /* see if it was an integral exponent */
   tgparm->expo = AIR_UINT(tgparm->expo_d);
@@ -118,8 +112,10 @@ gradsMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   if (tgparm->snap) {
     tgparm->report = tgparm->snap;
   }
-  E = (nin ? tenGradientDistribute(nout, nin, tgparm)
-           : tenGradientGenerate(nout, num, tgparm));
+  Nrrd *nout = nrrdNew();
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
+  int E = (nin ? tenGradientDistribute(nout, nin, tgparm)
+               : tenGradientGenerate(nout, num, tgparm));
   if (E) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble making distribution:\n%s\n", me, err);

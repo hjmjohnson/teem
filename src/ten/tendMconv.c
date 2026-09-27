@@ -25,32 +25,30 @@ static const char *mconvInfoL = (INFO ". More docs here.");
 
 static int
 mconvMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  int pret;
   hestOpt *hopt = NULL;
-  char *perr, *err;
-  airArray *mop;
-
-  Nrrd *nin, *nout;
-  char *outS, *modelSrcS, *modelDstS;
-  const tenModel *modelDst, *modelSrc;
-  int saveB0;
-
+  Nrrd *nin;
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-",
+                                   "input nrrd of model parms", nrrdHestNrrd);
+  hopt[inHidx].priority -= 10;
+  char *modelDstS;
   hestOptAdd_1_String(&hopt, "mo", "model", &modelDstS, NULL,
                       "which model to convert to");
+  char *modelSrcS;
   hestOptAdd_1_String(&hopt, "mi", "model", &modelSrcS, "",
                       "model converting from; if not set, will try to determine "
                       "from input nrrd");
-  hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-", "input nrrd of model parms",
-                     nrrdHestNrrd);
+  char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output nrrd of model parms");
 
-  mop = airMopNew();
+  airArray *mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  int pret;
+  char *perr, *err;
   USAGE_JUSTPARSE(mconvInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
-  nout = nrrdNew();
-  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
+  const tenModel *modelDst;
+  int saveB0;
   if (tenModelParse(&modelDst, &saveB0, AIR_FALSE, modelDstS)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble parsing model \"%s\":\n%s\n", me, modelDstS, err);
@@ -62,6 +60,7 @@ mconvMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
            "having B0 info.\n",
            me);
   }
+  const tenModel *modelSrc;
   if (airStrlen(modelSrcS)) {
     if (tenModelParse(&modelSrc, &saveB0, AIR_FALSE, modelSrcS)) {
       airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);
@@ -72,6 +71,8 @@ mconvMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   } else {
     modelSrc = NULL;
   }
+  Nrrd *nout = nrrdNew();
+  airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (tenModelConvert(nout, NULL, modelDst, nin, modelSrc)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble converting:\n%s\n", me, err);

@@ -35,23 +35,21 @@ static const char *bmatInfoL
 
 static int
 bmatMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  int pret;
   hestOpt *hopt = NULL;
-  char *perr, *err;
-  airArray *mop;
-
-  Nrrd *ngrad, *nout;
-  char *outS;
-
+  Nrrd *ngrad;
   hestOptAdd_1_Other(&hopt, "i", "grads", &ngrad, NULL, "array of gradient directions",
                      nrrdHestNrrd);
+  // (not bothering with priority adjustment; will be small array)
+  char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output B matrix");
 
-  mop = airMopNew();
+  airArray *mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  int pret;
+  char *perr, *err;
   USAGE_JUSTPARSE(bmatInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   if (tenBMatrixCalc(nout, ngrad)) {

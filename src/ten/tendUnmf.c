@@ -29,27 +29,27 @@ static const char *unmfInfoL
 
 static int
 unmfMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
-  int pret;
   hestOpt *hopt = NULL;
-  char *perr, *err;
-
-  Nrrd *nin, *nout;
-  char *outS;
 
   airArray *mop = airMopNew();
   hestParm *hparm = hestParmCopy(_hparm);
   airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hparm->noArgsIsNoProblem = AIR_TRUE;
 
-  hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-", "input diffusion tensor volume ",
-                     nrrdHestNrrdNoTTY);
+  Nrrd *nin;
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-",
+                                   "input diffusion tensor volume ", nrrdHestNrrdNoTTY);
+  hopt[inHidx].priority -= 10;
+  char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output tensor volume");
 
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  int pret;
+  char *perr, *err;
   USAGE_PARSE(unmfInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (tenMeasurementFrameReduce(nout, nin)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);
@@ -57,7 +57,6 @@ unmfMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
     airMopError(mop);
     return 1;
   }
-
   if (nrrdSave(outS, nout, NULL)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble writing:\n%s\n", me, err);

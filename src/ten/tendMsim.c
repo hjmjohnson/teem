@@ -33,16 +33,7 @@ static const char *msimInfoL
 
 static int
 msimMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
-  int pret;
   hestOpt *hopt = NULL;
-  char *perr, *err;
-
-  tenExperSpec *espec;
-  const tenModel *model;
-  int E, seed, keyValueSet, outType, plusB0, insertB0;
-  Nrrd *nin, *nT2, *_ngrad, *ngrad, *nout;
-  char *outS, *modS;
-  double bval, sigma;
 
   airArray *mop = airMopNew();
   hestParm *hparm = hestParmCopy(_hparm);
@@ -51,45 +42,59 @@ msimMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
      set to AIR_FALSE there */
   hparm->elideSingleOtherDefault = AIR_TRUE;
 
-  hestOptAdd_1_Double(&hopt, "sigma", "sigma", &sigma, "0.0",
-                      "Gaussian/Rician noise parameter");
-  hestOptAdd_1_Int(&hopt, "seed", "seed", &seed, "42",
-                   "seed value for RNG which creates noise");
-  hestOptAdd_1_Other(&hopt, "g", "grad list", &_ngrad, NULL,
-                     "gradient list, one row per diffusion-weighted image",
-                     nrrdHestNrrd);
+  Nrrd *nin;
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i", "model image", &nin, "-",
+                                   "input model image", nrrdHestNrrd);
+  hopt[inHidx].priority -= 10;
+  Nrrd *nT2;
   hestOptAdd_1_Other(&hopt, "b0", "b0 image", &nT2, "",
                      "reference non-diffusion-weighted (\"B0\") image, which "
                      "may be needed if it isn't part of give model param image",
                      nrrdHestNrrd);
-  hestOptAdd_1_Other(&hopt, "i", "model image", &nin, "-", "input model image",
+  Nrrd *_ngrad;
+  hestOptAdd_1_Other(&hopt, "g", "grad list", &_ngrad, NULL,
+                     "gradient list, one row per diffusion-weighted image",
                      nrrdHestNrrd);
+  char *modS;
   hestOptAdd_1_String(&hopt, "m", "model", &modS, NULL,
                       "model with which to simulate DWIs, which must be specified if "
                       "it is not indicated by the first axis in input model image.");
+  double sigma;
+  hestOptAdd_1_Double(&hopt, "sigma", "sigma", &sigma, "0.0",
+                      "Gaussian/Rician noise parameter");
+  int seed;
+  hestOptAdd_1_Int(&hopt, "seed", "seed", &seed, "42",
+                   "seed value for RNG which creates noise");
+  int insertB0;
   hestOptAdd_1_Bool(&hopt, "ib0", "bool", &insertB0, "false",
                     "insert a non-DW B0 image at the beginning of the experiment "
                     "specification (useful if the given gradient list doesn't "
                     "already have one) and hence also insert a B0 image at the "
                     "beginning of the output simulated DWIs");
+  double bval;
   hestOptAdd_1_Double(&hopt, "b", "b", &bval, "1000", "b value for simulated scan");
+  int keyValueSet;
   hestOptAdd_1_Bool(&hopt, "kvp", "bool", &keyValueSet, "true",
                     "generate key/value pairs in the NRRD header corresponding "
                     "to the input b-value and gradients.");
+  int outType;
   hestOptAdd_1_Enum(&hopt, "t", "type", &outType, "float", "output type of DWIs",
                     nrrdType);
+  char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output dwis");
 
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  int pret;
+  char *perr, *err;
   USAGE_PARSE(msimInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
-  espec = tenExperSpecNew();
+  tenExperSpec *espec = tenExperSpecNew();
   airMopAdd(mop, espec, tenExperSpecNix_mop, airMopAlways);
 
-  airSrandMT(seed);
+  Nrrd *ngrad;
   if (nrrdTypeDouble == _ngrad->type) {
     ngrad = _ngrad;
   } else {
@@ -103,7 +108,8 @@ msimMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
       return 1;
     }
   }
-  plusB0 = AIR_FALSE;
+  int plusB0 = AIR_FALSE;
+  const tenModel *model;
   if (airStrlen(modS)) {
     if (tenModelParse(&model, &plusB0, AIR_FALSE, modS)) {
       airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);
@@ -133,7 +139,8 @@ msimMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
      or: it is trying to say something about including B0 amongst
      model parameters (which isn't actually meaningful in the
      context of simulated DWIs */
-  E = 0;
+  int E = 0;
+  airSrandMT(seed);
   if (!E) E |= tenGradientCheck(ngrad, nrrdTypeDouble, 1);
   if (!E)
     E |= tenExperSpecGradSingleBValSet(espec, insertB0, bval,

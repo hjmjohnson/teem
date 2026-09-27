@@ -27,30 +27,28 @@ static const char *avgInfoL
 
 static int
 avgMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  int pret;
   hestOpt *hopt = NULL;
-  char *perr, *err;
-  airArray *mop;
-
+  Nrrd **nin;
+  uint ninLen;
+  uint inHidx = hestOptAdd_Mv_Other(&hopt, "i", "nin1 nin2", 2, -1, &nin, NULL,
+                                    "list of input diffusion tensor volumes", &ninLen,
+                                    nrrdHestNrrd);
+  hopt[inHidx].priority -= 10;
   int itype;
-  unsigned int ninLen;
-  Nrrd **nin, *nout;
-  char *outS;
-
-  hestOptAdd_Mv_Other(&hopt, "i", "nin1 nin2", 2, -1, &nin, NULL,
-                      "list of input diffusion tensor volumes", &ninLen, nrrdHestNrrd);
   hestOptAdd_1_Enum(&hopt, "t", "type", &itype, "linear", "averaging method",
                     tenInterpType);
+  char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output image (floating point)");
 
-  mop = airMopNew();
+  airArray *mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  int pret;
+  char *perr, *err;
   USAGE_JUSTPARSE(avgInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
-
   if (tenInterpMulti3D(nout, AIR_CAST(const Nrrd *const *, nin), NULL, ninLen, itype,
                        NULL)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);

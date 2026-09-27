@@ -26,24 +26,22 @@ static const char *logInfoL
 
 static int
 logMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  int pret;
   hestOpt *hopt = NULL;
-  char *perr, *err;
-  airArray *mop;
-
-  Nrrd *nin, *nout;
+  Nrrd *nin;
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-",
+                                   "input diffusion tensor volume", nrrdHestNrrd);
+  hopt[inHidx].priority -= 10;
   char *outS;
-
-  hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-", "input diffusion tensor volume",
-                     nrrdHestNrrd);
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, NULL, "output image");
 
-  mop = airMopNew();
+  airArray *mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  int pret;
+  char *perr, *err;
   USAGE_PARSE(logInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (tenLog(nout, nin)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);

@@ -30,34 +30,33 @@ static const char *anscaleInfoL
 
 static int
 anscaleMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  int pret;
   hestOpt *hopt = NULL;
-  char *perr, *err;
-  airArray *mop;
-
-  Nrrd *nin, *nout;
-  char *outS;
+  Nrrd *nin;
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-",
+                                   "input diffusion tensor volume", nrrdHestNrrd);
+  hopt[inHidx].priority -= 10;
   float scale;
-  int fixDet, makePositive;
-
   hestOptAdd_1_Float(&hopt, "s", "scale", &scale, NULL,
                      "Amount by which to scale deviatoric component of tensor.");
+  int fixDet;
   hestOptAdd_Flag(&hopt, "fd", &fixDet,
                   "instead of fixing the per-sample trace (the default), fix the "
                   "determinant (ellipsoid volume)");
+  int makePositive;
   hestOptAdd_Flag(&hopt, "mp", &makePositive,
                   "after changing the eigenvalues of the tensor, enforce their "
                   "non-negative-ness.  By default, no such constraint is imposed.");
-  hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-", "input diffusion tensor volume",
-                     nrrdHestNrrd);
+  char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output image (floating point)");
 
-  mop = airMopNew();
+  airArray *mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  int pret;
+  char *perr, *err;
   USAGE_PARSE(anscaleInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (tenAnisoScale(nout, nin, scale, fixDet, makePositive)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);

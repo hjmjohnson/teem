@@ -199,46 +199,48 @@ ellipseDoit(FILE *file, Nrrd *nten, Nrrd *npos, Nrrd *nstn, float min[2], float 
 
 static int
 ellipseMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  int pret;
   hestOpt *hopt = NULL;
-  char *perr;
-  airArray *mop;
-
-  Nrrd *nten, *npos, *nstn;
-  char *outS;
-  float gscale, dotRad, lineWidth, cthresh, min[2], max[2];
-  FILE *fout;
-  int invert;
-
-  mop = airMopNew();
-
-  hestOptAdd_1_Float(&hopt, "ctr", "conf thresh", &cthresh, "0.5",
-                     "Glyphs will be drawn only for tensors with confidence "
-                     "values greater than this threshold");
-  hestOptAdd_1_Float(&hopt, "gsc", "scale", &gscale, "1", "over-all glyph size");
-  hestOptAdd_1_Float(&hopt, "dot", "radius", &dotRad, "0.0",
-                     "radius of little dot to put in middle of ellipse, or \"0\" "
-                     "for no such dot");
-  hestOptAdd_1_Float(&hopt, "wid", "width", &lineWidth, "0.0",
-                     "with of lines for tractlets");
-  hestOptAdd_Flag(&hopt, "inv", &invert,
-                  "use white ellipses on black background, instead of reverse");
-  hestOptAdd_2_Float(&hopt, "min", "minX minY", min, "-1 -1",
-                     "when using \"-p\", minimum corner");
-  hestOptAdd_2_Float(&hopt, "max", "maxX maxY", max, "1 1",
-                     "when using \"-p\", maximum corner");
-
-  /* input/output */
+  Nrrd *nten;
   hestOptAdd_1_Other(&hopt, "i", "nin", &nten, "-", "image of 2D tensors", nrrdHestNrrd);
+  // (opting not to bother with priority adjustment; these will be small arrays no?)
+  Nrrd *npos;
   hestOptAdd_1_Other(&hopt, "p", "pos array", &npos, "",
                      "Instead of being on a grid, tensors are at arbitrary locations, "
                      "as defined by this 2-by-N array of floats",
                      nrrdHestNrrd);
+  Nrrd *nstn;
   hestOptAdd_1_Other(&hopt, "s", "stn array", &nstn, "",
                      "Locations given by \"-p\" have this connectivity", nrrdHestNrrd);
+  float cthresh;
+  hestOptAdd_1_Float(&hopt, "ctr", "conf thresh", &cthresh, "0.5",
+                     "Glyphs will be drawn only for tensors with confidence "
+                     "values greater than this threshold");
+  float gscale;
+  hestOptAdd_1_Float(&hopt, "gsc", "scale", &gscale, "1", "over-all glyph size");
+  float dotRad;
+  hestOptAdd_1_Float(&hopt, "dot", "radius", &dotRad, "0.0",
+                     "radius of little dot to put in middle of ellipse, or \"0\" "
+                     "for no such dot");
+  float lineWidth;
+  hestOptAdd_1_Float(&hopt, "wid", "width", &lineWidth, "0.0",
+                     "with of lines for tractlets");
+  int invert;
+  hestOptAdd_Flag(&hopt, "inv", &invert,
+                  "use white ellipses on black background, instead of reverse");
+  float min[2];
+  hestOptAdd_2_Float(&hopt, "min", "minX minY", min, "-1 -1",
+                     "when using \"-p\", minimum corner");
+  float max[2];
+  hestOptAdd_2_Float(&hopt, "max", "maxX maxY", max, "1 1",
+                     "when using \"-p\", maximum corner");
+
+  char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output PostScript file");
 
+  airArray *mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  int pret;
+  char *perr;
   USAGE_JUSTPARSE(ellipseInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
@@ -274,6 +276,7 @@ ellipseMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
       return 1;
     }
   }
+  FILE *fout;
   if (!(fout = airFopen(outS, stdout, "wb"))) {
     fprintf(stderr, "%s: couldn't open \"%s\" for writing\n", me, outS);
     airMopError(mop);

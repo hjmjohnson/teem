@@ -27,26 +27,25 @@ static const char *tripleInfoL
 
 static int
 tripleMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  int pret;
   hestOpt *hopt = NULL;
-  char *perr, *err;
-  airArray *mop;
-
+  Nrrd *nin;
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-", "input tensor volume",
+                                   nrrdHestNrrd);
+  hopt[inHidx].priority -= 10;
   int ttype;
-  Nrrd *nin, *nout;
-  char *outS;
-
   hestOptAdd_1_Enum(&hopt, "t", "type", &ttype, NULL, "desired output triple type",
                     tenTripleType);
-  hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-", "input tensor volume", nrrdHestNrrd);
+  char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output triple volume");
 
-  mop = airMopNew();
+  airArray *mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  int pret;
+  char *perr, *err;
   USAGE_PARSE(tripleInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (tenTripleCalc(nout, ttype, nin)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);

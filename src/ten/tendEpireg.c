@@ -35,13 +35,15 @@ static const char *epiregInfoL
 static int
 epiregMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
-
   Nrrd **nin;
   uint ninLen;
-  hestOptAdd_Mv_Other(&hopt, "i", "dwi0 dwi1", 1, -1, &nin, NULL,
-                      "all the diffusion-weighted images (DWIs), as separate 3D nrrds, "
-                      "**OR**: one 4D nrrd of all DWIs stacked along axis 0",
-                      &ninLen, nrrdHestNrrd);
+  uint inHidx = hestOptAdd_Mv_Other(&hopt, "i", "dwi0 dwi1", 1, -1, &nin, NULL,
+                                    "all the diffusion-weighted images (DWIs), "
+                                    "as separate 3D nrrds, "
+                                    "**OR**: one 4D nrrd of all "
+                                    "DWIs stacked along axis 0",
+                                    &ninLen, nrrdHestNrrd);
+  hopt[inHidx].priority -= 10;
   char *gradS;
   hestOptAdd_1_String(&hopt, "g", "grads", &gradS, NULL,
                       "array of gradient directions, in the same order as the "

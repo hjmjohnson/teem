@@ -26,14 +26,15 @@ static const char *sliceInfoL = (INFO ". ");
 static int
 sliceMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOpt *hopt = NULL;
-  unsigned int axis, pos, dim;
+  Nrrd *nin;
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-",
+                                   "input diffusion tensor volume", nrrdHestNrrd);
+  hopt[inHidx].priority -= 10;
+  uint axis, pos, dim;
   hestOptAdd_1_UInt(&hopt, "a", "axis", &axis, NULL, "axis along which to slice");
   hestOptAdd_1_UInt(&hopt, "p", "pos", &pos, NULL, "position to slice at");
   hestOptAdd_1_UInt(&hopt, "d", "dim", &dim, "3",
                     "dimension of desired tensor output, can be either 2 or 3");
-  Nrrd *nin;
-  hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-", "input diffusion tensor volume",
-                     nrrdHestNrrd);
   char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output tensor slice");
 

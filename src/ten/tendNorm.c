@@ -28,35 +28,33 @@ static const char *normInfoL
 
 static int
 normMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  int pret;
   hestOpt *hopt = NULL;
-  char *perr, *err;
-  airArray *mop;
-
-  Nrrd *nin, *nout;
-  char *outS;
-  float amount, target;
+  Nrrd *nin;
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-",
+                                   "input diffusion tensor volume", nrrdHestNrrd);
+  hopt[inHidx].priority -= 10;
   double weight[3];
-
   hestOptAdd_3_Double(&hopt, "w", "w0 w1 w2", weight, NULL,
                       "relative weights to put on major, medium, and minor "
                       "eigenvalue when performing normalization (internally "
                       "rescaled to have a 1.0 L1 norm). These weightings determine "
                       "the tensors's \"size\".");
+  float amount, target;
   hestOptAdd_1_Float(&hopt, "a", "amount", &amount, "1.0",
                      "how much of the normalization to perform");
   hestOptAdd_1_Float(&hopt, "t", "target", &target, "1.0",
                      "target size, post normalization");
-  hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-", "input diffusion tensor volume",
-                     nrrdHestNrrd);
+  char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output image (floating point)");
 
-  mop = airMopNew();
+  airArray *mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  int pret;
+  char *perr, *err;
   USAGE_PARSE(normInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (tenSizeNormalize(nout, nin, weight, amount, target)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);

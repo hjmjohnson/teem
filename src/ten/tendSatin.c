@@ -178,57 +178,58 @@ satinGen(Nrrd *nout, float parm, float mina, float maxa, unsigned int wsize, flo
 
 static int
 satinMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  int pret;
   hestOpt *hopt = NULL;
-  char *perr, *err;
-  airArray *mop;
-
   int torus;
-  unsigned int wsize;
-  float parm, maxa, mina, thick, scaling, bnd, bndRm, evsc;
-  Nrrd *nout;
-  char *outS;
-  gageShape *shape;
-  double spd[4][4], orig[4];
-
   hestOptAdd_Flag(&hopt, "t", &torus,
                   "generate a torus dataset, instead of the default spherical");
+  float parm;
   hestOptAdd_1_Float(&hopt, "p", "aniso parm", &parm, NULL,
                      "anisotropy parameter.  0.0 for one direction of linear (along "
                      "the equator for spheres, or along the larger circumference for "
                      "toruses), 1.0 for planar, 2.0 for the other direction of linear "
                      "(from pole to pole for spheres, or along the smaller "
                      "circumference for toruses)");
+  float maxa;
   hestOptAdd_1_Float(&hopt, "max", "max ca1", &maxa, "1.0",
                      "maximum anisotropy in dataset, according to the \"ca1\" "
                      "anisotropy metric.  \"1.0\" means "
                      "completely linear or completely planar anisotropy");
+  float mina;
   hestOptAdd_1_Float(&hopt, "min", "min ca1", &mina, "0.0",
                      "minimum anisotropy in dataset");
+  float bnd;
   hestOptAdd_1_Float(&hopt, "b", "boundary", &bnd, "0.05",
                      "parameter governing how fuzzy the boundary between high and "
                      "low anisotropy is. Use \"-b 0\" for no fuzziness");
+  float bndRm;
   hestOptAdd_1_Float(&hopt, "br", "ramp", &bndRm, "0.0",
                      "how much to ramp upeffective \"b\" along Y axis. "
                      "Use \"-b 0\" for no such ramping.");
+  float thick;
   hestOptAdd_1_Float(&hopt, "th", "thickness", &thick, "0.3",
                      "parameter governing how thick region of high anisotropy is");
+  float scaling;
   hestOptAdd_1_Float(&hopt, "scl", "scaling", &scaling, "1.0",
                      "scaling on size of sphere or torus within volume; lowering "
                      "this below default 1.0 produces more background margin");
+  float evsc;
   hestOptAdd_1_Float(&hopt, "evsc", "eval scale", &evsc, "1.0",
                      "scaling of eigenvalues");
+  uint wsize;
   hestOptAdd_1_UInt(&hopt, "s", "size", &wsize, "32",
                     "dimensions of output volume.  For size N, the output is "
                     "N\tx\tN\tx\tN for spheres, and 2N\tx\t2N\tx\tN for toruses");
+  char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output filename");
 
-  mop = airMopNew();
+  airArray *mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  int pret;
+  char *perr, *err;
   USAGE_JUSTPARSE(satinInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   if (satinGen(nout, parm, mina, maxa, wsize, thick, scaling, bnd, bndRm, evsc, torus)) {
@@ -241,7 +242,7 @@ satinMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   /* use gageShape to determine orientation info */
   nrrdAxisInfoSet_va(nout, nrrdAxisInfoCenter, nrrdCenterUnknown, nrrdCenterCell,
                      nrrdCenterCell, nrrdCenterCell);
-  shape = gageShapeNew();
+  gageShape *shape = gageShapeNew();
   airMopAdd(mop, shape, gageShapeNix_mop, airMopAlways);
   /* this is a weird mix of new and legacy code.  At some point
      prior to Wed May 27 19:23:55 CDT 2009, it was okay to pass
@@ -262,6 +263,7 @@ satinMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   }
   /* the ItoW is a 4x4 matrix, but
      we really only care about the first three rows */
+  double spd[4][4], orig[4];
   ELL_4V_SET(spd[0], AIR_NAN, AIR_NAN, AIR_NAN, AIR_NAN);
   ELL_4MV_COL0_GET(spd[1], shape->ItoW);
   ELL_4V_SCALE(spd[1], 32, spd[1]);

@@ -25,23 +25,21 @@ static const char *pointInfoL = (INFO ". ");
 
 static int
 pointMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  int pret;
   hestOpt *hopt = NULL;
-  char *perr, *err;
-  airArray *mop;
 
-  /* HEY: all of these ints should be unsigned! */
-  int loc[3], idx, sx, sy, sz, i;
   Nrrd *nin;
-  float *tdata, eval[3], evec[9], angle, axis[3], mat[9];
-
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-",
+                                   "input diffusion tensor volume", nrrdHestNrrd);
+  hopt[inHidx].priority -= 10;
+  /* HEY: all of these ints should be unsigned! */
+  int loc[3];
   hestOptAdd_3_Int(&hopt, "p", "x y z", loc, NULL,
                    "coordinates of sample to be described");
-  hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-", "input diffusion tensor volume",
-                     nrrdHestNrrd);
 
-  mop = airMopNew();
+  airArray *mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  int pret;
+  char *perr, *err;
   USAGE_PARSE(pointInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
@@ -51,6 +49,7 @@ pointMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
     airMopError(mop);
     return 1;
   }
+  int sx, sy, sz;
   sx = AIR_INT(nin->axis[1].size); /* HEY: unsigned? */
   sy = AIR_INT(nin->axis[2].size);
   sz = AIR_INT(nin->axis[3].size);
@@ -65,8 +64,8 @@ pointMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   }
 
   /* clang-format off */
-  idx = loc[0] + sx*(loc[1] + sy*loc[2]);
-  tdata = (float*)(nin->data) + 7*idx;
+  int idx = loc[0] + sx*(loc[1] + sy*loc[2]);
+  float *tdata = (float*)(nin->data) + 7*idx;
   fprintf(stderr, "location = (%d,%d,%d) = %d\n", loc[0], loc[1], loc[2], idx);
   fprintf(stderr, "confidence = %g\n", tdata[0]);
   fprintf(stderr, "tensor =\n");
@@ -75,6 +74,7 @@ pointMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   fprintf(stderr, "% 15.7f % 15.7f % 15.7f\n", tdata[1], tdata[2], tdata[3]);
   fprintf(stderr, "% 15.7f % 15.7f % 15.7f\n", tdata[2], tdata[4], tdata[5]);
   fprintf(stderr, "% 15.7f % 15.7f % 15.7f\n", tdata[3], tdata[5], tdata[6]);
+  float eval[3], evec[9];
   tenEigensolve_f(eval, evec, tdata);
   fprintf(stderr, "eigensystem = (<eigenvalue> : <eigenvector>):\n");
   fprintf(stderr, "% 15.7f : % 15.7f % 15.7f % 15.7f\n",
@@ -83,9 +83,11 @@ pointMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
           eval[1], evec[3], evec[4], evec[5]);
   fprintf(stderr, "% 15.7f : % 15.7f % 15.7f % 15.7f\n",
           eval[2], evec[6], evec[7], evec[8]);
-  angle = ell_3m_to_aa_f(axis, evec);
+  float axis[3];
+  float angle = ell_3m_to_aa_f(axis, evec);
   fprintf(stderr, "eigenvector rotation: %g around {%g,%g,%g}\n",
           angle, axis[0], axis[1], axis[2]);
+  float mat[9];
   ell_aa_to_3m_f(mat, angle, axis);
   fprintf(stderr, "% 15.7f % 15.7f % 15.7f\n",
           mat[0], mat[1], mat[2]);
@@ -94,7 +96,7 @@ pointMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   fprintf(stderr, "% 15.7f % 15.7f % 15.7f\n",
           mat[6], mat[7], mat[8]);
   fprintf(stderr, "anisotropies = \n");
-  for (i=1; i<=TEN_ANISO_MAX; i++) {
+  for (int i=1; i<=TEN_ANISO_MAX; i++) {
     fprintf(stderr, "%s: % 15.7f\n",
             airEnumStr(tenAniso, i), tenAnisoEval_f(eval, i));
   }

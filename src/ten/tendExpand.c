@@ -33,43 +33,45 @@ static const char *expandInfoL
 
 static int
 expandMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  int pret;
   hestOpt *hopt = NULL;
-  char *perr, *err;
-  airArray *mop;
-
-  Nrrd *nin, *nout;
-  char *outS;
-  int orientRed, orientRedWithOrigin, mfRed;
-  float scale, thresh;
-
+  Nrrd *nin;
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-",
+                                   "input diffusion tensor volume, "
+                                   "with 7 values per sample",
+                                   nrrdHestNrrd);
+  hopt[inHidx].priority -= 10;
+  float thresh;
   hestOptAdd_1_Float(&hopt, "t", "thresh", &thresh, "0.5",
                      "confidence level to threshold output tensors at.  Should "
                      "be between 0.0 and 1.0.");
+  float scale;
   hestOptAdd_1_Float(&hopt, "s", "scale", &scale, "1.0",
                      "how to scale values before saving as 9-value tensor.  Useful "
                      "for visualization tools which assume certain characteristic "
                      "ranges of eigenvalues");
+  int mfRed;
   hestOptAdd_Flag(&hopt, "unmf", &mfRed,
                   "apply and remove the measurement frame, if it exists");
+  int orientRed;
   hestOptAdd_Flag(&hopt, "ro", &orientRed,
                   "reduce general image orientation to axis-aligned spacings");
+  int orientRedWithOrigin;
   hestOptAdd_Flag(&hopt, "roo", &orientRedWithOrigin,
                   "reduce general image orientation to axis-aligned spacings, "
                   "while also making some effort to set axis mins from "
                   "space origin");
-  hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-",
-                     "input diffusion tensor volume, with 7 values per sample",
-                     nrrdHestNrrd);
+  char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, NULL,
                       "output tensor volume, with the 9 matrix components per sample");
 
-  mop = airMopNew();
+  airArray *mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  int pret;
+  char *perr, *err;
   USAGE_PARSE(expandInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (mfRed && 3 == nin->spaceDim && AIR_EXISTS(nin->measurementFrame[0][0])) {
     if (tenMeasurementFrameReduce(nin, nin)) {

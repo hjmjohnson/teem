@@ -25,38 +25,40 @@ static const char *mfitInfoL = (INFO ". More docs here.");
 
 static int
 mfitMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  int pret;
   hestOpt *hopt = NULL;
-  char *perr, *err;
-  airArray *mop;
-
-  Nrrd *nin, *nout, *nterr, *nconv, *niter;
-  char *outS, *terrS, *convS, *iterS, *modS;
-  int knownB0, saveB0, verbose, mlfit, typeOut;
-  unsigned int maxIter, minIter, starts;
-  double sigma, eps;
-  const tenModel *model;
-  tenExperSpec *espec;
-
+  Nrrd *nin;
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i", "dwi", &nin, "-",
+                                   "all the diffusion-weighted images in one 4D nrrd",
+                                   nrrdHestNrrd);
+  hopt[inHidx].priority -= 10;
+  int verbose;
   hestOptAdd_1_Int(&hopt, "v", "verbose", &verbose, "0", "verbosity level");
+  char *modS;
   hestOptAdd_1_String(&hopt, "m", "model", &modS, NULL,
                       "which model to fit. Use optional \"b0+\" prefix to "
                       "indicate that the B0 image should also be saved "
                       "(independent of whether it was known or had to be "
                       "estimated, according to \"-knownB0\").");
+  uint starts;
   hestOptAdd_1_UInt(&hopt, "ns", "# starts", &starts, "1",
                     "number of random starting points at which to initialize "
                     "fitting");
+  int mlfit;
   hestOptAdd_Flag(&hopt, "ml", &mlfit,
                   "do ML fitting, rather than least-squares, which also "
                   "requires setting \"-sigma\"");
+  double sigma;
   hestOptAdd_1_Double(&hopt, "sigma", "sigma", &sigma, "nan",
                       "Gaussian/Rician noise parameter");
+  double eps;
   hestOptAdd_1_Double(&hopt, "eps", "eps", &eps, "0.01", "convergence epsilon");
+  uint minIter;
   hestOptAdd_1_UInt(&hopt, "mini", "min iters", &minIter, "3",
                     "minimum required # iterations for fitting.");
+  uint maxIter;
   hestOptAdd_1_UInt(&hopt, "maxi", "max iters", &maxIter, "100",
                     "maximum allowable # iterations for fitting.");
+  int knownB0;
   hestOptAdd_1_Bool(&hopt, "knownB0", "bool", &knownB0, NULL,
                     "Indicates if the B=0 non-diffusion-weighted reference image "
                     "is known (\"true\") because it appears one or more times "
@@ -68,34 +70,38 @@ mfitMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
                     "should be saved in output, regardless of whether it was "
                     "known or had to be esimated");
   */
+  int typeOut;
   hestOptAdd_1_Enum(&hopt, "t", "type", &typeOut, "float",
                     "output type of model parameters", nrrdType);
-  hestOptAdd_1_Other(&hopt, "i", "dwi", &nin, "-",
-                     "all the diffusion-weighted images in one 4D nrrd", nrrdHestNrrd);
+  char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output parameter vector image");
+  char *terrS;
   hestOptAdd_1_String(&hopt, "eo", "filename", &terrS, "",
                       "Giving a filename here allows you to save out the per-sample "
                       "fitting error.  By default, no such error is saved.");
+  char *convS;
   hestOptAdd_1_String(&hopt, "co", "filename", &convS, "",
                       "Giving a filename here allows you to save out the per-sample "
                       "convergence fraction.  By default, no such error is saved.");
+  char *iterS;
   hestOptAdd_1_String(&hopt, "io", "filename", &iterS, "",
                       "Giving a filename here allows you to save out the per-sample "
                       "number of iterations needed for fitting.  "
                       "By default, no such error is saved.");
 
-  mop = airMopNew();
+  airArray *mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  int pret;
+  char *perr, *err;
   USAGE_JUSTPARSE(mfitInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
-  nterr = NULL;
-  nconv = NULL;
-  niter = NULL;
-  espec = tenExperSpecNew();
+  tenExperSpec *espec = tenExperSpecNew();
   airMopAdd(mop, espec, tenExperSpecNix_mop, airMopAlways);
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
+  const tenModel *model;
+  int saveB0;
   if (tenModelParse(&model, &saveB0, AIR_FALSE, modS)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble parsing model \"%s\":\n%s\n", me, modS, err);
@@ -108,6 +114,7 @@ mfitMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
     airMopError(mop);
     return 1;
   }
+  Nrrd *nterr = NULL, *nconv = NULL, *niter = NULL;
   if (tenModelSqeFit(nout, airStrlen(terrS) ? &nterr : NULL,
                      airStrlen(convS) ? &nconv : NULL, airStrlen(iterS) ? &niter : NULL,
                      model, espec, nin, knownB0, saveB0, typeOut, minIter, maxIter,

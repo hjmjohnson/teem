@@ -27,27 +27,25 @@ static const char *tconvInfoL
 
 static int
 tconvMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  int pret;
   hestOpt *hopt = NULL;
-  char *perr, *err;
-  airArray *mop;
-
+  Nrrd *nin;
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-",
+                                   "input array of triples", nrrdHestNrrd);
+  hopt[inHidx].priority -= 10;
   int ttype[2];
-  Nrrd *nin, *nout;
-  char *outS;
-
   hestOptAdd_2_Enum(&hopt, "t", "inType outType", ttype, NULL,
                     "given input and desired output type of triples", tenTripleType);
-  hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-", "input array of triples",
-                     nrrdHestNrrd);
+  char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output array");
 
-  mop = airMopNew();
+  airArray *mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  int pret;
+  char *perr, *err;
   USAGE_PARSE(tconvInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (tenTripleConvert(nout, ttype[1], nin, ttype[0])) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);

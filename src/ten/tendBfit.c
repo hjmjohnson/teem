@@ -28,37 +28,40 @@ static const char *bfitInfoL
 
 static int
 bfitMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
-  int pret;
   hestOpt *hopt = NULL;
-  char *perr, *err;
-
-  Nrrd *nin, *nout;
-  double *bb, *ww, *_ww, eps;
-  unsigned int ii, bbLen, _wwLen;
-  int iterMax;
-  char *outS;
 
   airArray *mop = airMopNew();
   hestParm *hparm = hestParmCopy(_hparm);
   airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hparm->responseFileEnable = AIR_TRUE;
 
-  hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-",
-                     "Input nrrd.  List of DWIs from different b-values must "
-                     "be along axis 0",
-                     nrrdHestNrrd);
+  Nrrd *nin;
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-",
+                                   "Input nrrd.  List of DWIs from different "
+                                   "b-values must be along axis 0",
+                                   nrrdHestNrrd);
+  hopt[inHidx].priority -= 10;
+  double *bb;
+  uint bbLen;
   hestOptAdd_Mv_Double(&hopt, "b", "b1 b2", 2, -1, &bb, NULL,
                        "b values across axis 0 of input nrrd", &bbLen);
+  double *_ww;
+  uint _wwLen;
   hestOptAdd_Mv_Double(&hopt, "w", "w1 w2", 2, -1, &_ww, "nan nan",
                        "weights for samples in non-linear fitting", &_wwLen);
+  int iterMax; // HEY why not uint?
   hestOptAdd_1_Int(&hopt, "imax", "# iter", &iterMax, "10",
                    "max number of iterations to use in non-linear fitting, or, "
                    "use 0 to do only initial linear fit");
+  double eps;
   hestOptAdd_1_Double(&hopt, "eps", "epsilon", &eps, "1",
                       "epsilon convergence threshold for non-linear fitting");
+  char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output tensor volume");
 
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  int pret;
+  char *perr, *err;
   USAGE_PARSE(bfitInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
@@ -69,6 +72,7 @@ bfitMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
     airMopError(mop);
     return 1;
   }
+  double *ww;
   if (AIR_EXISTS(_ww[0])) {
     if (!(_wwLen == nin->axis[0].size)) {
       char stmp[AIR_STRLEN_SMALL + 1];
@@ -82,14 +86,13 @@ bfitMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
     /* no explicit weights specified */
     ww = (double *)calloc(nin->axis[0].size, sizeof(double));
     airMopAdd(mop, ww, airFree, airMopAlways);
-    for (ii = 0; ii < nin->axis[0].size; ii++) {
+    for (uint ii = 0; ii < nin->axis[0].size; ii++) {
       ww[ii] = 1.0;
     }
   }
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
-
   if (tenBVecNonLinearFit(nout, nin, bb, ww, iterMax, eps)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble:\n%s\n", me, err);

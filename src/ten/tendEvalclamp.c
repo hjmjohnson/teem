@@ -28,15 +28,12 @@ static const char *evalclampInfoL
 
 static int
 evalclampMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  int pret;
   hestOpt *hopt = NULL;
-  char *perr, *err;
-  airArray *mop;
-
-  Nrrd *nin, *nout;
-  char *outS;
+  Nrrd *nin;
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-",
+                                   "input diffusion tensor volume", nrrdHestNrrd);
+  hopt[inHidx].priority -= 10;
   float min, max;
-
   hestOptAdd_1_Float(&hopt, "min", "min", &min, NULL,
                      "Eigenvalues are clamped from below by this (the minimum "
                      "output eigenvalue).  Use \"nan\" to signify that no "
@@ -45,16 +42,17 @@ evalclampMain(int argc, const char **argv, const char *me, const hestParm *hparm
                      "Eigenvalues are clamped from above by this (the maximum "
                      "output eigenvalue).  Use \"nan\" to signify that no "
                      "maximum clamping should be done.");
-  hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-", "input diffusion tensor volume",
-                     nrrdHestNrrd);
+  char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output image (floating point)");
 
-  mop = airMopNew();
+  airArray *mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  int pret;
+  char *perr, *err;
   USAGE_PARSE(evalclampInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (tenEigenvalueClamp(nout, nin, min, max)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);

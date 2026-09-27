@@ -33,15 +33,7 @@ static const char *simInfoL
 
 static int
 simMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
-  int pret;
   hestOpt *hopt = NULL;
-  char *perr, *err;
-  tenEstimateContext *tec;
-
-  int E, oldstuff, seed, keyValueSet, outType, preOutType;
-  Nrrd *nin, *nT2, *nbmat, *ngrad, *nout, *ntmp;
-  char *outS;
-  float b, sigma;
 
   airArray *mop = airMopNew();
   hestParm *hparm = hestParmCopy(_hparm);
@@ -50,38 +42,53 @@ simMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
      set to AIR_FALSE there */
   hparm->elideSingleOtherDefault = AIR_TRUE;
 
+  Nrrd *nin;
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i", "tensor field", &nin, "-",
+                                   "input diffusion tensor field", nrrdHestNrrd);
+  hopt[inHidx].priority -= 10;
+  int oldstuff;
   hestOptAdd_Flag(&hopt, "old", &oldstuff,
                   "don't use the new tenEstimateContext functionality");
+  float sigma;
   hestOptAdd_1_Float(&hopt, "sigma", "sigma", &sigma, "0.0", "Rician noise parameter");
+  int seed;
   hestOptAdd_1_Int(&hopt, "seed", "seed", &seed, "42",
                    "seed value for RNG which creates noise");
+  Nrrd *ngrad;
   hestOptAdd_1_Other(&hopt, "g", "grad list", &ngrad, "",
                      "gradient list, one row per diffusion-weighted image",
                      nrrdHestNrrd);
+  Nrrd *nbmat;
   hestOptAdd_1_Other(&hopt, "B", "B matrix", &nbmat, "",
                      "B matrix, one row per diffusion-weighted image.  Using this "
                      "overrides the gradient list input via \"-g\"",
                      nrrdHestNrrd);
+  Nrrd *nT2;
   hestOptAdd_1_Other(&hopt, "r", "reference field", &nT2, NULL,
                      "reference anatomical scan, with no diffusion weighting",
                      nrrdHestNrrd);
-  hestOptAdd_1_Other(&hopt, "i", "tensor field", &nin, "-",
-                     "input diffusion tensor field", nrrdHestNrrd);
+  float b;
   hestOptAdd_1_Float(&hopt, "b", "b", &b, "1000", "b value for simulated scan");
+  int keyValueSet;
   hestOptAdd_Flag(&hopt, "kvp", &keyValueSet,
                   "generate key/value pairs in the NRRD header corresponding "
                   "to the input b-value and gradients or B-matrices.  ");
+  int outType;
   hestOptAdd_1_Enum(&hopt, "t", "type", &outType, "float", "output type of DWIs",
                     nrrdType);
+  char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output image (floating point)");
 
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  int pret;
+  char *perr, *err;
   USAGE_PARSE(simInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
+  int E;
   if (!(nbmat || ngrad)) {
     fprintf(stderr,
             "%s: got neither B-matrix (\"-B\") "
@@ -92,9 +99,9 @@ simMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   }
   if (!oldstuff) {
     airSrandMT(seed);
-    tec = tenEstimateContextNew();
+    tenEstimateContext *tec = tenEstimateContextNew();
     airMopAdd(mop, tec, tenEstimateContextNix_mop, airMopAlways);
-    preOutType = (nrrdTypeFloat == outType ? nrrdTypeFloat : nrrdTypeDouble);
+    int preOutType = (nrrdTypeFloat == outType ? nrrdTypeFloat : nrrdTypeDouble);
     E = 0;
     if (!E) E |= tenEstimateMethodSet(tec, tenEstimate1MethodLLS);
     if (!E) E |= tenEstimateValueMinSet(tec, 0.0001);
@@ -115,7 +122,7 @@ simMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
       return 1;
     }
     if (preOutType != outType) {
-      ntmp = nrrdNew();
+      Nrrd *ntmp = nrrdNew();
       airMopAdd(mop, ntmp, nrrdNuke_mop, airMopAlways);
       E = 0;
       if (!E) E |= nrrdCopy(ntmp, nout);

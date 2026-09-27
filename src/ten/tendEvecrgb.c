@@ -25,21 +25,17 @@ static const char *evecrgbInfoL = (INFO ". ");
 
 static int
 evecrgbMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  int pret;
   hestOpt *hopt = NULL;
-  char *perr, *err;
-  airArray *mop;
 
-  tenEvecRGBParm *rgbp;
-  Nrrd *nin, *nout;
-  char *outS;
-
-  mop = airMopNew();
+  airArray *mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
-
-  rgbp = tenEvecRGBParmNew();
+  tenEvecRGBParm *rgbp = tenEvecRGBParmNew();
   airMopAdd(mop, rgbp, tenEvecRGBParmNix_mop, airMopAlways);
 
+  Nrrd *nin;
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-",
+                                   "input diffusion tensor volume", nrrdHestNrrd);
+  hopt[inHidx].priority -= 10;
   hestOptAdd_1_UInt(&hopt, "c", "evec index", &(rgbp->which), NULL,
                     "which eigenvector will be colored. \"0\" for the "
                     "principal, \"1\" for the middle, \"2\" for the minor");
@@ -56,15 +52,16 @@ evecrgbMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
                       "decreases (while confidence remains 1.0)");
   hestOptAdd_1_Double(&hopt, "gam", "gamma", &(rgbp->gamma), "1",
                       "gamma to use on color components");
-  hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-", "input diffusion tensor volume",
-                     nrrdHestNrrd);
+  char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output image (floating point)");
 
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  int pret;
+  char *perr, *err;
   USAGE_PARSE(evecrgbInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (tenEvecRGB(nout, nin, rgbp)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);

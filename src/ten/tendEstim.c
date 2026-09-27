@@ -31,67 +31,73 @@ static const char *estimInfoL
 
 static int
 estimMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  int pret;
   hestOpt *hopt = NULL;
-  char *perr, *err;
-  airArray *mop;
-
-  Nrrd **nin, *nin4d, *nbmat, *nterr, *nB0, *nout;
-  char *outS, *terrS, *bmatS, *eb0S;
-  float soft, scale, sigma;
-  int dwiax, EE, knownB0, oldstuff, estmeth, verbose, fixneg;
-  unsigned int ninLen, axmap[4], wlsi, *skip, skipNum, skipIdx;
-  double valueMin, thresh;
-
-  Nrrd *ngradKVP = NULL, *nbmatKVP = NULL;
-  double bKVP, bval;
-
-  tenEstimateContext *tec;
-
+  int oldstuff;
   hestOptAdd_Flag(&hopt, "old", &oldstuff,
                   "instead of the new tenEstimateContext code, use "
                   "the old tenEstimateLinear code");
+  Nrrd **nin;
+  uint ninLen;
+  uint inHidx = hestOptAdd_Mv_Other(&hopt, "i", "dwi0 dwi1", 1, -1, &nin, "-",
+                                    "all the diffusion-weighted images (DWIs), "
+                                    "as separate 3D nrrds, "
+                                    "**OR**: One 4D nrrd of "
+                                    "all DWIs stacked along axis 0",
+                                    &ninLen, nrrdHestNrrd);
+  hopt[inHidx].priority -= 10;
+  float sigma;
   hestOptAdd_1_Float(&hopt, "sigma", "sigma", &sigma, "nan", "Rician noise parameter");
+  int verbose;
   hestOptAdd_1_Int(&hopt, "v", "verbose", &verbose, "0", "verbosity level");
+  int estmeth;
   hestOptAdd_1_Enum(&hopt, "est", "estimate method", &estmeth, "lls",
                     "estimation method to use. \"lls\": linear-least squares",
                     tenEstimate1Method);
+  uint wlsi;
   hestOptAdd_1_UInt(&hopt, "wlsi", "WLS iters", &wlsi, "1",
                     "when using weighted-least-squares (\"-est wls\"), how "
                     "many iterations to do after the initial weighted fit.");
+  int fixneg;
   hestOptAdd_Flag(&hopt, "fixneg", &fixneg,
                   "after estimating the tensor, ensure that there are no negative "
                   "eigenvalues by adding (to all eigenvalues) the amount by which "
                   "the smallest is negative (corresponding to increasing the "
                   "non-DWI image value).");
+  char *terrS;
   hestOptAdd_1_String(&hopt, "ee", "filename", &terrS, "",
                       "Giving a filename here allows you to save out the tensor "
                       "estimation error: a value which measures how much error there "
                       "is between the tensor model and the given diffusion weighted "
                       "measurements for each sample.  By default, no such error "
                       "calculation is saved.");
+  char *eb0S;
   hestOptAdd_1_String(&hopt, "eb", "filename", &eb0S, "",
                       "In those cases where there is no B=0 reference image given "
                       "(\"-knownB0 false\"), "
                       "giving a filename here allows you to save out the B=0 image "
                       "which is estimated from the data.  By default, this image value "
                       "is estimated but not saved.");
+  double thresh;
   hestOptAdd_1_Double(&hopt, "t", "thresh", &thresh, "nan",
                       "value at which to threshold the mean DWI value per pixel "
                       "in order to generate the \"confidence\" mask.  By default, "
                       "the threshold value is calculated automatically, based on "
                       "histogram analysis.");
+  float soft;
   hestOptAdd_1_Float(&hopt, "soft", "soft", &soft, "0",
                      "how fuzzy the confidence boundary should be.  By default, "
                      "confidence boundary is perfectly sharp");
+  float scale;
   hestOptAdd_1_Float(&hopt, "scale", "scale", &scale, "1",
                      "After estimating the tensor, scale all of its elements "
                      "(but not the confidence value) by this amount.  Can help with "
                      "downstream numerical precision if values are very large "
                      "or small.");
+  double valueMin;
   hestOptAdd_1_Double(&hopt, "mv", "min val", &valueMin, "1.0",
                       "minimum plausible value (especially important for linear "
                       "least squares estimation)");
+  char *bmatS;
   hestOptAdd_1_String(&hopt, "B", "B-list", &bmatS, NULL,
                       "6-by-N list of B-matrices characterizing "
                       "the diffusion weighting for each "
@@ -102,8 +108,10 @@ estimMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
                       "specify the B-matrix.\n  **OR**\n "
                       "Can say just \"-B kvp\" to try to learn B matrices from "
                       "key/value pair information in input images.");
+  double bval;
   hestOptAdd_1_Double(&hopt, "b", "b", &bval, "nan",
                       "\"b\" diffusion-weighting factor (units of sec/mm^2)");
+  int knownB0;
   hestOptAdd_1_Bool(&hopt, "knownB0", "bool", &knownB0, NULL,
                     "Indicates if the B=0 non-diffusion-weighted reference image "
                     "is known, or if it has to be estimated along with the tensor "
@@ -114,23 +122,24 @@ estimMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
                     "\b\bo if \"false\": there may or may not be diffusion-weighted "
                     "images among the input; the B=0 image value is going to be "
                     "estimated along with the diffusion model");
-  hestOptAdd_Mv_Other(&hopt, "i", "dwi0 dwi1", 1, -1, &nin, "-",
-                      "all the diffusion-weighted images (DWIs), as separate 3D nrrds, "
-                      "**OR**: One 4D nrrd of all DWIs stacked along axis 0",
-                      &ninLen, nrrdHestNrrd);
+  char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output tensor volume");
 
-  mop = airMopNew();
+  airArray *mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  int pret;
+  char *perr, *err;
   USAGE_JUSTPARSE(estimInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
-  nbmat = nrrdNew();
+  Nrrd *nbmat = nrrdNew();
   airMopAdd(mop, nbmat, nrrdNuke_mop, airMopAlways);
 
   /* figure out B-matrix */
+  Nrrd *nin4d;
+  uint *skip, skipNum;
   if (strcmp("kvp", airToLower(bmatS))) {
     /* its NOT coming from key/value pairs */
     if (!AIR_EXISTS(bval)) {
@@ -167,6 +176,8 @@ estimMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
         return 1;
       }
     }
+    Nrrd *ngradKVP = NULL, *nbmatKVP = NULL;
+    double bKVP;
     if (tenDWMRIKeyValueParse(&ngradKVP, &nbmatKVP, &bKVP, &skip, &skipNum, nin[0])) {
       airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);
       fprintf(stderr, "%s: trouble parsing DWI info:\n%s\n", me, err);
@@ -198,19 +209,20 @@ estimMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
       }
     }
     /* this will work because of the impositions of tenDWMRIKeyValueParse */
-    dwiax = ((nrrdKindList == nin[0]->axis[0].kind
-              || nrrdKindVector == nin[0]->axis[0].kind)
-               ? 0
-               : ((nrrdKindList == nin[0]->axis[1].kind
-                   || nrrdKindVector == nin[0]->axis[1].kind)
-                    ? 1
-                    : ((nrrdKindList == nin[0]->axis[2].kind
-                        || nrrdKindVector == nin[0]->axis[2].kind)
-                         ? 2
-                         : 3)));
+    uint dwiax = ((nrrdKindList == nin[0]->axis[0].kind
+                   || nrrdKindVector == nin[0]->axis[0].kind)
+                    ? 0
+                    : ((nrrdKindList == nin[0]->axis[1].kind
+                        || nrrdKindVector == nin[0]->axis[1].kind)
+                         ? 1
+                         : ((nrrdKindList == nin[0]->axis[2].kind
+                             || nrrdKindVector == nin[0]->axis[2].kind)
+                              ? 2
+                              : 3)));
     if (0 == dwiax) {
       nin4d = nin[0];
     } else {
+      uint axmap[4];
       axmap[0] = dwiax;
       axmap[1] = 1 > dwiax ? 1 : 0;
       axmap[2] = 2 > dwiax ? 2 : 1;
@@ -225,9 +237,8 @@ estimMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
       }
     }
   }
-
-  nterr = NULL;
-  nB0 = NULL;
+  Nrrd *nterr = NULL;
+  Nrrd *nB0 = NULL;
   if (!oldstuff) {
     if (1 != ninLen) {
       fprintf(stderr,
@@ -267,16 +278,16 @@ estimMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
       thresh *= 0.93;
       fprintf(stderr, "%s: using mean DWI threshold %g\n", me, thresh);
     }
-    tec = tenEstimateContextNew();
+    tenEstimateContext *tec = tenEstimateContextNew();
     tec->progress = AIR_TRUE;
     airMopAdd(mop, tec, tenEstimateContextNix_mop, airMopAlways);
-    EE = 0;
+    int EE = 0;
     if (!EE) tenEstimateVerboseSet(tec, verbose);
     if (!EE) tenEstimateNegEvalShiftSet(tec, fixneg);
     if (!EE) EE |= tenEstimateMethodSet(tec, estmeth);
     if (!EE) EE |= tenEstimateBMatricesSet(tec, nbmat, bval, !knownB0);
     if (!EE) EE |= tenEstimateValueMinSet(tec, valueMin);
-    for (skipIdx = 0; skipIdx < skipNum; skipIdx++) {
+    for (uint skipIdx = 0; skipIdx < skipNum; skipIdx++) {
       /* fprintf(stderr, "%s: skipping %u\n", me, skip[skipIdx]); */
       if (!EE) EE |= tenEstimateSkipSet(tec, skip[skipIdx], AIR_TRUE);
     }
@@ -330,7 +341,7 @@ estimMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
       airMopAdd(mop, nterr, nrrdNuke_mop, airMopAlways);
     }
   } else {
-    EE = 0;
+    int EE = 0;
     if (1 == ninLen) {
       EE = tenEstimateLinear4D(nout, airStrlen(terrS) ? &nterr : NULL, &nB0, nin4d,
                                nbmat, knownB0, thresh, soft, bval);

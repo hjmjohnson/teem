@@ -26,54 +26,52 @@ static const char *fiberInfoL
 
 static int
 fiberMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  int pret;
   hestOpt *hopt = NULL;
-  char *perr, *err;
-  airArray *mop;
-  char *outS;
-
-  tenFiberContext *tfx;
-  tenFiberSingle *tfbs;
-  NrrdKernelSpec *ksp;
-  double start[3], step, *_stop, *stop;
-  const airEnum *ftypeEnum;
-  char *ftypeS;
-  int E, intg, useDwi, allPaths, verbose, worldSpace, worldSpaceOut, ftype, ftypeDef;
-  Nrrd *nin, *nseed, *nmat, *_nmat;
-  unsigned int si, stopLen, whichPath;
-  double matx[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
-  tenFiberMulti *tfml;
-  limnPolyData *fiberPld;
-
-  hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-", "input volume", nrrdHestNrrd);
+  Nrrd *nin;
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-", "input volume",
+                                   nrrdHestNrrd);
+  hopt[inHidx].priority -= 10;
+  int useDwi;
   hestOptAdd_Flag(&hopt, "dwi", &useDwi,
                   "input volume is a DWI volume, not a single tensor volume");
+  double start[3];
   hestOptAdd_3_Double(&hopt, "s", "seed point", start, "0 0 0",
                       "seed point for fiber; it will propogate in two opposite "
                       "directions starting from here");
+  Nrrd *nseed;
   hestOptAdd_1_Other(&hopt, "ns", "seed nrrd", &nseed, "", "3-by-N nrrd of seedpoints",
                      nrrdHestNrrd);
+  int worldSpace;
   hestOptAdd_Flag(&hopt, "wsp", &worldSpace,
                   "define seedpoint and output path in worldspace.  Otherwise, "
                   "(without using this option) everything is in index space");
+  char *ftypeS;
   hestOptAdd_1_String(&hopt, "t", "type", &ftypeS, "",
                       "fiber type; defaults to something");
+  int intg;
   hestOptAdd_1_Enum(&hopt, "n", "intg", &intg, "rk4",
                     "integration method for fiber tracking", tenFiberIntg);
+  NrrdKernelSpec *ksp;
   hestOptAdd_1_Other(&hopt, "k", "kernel", &ksp, "tent",
                      "kernel for reconstructing tensor field", nrrdHestKernelSpec);
+  uint whichPath;
   hestOptAdd_1_UInt(&hopt, "wp", "which", &whichPath, "0",
                     "when doing multi-tensor tracking, index of path to follow "
                     "(made moot by \"-ap\")");
+  int allPaths;
   hestOptAdd_Flag(&hopt, "ap", &allPaths,
                   "follow all paths from (all) seedpoint(s), output will be "
                   "polydata, rather than a single 3-by-N nrrd, even if only "
                   "a single path is generated");
+  int worldSpaceOut;
   hestOptAdd_Flag(&hopt, "wspo", &worldSpaceOut,
                   "output should be in worldspace, even if input is not "
                   "(this feature is unstable and/or confusing)");
+  double step;
   hestOptAdd_1_Double(&hopt, "step", "step size", &step, "0.01",
                       "stepsize along fiber, in world space");
+  double *_stop;
+  uint stopLen;
   hestOptAdd_Mv_Other(&hopt, "stop", "stop1", 1, -1, &_stop, NULL,
                       "the conditions that should signify the end of a fiber, or "
                       "when to discard a fiber that is done propagating. "
@@ -97,22 +95,28 @@ fiberMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
                       "\b\bo \"minsteps:<N>\": discard fiber if its final number of "
                       "steps is below N (not really a termination criterion)",
                       &stopLen, tendFiberStopCB);
+  int verbose;
   hestOptAdd_1_Int(&hopt, "v", "verbose", &verbose, "0", "verbosity level");
+  Nrrd *_nmat;
   hestOptAdd_1_Other(&hopt, "nmat", "transform", &_nmat, "",
                      "a 4x4 homogenous transform matrix (as a nrrd, or just a text "
                      "file) given with this option will be applied to the output "
                      "tractography vertices just prior to output",
                      nrrdHestNrrd);
+  char *outS;
   hestOptAdd_1_String(&hopt, "o", "out", &outS, "-", "output fiber(s)");
 
-  mop = airMopNew();
+  airArray *mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  int pret;
+  char *perr, *err;
   USAGE_PARSE(fiberInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
-  tfbs = tenFiberSingleNew();
+  tenFiberSingle *tfbs = tenFiberSingleNew();
   airMopAdd(mop, tfbs, tenFiberSingleNix_mop, airMopAlways);
 
+  double matx[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
   if (_nmat) {
     if (!(2 == _nmat->dim && 4 == _nmat->axis[0].size && 4 == _nmat->axis[1].size)) {
       fprintf(stderr,
@@ -122,7 +126,7 @@ fiberMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
       airMopError(mop);
       return 1;
     }
-    nmat = nrrdNew();
+    Nrrd *nmat = nrrdNew();
     airMopAdd(mop, nmat, nrrdNuke_mop, airMopAlways);
     if (nrrdConvert(nmat, _nmat, nrrdTypeDouble)) {
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
@@ -134,6 +138,7 @@ fiberMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
     fprintf(stderr, "%s: transforming output by:\n", me);
     ell_4m_print_d(stderr, matx);
   }
+  tenFiberContext *tfx;
   if (useDwi) {
     tfx = tenFiberContextDwiNew(nin, 50, 1, 1, tenEstimate1MethodLLS,
                                 tenEstimate2MethodPeled);
@@ -147,7 +152,9 @@ fiberMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
     return 1;
   }
   airMopAdd(mop, tfx, tenFiberContextNix_mop, airMopAlways);
-  E = 0;
+  int E = 0;
+  double *stop;
+  uint si;
   for (si = 0, stop = _stop; si < stopLen; si++, stop += 3) {
     int istop; /* not from Apple */
     istop = AIR_INT(stop[0]);
@@ -177,6 +184,8 @@ fiberMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
     }
   }
   if (!E) {
+    const airEnum *ftypeEnum;
+    int ftypeDef;
     if (useDwi) {
       ftypeEnum = tenDwiFiberType;
       ftypeDef = tenDwiFiberType2Evec0;
@@ -184,6 +193,7 @@ fiberMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
       ftypeEnum = tenFiberType;
       ftypeDef = tenFiberTypeEvec0;
     }
+    int ftype;
     if (airStrlen(ftypeS)) {
       ftype = airEnumVal(ftypeEnum, ftypeS);
       if (airEnumUnknown(ftypeEnum) == ftype) {
@@ -256,7 +266,7 @@ fiberMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
       airMopError(mop);
       return 1;
     }
-    tfml = tenFiberMultiNew();
+    tenFiberMulti *tfml = tenFiberMultiNew();
     airMopAdd(mop, tfml, tenFiberMultiNix_mop, airMopAlways);
     /*
     fiberArr = airArrayNew(AIR_CAST(void **, &fiber), NULL,
@@ -266,7 +276,7 @@ fiberMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
                      AIR_CAST(void (*)(void *), tenFiberSingleDone));
     airMopAdd(mop, fiberArr, airArrayNuke_mop, airMopAlways);
     */
-    fiberPld = limnPolyDataNew();
+    limnPolyData *fiberPld = limnPolyDataNew();
     airMopAdd(mop, fiberPld, limnPolyDataNix_mop, airMopAlways);
     if (tenFiberMultiTrace(tfx, tfml, nseed)
         || tenFiberMultiPolyData(tfx, fiberPld, tfml)) {

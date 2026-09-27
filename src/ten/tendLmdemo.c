@@ -360,10 +360,7 @@ levmarCall(Nrrd *ndata, int ajac, int itmax,
 
 static int
 lmdemoMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  int pret;
   hestOpt *hopt = NULL;
-  char *perr, *err;
-
   bagOstate bag[1]; // allocate one bag-o-state; can access member m with bag->m
   hestOptAdd_Mv_Double(&hopt, "tp", "true poly coeffs", 1, -1, &(bag->tp), NULL,
                        "coefficients of (ground-truth) polynomial to sample, to "
@@ -436,6 +433,8 @@ lmdemoMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
 
   airArray *mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  int pret;
+  char *perr, *err;
   USAGE(lmdemoInfoL);
   JUSTPARSE(lmdemoInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);

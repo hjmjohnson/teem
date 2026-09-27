@@ -27,30 +27,30 @@ static const char *shrinkInfoL
 
 static int
 shrinkMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
-  int pret;
   hestOpt *hopt = NULL;
-  char *perr, *err;
-
-  Nrrd *nin, *nout;
-  char *outS;
 
   airArray *mop = airMopNew();
   hestParm *hparm = hestParmCopy(_hparm);
   airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hparm->noArgsIsNoProblem = AIR_TRUE;
 
-  hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-",
-                     "input diffusion tensor volume, with 9 matrix components "
-                     "per sample",
-                     nrrdHestNrrdNoTTY);
+  Nrrd *nin;
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-",
+                                   "input diffusion tensor volume, "
+                                   "with 9 matrix components per sample",
+                                   nrrdHestNrrdNoTTY);
+  hopt[inHidx].priority -= 10;
+  char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-",
                       "output tensor volume, with the 7 values per sample");
 
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  int pret;
+  char *perr, *err;
   USAGE_PARSE(shrinkInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (tenShrink(nout, NULL, nin)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);

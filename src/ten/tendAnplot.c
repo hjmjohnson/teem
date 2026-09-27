@@ -26,45 +26,44 @@ static const char *anplotInfoL
           "in the lower right half of the image.  The plane on which they are "
           "sampled is a surface of constant trace.  You may want to use "
           "\"unu resample -s = x0.57735 -k tent\" to transform the triangle into "
-          "a 30-60-90 triangle, and \"ilk -t 1,-0.5,0,0,0.866,0 -k tent "
+          "a 30-60-90 triangle, and \"unu ilk -t 1,-0.5,0,0,0.866,0 -k tent "
           "-0 u:0,1 -b pad -bg 0\" (possibly followed by "
           "teem/src/limntest/triimg) to transform the domain into an equilateral "
           "triangle.");
 
 static int
 anplotMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  int pret;
   hestOpt *hopt = NULL;
-  char *perr, *err;
-  airArray *mop;
-
-  int aniso, whole, nanout, hflip;
-  unsigned int res;
-  Nrrd *nout;
-  char *outS;
-
+  uint res;
   hestOptAdd_1_UInt(&hopt, "r", "res", &res, "256", "resolution of anisotropy plot");
+  int whole;
   hestOptAdd_Flag(&hopt, "w", &whole,
                   "sample the whole triangle of constant trace, "
                   "instead of just the "
                   "sixth of it in which the eigenvalues have the "
                   "traditional sorted order. ");
+  int hflip;
   hestOptAdd_Flag(&hopt, "hflip", &hflip,
                   "flip the two bottom corners (swapping the place of "
                   "linear and planar)");
+  int nanout;
   hestOptAdd_Flag(&hopt, "nan", &nanout,
                   "set the pixel values outside the triangle to be NaN, "
                   "instead of 0");
+  int aniso;
   hestOptAdd_1_Enum(&hopt, "a", "aniso", &aniso, NULL,
                     "Which anisotropy metric to plot.  " TEN_ANISO_DESC, tenAniso);
+  char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output image (floating point)");
 
-  mop = airMopNew();
+  airArray *mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  int pret;
+  char *perr, *err;
   USAGE_JUSTPARSE(anplotInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
   if (tenAnisoPlot(nout, aniso, res, hflip, whole, nanout)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);

@@ -26,15 +26,12 @@ static const char *stenInfoL
 
 static int
 stenMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  int pret;
   hestOpt *hopt = NULL;
-  char *perr, *err;
-  airArray *mop;
-
+  Nrrd *nin;
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-", "input scalar volume",
+                                   nrrdHestNrrd);
+  hopt[inHidx].priority -= 10;
   int iScale, dScale, dsmp;
-  Nrrd *nin, *nout;
-  char *outS;
-
   hestOptAdd_1_Int(&hopt, "ds", "diff. scale", &dScale, "1",
                    "differentiation scale, in pixels: the radius of the "
                    "kernel used for differentation to compute gradient vectors");
@@ -45,15 +42,17 @@ stenMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
   hestOptAdd_1_Int(&hopt, "df", "downsample factor", &dsmp, "1",
                    "the factor by which to downsample when creating volume of "
                    "structure tensors");
-  hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-", "input scalar volume", nrrdHestNrrd);
+  char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output filename");
 
-  mop = airMopNew();
+  airArray *mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  int pret;
+  char *perr, *err;
   USAGE_PARSE(stenInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
 
   if (gageStructureTensor(nout, nin, dScale, iScale, dsmp)) {

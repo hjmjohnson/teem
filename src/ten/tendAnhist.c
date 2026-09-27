@@ -28,40 +28,40 @@ static const char *anhistInfoL
 
 static int
 anhistMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
-  int pret;
   hestOpt *hopt = NULL;
-  char *perr, *err;
-  airArray *mop;
-
-  int version, res, right;
-  Nrrd *nin, *nout, *nwght;
-  char *outS;
-
-  hestOptAdd_1_Int(&hopt, "v", "westin version", &version, "1",
-                   "Which version of Westin's anisotropy metric triple "
-                   "to use, either \"1\" or \"2\"");
+  Nrrd *nin;
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-",
+                                   "input diffusion tensor volume", nrrdHestNrrd);
+  hopt[inHidx].priority -= 10;
+  Nrrd *nwght;
   hestOptAdd_1_Other(&hopt, "w", "nweight", &nwght, "",
                      "how to weigh contributions to histogram.  By default "
                      "(not using this option), the increment is one bin count per "
                      "sample, but by giving a nrrd, the value in the nrrd at the "
                      "corresponding location will be the bin count increment ",
                      nrrdHestNrrd);
+  int version;
+  hestOptAdd_1_Int(&hopt, "v", "westin version", &version, "1",
+                   "Which version of Westin's anisotropy metric triple "
+                   "to use, either \"1\" or \"2\"");
+  int res; // HEY why not uint?
   hestOptAdd_1_Int(&hopt, "r", "res", &res, NULL, "resolution of anisotropy plot");
+  int right;
   hestOptAdd_Flag(&hopt, "right", &right,
                   "sample a right-triangle-shaped region, instead of "
                   "a roughly equilateral triangle. ");
-  hestOptAdd_1_Other(&hopt, "i", "nin", &nin, "-", "input diffusion tensor volume",
-                     nrrdHestNrrd);
+  char *outS;
   hestOptAdd_1_String(&hopt, "o", "nout", &outS, "-", "output image (floating point)");
 
-  mop = airMopNew();
+  airArray *mop = airMopNew();
   airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  int pret;
+  char *perr, *err;
   USAGE_PARSE(anhistInfoL);
   airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
-  nout = nrrdNew();
+  Nrrd *nout = nrrdNew();
   airMopAdd(mop, nout, nrrdNuke_mop, airMopAlways);
-
   if (tenAnisoHistogram(nout, nin, nwght, right, version, res)) {
     airMopAdd(mop, err = biffGetDone(TEN), airFree, airMopAlways);
     fprintf(stderr, "%s: trouble making histogram:\n%s\n", me, err);
