@@ -2020,6 +2020,10 @@ input histogram was all zeros, the output value is nan
 
 ========= unrrdu / unu =========
 
+• Sat Sep 26 19:18:53 2026 -0500 git commit 9a27079d
+BEHAVIOR UPGRADE: unu now uses hestOpt.priority to put -i inputs early in
+definition order but last in parse order
+
 • Sat Sep 26 07:47:06 2026 -0500 git commit 23814bbc
 unu BEHAVIOR NEW: "unu make" now accepts -cm/--comment to set comments in NRRD header
 
@@ -2546,6 +2550,10 @@ API CHANGE: added another field to seekContext: double gradMagAvg to record the 
 gageContext). This is useful for some computations on signed distance fields.
 
 ========= ten / tend =========
+
+• Sun Sep 27 05:20:05 2026 -0500 git commit 89b5926e
+BEHAVIOR UPGRADE: tend (like unu) now uses hestOpt.priority to put -i inputs early in
+definition order but last in parse order
 
 • 2025-09-14 09:28:38 +0000 (Sun, 14 Sep 2025) svn Revision: 7430
 Added "tend lmdemo" command as self-contained and hopefully instructive demo of the
