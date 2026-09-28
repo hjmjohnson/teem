@@ -190,7 +190,8 @@ typeset -g -A ZET_RSEEN=()       # set of review ids seen so far (for uniqueness
 
 ####### ZET_BAIL_ON_FAIL: if set by caller (e.g. ZET_BAIL_ON_FAIL= ./dist.zsh):
 # on first test failure, do things to diagnose circumstances of failure and
-# immediately zet_end then bail
+# immediately zet_end then bail, which includes setting ZET_BAILING true
+typeset -g -i ZET_BAILING=0 # are we bailing
 
 #__#__# _zet_arrays_reset
 # a helper function to (re)initialize these global arrays. Despite the
@@ -968,21 +969,23 @@ zet_test() {
             if ((${+ZET_BAIL_ON_FAIL})); then
                 print ""
                 print "$ZET_PFX ######## ZET_BAIL_ON_FAIL --> BAILING ########"
-                print "v.v.v.v.v.v.v  which unu  v.v.v.v.v.v.v"
+                ZET_BAILING=1
+                print "$ZET_PFX v.v.v.v.v.v.v  which unu  v.v.v.v.v.v.v"
                 which unu
-                print "^'^'^'^'^'^'^  which unu  ^'^'^'^'^'^'^"
-                print "v.v.v.v.v.v.v  unu env  v.v.v.v.v.v.v"
+                print "$ZET_PFX ^'^'^'^'^'^'^  which unu  ^'^'^'^'^'^'^"
+                print "$ZET_PFX v.v.v.v.v.v.v  unu env  v.v.v.v.v.v.v"
                 unu env
-                print "^'^'^'^'^'^'^  unu env  ^'^'^'^'^'^'^"
-                #print "v.v.v.v.v.v.v  set  v.v.v.v.v.v.v"
-                #set
-                #print "^'^'^'^'^'^'^  set  ^'^'^'^'^'^'^"
-                #print "v.v.v.v.v.v.v  unu head fin=$fin  v.v.v.v.v.v.v"
-                #unu head $fin
-                #print "^'^'^'^'^'^'^  unu head fin=$fin  ^'^'^'^'^'^'^"
-                #print "v.v.v.v.v.v.v  unu head fout=$fout  v.v.v.v.v.v.v"
-                #unu head $fout
-                #print "^'^'^'^'^'^'^  unu head fout=$fout  ^'^'^'^'^'^'^"
+                print "$ZET_PFX ^'^'^'^'^'^'^  unu env  ^'^'^'^'^'^'^"
+                print "$ZET_PFX v.v.v.v.v.v.v  set | grep TEEM, NRRD v.v.v.v.v.v.v"
+                set | grep TEEM
+                set | grep NRRD
+                print "$ZET_PFX ^'^'^'^'^'^'^  set | grep TEEM, NRRD ^'^'^'^'^'^'^"
+                print "$ZET_PFX v.v.v.v.v.v.v  unu head fin=$fin  v.v.v.v.v.v.v"
+                unu head $fin
+                print "$ZET_PFX ^'^'^'^'^'^'^  unu head fin=$fin  ^'^'^'^'^'^'^"
+                print "$ZET_PFX v.v.v.v.v.v.v  unu head fout=$fout  v.v.v.v.v.v.v"
+                unu head $fout
+                print "$ZET_PFX ^'^'^'^'^'^'^  unu head fout=$fout  ^'^'^'^'^'^'^"
                 zet_end
             fi
         fi
@@ -1035,6 +1038,7 @@ zet_review() {
             if ((${+ZET_BAIL_ON_FAIL})); then
                 print ""
                 print "$ZET_PFX ######## ZET_BAIL_ON_FAIL --> BAILING ########"
+                ZET_BAILING=1
                 zet_end
             fi
         fi
@@ -1101,7 +1105,7 @@ zet_end() {
     fi
     print "$ZET_PFX $ZET_DLM"
     _zet_arrays_reset
-    if ((${+ZET_BAIL_ON_FAIL})); then
+    if ((${+ZET_BAIL_ON_FAIL} && ZET_BAILING)); then
         # send ourselves untrappable SIGKILL (like kill -9) to really bail
         kill -KILL $$
     fi
