@@ -754,9 +754,10 @@ extern int nrrdDefaultIoHeaderDoubleExcessPrecision;
 extern int nrrdStateKeyValuePairsPropagate;
 /* ---- BEGIN non-NrrdIO */
 extern int nrrdStateBlind8BitRange;
-extern int nrrdStateMeasureType;
 extern unsigned int nrrdStateMeasureModeBins;
-extern int nrrdStateMeasureHistoType;
+/* gone in TeemV2: setting output measurement type should not be so sneaky
+ * NRRD_EXPORT int nrrdStateMeasureType;
+ * NRRD_EXPORT int nrrdStateMeasureHistoType; */
 extern int nrrdStateDisallowIntegerNonExist;
 /* ---- END non-NrrdIO */
 extern int nrrdStateAlwaysSetContent;
@@ -780,9 +781,7 @@ extern const char *const nrrdEnvVarStateKeyValuePairsPropagate;
 extern const char *const nrrdEnvVarStateBlind8BitRange;
 extern const char *const nrrdEnvVarStateAlwaysSetContent;
 extern const char *const nrrdEnvVarStateDisableContent;
-extern const char *const nrrdEnvVarStateMeasureType;
 extern const char *const nrrdEnvVarStateMeasureModeBins;
-extern const char *const nrrdEnvVarStateMeasureHistoType;
 extern const char *const nrrdEnvVarStateGrayscaleImage3D;
 extern const char *const nrrdEnvVarStateEncodingAsciiCommaAllow;
 extern int nrrdGetenvBool(int *val, const char **envStr, const char *envVar);

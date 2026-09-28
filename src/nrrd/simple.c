@@ -1611,18 +1611,6 @@ nrrdSanity(void) {
              nrrdBoundaryLast - 1);
     return 0;
   }
-  if (airEnumValCheck(nrrdType, nrrdStateMeasureType)) {
-    biffAddf(NRRD, "%s: nrrdStateMeasureType (%d) not in valid range [%d,%d]", me,
-             nrrdStateMeasureType, nrrdTypeUnknown + 1, nrrdTypeLast - 1);
-    return 0;
-  }
-  if (airEnumValCheck(nrrdType, nrrdStateMeasureHistoType)) {
-    biffAddf(NRRD,
-             "%s: nrrdStateMeasureHistoType (%d) not in "
-             "valid range [%d,%d]",
-             me, nrrdStateMeasureType, nrrdTypeUnknown + 1, nrrdTypeLast - 1);
-    return 0;
-  }
   /* ---- END non-NrrdIO */
 
   if (!(nrrdTypeSize[nrrdTypeChar] == sizeof(char)

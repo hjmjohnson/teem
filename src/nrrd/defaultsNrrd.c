@@ -64,9 +64,10 @@ int nrrdDefaultIoHeaderDoubleExcessPrecision = AIR_FALSE;
 int nrrdStateKeyValuePairsPropagate = AIR_FALSE;
 /* ---- BEGIN non-NrrdIO */
 int nrrdStateBlind8BitRange = AIR_TRUE;
-int nrrdStateMeasureType = nrrdTypeFloat;
 unsigned int nrrdStateMeasureModeBins = 1024u;
-int nrrdStateMeasureHistoType = nrrdTypeFloat;
+/* gone in TeemV2: setting output measurement type should not be so sneaky
+ * int nrrdStateMeasureType = nrrdTypeFloat;
+ * int nrrdStateMeasureHistoType = nrrdTypeFloat; */
 int nrrdStateDisallowIntegerNonExist = AIR_TRUE;
 /* ---- END non-NrrdIO */
 int nrrdStateAlwaysSetContent = AIR_TRUE;
@@ -126,9 +127,7 @@ const char *const nrrdEnvVarStateKeyValuePairsPropagate
 const char *const nrrdEnvVarStateBlind8BitRange = "NRRD_STATE_BLIND_8_BIT_RANGE";
 const char *const nrrdEnvVarStateAlwaysSetContent = "NRRD_STATE_ALWAYS_SET_CONTENT";
 const char *const nrrdEnvVarStateDisableContent = "NRRD_STATE_DISABLE_CONTENT";
-const char *const nrrdEnvVarStateMeasureType = "NRRD_STATE_MEASURE_TYPE";
 const char *const nrrdEnvVarStateMeasureModeBins = "NRRD_STATE_MEASURE_MODE_BINS";
-const char *const nrrdEnvVarStateMeasureHistoType = "NRRD_STATE_MEASURE_HISTO_TYPE";
 const char *const nrrdEnvVarStateGrayscaleImage3D = "NRRD_STATE_GRAYSCALE_IMAGE_3D";
 const char *const nrrdEnvVarStateEncodingAsciiCommaAllow
   = "NRRD_STATE_ENCODING_ASCII_COMMA_ALLOW";
@@ -336,10 +335,7 @@ nrrdStateGetenv(void) {
   nrrdGetenvBool(/**/ &nrrdStateBlind8BitRange, NULL, nrrdEnvVarStateBlind8BitRange);
   nrrdGetenvBool(/**/ &nrrdStateAlwaysSetContent, NULL, nrrdEnvVarStateAlwaysSetContent);
   nrrdGetenvBool(/**/ &nrrdStateDisableContent, NULL, nrrdEnvVarStateDisableContent);
-  nrrdGetenvEnum(/**/ &nrrdStateMeasureType, NULL, nrrdType, nrrdEnvVarStateMeasureType);
   nrrdGetenvUInt(/**/ &nrrdStateMeasureModeBins, NULL, nrrdEnvVarStateMeasureModeBins);
-  nrrdGetenvEnum(/**/ &nrrdStateMeasureHistoType, NULL, nrrdType,
-                 nrrdEnvVarStateMeasureHistoType);
   nrrdGetenvBool(/**/ &nrrdStateGrayscaleImage3D, NULL, nrrdEnvVarStateGrayscaleImage3D);
   nrrdGetenvBool(/**/ &nrrdStateEncodingAsciiCommaAllow, NULL,
                  nrrdEnvVarStateEncodingAsciiCommaAllow);

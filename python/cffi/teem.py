@@ -327,7 +327,7 @@ _BIFF_DICT = {  # contents here are filled in by teem/python/cffi/exult.py Tffi.
     'nrrdQuantize': (_equals_one, 0, b'nrrd', 'nrrd/map.c:191'),
     'nrrdUnquantize': (_equals_one, 0, b'nrrd', 'nrrd/map.c:363'),
     'nrrdHistoEq': (_equals_one, 0, b'nrrd', 'nrrd/map.c:498'),
-    'nrrdProject': (_equals_one, 0, b'nrrd', 'nrrd/measure.c:1133'),
+    'nrrdProject': (_equals_one, 0, b'nrrd', 'nrrd/measure.c:1145'),
     'nrrdBoundarySpecCheck': (_equals_one, 0, b'nrrd', 'nrrd/methodsNrrd.c:93'),
     'nrrdBoundarySpecParse': (_equals_one, 0, b'nrrd', 'nrrd/methodsNrrd.c:117'),
     'nrrdBoundarySpecSprint': (_equals_one, 0, b'nrrd', 'nrrd/methodsNrrd.c:191'),

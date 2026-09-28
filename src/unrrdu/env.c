@@ -297,12 +297,6 @@ unu_envMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
           "When true, text files used for saving nrrds can "
           "losslessly store values of more than just float type.",
           hparm->columns);
-  envEnum(out, nrrdType, nrrdEnvVarStateMeasureType, nrrdStateMeasureType,
-          "nrrdStateMeasureType",
-          "For measurements (\"unu project\") like sum and product, "
-          "the type of the output result, when one hasn't been "
-          "explicitly requested.",
-          hparm->columns);
   envInt(out,
          nrrdEnvVarStateMeasureModeBins,
          nrrdStateMeasureModeBins,
@@ -310,11 +304,18 @@ unu_envMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
          "When measuring mode but without a given histogram, how many "
          "bins to use in the temporary internal histogram.",
          hparm->columns);
-  envEnum(out, nrrdType, nrrdEnvVarStateMeasureHistoType, nrrdStateMeasureHistoType,
-          "nrrdStateMeasureHistoType",
-          "Output type for most measurements of histograms, when one "
-          "hasn't been explicitly requested",
-          hparm->columns);
+  /* gone in TeemV2: setting output measurement type should not be so sneaky
+   *   envEnum(out, nrrdType, nrrdEnvVarStateMeasureType, nrrdStateMeasureType,
+   *           "nrrdStateMeasureType",
+   *           "For measurements (\"unu project\") like sum and product, "
+   *           "the type of the output result, when one hasn't been "
+   *           "explicitly requested.",
+   *           hparm->columns);
+   *   envEnum(out, nrrdType, nrrdEnvVarStateMeasureHistoType, nrrdStateMeasureHistoType,
+   *           "nrrdStateMeasureHistoType",
+   *           "Output type for most measurements of histograms, when one "
+   *           "hasn't been explicitly requested",
+   *           hparm->columns); */
   envBool(out,
           nrrdEnvVarStateAlwaysSetContent,
           nrrdStateAlwaysSetContent,

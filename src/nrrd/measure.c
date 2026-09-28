@@ -1035,39 +1035,41 @@ measureHistoMin(void *ans, int ansType, const void *line, int lineType, size_t l
 }
 
 void (*const nrrdMeasureLine[NRRD_MEASURE_MAX + 1])(void *, int, const void *, int,
-                                                    size_t, double, double)
-  = {measureUnknown,
-     measureMin,
-     measureMax,
-     measureMean,
-     measureMedian,
-     measureMode,
-     measureProduct,
-     measureSum,
-     measureL1,
-     measureL2,
-     measureL4,
-     measureNormalizedL2,
-     measureRootMeanSquare,
-     measureLinf,
-     measureVariance,
-     measureSD,
-     measureCoV,
-     measureSkew,
-     measureLineSlope,
-     measureLineIntercept,
-     measureLineError,
-     measureHistoMin,
-     measureHistoMax,
-     measureHistoMean,
-     measureHistoMedian,
-     measureHistoMode,
-     measureHistoProduct,
-     measureHistoSum,
-     measureHistoL2,
-     measureHistoVariance,
-     measureHistoSD};
+                                                    size_t, double,
+                                                    double) = {measureUnknown,
+                                                               measureMin,
+                                                               measureMax,
+                                                               measureMean,
+                                                               measureMedian,
+                                                               measureMode,
+                                                               measureProduct,
+                                                               measureSum,
+                                                               measureL1,
+                                                               measureL2,
+                                                               measureL4,
+                                                               measureNormalizedL2,
+                                                               measureRootMeanSquare,
+                                                               measureLinf,
+                                                               measureVariance,
+                                                               measureSD,
+                                                               measureCoV,
+                                                               measureSkew,
+                                                               measureLineSlope,
+                                                               measureLineIntercept,
+                                                               measureLineError,
+                                                               measureHistoMin,
+                                                               measureHistoMax,
+                                                               measureHistoMean,
+                                                               measureHistoMedian,
+                                                               measureHistoMode,
+                                                               measureHistoProduct,
+                                                               measureHistoSum,
+                                                               measureHistoL2,
+                                                               measureHistoVariance,
+                                                               measureHistoSD};
 
+/* measureType: the automagic logic for deciding the output type of measurement values,
+   when when has not been set explicitly */
 static int
 measureType(const Nrrd *nin, int measr) {
   static const char me[] = "measureType";
@@ -1103,7 +1105,13 @@ measureType(const Nrrd *nin, int measr) {
   case nrrdMeasureLineSlope:
   case nrrdMeasureLineIntercept:
   case nrrdMeasureLineError:
-    type = nrrdStateMeasureType;
+    // type = nrrdStateMeasureType;   (gone in TeemV2)
+    /* simple rationale: if input is double, and the measurement computation is being
+    done in double, then double output is most natural (and the surprise of breaking that
+    expectation is why nrrdStateMeasureType was nixed). Else, float probably captures
+    all the useful information (as was long the default in nrrdStateMeasureType), and the
+    dissatisfied caller can set the output to double explicitly. */
+    type = nrrdTypeDouble == nin->type ? nrrdTypeDouble : nrrdTypeFloat;
     break;
   case nrrdMeasureHistoMin:
   case nrrdMeasureHistoMax:
@@ -1119,7 +1127,11 @@ measureType(const Nrrd *nin, int measr) {
        values which generated the histogram, and we may not even
        have access to that information.  So we end up choosing one
        type for all these histogram-based measures */
-    type = nrrdStateMeasureHistoType;
+    // type = nrrdStateMeasureHistoType;   (gone in TeemV2)
+    /* rationale: same as above, even with the huge amount of quantization imposed
+    by the binning of the histogram.  If the bin counts are double, and the computation
+    is done with double, why not by default preserve the computed result's precision */
+    type = nrrdTypeDouble == nin->type ? nrrdTypeDouble : nrrdTypeFloat;
     break;
   default:
     fprintf(stderr, "%s: PANIC: measr %d not handled\n", me, measr);

@@ -69,7 +69,7 @@ nrrdCastClampRound,int,1,0,nrrd,nrrd/map.c:169
 nrrdQuantize,int,1,0,nrrd,nrrd/map.c:191
 nrrdUnquantize,int,1,0,nrrd,nrrd/map.c:363
 nrrdHistoEq,int,1,0,nrrd,nrrd/map.c:498
-nrrdProject,int,1,0,nrrd,nrrd/measure.c:1133
+nrrdProject,int,1,0,nrrd,nrrd/measure.c:1145
 nrrdBoundarySpecCheck,int,1,0,nrrd,nrrd/methodsNrrd.c:93
 nrrdBoundarySpecParse,int,1,0,nrrd,nrrd/methodsNrrd.c:117
 nrrdBoundarySpecSprint,int,1,0,nrrd,nrrd/methodsNrrd.c:191
