@@ -572,7 +572,6 @@ is not sensitive to locale. Quoting Han's commit message:
     available.  The "C" locale is created under pthread_once only when
     Teem is built with pthreads, matching threadAir.c.
 
-
 • Wed Aug 26 14:04:12 2026 -0500 git commit ad42d9b0
 - BUG FIX: using airSingleSscanf("%zu") to parse a size_t had numerous serious
   bugs: not being careful with given NULL pointers, looking at memory after the
@@ -624,6 +623,14 @@ newlines in the interior of the string are preserved. Like in airOneLinify, all 
 whitespace (including newlines) is removed from the end of the string, and whitespace
 before or after interior newlines are dropped (and repeated contiguous newlines are
 collapsed to one newline).
+
+• Tue Nov 4 12:46:27 2025 -0600 git commit e4566753
+API CHANGE: airSinglePrintf now takes a string size arg:
+  airSinglePrintf(FILE *file, char *str, const char *fmt, ...) -->
+  airSinglePrintf(FILE *file, char *str, size_t strSize, const char *fmt, ...)
+so that it can internally use buffer-size-aware functions like snprintf
+instead of sprintf.
+(This was a step towards removal of scary string functions in 1b486a67)
 
 • Sat Oct 25 07:07:14 2025 -0500 git commit: 9b821d47
 BUG FIXES / behavior change in airSinglePrintf: The purpose of the function is to be
