@@ -1526,6 +1526,27 @@ updated to conform).
 
 ========= nrrd =========
 
+• Mon Sep 28 03:47:57 2026 -0500 git commit 3ee93f2e
+API CHANGE and BEHAVIOR CHANGE in nrrd/measure.c (and the "unu project" it implements)
+Have removed from nrrd.h:
+   NRRD_EXPORT int nrrdStateMeasureType;
+   NRRD_EXPORT int nrrdStateMeasureHistoType;
+because (1) their logic was never well justified, with results that were surprising:
+finding the sum or stdv of a list of double-type values would by default give you a
+float, instead of a double; what the heck.  The automagic output type determination
+in nrrd/measure.c:measureType makes more sense now (BEHAVIOR CHANGE; basically,
+double in => double out; else float), but as before the output type can be set
+explicitly (unu project -t).  Also (2) the fewer the globals the better!
+Have also removed from nrrd.h:
+   NRRD_EXPORT const char *const nrrdEnvVarStateMeasureType;
+   NRRD_EXPORT const char *const nrrdEnvVarStateMeasureHistoType;
+and now the output of "unu env" no longer (BEHAVIOR CHANGE) uses them to describe
+the environment variables.  If you had been using nrrdStateMeasureType (accessed
+via NRRD_STATE_MEASURE_TYPE env var) or nrrdStateMeasureHistoType (acccessed
+via NRRD_STATE_MEASURE_HISTO_TYPE env var), you may need to explicitly set
+the output type in nrrdProject() or via "unu project -t" to get the same output
+type were used to (e.g. "unu project -t float").
+
 • Sat Sep 26 07:43:06 2026 -0500 git commit 237b202d
 BUG FIX, BIG THANKS to Hans Johnson.  If a NRRD had comments or key/value pairs and also
 had multiple data files to be named in a "data file: LIST" in a detached header,
