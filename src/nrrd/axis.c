@@ -438,8 +438,8 @@ nrrdAxisInfoSet_va(Nrrd *nrrd, int axInfo, ...) {
         svec[ai][si] = dp[si];
       }
       for (si = nrrd->spaceDim; si < NRRD_SPACE_DIM_MAX; si++) {
-        /* nrrd->axis[ai].spaceDirection[si] = AIR_NAN; */
-        svec[ai][si] = dp[si];
+        /* callers pass spaceDim values per axis; nothing to read past them */
+        svec[ai][si] = AIR_NAN;
       }
       break;
     case nrrdAxisInfoCenter:
