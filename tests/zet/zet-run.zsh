@@ -13,9 +13,10 @@ typeset -a zr_pass=()
 typeset -a zr_fail=()
 
 # enforce that all scripts start with the same boilerplate
-typeset -g BOILER_CKS="4051111478 406"
+typeset -g BOILER_LINES="11"
+typeset -g BOILER_CKS="1813077674 359"
 for script in ${ZRR}/*/*.zsh(N); do
-    cks=$(head -15 $script | cksum)
+    cks=$(head -$BOILER_LINES $script | cksum)
     if [[ $cks != $BOILER_CKS ]]; then
         print -u2 "$0: \"head -15 $script | cksum\" says $cks but expected $BOILER_CKS"
         print -u2 "$0: all zet test scripts must begin with the same boilerplate"
