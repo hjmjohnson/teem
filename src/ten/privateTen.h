@@ -90,6 +90,8 @@ typedef unsigned int uint; /* uint is just more concise */
     hestInfo(stdout, me, (INFO), hparm);                                                \
     hestUsage(stdout, hopt, me, hparm, AIR_FALSE);                                      \
     hestGlossary(stdout, hopt, hparm);                                                  \
+    hestParseFree(hopt);                                                                \
+    airMopOkay(mop);                                                                    \
     return 0;                                                                           \
   }
 
