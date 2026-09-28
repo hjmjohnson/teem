@@ -80,7 +80,7 @@ main(int argc, const char **argv) {
   mop = airMopNew();
 
   nscl = nrrdNew();
-  airMopAdd(mop, nscl, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nscl, nrrdNuke_mop, airMopAlways);
   fullname = teemTestDataPath("fmob-c4h.nrrd");
   airMopAdd(mop, fullname, airFree, airMopAlways);
   if (nrrdLoad(nscl, fullname, NULL)) {
@@ -105,7 +105,7 @@ main(int argc, const char **argv) {
   for (ki = 0; ki < INTERP_KERN_NUM; ki++) {
     gagePerVolume *gpvl;
     igctx[ki] = gageContextNew();
-    airMopAdd(mop, igctx[ki], (airMopper)gageContextNix, airMopAlways);
+    airMopAdd(mop, igctx[ki], gageContextNix_mop, airMopAlways);
     gageParmSet(igctx[ki], gageParmRenormalize, AIR_FALSE);
     gageParmSet(igctx[ki], gageParmCheckIntegrals, AIR_TRUE);
     gageParmSet(igctx[ki], gageParmOrientationFromSpacing, AIR_FALSE);
@@ -166,7 +166,7 @@ main(int argc, const char **argv) {
   for (ki = 0; ki < BLUR_KERN_NUM; ki++) {
     gagePerVolume *gpvl;
     bgctx[ki] = gageContextNew();
-    airMopAdd(mop, bgctx[ki], (airMopper)gageContextNix, airMopAlways);
+    airMopAdd(mop, bgctx[ki], gageContextNix_mop, airMopAlways);
     gageParmSet(bgctx[ki], gageParmRenormalize, AIR_TRUE);
     gageParmSet(bgctx[ki], gageParmCheckIntegrals, AIR_TRUE);
     gageParmSet(bgctx[ki], gageParmOrientationFromSpacing, AIR_FALSE);
@@ -205,7 +205,7 @@ main(int argc, const char **argv) {
     corrfn = teemTestDataPath("test/probeSclAns.nrrd");
     airMopAdd(mop, corrfn, airFree, airMopAlways);
     ncorr = nrrdNew();
-    airMopAdd(mop, ncorr, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, ncorr, nrrdNuke_mop, airMopAlways);
     if (nrrdLoad(ncorr, corrfn, NULL)) {
       char *err;
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
@@ -227,7 +227,7 @@ main(int argc, const char **argv) {
       }
     }
     nprbd = nrrdNew();
-    airMopAdd(mop, nprbd, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, nprbd, nrrdNuke_mop, airMopAlways);
     if (nrrdMaybeAlloc_va(nprbd, nrrdTypeDouble, 3, AIR_CAST(size_t, qlen),
                           AIR_CAST(size_t, BLUR_KERN_NUM),
                           AIR_CAST(size_t, POS_NUM * POS_NUM * POS_NUM))) {

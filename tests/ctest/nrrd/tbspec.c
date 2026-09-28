@@ -110,12 +110,12 @@ main(int argc, const char *argv[]) {
   me = argv[0];
   mop = airMopNew();
   hparm = hestParmNew();
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hestOptAdd(&hopt, "bs", "bspec0", airTypeOther, 1, -1, &bsv, NULL, "bspecs", &bsNum,
              NULL, nrrdHestBoundarySpec);
   hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, tbspecInfo);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   printf("command line options:\n");
   for (bsIdx = 0; bsIdx < bsNum; bsIdx++) {
@@ -129,7 +129,7 @@ main(int argc, const char *argv[]) {
   }
 
   bspec = nrrdBoundarySpecNew();
-  airMopAdd(mop, bspec, (airMopper)nrrdBoundarySpecNix, airMopAlways);
+  airMopAdd(mop, bspec, nrrdBoundarySpecNix_mop, airMopAlways);
 
   fprintf(stderr, "%s: bogus value\n", me);
   bspec->boundary = -10;

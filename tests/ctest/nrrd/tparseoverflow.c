@@ -47,7 +47,7 @@ main(int argc, const char **argv) {
   me = argv[0];
   mop = airMopNew();
   nrrd = nrrdNew();
-  airMopAdd(mop, nrrd, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nrrd, nrrdNuke_mop, airMopAlways);
 
   /* Must return an error (excess sizes), and must not overflow the stack. */
   if (!nrrdStringRead(nrrd, header, NULL)) {

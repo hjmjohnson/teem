@@ -38,7 +38,7 @@ main(int argc, const char **argv) {
   me = argv[0]; // NOT how "me" is used within Teem (when not __func__)
   mop = airMopNew();
   hparm = hestParmNew();
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
 
   /* (same purpose as Testing/unrrdu/unulist.c) */
 

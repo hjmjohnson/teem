@@ -69,11 +69,11 @@ main(int argc, const char **argv) {
   me = argv[0];
   mop = airMopNew();
   nrrd = nrrdNew();
-  airMopAdd(mop, nrrd, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nrrd, nrrdNuke_mop, airMopAlways);
   nin = nrrdNew();
-  airMopAdd(mop, nin, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nin, nrrdNuke_mop, airMopAlways);
   nio = nrrdIoStateNew();
-  airMopAdd(mop, nio, (airMopper)nrrdIoStateNix, airMopAlways);
+  airMopAdd(mop, nio, nrrdIoStateNix_mop, airMopAlways);
   airMopAdd(mop, hdrName = teemTestTmpPath("tdatafilelast.nhdr"), airFree, airMopAlways);
   airMopAdd(mop, listName = teemTestTmpPath("tdatafilelist.nhdr"), airFree,
             airMopAlways);

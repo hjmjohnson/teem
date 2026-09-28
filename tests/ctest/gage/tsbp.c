@@ -114,12 +114,12 @@ main(int argc, const char **argv) {
   me = argv[0];
   mop = airMopNew();
   hparm = hestParmNew();
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   hestOptAdd(&hopt, "sbp", "sbp0", airTypeOther, 1, -1, &sbpv, NULL, "stack blur parms",
              &sbpNum, NULL, gageHestStackBlurParm);
   hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, sbpInfo);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   printf("%s: command line options: ---------- \n", me);
   for (sbpIdx = 0; sbpIdx < sbpNum; sbpIdx++) {
@@ -134,9 +134,9 @@ main(int argc, const char **argv) {
   printf("\n");
 
   sbp = gageStackBlurParmNew();
-  airMopAdd(mop, sbp, (airMopper)gageStackBlurParmNix, airMopAlways);
+  airMopAdd(mop, sbp, gageStackBlurParmNix_mop, airMopAlways);
   sbq = gageStackBlurParmNew();
-  airMopAdd(mop, sbq, (airMopper)gageStackBlurParmNix, airMopAlways);
+  airMopAdd(mop, sbq, gageStackBlurParmNix_mop, airMopAlways);
 
   printf("%s: testing various broken strings ---------- \n", me);
   parseFailOrDie("0-8");

@@ -64,7 +64,7 @@ main(int argc, const char *argv[]) {
 
   mop = airMopNew();
   rng = airRandMTStateNew(0);
-  airMopAdd(mop, rng, (airMopper)airRandMTStateNix, airMopAlways);
+  airMopAdd(mop, rng, airRandMTStateNix_mop, airMopAlways);
   for (jj = 0; jj < NUM; jj++) {
     airSrandMT_r(rng, 42 * jj);
     for (ii = 0; ii < NUM; ii++) {

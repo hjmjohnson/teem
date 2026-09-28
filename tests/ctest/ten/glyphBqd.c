@@ -37,7 +37,7 @@ main(int argc, const char **argv) {
 
   mop = airMopNew();
   nabc = nrrdNew();
-  airMopAdd(mop, nabc, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nabc, nrrdNuke_mop, airMopAlways);
   sz = 100;
   betaMaxNum = AIR_CAST(unsigned int, sizeof(betaMax) / sizeof(double));
   if (nrrdMaybeAlloc_va(nabc, nrrdTypeDouble, 3, AIR_CAST(size_t, 3),
@@ -62,7 +62,7 @@ main(int argc, const char **argv) {
   refname = teemTestDataPath("test/tenGlyphBqdAbcUv.nrrd");
   airMopAdd(mop, refname, airFree, airMopAlways);
   nref = nrrdNew();
-  airMopAdd(mop, nref, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nref, nrrdNuke_mop, airMopAlways);
   if (nrrdLoad(nref, refname, NULL)
       || nrrdCompare(nref, nabc, AIR_FALSE /* onlyData */, 5e-15 /* epsilon */, &differ,
                      explain)) {

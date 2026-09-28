@@ -60,7 +60,7 @@ main(int argc, const char *argv[]) {
     airRandMTState *rng;
     double aa[2], uu, eps = 8e-27, error;
     rng = airRandMTStateNew(4242);
-    airMopAdd(mop, rng, (airMopper)airRandMTStateNix, airMopAlways);
+    airMopAdd(mop, rng, airRandMTStateNix_mop, airMopAlways);
     error = 0;
     for (ti = 0; ti < testnum; ti++) {
       double dif;

@@ -38,7 +38,7 @@ main(int argc, const char **argv) {
   mop = airMopNew();
 
   nin = nrrdNew();
-  airMopAdd(mop, nin, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nin, nrrdNuke_mop, airMopAlways);
   fullname = teemTestDataPath("fmob-c4h.nrrd");
   airMopAdd(mop, fullname, airFree, airMopAlways);
   if (nrrdLoad(nin, fullname, NULL)) {
@@ -54,7 +54,7 @@ main(int argc, const char **argv) {
     char *blah, *blah1L, explain[AIR_STRLEN_LARGE + 1];
     size_t ii, blen;
     ncopy = nrrdNew();
-    airMopAdd(mop, ncopy, (airMopper)nrrdNuke, airMopAlways);
+    airMopAdd(mop, ncopy, nrrdNuke_mop, airMopAlways);
     blen = AIR_STRLEN_HUGE * 42;
     blah = AIR_CALLOC(blen, char);
     airMopAdd(mop, blah, airFree, airMopAlways);

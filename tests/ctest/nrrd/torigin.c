@@ -43,7 +43,7 @@ main(int argc, const char **argv) {
   me = argv[0];
   mop = airMopNew();
   nrrd = nrrdNew();
-  airMopAdd(mop, nrrd, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nrrd, nrrdNuke_mop, airMopAlways);
 
   if (nrrdMaybeAlloc_va(nrrd, nrrdTypeUChar, 3, AIR_SIZE_T(2), AIR_SIZE_T(2),
                         AIR_SIZE_T(2))) {

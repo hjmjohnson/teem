@@ -167,7 +167,7 @@ makeVolume(Nrrd *nin, unsigned int sx, unsigned int sy, unsigned int sz,
      derivatives are readily available. tmf:n,3,4 can also reconstruct
      cubics but its not clear which other kernels are its derivatives */
   gctx = gageContextNew();
-  airMopAdd(submop, gctx, (airMopper)gageContextNix, airMopOnError);
+  airMopAdd(submop, gctx, gageContextNix_mop, airMopOnError);
   gageParmSet(gctx, gageParmRenormalize, AIR_FALSE);
   gageParmSet(gctx, gageParmCheckIntegrals, AIR_TRUE);
   EE = 0;
@@ -205,10 +205,10 @@ main(void) {
   mop = airMopNew();
 
   rng = airRandMTStateNew(429);
-  airMopAdd(mop, rng, (airMopper)airRandMTStateNix, airMopAlways);
+  airMopAdd(mop, rng, airRandMTStateNix_mop, airMopAlways);
 
   nin = nrrdNew();
-  airMopAdd(mop, nin, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nin, nrrdNuke_mop, airMopAlways);
   epsilon = 1e-8;
   runNum = 30;
 
@@ -243,7 +243,7 @@ main(void) {
       airMopError(mop);
       return 1;
     }
-    airMopAdd(submop, gctx, (airMopper)gageContextNix, airMopAlways);
+    airMopAdd(submop, gctx, gageContextNix_mop, airMopAlways);
     vmeas = gageAnswerPointer(gctx, gctx->pvl[0], gageSclValue);
     gmeas = gageAnswerPointer(gctx, gctx->pvl[0], gageSclGradVec);
     hmeas = gageAnswerPointer(gctx, gctx->pvl[0], gageSclHessian);

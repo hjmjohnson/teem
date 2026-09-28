@@ -67,7 +67,7 @@ static unsigned int volSize[3] = {45, 46, 47};
 
 #define NRRD_NEW(nn, mm)                                                                \
   (nn) = nrrdNew();                                                                     \
-  airMopAdd((mm), (nn), (airMopper)nrrdNuke, airMopAlways)
+  airMopAdd((mm), (nn), nrrdNuke_mop, airMopAlways)
 
 /* the weird function names of the various local functions here (created in a
    rather adhoc and organic way) should be read in usual Teem order: from
@@ -102,7 +102,7 @@ engageGenTensor(gageContext *gctx, Nrrd *ncten,
      is certainly awkward
   */
   hparm = hestParmNew();
-  airMopAdd(smop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(smop, hparm, hestParmFree_mop, airMopAlways);
   sprintf(tmpStr[0], "%u", sx);
   helixArgv[1] = tmpStr[0];
   sprintf(tmpStr[1], "%u", sy);
@@ -131,8 +131,8 @@ engageGenTensor(gageContext *gctx, Nrrd *ncten,
      but for the purposes of gage testing its fine */
   narg0 = nrrdIterNew();
   narg1 = nrrdIterNew();
-  airMopAdd(smop, narg0, (airMopper)nrrdIterNix, airMopAlways);
-  airMopAdd(smop, narg1, (airMopper)nrrdIterNix, airMopAlways);
+  airMopAdd(smop, narg0, nrrdIterNix_mop, airMopAlways);
+  airMopAdd(smop, narg1, nrrdIterNix_mop, airMopAlways);
   nrrdIterSetNrrd(narg0, nclean);
   nrrdIterSetValue(narg1, noiseStdv);
   airSrandMT(seed);
@@ -278,9 +278,9 @@ genDwi(Nrrd *ndwi, Nrrd *ngrad,
 
   smop = airMopNew();
   gparm = tenGradientParmNew();
-  airMopAdd(smop, gparm, (airMopper)tenGradientParmNix, airMopAlways);
+  airMopAdd(smop, gparm, tenGradientParmNix_mop, airMopAlways);
   espec = tenExperSpecNew();
-  airMopAdd(smop, espec, (airMopper)tenExperSpecNix, airMopAlways);
+  airMopAdd(smop, espec, tenExperSpecNix_mop, airMopAlways);
   gparm->verbose = 0;
   gparm->minMean = 0.002;
   gparm->seed = 4242;
@@ -307,8 +307,8 @@ genDwi(Nrrd *ndwi, Nrrd *ngrad,
   }
   narg0 = nrrdIterNew();
   narg1 = nrrdIterNew();
-  airMopAdd(smop, narg0, (airMopper)nrrdIterNix, airMopAlways);
-  airMopAdd(smop, narg1, (airMopper)nrrdIterNix, airMopAlways);
+  airMopAdd(smop, narg0, nrrdIterNix_mop, airMopAlways);
+  airMopAdd(smop, narg1, nrrdIterNix_mop, airMopAlways);
   nrrdIterSetValue(narg1, 50000.0);
   nrrdIterSetNrrd(narg0, nb0);
   if (nrrdArithIterBinaryOp(nb0, nrrdBinaryOpMultiply, narg0, narg1)) {
@@ -497,6 +497,7 @@ multiAnswerNix(multiAnswer *man) {
   airFree(man);
   return NULL;
 }
+AIR_MOPPER(multiAnswerNix);
 
 static void
 multiAnswerAdd(multiAnswer *man, unsigned int ansIdx, const gageContext *gctx,
@@ -915,7 +916,7 @@ main(int argc, const char **argv) {
   me = argv[0];
   mop = airMopNew();
   hparm = hestParmNew();
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   /* learn things from hest */
   hestOptAdd(&hopt, "supp", "r", airTypeDouble, 1, 1, &ksupport, "1.0",
              "kernel support");
@@ -923,8 +924,8 @@ main(int argc, const char **argv) {
   hestOptAdd(&hopt, "k", "kern", airTypeString, 1, 1, &kernS, NULL,
              "kernel to use; can be: box, cos, or ctmr");
   hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, testInfo);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   if (!strcmp(kernS, "box")) {
     ELL_3V_SET(kpack, nrrdKernelBoxSupportDebug, nrrdKernelZero, nrrdKernelZero);
@@ -959,11 +960,11 @@ main(int argc, const char **argv) {
      If we had something like smart pointers, then tenDwiGageKindNix
      would not have freed something that an extant pvl was using */
   dwikind = tenDwiGageKindNew();
-  airMopAdd(mop, dwikind, (airMopper)tenDwiGageKindNix, airMopAlways);
+  airMopAdd(mop, dwikind, tenDwiGageKindNix_mop, airMopAlways);
 
 #define GAGE_CTX_NEW(gg, mm)                                                            \
   (gg) = gageContextNew();                                                              \
-  airMopAdd((mm), (gg), (airMopper)gageContextNix, airMopAlways);                       \
+  airMopAdd((mm), (gg), gageContextNix_mop, airMopAlways);                              \
   gageParmSet((gg), gageParmRenormalize, AIR_FALSE);                                    \
   gageParmSet((gg), gageParmCheckIntegrals, AIR_TRUE)
 
@@ -978,8 +979,8 @@ main(int argc, const char **argv) {
     */
     man[kindIdx] = multiAnswerNew(name[kindIdx]);
     manComp[kindIdx] = multiAnswerNew(nameComp[kindIdx]);
-    airMopAdd(mop, man[kindIdx], (airMopper)multiAnswerNix, airMopAlways);
-    airMopAdd(mop, manComp[kindIdx], (airMopper)multiAnswerNix, airMopAlways);
+    airMopAdd(mop, man[kindIdx], multiAnswerNix_mop, airMopAlways);
+    airMopAdd(mop, manComp[kindIdx], multiAnswerNix_mop, airMopAlways);
   }
 #undef GAGE_CTX_NEW
 
@@ -1108,7 +1109,7 @@ main(int argc, const char **argv) {
       airMopError(mop);
       return 1;
     }
-    airMopAdd(mop, gctxCopy[kindIdx], (airMopper)gageContextNix, airMopAlways);
+    airMopAdd(mop, gctxCopy[kindIdx], gageContextNix_mop, airMopAlways);
   }
   if (updateQueryKernelSetTask1(gctxComp, gctxCopy, AIR_FALSE, manComp, man, kpack,
                                 ksupport)
@@ -1125,7 +1126,7 @@ main(int argc, const char **argv) {
       airMopError(mop);
       return 1;
     }
-    airMopAdd(mop, gctxCompCopy[kindIdx], (airMopper)gageContextNix, airMopAlways);
+    airMopAdd(mop, gctxCompCopy[kindIdx], gageContextNix_mop, airMopAlways);
   }
   if (updateQueryKernelSetTask1(gctxCompCopy, gctxCopy, AIR_FALSE, manComp, man, kpack,
                                 ksupport)

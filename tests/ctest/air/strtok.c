@@ -59,7 +59,7 @@ main(int argc, const char *argv[]) {
 
   mop = airMopNew();
   lineArr = airArrayNew((void **)(&line), &lineLen, sizeof(char), INCR);
-  airMopAdd(mop, lineArr, (airMopper)airArrayNuke, airMopAlways);
+  airMopAdd(mop, lineArr, airArrayNuke_mop, airMopAlways);
 
   /* initialize line with "" */
   airArrayLenSet(lineArr, 1);

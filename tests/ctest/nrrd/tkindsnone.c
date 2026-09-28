@@ -46,7 +46,7 @@ main(int argc, const char **argv) {
   me = argv[0];
   mop = airMopNew();
   nrrd = nrrdNew();
-  airMopAdd(mop, nrrd, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nrrd, nrrdNuke_mop, airMopAlways);
   airMopAdd(mop, hdrName = teemTestTmpPath("tkindsnone.nhdr"), airFree, airMopAlways);
   airMopAdd(mop, dataName = teemTestTmpPath("tkindsnone.raw"), airFree, airMopAlways);
 

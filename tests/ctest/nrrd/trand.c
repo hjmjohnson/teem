@@ -70,17 +70,17 @@ main(int argc, const char *argv[]) {
 
   qvalLen = 10 * BINS;
   nrrdAlloc_va(nval = nrrdNew(), nrrdTypeDouble, 1, 4 * qvalLen);
-  airMopAdd(mop, nval, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nval, nrrdNuke_mop, airMopAlways);
   val = AIR_CAST(double *, nval->data);
 
   nhist = nrrdNew();
-  airMopAdd(mop, nhist, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nhist, nrrdNuke_mop, airMopAlways);
   nimg = nrrdNew();
-  airMopAdd(mop, nimg, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nimg, nrrdNuke_mop, airMopAlways);
   nmine = nrrdNew();
-  airMopAdd(mop, nmine, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nmine, nrrdNuke_mop, airMopAlways);
   ncorr = nrrdNew();
-  airMopAdd(mop, ncorr, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, ncorr, nrrdNuke_mop, airMopAlways);
 
   airSrandMT(999);
   vi = 0;

@@ -58,7 +58,7 @@ main(int argc, const char **argv) {
   /* start-up */
   mop = airMopNew();
   hparm = hestParmNew();
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
   /* learn things from hest */
   hestOptAdd(&hopt, "seed", "N", airTypeUInt, 1, 1, &seed, "42", "seed for RNG");
   hestOptAdd(&hopt, "s", "sz0", airTypeSize_t, 1, -1, &size, NULL,
@@ -74,12 +74,12 @@ main(int argc, const char **argv) {
   hestOptAdd(&hopt, "o", "out.data out.nhdr", airTypeString, 2, 2, outSbase, NULL,
              "output filenames of data and header");
   hestParseOrExit(hopt, argc - 1, argv + 1, hparm, me, tskipInfo);
-  airMopAdd(mop, hopt, (airMopper)hestOptFree, airMopAlways);
-  airMopAdd(mop, hopt, (airMopper)hestParseFree, airMopAlways);
+  airMopAdd(mop, hopt, hestOptFree_mop, airMopAlways);
+  airMopAdd(mop, hopt, hestParseFree_mop, airMopAlways);
 
   /* generate reference nrrd data */
   nref = nrrdNew();
-  airMopAdd(mop, nref, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nref, nrrdNuke_mop, airMopAlways);
   if (nrrdMaybeAlloc_nva(nref, nrrdTypeUInt, sizeNum, size)) {
     airMopAdd(mop, berr = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error allocating data: %s\n", me, berr);
@@ -87,7 +87,7 @@ main(int argc, const char **argv) {
     return 1;
   }
   rng = airRandMTStateNew(seed);
-  airMopAdd(mop, rng, (airMopper)airRandMTStateNix, airMopAlways);
+  airMopAdd(mop, rng, airRandMTStateNix_mop, airMopAlways);
   nn = nrrdElementNumber(nref);
   rdata = AIR_CAST(unsigned int *, nref->data);
   fprintf(stderr, "generating data: . . .       ");
@@ -134,7 +134,7 @@ main(int argc, const char **argv) {
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, fout, (airMopper)airFclose, airMopAlways);
+  airMopAdd(mop, fout, airFclose_mop, airMopAlways);
   for (ii = 0; ii < pad[0]; ii++) {
     if (EOF == fputc(1, fout)) {
       fprintf(stderr, "\n%s: error doing pre-padding\n", me);
@@ -189,7 +189,7 @@ main(int argc, const char **argv) {
     airMopError(mop);
     return 1;
   }
-  airMopAdd(mop, fout, (airMopper)airFclose, airMopAlways);
+  airMopAdd(mop, fout, airFclose_mop, airMopAlways);
   fprintf(fout, "NRRD0005\n");
   fprintf(fout, "type: unsigned int\n");
   fprintf(fout, "dimension: %u\n", sizeNum);
@@ -213,7 +213,7 @@ main(int argc, const char **argv) {
   /* read it in, make sure it checks out */
   fprintf(stderr, "reading data . . . \n");
   nin = nrrdNew();
-  airMopAdd(mop, nin, (airMopper)nrrdNuke, airMopAlways);
+  airMopAdd(mop, nin, nrrdNuke_mop, airMopAlways);
   if (nrrdLoad(nin, outS[1], NULL)) {
     airMopAdd(mop, berr = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error reading back in: %s\n", me, berr);

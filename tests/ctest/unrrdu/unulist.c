@@ -38,7 +38,7 @@ main(int argc, const char **argv) {
   me = argv[0];
   mop = airMopNew();
   hparm = hestParmNew();
-  airMopAdd(mop, hparm, (airMopper)hestParmFree, airMopAlways);
+  airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
 
   /* This just generates all the usage information for unu itself, and
      then for all the unu sub-commands.  The purpose is to exercise

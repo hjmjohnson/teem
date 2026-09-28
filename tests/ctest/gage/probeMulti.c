@@ -61,7 +61,7 @@ main(void) {
 
 #define NRRD_NEW(name, mop)                                                             \
   (name) = nrrdNew();                                                                   \
-  airMopAdd((mop), (name), (airMopper)nrrdNuke, airMopAlways)
+  airMopAdd((mop), (name), nrrdNuke_mop, airMopAlways)
 
   /* --------------------------------------------------------------- */
   /* Creating initial volume */
@@ -173,7 +173,7 @@ main(void) {
     int E;
     double kparm[1];
     gctx[0][supi] = gageContextNew();
-    airMopAdd(mop, gctx[0][supi], (airMopper)gageContextNix, airMopAlways);
+    airMopAdd(mop, gctx[0][supi], gageContextNix_mop, airMopAlways);
     gageParmSet(gctx[0][supi], gageParmRenormalize, AIR_FALSE);
     gageParmSet(gctx[0][supi], gageParmCheckIntegrals, AIR_TRUE);
     kparm[0] = supi;
