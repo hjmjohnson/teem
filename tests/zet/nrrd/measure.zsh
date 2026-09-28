@@ -1,5 +1,6 @@
 #!/usr/bin/env zsh
 
+# (begin zet test set boilerplate)
 cd ${0:A:h} # get to directory of this script
 #   $0 path of me
 #     :A made absolute
@@ -7,11 +8,7 @@ cd ${0:A:h} # get to directory of this script
 source ../zet-lib.zsh # set up the zet "library"
 setopt err_exit       # exit on error
 setopt pipe_fail      # propagate pipeline errors
-if (($+commands[unu])); then
-    print "${0} using unu = $(which unu)\n"
-else
-    zet_die "unu not found, bye"
-fi
+# (end zet test set boilerplate)
 
 Setup() {
     local szX=1000 szY=5 # size of ramp array
@@ -112,7 +109,11 @@ Test() {
             local obase="-m${mm}"
             local inf=$(zet_inf $ike)
             local outf=${inf/.nrrd/$obase.nrrd}
-            local comd="unu project -i $inf -a 0 ${opts[@]} -o $outf"
+            # TeemV2's nrrd/measure.c:measureType() now defaults to double output
+            # for double input (plus nrrdStateMeasureType, nrrdStateMeasureHistoType
+            # are now nixed), so to facilitate comparison with older unu we
+            # explicitly set the output type with -t float
+            local comd="unu project -i $inf -a 0 ${opts[@]} -t float -o $outf"
             zet_test "$outf" "$comd" "$inf" "cksum"
         done
     done

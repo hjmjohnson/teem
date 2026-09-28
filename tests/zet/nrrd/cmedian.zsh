@@ -1,5 +1,6 @@
 #!/usr/bin/env zsh
 
+# (begin zet test set boilerplate)
 cd ${0:A:h} # get to directory of this script
 #   $0 path of me
 #     :A made absolute
@@ -7,11 +8,7 @@ cd ${0:A:h} # get to directory of this script
 source ../zet-lib.zsh # set up the zet "library"
 setopt err_exit       # exit on error
 setopt pipe_fail      # propagate pipeline errors
-if (($+commands[unu])); then
-    print "${0} using unu = $(which unu)\n"
-else
-    zet_die "unu not found, bye"
-fi
+# (end zet test set boilerplate)
 
 # This was the first zet test set written; things that didn't stick
 #setopt XTRACE             # print commands before executing them

@@ -193,6 +193,16 @@ typeset -g -A ZET_RSEEN=()       # set of review ids seen so far (for uniqueness
 # immediately zet_end then bail, which includes setting ZET_BAILING true
 typeset -g -i ZET_BAILING=0 # are we bailing
 
+####### ZET_OMIT_BUGGY: if set by caller (e.g. ZET_OMIT_BUGGY= ./make.zsh):
+# Some scripts may be sensitive to how some things are known to not just fail (e.g. unu finishes
+# but with a bad result), but to crash out (e.g. unu will exits with an error code that halts the
+# rest of the script from running) because of old buggy code which has been fixed in the current
+# code. In light of that, scripts may call zet_test_omit or zet_review_omit instead of zet_test or
+# zet_review, and then we give different progress indication.
+# Related variables:
+typeset -g -i ZET_TSET_OMIT=0   # counts tests ommitted
+typeset -g -i ZET_REVIEW_OMIT=0 # counts reviews ommitted
+
 #__#__# _zet_arrays_reset
 # a helper function to (re)initialize these global arrays. Despite the
 # uniform syntax, this preserves the type (regular vs hash) of the array
@@ -469,11 +479,11 @@ zet_inf_begin() {
         ZET_INF_BIN_PATH_SAVE="$PATH"
         export PATH="$ZET_INF_BIN:$PATH"
         print "$ZET_PFX ZET_INF_BIN=$ZET_INF_BIN prepended to PATH for input file creation"
-        if (($+commands[unu])); then
-            print "$ZET_PFX --> using unu = $(which unu)\n"
-        fi
     else
         print "$ZET_PFX (ZET_INF_BIN not set --> same PATH for input file creation and testing)"
+    fi
+    if (($+commands[unu])); then
+        print "$ZET_PFX zet_inf_begin which unu = $(which unu)"
     fi
     # For the input files, we do want to record how they were generated
     export TEEM_KVP_HISTORY_TRACE=yes
@@ -812,6 +822,9 @@ zet_begin() {
     if ((${#ZET_TSET[@]})); then
         zet_die "$ZET_PFX Seem to be already running test set \"${ZET_TSET[name]}\""
     fi
+    if (($+commands[unu])); then
+        print "$ZET_PFX zet_begin which unu = $(which unu)"
+    fi
     # From what file are we being called
     local given subname caller_file caller_file_raw=${funcfiletrace[1]%:*}
     if ((${+1})); then
@@ -970,9 +983,6 @@ zet_test() {
                 print ""
                 print "$ZET_PFX ######## ZET_BAIL_ON_FAIL --> BAILING ########"
                 ZET_BAILING=1
-                print "$ZET_PFX v.v.v.v.v.v.v  which unu  v.v.v.v.v.v.v"
-                which unu
-                print "$ZET_PFX ^'^'^'^'^'^'^  which unu  ^'^'^'^'^'^'^"
                 print "$ZET_PFX v.v.v.v.v.v.v  unu env  v.v.v.v.v.v.v"
                 unu env
                 print "$ZET_PFX ^'^'^'^'^'^'^  unu env  ^'^'^'^'^'^'^"
@@ -990,6 +1000,22 @@ zet_test() {
             fi
         fi
     fi
+}
+
+zet_test_omit() {
+    if ((! ${+ZET_OMIT_BUGGY})); then
+        zet_die "Trying to zet_test_omit but ZET_OMIT_BUGGY not set"
+    fi
+    ((++ZET_TSET_OMIT))
+    print -n '?'
+}
+
+zet_review_omit() {
+    if ((! ${+ZET_OMIT_BUGGY})); then
+        zet_die "Trying to zet_review_omit but ZET_OMIT_BUGGY not set"
+    fi
+    ((++ZET_REVIEW_OMIT))
+    print -n '¿'
 }
 
 ####### zet_review rid chek fin
@@ -1065,7 +1091,11 @@ zet_end() {
     fi
     print "$ZET_PFX Ending test set $ZET_TSET[name] ($(_zet_dtime $ZET_TSET_TIME0))"
     if [[ $ZET_TSET[mode] == "read" ]]; then
-        print -n "$ZET_PFX $ZET_TSET[name] results: $#ZET_PASS passed, $#ZET_FAIL failed"
+        local omitTdesc=""
+        if ((ZET_TSET_OMIT)); then
+            omitTdesc=" ($ZET_TSET_OMIT omitted)"
+        fi
+        print -n "$ZET_PFX $ZET_TSET[name] tests: $#ZET_PASS passed$omitTdesc, $#ZET_FAIL failed"
         if (($#ZET_FAIL)); then
             #( # of elements in ZET_FAIL array )
             print ", as follows:" # finishing previous line
@@ -1085,7 +1115,11 @@ zet_end() {
             if ((ZET_TSET_STRIDE > 1)); then
                 print "$ZET_PFX $ZET_TSET[name] ZET_TSET_STRIDE=$ZET_TSET_STRIDE --> all $ZET_REVIEW_COUNT reviews skipped"
             else
-                print -n "$ZET_PFX $ZET_TSET[name] reviews: $#ZET_RPASS passed, $#ZET_RFAIL failed"
+                local omitRdesc=""
+                if ((ZET_REVIEW_OMIT)); then
+                    omitRdesc=" ($ZET_REVIEW_OMIT omitted)"
+                fi
+                print -n "$ZET_PFX $ZET_TSET[name] reviews: $#ZET_RPASS passed$omitRdesc, $#ZET_RFAIL failed"
                 if (($#ZET_RFAIL)); then
                     print ", as follows:"
                     local rid
