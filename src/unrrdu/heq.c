@@ -31,12 +31,15 @@ static const char *unu_heqInfoL
           "* Uses nrrdHistoEq");
 
 static int
-unu_heqMain(int argc, const char **argv, const char *me, const hestParm *hparm) {
+unu_heqMain(int argc, const char **argv, const char *me, const hestParm *_hparm) {
   hestOpt *hopt = NULL;
   Nrrd *nin;
-  MY_OPT_ADD_NIN(nin, "input nrrd");
+  uint inHidx = hestOptAdd_1_Other(&hopt, "i,input", "nin", &nin, "-", "input nrrd",
+                                   nrrdHestNrrdNoTTY);
+  hopt[inHidx].priority -= 10;
   uint bins;
-  hestOptAdd_1_UInt(&hopt, "b,bin", "bins", &bins, NULL,
+  /* TeemV2: this option can now finally have a default, with nrrdHestNrrdNoTTY above */
+  hestOptAdd_1_UInt(&hopt, "b,bin", "bins", &bins, "1024",
                     "# bins to use in histogram that is created in order to "
                     "calculate the mapping that achieves the equalization.");
   uint smart;
@@ -61,9 +64,11 @@ unu_heqMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
   char *out;
   MY_OPT_ADD_NOUT(out, "output nrrd");
 
-  // (boilerplate for no hparm modification)
+  // (boilerplate for YES some hparm modification)
+  hestParm *hparm = hestParmCopy(_hparm);
+  hparm->noArgsIsNoProblem = AIR_TRUE; // thanks to nrrdHestNrrdNoTTY
   hestParseOrExit(hopt, argc, argv, hparm, me, unu_heqInfoL);
-  airArray *mop = unrrduMopNew(hopt, NULL);
+  airArray *mop = unrrduMopNew(hopt, hparm);
   char *err;
 
   Nrrd *nout = nrrdNew();
