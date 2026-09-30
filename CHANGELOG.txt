@@ -1526,6 +1526,37 @@ updated to conform).
 
 ========= nrrd =========
 
+• Wed Sep 30 05:14:30 2026 -0500 git commit 5547e1a5
+BUG FIXes and BEHAVIOR CHANGE in nrrdHistoEq ("unu heq")
+BUG FIX:
+* nrrdHistoEq used to fail with an error message if the incoming nrrd
+  was all of one constant value:
+     [nrrd] nrrdApply1DRegMap:
+     [nrrd] apply1DSetUp: (axis 0) domain min (0) not less than max (0)
+  But this is not an error. Now it just returns a copy of the input.
+BUT FIX:
+* nrrdHistoEq used to fail with an error message if the `smart` flag
+  was enabled, but the input nrrd had only a few distinct values,
+  in fact if smart >= # bins with non-zero counts.  Then the rescaled
+  value map would have NaNs, creating a confusing error message:
+     [nrrd] nrrdApply1DRegMap:
+     [nrrd] apply1DSetUp: regular map nrrd has non-existent values
+  Again: not an error.  Now it just returns a copy of the input.
+BEHAVIOR CHANGE (quoting from the explanatory comment in nrrd/map.c:nrrdHistoEq):
+* TeemV2 fixes a long-standing problem in how "smart" was implemented: the ignored
+  (disrespected) bin caused a wripple in the value map. An ideal demo for "smart" is a
+  linear ramp -- interrupted by a brief flat segment -- sent through "unu gamma -g 2".
+  "unu heq -s 1" should be able to recover the linear ramp with its flat histogram,
+  while ignoring the spiked bin because of the flat segment. But the old code actually
+  ended up producing similar results with "unu heq -s 0" and "unu heq -s 1": in both
+  cases the output histogram had a depression around the spike. The long-standing
+  cleverness (as of svn r676 in 2002-08-16) of trying to avoid discontinuities in the
+  integrated histogram (caused by smartness ignoring some bins) either didn't work
+  or made things worse, so that has been removed below. Instead, the simple strategy
+  is: when you are ignoring a histogram bin in the context of computing the
+  histogram integral, pretend that the ignored bin as the same count as the last
+  non-ignored bin.  No need for a histogram integral post-process.
+
 • Mon Sep 28 03:47:57 2026 -0500 git commit 3ee93f2e
 API CHANGE and BEHAVIOR CHANGE in nrrd/measure.c (and the "unu project" it implements)
 Have removed from nrrd.h:

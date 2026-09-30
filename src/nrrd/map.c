@@ -679,10 +679,10 @@ nrrdHistoEq(Nrrd *nout, const Nrrd *nin, Nrrd **nmapP, unsigned int bins,
      while ignoring the spiked bin because of the flat segment. But the old code actually
      ended up producing similar results with "unu heq -s 0" and "unu heq -s 1": in both
      cases the output histogram had a depression around the spike. The long-standing
-     cleverness (as of svn r676 in 2002-08-16) of trying to avoid flat plots in the
+     cleverness (as of svn r676 in 2002-08-16) of trying to avoid discontinuities in the
      integrated histogram (caused by smartness ignoring some bins) either didn't work
      or made things worse, so that has been removed below. Instead, the simple strategy
-     is: when you are ignoring a histogram bin in the context of computing the the
+     is: when you are ignoring a histogram bin in the context of computing the
      histogram integral, pretend that the ignored bin as the same count as the last
      non-ignored bin.  No need for a histogram integral post-process. */
   uint respectedBinCount = 0;
@@ -707,7 +707,7 @@ nrrdHistoEq(Nrrd *nout, const Nrrd *nin, Nrrd **nmapP, unsigned int bins,
       fprintf(stderr, "%s: (initial) ycoord[%u] = %g\n", me, bii, ycoord[bii]);
     }
   }
-  /* (removed attempted cleverness about avoiding flat spots in histogram integration) */
+  // (removed attempted cleverness to avoid integrated histo discontinuities)
   /* rescale the histogram integration to span the original
      value range, and affect the influence of "amount" */
   for (uint bii = 0; bii <= bins; bii++) {
