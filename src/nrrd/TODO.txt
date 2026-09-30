@@ -1,7 +1,6 @@
 all IO-related things:
 ******** enable imagemagick-style format flagging on filenames ("PNM:-"),
   thereby obviating "unu save -f pnm" steps in pipes to standard out
-* get back verbose IO messages about fread-vs-directIO
 * to expand multiple-format handling: in nrrdRead(), generalize
 _nrrdOneLine to some more generation _nrrdReadStart, which puts some
 portion of the read file into nio.  The various formats' readTest()
@@ -62,8 +61,6 @@ to the nrrdDefault* value.
 Bricking!
 
 split?  (reverse of join)
-
-make nrrdDescribe() a little prettier
 
 create textual representation of resampling parameters
 
