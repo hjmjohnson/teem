@@ -19,6 +19,7 @@
 
 #include "nrrd.h"
 #include "privateNrrd.h"
+#include <assert.h>
 
 static int /* Biff: 1 */
 clampRoundConvert(Nrrd *nout, const Nrrd *nin, int type, int doClamp, int roundDir) {
@@ -481,17 +482,17 @@ histoEqCompareSteady(const void *a_, const void *b_) {
  * If the nhistP arg is non-NULL, then it is set to point to the histogram that was used
  * for calculation. Otherwise this histogram is deleted on return.
  *
- * This is all that is done normally, when "smart" is == 0.  In "smart" mode (activated
- * by setting "smart" to something greater than 0), the histogram is analyzed during its
+ * This is all that is done normally, when `smart == 0`.  In smart mode (activated
+ * by setting `smart` to something greater than 0), the histogram is analyzed during its
  * creation to detect if there are a few bins which keep getting hit with the same value
  * over and over.  It may be desirable to ignore these bins in the histogram integral
  * because they may not contain any useful information, and so they should not effect how
- * values are re-mapped.  The value of "smart" is the number of bins that will be
+ * values are re-mapped.  The value of `smart` is the number of bins that will be
  * ignored.  For instance, use the value 1 if the problem with naive histogram
  * equalization is a large amount of background (which is exactly one fixed value).
  * NOTE that this is a hack in the sense that it is sensitive to the order in which the
  * nin values are traversed to make the histogram: constant values along the fastest axis
- * scanlines can be recognized (with smart=1), but not if the same array's axes are
+ * scanlines can be recognized (with `smart==1`), but not if the same array's axes are
  * swapped.
  */
 int /* Biff: 1 */
@@ -519,6 +520,7 @@ nrrdHistoEq(Nrrd *nout, const Nrrd *nin, Nrrd **nmapP, unsigned int bins,
       return 1;
     }
   }
+#define VERBUG 0
   airArray *mop = airMopNew();
   if (nmapP) {
     airMopAdd(mop, nmapP, airSetNull_mop, airMopOnError);
@@ -537,6 +539,16 @@ nrrdHistoEq(Nrrd *nout, const Nrrd *nin, Nrrd **nmapP, unsigned int bins,
     hist = (uint *)nhist->data;
     min = nhist->axis[0].min;
     max = nhist->axis[0].max;
+    if (min == max) {
+      /* like the "don't crash out" code below: min == max just means its
+      a constant array, and trying to do HEQ on that should not be an error.
+      If we didn't return here, we'd hit:
+         [nrrd] nrrdApply1DRegMap:
+         [nrrd] apply1DSetUp: (axis 0) domain min (0) not less than max (0)
+      which would likely be confusing for the user. */
+      airMopOkay(mop);
+      return 0;
+    }
   } else {
     /* for "smart" mode, we have to basically reimplement nrrdHisto, plus do some extra
        work while creating the histogram to look for bins incessantly hit with the exact
@@ -549,9 +561,9 @@ nrrdHistoEq(Nrrd *nout, const Nrrd *nin, Nrrd **nmapP, unsigned int bins,
     hist = (uint *)nhist->data;
     nhist->axis[0].size = bins;
     /* allocate the respect, steady, and last arrays */
-    respect = AIR_MALLOC(bins, uint);
-    steady = AIR_MALLOC(2 * bins, uint);
-    last = AIR_MALLOC(bins, double);
+    assert(respect = AIR_MALLOC(bins, uint));
+    assert(steady = AIR_MALLOC(2 * bins, uint));
+    assert(last = AIR_MALLOC(bins, double));
     airMopMem(mop, &respect, airMopAlways);
     airMopMem(mop, &steady, airMopAlways);
     airMopMem(mop, &last, airMopAlways);
@@ -560,8 +572,8 @@ nrrdHistoEq(Nrrd *nout, const Nrrd *nin, Nrrd **nmapP, unsigned int bins,
       airMopError(mop);
       return 1;
     }
-    /* steady[0 + 2*bii] == how many times has bin bii seen the same
-                            value i.e. last[bii]
+    /* steady[0 + 2*bii] == how many times has bin bii seen the same value
+                            i.e. last[bii]
        steady[1 + 2*bii] == bii (steady will be rearranged by qsort()) */
     for (uint bii = 0; bii < bins; bii++) {
       last[bii] = AIR_NAN;
@@ -573,12 +585,16 @@ nrrdHistoEq(Nrrd *nout, const Nrrd *nin, Nrrd **nmapP, unsigned int bins,
     NrrdRange *range = nrrdRangeNewSet(nin, nrrdBlind8BitRangeState);
     airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
     if (range->min == range->max) {
-      biffAddf(NRRD,
-               "%s: invalid min and max in nrrd.  "
-               "Min and max are equivalent (min,max = %g).",
-               me, range->min);
-      airMopError(mop);
-      return 1;
+      /* No, don't crash out.  It's fine; HEQ should just be a no-op in this case.
+       * biffAddf(NRRD,
+       *          "%s: invalid min and max in nrrd.  "
+       *          "Min and max are equivalent (min,max = %g).",
+       *          me, range->min);
+       * airMopError(mop);
+       * return 1;
+       */
+      airMopOkay(mop);
+      return 0;
     }
     min = range->min;
     max = range->max;
@@ -587,28 +603,35 @@ nrrdHistoEq(Nrrd *nout, const Nrrd *nin, Nrrd **nmapP, unsigned int bins,
       if (AIR_EXISTS(val)) {
         uint idx = airIndex(min, val, max, bins);
         ++hist[idx];
-#if 0
-        // pre-TeemV2 code:
-        if (AIR_EXISTS(last[idx])) {
-          steady[0 + 2 * idx] = (last[idx] == val ? 1 + steady[0 + 2 * idx] : 0);
-        }
-#endif
+        /* pre-TeemV2 code:
+         * if (AIR_EXISTS(last[idx])) {
+         *   steady[0 + 2 * idx] = (last[idx] == val ? 1 + steady[0 + 2 * idx] : 0);
+         * } */
         if (last[idx] == val) { // which implies last[idx] exists
           steady[0 + 2 * idx]++;
         }
         /* no else! Pre-TeemV2, there was effectively: steady[0 + 2 * idx] = 0
            here, which meant that all memory of an incessantly hit bin is lost if
-           any different value lands in the bin, which undermined the effectiveness
-           of all this "smart" processing */
+           any different value lands in the bin, which decreased the effectiveness
+           of all this "smart" processing.  Still, the *first* value to hit this
+           bin sets the precedent: if the first value is a value that later recurs
+           exactly, then we will (as intended) ignore occasional deviations from it
+           that also hit hit bin.  But we are not storing a history of values hitting
+           this bin and taking the mode, so we are not magically invariant w.r.t
+           reorderings of the input values: if it was a deviant who hit this bin
+           first, we will not record how often a constant value hit it later. The
+           pre-TeemV2 code was also not invariant w.r.t re-orderings: a periodic
+           deviant would limit the steady count to that period, instead of letting
+           it accumulate over the whole array. */
         last[idx] = val;
       }
     }
-    /*
-    for (uint ti = 0; ti < bins; ti++) {
-      fprintf(stderr, "!%s: pre-sort [%3u]: last=%g, steady=[%u %u]\n", __func__, ti,
-              last[ti], steady[0 + 2 * ti], steady[1 + 2 * ti]);
+    if (VERBUG) {
+      for (uint ti = 0; ti < bins; ti++) {
+        fprintf(stderr, "%s: pre-sort [%3u]: last=%g, steady=[%u %u]\n", __func__, ti,
+                last[ti], steady[0 + 2 * ti], steady[1 + 2 * ti]);
+      }
     }
-    */
     /* now sort the steady array; note the "2 *" */
     qsort(steady, bins, 2 * sizeof(uint), histoEqCompareSteady);
     /* we ignore some of the bins according to "smart" arg */
@@ -625,14 +648,16 @@ nrrdHistoEq(Nrrd *nout, const Nrrd *nin, Nrrd **nmapP, unsigned int bins,
           not have an effect if there is no region of constant value. */
         respect[steady[1 + 2 * bii]] = 0;
       }
-      /* printf("%s: disrespecting bin %d\n", me, steady[1+2*bii]); */
+      if (VERBUG) {
+        fprintf(stderr, "%s: disrespecting bin %d\n", me, steady[1 + 2 * bii]);
+      }
     }
-    /*
-    for (uint ti = 0; ti < bins; ti++) {
-      fprintf(stderr, "!%s: postsort [%3u]: steady=[%u %u] respect=%u\n", __func__, ti,
-              steady[0 + 2 * ti], steady[1 + 2 * ti], respect[ti]);
+    if (VERBUG) {
+      for (uint ti = 0; ti < bins; ti++) {
+        fprintf(stderr, "%s: postsort [%3u]: steady=[%u %u] respect=%u\n", __func__, ti,
+                steady[0 + 2 * ti], steady[1 + 2 * ti], respect[ti]);
+      }
     }
-    */
   }
 
   Nrrd *nmap = nrrdNew();
@@ -647,48 +672,63 @@ nrrdHistoEq(Nrrd *nout, const Nrrd *nin, Nrrd **nmapP, unsigned int bins,
   nmap->axis[0].max = max;
 
   /* integrate the histogram then normalize it */
+  /* TeemV2 fixes a long-standing problem in how "smart" was implemented: the ignored
+     (disrespected) bin caused a wripple in the value map. An ideal demo for "smart" is a
+     linear ramp -- interrupted by a brief flat segment -- sent through "unu gamma -g 2".
+     "unu heq -s 1" should be able to recover the linear ramp with its flat histogram,
+     while ignoring the spiked bin because of the flat segment. But the old code actually
+     ended up producing similar results with "unu heq -s 0" and "unu heq -s 1": in both
+     cases the output histogram had a depression around the spike. The long-standing
+     cleverness (as of svn r676 in 2002-08-16) of trying to avoid flat plots in the
+     integrated histogram (caused by smartness ignoring some bins) either didn't work
+     or made things worse, so that has been removed below. Instead, the simple strategy
+     is: when you are ignoring a histogram bin in the context of computing the the
+     histogram integral, pretend that the ignored bin as the same count as the last
+     non-ignored bin.  No need for a histogram integral post-process. */
+  uint respectedBinCount = 0;
   for (uint bii = 0; bii <= bins; bii++) {
     if (bii == 0) {
       ycoord[bii] = 0;
     } else {
-      ycoord[bii] = ycoord[bii - 1] + hist[bii - 1] * (smart ? respect[bii - 1] : 1);
-    }
-  }
-  /* if we've done smart, the integral will have little flat spots where we ignored hits
-     in the histogram.  That means the mapping will actually be lower at that value than
-     it should be.  In truth, we should be using an irregular mapping for this (and
-     disrepsected bins would lead to a pair of control points that are further apart in
-     the domain than elsewhere, because of the missing control points for at the
-     disrespected bins).  So we have to do this silliness to raise those control points
-     in the regular map (making a little linear ramp up, instead of leaving itflat). */
-  if (smart) {
-    /* there are bins+1 control points, with indices 0 to bins.
-       We'll fix control points 1 to bins-1.
-       ycoord[bii] is too low if hist[bii-1] was not respected (!respect[bii-1]) */
-    for (uint bii = 1; bii <= bins - 1; bii++) {
-      if (!respect[bii - 1]) {
-        uint lort, hirt;
-        /* lort and hirt will bracket the index of the bad control point
-           with points corresponding either to respected bins or the
-           endpoints of the histogram */
-        for (lort = bii; lort >= 1 && !respect[lort - 1]; lort--)
-          ;
-        for (hirt = bii; hirt < bins && !respect[hirt - 1]; hirt++)
-          ;
-        ycoord[bii] = AIR_AFFINE(lort, bii, hirt, ycoord[lort], ycoord[hirt]);
+      uint incr;
+      if (!smart || /* else we are smart and */ respect[bii - 1]) {
+        incr = hist[bii - 1];
+      } else {
+        // smart and !respect[bii - 1]
+        incr = respectedBinCount;
       }
+      ycoord[bii] = ycoord[bii - 1] + incr;
     }
-    /* the very last control point has to be handled differently */
-    if (!respect[bins - 1]) {
-      ycoord[bins] += ycoord[bins - 1] - ycoord[bins - 2];
+    if (smart && bii < bins && respect[bii]) {
+      // remember a respected bin count for next iter
+      respectedBinCount = hist[bii];
+    }
+    if (VERBUG) {
+      fprintf(stderr, "%s: (initial) ycoord[%u] = %g\n", me, bii, ycoord[bii]);
     }
   }
+  /* (removed attempted cleverness about avoiding flat spots in histogram integration) */
   /* rescale the histogram integration to span the original
      value range, and affect the influence of "amount" */
   for (uint bii = 0; bii <= bins; bii++) {
     ycoord[bii] = AIR_AFFINE(0.0, ycoord[bii], ycoord[bins], min, max);
     ycoord[bii] = AIR_AFFINE(0.0, amount, 1.0, AIR_AFFINE(0, bii, bins, min, max),
                              ycoord[bii]);
+  }
+  if (VERBUG) {
+    for (uint bii = 0; bii <= bins; bii++) {
+      fprintf(stderr, "%s: (rescale) ycoord[%u] = %g\n", me, bii, ycoord[bii]);
+    }
+  }
+  if (!AIR_EXISTS(ycoord[bins])) {
+    /* TeemV2 fixes a long-standing bug here: if the smartness ended up ignoring all the
+       bins that any any counts, then the ycoord[] array that started as all 0.0 will go
+       all NaN, and then user will be confused by:
+          [nrrd] nrrdApply1DRegMap:
+          [nrrd] apply1DSetUp: regular map nrrd has non-existent values
+       Like with the min==max cases: just call it done and return */
+    airMopOkay(mop);
+    return 0;
   }
 
   /* map the nrrd values through the normalized histogram integral */
@@ -697,17 +737,6 @@ nrrdHistoEq(Nrrd *nout, const Nrrd *nin, Nrrd **nmapP, unsigned int bins,
     airMopError(mop);
     return 1;
   }
-  /*
-  for (I=0; I<num; I++) {
-    val = nrrdDLookup[nin->type](nin->data, I);
-    if (AIR_EXISTS(val)) {
-      AIR_INDEX(min, val, max, bins, idx);
-      val = AIR_AFFINE(xcoord[idx], val, xcoord[idx+1],
-                       ycoord[idx], ycoord[idx+1]);
-    }
-    nrrdDInsert[nout->type](nout->data, I, val);
-  }
-  */
 
   /* if user is interested, set pointer to map nrrd,
      otherwise it will be nixed by airMop */
@@ -733,7 +762,7 @@ nrrdHistoEq(Nrrd *nout, const Nrrd *nin, Nrrd **nmapP, unsigned int bins,
     airMopError(mop);
     return 1;
   }
-
+#undef VERBUG
   airMopOkay(mop);
   return 0;
 }
