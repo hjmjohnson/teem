@@ -197,15 +197,6 @@ airDrandMT_r(airRandMTState *rng) {
   return result * (1.0 / 4294967295.0);
 }
 
-/* [0,1) w/ 53 bit precision (capacity of IEEE double precision) */
-double
-airDrandMT53_r(airRandMTState *rng) {
-  unsigned int a, b;
-  a = airUIrandMT_r(rng) >> 5;
-  b = airUIrandMT_r(rng) >> 6;
-  return (a * 67108864.0 + b) * (1.0 / 9007199254740992.0); /* by Isaku Wada */
-}
-
 #define GLOBAL_ALLOC                                                                    \
   if (!air__RandMTStateGlobal_allocated) {                                              \
     airRandMTStateGlobal = airRandMTStateNew(0);                                        \

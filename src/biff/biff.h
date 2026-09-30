@@ -52,13 +52,11 @@ extern "C" {
 /* ---- BEGIN non-NrrdIO */
 BIFF_EXPORT const int biffPresent;
 /* ---- END non-NrrdIO */
-BIFF_EXPORT void biffAdd(const char *key, const char *err);
 BIFF_EXPORT void biffAddf(const char *key, const char *errfmt, ...)
 #ifdef __GNUC__
   __attribute__((format(printf, 2, 3)))
 #endif
   ;
-BIFF_EXPORT void biffMaybeAdd(const char *key, const char *err, int useBiff);
 BIFF_EXPORT void biffMaybeAddf(int useBiff, const char *key, const char *errfmt, ...)
 #ifdef __GNUC__
   __attribute__((format(printf, 3, 4)))
@@ -66,8 +64,7 @@ BIFF_EXPORT void biffMaybeAddf(int useBiff, const char *key, const char *errfmt,
   ;
 BIFF_EXPORT char *biffGet(const char *key);
 /* ---- BEGIN non-NrrdIO */
-BIFF_EXPORT unsigned int biffCheck(const char *key);
-BIFF_EXPORT void biffMove(const char *destKey, const char *err, const char *srcKey);
+BIFF_EXPORT unsigned int biffCount(const char *key);
 BIFF_EXPORT void biffMovef(const char *destKey, const char *srcKey, const char *errfmt,
                            ...)
 #ifdef __GNUC__

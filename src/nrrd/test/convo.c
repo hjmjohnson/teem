@@ -27,7 +27,7 @@ const char *convoInfo = ("Good for convolution of two 2-D nrrd, "
 
 int
 convoFunc(Nrrd *nout, Nrrd *_nimg, Nrrd *_nmask, int renorm, int crop) {
-  char me[] = "convoFunc", err[AIR_STRLEN_MED + 1];
+  char me[] = "convoFunc";
   Nrrd *nimg, *nmask, *npad;
   airArray *mop;
   int E;
@@ -77,8 +77,7 @@ convoFunc(Nrrd *nout, Nrrd *_nimg, Nrrd *_nmask, int renorm, int crop) {
      is just a simple way of creating a nrrd with the correct dimensions */
   if (!E) E |= nrrdPad_va(npad, nimg, pmin, pmax, nrrdBoundaryPad, 0.0);
   if (E) {
-    sprintf(err, "%s: set-up problem", me);
-    biffMove(CONVO, me, NRRD);
+    biffMovef(CONVO, NRRD, "%s: set-up problem", me);
     airMopError(mop);
     return 1;
   }
@@ -145,8 +144,7 @@ convoFunc(Nrrd *nout, Nrrd *_nimg, Nrrd *_nmask, int renorm, int crop) {
     E = nrrdCopy(nout, npad);
   }
   if (E) {
-    sprintf(err, "%s: final crop/copy problem", me);
-    biffMove(CONVO, err, NRRD);
+    biffMovef(CONVO, NRRD, "%s: final crop/copy problem", me);
     airMopError(mop);
     return 1;
   }

@@ -21,9 +21,7 @@
 
 /*
 ** Tests:
-** biffAdd
 ** biffAddf
-** biffMove
 ** biffMovef
 ** biffGet
 ** biffDone
@@ -36,7 +34,7 @@
 int
 main(int argc, const char *argv[]) {
   const char *me;
-  char *tmp;
+  char *got;
   airArray *mop;
 
   AIR_UNUSED(argc);
@@ -44,34 +42,36 @@ main(int argc, const char *argv[]) {
   mop = airMopNew();
 
   /* HEY: the creation and comparison of these strings is not very
-     flexible, especially the hard-coded "good[]" strings */
-  biffAdd("axis", "the first error axis");
-  biffAdd("chard", "the first error chard");
-  biffAdd("chard", "the second error chard");
-  biffAdd("axis", "the second error axis");
-  biffAdd("chard", "the third error chard");
-  biffAdd("bingo", "zero-eth bingo message");
-  biffMove("bingo", NULL, "chard");
-  biffAdd("bingo", "the first error bingo");
-  biffAdd("bingo", "the second bll boo boo boo error bingo");
-  biffAdd("bingo", "the third error bingo");
-  biffAdd("axis", "the third error axis");
+     flexible, especially the hard-coded "want[]" strings */
+  biffAddf("axis", "the first error axis");
+  biffAddf("chard", "the first error chard");
+  biffAddf("chard", "the second error chard");
+  biffAddf("axis", "the second error axis");
+  biffAddf("chard", "the third error chard");
+  biffAddf("bingo", "zero-eth bingo message");
+  biffMovef("bingo", "chard", "moving chard->bingo");
+  biffAddf("bingo", "the first error bingo");
+  biffAddf("bingo", "the second bll boo boo boo error bingo");
+  biffAddf("bingo", "the third error bingo");
+  biffAddf("axis", "the third error axis");
   {
-    char good[] = "[bingo] the third error bingo\n"
+    char want[] = "[bingo] the third error bingo\n"
                   "[bingo] the second bll boo boo boo error bingo\n"
                   "[bingo] the first error bingo\n"
+                  "[bingo] moving chard->bingo\n"
                   "[bingo] [chard] the third error chard\n"
                   "[bingo] [chard] the second error chard\n"
                   "[bingo] [chard] the first error chard\n"
                   "[bingo] zero-eth bingo message\n";
-    tmp = biffGet("bingo");
-    airMopAdd(mop, tmp, airFree, airMopAlways);
+    got = biffGet("bingo");
+    fprintf(stderr, "!%s: biffGet(bingo) = <%s>\n", __func__, got);
+    airMopAdd(mop, got, airFree, airMopAlways);
 
     /* an ugly macro */
 #define COMPARE(N)                                                                      \
-  airMopAdd(mop, tmp, airFree, airMopAlways);                                           \
-  if (strcmp(tmp, good)) {                                                              \
-    fprintf(stderr, "%s: %d: #%s# != #%s#\n", me, N, tmp, good);                        \
+  airMopAdd(mop, got, airFree, airMopAlways);                                           \
+  if (strcmp(got, want)) {                                                              \
+    fprintf(stderr, "%s: %d: #got=(%s)# != #want=(%s)#\n", me, N, got, want);           \
     airMopError(mop);                                                                   \
     exit(1);                                                                            \
   }
@@ -80,27 +80,27 @@ main(int argc, const char *argv[]) {
   }
 
   {
-    char good[] = "";
-    tmp = biffGet("chard");
+    char want[] = "[chard] No information for this key!";
+    got = biffGet("chard");
     COMPARE(2);
   }
 
   {
-    char good[] = "[axis] the third error axis\n"
+    char want[] = "[axis] the third error axis\n"
                   "[axis] the second error axis\n"
                   "[axis] the first error axis\n";
-    tmp = biffGet("axis");
+    got = biffGet("axis");
     COMPARE(3);
   }
 
-  biffAdd("harold", "the first error harold");
-  biffAdd("harold", "the second error harold");
-  biffAdd("harold", "the third error harold");
+  biffAddf("harold", "the first error harold");
+  biffAddf("harold", "the second error harold");
+  biffAddf("harold", "the third error harold");
   {
-    char good[] = "[harold] the third error harold\n"
+    char want[] = "[harold] the third error harold\n"
                   "[harold] the second error harold\n"
                   "[harold] the first error harold\n";
-    tmp = biffGetDone("harold");
+    got = biffGetDone("harold");
     COMPARE(4);
   }
 
@@ -108,34 +108,34 @@ main(int argc, const char *argv[]) {
   biffDone("axis");
   biffDone("chard");
 
-  biffAdd("axis", "the first error axis");
-  biffAdd("axis", "the second error axis");
-  biffAdd("axis", "the third error axis");
-  biffAdd("axis", "the fourth error axis");
-  biffAdd("axis", "the fifth error axis");
+  biffAddf("axis", "the first error axis");
+  biffAddf("axis", "the second error axis");
+  biffAddf("axis", "the third error axis");
+  biffAddf("axis", "the fourth error axis");
+  biffAddf("axis", "the fifth error axis");
   {
-    char good[] = "[axis] the fifth error axis\n"
+    char want[] = "[axis] the fifth error axis\n"
                   "[axis] the fourth error axis\n"
                   "[axis] the third error axis\n"
                   "[axis] the second error axis\n"
                   "[axis] the first error axis\n";
-    tmp = biffGetDone("axis");
+    got = biffGetDone("axis");
     COMPARE(5);
   }
 
   biffAddf("test", "%s: this is a test of biffAddf %d %g", "me", 1, 4.2);
   {
-    char good[] = "[test] me: this is a test of biffAddf 1 4.2\n";
-    tmp = biffGetDone("test");
+    char want[] = "[test] me: this is a test of biffAddf 1 4.2\n";
+    got = biffGetDone("test");
     COMPARE(6);
   }
 
   biffAddf("test2", "%s: this is a test of biffAddf %d %g", "me", 1, 4.2);
   biffMovef("test3", "test2", "%s: testing biffMove %d.", "me", 1729);
   {
-    char good[] = "[test3] me: testing biffMove 1729.\n"
+    char want[] = "[test3] me: testing biffMove 1729.\n"
                   "[test3] [test2] me: this is a test of biffAddf 1 4.2\n";
-    tmp = biffGet("test3");
+    got = biffGet("test3");
     COMPARE(7);
   }
 

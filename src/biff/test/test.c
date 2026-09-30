@@ -53,20 +53,20 @@ main(void) {
   free(tmp);
   */
 
-  biffAdd("axis", "the first error axis");
-  biffAdd("axis", "the second error axis");
-  biffAdd("axis", "the third error axis");
-  biffAdd("axis", "the fourth error axis");
-  biffAdd("axis", "the fifth error axis");
+  biffAddf("axis", "the first error axis");
+  biffAddf("axis", "the second error axis");
+  biffAddf("axis", "the third error axis");
+  biffAddf("axis", "the fourth error axis");
+  biffAddf("axis", "the fifth error axis");
   printf("%s", (tmp = biffGet("axis")));
   free(tmp);
   biffDone("axis");
 
-  biffAdd("axo", "the first error axis");
-  biffAdd("axo", "the second error axis");
-  biffAdd("axo", "the third error axis");
-  biffAdd("axo", "the fourth error axis");
-  biffAdd("axo", "the fifth error axis");
+  biffAddf("axo", "the first error axis");
+  biffAddf("axo", "the second error axis");
+  biffAddf("axo", "the third error axis");
+  biffAddf("axo", "the fourth error axis");
+  biffAddf("axo", "the fifth error axis");
   printf("%s", (tmp = biffGetDone("axo")));
   free(tmp);
 

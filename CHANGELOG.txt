@@ -69,19 +69,21 @@ is some combination of reverse chronological (later changes described earlier in
 and ordering changes from most interesting/important to least so.  Search for "BUG" to
 see info about bugs fixed. Search for "API CHANGE" to see changes to the APIs of the
 libraries (in particular: biff, hest, unrrdu, bane, gage, seek, moss, and meet). Also
-noted are "ABI CHANGE"s (e.g. where a struct has changed size).  As part of assembling
-this change log for TeemV2, I opted to also include whatever I had written about changes
-for previous Teem releases, going back to Teem v1.5 in 2003.
+noted are "ABI CHANGE"s (e.g. where a struct has changed size), and "BEHAVIOR CHANGE"s
+where the API/ABI is unchanged, but the behavior of the function call (or unu command)
+has been updated.  As part of assembling this change log for TeemV2, I opted to also
+include whatever I had written about changes for previous Teem releases, as delineated
+by "=-=-=-=-=-=" markers, going all the way back to Teem v1.5 in 2003.
 
 Since March 2001, Teem code version control has been hosted on Sourceforge, which has
-been more or less reliable for more than a *25 years*.  Version control on Sourceforge
-has transitioned from using svn to using git, thanks to Hans Johnson.  The awful DevShare
-malware stuff that Sourceforge started (under new ownership) in 2012 was stopped (under
-different new ownership) in 2016, and their server reliability issues are fully resolved,
-as far as I can tell.  Teem code will continue to be hosted on Sourceforge for the time
-being, even after GitHub has subsumed the open source mindshare.  I have deep reservations
-about GitHub's corporate owner. Being a leaderless component of an AI platform has not
-improved Github's quality of service.
+been more or less reliable for more than a *25 years*.  In 2025 Hans Johnson did the
+annoying work of transitioning version control on Sourceforge from svn to git. The awful
+DevShare malware stuff that Sourceforge started (under new ownership) in 2012 was stopped
+(under different new ownership) in 2016, and their server reliability issues are fully
+resolved, as far as I can tell.  Teem code will continue to be hosted on Sourceforge for
+the time being, even after GitHub has subsumed the open source mindshare.  I have deep
+reservations about GitHub's corporate owner. Being a leaderless component of an AI
+platform has not improved Github's quality of service.
 
 ========= use of CMake and GNUmake =========
 

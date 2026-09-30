@@ -359,7 +359,6 @@ extern void *airRandMTStateNix_mop(void *);
 extern void airSrandMT_r(airRandMTState *state, unsigned int seed);
 extern double airDrandMT_r(airRandMTState *state); /* [0,1] */
 extern unsigned int airUIrandMT_r(airRandMTState *state);
-extern double airDrandMT53_r(airRandMTState *state); /* [0,1) */
 extern unsigned int airRandInt(unsigned int N);
 extern unsigned int airRandInt_r(airRandMTState *state, unsigned int N);
 extern void airSrandMT(unsigned int seed);
@@ -534,7 +533,6 @@ extern double airFastExp(double val);
 extern double airExp(double val);
 extern void airNormalRand(double *z1, double *z2);
 extern void airNormalRand_r(double *z1, double *z2, airRandMTState *state);
-extern void airShuffle(unsigned int *buff, unsigned int N, int perm);
 extern void airShuffle_r(airRandMTState *state, unsigned int *buff, unsigned int N,
                              int perm);
 extern double airCbrt(double);

@@ -146,7 +146,7 @@ encodingAscii_read(FILE *file, void *_data, size_t elNum, Nrrd *nrrd, NrrdIoStat
   I = 0;
   elSize = nrrdElementSize(nrrd);
   istore = nrrdIStore[nrrd->type];
-  conv = nrrdTypePrintfStr[nrrd->type];
+  conv = nrrdTypeConvSpec[nrrd->type];
   while (I < elNum) {
     int pret;
     char numbStr[AIR_STRLEN_SMALL + 1], stmp[2][AIR_STRLEN_SMALL + 1];

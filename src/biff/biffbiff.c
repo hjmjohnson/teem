@@ -155,23 +155,6 @@ msgAdd(const char *key) {
   return msg;
 }
 
-/*
- ******** biffAdd()
- *
- * Adds string `err` at key `key`, whether or not there are any existing messages there.
- * Since biffSet() was killed Wed Apr 20 11:11:51 EDT 2005, this has become the main biff
- * function (but later the more useful biffAddf really became the main biff function)
- */
-void
-biffAdd(const char *key, const char *err) {
-  biffMsg *msg;
-
-  msgStart();
-  msg = msgAdd(key);
-  biff__MsgAdd(msg, err);
-  return;
-}
-
 static void
 bAddVL(const char *key, const char *errfmt, va_list args) {
   biffMsg *msg;
@@ -195,20 +178,6 @@ biffAddf(const char *key, const char *errfmt, ...) {
   va_start(args, errfmt);
   bAddVL(key, errfmt, args);
   va_end(args);
-  return;
-}
-
-/*
- ******** biffMaybeAdd()
- *
- * wrapper around biffAdd() but doesn't actually do anything if !useBiff
- */
-void
-biffMaybeAdd(const char *key, const char *err, int useBiff) {
-
-  if (useBiff) {
-    biffAdd(key, err);
-  }
   return;
 }
 
@@ -272,12 +241,12 @@ biffGet(const char *key) {
 }
 
 /*
-******** biffCheck()
+******** biffCount()
 **
 ** sees how many messages there are for a given key;
 */
 unsigned int
-biffCheck(const char *key) {
+biffCount(const char *key) {
   biffMsg *msg;
 
   msgStart();
@@ -323,22 +292,6 @@ biffDone(const char *key) {
     msgFinish();
   }
 
-  return;
-}
-
-void
-biffMove(const char *destKey, const char *err, const char *srcKey) {
-  static const char me[] = "biffMove";
-  biffMsg *dest, *src;
-
-  msgStart();
-  dest = msgAdd(destKey);
-  src = msgFind(srcKey);
-  if (!src) {
-    fprintf(stderr, "%s: WARNING: key \"%s\" unknown\n", me, srcKey);
-    return;
-  }
-  biff__MsgMove(dest, src, err);
   return;
 }
 

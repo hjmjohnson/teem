@@ -1500,7 +1500,7 @@ int(*const nrrdFieldInfoParse[NRRD_FIELD_MAX + 1]) //
                                                                                         \
   /* if we got NULL, there's nothing to do */                                           \
   if (!(_out && _s && sep)) return 0;                                                   \
-  format = nrrdTypePrintfStr[ntype];                                                    \
+  format = nrrdTypeConvSpec[ntype];                                                     \
   out = (type *)_out;                                                                   \
   /* copy the input so that we don't change it */                                       \
   s = airStrdup(_s);                                                                    \

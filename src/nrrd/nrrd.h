@@ -904,7 +904,7 @@ NRRD_EXPORT const airEnum *const nrrdMetaDataCanonicalVersion;
 
 /******** arrays of things (poor-man's functions/predicates) */
 /* arraysNrrd.c */
-NRRD_EXPORT const char nrrdTypePrintfStr[NRRD_TYPE_MAX + 1][AIR_STRLEN_SMALL + 1];
+NRRD_EXPORT const char nrrdTypeConvSpec[NRRD_TYPE_MAX + 1][AIR_STRLEN_SMALL + 1];
 NRRD_EXPORT const size_t nrrdTypeSize[NRRD_TYPE_MAX + 1];
 NRRD_EXPORT const double nrrdTypeMin[NRRD_TYPE_MAX + 1];
 NRRD_EXPORT const double nrrdTypeMax[NRRD_TYPE_MAX + 1];

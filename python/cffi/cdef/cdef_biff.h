@@ -26,16 +26,13 @@ CFFI, within its many limitations, specifically lacking a C pre-processor
 /* ---- BEGIN non-NrrdIO */
 extern const int biffPresent;
 /* ---- END non-NrrdIO */
-extern void biffAdd(const char *key, const char *err);
 extern void biffAddf(const char *key, const char *errfmt, ...)
   ;
-extern void biffMaybeAdd(const char *key, const char *err, int useBiff);
 extern void biffMaybeAddf(int useBiff, const char *key, const char *errfmt, ...)
   ;
 extern char *biffGet(const char *key);
 /* ---- BEGIN non-NrrdIO */
-extern unsigned int biffCheck(const char *key);
-extern void biffMove(const char *destKey, const char *err, const char *srcKey);
+extern unsigned int biffCount(const char *key);
 extern void biffMovef(const char *destKey, const char *srcKey, const char *errfmt,
                            ...)
   ;

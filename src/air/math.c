@@ -167,42 +167,19 @@ airNormalRand_r(double *z1, double *z2, airRandMTState *state) {
 }
 
 /*
-******** airShuffle()
+******** airShuffle_r()
 **
+** (in a re-entrant way)
 ** generates a random permutation of integers [0..N-1] if perm is non-zero,
 ** otherwise, just fills buff with [0..N-1] in order
 **
 ** see http://en.wikipedia.org/wiki/Knuth_shuffle
 */
 void
-airShuffle(unsigned int *buff, unsigned int N, int perm) {
-  unsigned int i;
-
-  if (!(buff && N > 0)) {
-    return;
-  }
-
-  for (i=0; i<N; i++) {
-    buff[i] = i;
-  }
-  if (perm) {
-    unsigned int swp, tmp;
-    while (N > 1) {
-      swp = airRandInt(N);
-      N--;
-      tmp = buff[N];
-      buff[N] = buff[swp];
-      buff[swp] = tmp;
-    }
-  }
-}
-
-void
 airShuffle_r(airRandMTState *state,
              unsigned int *buff, unsigned int N, int perm) {
   unsigned int i;
 
-  /* HEY !!! COPY AND PASTE !!!! */
   if (!(buff && N > 0)) {
     return;
   }
@@ -220,7 +197,6 @@ airShuffle_r(airRandMTState *state,
       buff[swp] = tmp;
     }
   }
-  /* HEY !!! COPY AND PASTE !!!! */
 }
 
 double

@@ -824,7 +824,7 @@ extern const airEnum *const nrrdMetaDataCanonicalVersion;
 /* ---- END non-NrrdIO */
 /******** arrays of things (poor-man's functions/predicates) */
 /* arraysNrrd.c */
-extern const char nrrdTypePrintfStr[NRRD_TYPE_MAX + 1][AIR_STRLEN_SMALL + 1];
+extern const char nrrdTypeConvSpec[NRRD_TYPE_MAX + 1][AIR_STRLEN_SMALL + 1];
 extern const size_t nrrdTypeSize[NRRD_TYPE_MAX + 1];
 extern const double nrrdTypeMin[NRRD_TYPE_MAX + 1];
 extern const double nrrdTypeMax[NRRD_TYPE_MAX + 1];
