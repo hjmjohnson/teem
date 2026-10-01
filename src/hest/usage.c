@@ -113,6 +113,9 @@ hestPrintStr(FILE *file, size_t indent, size_t already, size_t width, const char
     airStrtrans(ws, '\t', ' ');
     // fprintf(stderr, "!%s:\nws[%u]=|%s|\n\n", __func__, wrdIdx, ws);
     size_t slws = strlen(ws);
+    if (!slws) {
+      continue; /* trailing separators yield an empty word; nothing to print */
+    }
     if (pos + 1 + slws <= width - !!bslash) {
       /* if this word would still fit on the current line */
       if (wrdIdx) fputc(' ', file);
