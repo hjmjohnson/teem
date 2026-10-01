@@ -549,6 +549,17 @@ miteDefOpacMatters --> miteDefaultOpacMatters
 
 ========= air =========
 
+• Wed Sep 30 11:48:06 2026 -0500 git commit 711a19e8
+API CHANGE (many removed, some rename)
+For TeemV2, want to clean up the APIs of libraries, to remove things that are not
+used in Teem and not serving a purpose that other things can satisfy, and make
+names more consistent (later commits will likely continue this effort)
+* air REMOVED (not used in Teem)
+  - double airDrandMT53_r(airRandMTState *state); /* [0,1) */
+    (not uniquely useful)
+  - void airShuffle(unsigned int *buff, unsigned int N, int perm);
+    (use the re-entrant airShuffle_r instead)
+
 • Sat Sep 26 10:17:27 2026 -0500 git commit 436dc5583
 BUG FIX thanks to Hans Johnson. Finally, how floating point numbers are
 printed by src/air/miscAir.c:airSinglePrintf(), and
@@ -1014,6 +1025,20 @@ an index I to be within valid indices [0...N-1], which is used
 for -b mirror with unu resample and unu pad
 
 ========= biff =========
+
+• Wed Sep 30 11:48:06 2026 -0500 git commit 711a19e8
+API CHANGE (many removed, some rename) (see above)
+* biff REMOVED (not used in Teem except for a test)
+  - extern void biffAdd(const char *key, const char *err);
+  - extern void biffMaybeAdd(const char *key, const char *err, int useBiff);
+  - extern void biffMove(const char *destKey, const char *err, const char *srcKey);
+  Teem has settled on the biffAddf, biffMaybeAddf, biffMovef variants that mimic
+  printf, and a string without conversion sequences can stand in for the
+  `const char *err` of these non-f functions
+* biff RENAMED:
+  - extern unsigned int biffCheck(const char *key) --> biffCount
+  because it returns the number of messages. Other Teem "Check" functions are validity
+  checkers, not counting anthing
 
 • Sun Nov 16 22:22:23 2025 -0600 git commit: d1472dcf
 BEHAVIOR CHANGE: internally, biff used to call airOneLinify on the string you passed to
@@ -1527,6 +1552,13 @@ should have been taking a const char * as a second arg (various files in other l
 updated to conform).
 
 ========= nrrd =========
+
+• Wed Sep 30 11:48:06 2026 -0500 git commit 711a19e8
+API CHANGE (many removed, some rename) (see above)
+* nrrd RENAMED:
+  - const char nrrdTypePrintfStr[NRRD_TYPE_MAX + 1][AIR_STRLEN_SMALL + 1] --> nrrdTypeConvSpec
+  because that's in here: printf conversion sequences. Student GLK honestly didn't
+  know the term "conversion sequence"
 
 • Wed Sep 30 05:14:30 2026 -0500 git commit 5547e1a5
 BUG FIXes and BEHAVIOR CHANGE in nrrdHistoEq ("unu heq")
