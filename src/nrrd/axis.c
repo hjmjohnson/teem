@@ -438,7 +438,8 @@ nrrdAxisInfoSet_va(Nrrd *nrrd, int axInfo, ...) {
         svec[ai][si] = dp[si];
       }
       for (si = nrrd->spaceDim; si < NRRD_SPACE_DIM_MAX; si++) {
-        /* callers pass spaceDim values per axis; nothing to read past them */
+        /* callers pass only spaceDim <= NRRD_SPACE_DIM_MAX values per axis so we
+           shouldn't read dp[] past that; NaN out the rest of the space vec */
         svec[ai][si] = AIR_NAN;
       }
       break;
