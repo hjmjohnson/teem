@@ -109,7 +109,9 @@ argstGo(int *tokenDone, hestArg *tharg, int *stateP, int icc, int vrbo) {
   /* hitting end of input is special enough to handle separately.  Note that
      the caller also makes the end of a string input (not just file input) into EOF */
   if (EOF == icc) {
-    int ret;
+    int ret = 2; /* sssh to "warning: ‘ret’ may be used uninitialized" with a value
+                    that signals an error, which will hopefully raise a red flag since
+                    there won't be a biff error if no case below matches */
     switch (*stateP) {
     case argstInside:
       // EOF ends the arg we've been building up, great: it is now done
