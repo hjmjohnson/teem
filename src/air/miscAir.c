@@ -17,25 +17,6 @@
   along with this library; if not, see <https://www.gnu.org/licenses/>.
 */
 
-/* Locale-independent numeric printing for airSinglePrintf; the API selection
-   must precede the first system-header include (air.h pulls in <stdio.h>).
-   BSD/macOS and Windows have printf-family *_l variants; glibc/musl lack
-   them, but their printf honors the uselocale() thread-local locale. */
-#if defined(__APPLE__) || defined(__FreeBSD__) || defined(__NetBSD__)                   \
-  || defined(__OpenBSD__) || defined(__DragonFly__)
-#  include <xlocale.h>
-#  define TEEM_HAS_PRINTF_L 1
-#elif defined(__linux__)
-#  ifndef _GNU_SOURCE
-#    define _GNU_SOURCE 1
-#  endif
-#  include <locale.h>
-#  define TEEM_HAS_USELOCALE 1
-#elif defined(_MSC_VER)
-#  include <locale.h>
-#  define TEEM_HAS_PRINTF_L_WIN 1
-#endif
-
 #include "air.h"
 #include "privateAir.h"
 /* timer functions */
@@ -47,37 +28,6 @@
 #  include <windows.h>
 #else
 #  include <sys/time.h>
-#endif
-
-#if defined(TEEM_HAS_PRINTF_L_WIN)
-/* _snprintf_l leaves the buffer unterminated and returns -1 when the output
-   does not fit; these restore the C99 snprintf contract that the rest of
-   nrrdSprint[] follows (always terminate, return the would-be length). */
-static int
-myVsnprintfCLoc(char *str, size_t strSize, const char *fmt, _locale_t cloc, va_list ap) {
-  va_list ap2;
-  int ret;
-  va_copy(ap2, ap);
-  ret = _vsnprintf_l(str, strSize, fmt, cloc, ap);
-  if (ret < 0) {
-    if (strSize) {
-      str[strSize - 1] = '\0';
-    }
-    ret = _vscprintf_l(fmt, cloc, ap2);
-  }
-  va_end(ap2);
-  return ret;
-}
-
-static int
-mySnprintfCLoc(char *str, size_t strSize, const char *fmt, _locale_t cloc, ...) {
-  va_list ap;
-  int ret;
-  va_start(ap, cloc);
-  ret = myVsnprintfCLoc(str, strSize, fmt, cloc, ap);
-  va_end(ap);
-  return ret;
-}
 #endif
 
 /*
@@ -273,27 +223,8 @@ airSinglePrintf(FILE *file, char *str, size_t strSize, const char *_fmt, ...) {
   int ret, isF, isD;
   const char *_p0, *_p1, *_p2, *_p3, *_p4, *_p5;
   va_list ap;
-#if defined(TEEM_HAS_PRINTF_L) || defined(TEEM_HAS_USELOCALE)
-  locale_t _aspCloc = (locale_t)air__CLocale();
-#elif defined(TEEM_HAS_PRINTF_L_WIN)
-  _locale_t _aspCloc = (_locale_t)air__CLocale();
-#endif
-#if defined(TEEM_HAS_USELOCALE)
-  /* swap this thread to the "C" numeric locale for the whole function;
-     restored at the single exit below */
-  locale_t _aspOld = _aspCloc ? uselocale(_aspCloc) : (locale_t)0;
-#endif
 
   va_start(ap, _fmt);
-#if defined(TEEM_HAS_PRINTF_L) || defined(TEEM_HAS_USELOCALE)                           \
-  || defined(TEEM_HAS_PRINTF_L_WIN)
-  /* cannot print locale-independently without the cached "C" locale: fail
-     (printf error convention) rather than risk a wrong decimal separator */
-  if (!_aspCloc) {
-    va_end(ap);
-    return -1;
-  }
-#endif
 
   /* look for unmodified floating point conversion sequences */
   _p0 = strstr(_fmt, "%e");
@@ -309,35 +240,10 @@ airSinglePrintf(FILE *file, char *str, size_t strSize, const char *_fmt, ...) {
      "is 3-character conv. seq."
      (but for TeemV2 we run with that type implication for "%g" and "%lg") */
   if (isF || isD) {
-#if defined(TEEM_HAS_PRINTF_L)
-#  define PRINT(F, S, C, V)                                                             \
-    ((F) /* */                                                                          \
-       ? fprintf_l((F), _aspCloc, (C), (V))                                             \
-       : snprintf_l((S), strSize, _aspCloc, (C), (V)))
-#elif defined(TEEM_HAS_PRINTF_L_WIN)
-#  define PRINT(F, S, C, V)                                                             \
-    ((F) /* */                                                                          \
-       ? _fprintf_l((F), (C), _aspCloc, (V))                                            \
-       : mySnprintfCLoc((S), strSize, (C), _aspCloc, (V)))
-#else
-#  define PRINT(F, S, C, V)                                                             \
-    ((F) /* */                                                                          \
-       ? fprintf((F), (C), (V))                                                         \
-       : snprintf((S), strSize, (C), (V)))
-#endif
-    /* the round-trip precision probe below must use the same "C" locale as PRINT,
-       so that the format it selects does not depend on the ambient LC_NUMERIC */
-#if defined(TEEM_HAS_PRINTF_L)
-#  define PROBE_SPRINT(B, BS, C, V) snprintf_l((B), (BS), _aspCloc, (C), (V))
-#  define PROBE_STRTOD(B)           strtod_l((B), NULL, _aspCloc)
-#elif defined(TEEM_HAS_PRINTF_L_WIN)
-#  define PROBE_SPRINT(B, BS, C, V) mySnprintfCLoc((B), (BS), (C), _aspCloc, (V))
-#  define PROBE_STRTOD(B)           _strtod_l((B), NULL, _aspCloc)
-#else
-/* TEEM_HAS_USELOCALE: this whole function already runs in the "C" locale */
-#  define PROBE_SPRINT(B, BS, C, V) snprintf((B), (BS), (C), (V))
-#  define PROBE_STRTOD(B)           strtod((B), NULL)
-#endif
+#define PRINT(F, S, C, V)                                                               \
+  ((F) /* */                                                                            \
+     ? fprintf((F), (C), (V))                                                           \
+     : snprintf((S), strSize, (C), (V)))
     double val0;
     const char *_conv;
     size_t fmtSize;
@@ -413,8 +319,8 @@ airSinglePrintf(FILE *file, char *str, size_t strSize, const char *_fmt, ...) {
         size_t buffSize = AIR_STRLEN_SMALL + 1;
         if (_p2) /* got "%g" intended for float */ {
           float fltval1, fltval0 = (float)val0;
-          PROBE_SPRINT(buff, buffSize, "%g", fltval0);
-          fltval1 = (float)PROBE_STRTOD(buff);
+          snprintf(buff, buffSize, "%g", fltval0);
+          sscanf(buff, "%f", &fltval1);
           if (fltval1 != fltval0) {
             /* "%g" by itself did NOT gave round-trip single-precision accuracy;
                assemble new format string with |%g|=2 --> |%.9g|=4 */
@@ -425,8 +331,8 @@ airSinglePrintf(FILE *file, char *str, size_t strSize, const char *_fmt, ...) {
           /* else "%g" gave round-trip single-precision accuracy; use `fmt` as is */
         } else /* _p5: got "%lg% intended for double */ {
           double val1;
-          PROBE_SPRINT(buff, buffSize, "%g", val0);
-          val1 = PROBE_STRTOD(buff);
+          snprintf(buff, buffSize, "%g", val0);
+          sscanf(buff, "%lf", &val1);
           if (val1 != val0) { /* SORRY COPY PASTA */
             shift2(conv + 3 /* first char after %lg */,
                    fmt + strlen(fmt) - 1 /* last char in `fmt` */);
@@ -443,27 +349,14 @@ airSinglePrintf(FILE *file, char *str, size_t strSize, const char *_fmt, ...) {
     } /* end of else !special */
     free(fmt);
 #undef PRINT
-#undef PROBE_SPRINT
-#undef PROBE_STRTOD
   } else {
     /* `!isF && !isD`: conversion sequence is either for float or double but something
        more specific like "%.17g" (which NOTE does not get the above special treatment of
        IEEE754 special values!s), or, it isn't for any kind of floating point value.
        We can use the given `_fmt` as is (no local allocation of `fmt`) */
-#if defined(TEEM_HAS_PRINTF_L)
-    ret = file ? vfprintf_l(file, _aspCloc, _fmt, ap) /* */
-               : vsnprintf_l(str, strSize, _aspCloc, _fmt, ap);
-#elif defined(TEEM_HAS_PRINTF_L_WIN)
-    ret = file ? _vfprintf_l(file, _fmt, _aspCloc, ap) /* */
-               : myVsnprintfCLoc(str, strSize, _fmt, _aspCloc, ap);
-#else
     ret = file ? vfprintf(file, _fmt, ap) : vsnprintf(str, strSize, _fmt, ap);
-#endif
   }
 
-#if defined(TEEM_HAS_USELOCALE)
-  uselocale(_aspOld);
-#endif
   va_end(ap);
   return ret;
 }
