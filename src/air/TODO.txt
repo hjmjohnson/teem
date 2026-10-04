@@ -4,11 +4,5 @@ An OS-general means of:
 
 Fix Windows implementation of airTime()
 
-fix airSinglePrintf to not put a space before double-type special values
-("%4s" hack has to go)
-
-complete fprintf/sprintf/printf stand-in: use trio?
-complete fscanf/sscanf stand-in
-
 Decide if air will have a general-purpose thread-safe progress indication
 scheme, or if this will be each library's responsibility
