@@ -462,11 +462,12 @@ AIR_EXPORT int airJSFRandSanity(void);
 /* ---- END non-NrrdIO */
 
 /* fpio.c (new TeemV2 floating point IO to support locale handling) */
-AIR_EXPORT char *airDecimalSeparatorLearn(char str[AIR_STRLEN_SMALL + 1]);
-AIR_EXPORT char *airFltToStr(char str[AIR_STRLEN_SMALL + 1], float val,
-                             const char *decisep);
-AIR_EXPORT char *airDblToStr(char str[AIR_STRLEN_SMALL + 1], double val,
-                             const char *decisep);
+AIR_EXPORT const char *airDecimalSeparatorLearn(char str[AIR_STRLEN_SMALL + 1]);
+AIR_EXPORT char *airFtoS(char str[AIR_STRLEN_SMALL + 1], float val, const char *decisep);
+AIR_EXPORT char *airDtoS(char str[AIR_STRLEN_SMALL + 1], double val,
+                         const char *decisep);
+AIR_EXPORT int airStoF(float *valP, const char *str, const char *decisep);
+AIR_EXPORT int airStoD(double *valP, const char *str, const char *decisep);
 
 /* changes for for TeemV2:
  *** airParseStrT() are no longer var-args; it was a mistaken way to enforce uniformity
