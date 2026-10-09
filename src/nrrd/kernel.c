@@ -3032,8 +3032,14 @@ KernelParseTMFInt(int *val, char *str) {
 int /* Biff: 1 */
 nrrdKernelParse(const NrrdKernel **kernelP, double *parm, const char *str_) {
   static const char me[] = "nrrdKernelParse";
+  char decibuff[ASP1_S];
+  const char *decisep;
   if (!(kernelP && parm && str_)) {
     biffAddf(NRRD, "%s: got NULL pointer", me);
+    return 1;
+  }
+  if (!(decisep = airDecimalSeparatorLearn(decibuff))) {
+    biffAddf(NRRD, "%s: couldn't learn locale's decimal separator", me);
     return 1;
   }
 
@@ -3069,7 +3075,7 @@ nrrdKernelParse(const NrrdKernel **kernelP, double *parm, const char *str_) {
       airMopAdd(mop, tmfStr[2], airFree, airMopAlways);
       airMopAdd(mop, tmfStr[3], airFree, airMopAlways);
       /* a TMF with a parameter: D,C,A,a */
-      if (1 != airSingleSscanf(tmfStr[3], "%lg", parm)) {
+      if (1 != airStoD(parm, tmfStr[3], decisep)) {
         biffAddf(NRRD, "%s: couldn't parse TMF parameter \"%s\" as double", me,
                  tmfStr[3]);
         airMopError(mop);
@@ -3157,7 +3163,7 @@ nrrdKernelParse(const NrrdKernel **kernelP, double *parm, const char *str_) {
     uint haveParm;
     for (haveParm = 0; haveParm < (*kernelP)->parmNum; haveParm++) {
       if (!pstr) break;
-      if (1 != airSingleSscanf(pstr, "%lg", parm + haveParm)) {
+      if (1 != airStoD(parm + haveParm, pstr, decisep)) {
         biffAddf(NRRD, "%s: trouble parsing \"%s\" as parameter[%u] (in \"%s\")", me,
                  pstr, haveParm, str_);
         airMopError(mop);
@@ -3232,11 +3238,17 @@ nrrdKernelSpecParse(NrrdKernelSpec *ksp, const char *str) {
 int /* Biff: 1 */
 nrrdKernelSpecSprint(char str_[AIR_STRLEN_SMALL + 1], const NrrdKernelSpec *ksp) {
   static const char me[] = "nrrdKernelSpecSprint";
+  char decibuff[ASP1_S], nbuff[ASP1_S];
+  const char *decisep;
   char *str = str_;
   size_t strSize = ASP1_S;
 
   if (!(str_ && ksp)) {
     biffAddf(NRRD, "%s: got NULL pointer", me);
+    return 1;
+  }
+  if (!(decisep = airDecimalSeparatorLearn(decibuff))) {
+    biffAddf(NRRD, "%s: couldn't learn locale's decimal separator", me);
     return 1;
   }
   if (strstr(ksp->kernel->name, "TMF")) {
@@ -3259,7 +3271,7 @@ nrrdKernelSpecSprint(char str_[AIR_STRLEN_SMALL + 1], const NrrdKernelSpec *ksp)
               ksp->kernel->name[10]);
     /* see if the single parm should be added on */
     if (0.0 != ksp->parm[0]) {
-      airSinglePrintf(NULL, str, strSize, ",%lg", ksp->parm[0]);
+      snprintf(str, strSize, ",%s", airDtoS(nbuff, ksp->parm[0], decisep));
       SN_INCR(str, strSize);
     }
   } else {
@@ -3273,7 +3285,7 @@ nrrdKernelSpecSprint(char str_[AIR_STRLEN_SMALL + 1], const NrrdKernelSpec *ksp)
     if (parmNum) {
       for (uint pi = p1st; pi < parmNum; pi++) {
         SN_COPY(str, strSize, pi == p1st ? ":" : ",");
-        airSinglePrintf(NULL, str, strSize, "%lg", ksp->parm[pi]);
+        airStrcpy(str, strSize, airDtoS(nbuff, ksp->parm[pi], decisep));
         SN_INCR(str, strSize);
       }
     }

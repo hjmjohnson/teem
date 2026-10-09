@@ -17,6 +17,8 @@ static const char *info
 
 int
 main(int argc, const char **argv) {
+  /* to debug how well we're doing C-locale-emulation */
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
   TH_SANITY;
   hestOpt *hopt = NULL;
   // mopParm means using the "self-mopping" hparm for hestParseOrExit
@@ -153,7 +155,8 @@ main(int argc, const char **argv) {
     }
     THPRINT_SOURCE("B", hopt, Bopi);
   }
-  airSinglePrintf(stdout, NULL, 0, "C=%g\n", C);
+  char nbuff[AIR_STRLEN_SMALL + 1];
+  printf("C=%s\n", airFtoS(nbuff, C, NULL));
   THPRINT_SOURCE("C", hopt, Copi);
 
   printf("D=[%d;%d;]\n", D[0], D[1]);

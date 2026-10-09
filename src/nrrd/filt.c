@@ -530,6 +530,8 @@ nrrdCheapMedian(Nrrd *_nout, const Nrrd *_nin, int pad, int mode, unsigned int r
     airMopError(mop);
     return 1;
   }
+  /* basic info handled by nrrdCopy above */
+
   NrrdRange *range = nrrdRangeNewSet(nin, nrrdBlind8BitRangeFalse);
   airMopAdd(mop, range, nrrdRangeNix_mop, airMopAlways);
   float *hist = AIR_CALLOC(bins, float);
@@ -560,6 +562,7 @@ nrrdCheapMedian(Nrrd *_nout, const Nrrd *_nin, int pad, int mode, unsigned int r
     airMopError(mop);
     return 1;
   }
+  /* basic info handled by nrrdCopy above */
 
   nrrdAxisInfoCopy(nout, nin, NULL, NRRD_AXIS_INFO_NONE);
   if (nrrdContentSet_va(nout, func, nin, "%d,%d,%g,%d", mode, radius, wght, bins)) {
@@ -567,7 +570,6 @@ nrrdCheapMedian(Nrrd *_nout, const Nrrd *_nin, int pad, int mode, unsigned int r
     airMopError(mop);
     return 1;
   }
-  /* basic info handled by nrrdCopy above */
 
   /* set _nout based on nout */
   if (pad) {

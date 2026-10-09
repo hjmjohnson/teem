@@ -92,7 +92,7 @@ fiberStopParse(void *ptr, const char *_str, char err[AIR_STRLEN_HUGE + 1]) {
       airMopError(mop);
       return 1;
     }
-    if (1 != sscanf(opt2, "%lg", info + 2)) {
+    if (1 != airSingleParse(opt2, "%lg", info + 2)) {
       snprintf(err, ASP1_H, "%s: couldn't parse aniso level \"%s\" as double", me, opt2);
       airMopError(mop);
       return 1;
@@ -108,7 +108,7 @@ fiberStopParse(void *ptr, const char *_str, char err[AIR_STRLEN_HUGE + 1]) {
   case tenFiberStopConfidence:
   case tenFiberStopMinLength:
     /* all of these take a single double */
-    if (1 != sscanf(opt, "%lg", info + 1)) {
+    if (1 != airSingleParse(opt, "%lg", info + 1)) {
       snprintf(err, ASP1_H, "%s: couldn't parse %s \"%s\" as double", me,
                airEnumStr(tenFiberStop, AIR_INT(info[0])), opt);
       airMopError(mop);

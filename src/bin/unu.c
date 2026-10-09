@@ -18,6 +18,7 @@
 */
 
 #include <teem/unrrdu.h>
+#include <locale.h>
 
 #define UNU "unu"
 
@@ -125,6 +126,9 @@ usage(const char *me, const hestParm *hparm, int alsoHidden) {
 int
 main(int argc, const char **argv) {
   int i, ret, listAll;
+
+  /* really first: setlocale if requested */
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
 
   /* parse environment variables first, in case they break nrrdDefault*
      or nrrdState* variables in a way that nrrdSanity() should see */

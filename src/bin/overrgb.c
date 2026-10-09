@@ -71,6 +71,9 @@ main(int argc, const char *argv[]) {
   NrrdResampleInfo *rinfo;
   NrrdIoState *nio = NULL;
 
+  /* really first: setlocale if requested */
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
+
   me = argv[0];
   mop = airMopNew();
   hparm = hestParmMopNew();
@@ -122,7 +125,7 @@ main(int argc, const char *argv[]) {
     return 1;
   }
   /* HEY copied to unrrdu/quantize.c */
-  if (!(!strcmp(gammaS, "srgb") || 1 == sscanf(gammaS, "%lf", &_gamma))) {
+  if (!(!strcmp(gammaS, "srgb") || 1 == airSingleParse(gammaS, "%lf", &_gamma))) {
     fprintf(stderr,
             "%s: gamma \"%s\" neither \"srgb\" nor "
             "parseable as double",

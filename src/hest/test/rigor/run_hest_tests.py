@@ -208,7 +208,7 @@ def test_list(args):
             expected={
                 'n': 99,
                 'n.src': SRC_DF,
-                'x': 1.0,
+                'x': 1.5,
                 'x.src': SRC_DF,
                 # note: The default string value _is_ the default string,
                 # without any tokenization or quoting
@@ -238,7 +238,7 @@ def test_list(args):
             argv='-n 7 -s world',
             expected={
                 'n': 7,
-                'x': 1.0,
+                'x': 1.5,
                 'x.src': SRC_DF,
                 's': 'world',
                 'b': False,
@@ -345,7 +345,7 @@ def test_list(args):
                 'n.src': SRC_RF,
                 's': 'from-file',
                 's.src': SRC_RF,
-                'x': 1.0,
+                'x': 1.5,
                 'x.src': SRC_DF,
                 'b': False,
                 'b.src': SRC_DF,

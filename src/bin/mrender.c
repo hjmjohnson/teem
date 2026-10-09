@@ -404,6 +404,9 @@ main(int argc, const char *argv[]) {
   airArray *mop;
   double gmc, turn, eye[3], eyedist;
 
+  /* really first: setlocale if requested */
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
+
   me = argv[0];
   mop = airMopNew();
   hparm = hestParmMopNew();

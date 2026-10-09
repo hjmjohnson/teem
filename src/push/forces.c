@@ -363,7 +363,7 @@ pushEnergySpecParse(pushEnergySpec *ensp, const char *_str) {
     if (!pstr) {
       break;
     }
-    if (1 != sscanf(pstr, "%lg", &pval)) {
+    if (1 != airSingleParse(pstr, "%lg", &pval)) {
       biffAddf(PUSH, "%s: trouble parsing \"%s\" as double (in \"%s\")", me, _pstr,
                _str);
       airMopError(mop);

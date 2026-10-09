@@ -151,7 +151,7 @@ parseSingleB(void *_out, const char *str, hest__PPair *hpp) {
 #define PARSE_1_ARGS void *out, const char *str, hest__PPair *hpp
 #define PARSE_1_BODY(typstr, format)                                                    \
   if (!(out && str && hpp)) return 1;                                                   \
-  int ret = (1 != airSingleSscanf(str, format, out));                                   \
+  int ret = (1 != airSingleParse(str, format, out));                                    \
   if (ret) {                                                                            \
     snprintf(hpp->err, AIR_STRLEN_HUGE + 1, "couldn't parse \"%s\" (from %s) as %s",    \
              str, airEnumStr(hestSource, hpp->hopt->source), typstr);                   \

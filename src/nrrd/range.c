@@ -249,7 +249,7 @@ nrrdRangePercentileFromStringSet(NrrdRange *range, const Nrrd *nin, const char *
     } else {
       percwant = AIR_FALSE;
     }
-    if (1 != airSingleSscanf(mmStr, "%lf", &val)) {
+    if (1 != airSingleParse(mmStr, "%lf", &val)) {
       biffAddf(NRRD, "%s: couldn't parse \"%s\" for %s", me, !mmIdx ? _minStr : _maxStr,
                !mmIdx ? "minimum" : "maximum");
       airMopError(mop);

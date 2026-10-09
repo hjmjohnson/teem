@@ -19,103 +19,171 @@
 
 #include <locale.h>
 #include <string.h>
+#include <sys/errno.h>
 #include <teem/air.h>
 
 /*
 ** Tests:
-** airSingleSscanf, airParseStrD, and airSinglePrintf use '.' as the decimal
-** separator under a decimal-comma LC_NUMERIC locale, and round-trip.
+** airDecimalSeparatorLearn to learn whatever the decimal separator is in
+** various locales that we try (with 1 or 2 byte non-'.' decimal separators),
+** and then making sure airDtoS, airFtoS, airStoD, airStoF all use '.' as
+** the decimal separator, despite the locale using otherwise.
 ** Returns 77 (skip) when no decimal-comma locale is installed.
 */
 
 int
 main(int argc, const char *argv[]) {
   const char *me = argv[0];
-  /* locales whose LC_NUMERIC uses ',' as the decimal separator */
-  const char *commaLocales[] = {"de_DE.UTF-8", "fr_FR.UTF-8", "nl_NL.UTF-8",
-                                "it_IT.UTF-8"};
+  /*         locale // (bytes) decimal separator, at least on a Mac */
+  const char *funLocale[] = {
+    "de_DE.UTF-8", // (1) ","
+    "fr_FR.UTF-8", // (1) ","
+    "nl_NL.UTF-8", // (1) ","
+    "it_IT.UTF-8", // (1) ","
+#if 0
+    "fa_AF.UTF-8",  // (2) "٫" == Arabic Decimal Separator
+    "zh_TW.Big5",   // (2) "．" == full width full stop (?) but not in UTF-8
+    "zh_CN.eucCN",  // (2) (same)
+    "zh_CN.GB2312", // (2) \"#.\"
+#endif
+  };
   unsigned int li, tested = 0;
   int failed = 0;
+  char decibuff[AIR_STRLEN_SMALL + 1];
+  const char *decisep;
 
   AIR_UNUSED(argc);
 
-  for (li = 0; li < AIR_CAST(unsigned int, sizeof(commaLocales) / sizeof(char *));
-       li++) {
+  for (li = 0; li < AIR_CAST(unsigned int, sizeof(funLocale) / sizeof(char *)); li++) {
     double dval = -1.0;
     float fval = -1.0f;
-    if (!setlocale(LC_NUMERIC, commaLocales[li])) {
+    int pret, cls;
+    if (!setlocale(LC_NUMERIC, funLocale[li])) {
+      printf("%s: setlocale(LC_NUMERIC, \"%s\") failed (not installed?)\n", me,
+             funLocale[li]);
       continue; /* locale not installed here */
     }
     tested++;
 
-    /* sanity: confirm the locale really is decimal-comma, else it proves nothing */
+    /* sanity: confirm locale's decimal separator isn't '.' (else not useful test) */
     if (1 == sscanf("0.878906", "%lf", &dval) && dval > 0.5) {
-      /* platform's sscanf ignored the comma locale; skip this one */
-      continue;
+      printf("%s: \"%s\" accepts '.' as decimal separator; boring\n", me, funLocale[li]);
+      continue; /* platform's sscanf ignored the comma locale; skip this one */
     }
 
+    if (!(decisep = airDecimalSeparatorLearn(decibuff))) {
+      fprintf(stderr, "%s: oops couldn't learn %s's decimal separator", me,
+              funLocale[li]);
+      return 1;
+    }
+    errno = 0;
     dval = -1.0;
-    if (1 != airSingleSscanf("0.878906", "%lf", &dval)
-        || !AIR_IN_OP(0.878, dval, 0.879)) {
+#define STR_(X)  #X
+#define STR(x)   STR_(x)
+#define F_MID_LO 0.733f
+#define F_MID_V  0.734375
+#define F_MID_HI 0.735f
+#define F_MID_S  STR(F_MID_V)
+    /* a value inside double range but past (32-bit) FLT_MAX should
+      (like sscanf does) be parsed (as a float) as infinity,
+       but set errno to ERANGE ("Math result not representable") */
+#define F_BIG_LO 4.0e49
+#define F_BIG_V  4.5e49
+#define F_BIG_HI 5.0e49
+#define F_BIG_S  STR(F_BIG_V)
+    if (!(1 == airStoD(&dval, F_MID_S, decisep) //
+          && 0 == errno                         //
+          && AIR_IN_OP(F_MID_LO, dval, F_MID_HI))) {
       fprintf(stderr,
-              "%s: airSingleSscanf(\"0.878906\",%%lf) = %.9g under %s (want 0.878906)\n",
-              me, dval, commaLocales[li]);
+              "%s: oops (in %s) airStoD(\"" F_MID_S "\") = %.17g (want " F_MID_S
+              ") with errno=%d (want 0)\n",
+              me, funLocale[li], dval, errno);
       failed = 1;
     }
-    if (1 != airSingleSscanf("3.5", "%f", &fval) || !AIR_IN_OP(3.4f, fval, 3.6f)) {
-      fprintf(stderr, "%s: airSingleSscanf(\"3.5\",%%f) = %.9g under %s (want 3.5)\n",
-              me, (double)fval, commaLocales[li]);
-      failed = 1;
-    }
-    /* a value inside double range but past FLT_MAX must fail a "%f" parse
-       rather than silently narrow to infinity */
-    fval = -1.0f;
-    if (0 != airSingleSscanf("1e300", "%f", &fval)) {
-      fprintf(
-        stderr,
-        "%s: airSingleSscanf(\"1e300\",%%f) succeeded = %.9g under %s (want fail)\n", me,
-        (double)fval, commaLocales[li]);
-      failed = 1;
-    }
-    dval = -1.0;
-    if (1 != airSingleSscanf("1e300", "%lf", &dval) || !AIR_IN_OP(1e299, dval, 1e301)) {
+    errno = 0;
+    fval = -1.f;
+    if (!(1 == airStoF(&fval, F_MID_S, decisep) //
+          && 0 == errno                         //
+          && AIR_IN_OP(F_MID_LO, fval, F_MID_HI))) {
       fprintf(stderr,
-              "%s: airSingleSscanf(\"1e300\",%%lf) = %.9g under %s (want 1e300)\n", me,
-              dval, commaLocales[li]);
+              "%s: oops (in %s) airStoF(\"" F_MID_S "\") = %.9g (want " F_MID_S
+              ") with errno=%d (want 0)\n",
+              me, funLocale[li], fval, errno);
+      failed = 1;
+    }
+    errno = 0;
+    fval = 0.f;
+    pret = airStoF(&fval, F_BIG_S, decisep);
+    cls = airFPClass_f(fval);
+    if (!(1 == pret && airFP_POS_INF == cls && ERANGE == errno)) {
+      fprintf(stderr,
+              "%s: oops (in %s) airStoF(\"" F_BIG_S "\") returned %d (want 1), "
+              "with fval==%.9g in class %s (want %s), and "
+              "errno==%d (want ERANGE=%d)\n",
+              me, funLocale[li], pret, //
+              fval, airEnumStr(airFPClass_ae, cls),
+              airEnumStr(airFPClass_ae, airFP_POS_INF), //
+              errno, ERANGE);
+      failed = 1;
+    }
+    /* the same big value should parse to a finite double */
+    errno = 0;
+    dval = 0.;
+    pret = airStoD(&dval, F_BIG_S, decisep);
+    cls = airFPClass_d(dval);
+    if (!(1 == pret && airFP_POS_NORM == cls && 0 == errno
+          && AIR_IN_OP(F_BIG_LO, dval, F_BIG_HI))) {
+      fprintf(stderr,
+              "%s: oops (in %s) airStoD(\"" F_BIG_S "\") returned %d (want 1), "
+              "with dval==%.17g in class %s (want %s), and "
+              "errno==%d (want 0)\n",
+              me, funLocale[li], pret, //
+              dval, airEnumStr(airFPClass_ae, cls),
+              airEnumStr(airFPClass_ae, airFP_POS_NORM), //
+              errno);
       failed = 1;
     }
     dval = -1.0;
-    if (1 != airParseStrD(&dval, "0.878906", " ", 1) || !AIR_IN_OP(0.878, dval, 0.879)) {
-      fprintf(stderr, "%s: airParseStrD(\"0.878906\") = %.9g under %s (want 0.878906)\n",
-              me, dval, commaLocales[li]);
+    if (1 != airParseStrD(&dval, F_MID_S, " ", 1)
+        || !AIR_IN_OP(F_MID_LO, dval, F_MID_HI)) {
+      fprintf(stderr,
+              "%s: oops (in %s) airParseStrD(\"" F_MID_S "\") = %.9g (want " F_MID_S
+              ")\n",
+              me, funLocale[li], dval);
       failed = 1;
     }
-    /* write side: airSinglePrintf must emit '.' (never the locale's ',')
-       and the output must round-trip through airSingleSscanf */
-    {
-      char buff[AIR_STRLEN_SMALL + 1];
+    /* write side: airSinglePrintf must emit '.' (whatever the locale's decimal
+       separator) and the output must round-trip through airSingleSscanf */
+    if (1) {
+      char buff[AIR_STRLEN_SMALL + 1] = "";
       double back = -1.0;
-      if (airSinglePrintf(NULL, buff, sizeof(buff), "%lg", 0.878906) < 0
-          || strchr(buff, ',')                        /* */
-          || 1 != airSingleSscanf(buff, "%lf", &back) /* */
-          || !AIR_IN_OP(0.878, back, 0.879)) {
-        fprintf(stderr, "%s: airSinglePrintf(0.878906) = \"%s\" -> %.9g under %s\n", me,
-                buff, back, commaLocales[li]);
+      int wlen = AIR_INT(strlen(F_MID_S)), ret1 = -1, ret2 = -1;
+      if (!(wlen == (ret1 = airSinglePrintf(NULL, buff, sizeof(buff), "%lg", F_MID_V))
+            && strchr(buff, '.')                                /* */
+            && 1 == (ret2 = airSingleParse(buff, "%lf", &back)) /* */
+            && AIR_IN_OP(F_MID_LO, back, F_MID_HI)              /* */
+            )) {
+        fprintf(stderr,
+                "%s: oops (in %s) airSinglePrintf(%%lg, \"" F_MID_S "\") "
+                "-(%d vs %d)-> \"%s\" -(%d)-> %.17g\n",
+                me, funLocale[li], /* */
+                ret1, wlen, buff, ret2, back);
         failed = 1;
       }
     }
   }
 
+  /* being a good citizen, fwiw */
   setlocale(LC_NUMERIC, "C");
 
   if (!tested) {
-    fprintf(stderr, "%s: no decimal-comma locale installed; skipping\n", me);
+    fprintf(stderr, "%s: oops no non-'.'-decisep locale installed; skipping\n", me);
     return 77;
   }
   if (failed) {
     return 1;
   }
-  printf("%s: locale-independent parse verified under %u decimal-comma locale(s)\n", me,
-         tested);
+  printf("%s: locale-independent parse verified in %u non-'.'-decisep locale%s\n", me,
+         tested, 1 == tested ? "" : "s");
   return 0;
 }

@@ -27,6 +27,9 @@ main(int argc, const char **argv) {
                 "As usual, any implied functionality is purely coincidental, "
                 "especially since this is the output of a unicyclist.";
 
+  /* to debug how we're doing C-locale-emulation */
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
+
   airArray *mop = airMopNew();
   hestParm *hparm = hestParmMopNew();
   airMopAdd(mop, hparm, hestParmFree_mop, airMopAlways);
@@ -42,6 +45,8 @@ main(int argc, const char **argv) {
   hestOptAdd_1_String(&hopt, "out", "file", &out, "output.ppm", "PPM image output");
   int v;
   hestOptAdd_1v_Int(&hopt, "v,verbose", "level", &v, "0", "verbosity level");
+  double dbl;
+  hestOptAdd_1_Double(&hopt, "d,double", "val", &dbl, "1.5", "an FP value");
   char *blah[3];
   hestOptAdd_3_String(&hopt, "blah", "input", blah, "a b c", "input image file(s)");
   int norenorm;
@@ -89,6 +94,7 @@ main(int argc, const char **argv) {
   printf("(err = %s)\n", err ? err : "(null)");
   printf("  v = %d\n", v);
   printf("  flag glag = %d %d\n", flag, glag);
+  airSinglePrintf(airStdout(), NULL, 0, "dbl = %lg\n", dbl);
   printf("out = \"%s\"\n", out ? out : "(null)");
   printf("blah = \"%s\" \"%s\" \"%s\"\n", blah[0], blah[1], blah[2]);
   // printf("option = \"%s\"\n", option ? option : "(null)");

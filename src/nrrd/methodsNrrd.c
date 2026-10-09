@@ -160,7 +160,7 @@ nrrdBoundarySpecParse(NrrdBoundarySpec *bspec, const char *_str,
       airMopError(mop);
       return 1;
     }
-    if (1 != airSingleSscanf(parm, "%lg", &(bspec->padValue))) {
+    if (1 != airSingleParse(parm, "%lg", &(bspec->padValue))) {
       biffAddf(NRRD, "%s: couldn't parse \"%s\" as double", me, parm);
       airMopError(mop);
       return 1;
@@ -365,6 +365,7 @@ nrrdIoStateInit(NrrdIoState *nio) {
     nio->oldData = NULL;
     nio->oldDataSize = 0;
     nio->headerDoubleExcessPrecision = nrrdDefaultIoHeaderDoubleExcessPrecision;
+    nio->decisep = airDecimalSeparatorLearn(nio->decibuff);
     nio->format = nrrdFormatUnknown;
     nio->encoding = nrrdEncodingUnknown;
   }

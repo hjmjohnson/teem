@@ -22,6 +22,8 @@ static const char *info = "stand-alone flag (kind 1)";
 
 int
 main(int argc, const char **argv) {
+  /* to debug how well we're doing C-locale-emulation */
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
   TH_SANITY;
   hestOpt *opt = NULL;
   hestParm *hparm = hestParmNew();

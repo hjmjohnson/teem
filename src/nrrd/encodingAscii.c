@@ -132,8 +132,8 @@ encodingAscii_read(FILE *file, void *_data, size_t elNum, Nrrd *nrrd, NrrdIoStat
   static const char me[] = "encodingAscii_read";
   /* fprintf(stderr, "!%s: hi -------------------- \n", me); */
   int (*istore)(void *v, int j);
-  char *valPtr;
-  const char *conv;
+  char *valPtr, decibuff[AIR_STRLEN_SMALL + 1];
+  const char *conv, *decisep = NULL;
   size_t I, elSize;
 
   AIR_UNUSED(nio);
@@ -141,6 +141,14 @@ encodingAscii_read(FILE *file, void *_data, size_t elNum, Nrrd *nrrd, NrrdIoStat
     biffAddf(NRRD, "%s: can't read nrrd type %s from %s", me,
              airEnumStr(nrrdType, nrrdTypeBlock), nrrdEncodingAscii->name);
     return 1;
+  }
+  if (nrrdTypeDouble == nrrd->type || nrrdTypeFloat == nrrd->type) {
+    /* our ultimate reliance on sscanf requires us to learn (once) this locale's decimal
+       separator, so we know how to convert '.' to that in strings as a pre-process */
+    if (!(decisep = airDecimalSeparatorLearn(decibuff))) {
+      biffAddf(NRRD, "%s: couldn't learn decimal separator in this locale", me);
+      return 1;
+    }
   }
   valPtr = _data; /* initial pointer to single value, to point to first value */
   I = 0;
@@ -157,11 +165,17 @@ encodingAscii_read(FILE *file, void *_data, size_t elNum, Nrrd *nrrd, NrrdIoStat
     }
     if (nrrd->type >= nrrdTypeInt) {
       /* can parse value directly into this type */
-      pret = airSingleSscanf(numbStr, conv, valPtr);
+      if (nrrdTypeDouble == nrrd->type) {
+        pret = airStoD(AIR_VOIDP(valPtr), numbStr, decisep);
+      } else if (nrrdTypeFloat == nrrd->type) {
+        pret = airStoF(AIR_VOIDP(valPtr), numbStr, decisep);
+      } else {
+        pret = airSingleParse(numbStr, conv, valPtr);
+      }
     } else {
       /* sscanf value into an int first (but why?) */
       int tmpint;
-      pret = airSingleSscanf(numbStr, "%d", &tmpint);
+      pret = airSingleParse(numbStr, "%d", &tmpint);
       if (1 == pret) {
         istore(valPtr, tmpint);
       }

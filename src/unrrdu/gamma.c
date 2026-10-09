@@ -70,7 +70,7 @@ unu_gammaMain(int argc, const char **argv, const char *me, const hestParm *hparm
   } else {
     srgb = AIR_FALSE;
     forward = AIR_FALSE;
-    if (1 != airSingleSscanf(GammaS, "%lf", &Gamma)) {
+    if (1 != airSingleParse(GammaS, "%lf", &Gamma)) {
       fprintf(stderr,
               "%s: couldn't parse gamma \"%s\" as double, and wasn't either "
               "\"srgb\" or \"1/srgb\"\n",

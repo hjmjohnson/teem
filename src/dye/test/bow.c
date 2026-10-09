@@ -45,7 +45,7 @@ main(int argc, char *argv[]) {
     fprintf(stderr, "%s: couldn't parse \"%s\" as int\n", me, resS);
     exit(1);
   }
-  if (1 != sscanf(scS, "%f", &sc)) {
+  if (1 != airSingleParse(scS, "%f", &sc)) {
     fprintf(stderr, "%s: couldn't parse \"%s\" as float\n", me, scS);
     exit(1);
   }

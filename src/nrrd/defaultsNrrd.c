@@ -254,7 +254,7 @@ nrrdGetenvDouble(double *val, const char **envStr, const char *envVar) {
   if (!env) {
     return -1;
   }
-  if (1 != airSingleSscanf(env, "%lf", &tmp)) {
+  if (1 != airSingleParse(env, "%lf", &tmp)) {
     return AIR_FALSE;
   } else {
     *val = tmp;

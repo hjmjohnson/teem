@@ -103,10 +103,9 @@ typedef unsigned long long airULLong;
  */
 #define AIR_STRLEN_SMALL 128u
 /* SMALL has to be big enough to hold:
-   - printed value of size_t and
-   - ptrdiff_t, line of text that
-   - should contain file format "magic"
-*/
+   - printed value of size_t and ptrdiff_t
+   - printf'ed value of any double via %.17g (which ensures 64-bit accuracy)
+   - line of text long enough to contain input file format "magic" */
 #define AIR_STRLEN_MED   256u
 #define AIR_STRLEN_LARGE 512u
 #define AIR_STRLEN_HUGE  1024u
@@ -461,7 +460,12 @@ AIR_EXPORT int airJSFRandSanity(void);
 
 /* ---- END non-NrrdIO */
 
-/* fpio.c (new TeemV2 floating point IO to support locale handling) */
+/* fpio.c: API NEW TeemV2 locale-compensating floating point number IO, to emulate
+   running in the "C"-locale (only '.' produced as decimal separator on output,
+   and '.' assumed in input), no matter the actual locale set while these are called.
+   The long comment at the top of fpio.c gives history/rationale for these functions,
+   and the decision that all of TeemV2 should emulate running under "C"-locale,
+   henceforth called "C-locale-emulation" */
 AIR_EXPORT const char *airDecimalSeparatorLearn(char str[AIR_STRLEN_SMALL + 1]);
 AIR_EXPORT char *airFtoS(char str[AIR_STRLEN_SMALL + 1], float val, const char *decisep);
 AIR_EXPORT char *airDtoS(char str[AIR_STRLEN_SMALL + 1], double val,
@@ -469,7 +473,10 @@ AIR_EXPORT char *airDtoS(char str[AIR_STRLEN_SMALL + 1], double val,
 AIR_EXPORT int airStoF(float *valP, const char *str, const char *decisep);
 AIR_EXPORT int airStoD(double *valP, const char *str, const char *decisep);
 
-/* changes for for TeemV2:
+/* API CHANGES for TeemV2:
+ *** airSingleSscanf renamed to airSingleParse (it never deserved to be named with
+ *   anything like sscanf), and its floating-point parsing smarts were pushed down
+ *   into new locale-compensating airStoF and airStoD functions (above).
  *** airParseStrT() are no longer var-args; it was a mistaken way to enforce uniformity
  *   across parsers for different types, but it was really only airParseStrE (for
  *   parsing airEnum values) that needed it.  Then airParseStrS sneakily used it for
@@ -498,7 +505,7 @@ AIR_EXPORT int airStoD(double *valP, const char *str, const char *decisep);
  *                                                         *unsigned int);
  */
 /* parseAir.c */
-AIR_EXPORT int airSingleSscanf(const char *str, const char *fmt, void *ptr);
+AIR_EXPORT int airSingleParse(const char *str, const char *cnv, void *ptr);
 AIR_EXPORT const airEnum *const airBool;
 AIR_EXPORT unsigned int airParseStrB(int *out, const char *s, const char *ct,
                                      unsigned int n);
@@ -520,6 +527,11 @@ AIR_EXPORT unsigned int airParseStrF(float *out, const char *s, const char *ct,
                                      unsigned int n);
 AIR_EXPORT unsigned int airParseStrD(double *out, const char *s, const char *ct,
                                      unsigned int n);
+/* (new for TeemV2: the Fdecisep and Ddecisep variants) */
+AIR_EXPORT unsigned int airParseStrFdecisep(float *out, const char *s, const char *ct,
+                                            const char *decisep, unsigned int n);
+AIR_EXPORT unsigned int airParseStrDdecisep(double *out, const char *s, const char *ct,
+                                            const char *decisep, unsigned int n);
 AIR_EXPORT unsigned int airParseStrC(char *out, const char *s, const char *ct,
                                      unsigned int n);
 AIR_EXPORT unsigned int airParseStrS(char **out, const char *s, const char *ct,
@@ -582,6 +594,7 @@ AIR_EXPORT const int airTeemReleaseDone;
 AIR_EXPORT const char *const airTeemReleaseDate;
 AIR_EXPORT void airTeemVersionSprint(char buff[AIR_STRLEN_SMALL + 1]);
 /* ---- BEGIN non-NrrdIO */
+AIR_EXPORT void airSetLocaleFromEnvOrExit(const char *me, FILE *fverb);
 AIR_EXPORT void airTeemVersionPrintAndExit(const char *pfx);
 /* ---- END non-NrrdIO */
 AIR_EXPORT void *airNull(void);
@@ -772,6 +785,15 @@ AIR_EXPORT void airMopSingleOkay(airArray *arr, void *ptr);
 #define AIR_NAN     (airFloatNaN.f)
 #define AIR_POS_INF (airFloatPosInf.f)
 #define AIR_NEG_INF (airFloatNegInf.f)
+
+/*
+******** TEEM_SET_LOCALE_ENV
+**
+** For debugging purposes, programs like unu can switch,
+** via `setlocale(LC_NUMERIC, lstr)` to the locale `lstr`
+** named in this environment variable, as soon as they start.
+*/
+#define TEEM_SET_LOCALE_ENV "TEEM_SET_LOCALE"
 
 /* NrrdIO-hack-002 */ /* simpler AIR_EXISTS for NrrdIO */
 /* ---- BEGIN non-NrrdIO */

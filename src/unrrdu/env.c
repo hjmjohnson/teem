@@ -231,6 +231,22 @@ unu_envMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
   }
   fprintf(out, "\n");
 
+  {
+    char *locenv;
+    fprintf(out, "%s: ", TEEM_SET_LOCALE_ENV);
+    locenv = getenv(TEEM_SET_LOCALE_ENV);
+    if (locenv) {
+      fprintf(out,
+              "is set to %s **********************\n"
+              "   ==> already called setlocale(LC_NUMERIC, %s)\n",
+              locenv, locenv);
+    } else {
+      fprintf(out, "is NOT set\n"
+                   "   ==> did NOT setlocale(LC_NUMERIC)\n");
+    }
+    fprintf(out, "\n");
+  }
+
   fprintf(out, "%s: ", UNRRDU_TEEM_KVP_HISTORY_TRACE_ENV);
   if (getenv(UNRRDU_TEEM_KVP_HISTORY_TRACE_ENV)) {
     fprintf(out, "is set (to what doesn't matter) **********************\n"
@@ -311,10 +327,9 @@ unu_envMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
    *           "the type of the output result, when one hasn't been "
    *           "explicitly requested.",
    *           hparm->columns);
-   *   envEnum(out, nrrdType, nrrdEnvVarStateMeasureHistoType, nrrdStateMeasureHistoType,
-   *           "nrrdStateMeasureHistoType",
-   *           "Output type for most measurements of histograms, when one "
-   *           "hasn't been explicitly requested",
+   *   envEnum(out, nrrdType, nrrdEnvVarStateMeasureHistoType,
+   * nrrdStateMeasureHistoType, "nrrdStateMeasureHistoType", "Output type for most
+   * measurements of histograms, when one " "hasn't been explicitly requested",
    *           hparm->columns); */
   envBool(out,
           nrrdEnvVarStateAlwaysSetContent,

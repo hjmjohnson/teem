@@ -40,7 +40,7 @@ main(int argc, char *argv[]) {
   char *me = argv[0];
   double max;
   uint NN;
-  if (3 != argc || 1 != sscanf(argv[1], "%lg", &max)
+  if (3 != argc || 1 != airSingleParse(argv[1], "%lg", &max)
       || 1 != sscanf(argv[2], "%u", &NN)) {
     fprintf(stderr, "usage: %s <max> <N> \n", me);
     exit(1);

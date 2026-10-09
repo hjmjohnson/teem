@@ -66,8 +66,8 @@ main(int argc, char *argv[]) {
   }
 
   if (3
-      != (sscanf(minS, "%lf", &min) + sscanf(stepS, "%lf", &step)
-          + sscanf(maxS, "%lf", &max))) {
+      != (airSingleParse(minS, "%lf", &min) + airSingleParse(stepS, "%lf", &step)
+          + airSingleParse(maxS, "%lf", &max))) {
     fprintf(stderr,
             "%s: couldn't parse min \"%s\", step \"%s\", "
             "or max \"%s\" as doubles\n",

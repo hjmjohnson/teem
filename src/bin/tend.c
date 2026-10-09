@@ -25,6 +25,9 @@ int
 main(int argc, const char **argv) {
   int i, ret;
 
+  /* really first: setlocale if requested */
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
+
   /* parse environment variables first, in case they break nrrdDefault*
      or nrrdState* variables in a way that nrrdSanity() should see */
   nrrdDefaultGetenv();

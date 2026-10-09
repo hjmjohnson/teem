@@ -53,10 +53,9 @@ typedef signed long long airLLong;
  */
 #define AIR_STRLEN_SMALL 128u
 /* SMALL has to be big enough to hold:
-   - printed value of size_t and
-   - ptrdiff_t, line of text that
-   - should contain file format "magic"
-*/
+   - printed value of size_t and ptrdiff_t
+   - printf'ed value of any double via %.17g (which ensures 64-bit accuracy)
+   - line of text long enough to contain input file format "magic" */
 #define AIR_STRLEN_MED   256u
 #define AIR_STRLEN_LARGE 512u
 #define AIR_STRLEN_HUGE  1024u
@@ -385,7 +384,22 @@ extern double airJSFRandNormal_d(airJSFRand *jsf);
 extern void airJSFRandNormal2_d(airJSFRand *jsf, double val[2]);
 extern int airJSFRandSanity(void);
 /* ---- END non-NrrdIO */
-/* changes for for TeemV2:
+/* fpio.c: API NEW TeemV2 locale-compensating floating point number IO, to emulate
+   running in the "C"-locale (only '.' produced as decimal separator on output,
+   and '.' assumed in input), no matter the actual locale set while these are called.
+   The long comment at the top of fpio.c gives history/rationale for these functions,
+   and the decision that all of TeemV2 should emulate running under "C"-locale,
+   henceforth called "C-locale-emulation" */
+extern const char *airDecimalSeparatorLearn(char str[AIR_STRLEN_SMALL + 1]);
+extern char *airFtoS(char str[AIR_STRLEN_SMALL + 1], float val, const char *decisep);
+extern char *airDtoS(char str[AIR_STRLEN_SMALL + 1], double val,
+                         const char *decisep);
+extern int airStoF(float *valP, const char *str, const char *decisep);
+extern int airStoD(double *valP, const char *str, const char *decisep);
+/* API CHANGES for TeemV2:
+ *** airSingleSscanf renamed to airSingleParse (it never deserved to be named with
+ *   anything like sscanf), and its floating-point parsing smarts were pushed down
+ *   into new locale-compensating airStoF and airStoD functions (above).
  *** airParseStrT() are no longer var-args; it was a mistaken way to enforce uniformity
  *   across parsers for different types, but it was really only airParseStrE (for
  *   parsing airEnum values) that needed it.  Then airParseStrS sneakily used it for
@@ -414,7 +428,7 @@ extern int airJSFRandSanity(void);
  *                                                         *unsigned int);
  */
 /* parseAir.c */
-extern int airSingleSscanf(const char *str, const char *fmt, void *ptr);
+extern int airSingleParse(const char *str, const char *cnv, void *ptr);
 extern const airEnum *const airBool;
 extern unsigned int airParseStrB(int *out, const char *s, const char *ct,
                                      unsigned int n);
@@ -436,6 +450,11 @@ extern unsigned int airParseStrF(float *out, const char *s, const char *ct,
                                      unsigned int n);
 extern unsigned int airParseStrD(double *out, const char *s, const char *ct,
                                      unsigned int n);
+/* (new for TeemV2: the Fdecisep and Ddecisep variants) */
+extern unsigned int airParseStrFdecisep(float *out, const char *s, const char *ct,
+                                            const char *decisep, unsigned int n);
+extern unsigned int airParseStrDdecisep(double *out, const char *s, const char *ct,
+                                            const char *decisep, unsigned int n);
 extern unsigned int airParseStrC(char *out, const char *s, const char *ct,
                                      unsigned int n);
 extern unsigned int airParseStrS(char **out, const char *s, const char *ct,
@@ -495,6 +514,7 @@ extern const int airTeemReleaseDone;
 extern const char *const airTeemReleaseDate;
 extern void airTeemVersionSprint(char buff[AIR_STRLEN_SMALL + 1]);
 /* ---- BEGIN non-NrrdIO */
+extern void airSetLocaleFromEnvOrExit(const char *me, FILE *fverb);
 extern void airTeemVersionPrintAndExit(const char *pfx);
 /* ---- END non-NrrdIO */
 extern void *airNull(void);
@@ -653,6 +673,13 @@ extern void airMopSingleOkay(airArray *arr, void *ptr);
 ** bit-patterns which signify positive and negative infinity.  With
 ** the NaNs, however, they are only one of many possible
 ** representations.
+*/
+/*
+******** TEEM_SET_LOCALE_ENV
+**
+** For debugging purposes, programs like unu can switch,
+** via `setlocale(LC_NUMERIC, lstr)` to the locale `lstr`
+** named in this environment variable, as soon as they start.
 */
 /* Gone in TeemV2: size-specific AIR_EXISTS_F, AIR_EXISTS_D, AIR_ISNAN_F macros */
 /*

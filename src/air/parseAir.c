@@ -71,55 +71,58 @@ const airEnum *const airBool = &bool_ae;
 
 /* NOTE: see info in air.h about TeemV2 changes to all things airType and airParse */
 
+/*
+******** airSingleParse
+TeemV2 API CHANGE: airSingleSscanf renamed airSingleParse
+This has always described itself as a stand-in for sscanf, as long as there is exactly
+one conversion sequence in `fmt`, but that was always wildly aspirational: it was never
+close to handling otherise general format strings, nor did it need to be so, for how it
+is used within Teem. Thus the "f" of "Sscanf" had to go, and at that point it a simpler
+rename made sense, hence airSingleParse, and the second arg changed from `fmt` to `cnv`.
+
+While airSinglePrintf as been changed to only do special floating-point handling with %g
+and %lg (no longer %e %le %f %lf), here we keep acting on all six of these conversion
+sequences, because on the scanning/parsing side, the difference never mattered anyway.
+The variety of conversion sequences with sscanf exists for parity with printf, but sscanf
+only cares whether it is saving to float or double.
+
+ALSO: BEHAVIOR CHANGE For TeemV2 as of Oct 2026 revisit: when being asked to parse a
+float (via %e/%f/%g) or double (via %le/%lf/%lg), this is just a wrapper around airStoF
+or airStoD, but with the expense of re-learning the decimal separator each time its
+called, which means that:
+ (1) noticing special values is no longer via (case-insensitive) SUBSTRING SEARCH
+     for "nan" (which meant "banana" parsed to NaN), "-inf", or "inf", but rather:
+     A (case-insensitive) MATCH with "nan", "-inf", or "inf".
+ (2) This function is exactly as locale-compensating as are airStoF/airStoD.
+     All non-'.'-decimal-seperator cleverness pushed down into those functions.
+IF YOU HAVE BEEN USING airSingleSscanf->airSingleParse to parse double or floats,
+YOU SHOULD PROBABLY USE airStoF/airStoD directly, after a single call to
+airDecimalSeparatorLearn, so that that cost is amortized not repeatedly incurred!
+The value of parsing a size_t in C89 code is still here and possibly useful.
+v . v . v . v . v . v . v . v . v . v . v . v . v . v . v . v . v . v . v . v . v . v
+Use within Teem of airSingleParse for FP vals should be minimized or eliminated.
+^ ' ^ ' ^ ' ^ ' ^ ' ^ ' ^ ' ^ ' ^ ' ^ ' ^ ' ^ ' ^ ' ^ ' ^ ' ^ ' ^ ' ^ ' ^ ' ^ ' ^ ' ^
+*/
 int
-airSingleSscanf(const char *str, const char *fmt, void *ptr) {
-  char *tmp;
-  double val;
+airSingleParse(const char *str, const char *cnv, void *ptr) {
   int ret;
 
-  if (!(str && fmt && ptr)) {
+  if (!(str && cnv && ptr)) {
     return EOF;
   }
-  if (!strcmp(fmt, "%e") || !strcmp(fmt, "%f") || !strcmp(fmt, "%g")
-      || !strcmp(fmt, "%le") || !strcmp(fmt, "%lf") || !strcmp(fmt, "%lg")) {
-    tmp = airStrdup(str);
-    if (!tmp) {
-      return EOF;
-    }
-    airToLower(tmp);
-    if (strstr(tmp, "nan")) {
-      val = (double)AIR_NAN;
-    }
-    /* ---- BEGIN non-NrrdIO */
-    else if (strstr(tmp, "-pi")) {
-      val = -AIR_PI;
-    } else if (strstr(tmp, "pi")) {
-      val = AIR_PI;
-    }
-    /* ---- END non-NrrdIO */
-    else if (strstr(tmp, "-inf")) {
-      val = (double)AIR_NEG_INF;
-    } else if (strstr(tmp, "inf")) {
-      val = (double)AIR_POS_INF;
+  if (!strcmp(cnv, "%e") || !strcmp(cnv, "%f") || !strcmp(cnv, "%g")
+      || !strcmp(cnv, "%le") || !strcmp(cnv, "%lf") || !strcmp(cnv, "%lg")) {
+    char decibuff[AIR_STRLEN_SMALL + 1];
+    const char *decisep = airDecimalSeparatorLearn(decibuff);
+    if (cnv[1] == 'l') {
+      /* `ptr` points to a double */
+      ret = airStoD(ptr, str, decisep);
     } else {
-      /* nothing special matched; pass it off to sscanf() */
-      /* (save setlocale here) */
-      ret = sscanf(str, fmt, ptr);
-      /* (return setlocale here) */
-      free(tmp);
-      return ret;
+      /* `ptr` points to a float */
+      ret = airStoF(ptr, str, decisep);
     }
-    /* else we matched "nan", "-inf", or "inf"; now set val accordingly */
-    if (fmt[1] == 'l') {
-      /* we were given a double pointer */
-      *((double *)(ptr)) = val;
-    } else {
-      /* we were given a float pointer */
-      *((float *)(ptr)) = AIR_FLOAT(val);
-    }
-    free(tmp);
-    return 1;
-  } else if (!strcmp(fmt, "%zu")) {
+    return ret;
+  } else if (!strcmp(cnv, "%zu")) {
     /* its a size_t */
     size_t tsz = 0;        /* tmp size_t */
     const char *chh = str; /* char here */
@@ -155,7 +158,7 @@ airSingleSscanf(const char *str, const char *fmt, void *ptr) {
     return ret;
   } else {
     /* not a float, double, or size_t, let sscanf handle it */
-    return sscanf(str, fmt, ptr);
+    return sscanf(str, cnv, ptr); /* as part of airSingleParse */
   }
 }
 
@@ -187,10 +190,20 @@ airParseStrB(int *out, const char *_s, const char *ct, unsigned int n) {
   return n;
 }
 
-#define PARSE_STR_ARGS(type) type *out, const char *_s, const char *ct, unsigned int n
-#define PARSE_STR_BODY(format)                                                          \
+/* With the TeemV2 addition of decisep, wanted to keep the PARSE_STR_BODY macro
+mostly as is, but also be able to tweak it to call airStoF or aairStoD with a passed
+decisep. This is a bit like a switch statement inside the pre-processor.
+The same trick is used in frustratingly similar code in nrrd/parseNrrd.c */
+#define CONC(A, B)                  A##_##B
+#define PFUNC_OTH(FORMAT, DECISEP)  airSingleParse(word, (FORMAT), out + i)
+#define PFUNC_FLT(FORMAT, DECISEP)  airStoF(out + i, word, (DECISEP))
+#define PFUNC_DBL(FORMAT, DECISEP)  airStoD(out + i, word, (DECISEP))
+#define PFUNC(WUT, FORMAT, DECISEP) CONC(PFUNC, WUT)(FORMAT, DECISEP)
+
+#define PARSE_STR_ARGS(TYPE) TYPE *out, const char *_s, const char *ct, unsigned int n
+#define PARSE_STR_BODY(WUT, FORMAT, DECISEP)                                            \
   unsigned int i;                                                                       \
-  char *tmp, *s, *last;                                                                 \
+  char *word, *s, *last;                                                                \
                                                                                         \
   /* if we got NULL, there's nothing to do */                                           \
   if (!(out && _s && ct)) return 0;                                                     \
@@ -200,12 +213,14 @@ airParseStrB(int *out, const char *_s, const char *ct, unsigned int n) {
                                                                                         \
   /* keep calling airStrtok() until we have everything */                               \
   for (i = 0; i < n; i++) {                                                             \
-    tmp = airStrtok(i ? NULL : s, ct, &last);                                           \
-    if (!tmp) {                                                                         \
+    int pret;                                                                           \
+    word = airStrtok(i ? NULL : s, ct, &last);                                          \
+    if (!word) {                                                                        \
       free(s);                                                                          \
       return i;                                                                         \
     }                                                                                   \
-    if (1 != airSingleSscanf(tmp, format, out + i)) {                                   \
+    pret = PFUNC(WUT, FORMAT, DECISEP);                                                 \
+    if (1 != pret) {                                                                    \
       free(s);                                                                          \
       return i;                                                                         \
     }                                                                                   \
@@ -226,48 +241,71 @@ airParseStrB(int *out, const char *_s, const char *ct, unsigned int n) {
 */
 unsigned int
 airParseStrH(PARSE_STR_ARGS(short)) {
-  PARSE_STR_BODY("%hd")
+  PARSE_STR_BODY(OTH, "%hd", NULL)
 }
 
 unsigned int
 airParseStrUH(PARSE_STR_ARGS(unsigned short)) {
-  PARSE_STR_BODY("%hu")
+  PARSE_STR_BODY(OTH, "%hu", NULL)
 }
 
 unsigned int
 airParseStrI(PARSE_STR_ARGS(int)) {
-  PARSE_STR_BODY("%d")
+  PARSE_STR_BODY(OTH, "%d", NULL)
 }
 
 unsigned int
 airParseStrUI(PARSE_STR_ARGS(unsigned int)) {
-  PARSE_STR_BODY("%u")
+  PARSE_STR_BODY(OTH, "%u", NULL)
 }
 
 unsigned int
 airParseStrL(PARSE_STR_ARGS(long int)) {
-  PARSE_STR_BODY("%ld")
+  PARSE_STR_BODY(OTH, "%ld", NULL)
 }
 
 unsigned int
 airParseStrUL(PARSE_STR_ARGS(unsigned long int)) {
-  PARSE_STR_BODY("%lu")
+  PARSE_STR_BODY(OTH, "%lu", NULL)
 }
 
 unsigned int
 airParseStrZ(PARSE_STR_ARGS(size_t)) {
-  PARSE_STR_BODY("%zu")
+  PARSE_STR_BODY(OTH, "%zu", NULL)
 }
 
 unsigned int
 airParseStrF(PARSE_STR_ARGS(float)) {
-  PARSE_STR_BODY("%f")
+  /* will use airSingleParse which wastefully re-learns decisep */
+  PARSE_STR_BODY(OTH, "%f", NULL)
 }
 
 unsigned int
 airParseStrD(PARSE_STR_ARGS(double)) {
-  PARSE_STR_BODY("%lf")
+  /* will use airSingleParse which wastefully re-learns decisep */
+  PARSE_STR_BODY(OTH, "%lf", NULL)
 }
+
+/* For TeemV2: the non-decisep-aware functions above stay as is,
+   but we also make variants that can re-use an already learned decisep. */
+unsigned int
+airParseStrFdecisep(float *out,
+                    const char *_s,
+                    const char *ct,
+                    const char *decisep,
+                    unsigned int n) {
+  PARSE_STR_BODY(FLT, "%f", decisep)
+}
+
+unsigned int
+airParseStrDdecisep(double *out,
+                    const char *_s,
+                    const char *ct,
+                    const char *decisep,
+                    unsigned int n) {
+  PARSE_STR_BODY(DBL, "%lf", decisep)
+}
+
 #undef PARSE_STR_ARGS
 #undef PARSE_STR_BODY
 
