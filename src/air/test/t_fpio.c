@@ -44,7 +44,7 @@ main(int argc, const char *argv[]) {
       "                              https://en.wikipedia.org/wiki/GB_2312, or\n"
       "\"\" for no explicit call to setlocale().\n"
       "For a fun time, run:\n"
-      "   locale -a | xargs -n 1 -J %% test/t_fpio %% -1 -1 |& grep decisep | sort\n\n");
+      "   locale -a | xargs -n 1 -I %% test/t_fpio %% -1 -1 |& grep decisep | sort\n\n");
     return 1;
   }
   const char *localestr = argv[1];
