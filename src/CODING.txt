@@ -16,7 +16,7 @@ But first some quick notes about Python coding, currently in teem/python/cffi:
 ============ Basic C code formatting
 Example function:
 
-unsigned int
+unsigned int /* Biff: nope */
 nrrdSpaceOriginGetExample(const Nrrd *nrrd, double vector[NRRD_SPACE_DIM_MAX]) {
   static const char me[] = "nrrdSpaceOriginGetExample";
   unsigned int sdi, ret;
@@ -38,20 +38,22 @@ nrrdSpaceOriginGetExample(const Nrrd *nrrd, double vector[NRRD_SPACE_DIM_MAX]) {
 Note:
 * No tabs, ever. (why: no two editors necessarily show them the same)
 * Two spaces per level of indentation
-* In function definition (and only in definition), the function name
-starts a new line (why: makes it trivial to use grep or ack to
-identify which source file contains the function definition, as with
-"ack ^nrrdLoad")
+* After the function qualifiers and return type, and before the function name on the
+  next line is space for Biff annotations; see biff/0-README.md. Annotations are part
+  of all Teem code except for air and biff libraries.
+* In function definition (and only in definition), the function name starts a new line
+  (why: makes it trivial to use grep or ack to identify which source file contains the
+  function definition, as with `ack ^nrrdLoad`)
 * opening brace *not* on its own line
 * closing brace gets its own line, except for if/else
 * braces around a branch even if there is only one statement
-(why: there will likely eventually be more than one statement, even
-if only for debugging)
-* single blank line between function variable declaration/initialiation
-and function code.  Blank lines between distinct stages of a function
-computation are nice too (like a paragraph break).
+  (why: there will likely eventually be more than one statement, even if only for
+  debugging)
+* single blank line between function variable declaration/initialiation and function
+  code.  Blank lines between distinct stages of a function computation are nice too
+  (like a paragraph break).
 * No trailing white-space. Changes in it are easy to make, and generate only
-noise in diffs. Google "trailing white space" for further info and tips.
+  noise in diffs. Google "trailing white space" for further info and tips.
 
 Other code formatting points:
 
@@ -264,6 +266,23 @@ real object-oriented language, with methods wrapping foo-related functions.
 
 ============ Coding functions
 
+* As of Oct 2026 Teem seeks to works the same regardless of the locale it is running
+under. All C programs start running in the "C" locale which, like the "en_US" locale,
+uses '.' as the decimal separator. Later calls to `setlocale` can make ',' or
+something else for the decimal separator, which changes how printf and sscanf work.
+As of TeemV2, the goal is that all Teem functions act as though they're still under
+the "C" locale ("C-locale-emulation"). Read through the long comment at the top
+of src/air/fpio.c to understand the rationale and the functions available for this.
+But the consequence of this is that Teem code can't just use printf or sscanf, or
+any other function that depends on locale if it is doing any I/O with floating point
+values: they have to use code that implements C-locale-emulation.  Much of Teem
+already used its own functions like airSinglePrintf and airSingleParse
+(née airSingleSscanf) for FP I/O, and now those functions have been upgraded to
+do C-locale-emulation (the more efficient alternative is airDecimalSeparatorLearn
+before airSto{F,D} or air{F,D}toS), but that was done in a someone adhoc way.
+Now, Teem coding has to be more diligent about all FP I/O, and consistently forego
+the convenience of calling printf or sscanf directly.
+
 * Following the point about "object-oriented" code above, make an effort to
 logically associate functions with existing structs in a way that reflects how
 you would attach methods to objects.
@@ -310,8 +329,9 @@ http://my.cdash.org/index.php?project=Teem
 but this has not been updated with a correct source checkout and GLK has never
 been able to figure out who set this up, in order to get it fixed or updated.
 
-* The tests in teem/Testing are slowly accumulating.  Much of the effort in
-ongoing Teem development should be in creating and strengthening tests.
+* The tests in teem/tests are slowly accumulating.  Much of the effort in ongoing Teem
+development should be in creating and strengthening tests, either the CTest tests in
+teem/tests/ctest, or the new zshell-based scripts in teem/tests/zet
 
 * Prior to TeemV2, Teem is 99.9% ANSI C89. The code that goes into NrrdIO should
 remain as close as possible to C89, hopefully not straying further than these:
@@ -572,6 +592,7 @@ call `exit` for you. New for TeemV2: those functions that do call `exit`
 (whether always or only in some circumstances) should have a name ending with
 "Exit" to advertise this.  The complete list is currently:
 - airTeemVersionPrintAndExit
+- airSetLocaleFromEnvOrExit
 - hestParseOrExit
 - nrrdSanityOrExit
 - unrrduMainOrExit
