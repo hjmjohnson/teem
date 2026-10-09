@@ -63,13 +63,12 @@ airTeemVersionSprint(char buff[AIR_STRLEN_SMALL + 1]) {
 /* ---- BEGIN non-NrrdIO */
 /******** airSetLocaleFromEnvOrExit
 For debugging how Teem code runs under different locales:
-Tries setting locale to whatever is named by TEEM_SET_LOCALE_ENV.
-It is no problem if that is not set, or set only to an empty string;
-nothing happens in that case.
-If TEEM_SET_LOCALE_ENV is set to a non-empty string that fails with setlocale,
-then report the error and exit: the caller doesn't want to be running
-under any uncertainty about what the locale actually is.
-If fverb is non-NULL, use that to fprint the successful setlocale return.
+Tries setlocale(LC_NUMERIC, lstr) with lstr named by environment variable
+TEEM_SET_LOCALE_ENV. It is no problem if TEEM_SET_LOCALE_ENV is not set, or set only to
+an empty string; nothing happens in that case. If TEEM_SET_LOCALE_ENV is set to a
+non-empty string that fails with setlocale, then report the error and exit: the caller
+doesn't want to be running with any uncertainty about what locale it will be running
+under. If fverb is non-NULL, use that to fprint the successful setlocale return.
 */
 void
 airSetLocaleFromEnvOrExit(const char *me, FILE *fverb) {
@@ -82,8 +81,9 @@ airSetLocaleFromEnvOrExit(const char *me, FILE *fverb) {
       exit(1);
     } else {
       if (fverb) {
-        fprintf(fverb, "%s: setlocale(LC_NUMERIC, \"%s\") returned \"%s\"\n", me, lenv,
-                lret);
+        fprintf(fverb,
+                "%s: setlocale(LC_NUMERIC, \"%s\") successfully returned \"%s\"\n", me,
+                lenv, lret);
       }
     }
   }
