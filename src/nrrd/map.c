@@ -561,9 +561,12 @@ nrrdHistoEq(Nrrd *nout, const Nrrd *nin, Nrrd **nmapP, unsigned int bins,
     hist = (uint *)nhist->data;
     nhist->axis[0].size = bins;
     /* allocate the respect, steady, and last arrays */
-    assert((respect = AIR_MALLOC(bins, uint)));
-    assert((steady = AIR_MALLOC(2 * bins, uint)));
-    assert((last = AIR_MALLOC(bins, double)));
+    respect = AIR_MALLOC(bins, uint);
+    assert(respect);
+    steady = AIR_MALLOC(2 * bins, uint);
+    assert(steady);
+    last = AIR_MALLOC(bins, double);
+    assert(last);
     airMopMem(mop, &respect, airMopAlways);
     airMopMem(mop, &steady, airMopAlways);
     airMopMem(mop, &last, airMopAlways);
