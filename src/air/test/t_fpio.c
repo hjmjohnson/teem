@@ -45,6 +45,10 @@ main(int argc, const char *argv[]) {
       "\"\" for no explicit call to setlocale().\n"
       "For a fun time, run:\n"
       "   locale -a | xargs -n 1 -I %% test/t_fpio %% -1 -1 |& grep decisep | sort\n\n");
+    // also preserving here for posterity a command that usefully showed the
+    // various separators on linux:
+    //   grep "^decimal_point" /usr/share/i18n/locales/* | sed 's/decimal_point[[:space:]]*/decimal_point /' | LC_ALL=C sort -k2
+    // (the need for LC_ALL=C on sort was a surprise)
     return 1;
   }
   const char *localestr = argv[1];
