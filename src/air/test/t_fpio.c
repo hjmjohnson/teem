@@ -47,7 +47,9 @@ main(int argc, const char *argv[]) {
       "   locale -a | xargs -n 1 -I %% test/t_fpio %% -1 -1 |& grep decisep | sort\n\n");
     // also preserving here for posterity a command that usefully showed the
     // various separators on linux:
+    // clang-format off
     //   grep "^decimal_point" /usr/share/i18n/locales/* | sed 's/decimal_point[[:space:]]*/decimal_point /' | LC_ALL=C sort -k2
+    // clang-format on
     // (the need for LC_ALL=C on sort was a surprise)
     return 1;
   }
@@ -71,12 +73,12 @@ main(int argc, const char *argv[]) {
   if (strlen(localestr)) {
     const char *lret = setlocale(LC_NUMERIC, localestr);
     if (!lret) {
-      fprintf(stderr, "%s: setlocale(LC_NUMERIC, %s) failed (returned NULL)\n", me,
+      fprintf(stderr, "%s: setlocale(LC_NUMERIC, \"%s\") failed (returned NULL)\n", me,
               localestr);
       return 1;
     }
     if (strcmp(lret, localestr)) {
-      printf("%s: setlocale(LC_NUMERIC, %s) returned %s\n", me, localestr, lret);
+      printf("%s: setlocale(LC_NUMERIC, \"%s\") returned %s\n", me, localestr, lret);
     }
   } else {
     printf("%s: got empty localestr, did not call setlocale\n", me);
