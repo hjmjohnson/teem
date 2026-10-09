@@ -305,7 +305,8 @@ airSinglePrintf(FILE *file, char *str, size_t strSize, const char *_fmt, ...) {
     _conv = pf ? pf : pd; /* one of these is non-NULL */
     /* allocate our own copy of _fmt, so that we can change _conv to "%s",
        which cannot make it any bigger; maybe one char shorter */
-    assert((fmt = airStrdup(_fmt)));
+    fmt = airStrdup(_fmt);
+    assert(fmt);
     conv = fmt + (_conv - _fmt); /* conv points into fmt like _conv points into _fmt */
     if ('l' == conv[1]) {
       /* turn %lg into %g; shuffle down following chars */
