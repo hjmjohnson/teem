@@ -38,6 +38,7 @@ main(int argc, const char *argv[]) {
       "        de_DE.UTF-8 : \",\" == a comma,\n"
       "   en_US.UTF-8 or C : \".\" == period, or\n"
       "        fa_IR.UTF-8 : \"٫\" == Arabic Decimal Separator != a comma, or\n"
+      /* some linux (but not my mac) has ps_AF in which the separator is also this */
       "         zh_TW.Big5,\n"
       "        zh_CN.eucCN : \"．\" == full width full stop (?) but not in UTF-8, or\n"
       "       zh_CN.GB2312 : \"#.\" == full width full stop (?) but in\n"
