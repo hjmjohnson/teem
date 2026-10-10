@@ -191,7 +191,7 @@ makeVolume(Nrrd *nin, unsigned int sx, unsigned int sy, unsigned int sz,
 }
 
 int
-main(void) {
+main(int argc, const char **argv) {
   airArray *mop;
   char *err;
 
@@ -202,6 +202,8 @@ main(void) {
   const double *vmeas, *gmeas, *hmeas;
   gageContext *gctx;
 
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
+  AIR_UNUSED(argc);
   mop = airMopNew();
 
   rng = airRandMTStateNew(429);

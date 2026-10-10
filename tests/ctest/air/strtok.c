@@ -53,6 +53,9 @@ main(int argc, const char *argv[]) {
   airArray *lineArr;
   char wordsp[AIR_STRLEN_MED + 1], *line, *last = NULL;
 
+  /* for debugging C-locale-emulation conformance */
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
+
   AIR_UNUSED(argc);
   me = argv[0];
   sepLen = AIR_CAST(unsigned int, airStrlen(sep));

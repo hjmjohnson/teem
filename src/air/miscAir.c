@@ -445,13 +445,15 @@ char *
 airPrettySprintSize_t(char str[AIR_STRLEN_SMALL + 1], size_t val) {
   static const char suff[][7] = {"bytes", "KB", "MB", "GB", "TB", "PB", "EB"};
   unsigned int suffIdx, suffNum;
-  double dval;
+  float dval;
+  char Db[ASP1_S], Nb[ASP1_S];
+  const char *Ds = airDecimalSeparatorLearn(Db);
 
   if (!str) {
     return NULL;
   }
   suffIdx = 0;
-  dval = AIR_CAST(double, val);
+  dval = AIR_CAST(float, val);
   suffNum = AIR_UINT(sizeof(suff) / sizeof(suff[0]));
   while (suffIdx < suffNum - 1) { /* while we can go to a bigger suffix */
     if (dval > 1024) {
@@ -461,7 +463,7 @@ airPrettySprintSize_t(char str[AIR_STRLEN_SMALL + 1], size_t val) {
       break;
     }
   }
-  snprintf(str, AIR_STRLEN_SMALL + 1, "%g %s", dval, suff[suffIdx]);
+  snprintf(str, AIR_STRLEN_SMALL + 1, "%s %s", airFtoS(Nb, dval, Ds), suff[suffIdx]);
   return str;
 }
 

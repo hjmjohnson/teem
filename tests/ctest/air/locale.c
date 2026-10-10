@@ -52,6 +52,7 @@ main(int argc, const char *argv[]) {
   char decibuff[AIR_STRLEN_SMALL + 1];
   const char *decisep;
 
+  /* no: we set it explicitly: airSetLocaleFromEnvOrExit(argv[0], airStderr()); */
   AIR_UNUSED(argc);
 
   for (li = 0; li < AIR_CAST(unsigned int, sizeof(funLocale) / sizeof(char *)); li++) {

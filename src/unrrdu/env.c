@@ -237,8 +237,8 @@ unu_envMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
     locenv = getenv(TEEM_SET_LOCALE_ENV);
     if (locenv) {
       fprintf(out,
-              "is set to %s **********************\n"
-              "   ==> already called setlocale(LC_NUMERIC, %s)\n",
+              "is set to \"%s\" **********************\n"
+              "   ==> already called setlocale(LC_NUMERIC, \"%s\")\n",
               locenv, locenv);
     } else {
       fprintf(out, "is NOT set\n"

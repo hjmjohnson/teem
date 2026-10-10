@@ -55,6 +55,9 @@ main(int argc, const char *argv[]) {
   static const char *const what[3] = {"value", "histogram", "histogram image"};
   int differ, wi;
 
+  /* for debugging C-locale-emulation conformance */
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
+
   AIR_UNUSED(argc);
   me = argv[0];
   mop = airMopNew();
@@ -122,7 +125,7 @@ main(int argc, const char *argv[]) {
     if (nrrdLoad(nmine, minePath[wi], NULL) || nrrdLoad(ncorr, corrPath[wi], NULL)) {
       char *err;
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
-      fprintf(stderr, "%s: trouble reading %s:\n%s", me, err, what[wi]);
+      fprintf(stderr, "%s: trouble reading my(saved) or ref %s:\n%s", me, err, what[wi]);
       airMopError(mop);
       return 1;
     }
@@ -130,35 +133,35 @@ main(int argc, const char *argv[]) {
                     &differ, explain)) {
       char *err;
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
-      fprintf(stderr, "%s: trouble comparing in-mem and from-disk %s:\n%s", me, what[wi],
+      fprintf(stderr, "%s: trouble comparing my in-mem vs saved %s:\n%s", me, what[wi],
               err);
       airMopError(mop);
       return 1;
     }
     if (differ) {
-      fprintf(stderr, "%s: in-mem and from-disk (%s) %ss differ: %s\n", me, minePath[wi],
+      fprintf(stderr, "%s: my in-mem vs saved (%s) %ss differ: %s\n", me, minePath[wi],
               what[wi], explain);
       airMopError(mop);
       return 1;
     } else {
-      printf("%s: good: in-mem and from-disk %ss same\n", me, what[wi]);
+      printf("%s: good: my in-mem and saved %ss same\n", me, what[wi]);
     }
     if (nrrdCompare(ncorr, nmine, AIR_FALSE /* onlyData */, 0.0 /* epsilon */, &differ,
                     explain)) {
       char *err;
       airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
-      fprintf(stderr, "%s: trouble comparing correct and generated %s:\n%s", me,
+      fprintf(stderr, "%s: trouble comparing my(saved) and reference %s:\n%s", me,
               what[wi], err);
       airMopError(mop);
       return 1;
     }
     if (differ) {
-      fprintf(stderr, "%s: correct (%s) and generated %ss differ: %s\n", me,
-              corrPath[wi], what[wi], explain);
+      fprintf(stderr, "%s: my(saved) (%s) and reference (%s) %ss differ: %s\n", me,
+              minePath[wi], corrPath[wi], what[wi], explain);
       airMopError(mop);
       return 1;
     } else {
-      printf("%s: good: correct and generated %ss same\n", me, what[wi]);
+      printf("%s: good: my(saved) and reference %ss same\n", me, what[wi]);
     }
   }
 

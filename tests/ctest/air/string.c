@@ -58,6 +58,9 @@ main(int argc, const char *argv[]) {
   char *aa, *aaCopy, *ab;
   size_t aaSize, abSize;
 
+  /* for debugging C-locale-emulation conformance */
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
+
   AIR_UNUSED(argc);
   me = argv[0];
   mop = airMopNew();

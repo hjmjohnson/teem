@@ -36,7 +36,10 @@ main(int argc, const char *argv[]) {
   const char *me;
   char *got;
   airArray *mop;
+  char db[AIR_STRLEN_SMALL + 1], nb[AIR_STRLEN_SMALL + 1];
 
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
+  const char *ds = airDecimalSeparatorLearn(db); /* okay to have declare-as-you go? */
   AIR_UNUSED(argc);
   me = argv[0];
   mop = airMopNew();
@@ -123,14 +126,16 @@ main(int argc, const char *argv[]) {
     COMPARE(5);
   }
 
-  biffAddf("test", "%s: this is a test of biffAddf %d %g", "me", 1, 4.2);
+  biffAddf("test", "%s: this is a test of biffAddf %d %s", "me", 1,
+           airDtoS(nb, 4.2, ds));
   {
     char want[] = "[test] me: this is a test of biffAddf 1 4.2\n";
     got = biffGetDone("test");
     COMPARE(6);
   }
 
-  biffAddf("test2", "%s: this is a test of biffAddf %d %g", "me", 1, 4.2);
+  biffAddf("test2", "%s: this is a test of biffAddf %d %s", "me", 1,
+           airDtoS(nb, 4.2, ds));
   biffMovef("test3", "test2", "%s: testing biffMove %d.", "me", 1729);
   {
     char want[] = "[test3] me: testing biffMove 1729.\n"

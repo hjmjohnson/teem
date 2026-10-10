@@ -53,7 +53,10 @@ int
 main(int argc, const char *argv[]) {
   const char *me;
   void *ptr, *ptr2;
+  char db[AIR_STRLEN_SMALL + 1], nb[3][AIR_STRLEN_SMALL + 1];
 
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
+  const char *ds = airDecimalSeparatorLearn(db); /* okay to have declare-as-you go? */
   AIR_UNUSED(argc);
   me = argv[0];
 
@@ -152,16 +155,18 @@ main(int argc, const char *argv[]) {
       ci = airIndexClamp(min, val[vi], max, N);
       if (ii != wantIdx[vi]) {
         fprintf(stderr,
-                "%s: %u = airIndex(%.17g, %.17g, %.17g, %u) "
+                "%s: %u = airIndex(%s, %s, %s, %u) "
                 "!= correct %u\n",
-                me, ii, min, val[vi], max, N, wantIdx[vi]);
+                me, ii, airDtoS(nb[0], min, ds), airDtoS(nb[1], val[vi], ds),
+                airDtoS(nb[2], max, ds), N, wantIdx[vi]);
         exit(1);
       }
       if (ci != wantIdx[vi]) {
         fprintf(stderr,
-                "%s: %u = airIndexClamp(%.17g, %.17g, %.17g, %u) "
+                "%s: %u = airIndexClamp(%s, %s, %s, %u) "
                 "!= correct %u\n",
-                me, ci, min, val[vi], max, N, wantIdx[vi]);
+                me, ci, airDtoS(nb[0], min, ds), airDtoS(nb[1], val[vi], ds),
+                airDtoS(nb[2], max, ds), N, wantIdx[vi]);
         exit(1);
       }
     }
@@ -196,28 +201,28 @@ main(int argc, const char *argv[]) {
                      16 * 1024 * 1024ul,         /* 21 = 2^64 */
                      0};
     static const char *const string[] = {
-      "0 bytes",    /* 0 */
-      "800 bytes",  /* 1 */
-      "1024 bytes", /* 2 */
-      "1.00098 KB", /* 3 */
-      "500 KB",     /* 4 */
-      "1024 KB",    /* 5 */
-      "1.00098 MB", /* 6 */
-      "500 MB",     /* 7 */
-      "1024 MB",    /* 8 */
-      "1.00098 GB", /* 9 */
-      "500 GB",     /* 10 */
-      "1024 GB",    /* 11 */
-      "1.00098 TB", /* 12 */
-      "500 TB",     /* 13 */
-      "1024 TB",    /* 14 */
-      "1.00098 PB", /* 15 */
-      "500 PB",     /* 16 */
-      "1024 PB",    /* 17 */
-      "1.00098 EB", /* 18 */
-      "2 EB",       /* 19 */
-      "15.9844 EB", /* 20 */
-      "blah",       /* 21 */
+      "0 bytes",       /* 0 */
+      "800 bytes",     /* 1 */
+      "1024 bytes",    /* 2 */
+      "1.00097656 KB", /* 3 */
+      "500 KB",        /* 4 */
+      "1024 KB",       /* 5 */
+      "1.00097656 MB", /* 6 */
+      "500 MB",        /* 7 */
+      "1024 MB",       /* 8 */
+      "1.00097656 GB", /* 9 */
+      "500 GB",        /* 10 */
+      "1024 GB",       /* 11 */
+      "1.00097656 TB", /* 12 */
+      "500 TB",        /* 13 */
+      "1024 TB",       /* 14 */
+      "1.00097656 PB", /* 15 */
+      "500 PB",        /* 16 */
+      "1024 PB",       /* 17 */
+      "1.00097656 EB", /* 18 */
+      "2 EB",          /* 19 */
+      "15.984375 EB",  /* 20 */
+      "blah",          /* 21 */
     };
     unsigned int ii;
     /* hiding some multiplications in function calls,

@@ -29,6 +29,9 @@ main(int argc, char *argv[]) {
   int ret;
   char *me, *err;
 
+  /* for debugging C-locale-emulation conformance */
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
+
   AIR_UNUSED(argc);
   me = argv[0];
   if (!nrrdSanity()) {

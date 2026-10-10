@@ -32,6 +32,9 @@ main(int argc, const char *argv[]) {
   ptrdiff_t pd;
   char stmp[AIR_STRLEN_SMALL + 1];
 
+  /* for debugging C-locale-emulation conformance */
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
+
   AIR_UNUSED(argc);
   me = argv[0];
 

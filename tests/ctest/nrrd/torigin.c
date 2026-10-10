@@ -39,6 +39,9 @@ main(int argc, const char **argv) {
   double origin[3];
   int status;
 
+  /* for debugging C-locale-emulation conformance */
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
+
   AIR_UNUSED(argc);
   me = argv[0];
   mop = airMopNew();

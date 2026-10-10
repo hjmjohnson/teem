@@ -38,7 +38,7 @@ errPrefix(char *dst, int typi, unsigned int supi, unsigned int prbi,
 }
 
 int
-main(void) {
+main(int argc, const char **argv) {
   airArray *mop, *submop;
   char *err;
 
@@ -57,6 +57,8 @@ main(void) {
     spcOrig[NRRD_SPACE_DIM_MAX] = {0.0, 0.0, 0.0},
     spcVec[3][NRRD_SPACE_DIM_MAX] = {{1.1, 0.0, 0.0}, {0.0, 2.2, 0.0}, {0.0, 0.0, 3.3}};
 
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
+  AIR_UNUSED(argc);
   mop = airMopNew();
 
 #define NRRD_NEW(name, mop)                                                             \

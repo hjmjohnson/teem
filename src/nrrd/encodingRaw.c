@@ -36,8 +36,10 @@ encodingRaw_read(FILE *file, void *data, size_t elementNum, Nrrd *nrrd,
   char *data_c;
   size_t elementSize, maxChunkSize, remainderValue, chunkSize;
   size_t retTmp;
-  char db[ASP1_S], nb[ASP1_S];
-  const char *ds = airDecimalSeparatorLearn(db);
+  /* for now we always re-learn decisep because nio might be NULL; this is unfortunate
+     but not terrible: its only for error+verbose messages not in data reading loop */
+  char Db[ASP1_S], Nb[ASP1_S];
+  const char *Ds = airDecimalSeparatorLearn(Db);
 
   bsize = nrrdElementSize(nrrd) * elementNum;
 
@@ -65,8 +67,8 @@ encodingRaw_read(FILE *file, void *data, size_t elementNum, Nrrd *nrrd,
                "%s: fread got only %zu %zu-sized things, not %zu "
                "(%s%% of expected)",
                me, ret, nrrdElementSize(nrrd), elementNum,
-               airDtoS(nb, 100.0 * AIR_CAST(double, ret) / AIR_CAST(double, elementNum),
-                       ds));
+               airDtoS(Nb, 100.0 * AIR_CAST(double, ret) / AIR_CAST(double, elementNum),
+                       Ds));
       return 1;
     }
   }
@@ -86,7 +88,7 @@ encodingRaw_read(FILE *file, void *data, size_t elementNum, Nrrd *nrrd,
     if (!fseek(file, 0, SEEK_END)) {
       double frac = (AIR_CAST(double, bsize) / AIR_CAST(double, ftell(file) + 1));
       fprintf(stderr, "(%s: used %s%% of file for nrrd data)\n", me,
-              airDtoS(nb, 100.0 * frac, ds));
+              airDtoS(Nb, 100.0 * frac, Ds));
       fseek(file, savePos, SEEK_SET);
     }
   }
@@ -103,8 +105,10 @@ encodingRaw_write(FILE *file, const void *data, size_t elementNum, const Nrrd *n
   size_t elementSize, maxChunkSize, remainderValue, chunkSize;
   size_t retTmp;
   char stmp[3][AIR_STRLEN_SMALL + 1];
-  char db[ASP1_S], nb[ASP1_S];
-  const char *ds = airDecimalSeparatorLearn(db);
+  /* for now we always re-learn decisep because nio might be NULL; this is unfortunate
+     but not terrible: its only for an error message not in a data reading loop */
+  char Db[ASP1_S], Nb[ASP1_S];
+  const char *Ds = airDecimalSeparatorLearn(Db);
 
   AIR_UNUSED(nio);
 
@@ -133,8 +137,8 @@ encodingRaw_write(FILE *file, const void *data, size_t elementNum, const Nrrd *n
                me, airSprintSize_t(stmp[0], ret),
                airSprintSize_t(stmp[1], nrrdElementSize(nrrd)),
                airSprintSize_t(stmp[2], elementNum),
-               airDtoS(nb, 100.0 * AIR_CAST(double, ret) / AIR_CAST(double, elementNum),
-                       ds));
+               airDtoS(Nb, 100.0 * AIR_CAST(double, ret) / AIR_CAST(double, elementNum),
+                       Ds));
       return 1;
     }
   }
