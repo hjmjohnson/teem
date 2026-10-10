@@ -525,7 +525,14 @@ typedef struct NrrdIoState_t {
                                  `locale`-related API or data (which is hard to make
                                  fast, thread-safe, and memory-clean), we call
                                  airDecimalSeparatorLearn to learn the separator, once,
-                                 and then we can use it for all NRRD IO. */
+                                 and then we can use it for all NRRD IO. Because
+                                 airDecimalSeparatorLearn is called (indirectly) from
+                                 nrrdIoStateNew, the deal is this:
+                                 *** After you call nrrdIoStateNew, you cannot then call
+                                 *** setlocale() prior to doing any Nrrd I/O (such as
+                                 *** with nrrdLoad or nrrdSave) because that could
+                                 *** invalidate nio->decisep and break the intended
+                                 *** C-locale-emulation behavior. */
 
   /* The format and encoding.  These are initialized to `nrrdFormatUnknown`
      and `nrrdEncodingUnknown`, respectively, and DO USE THOSE VALUES for
