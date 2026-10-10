@@ -53,9 +53,9 @@ nrrdDistanceL2Signed,int,1,0,nrrd,nrrd/filt.c:895
 nrrdHisto,int,1,0,nrrd,nrrd/histogram.c:38
 nrrdHistoCheck,int,1,0,nrrd,nrrd/histogram.c:158
 nrrdHistoDraw,int,1,0,nrrd,nrrd/histogram.c:187
-nrrdHistoAxis,int,1,0,nrrd,nrrd/histogram.c:323
-nrrdHistoJoint,int,1,0,nrrd,nrrd/histogram.c:437
-nrrdHistoThresholdOtsu,int,1,0,nrrd,nrrd/histogram.c:644
+nrrdHistoAxis,int,1,0,nrrd,nrrd/histogram.c:336
+nrrdHistoJoint,int,1,0,nrrd,nrrd/histogram.c:450
+nrrdHistoThresholdOtsu,int,1,0,nrrd,nrrd/histogram.c:657
 nrrdKernelParse,int,1,0,nrrd,nrrd/kernel.c:3033
 nrrdKernelSpecParse,int,1,0,nrrd,nrrd/kernel.c:3217
 nrrdKernelSpecSprint,int,1,0,nrrd,nrrd/kernel.c:3239
