@@ -168,11 +168,16 @@ so it doesn't have to be relearned.  This file is the starting point of that cha
     air{F,D}toS/airSto{F,D} prevents them from correctly emulating "C"-locale. In
     principle, the call to airDecimalSeparatorLearn goes just before some looped FP IO,
     with many air{F,D}toS/airSto{F,D} calls inside the loop.
+*** NOTE/WARNING: Teem's goal of C-locale-emulation means that when running under
+    e.g. `de_DE`, "1,5" will fail to parse with airStoD (when properly called) because
+    it checks for a non-'.' `decisep` already being in the input string:
+    it does not belong there, since accepting both "1.5" and "1,5" is not correctly
+    accomplishing C-locale-emulation.
 *** The only locale-compensation that air{F,D}toS/airSto{F,D} can do is to
     (as a printing post-process) convert from `decisep` to '.', and
-    (as a parsing pre-process) convert from '.' to `decisep`.  No general-purpose
-    conversion between two non-"C" locales is attempted here, but nor is that needed for
-    Teem's goal of C-locale-emulation.
+    (as a parsing pre-process) convert from '.' to `decisep`; THAT IS IT.
+*** Also, no general-purpose conversion between two non-"C" locales is attempted here,
+    since that is far outside the scope of C-locale-emulation.
 
 AI Disclosure: GLK's chats in Sep and Oct 2026 with Claude (Sonnet 4.6) informed parts of
 the summary above and the some implementatn choices in the code below, but all the words
@@ -480,6 +485,15 @@ str2fp(float *fvalP, double *dvalP, int singlePrec, const char *str0,
         /* and we proceed anyway; maybe we should set errno? */
       }
       if (1 == decisep[-1]) {
+        /* first check for locale's decisep in original (non-lower-case) string */
+        for (ii = 0; str0[ii]; ii++) {
+          if (decisep[0] == str0[ii]) {
+            /* whoops: we saw the locale's decisep already in the input, which is not
+               valid with our goal of C-locale-emulation, sorry. */
+            free(str);
+            return 0;
+          }
+        }
         /* simple sweep: replace the single char if we see it */
         for (ii = 0; str[ii]; ii++) {
           if ('.' == str[ii]) {
@@ -488,6 +502,13 @@ str2fp(float *fvalP, double *dvalP, int singlePrec, const char *str0,
           }
         }
       } else { /* 1-OR-2-BYTE-SEPARATOR */
+        for (ii = 0; str0[ii]; ii++) {
+          if (ii && decisep[0] == str0[ii - 1] && decisep[1] == str0[ii]) {
+            /* same whoops as above: accepting this is not C-locale-emulation */
+            free(str);
+            return 0;
+          }
+        }
         /* decimal separator is two chars, have to shuffle up chars after change */
         for (ii = 0; str[ii]; ii++) {
           if ('.' == str[ii]) {
