@@ -3163,20 +3163,41 @@ nrrdKernelParse(const NrrdKernel **kernelP, double *parm, const char *str_) {
     uint haveParm;
     for (haveParm = 0; haveParm < (*kernelP)->parmNum; haveParm++) {
       if (!pstr) break;
-      if (1 != airStoD(parm + haveParm, pstr, decisep)) {
+      /* pre-C-locale-emulation, code here was:
+       *     if (1 != airSingleSscanf(pstr, "%lg", parm+haveParm)) {
+       * in which `pstr` is the rest of the comma-separated parms. The old
+       * airSingleSscanf handed things off to sscanf, with all the locale-dependency
+       * that implies.  But now for C-locale-emulation, airStoD intentionally balks
+       * at inputs that contain the non-'.' decisep. So `pstr` under e.g. de_DE would
+       * fail to parse even the first value. Having already made a local copy in
+       * `str`, we can nul-out and then restore the comma, pre- and post-airStoD.
+       */
+      char *comma = strchr(pstr, ',');
+      if (comma) {
+        *comma = '\0';
+      }
+      int pret = airStoD(parm + haveParm, pstr, decisep);
+      if (comma) {
+        *comma = ',';
+      }
+      if (1 != pret) {
         biffAddf(NRRD, "%s: trouble parsing \"%s\" as parameter[%u] (in \"%s\")", me,
                  pstr, haveParm, str_);
         airMopError(mop);
         return 1;
       }
-      if ((pstr = strchr(pstr, ','))) {
-        pstr++;
+      /* If there was a later comma, `comma` points to it, and we prepare
+         for the next iteration by setting pstr to comma+1 */
+      if (comma) {
+        pstr = comma + 1;
         if (!*pstr) {
           biffAddf(NRRD, "%s: nothing after last comma in \"%s\" (in \"%s\")", me, _pstr,
                    str_);
           airMopError(mop);
           return 1;
         }
+      } else {
+        pstr = NULL;
       }
     }
     /* haveParm is now the number of parameters that were parsed. */
