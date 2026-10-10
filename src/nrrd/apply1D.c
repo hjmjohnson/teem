@@ -101,6 +101,8 @@ apply1DSetUp(Nrrd *nout, const Nrrd *nin, const NrrdRange *range, const Nrrd *nm
   unsigned int ax, dim, entLen, mapAxis;
   size_t size[NRRD_DIM_MAX];
   double domMin, domMax;
+  char db[ASP1_S], nb[2][ASP1_S];
+  const char *ds = airDecimalSeparatorLearn(db);
 
   if (nout == nin) {
     biffAddf(NRRD, "%s: due to laziness, nout==nin always disallowed", me);
@@ -123,12 +125,13 @@ apply1DSetUp(Nrrd *nout, const Nrrd *nin, const NrrdRange *range, const Nrrd *nm
     if (!(AIR_EXISTS(range->min) && AIR_EXISTS(range->max))) {
       biffAddf(NRRD,
                "%s: want rescaling but not both "
-               "range->{min,max} %g %g exist",
-               me, range->min, range->max);
+               "range->{min,max} %s %s exist",
+               me, airDtoS(nb[0], range->min, ds), airDtoS(nb[1], range->max, ds));
       return 1;
     }
     if (range->min == range->max) {
-      biffAddf(NRRD, "%s: want rescaling but range->min == max == %g", me, range->min);
+      biffAddf(NRRD, "%s: want rescaling but range->min == max == %s", me,
+               airDtoS(nb[0], range->min, ds));
       return 1;
     }
   }
@@ -172,8 +175,8 @@ apply1DSetUp(Nrrd *nout, const Nrrd *nin, const NrrdRange *range, const Nrrd *nm
     domMin = nrrd__ApplyDomainMin(nmap, AIR_FALSE, mapAxis);
     domMax = nrrd__ApplyDomainMax(nmap, AIR_FALSE, mapAxis);
     if (!(domMin < domMax)) {
-      biffAddf(NRRD, "%s: (axis %u) domain min (%g) not less than max (%g)", me, mapAxis,
-               domMin, domMax);
+      biffAddf(NRRD, "%s: (axis %u) domain min (%s) not less than max (%s)", me, mapAxis,
+               airDtoS(nb[0], domMin, ds), airDtoS(nb[1], domMax, ds));
       return 1;
     }
     if (nrrdHasNonExist(nmap)) {
@@ -340,28 +343,26 @@ apply1DLutOrRegMap(Nrrd *nout, const Nrrd *nin, const NrrdRange *range, const Nr
                  ? AIR_AFFINE(range->min, val, range->max, domMin, domMax)
                  : domMin);
         /* ...
-        fprintf(stderr, "\nb% 31.15f (min,max = %g,%g)--> ", val,
-                range->min, range->max);
-        ... */
+         * fprintf(stderr, "\nb% 31.15f (min,max = %g,%g)--> ", val,
+         *         range->min, range->max);
+         * ... */
       }
       /* ...
-      fprintf(stderr, "\nc% 31.15f --> clamp(%g,%g), %d --> ",
-              val, domMin, domMax, mapLen);
-      ... */
+       * fprintf(stderr, "\nc% 31.15f --> clamp(%g,%g), %d --> ",
+       *         val, domMin, domMax, mapLen);
+       * ... */
       if (AIR_EXISTS(val)) {
         val = AIR_CLAMP(domMin, val, domMax);
         mapIdxFrac = AIR_AFFINE(domMin, val, domMax, 0, mapLen - 1);
         /* ...
-        fprintf(stderr, "mapIdxFrac = \nd% 31.15f --> ",
-                mapIdxFrac);
-        ... */
+         * fprintf(stderr, "mapIdxFrac = \nd% 31.15f --> ", mapIdxFrac);
+         * ... */
         mapIdx = (unsigned int)mapIdxFrac;
         mapIdx -= mapIdx == mapLen - 1;
         mapIdxFrac -= mapIdx;
         /* ...
-        fprintf(stderr, "%s: (%d,\ne% 31.15f) --> \n",
-                me, mapIdx, mapIdxFrac);
-        ... */
+         * fprintf(stderr, "%s: (%d,\ne% 31.15f) --> \n", me, mapIdx, mapIdxFrac);
+         * ... */
         entData0 = mapData + mapIdx * entSize;
         entData1 = mapData + (mapIdx + 1) * entSize;
         for (i = 0; i < entLen; i++) {
@@ -589,6 +590,8 @@ nrrd1DIrregMapCheck(const Nrrd *nmap) {
   unsigned int ii, entLen, mapLen, baseI;
   size_t min[2], max[2];
   Nrrd *nrange;
+  char db[ASP1_S], nb[3][ASP1_S];
+  const char *ds = airDecimalSeparatorLearn(db);
 
   if (!nmap) {
     biffAddf(NRRD, "%s: got NULL pointer", me);
@@ -646,13 +649,14 @@ nrrd1DIrregMapCheck(const Nrrd *nmap) {
           && airFP_POS_INF == airFPClass_d(mapLup(nmap->data, 2 * entLen)))) {
       biffAddf(NRRD,
                "%s: 1st entry's position non-existent, but position "
-               "of 1st three entries (%g:%d,%g:%d,%g:%d) not "
+               "of 1st three entries (%s:%d,%s:%d,%s:%d) not "
                "-inf, NaN, and +inf",
-               me, mapLup(nmap->data, 0 * entLen),
+               me, /* */
+               airDtoS(nb[0], mapLup(nmap->data, 0 * entLen), ds),
                airFPClass_d(mapLup(nmap->data, 0 * entLen)),
-               mapLup(nmap->data, 1 * entLen),
+               airDtoS(nb[1], mapLup(nmap->data, 1 * entLen), ds),
                airFPClass_d(mapLup(nmap->data, 1 * entLen)),
-               mapLup(nmap->data, 2 * entLen),
+               airDtoS(nb[2], mapLup(nmap->data, 2 * entLen), ds),
                airFPClass_d(mapLup(nmap->data, 2 * entLen)));
       return 1;
     }
@@ -665,9 +669,9 @@ nrrd1DIrregMapCheck(const Nrrd *nmap) {
   }
   for (ii = baseI; ii < mapLen - 1; ii++) {
     if (!(mapLup(nmap->data, ii * entLen) < mapLup(nmap->data, (ii + 1) * entLen))) {
-      biffAddf(NRRD, "%s: map entry %u pos (%g) not < entry %u pos (%g)", me, ii,
-               mapLup(nmap->data, ii * entLen), ii + 1,
-               mapLup(nmap->data, (ii + 1) * entLen));
+      biffAddf(NRRD, "%s: map entry %u pos (%s) not < entry %u pos (%s)", me, /* */
+               ii, airDtoS(nb[0], mapLup(nmap->data, ii * entLen), ds),       /* */
+               ii + 1, airDtoS(nb[1], mapLup(nmap->data, (ii + 1) * entLen), ds));
       return 1;
     }
   }
@@ -766,11 +770,11 @@ n1DIrregFindInterval(const double *pos, double p, unsigned int loI, unsigned int
   unsigned int midI;
 
   /*
-  fprintf(stderr, "##%s(%g): hi: %d/%g-%g | %d/%g-%g\n",
-          "n1DIrregFindInterval", p,
-          loI, pos[loI], pos[loI+1],
-          hiI, pos[hiI], pos[hiI+1]);
-  */
+   * fprintf(stderr, "##%s(%g): hi: %d/%g-%g | %d/%g-%g\n",
+   *         "n1DIrregFindInterval", p,
+   *         loI, pos[loI], pos[loI+1],
+   *         hiI, pos[hiI], pos[hiI+1]);
+   */
   while (loI < hiI) {
     midI = (loI + hiI) / 2;
     if (pos[midI] <= p
@@ -785,12 +789,12 @@ n1DIrregFindInterval(const double *pos, double p, unsigned int loI, unsigned int
       loI = midI + 1;
     }
     /*
-    fprintf(stderr, "##%s(%g): %d/%g-%g | %d/%g-%g | %d/%g-%g\n",
-            "n1DIrregFindInterval", p,
-            loI, pos[loI], pos[loI+1],
-            midI, pos[midI], pos[midI+1],
-            hiI, pos[hiI], pos[hiI+1]);
-    */
+     * fprintf(stderr, "##%s(%g): %d/%g-%g | %d/%g-%g | %d/%g-%g\n",
+     *         "n1DIrregFindInterval", p,
+     *         loI, pos[loI], pos[loI+1],
+     *         midI, pos[midI], pos[midI+1],
+     *         hiI, pos[hiI], pos[hiI+1]);
+     */
   }
   return loI;
 }
@@ -937,8 +941,8 @@ nrrdApply1DIrregMap(Nrrd *nout, const Nrrd *nin, const NrrdRange *_range,
   domMin = pos[0];
   domMax = pos[posLen - 1];
   /*
-  fprintf(stderr, "!%s: domMin, domMax = %g, %g\n", me, domMin, domMax);
-  */
+   * fprintf(stderr, "!%s: domMin, domMax = %g, %g\n", me, domMin, domMax);
+   */
 
   NN = nrrdElementNumber(nin);
   for (II = 0; II < NN; II++, inData += inSize, outData += colSize) {

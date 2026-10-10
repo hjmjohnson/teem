@@ -695,6 +695,8 @@ resampleVectorFillUpdate(NrrdResampleContext *rsmc) {
   nrrdResample_t *weightData, idx, integral;
   NrrdResampleAxis *axis;
   double kparm[NRRD_KERNEL_PARM_MAXNUM];
+  char nb[AIR_STRLEN_SMALL + 1], decibuff[AIR_STRLEN_SMALL + 1];
+  const char *DS = airDecimalSeparatorLearn(decibuff);
 
   if (rsmc->flag[flagRenormalize]     /* */
       || rsmc->flag[flagBoundary]     /* */
@@ -736,14 +738,14 @@ resampleVectorFillUpdate(NrrdResampleContext *rsmc) {
         }
         if (rsmc->verbose) {
           if (!smpIdx) {
-            fprintf(stderr, "%s: smpIdx=%u -> idx=%g -> base=%d\n", me, smpIdx, idx,
-                    base);
+            fprintf(stderr, "%s: smpIdx=%u -> idx=%s -> base=%d\n", me, smpIdx,
+                    RSF_to_S(nb, idx, DS), base);
             fprintf(stderr, "%s: sample locations:\n", me);
           }
           fprintf(stderr, "%s: %u (sample locations)\n        ", me, smpIdx);
           for (dotIdx = 0; dotIdx < dotLen; dotIdx++) {
-            fprintf(stderr, "%d/%g ", indexData[dotIdx + dotLen * smpIdx],
-                    weightData[dotIdx + dotLen * smpIdx]);
+            fprintf(stderr, "%d/%s ", indexData[dotIdx + dotLen * smpIdx],
+                    RSF_to_S(nb, weightData[dotIdx + dotLen * smpIdx], DS));
           }
           fprintf(stderr, "\n");
         }
@@ -843,8 +845,8 @@ resampleVectorFillUpdate(NrrdResampleContext *rsmc) {
         for (smpIdx = 0; smpIdx < axis->samples; smpIdx++) {
           fprintf(stderr, "%s: %u (sample weights)\n        ", me, smpIdx);
           for (dotIdx = 0; dotIdx < dotLen; dotIdx++) {
-            fprintf(stderr, "%d/%g ", indexData[dotIdx + dotLen * smpIdx],
-                    weightData[dotIdx + dotLen * smpIdx]);
+            fprintf(stderr, "%d/%s ", indexData[dotIdx + dotLen * smpIdx],
+                    RSF_to_S(nb, weightData[dotIdx + dotLen * smpIdx], DS));
           }
           fprintf(stderr, "\n");
         }
@@ -903,8 +905,8 @@ resampleVectorFillUpdate(NrrdResampleContext *rsmc) {
         for (smpIdx = 0; smpIdx < axis->samples; smpIdx++) {
           fprintf(stderr, "%s: %u (sample weights)\n        ", me, smpIdx);
           for (dotIdx = 0; dotIdx < dotLen; dotIdx++) {
-            fprintf(stderr, "%d/%g ", indexData[dotIdx + dotLen * smpIdx],
-                    weightData[dotIdx + dotLen * smpIdx]);
+            fprintf(stderr, "%d/%s ", indexData[dotIdx + dotLen * smpIdx],
+                    RSF_to_S(nb, weightData[dotIdx + dotLen * smpIdx], DS));
           }
           fprintf(stderr, "\n");
         }

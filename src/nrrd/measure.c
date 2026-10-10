@@ -829,15 +829,15 @@ measureHistoMode(void *ans, int ansType, const void *line, int lineType, size_t 
   }
   ansD = idxsum / idxcount;
   /*
-  printf("idxsum = %g; idxcount = %d --> ansD = %g --> ",
-         (float)idxsum, idxcount, ansD);
-  */
+   * printf("idxsum = %g; idxcount = %d --> ansD = %g --> ",
+   *        (float)idxsum, idxcount, ansD);
+   */
   if (AIR_EXISTS(axmin) && AIR_EXISTS(axmax)) {
     ansD = NRRD_CELL_POS(axmin, axmax, len, ansD);
   }
   /*
-  printf("%g\n", ansD);
-  */
+   * printf("%g\n", ansD);
+   */
   nrrdDStore[ansType](ans, ansD);
 }
 

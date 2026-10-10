@@ -158,8 +158,12 @@ nCCFind_2(Nrrd *nout, unsigned int *numid, airArray *eqvArr, const Nrrd *nin,
         (*numid)++;
       }
       if (nrrd__CC_verb) {
-        fprintf(stderr, "%s: pvl: %g %g %g %g (vl = %g)\n", me, pvl[1], pvl[2], pvl[3],
-                pvl[4], vl);
+        char db[ASP1_S], nb[5][ASP1_S];
+        const char *ds = airDecimalSeparatorLearn(db);
+        fprintf(stderr, "%s: pvl: %s %s %s %s (vl = %s)\n", me,
+                airDtoS(nb[0], pvl[1], ds), airDtoS(nb[1], pvl[2], ds),
+                airDtoS(nb[2], pvl[3], ds), airDtoS(nb[3], pvl[4], ds),
+                airDtoS(nb[4], vl, ds));
         fprintf(stderr, "        pid: %u %u %u %u\n", pid[1], pid[2], pid[3], pid[4]);
         fprintf(stderr, "    --> midx = %u, id = %u, *numid = %u\n", midx, id, *numid);
       }

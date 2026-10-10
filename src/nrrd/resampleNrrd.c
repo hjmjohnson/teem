@@ -316,10 +316,10 @@ resampleMakeWeightIndex(nrrdResample_t **weightP, int **indexP, double *ratioP,
   support = AIR_CAST(nrrdResample_t, info->kernel[ai]->support(info->parm[ai]));
   integral = AIR_CAST(nrrdResample_t, info->kernel[ai]->integral(info->parm[ai]));
   /*
-  fprintf(stderr,
-          "!%s(%d): size{In,Out} = %d, %d, support = %f; ratio = %f\n",
-          me, d, sizeIn, sizeOut, support, ratio);
-  */
+   * fprintf(stderr,
+   *         "!%s(%d): size{In,Out} = %d, %d, support = %f; ratio = %f\n",
+   *         me, d, sizeIn, sizeOut, support, ratio);
+   */
   if (ratio > 1) {
     /* if upsampling, we need only as many samples as needed for
        interpolation with the given kernel */
@@ -334,8 +334,8 @@ resampleMakeWeightIndex(nrrdResample_t **weightP, int **indexP, double *ratioP,
     }
   }
   /*
-  fprintf(stderr, "!%s(%d): dotLen = %d\n", me, d, dotLen);
-  */
+   * fprintf(stderr, "!%s(%d): dotLen = %d\n", me, d, dotLen);
+   */
 
   weight = AIR_CALLOC(sizeOut * dotLen, nrrdResample_t);
   if (!weight) {
@@ -367,15 +367,15 @@ resampleMakeWeightIndex(nrrdResample_t **weightP, int **indexP, double *ratioP,
       weight[e + dotLen * i] = idxD - indx[e + dotLen * i];
     }
     /* ********
-    if (!i) {
-      fprintf(stderr, "%s: sample locations:\n", me);
-    }
-    fprintf(stderr, "%s: %d (sample locations)\n        ", me, i);
-    for (e=0; e<dotLen; e++) {
-      fprintf(stderr, "%d/%g ", indx[e + dotLen*i], weight[e + dotLen*i]);
-    }
-    fprintf(stderr, "\n");
-    ******** */
+     * if (!i) {
+     *   fprintf(stderr, "%s: sample locations:\n", me);
+     * }
+     * fprintf(stderr, "%s: %d (sample locations)\n        ", me, i);
+     * for (e=0; e<dotLen; e++) {
+     *   fprintf(stderr, "%d/%g ", indx[e + dotLen*i], weight[e + dotLen*i]);
+     * }
+     * fprintf(stderr, "\n");
+     ******** */
   }
 
   /* figure out what to do with the out-of-range indices */
@@ -418,14 +418,14 @@ resampleMakeWeightIndex(nrrdResample_t **weightP, int **indexP, double *ratioP,
   info->kernel[ai]->EVALN(weight, weight, dotLen * sizeOut, parm);
 
   /* ********
-  for (i=0; i<sizeOut; i++) {
-    fprintf(stderr, "%s: %d (sample weights)\n        ", me, i);
-    for (e=0; e<dotLen; e++) {
-      fprintf(stderr, "%d/%g ", indx[e + dotLen*i], weight[e + dotLen*i]);
-    }
-    fprintf(stderr, "\n");
-  }
-  ******** */
+   * for (i=0; i<sizeOut; i++) {
+   *   fprintf(stderr, "%s: %d (sample weights)\n        ", me, i);
+   *   for (e=0; e<dotLen; e++) {
+   *     fprintf(stderr, "%d/%g ", indx[e + dotLen*i], weight[e + dotLen*i]);
+   *   }
+   *   fprintf(stderr, "\n");
+   * }
+   ******** */
 
   if (nrrdBoundaryWeight == info->boundary) {
     if (integral) {
@@ -472,23 +472,23 @@ resampleMakeWeightIndex(nrrdResample_t **weightP, int **indexP, double *ratioP,
     }
   }
   /* ********
-  fprintf(stderr, "%s: sample weights:\n", me);
-  for (i=0; i<sizeOut; i++) {
-    fprintf(stderr, "%s: %d\n        ", me, i);
-    wght = 0;
-    for (e=0; e<dotLen; e++) {
-      fprintf(stderr, "%d/%g ", indx[e + dotLen*i], weight[e + dotLen*i]);
-      wght += weight[e + dotLen*i];
-    }
-    fprintf(stderr, " (sum = %g)\n", wght);
-  }
-  ******** */
+   * fprintf(stderr, "%s: sample weights:\n", me);
+   * for (i=0; i<sizeOut; i++) {
+   *   fprintf(stderr, "%s: %d\n        ", me, i);
+   *   wght = 0;
+   *   for (e=0; e<dotLen; e++) {
+   *     fprintf(stderr, "%d/%g ", indx[e + dotLen*i], weight[e + dotLen*i]);
+   *     wght += weight[e + dotLen*i];
+   *   }
+   *   fprintf(stderr, " (sum = %g)\n", wght);
+   * }
+   ******** */
 
   *weightP = weight;
   *indexP = indx;
   /*
-  fprintf(stderr, "!%s: dotLen = %d\n", me, dotLen);
-  */
+   * fprintf(stderr, "!%s: dotLen = %d\n", me, dotLen);
+   */
   airMopOkay(mop);
   return dotLen;
 }
@@ -773,20 +773,20 @@ nrrdSpatialResample(Nrrd *nout, const Nrrd *nin, const NrrdResampleInfo *info) {
       for (i = 0; i < sizeOut; i++) {
         tmpF = 0.0;
         /*
-        fprintf(stderr, "%s: i = %d (tmpF=0)\n", me, (int)i);
-        */
+         * fprintf(stderr, "%s: i = %d (tmpF=0)\n", me, (int)i);
+         */
         for (s = 0; s < dotLen; s++) {
           tmpF += inVec[indx[s + dotLen * i]] * weight[s + dotLen * i];
           /*
-          fprintf(stderr, "  tmpF += %g*%g == %g\n",
-                  inVec[indx[s + dotLen*i]], weight[s + dotLen*i], tmpF);
-          */
+           * fprintf(stderr, "  tmpF += %g*%g == %g\n",
+           *         inVec[indx[s + dotLen*i]], weight[s + dotLen*i], tmpF);
+           */
         }
         _outVec[i * strideOut] = tmpF;
         /*
-        fprintf(stderr, "--> out[%d] = %g\n",
-                i*strideOut, _outVec[i*strideOut]);
-        */
+         * fprintf(stderr, "--> out[%d] = %g\n",
+         *         i*strideOut, _outVec[i*strideOut]);
+         */
       }
 
       /* update the coordinates for the scanline starts.  We don't

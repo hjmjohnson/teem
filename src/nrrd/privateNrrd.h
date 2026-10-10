@@ -85,9 +85,11 @@ typedef unsigned int uint; /* uint is just more concise */
 #if NRRD_RESAMPLE_FLOAT
 #  define nrrdResamplenrrd__Type nrrdTypeFloat
 #  define EVALN                  evalN_f /* NrrdKernel method */
+#  define RSF_to_S               airFtoS
 #else
 #  define nrrdResample_nrrdType nrrdTypeDouble
 #  define EVALN                 evalN_d /* NrrdKernel method */
+#  define RSF_to_S              airDtoS
 #endif
 
 /* to access whatever nrrd there may be in in a NrrdIter */

@@ -34,13 +34,14 @@ main(int argc, char *argv[]) {
   double min, max, *out;
   Nrrd *nout;
 
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
   me = argv[0];
   if (5 != argc) {
     usage(me);
   }
   if (3
-      != (sscanf(argv[2], "%u", &NN) + sscanf(argv[1], "%lf", &min)
-          + sscanf(argv[3], "%lf", &max))) {
+      != (sscanf(argv[2], "%u", &NN) + airSingleParse(argv[1], "%lf", &min)
+          + airSingleParse(argv[3], "%lf", &max))) {
     fprintf(stderr, "%s: couldn't parse %s %s %s double uint double", me, argv[1],
             argv[2], argv[3]);
     usage(me);
@@ -59,7 +60,11 @@ main(int argc, char *argv[]) {
     gg = airExp(xx);
     if (rr < 0 || ff < 0 || gg < 0 || !AIR_EXISTS(rr) || !AIR_EXISTS(ff)
         || !AIR_EXISTS(gg)) {
-      fprintf(stderr, "%s: problem: %f -> real %f, approx %f %f\n", me, xx, rr, ff, gg);
+      char nb[4][AIR_STRLEN_SMALL + 1], decibuff[AIR_STRLEN_SMALL + 1];
+      const char *DS = airDecimalSeparatorLearn(decibuff);
+      fprintf(stderr, "%s: problem: %s -> real %s, approx %s %s\n", me,
+              airDtoS(nb[0], xx, DS), airDtoS(nb[1], rr, DS), airDtoS(nb[2], ff, DS),
+              airDtoS(nb[2], gg, DS));
       exit(1);
     }
     out[0] = rr;

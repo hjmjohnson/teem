@@ -36,6 +36,8 @@ encodingRaw_read(FILE *file, void *data, size_t elementNum, Nrrd *nrrd,
   char *data_c;
   size_t elementSize, maxChunkSize, remainderValue, chunkSize;
   size_t retTmp;
+  char db[ASP1_S], nb[ASP1_S];
+  const char *ds = airDecimalSeparatorLearn(db);
 
   bsize = nrrdElementSize(nrrd) * elementNum;
 
@@ -61,9 +63,10 @@ encodingRaw_read(FILE *file, void *data, size_t elementNum, Nrrd *nrrd,
       biffAddf(NRRD,
                /* trying C99's %zu conversion sequence instead of airSprintSize_t */
                "%s: fread got only %zu %zu-sized things, not %zu "
-               "(%g%% of expected)",
+               "(%s%% of expected)",
                me, ret, nrrdElementSize(nrrd), elementNum,
-               100.0 * AIR_CAST(double, ret) / AIR_CAST(double, elementNum));
+               airDtoS(nb, 100.0 * AIR_CAST(double, ret) / AIR_CAST(double, elementNum),
+                       ds));
       return 1;
     }
   }
@@ -82,7 +85,8 @@ encodingRaw_read(FILE *file, void *data, size_t elementNum, Nrrd *nrrd,
     savePos = ftell(file);
     if (!fseek(file, 0, SEEK_END)) {
       double frac = (AIR_CAST(double, bsize) / AIR_CAST(double, ftell(file) + 1));
-      fprintf(stderr, "(%s: used %g%% of file for nrrd data)\n", me, 100.0 * frac);
+      fprintf(stderr, "(%s: used %s%% of file for nrrd data)\n", me,
+              airDtoS(nb, 100.0 * frac, ds));
       fseek(file, savePos, SEEK_SET);
     }
   }
@@ -99,6 +103,8 @@ encodingRaw_write(FILE *file, const void *data, size_t elementNum, const Nrrd *n
   size_t elementSize, maxChunkSize, remainderValue, chunkSize;
   size_t retTmp;
   char stmp[3][AIR_STRLEN_SMALL + 1];
+  char db[ASP1_S], nb[ASP1_S];
+  const char *ds = airDecimalSeparatorLearn(db);
 
   AIR_UNUSED(nio);
 
@@ -123,22 +129,23 @@ encodingRaw_write(FILE *file, const void *data, size_t elementNum, const Nrrd *n
     if (retTmp != chunkSize) {
       biffAddf(NRRD,
                "%s: fwrite wrote only %s %s-sized things, not %s "
-               "(%g%% of expected)",
+               "(%s%% of expected)",
                me, airSprintSize_t(stmp[0], ret),
                airSprintSize_t(stmp[1], nrrdElementSize(nrrd)),
                airSprintSize_t(stmp[2], elementNum),
-               100.0 * AIR_CAST(double, ret) / AIR_CAST(double, elementNum));
+               airDtoS(nb, 100.0 * AIR_CAST(double, ret) / AIR_CAST(double, elementNum),
+                       ds));
       return 1;
     }
   }
 
   fflush(file);
   /*
-  if (ferror(file)) {
-    biffAddf(NRRD, "%s: ferror returned non-zero", me);
-    return 1;
-  }
-  */
+   * if (ferror(file)) {
+   *   biffAddf(NRRD, "%s: ferror returned non-zero", me);
+   *   return 1;
+   * }
+   */
 
   return 0;
 }

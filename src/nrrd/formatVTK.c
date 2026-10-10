@@ -136,17 +136,23 @@ formatVTK_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
   airToUpper(nio->line);
   while (!strstr(nio->line, "POINT_DATA")) {
     if (strstr(nio->line, "ORIGIN")) {
-      if (3 != sscanf(nio->line, "ORIGIN %lf %lf %lf", &xm, &ym, &zm)) {
+      if (3
+          != sscanf(nio->line, "ORIGIN %lf %lf %lf", /* NOT C-locale-emulating! */
+                    &xm, &ym, &zm)) {
         biffAddf(NRRD, "%s: couldn't parse ORIGIN line (\"%s\")", me, nio->line);
         return 1;
       }
     } else if (strstr(nio->line, "SPACING")) {
-      if (3 != sscanf(nio->line, "SPACING %lf %lf %lf", &xs, &ys, &zs)) {
+      if (3
+          != sscanf(nio->line, "SPACING %lf %lf %lf", /* NOT C-locale-emulating! */
+                    &xs, &ys, &zs)) {
         biffAddf(NRRD, "%s: couldn't parse SPACING line (\"%s\")", me, nio->line);
         return 1;
       }
     } else if (strstr(nio->line, "ASPECT_RATIO")) {
-      if (3 != sscanf(nio->line, "ASPECT_RATIO %lf %lf %lf", &xs, &ys, &zs)) {
+      if (3
+          != sscanf(nio->line, "ASPECT_RATIO %lf %lf %lf", /* NOT C-locale-emulating! */
+                    &xs, &ys, &zs)) {
         biffAddf(NRRD, "%s: couldn't parse ASPECT_RATIO line (\"%s\")", me, nio->line);
         return 1;
       }
