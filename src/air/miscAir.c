@@ -69,21 +69,28 @@ an empty string; nothing happens in that case. If TEEM_SET_LOCALE_ENV is set to 
 non-empty string that fails with setlocale, then report the error and exit: the caller
 doesn't want to be running with any uncertainty about what locale it will be running
 under. If fverb is non-NULL, use that to fprint the successful setlocale return.
+Extra hack: if the locale name `lstr` starts with '_', then setlocal is called with
+`lstr+1`, and the the verbose feedback about setlocale success is suppressed.
 */
 void
 airSetLocaleFromEnvOrExit(const char *me, FILE *fverb) {
-  char *lenv = getenv(TEEM_SET_LOCALE_ENV);
-  if (airStrlen(lenv)) {
-    const char *lret = setlocale(LC_NUMERIC, lenv);
+  char *lstr = getenv(TEEM_SET_LOCALE_ENV);
+  if (airStrlen(lstr)) {
+    int shhh = 0;
+    if ('_' == lstr[0]) {
+      shhh = 1;
+      lstr += 1;
+    }
+    const char *lret = setlocale(LC_NUMERIC, lstr);
     if (!lret) {
       fprintf(stderr, "%s: setlocale(LC_NUMERIC, \"%s\") failed (returned NULL)\n", me,
-              lenv);
+              lstr);
       exit(1);
     } else {
-      if (fverb) {
+      if (fverb && !shhh) {
         fprintf(fverb,
                 "%s: setlocale(LC_NUMERIC, \"%s\") successfully returned \"%s\"\n", me,
-                lenv, lret);
+                lstr, lret);
       }
     }
   }
