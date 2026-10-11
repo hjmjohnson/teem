@@ -155,8 +155,7 @@ main(int argc, const char **argv) {
     }
     THPRINT_SOURCE("B", hopt, Bopi);
   }
-  char nbuff[AIR_STRLEN_SMALL + 1];
-  printf("C=%s\n", airFtoS(nbuff, C, NULL));
+  airSinglePrintf(stdout, NULL, 0, "C=%g\n", C);
   THPRINT_SOURCE("C", hopt, Copi);
 
   printf("D=[%d;%d;]\n", D[0], D[1]);
