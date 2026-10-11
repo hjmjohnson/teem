@@ -30,7 +30,7 @@ patiently and diplomatically interfacing between the ITK and Teem world.
 When writing out an non-integer number, different parts of the world use different ways
 to separate the integer part from the fractional part. The technical world at large calls
 this by various names including "decimal separator", "decimal mark", or "decimal sign":
-https://en.wikipedia.org/wiki/Decimal_separator . Some printf/sscanf man pages call it
+https://en.wikipedia.org/wiki/Decimal_separator . Some printf/strtod man pages call it
 the "decimal point character", but other docs (e.g. from POSIX) call it the "radix
 character" https://pubs.opengroup.org/onlinepubs/9799919799/functions/fprintf.html which
 is confusing, given its existing meaning: https://en.wikipedia.org/wiki/Radix (the radix
@@ -42,12 +42,12 @@ single character, but are more than one 8-bit `char`.
 *** We use "decimal separator", and use `decisep` as a variable and parameter name.
 
 For C code around things like the NRRD file format that assume '.' as the FP (floating
-point) decimal separator, using printf/sscanf is complicated by their dependency on the
+point) decimal separator, using printf/strtod is complicated by their dependency on the
 current "locale" https://en.wikipedia.org/wiki/C_localization_functions which includes a
 numeric category (`LC_NUMERIC`) of locale-specific behavior. In particular the `lconv`
 struct from https://en.cppreference.com/c/locale/localeconv has the `decimal_point` field
 that in principle is the same thing that will appear in printf output or be assumed in
-sscanf input of string representations of non-integer FP values.  Names for the locale in
+strtod input of string representations of non-integer FP values.  Names for the locale in
 which '.' is the decimal separator include "C", "POSIX", "en_US", and many others. The
 semantics of the C language include that the equivalent of `setlocale(LC_ALL, "C");` is
 called at the start of program execution https://en.cppreference.com/c/locale/setlocale
@@ -75,15 +75,16 @@ implementation and mental cost, for modest aesthetic and ergonomic gain.
 *** The TeemV2 goal is thus that all Teem (even hest) adopts C-locale-emulation.
 
 There are at least three (3) different strategies for doing C-locale-emulation. The
-most intensive is to entirely abstain from library functions like printf and sscanf that
+most intensive is to entirely abstain from library functions like printf and strtod that
 are affected by locale, and directly compute everything for a FP<-->string conversion,
 including hard-coding '.' as decimal separator. We can call this a (1) "locale-agnostic"
 strategy.  An oft-cited example is David Gay's dtoa.c http://www.netlib.org/fp/dtoa.c but
 there are newer methods too https://news.ycombinator.com/item?id=41501625 such as this
-nice single-header library https://github.com/kolemannix/ffc.h . Despite temptations (due
-to discovering that under some locales `sscanf` can fail to parse a string into which
-`sprintf` just wrote a non-integer), Teem/NrrdIO has yet to use locale-agnostic code: it
-shouldn't be our job to replace or fix your broken standard library.
+nice single-header library https://github.com/kolemannix/ffc.h . After learning that
+under some locales `sscanf` can fail to parse a string into which `sprintf` just wrote
+a non-integer), this route looked more tempting, but thankfully so far it seems that
+`strtod` can succeed in FP parsing where `sscanf` fails (still, it shouldn't be our job
+to replace or fix your broken standard library).
 
 In contrast, there are what we can call "locale-aware" strategies for C-locale-emulation.
 A principled but heavy-weight approach is to wrap any FP<-->string conversion code in
@@ -109,8 +110,8 @@ However, experience showed that it is hard to implement the save/restore strateg
 fast, portable, thread-safe way that avoids memory leaks or memory in use at exit.
 
 A more targeted and pragmatic strategy is to accept how library functions like printf and
-sscanf depend on locale.  Instead, just post-process printf output to make '.' be the
-decimal separator, and pre-process sscanf input to convert '.' to the locale's separator.
+strtod depend on locale.  Instead, just post-process printf output to make '.' be the
+decimal separator, and pre-process strtod input to convert '.' to the locale's separator.
 
 *** Let's call this the (3) "string fixing strategy"
 
@@ -148,19 +149,15 @@ so it doesn't have to be relearned.  This file is the starting point of that cha
     as `decisep` to air{F,D}toS/airSto{F,D} enables (3.b) locale compensation. See note
     below about its return being a weird pseudo-Pascal string: decisep works as a
     `char *` string, but decisep[-1] and decisep[-2] store other learned information.
-    In locales where we learn that non-integers cannot be parsed via sscanf (even for
+    In locales where we learn that non-integers cannot be parsed via strtod (even for
     values like 12.5 which can be exactly represented in FP), a warning message is
-    printed, and the warning is re-iterated in later calls to airSto{F,D}.
+    printed, and NULL is returned.
 *** Currently only 1 or 2 byte decimal separators are handled; anything else will cause
     airDecimalSeparatorLearn to return NULL. Places in all the code below that assume
     this limitation on decimal separator size are tagged with "1-OR-2-BYTE-SEPARATOR".
-*** Or, `decisep` can be passed as NULL to air{F,D}toS/airSto{F,D} to say:
-    "I choose to be affected by locale: do no string pre- or post-processing"
-    which is only ok if e.g. the caller already knows that '.' is the decimal separator,
-    or the caller does not want C-locale-emulation.
-*** There is no fall-back method for air{F,D}toS/airSto{F,D} to be locale-aware without
-    passing a non-NULL `decisep`. airSinglePrintf and airSingleParse can be used for
-    one-off FP printing and parsing (they internally re-learn decisep with each call).
+*** `decisep` is what allows air{F,D}toS/airSto{F,D} to be locale-aware; there is no
+    fallback. airSinglePrintf and airSingleParse can be used for one-off FP printing
+    and parsing (they internally re-learn decisep with each call).
 *** Avoiding the expense of re-learning the `decisep` inside air{F,D}toS/airSto{F,D}
     does incur a risk that the caller calls `setlocale` AFTER airDecimalSeparatorLearn
     but BEFORE calling air{F,D}toS/airSto{F,D}. Clearly, if `setlocale` changed to a new
@@ -202,27 +199,33 @@ sense to `free(decisep)` since `decisep` never arose from a heap allocation.  It
 purpose that airDecimalSeparatorLearn returns a `const char *` and takes a `char
 str[AIR_STRLEN_SMALL + 1]`, encouraging use of a stack-allocated buffer.
 
-ALSO: decisep[-2] is set to flag if the current locale does not have a functioning
-sscanf (such as GLK's Mac in 2026 under fa_IR.UTF-8) */
+ALSO: decisep[-2] is set 1 to flag if the current locale does *not* have a functioning
+strtod, or 0 otherwise.
+
+trivia: on GLK's Mac in 2026 under fa_IR.UTF-8, zh_TW.Big5, or zh_CN.eucCN, sscanf failed
+to parse a non-integer with those two-byte decimal separators (weirdly, the two-byte
+separator under zh_CN.GB2312 *did* work). In those cases, however, strtod did work.
+*/
 const char *
 airDecimalSeparatorLearn(char str[ASP1_S]) {
   static const char me[] = "airDecimalSeparatorLearn";
-  char *decisep;
-  int plen, pret;
-  unsigned int len;
-  double pval;
+  char *decisep, *dend, *fend;
+  int plen;
+  unsigned int slen, deciseplen;
+  double dval;
+  double fval;
 #define STR_(X) #X
 #define STR(x)  STR_(x)
 #define TVAL_V  12.5 /* test value, exact in both 32- and 64- bit float */
-#define TVAL_S  STR(TVAL_V)
-  /* indices 0123 for 4 bytes total with '.' decimal separator,
+  /*   indices  0123 for 4 bytes total with '.' decimal separator,
      or 5 for a two-byte decimal separator */
+#define TVAL_S  STR(TVAL_V)
   /* set in `str` a string for TVAL_V */
   str[0] = '\0';
   str[1] = '\0';
   plen = snprintf(str, ASP1_S, "%g", TVAL_V);
-  if (plen < 4 || 5 < plen /* 1-OR-2-BYTE-SEPARATOR */
-      || '1' != str[0] || '2' != str[1]) {
+  if (!(4 <= plen && plen <= 5 /* 1-OR-2-BYTE-SEPARATOR */
+        && '1' == str[0] && '2' == str[1])) {
     /* something is very strange; the string snprintf intends to write is either
        as short as strlen("125"), which implies there was no decimal separator,
        or too long to be from any known (1 or 2 byte) decimal separator,
@@ -234,47 +237,63 @@ airDecimalSeparatorLearn(char str[ASP1_S]) {
     fprintf(stderr, "!%s: 00 str=|%s| --> plen=%d, strlen=%u\n", me, str, plen,
             AIR_UINT(strlen(str)));
   /* find the last char of the string (and its length) */
-  len = 2;
+  slen = 2;
   do {
     if (VERB)
-      fprintf(stderr, "!%s: ... str[len=%u]='%c'=%d\n", me, len, str[len],
-              AIR_UCHAR(str[len]));
-    len++;
-  } while (str[len]);
+      fprintf(stderr, "!%s: ... str[slen=%u]='%c'=%d\n", me, slen, str[slen],
+              AIR_UCHAR(str[slen]));
+    slen++;
+  } while (str[slen]);
   if (VERB)
-    fprintf(stderr, "!%s: 11 str[len-1=%u]='%c'=%d\n", me, len - 1, str[len - 1],
-            str[len - 1]);
-  if ('5' != str[len - 1]) {
+    fprintf(stderr, "!%s: 11 str[slen-1=%u]='%c'=%d\n", me, slen - 1, str[slen - 1],
+            str[slen - 1]);
+  if ('5' != str[slen - 1]) {
     /* very strange again if string didn't end with '5' */
     return NULL;
   }
-  /* set the decisep pointer that will be returned */
+  /* set the decisep pointer that will be returned, save strlen(decisep) */
   decisep = str + 2;
-  /* now see if sscanf actually works here to parse a floating point number */
-  pret = sscanf(str, "%lf", &pval);
-  if (!(1 == pret && TVAL_V == pval)) {
-    /* e.g. GLK's Mac in Oct 2026 under fa_IR.UTF-8, zh_TW.Big5, or zh_CN.eucCN.
-       Weirdly, the two-byte separator under zh_CN.GB2312 *did* work. */
-    fprintf(stderr,
-            "%s: Warning: in this locale (with a %u-byte decimal separator) "
-            "`sscanf(\"%s\", %%lf, &dbl)` does not work to recover the simple "
-            "non-integer value " TVAL_S ": airStoD or airStoF cannot be trusted.\n",
-            me, len - 3, str);
-    decisep[-2] = (char)8; /* 8 like B for Bad */
-  } else {
-    decisep[-2] = (char)0; /* no error */
-  }
-  /* save the length into the first slot (above we asserted that plen >= 4) */
-  decisep[-1] = (char)(len - 3); /* -3 because of '1', '2', and '5' */
-  /* drop the '5' from the snprintf result */
-  str[len - 1] = '\0';
-  if (VERB) fprintf(stderr, "!%s: 22 str=|%s| len=%u\n", me, str, len);
+  deciseplen = slen - 3; /* -3 because of '1', '2', and '5' */
+  /* now see if strtod/strtof actually works here to parse a double/float */
+  dval = strtod(str, &dend);
+  fval = strtof(str, &fend);
   if (VERB)
-    fprintf(stderr, "!%s: 33 decisep=|%s| with saved length %u\n", me, decisep,
-            (unsigned int)(decisep[-1]));
+    fprintf(stderr,
+            "!%s: 22 dval=%.17g dend-str=%u *dend=%d;  "
+            "fval=%.9g fend-str=%u *fend=%d\n",
+            me, dval, AIR_UINT(dend - str), *dend, fval, AIR_UINT(fend - str), *fend);
+  if (!(TVAL_V == dval && *dend == '\0' /* */
+        && AIR_FLOAT(TVAL_V) == fval && *fend == '\0')) {
+    fprintf(stderr,
+            "%s: Warning: in this locale (with a %u-byte decimal separator) both "
+            "`strtod` and `strtof` do not work to recover the simple non-integer "
+            "value " TVAL_S " from \"%s\": airStoD or airStoF won't work.\n",
+            me, deciseplen, str);
+    decisep[-2] = 1;
+  } else {
+    decisep[-2] = 0; /* strtod/strtof worked without error */
+  }
+  /* save the length Pascal-style */
+  decisep[-1] = (char)(deciseplen);
+  /* drop the '5' from the snprintf result */
+  str[slen - 1] = '\0';
+  if (VERB)
+    fprintf(stderr, "!%s: 33 decisep=|%s| with saved length %u and error %u\n", me,
+            decisep, (unsigned int)(decisep[-1]), (unsigned int)(decisep[-2]));
 #undef VERB
-#undef TVAL
+#undef STR_
+#undef STR
+#undef TVAL_V
+#undef TVAL_S
   return decisep;
+}
+
+static int
+decisepGood(const char *decisep) {
+  return (decisep                                   /* want non-NULL decisep, */
+          && (1 == decisep[-1] || 2 == decisep[-1]) /* a 1-OR-2-BYTE-SEPARATOR, and */
+          && !decisep[-2]                           /* to know that parsing works */
+  );
 }
 
 /* fp2str
@@ -286,10 +305,6 @@ airSinglePrintf, for the case where it is passed a format string that is only "%
   post-parsing (round-trip) equality with fval0
   else (if `!singlePrec`) prints `dval0` with enough precision to ensure
   post-parsing (round-trip) equality with dval0
-- BUT UNLIKE airSinglePrintf (apart from efforts to add locale-awareness within it),
-  this will use the curent locale's decimal separator `decisep` (if non-NULL),
-  to post-process the output string from snprintf (which is locale-dependent) to
-  change an occurance of `decisep` to instead be '.'
 
 NOTE: the `decisep` passed here *MUST* be the return from airDecimalSeparatorLearn,
 because of how that creates a special string with earlier bytes carrying extra info.
@@ -298,11 +313,13 @@ static char *
 fp2str(char str[ASP1_S], float fval0, double dval0, int singlePrec,
        const char *decisep) {
   static const char me[] = "fp2str";
-  int cls, accurate, pret;
+  int cls, accurate;
   float fval1;
   double dval1;
-  /* since code below is special-cased to 1 or 2 byte decimal separators */
-  assert(!decisep || (1 == decisep[-1] || 2 == decisep[-1]));
+
+  if (!(str && decisepGood(decisep))) {
+    return NULL;
+  }
   /* first handle the special (non-finite) cases */
   cls = singlePrec ? airFPClass_f(fval0) : airFPClass_d(dval0);
   if (airFP_NAN == cls) {
@@ -317,70 +334,58 @@ fp2str(char str[ASP1_S], float fval0, double dval0, int singlePrec,
 #define VERB 0
   /* else not a special value; try snprintf'ing it with %g (in current locale) */
   snprintf(str, ASP1_S, "%g", singlePrec ? fval0 : dval0);
-  if (VERB) fprintf(stderr, "!%s: snprintf(%%g) -> \"%s\"\n", me, str);
-  /* If this locale is so busted that even things like "12.5" cannot be correctly
-     parsed (which generated a warning message from airDecimalSeparatorLearn above, and
-     is recorded in decisep[-2]), the sscanf test here is kind of meaningless, but the
-     final result will be that the value will be printed with %.9g or %.17g, which
-     is the best we can do. */
+  if (VERB)
+    fprintf(stderr, "!%s: snprintf of %s with %%g -> \"%s\"\n", me,
+            singlePrec ? "flt" : "dbl", str);
   if (singlePrec) {
-    pret = sscanf(str, "%f", &fval1);
+    fval1 = strtof(str, NULL);
     accurate = (fval1 == fval0);
   } else {
-    pret = sscanf(str, "%lf", &dval1);
+    dval1 = strtod(str, NULL);
     accurate = (dval1 == dval0);
-  }
-  if (1 != pret) {
-    snprintf(str, ASP1_S, "air/%s: sscanf(sprintf) error", me);
-    return str;
   }
   if (VERB)
     fprintf(stderr,
-            singlePrec ? "!%s: parsed %.9g vs %.9g (accurate==%d)\n"
-                       : "!%s: parsed %.17g vs %.17g (accurate==%d)\n",
+            singlePrec ? "!%s: parsed flt %.9g vs %.9g (accurate==%d)\n"
+                       : "!%s: parsed dbl %.17g vs %.17g (accurate==%d)\n",
             me, singlePrec ? fval1 : dval1, singlePrec ? fval0 : dval0, accurate);
   if (!accurate) {
+    /* print again with precision enough for 32- or 64-bit float */
     snprintf(str, ASP1_S, singlePrec ? "%.9g" : "%.17g", singlePrec ? fval0 : dval0);
     if (VERB) fprintf(stderr, "!%s: 2nd try: snprintf(%%g) -> \"%s\"\n", me, str);
-    /* (in busted locales, even sscanf of this will fail round-trip accuracy, alas) */
   }
   /* we now have an accurate string representation in `str` */
-  if (decisep) {
-    if (2 == decisep[-1] /* 1-OR-2-BYTE-SEPARATOR */
-        || /* else its length=1 and */ '.' != decisep[0]) {
-      /* we need to look for the decimal separator to emulate "C" locale;
-         both cases here assume the decimal separator can only appear once */
-      unsigned int ii, jj;
-      if (VERB)
-        fprintf(stderr, "!%s: decisep=|%s| (length %u)\n", me, decisep,
-                AIR_UINT(decisep[-1]));
-      if (1 == decisep[-1]) {
-        /* simple sweep: replace the single character if we see it */
-        for (ii = 0; str[ii]; ii++) {
-          if (decisep[0] == str[ii]) {
-            str[ii] = '.'; /* change and bail */
-            break;
-          }
-        }
-      } else { /* 1-OR-2-BYTE-SEPARATOR */
-        /* decimal separator is two chars, have to shuffle down chars after change */
-        for (ii = 0; str[ii + 1]; ii++) {
-          if (decisep[0] == str[ii] && decisep[1] == str[ii + 1]) {
-            str[ii] = '.';
-            jj = ii + 1;
-            do {
-              str[jj] = str[jj + 1];
-              jj++;
-            } while (str[jj]);
-            break;
-          }
+  if (2 == decisep[-1] /* 1-OR-2-BYTE-SEPARATOR */
+      || /* else its length=1 and */ '.' != decisep[0]) {
+    /* we need to look and change the decimal separator for C-locale-emulation;
+       both cases here assume the decimal separator only appears once */
+    unsigned int ii;
+    if (VERB)
+      fprintf(stderr, "!%s: decisep=|%s| (length %u)\n", me, decisep,
+              AIR_UINT(decisep[-1]));
+    if (1 == decisep[-1]) {
+      /* simple sweep: replace the single character if we see it */
+      for (ii = 0; str[ii]; ii++) {
+        if (decisep[0] == str[ii]) {
+          str[ii] = '.'; /* change and bail */
+          break;
         }
       }
-      if (VERB) fprintf(stderr, "!%s: after decisep change: \"%s\"\n", me, str);
+    } else { /* 1-OR-2-BYTE-SEPARATOR */
+      /* decimal separator is two chars, have to shuffle down chars after change */
+      for (ii = 0; str[ii + 1]; ii++) {
+        if (decisep[0] == str[ii] && decisep[1] == str[ii + 1]) {
+          unsigned int jj = ii + 1;
+          str[ii] = '.';
+          do {
+            str[jj] = str[jj + 1];
+            jj++;
+          } while (str[jj]);
+          break;
+        }
+      }
     }
-  } else {
-    if (VERB)
-      fprintf(stderr, "!%s: HEY why am I being called with a NULL decisep?\n", me);
+    if (VERB) fprintf(stderr, "!%s: after decisep change: \"%s\"\n", me, str);
   }
 #undef VERB
   return str;
@@ -401,7 +406,8 @@ airDtoS(char str[ASP1_S], double dval, const char *decisep) {
 /* str2fp
 implements airStoF and airStoD, which are intended to be **part** of replacing
 airSingleParse (née airSingleSscanf), for the case where it is passed a format string
-that is only "%g" (for float value) or "%lg" (for double): We interpret "NaN", "inf", and
+that is only "%g" (for float value) or "%lg" (for double): We interpret "NaN", "inf",
+and
 "-inf" (case-insensitive) as those special values, as well as (if non-NrrdIO) "-pi" and
 "pi" as those useful values, HOWEVER, airSingleSscanf would do this with a `strstr`
 substring search, which meant that "banana" would be parsed as a NaN. That's confusing
@@ -425,13 +431,14 @@ str2fp(float *fvalP, double *dvalP, int singlePrec, const char *str0,
   char *str;
   size_t str0len;
   int ret;
-  if (!str0) {
+  if (!(str0 && decisepGood(decisep))) {
     return EOF;
   }
 #define VERB 0
   str0len = strlen(str0);
   /* allocate local copy for one extra char, in case needed for decisep conversion
-     (+1 for extra decisep character, +1 for nul-termination ==> +2 */
+     +1 for extra decisep character (1-OR-2-BYTE-SEPARATOR),
+     +1 for nul-termination ==> +2 */
   str = AIR_CALLOC(str0len + 2, char);
   if (!str) {
     return EOF;
@@ -443,7 +450,7 @@ str2fp(float *fvalP, double *dvalP, int singlePrec, const char *str0,
     fprintf(stderr, "!%s: airToLower -> \"%s\" (length %u)\n", me, str,
             AIR_UINT(strlen(str)));
   /* See if str matches strings for one of the special values. See NOTE above about
-     how airSingleSscanf would parse "banana" as a NaN; we don't do that here. */
+     how old airSingleSscanf would parse "banana" as a NaN; we don't do that here. */
 #define HANDLE(STR, VAL)                                                                \
   if (!strcmp(str, (STR))) {                                                            \
     if (singlePrec) {                                                                   \
@@ -464,87 +471,87 @@ str2fp(float *fvalP, double *dvalP, int singlePrec, const char *str0,
 #undef HANDLE
 
   /* else we try in earnest to parse an FP value */
-  if (decisep) {
-    if (2 == decisep[-1] /* 1-OR-2-BYTE-SEPARATOR */
-        || /* else its length=1 and */ '.' != decisep[0]) {
-      /* There is work to do to implement C-locale-emulation:
-         Look for incoming '.' to change to the decimal separator,
-         both cases here assume the decimal separator can only appear once */
-      unsigned int ii, jj;
-      if (VERB)
-        fprintf(stderr, "!%s: decisep=|%s| (length %u)\n", me, decisep,
-                AIR_UINT(decisep[-1]));
-      if ((char)8 == decisep[-2]) {
-        /* this was set as a flag by airDecimalSeparatorLearn */
-        fprintf(
-          stderr,
-          "air/%s: Warning: in this locale (with %u-byte decimal separator \"%s\"), "
-          "sscanf() for floating-point values is broken; "
-          "non-integer values will not be correctly parsed.\n",
-          me, AIR_UINT(decisep[-1]), decisep);
-        /* and we proceed anyway; maybe we should set errno? */
-      }
-      if (1 == decisep[-1]) {
-        /* first check for locale's decisep in original (non-lower-case) string */
-        for (ii = 0; str0[ii]; ii++) {
-          if (decisep[0] == str0[ii]) {
-            /* whoops: we saw the locale's decisep already in the input, which is not
-               valid with our goal of C-locale-emulation, sorry. */
-            free(str);
-            return 0;
-          }
-        }
-        /* simple sweep: replace the single char if we see it */
-        for (ii = 0; str[ii]; ii++) {
-          if ('.' == str[ii]) {
-            str[ii] = decisep[0]; /* change and bail */
-            break;
-          }
-        }
-      } else { /* 1-OR-2-BYTE-SEPARATOR */
-        for (ii = 0; str0[ii]; ii++) {
-          if (ii && decisep[0] == str0[ii - 1] && decisep[1] == str0[ii]) {
-            /* same whoops as above: accepting this is not C-locale-emulation */
-            free(str);
-            return 0;
-          }
-        }
-        /* decimal separator is two chars, have to shuffle up chars after change */
-        for (ii = 0; str[ii]; ii++) {
-          if ('.' == str[ii]) {
-            str[ii] = decisep[0];
-            if (VERB)
-              fprintf(stderr, "!%s: 00 decisep swap -> \"%s\" (length %u)\n", me, str,
-                      AIR_UINT(strlen(str)));
-            str[str0len + 1] = '\0';
-            jj = str0len;
-            do {
-              str[jj] = str[jj - 1];
-              jj--;
-              if (VERB)
-                fprintf(stderr, "!%s: ... (%u) decisep swap -> \"%s\" (length %u)\n", me,
-                        jj, str, AIR_UINT(strlen(str)));
-            } while (jj > ii + 1);
-            str[ii + 1] = decisep[1];
-            break;
-          }
-        }
-      }
-      if (VERB)
-        fprintf(stderr, "!%s: post decisep swap -> \"%s\" (length %u)\n", me, str,
-                AIR_UINT(strlen(str)));
-    }
-  } else {
+  if (2 == decisep[-1] /* 1-OR-2-BYTE-SEPARATOR */
+      || /* else its length=1 and */ '.' != decisep[0]) {
+    /* There is work to do to implement C-locale-emulation:
+       Look for incoming '.' to change to the decimal separator,
+       both cases here assume the decimal separator can only appear once */
+    unsigned int ii;
     if (VERB)
-      fprintf(stderr, "!%s: HEY why am I being called with a NULL decisep?\n", me);
+      fprintf(stderr, "!%s: decisep=|%s| (length %u)\n", me, decisep,
+              AIR_UINT(decisep[-1]));
+    if (1 == decisep[-1]) {
+      /* first check for locale's decisep in original (non-lower-case) string */
+      for (ii = 0; str0[ii]; ii++) {
+        if (decisep[0] == str0[ii]) {
+          /* whoops: we saw the locale's decisep already in the input, which is not
+             valid with our goal of C-locale-emulation, sorry. */
+          free(str);
+          return 0;
+        }
+      }
+      /* simple sweep: replace the single char if we see it */
+      for (ii = 0; str[ii]; ii++) {
+        if ('.' == str[ii]) {
+          str[ii] = decisep[0]; /* change and bail */
+          break;
+        }
+      }
+    } else { /* 1-OR-2-BYTE-SEPARATOR */
+      /* its a 2-byte separator */
+      for (ii = 1; str0[ii]; ii++) {
+        if (decisep[0] == str0[ii - 1] && decisep[1] == str0[ii]) {
+          /* same whoops as above: accepting this is not C-locale-emulation */
+          free(str);
+          return 0;
+        }
+      }
+      /* decimal separator is two chars, have to shuffle up chars after change */
+      for (ii = 0; str[ii]; ii++) {
+        if ('.' == str[ii]) {
+          unsigned int jj;
+          str[ii] = decisep[0];
+          if (VERB)
+            fprintf(stderr, "!%s: 00 decisep swap -> \"%s\" (length %u)\n", me, str,
+                    AIR_UINT(strlen(str)));
+          str[str0len + 1] = '\0';
+          jj = str0len;
+          do {
+            str[jj] = str[jj - 1];
+            jj--;
+            if (VERB)
+              fprintf(stderr, "!%s: ... (%u) decisep swap -> \"%s\" (length %u)\n", me,
+                      jj, str, AIR_UINT(strlen(str)));
+          } while (jj > ii + 1);
+          str[ii + 1] = decisep[1];
+          break;
+        }
+      }
+    }
+    if (VERB)
+      fprintf(stderr, "!%s: post decisep swap -> \"%s\" (length %u)\n", me, str,
+              AIR_UINT(strlen(str)));
   }
-  /* now we run (locale-dependent) sscanf */
+  /* now we run (locale-dependent) strtod/strtof */
+  char *end;
   if (singlePrec) {
-    ret = sscanf(str, "%f", fvalP);
-    if (VERB) fprintf(stderr, "!%s: parsed %d float %.9g(native)\n", me, ret, *fvalP);
+    *fvalP = strtof(str, &end);
   } else {
-    ret = sscanf(str, "%lf", dvalP);
-    if (VERB) fprintf(stderr, "!%s: parsed %d double %.17g(native)\n", me, ret, *dvalP);
+    *dvalP = strtod(str, &end);
+  }
+  ret = (end != str && *end == '\0');
+  if (VERB) {
+    fprintf(stderr, "!%s: %s %s parse %s", me, singlePrec ? "strtof" : "strtod",
+            ret ? "did" : "FAILED to", singlePrec ? "float" : "double");
+    if (ret) {
+      if (singlePrec) {
+        fprintf(stderr, " %.9g(native)\n", *fvalP);
+      } else {
+        fprintf(stderr, " %.17g(native)\n", *dvalP);
+      }
+    } else {
+      fprintf(stderr, "\n");
+    }
   }
   free(str);
   return ret;

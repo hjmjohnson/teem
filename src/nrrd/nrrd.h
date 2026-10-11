@@ -516,7 +516,7 @@ typedef struct NrrdIoState_t {
   /*                             (new for TeemV2) ON READ+WRITE For learning and
                                  saving the current locale's decimal separator. NRRD
                                  files need to consistently use '.' as the decimal
-                                 separator, but the sscanf and printf that are used to
+                                 separator, but the strtod and printf that are used to
                                  read and write them are affected by the locale, in
                                  which the decimal separator could be ',' or various
                                  two-byte sequences. See air/fpio.c for a detailed

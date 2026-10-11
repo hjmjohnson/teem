@@ -45,7 +45,7 @@ main(int argc, const char *argv[]) {
       "                              https://en.wikipedia.org/wiki/GB_2312, or\n"
       "\"\" for no explicit call to setlocale().\n"
       "For a fun time, run:\n"
-      "   locale -a | xargs -n 1 -I %% test/t_fpio %% -1 -1 |& grep decisep | sort\n\n");
+      "   locale -a | xargs -n 1 -I %% test/t_fpio %% -1 -1 |& sort\n\n");
     // also preserving here for posterity a command that usefully showed the
     // various separators on linux:
     // clang-format off
@@ -95,7 +95,7 @@ main(int argc, const char *argv[]) {
     printf("%c%d", !ii ? ' ' : ',', AIR_UCHAR(dcs[ii]));
   }
   printf(" (%s %s)\n", localestr,
-         (char)8 == dcs[-2] ? "HAS BUSTED sscanf" : "sscanf works");
+         (char)8 == dcs[-2] ? "HAS BUSTED strtod" : "strtod works");
 
   if (!(-1 == A && -1 == B)) {
     double dval1, dval0 = (double)A / B;
