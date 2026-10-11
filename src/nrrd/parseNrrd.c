@@ -396,7 +396,7 @@ static int /* Biff: maybe:5:1 */
 spaceVectorParse(double val[NRRD_SPACE_DIM_MAX], char **hhP, unsigned int spaceDim,
                  const char *decisep, int useBiff) {
   static const char me[] = "spaceVectorParse";
-  char *hh, *buff, sep[] = ",)";
+  char *hh, *buff, sep[] = ",";
   airArray *mop;
   unsigned int ret, dd;
   size_t length;
@@ -460,8 +460,8 @@ spaceVectorParse(double val[NRRD_SPACE_DIM_MAX], char **hhP, unsigned int spaceD
       airMopError(mop);
       return 1;
     }
-    /* terminate at end paren */
-    *(hh + 1) = 0;
+    /* terminate *on* end paren */
+    *hh = '\0';
     length += strlen(buff);
     /* see if we have too many fields */
     ret = airStrntok(buff + 1, sep);
@@ -506,7 +506,7 @@ spaceVectorParse(double val[NRRD_SPACE_DIM_MAX], char **hhP, unsigned int spaceD
       return 1;
     }
   }
-  *hhP += length;
+  *hhP += length + 1; /* for the ')' we '\0'd out */
   airMopOkay(mop);
   return 0;
 }
