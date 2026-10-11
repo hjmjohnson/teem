@@ -428,7 +428,9 @@ static int
 str2fp(float *fvalP, double *dvalP, int singlePrec, const char *str0,
        const char *decisep) {
   static const char me[] = "str2fp";
-  char *str;
+  char *str, *end;
+  float fval;
+  double dval;
   size_t str0len;
   int ret;
   if (!(str0 && decisepGood(decisep))) {
@@ -533,13 +535,20 @@ str2fp(float *fvalP, double *dvalP, int singlePrec, const char *str0,
               AIR_UINT(strlen(str)));
   }
   /* now we run (locale-dependent) strtod/strtof */
-  char *end;
   if (singlePrec) {
-    *fvalP = strtof(str, &end);
+    fval = strtof(str, &end);
   } else {
-    *dvalP = strtod(str, &end);
+    dval = strtod(str, &end);
   }
   ret = (end != str && *end == '\0');
+  if (ret) {
+    /* only save to caller-supplied variables if consumed everything */
+    if (singlePrec) {
+      *fvalP = fval;
+    } else {
+      *dvalP = dval;
+    }
+  }
   if (VERB) {
     fprintf(stderr, "!%s: %s %s parse %s", me, singlePrec ? "strtof" : "strtod",
             ret ? "did" : "FAILED to", singlePrec ? "float" : "double");
