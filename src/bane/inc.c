@@ -114,7 +114,7 @@ incAnswer_RangeRatio(double *minP, double *maxP, Nrrd *hist, double *incParm,
 **
 ** incParm[0]: resolution of histogram generated
 ** incParm[1]: PERCENT of hits to throw away, by nibbling away at
-** lower and upper ends of range, in a manner dependant on the
+** lower and upper ends of range, in a manner dependent on the
 ** range type
 */
 static int /* Biff: 1 */
