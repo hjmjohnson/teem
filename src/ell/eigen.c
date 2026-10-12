@@ -543,15 +543,15 @@ ell_3m2sub_eigenvalues_d(double eval[3], const double _m[9]) {
   B = m[0] * m[3] - m[1] * m[2];
   Dsq = A * A - 4 * B;
   /*
-  fprintf(stderr, "!%s: m = {{%f,%f},{%f,%f}} -> A=%f B=%f Dsq=%.17f %s 0 (%.17f)\n", me,
-          m[0], m[1], m[2], m[3], A, B, Dsq,
-          (Dsq > 0 ? ">" : (Dsq < 0 ? "<" : "==")), eps);
-  fprintf(stderr, "!%s: Dsq = \n", me);
-  airFPFprintf_d(stderr, Dsq);
-  fprintf(stderr, "!%s: eps = \n", me);
-  airFPFprintf_d(stderr, eps);
-  ell_3m_print_d(stderr, _m);
-  */
+   * fprintf(stderr, "!%s: m = {{%f,%f},{%f,%f}} -> A=%f B=%f Dsq=%.17f %s 0 (%.17f)\n",
+   *         me, m[0], m[1], m[2], m[3], A, B, Dsq,
+   *         (Dsq > 0 ? ">" : (Dsq < 0 ? "<" : "==")), eps);
+   * fprintf(stderr, "!%s: Dsq = \n", me);
+   * airFPFprintf_d(stderr, Dsq);
+   * fprintf(stderr, "!%s: eps = \n", me);
+   * airFPFprintf_d(stderr, eps);
+   * ell_3m_print_d(stderr, _m);
+   */
   if (Dsq > eps) {
     D = sqrt(Dsq);
     eval[0] = (-A + D) / 2;
@@ -568,9 +568,9 @@ ell_3m2sub_eigenvalues_d(double eval[3], const double _m[9]) {
     roots = ell_cubic_root_single_double;
   }
   /*
-  fprintf(stderr, "!%s: Dsq=%f, roots=%d (%f %f %f)\n",
-          me, Dsq, roots, eval[0], eval[1], eval[2]);
-  */
+   * fprintf(stderr, "!%s: Dsq=%f, roots=%d (%f %f %f)\n",
+   *         me, Dsq, roots, eval[0], eval[1], eval[2]);
+   */
   return roots;
 }
 
@@ -784,16 +784,16 @@ ell_6ms_eigensolve_d(double eval[6], double _evec[36], const double sym[21],
     }
   }
   /*
-  fprintf(stderr, "!%s(INIT): m = [", me);
-  for (rrI=0; rrI<6; rrI++) {
-    for (ccI=0; ccI<6; ccI++) {
-      fprintf(stderr, "%f%s",
-              (rrI <= ccI ? mat[0][rrI][ccI] : mat[0][ccI][rrI]),
-              ccI<5 ? "," : (rrI<5 ? ";" : "]"));
-    }
-    fprintf(stderr, "\n");
-  }
-  */
+   * fprintf(stderr, "!%s(INIT): m = [", me);
+   * for (rrI=0; rrI<6; rrI++) {
+   *   for (ccI=0; ccI<6; ccI++) {
+   *     fprintf(stderr, "%f%s",
+   *             (rrI <= ccI ? mat[0][rrI][ccI] : mat[0][ccI][rrI]),
+   *             ccI<5 ? "," : (rrI<5 ? ";" : "]"));
+   *   }
+   *   fprintf(stderr, "\n");
+   * }
+   */
   maxI[0] = maxI[1] = UINT_MAX; /* quiet warnings about using maxI unset */
   e_sum_find(maxI, &sumon, &sumoff, mat[0]);
   cur = 1; /* fake out anticipating first line of loop */
@@ -817,24 +817,24 @@ ell_6ms_eigensolve_d(double eval[6], double _evec[36], const double sym[21],
     cc = 1 / sqrt(tt * tt + 1);
     ss = cc * tt;
     /*
-    fprintf(stderr, "!%s(%u): maxI = (P,Q) = (%u,%u) --> ss=%f, cc=%f\n",
-            me, iter, P, Q, ss, cc);
-    fprintf(stderr, "     r = [");
-    for (rrI=0; rrI<6; rrI++) {
-      for (ccI=0; ccI<6; ccI++) {
-        fprintf(stderr, "%g%s",
-                (rrI == ccI
-                 ? (rrI == P || rrI == Q ? cc : 1.0)
-                 : (rrI == P && ccI == Q
-                    ? ss
-                    : (rrI == Q && ccI == P
-                       ? -ss
-                       : 0))),
-                ccI<5 ? "," : (rrI<5 ? ";" : "]"));
-      }
-      fprintf(stderr, "\n");
-    }
-    */
+     * fprintf(stderr, "!%s(%u): maxI = (P,Q) = (%u,%u) --> ss=%f, cc=%f\n",
+     *         me, iter, P, Q, ss, cc);
+     * fprintf(stderr, "     r = [");
+     * for (rrI=0; rrI<6; rrI++) {
+     *   for (ccI=0; ccI<6; ccI++) {
+     *     fprintf(stderr, "%g%s",
+     *             (rrI == ccI
+     *              ? (rrI == P || rrI == Q ? cc : 1.0)
+     *              : (rrI == P && ccI == Q
+     *                 ? ss
+     *                 : (rrI == Q && ccI == P
+     *                    ? -ss
+     *                    : 0))),
+     *             ccI<5 ? "," : (rrI<5 ? ";" : "]"));
+     *   }
+     *   fprintf(stderr, "\n");
+     * }
+     */
     /* initialize by copying whole matrix */
     for (rrI = 0; rrI < 6; rrI++) {
       for (ccI = rrI; ccI < 6; ccI++) {
@@ -877,16 +877,16 @@ ell_6ms_eigensolve_d(double eval[6], double _evec[36], const double sym[21],
     e_sum_find(maxI, &sumon, &sumoff, mat[1 - cur]);
 
     /*
-    fprintf(stderr, "!%s(%u): m = [", me, iter);
-    for (rrI=0; rrI<6; rrI++) {
-      for (ccI=0; ccI<6; ccI++) {
-        fprintf(stderr, "%f%s",
-                (rrI <= ccI ? mat[1-cur][rrI][ccI] : mat[1-cur][ccI][rrI]),
-                ccI<5 ? "," : (rrI<5 ? ";" : "]"));
-      }
-      fprintf(stderr, "\n");
-    }
-    */
+     * fprintf(stderr, "!%s(%u): m = [", me, iter);
+     * for (rrI=0; rrI<6; rrI++) {
+     *   for (ccI=0; ccI<6; ccI++) {
+     *     fprintf(stderr, "%f%s",
+     *             (rrI <= ccI ? mat[1-cur][rrI][ccI] : mat[1-cur][ccI][rrI]),
+     *             ccI<5 ? "," : (rrI<5 ? ";" : "]"));
+     *   }
+     *   fprintf(stderr, "\n");
+     * }
+     */
     /* iter++; */
   }
   /* 1-cur is index of final solution */
