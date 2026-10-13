@@ -202,6 +202,7 @@ mossSamplerSample(double *val, mossSampler *smplr, double xPos, double yPos) {
   unsigned int ci, nchan;
   double (*lup)(const void *v, size_t I);
   const void *data;
+  DECISEP_DECL(4);
 
   if (!(val && smplr && smplr->ivc)) {
     return 1;
@@ -218,7 +219,12 @@ mossSamplerSample(double *val, mossSampler *smplr, double xPos, double yPos) {
   frad = fdiam / 2;
   if (smplr->verbose) {
     printf("%s: fdiam = %d; frad = %d\n", me, fdiam, frad);
-    printf("%s: {x,y}Pos = %g %g --> %d %d  +  %g %g\n", me, xPos, yPos, xi, yi, xf, yf);
+    printf("%s: {x,y}Pos = "
+           "%s %s --> %d %d  +  "
+           "%s %s\n",
+           me,                                                         /* */
+           airDtoS(Nb[0], xPos, Ds), airDtoS(Nb[1], yPos, Ds), xi, yi, /* */
+           airDtoS(Nb[2], xf, Ds), airDtoS(Nb[3], yf, Ds));
   }
   for (ii = 1 - frad; ii <= frad; ii++) {
     int ai = ii - (1 - frad);
@@ -227,8 +233,9 @@ mossSamplerSample(double *val, mossSampler *smplr, double xPos, double yPos) {
     smplr->xFslw[ai] = xf - ii;
     smplr->yFslw[ai] = yf - ii;
     if (smplr->verbose) {
-      printf("  orig --> {x,y}Idx[%d->%d]: %d %d ; {x,y}Fsl %g %g\n", ii, ai,
-             smplr->xIdx[ai], smplr->yIdx[ai], smplr->xFslw[ai], smplr->yFslw[ai]);
+      printf("  orig --> {x,y}Idx[%d->%d]: %d %d ; {x,y}Fsl %s %s\n", ii, ai,
+             smplr->xIdx[ai], smplr->yIdx[ai], airDtoS(Nb[0], smplr->xFslw[ai], Ds),
+             airDtoS(Nb[1], smplr->yFslw[ai], Ds));
     }
   }
   switch (smplr->boundary) {
@@ -285,8 +292,8 @@ mossSamplerSample(double *val, mossSampler *smplr, double xPos, double yPos) {
         }
         if (smplr->verbose) {
           for (ci = 0; ci < nchan; ci++) {
-            printf("  ivc[ii=%d, jj=%d, ci=%u] = %g\n", ii, jj, ci,
-                   smplr->ivc[ii + fdiam * (jj + fdiam * ci)]);
+            printf("  ivc[ii=%d, jj=%d, ci=%u] = %s\n", ii, jj, ci,
+                   airDtoS(Nb[0], smplr->ivc[ii + fdiam * (jj + fdiam * ci)], Ds));
           }
         }
       }
@@ -307,7 +314,8 @@ mossSamplerSample(double *val, mossSampler *smplr, double xPos, double yPos) {
   smplr->kspec->kernel->evalN_d(smplr->yFslw, smplr->yFslw, fdiam, smplr->kspec->parm);
   if (smplr->verbose) {
     for (ii = 0; ii < fdiam; ii++) {
-      printf("   [%d] --> {x,y}Fsw %g %g\n", ii, smplr->xFslw[ii], smplr->yFslw[ii]);
+      printf("   [%d] --> {x,y}Fsw %s %s\n", ii, airDtoS(Nb[0], smplr->xFslw[ii], Ds),
+             airDtoS(Nb[1], smplr->yFslw[ii], Ds));
     }
   }
 
