@@ -19,12 +19,6 @@
 
 #include "../hest.h"
 
-/*
-  char numbuff[6][AIR_STRLEN_SMALL + 1];
-  char decibuff[AIR_STRLEN_SMALL + 1];
-  const char *decisep = airDecimalSeparatorLearn(decibuff);
-#define D2S(I, V) airDtoS(numbuff[(I)], (V), decisep)
-*/
 static int
 pos_parse(void *_ptr, const char *str, char *err) {
   double *ptr;
