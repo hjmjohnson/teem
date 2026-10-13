@@ -44,7 +44,7 @@ parse(void *_ptr, const char *str, char *err) {
   int ret;
 
   ptr = _ptr;
-  ret = sscanf(str, "%lf:%lf", ptr + 0, ptr + 1); /* yes, locale-dependant */
+  ret = sscanf(str, "%lf:%lf", ptr + 0, ptr + 1); /* yes, locale-dependent */
   if (2 != ret) {
     sprintf(err, "parsed %d (not 2) doubles", ret);
     return 1;
@@ -59,7 +59,7 @@ hestCB cbinfo = {2 * sizeof(double), "location", parse, NULL};
 size_t
 locSprint(char *buff, size_t buffSize, const double loc[2]) {
 
-  snprintf(buff, buffSize, "%.17g:%.17g", loc[0], loc[1]); /* yes, locale-dependant */
+  snprintf(buff, buffSize, "%.17g:%.17g", loc[0], loc[1]); /* yes, locale-dependent */
   /* the return value of snprintf is how much it would have written
      into an unlimited buffer, which isn't actually want we want to
      know for the purposes of advancing a "sprint here next" pointer */
@@ -114,13 +114,13 @@ main(int argc, const char **argv) {
 
   hestParseOrExit(opt, argc - 1, argv + 1, NULL /* hparm */, argv[0],
                   "info about hest/text/ex4");
-  printf("single= %g:%g\n", single[0], single[1]); /* yes, locale-dependant */
-  printf("triple= %g:%g  %g:%g  %g:%g\n",          /* yes, locale-dependant */
+  printf("single= %g:%g\n", single[0], single[1]); /* yes, locale-dependent */
+  printf("triple= %g:%g  %g:%g  %g:%g\n",          /* yes, locale-dependent */
          triple[0], triple[1], triple[2], triple[3], triple[4], triple[5]);
   /* printf("maybe: (%g,%g)\n", maybe[0], maybe[1]); */
   printf("many(%u)=", howMany);
   for (unsigned int i = 0; i <= howMany - 1; i++) {
-    printf("  %g:%g", many[0 + 2 * i], many[1 + 2 * i]); /* yes, locale-dependant */
+    printf("  %g:%g", many[0 + 2 * i], many[1 + 2 * i]); /* yes, locale-dependent */
   }
   printf("\n");
 
