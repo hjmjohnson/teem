@@ -61,7 +61,7 @@ main(int argc, char *argv[]) {
     if (rr < 0 || ff < 0 || gg < 0 || !AIR_EXISTS(rr) || !AIR_EXISTS(ff)
         || !AIR_EXISTS(gg)) {
       char nb[4][AIR_STRLEN_SMALL + 1], decibuff[AIR_STRLEN_SMALL + 1];
-      const char *DS = airDecimalSeparatorLearn(decibuff);
+      const char *DS = airDeciSepLearn(decibuff, NULL);
       fprintf(stderr, "%s: problem: %s -> real %s, approx %s %s\n", me,
               airDtoS(nb[0], xx, DS), airDtoS(nb[1], rr, DS), airDtoS(nb[2], ff, DS),
               airDtoS(nb[2], gg, DS));

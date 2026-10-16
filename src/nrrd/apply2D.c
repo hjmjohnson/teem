@@ -49,6 +49,7 @@ apply2DSetUp(Nrrd *nout, const Nrrd *nin, const NrrdRange *range0,
   unsigned int dim, entLen, mapAxis;
   size_t size[NRRD_DIM_MAX];
   double domMin, domMax;
+  DECISEP_DECL(2);
 
   if (nout == nin) {
     biffAddf(NRRD, "%s: due to laziness, nout==nin always disallowed", me);
@@ -97,15 +98,15 @@ apply2DSetUp(Nrrd *nout, const Nrrd *nin, const NrrdRange *range0,
   domMin = nrrd__ApplyDomainMin(nmap, AIR_FALSE, mapAxis);
   domMax = nrrd__ApplyDomainMax(nmap, AIR_FALSE, mapAxis);
   if (!(domMin < domMax)) {
-    biffAddf(NRRD, "%s: (axis %u) domain min (%g) not less than max (%g)", me, mapAxis,
-             domMin, domMax);
+    biffAddf(NRRD, "%s: (axis %u) domain min (%s) not less than max (%s)", me, mapAxis,
+             airDtoS(Nb[0], domMin, Ds), airDtoS(Nb[1], domMax, Ds));
     return 1;
   }
   domMin = nrrd__ApplyDomainMin(nmap, AIR_FALSE, mapAxis + 1);
   domMax = nrrd__ApplyDomainMax(nmap, AIR_FALSE, mapAxis + 1);
   if (!(domMin < domMax)) {
-    biffAddf(NRRD, "%s: (axis %u) domain min (%g) not less than max (%g)", me,
-             mapAxis + 1, domMin, domMax);
+    biffAddf(NRRD, "%s: (axis %u) domain min (%s) not less than max (%s)", me,
+             mapAxis + 1, airDtoS(Nb[0], domMin, Ds), airDtoS(Nb[1], domMax, Ds));
     return 1;
   }
   if (nrrdHasNonExist(nmap)) {

@@ -222,6 +222,7 @@ doit(Nrrd *nout, const Nrrd *nin, int smart, float amount, unsigned int margin,
   unsigned int axis, srl, sap, ssi;
   size_t min[3], ii, nn;
   unsigned char *out;
+  DECISEP_DECL(3);
 
   if (!(nout && nin && back)) {
     biffAddf(UNRRDU, "%s: got NULL pointer", me);
@@ -268,8 +269,9 @@ doit(Nrrd *nout, const Nrrd *nin, int smart, float amount, unsigned int margin,
       }
     } else {
       printf("%s not reorienting/resampling projections with edge "
-             "lens %g,%g,%g\n",
-             me, ejl[0], ejl[1], ejl[2]);
+             "lens %s,%s,%s\n",
+             me, airDtoS(Nb[0], ejl[0], Ds), airDtoS(Nb[1], ejl[1], Ds),
+             airDtoS(Nb[2], ejl[2], Ds));
     }
   }
   srl = AIR_UINT(nproj[1]->axis[0 + 1].size);

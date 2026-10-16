@@ -375,13 +375,14 @@ nrrdSliceSelect(Nrrd *noutAbove, Nrrd *noutBelow, const Nrrd *nin, unsigned int 
     axperm[NRRD_DIM_MAX];  /* for doing the axis permute to final out */
   int axmap[NRRD_DIM_MAX]; /* for copying axis info from nin to outputs */
   char *ABdata[2], stmp[2][AIR_STRLEN_SMALL + 1];
+  DECISEP_DECL(3);
 
   if (!((noutAbove || noutBelow) && nin && _nline)) {
     biffAddf(NRRD, "%s: got NULL pointer", me);
     return 1;
   }
   if (!AIR_EXISTS(thresh)) {
-    biffAddf(NRRD, "%s: thresh %g doesn't exist", me, thresh);
+    biffAddf(NRRD, "%s: thresh %s doesn't exist", me, airDtoS(Nb[0], thresh, Ds));
     return 1;
   }
   if (!(saxi < nin->dim)) {
@@ -451,9 +452,10 @@ nrrdSliceSelect(Nrrd *noutAbove, Nrrd *noutBelow, const Nrrd *nin, unsigned int 
   if (noutAbove) {
     if (!numAbove) {
       biffAddf(NRRD,
-               "%s: want slices for val >= thresh %g, "
-               "but highest value is %g < %g\n",
-               me, thresh, rng->max, thresh);
+               "%s: want slices for val >= thresh %s, "
+               "but highest value is %s < %s\n",
+               me, airDtoS(Nb[0], thresh, Ds), airDtoS(Nb[1], rng->max, Ds),
+               airDtoS(Nb[2], thresh, Ds));
       airMopError(mop);
       return 1;
     }
@@ -466,9 +468,10 @@ nrrdSliceSelect(Nrrd *noutAbove, Nrrd *noutBelow, const Nrrd *nin, unsigned int 
   if (noutBelow) {
     if (!numBelow) {
       biffAddf(NRRD,
-               "%s: want slices for val < thresh %g, "
-               "but lowest value is %g >= %g\n",
-               me, thresh, rng->min, thresh);
+               "%s: want slices for val < thresh %s, "
+               "but lowest value is %s >= %s\n",
+               me, airDtoS(Nb[0], thresh, Ds), airDtoS(Nb[1], rng->min, Ds),
+               airDtoS(Nb[2], thresh, Ds));
       airMopError(mop);
       return 1;
     }
@@ -674,6 +677,7 @@ nrrdCropAuto(Nrrd *nout, const Nrrd *nin, size_t _min[NRRD_DIM_MAX],
   Nrrd *nperm, *nline;
   unsigned int axi;
   double *line;
+  DECISEP_DECL1;
 
   if (!(nout && nin)) {
     biffAddf(NRRD, "%s: got NULL pointer", me);
@@ -688,7 +692,7 @@ nrrdCropAuto(Nrrd *nout, const Nrrd *nin, size_t _min[NRRD_DIM_MAX],
     return 1;
   }
   if (!(AIR_EXISTS(frac) && frac >= 0.0 && frac < 0.5)) {
-    biffAddf(NRRD, "%s: frac %g not in interval [0.0,0.5)", me, frac);
+    biffAddf(NRRD, "%s: frac %s not in interval [0.0,0.5)", me, airDtoS(Nb, frac, Ds));
     return 1;
   }
   for (axi = 0; axi < nin->dim; axi++) {

@@ -39,7 +39,7 @@ encodingRaw_read(FILE *file, void *data, size_t elementNum, Nrrd *nrrd,
   /* for now we always re-learn decisep because nio might be NULL; this is unfortunate
      but not terrible: its only for error+verbose messages not in data reading loop */
   char Db[ASP1_S], Nb[ASP1_S];
-  const char *Ds = airDecimalSeparatorLearn(Db);
+  const char *Ds = airDeciSepLearn(Db, NULL);
 
   bsize = nrrdElementSize(nrrd) * elementNum;
 
@@ -108,7 +108,7 @@ encodingRaw_write(FILE *file, const void *data, size_t elementNum, const Nrrd *n
   /* for now we always re-learn decisep because nio might be NULL; this is unfortunate
      but not terrible: its only for an error message not in a data reading loop */
   char Db[ASP1_S], Nb[ASP1_S];
-  const char *Ds = airDecimalSeparatorLearn(Db);
+  const char *Ds = airDeciSepLearn(Db, NULL);
 
   AIR_UNUSED(nio);
 

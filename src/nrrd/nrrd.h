@@ -524,10 +524,9 @@ typedef struct NrrdIoState_t {
                                  the tldr is that instead of meddling with any
                                  `locale`-related API or data (which is hard to make
                                  fast, thread-safe, and memory-clean), we call
-                                 airDecimalSeparatorLearn to learn the separator, once,
-                                 and then we can use it for all NRRD IO. Because
-                                 airDecimalSeparatorLearn is called (indirectly) from
-                                 nrrdIoStateNew, the deal is this:
+                                 airDeciSepLearn to learn the separator, once, and then
+                                 we can use it for all NRRD IO. Because airDeciSepLearn
+                                 is called (indirectly) from nrrdIoStateNew, the deal is:
                                  *** After you call nrrdIoStateNew, you cannot then call
                                  *** setlocale() prior to doing any Nrrd I/O (such as
                                  *** with nrrdLoad or nrrdSave) because that could
@@ -876,6 +875,7 @@ NRRD_EXPORT const char *const nrrdEnvVarDefaultWriteCharsPerLine;
 NRRD_EXPORT const char *const nrrdEnvVarDefaultWriteValsPerLine;
 /* TeemV2: nrrdEnvVarStateVerboseIO --> nrrdEnvVarDefaultIoVerbose */
 NRRD_EXPORT const char *const nrrdEnvVarDefaultIoVerbose;
+NRRD_EXPORT const char *const nrrdEnvVarDefaultIoHeaderDoubleExcessPrecision;
 NRRD_EXPORT const char *const nrrdEnvVarStateKindNoop;
 NRRD_EXPORT const char *const nrrdEnvVarStateKeyValuePairsPropagate;
 NRRD_EXPORT const char *const nrrdEnvVarStateBlind8BitRange;

@@ -266,7 +266,7 @@ If you use e.g. %f or %.17g with a non-integer double, in a locale for which '.'
 the decimal separator, you're on your own: OUTPUT WILL SHOW THE DECIMAL SEPARATOR.
 IF YOU HAVE BEEN USING airSinglePrintf to print double or floats,
 YOU SHOULD PROBABLY USE airFtoS/airDtoS directly, after a single call to
-airDecimalSeparatorLearn, so that that cost is amortized not repeatedly incurred!
+airDeciSepLearn, so that that cost is amortized not repeatedly incurred!
 v . v . v . v . v . v . v . v . v . v . v . v . v . v . v . v . v . v . v . v . v . v
 Use within Teem of airSinglePrintf for FP vals should be minimized or eliminated.
 ^ ' ^ ' ^ ' ^ ' ^ ' ^ ' ^ ' ^ ' ^ ' ^ ' ^ ' ^ ' ^ ' ^ ' ^ ' ^ ' ^ ' ^ ' ^ ' ^ ' ^ ' ^
@@ -328,7 +328,7 @@ airSinglePrintf(FILE *file, char *str, size_t strSize, const char *_fmt, ...) {
     /* must use "double" here to consume var-arg; var args are always subject to
        old-style C type promotions: float promotes to double */
     dval = va_arg(ap, double);
-    decisep = airDecimalSeparatorLearn(decibuff);
+    decisep = airDeciSepLearn(decibuff, NULL);
     if (pf) {
       airFtoS(nbuff, AIR_FLOAT(dval), decisep);
     } else {
@@ -447,7 +447,7 @@ airPrettySprintSize_t(char str[AIR_STRLEN_SMALL + 1], size_t val) {
   unsigned int suffIdx, suffNum;
   float dval;
   char Db[ASP1_S], Nb[ASP1_S];
-  const char *Ds = airDecimalSeparatorLearn(Db);
+  const char *Ds = airDeciSepLearn(Db, NULL);
 
   if (!str) {
     return NULL;

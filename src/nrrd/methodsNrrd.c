@@ -92,6 +92,7 @@ nrrdBoundarySpecCopy(const NrrdBoundarySpec *bspec) {
 int /* Biff: 1 */
 nrrdBoundarySpecCheck(const NrrdBoundarySpec *bspec) {
   static const char me[] = "nrrdBoundarySpecCheck";
+  DECISEP_DECL1;
 
   if (!bspec) {
     biffAddf(NRRD, "%s: got NULL pointer", me);
@@ -104,8 +105,8 @@ nrrdBoundarySpecCheck(const NrrdBoundarySpec *bspec) {
   }
   if (nrrdBoundaryPad == bspec->boundary) {
     if (!AIR_EXISTS(bspec->padValue)) {
-      biffAddf(NRRD, "%s: need existing pad value (not %g) with %s %s", me,
-               bspec->padValue, nrrdBoundary->name,
+      biffAddf(NRRD, "%s: need existing pad value (not %s) with %s %s", me,
+               airDtoS(Nb, bspec->padValue, Ds), nrrdBoundary->name,
                airEnumStr(nrrdBoundary, nrrdBoundaryPad));
       return 1;
     }
@@ -214,6 +215,7 @@ int /* Biff: 1 */
 nrrdBoundarySpecCompare(const NrrdBoundarySpec *aa, const NrrdBoundarySpec *bb,
                         int *differ, char explain[AIR_STRLEN_LARGE + 1]) {
   static const char me[] = "nrrdBoundarySpecCompare";
+  DECISEP_DECL(2);
 
   if (!differ) {
     biffAddf(NRRD, "%s: got NULL pointer", me);
@@ -244,8 +246,8 @@ nrrdBoundarySpecCompare(const NrrdBoundarySpec *aa, const NrrdBoundarySpec *bb,
   if (nrrdBoundaryPad == aa->boundary) {
     if (aa->padValue != bb->padValue) {
       if (explain) {
-        snprintf(explain, ASP1_L, "padValue differ: %.17g != %.17g", aa->padValue,
-                 bb->padValue);
+        snprintf(explain, ASP1_L, "padValue differ: %s != %s",
+                 airDtoS(Nb[0], aa->padValue, Ds), airDtoS(Nb[1], bb->padValue, Ds));
       }
       *differ = 1;
       return 0;
@@ -365,7 +367,7 @@ nrrdIoStateInit(NrrdIoState *nio) {
     nio->oldData = NULL;
     nio->oldDataSize = 0;
     nio->headerDoubleExcessPrecision = nrrdDefaultIoHeaderDoubleExcessPrecision;
-    nio->decisep = airDecimalSeparatorLearn(nio->decibuff);
+    nio->decisep = airDeciSepLearn(nio->decibuff, NULL);
     nio->format = nrrdFormatUnknown;
     nio->encoding = nrrdEncodingUnknown;
   }
@@ -1280,6 +1282,7 @@ nrrdCompare(const Nrrd *ninA, const Nrrd *ninB, int onlyData, double epsilon,
   static const char me[] = "nrrdCompare";
   size_t numA, numB;
   unsigned int axi, saxi;
+  DECISEP_DECL(2);
 
   if (!(ninA && ninB && differ)) {
     biffAddf(NRRD, "%s: got NULL pointer (%p, %p, or %p)", me, AIR_CVOIDP(ninA),
@@ -1394,8 +1397,11 @@ nrrdCompare(const Nrrd *ninA, const Nrrd *ninB, int onlyData, double epsilon,
   *differ = nrrd__Dblcmp(ninA->VAL, ninB->VAL);                                         \
   if (*differ) {                                                                        \
     if (explain) {                                                                      \
-      snprintf(explain, AIR_STRLEN_LARGE + 1, "ninA->%s %.17g %s ninB->%s %.17g", STR,  \
-               ninA->VAL, *differ < 0 ? "<" : ">", STR, ninB->VAL);                     \
+      snprintf(explain, AIR_STRLEN_LARGE + 1, /* */                                     \
+               "ninA->%s %s %s "              /* */                                     \
+               "ninB->%s %s",                                                           \
+               STR, airDtoS(Nb[0], ninA->VAL, Ds), *differ < 0 ? "<" : ">", /* */       \
+               STR, airDtoS(Nb[1], ninB->VAL, Ds));                                     \
     }                                                                                   \
     return 0;                                                                           \
   }

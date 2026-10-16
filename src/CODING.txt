@@ -275,13 +275,40 @@ the "C" locale ("C-locale-emulation"). Read through the long comment at the top
 of src/air/fpio.c to understand the rationale and the functions available for this.
 But the consequence of this is that Teem code can't just use printf or sscanf, or
 any other function that depends on locale if it is doing any I/O with floating point
-values: they have to use code that implements C-locale-emulation.  Much of Teem
+values: they should use code that implements C-locale-emulation.  Much of Teem
 already used its own functions like airSinglePrintf and airSingleParse
 (née airSingleSscanf) for FP I/O, and now those functions have been upgraded to
 do C-locale-emulation (the more efficient alternative is airDecimalSeparatorLearn
 before airSto{F,D} or air{F,D}toS), but that was done in a someone adhoc way.
-Now, Teem coding has to be more diligent about all FP I/O, and consistently forego
-the convenience of calling printf or sscanf directly.
+Now, Teem coding should be more diligent about all FP I/O, and consistently forego
+the convenience of calling printf or sscanf directly. But this can be annoying;
+here an example of a recent diff related to this:
+             snprintf(explain, AIR_STRLEN_LARGE + 1,
+-                     "valA[%s]=%.17g %s valB[%s]=%.17g "
+-                     "by %g, more than eps %g",
+-                     stmp, aa, *differ < 0 ? "<" : ">", stmp, bb, fabs(aa - bb),
+-                     epsilon);
++                     "valA[%s]=%s %s "
++                     "valB[%s]=%s "
++                     "by %s, "
++                     "more than eps %s",
++                     stmp, airDtoS(Nb[0], aa, Ds), *differ < 0 ? "<" : ">", /* */
++                     stmp, airDtoS(Nb[1], bb, Ds),                          /* */
++                     airDtoS(Nb[2], fabs(aa - bb), Ds),                     /* */
++                     airDtoS(Nb[3], epsilon, Ds));
+Many of the <lib>/test/*.c programs will not be transitioned to C-locale-emulation
+(because that isn't a pre-req to their utility for debugging), but the intent is
+that all the code in the libraries themselves should achieve C-locale-emulation.
+The libraries which are *believed* to meet C-locale-emulation, versus still
+need some attention are:
+          done: air biff hest nrrd   unrrdu                 mite meet
+   still to go: ell moss alan tijk gage dye bane limn echo hoover seek ten elf pull coil push
+(TEEM_LIB_LIST: air biff hest nrrd ell moss unrrdu alan tijk gage dye bane limn echo hoover seek ten elf pull coil push mite meet)
+
+Part of testing C-locale-emulation is actually running the code under different
+locales. That is the role of the (new for TeemV2) airSetLocaleFromEnvOrExit()
+function, which is called at the start of `main()` in unu and other Teem binaries.
+!! THUS: ALL CTest PROGRAMS MUST START BY CALLING airSetLocaleFromEnvOrExit() !!
 
 * Following the point about "object-oriented" code above, make an effort to
 logically associate functions with existing structs in a way that reflects how

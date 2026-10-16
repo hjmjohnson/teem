@@ -85,7 +85,7 @@ main(int argc, const char *argv[]) {
     printf("%s: got empty localestr, did not call setlocale\n", me);
   }
   char dcsBuff[AIR_STRLEN_SMALL + 1];
-  const char *dcs = airDecimalSeparatorLearn(dcsBuff);
+  const char *dcs = airDeciSepLearn(dcsBuff, stderr);
   if (!(-1 == A && -1 == B)) {
     printf("%s: decisep == |%s| (length %u) ==", me, dcs, AIR_UINT(dcs[-1]));
   } else {

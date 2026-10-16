@@ -390,7 +390,8 @@ extern int airJSFRandSanity(void);
    The long comment at the top of fpio.c gives history/rationale for these functions,
    and the decision that all of TeemV2 should emulate running under "C"-locale,
    henceforth called "C-locale-emulation" */
-extern const char *airDecimalSeparatorLearn(char str[AIR_STRLEN_SMALL + 1]);
+extern const char *airDeciSepLearn(char str[AIR_STRLEN_SMALL + 1], FILE *fwarn);
+extern char *airDeciSepRemove(char *str, const char *decisep);
 extern char *airFtoS(char str[AIR_STRLEN_SMALL + 1], float val, const char *decisep);
 extern char *airDtoS(char str[AIR_STRLEN_SMALL + 1], double val,
                          const char *decisep);

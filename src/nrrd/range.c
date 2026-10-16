@@ -112,6 +112,7 @@ nrrdRangePercentileSet(NrrdRange *range, const Nrrd *nrrd, double minPerc,
   Nrrd *nhist;
   double allmin, allmax, minval, maxval, *hist, sum, total, sumPerc;
   unsigned int hi;
+  DECISEP_DECL1;
 
   if (!(range && nrrd)) {
     biffAddf(NRRD, "%s: got NULL pointer", me);
@@ -170,7 +171,8 @@ nrrdRangePercentileSet(NrrdRange *range, const Nrrd *nrrd, double minPerc,
       }
     }
     if (hi == hbins || !AIR_EXISTS(minval)) {
-      biffAddf(NRRD, "%s: failed to find lower %g-percentile value", me, minPerc);
+      biffAddf(NRRD, "%s: failed to find lower %s-percentile value", me,
+               airDtoS(Nb, minPerc, Ds));
       airMopError(mop);
       return 1;
     }
@@ -188,7 +190,8 @@ nrrdRangePercentileSet(NrrdRange *range, const Nrrd *nrrd, double minPerc,
       }
     }
     if (!hi || !AIR_EXISTS(maxval)) {
-      biffAddf(NRRD, "%s: failed to find upper %g-percentile value", me, maxPerc);
+      biffAddf(NRRD, "%s: failed to find upper %s-percentile value", me,
+               airDtoS(Nb, maxPerc, Ds));
       airMopError(mop);
       return 1;
     }
@@ -249,7 +252,7 @@ nrrdRangePercentileFromStringSet(NrrdRange *range, const Nrrd *nin, const char *
     } else {
       percwant = AIR_FALSE;
     }
-    if (1 != airSingleParse(mmStr, "%lf", &val)) {
+    if (1 != airSingleParse(mmStr, "%lg", &val)) {
       biffAddf(NRRD, "%s: couldn't parse \"%s\" for %s", me, !mmIdx ? _minStr : _maxStr,
                !mmIdx ? "minimum" : "maximum");
       airMopError(mop);

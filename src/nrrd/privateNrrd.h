@@ -74,6 +74,14 @@ extern "C" {
 
 typedef unsigned int uint; /* uint is just more concise */
 
+/* to reduce boilerplate in code implementing C-locale-emulation */
+#define DECISEP_DECL1                                                                   \
+  char Nb[ASP1_S], Db[ASP1_S];                                                          \
+  const char *Ds = airDeciSepLearn(Db, NULL);
+#define DECISEP_DECL(N)                                                                 \
+  char Nb[(N)][ASP1_S], Db[ASP1_S];                                                     \
+  const char *Ds = airDeciSepLearn(Db, NULL);
+
 #define MY_NRRD_TEXT_INCR      1024u
 #define MY_NRRD_LLONG_MAX_HELP AIR_LLONG(2305843009213693951)
 #define MY_NRRD_LLONG_MIN_HELP AIR_LLONG(-2305843009213693952)

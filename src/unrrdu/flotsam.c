@@ -618,6 +618,7 @@ static int
 parseScale(void *ptr, const char *str, char err[ASP1_H]) {
   double *scale;
   unsigned int num;
+  DECISEP_DECL1;
 
   if (!(ptr && str)) {
     snprintf(err, ASP1_H, "%s: got NULL pointer", __func__);
@@ -637,8 +638,8 @@ parseScale(void *ptr, const char *str, char err[ASP1_H]) {
       return 1;
     }
     if (!(scale[1] > 0)) {
-      snprintf(err, ASP1_H, "%s: need positive float from \"%s\" (not %g)", __func__,
-               str, scale[1]);
+      snprintf(err, ASP1_H, "%s: need positive float from \"%s\" (not %s)", __func__,
+               str, airDtoS(Nb, scale[1], Ds));
       return 1;
     }
     scale[0] = AIR_CAST(double,
@@ -652,8 +653,8 @@ parseScale(void *ptr, const char *str, char err[ASP1_H]) {
       return 1;
     }
     if (!(scale[1] > 0)) {
-      snprintf(err, ASP1_H, "%s: need positive float from \"%s\" (not %g)", __func__,
-               str, scale[1]);
+      snprintf(err, ASP1_H, "%s: need positive float from \"%s\" (not %s)", __func__,
+               str, airDtoS(Nb, scale[1], Ds));
       return 1;
     }
     scale[0] = AIR_CAST(double,

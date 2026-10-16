@@ -71,8 +71,9 @@ unu_diffMain(int argc, const char **argv, const char *me, const hestParm *hparm)
       if (0 == epsilon) {
         printf("%s: %s are the same\n", me, onlyData ? "data values" : "nrrds");
       } else {
-        printf("%s: %s are same or within %g of each other\n", me,
-               onlyData ? "data values" : "nrrds", epsilon);
+        DECISEP_DECL1;
+        printf("%s: %s are same or within %s of each other\n", me,
+               onlyData ? "data values" : "nrrds", airDtoS(Nb, epsilon, Ds));
       }
     }
     ret = 0;

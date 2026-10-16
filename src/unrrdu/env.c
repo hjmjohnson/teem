@@ -196,15 +196,31 @@ unu_envMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
                AIR_FALSE);
   fprintf(out, "\n");
 
+  hestPrintStr(
+    out, 0, 0, hparm->columns,
+    ("In addition to the many \"NRRD_\" environment variables, there are some extras. "
+     "One is for all of Teem: set " TEEM_SET_LOCALE_ENV " to the name of a locale to "
+     "pass to setlocale(). This is done by the call to airSetLocaleFromEnvOrExit() "
+     "that is (or should be at the start of Teem binaries and tests. This mechanism "
+     "exists as a way to set locale prior to running other Teem code, to debug the "
+     "extent to which it achieves its intended goal of C-locale-emulation: no matter "
+     "what locale the code is running under, it should behave as if it is running under "
+     "the \"C\" locale with its '.' decimal separator, even a locale like fa_IR.UTF-8 "
+     "(on Mac) or ps_AF.utf8 (on Linux) with a two-byte decimal separator. "
+     "To suppress the diagnostic feedback about the success of setlocale, "
+     "prefix the locale name with an underscore `_` eg.:"),
+    AIR_FALSE);
   hestPrintStr(out, 0, 0, hparm->columns,
-               ("In addition to the many \"NRRD_\" environment variables, "
-                "there are two which are specific to unu. " UNRRDU_UNU_QUIET_QUIT_ENV " "
+               ("\t\t\texport " TEEM_SET_LOCALE_ENV "=_de_DE"), AIR_FALSE);
+  fprintf(out, "\n");
+  hestPrintStr(out, 0, 0, hparm->columns,
+               ("Two other extras are specific to unu. " UNRRDU_UNU_QUIET_QUIT_ENV " "
                 "(or legacy name " UNRRDU_UNU_QUIET_QUIT_ENV_OLD ") determines "
                 "whether unu exits "
                 "quietly (without error and usage info) when it fails "
                 "because an input nrrd read immediately hit EOF (as often "
                 "happens when many unu invocations are piped "
-                "together). " UNRRDU_TEEM_KVP_HISTORY_TRACE_ENV " "
+                "together). New for TeemV2, " UNRRDU_TEEM_KVP_HISTORY_TRACE_ENV " "
                 "controls whether unu (plus any Teem-based CLI tools) commands "
                 "accumulate a history of their use inside output nrrd "
                 "key/value pairs."),
@@ -257,47 +273,10 @@ unu_envMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
   }
   fprintf(out, "\n");
 
-  envBool(out,
-          nrrdEnvVarStateKeyValuePairsPropagate,
-          nrrdStateKeyValuePairsPropagate,
-          "nrrdStateKeyValuePairsPropagate",
-          "When true, key/value pairs are copied from input "
-          "nrrd to output nrrd just like other basic info that hasn't "
-          "just been modified (e.g. type, dimension, block size).",
-          hparm->columns);
-  envEnum(out, nrrdCenter, nrrdEnvVarDefaultCenter, nrrdDefaultCenter,
-          "nrrdDefaultCenter",
-          "The type of sample centering to use when none has been "
-          "set but one has to be chosen for some operation "
-          "(e.g. resampling).",
-          hparm->columns);
   envEnum(out, nrrdEncodingType, nrrdEnvVarDefaultWriteEncodingType,
           nrrdDefaultWriteEncodingType, "nrrdDefaultWriteEncodingType",
           "When writing nrrds, what encoding to use. Only "
           "\"unu save\" affords explicit control of output encoding.",
-          hparm->columns);
-  envBool(out,
-          nrrdEnvVarStateKindNoop,
-          nrrdStateKindNoop,
-          "nrrdStateKindNoop",
-          "When true, Nrrd makes not even the slightest effort to be "
-          "smart about setting the \"kind\" field of an axis after "
-          "some operation that modified its samples.",
-          hparm->columns);
-  envInt(out,                                                            /* */
-         nrrdEnvVarDefaultIoVerbose,                                     /* */
-         nrrdDefaultIoVerbose,                                           /* */
-         "nrrdDefaultIoVerbose",                                         /* */
-         "The default verbosity level of Nrrd input/output operations.", /* */
-         hparm->columns);
-  envBool(out,
-          nrrdEnvVarStateBlind8BitRange,
-          nrrdStateBlind8BitRange,
-          "nrrdStateBlind8BitRange",
-          "When true, the determined range of 8-bit data will always "
-          "be [0,255] (for uchar) or [-128,127] (for signed char), "
-          "instead of actually looking into the data to find its "
-          "range.",
           hparm->columns);
   envBool(out,
           nrrdEnvVarDefaultWriteBareText,
@@ -312,6 +291,57 @@ unu_envMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
           "nrrdDefaultWriteMoreThanFloatInText",
           "When true, text files used for saving nrrds can "
           "losslessly store values of more than just float type.",
+          hparm->columns);
+  envUInt(out,
+          nrrdEnvVarDefaultWriteCharsPerLine,
+          nrrdDefaultWriteCharsPerLine,
+          "nrrdDefaultWriteCharsPerLine",
+          "When using text encoding, maximum # characters allowed "
+          "per line.",
+          hparm->columns);
+  envUInt(out,
+          nrrdEnvVarDefaultWriteValsPerLine,
+          nrrdDefaultWriteValsPerLine,
+          "nrrdDefaultWriteValsPerLine",
+          "When using text encoding, maximum # values allowed "
+          "per line",
+          hparm->columns);
+  envEnum(out, nrrdCenter, nrrdEnvVarDefaultCenter, nrrdDefaultCenter,
+          "nrrdDefaultCenter",
+          "The type of sample centering to use when none has been "
+          "set but one has to be chosen for some operation "
+          "(e.g. resampling).",
+          hparm->columns);
+  envInt(out,                                                            /* */
+         nrrdEnvVarDefaultIoVerbose,                                     /* */
+         nrrdDefaultIoVerbose,                                           /* */
+         "nrrdDefaultIoVerbose",                                         /* */
+         "The default verbosity level of Nrrd input/output operations.", /* */
+         hparm->columns);
+  envBool(out,                                            /* */
+          nrrdEnvVarDefaultIoHeaderDoubleExcessPrecision, /* */
+          nrrdDefaultIoHeaderDoubleExcessPrecision,       /* */
+          "nrrdDefaultIoHeaderDoubleExcessPrecision",     /* */
+          "Whether to print `double` values in NRRD header with %.17g, "
+          "instead of fewer that would still parse back to the same "
+          "64-bit value.", /* */
+          hparm->columns);
+  envBool(out,
+          nrrdEnvVarStateKeyValuePairsPropagate,
+          nrrdStateKeyValuePairsPropagate,
+          "nrrdStateKeyValuePairsPropagate",
+          "When true, key/value pairs are copied from input "
+          "nrrd to output nrrd just like other basic info that hasn't "
+          "just been modified (e.g. type, dimension, block size).",
+          hparm->columns);
+  envBool(out,
+          nrrdEnvVarStateBlind8BitRange,
+          nrrdStateBlind8BitRange,
+          "nrrdStateBlind8BitRange",
+          "When true, the determined range of 8-bit data will always "
+          "be [0,255] (for uchar) or [-128,127] (for signed char), "
+          "instead of actually looking into the data to find its "
+          "range.",
           hparm->columns);
   envInt(out,
          nrrdEnvVarStateMeasureModeBins,
@@ -344,20 +374,6 @@ unu_envMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
           "nrrdStateDisableContent",
           "If true, output content is never set.",
           hparm->columns);
-  envUInt(out,
-          nrrdEnvVarDefaultWriteCharsPerLine,
-          nrrdDefaultWriteCharsPerLine,
-          "nrrdDefaultWriteCharsPerLine",
-          "When using text encoding, maximum # characters allowed "
-          "per line.",
-          hparm->columns);
-  envUInt(out,
-          nrrdEnvVarDefaultWriteValsPerLine,
-          nrrdDefaultWriteValsPerLine,
-          "nrrdDefaultWriteValsPerLine",
-          "When using text encoding, maximum # values allowed "
-          "per line",
-          hparm->columns);
   envBool(out,
           nrrdEnvVarStateGrayscaleImage3D,
           nrrdStateGrayscaleImage3D,
@@ -373,6 +389,14 @@ unu_envMain(int argc, const char **argv, const char *me, const hestParm *hparm) 
           "If true, emulate pre-TeemV2 behavior of ASCII encoding "
           "when reading NRRD files: commas are almost but not quite "
           "treated as white-space.",
+          hparm->columns);
+  envBool(out,
+          nrrdEnvVarStateKindNoop,
+          nrrdStateKindNoop,
+          "nrrdStateKindNoop",
+          "When true, Nrrd makes not even the slightest effort to be "
+          "smart about setting the \"kind\" field of an axis after "
+          "some operation that modified its samples.",
           hparm->columns);
   return 0;
 }

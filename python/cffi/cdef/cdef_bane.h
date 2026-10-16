@@ -92,7 +92,7 @@ enum {
                         -- incParm[0]: resolution of histogram generated
                         -- incParm[1]: PERCENT of hits to throw away,
                            by nibbling away at lower and upper ends of
-                           range, in a manner dependant on the range type */
+                           range, in a manner dependent on the range type */
   baneIncStdv,       /* 4: some multiple of the standard deviation
                         -- incParm[0]: range is standard deviation
                            times this */

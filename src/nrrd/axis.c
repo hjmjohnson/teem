@@ -424,15 +424,15 @@ nrrdAxisInfoSet_va(Nrrd *nrrd, int axInfo, ...) {
     case nrrdAxisInfoSize:
       info.ST[ai] = va_arg(ap, size_t);
       /*
-      printf("!%s: got int[%d] = %d\n", "nrrdAxisInfoSet", d, info.I[ai]);
-      */
+       * printf("!%s: got int[%d] = %d\n", "nrrdAxisInfoSet", d, info.I[ai]);
+       */
       break;
     case nrrdAxisInfoSpaceDirection:
       dp = va_arg(ap, double *); /* punting on using info enum */
       /*
-      printf("!%s: got dp = %lu\n", "nrrdAxisInfoSet",
-             (unsigned long)(dp));
-      */
+       * printf("!%s: got dp = %lu\n", "nrrdAxisInfoSet",
+       *        (unsigned long)(dp));
+       */
       for (si = 0; si < nrrd->spaceDim; si++) {
         /* nrrd->axis[ai].spaceDirection[si] = dp[si]; */
         svec[ai][si] = dp[si];
@@ -447,9 +447,9 @@ nrrdAxisInfoSet_va(Nrrd *nrrd, int axInfo, ...) {
     case nrrdAxisInfoKind:
       info.I[ai] = va_arg(ap, int);
       /*
-      printf("!%s: got int[%d] = %d\n",
-             "nrrdAxisInfoSet", d, info.I[ai]);
-      */
+       * printf("!%s: got int[%d] = %d\n",
+       *        "nrrdAxisInfoSet", d, info.I[ai]);
+       */
       break;
     case nrrdAxisInfoSpacing:
     case nrrdAxisInfoThickness:
@@ -457,9 +457,9 @@ nrrdAxisInfoSet_va(Nrrd *nrrd, int axInfo, ...) {
     case nrrdAxisInfoMax:
       info.D[ai] = va_arg(ap, double);
       /*
-      printf("!%s: got double[%d] = %g\n",
-             "nrrdAxisInfoSet", d, info.D[ai]);
-      */
+       * printf("!%s: got double[%d] = %g\n",
+       *        "nrrdAxisInfoSet", d, info.D[ai]);
+       */
       break;
     case nrrdAxisInfoLabel:
       /* we DO NOT do the airStrdup() here because this pointer value is
@@ -467,9 +467,9 @@ nrrdAxisInfoSet_va(Nrrd *nrrd, int axInfo, ...) {
          airStrdup(); we're not violating the rules for axis labels */
       info.CP[ai] = va_arg(ap, char *);
       /*
-      printf("!%s: got char*[%d] = |%s|\n",
-             "nrrdAxisInfoSet", d, info.CP[ai]);
-      */
+       * printf("!%s: got char*[%d] = |%s|\n",
+       *        "nrrdAxisInfoSet", d, info.CP[ai]);
+       */
       break;
     case nrrdAxisInfoUnits:
       /* see not above */
@@ -937,6 +937,7 @@ nrrdAxisInfoCompare(const NrrdAxisInfo *axisA, const NrrdAxisInfo *axisB, int *d
                     char explain[AIR_STRLEN_LARGE + 1]) {
   static const char me[] = "nrrdAxisInfoCompare";
   unsigned int saxi;
+  DECISEP_DECL(2);
 
   if (!(axisA && axisB && differ)) {
     biffAddf(NRRD, "%s: got NULL pointer (%p, %p, or %p)", me, AIR_CVOIDP(axisA),
@@ -962,8 +963,11 @@ nrrdAxisInfoCompare(const NrrdAxisInfo *axisA, const NrrdAxisInfo *axisB, int *d
   *differ = nrrd__Dblcmp(axisA->VAL, axisB->VAL);                                       \
   if (*differ) {                                                                        \
     if (explain) {                                                                      \
-      snprintf(explain, AIR_STRLEN_LARGE + 1, "axisA->%s %.17g %s axisB->%s %.17g",     \
-               STR, axisA->VAL, *differ < 0 ? "<" : ">", STR, axisB->VAL);              \
+      snprintf(explain, AIR_STRLEN_LARGE + 1, /* */                                     \
+               "axisA->%s %s %s "             /* */                                     \
+               "axisB->%s %s",                                                          \
+               STR, airDtoS(Nb[0], axisA->VAL, Ds), *differ < 0 ? "<" : ">", /* */      \
+               STR, airDtoS(Nb[1], axisB->VAL, Ds));                                    \
     }                                                                                   \
     return 0;                                                                           \
   }

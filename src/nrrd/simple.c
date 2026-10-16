@@ -1018,11 +1018,13 @@ nFieldCheck_spacings(const Nrrd *nrrd, int useBiff) {
   static const char me[] = "nFieldCheck_spacings";
   double val[NRRD_DIM_MAX];
   unsigned int ai;
+  DECISEP_DECL1;
 
   nrrdAxisInfoGet_nva(nrrd, nrrdAxisInfoSpacing, val);
   for (ai = 0; ai < nrrd->dim; ai++) {
     if (!(!airIsInf_d(val[ai]) && (airIsNaN(val[ai]) || (0 != val[ai])))) {
-      biffMaybeAddf(useBiff, NRRD, "%s: axis %u spacing (%g) invalid", me, ai, val[ai]);
+      biffMaybeAddf(useBiff, NRRD, "%s: axis %u spacing (%s) invalid", me, ai,
+                    airDtoS(Nb, val[ai], Ds));
       return 1;
     }
   }
@@ -1038,14 +1040,15 @@ nFieldCheck_thicknesses(const Nrrd *nrrd, int useBiff) {
   static const char me[] = "nFieldCheck_thicknesses";
   double val[NRRD_DIM_MAX];
   unsigned int ai;
+  DECISEP_DECL1;
 
   nrrdAxisInfoGet_nva(nrrd, nrrdAxisInfoThickness, val);
   for (ai = 0; ai < nrrd->dim; ai++) {
     /* note that unlike spacing, we allow zero thickness,
        but it makes no sense to be negative */
     if (!(!airIsInf_d(val[ai]) && (airIsNaN(val[ai]) || (0 <= val[ai])))) {
-      biffMaybeAddf(useBiff, NRRD, "%s: axis %u thickness (%g) invalid", me, ai,
-                    val[ai]);
+      biffMaybeAddf(useBiff, NRRD, "%s: axis %u thickness (%s) invalid", me, ai,
+                    airDtoS(Nb, val[ai], Ds));
       return 1;
     }
   }

@@ -176,11 +176,11 @@ cheapMedian1D(Nrrd *nout, const Nrrd *nin, const NrrdRange *range, uint radius,
       idx = mode ? CM_mode(hist, bins) : CM_median(hist, half);
       val = NRRD_NODE_POS(range->min, range->max, bins, idx);
       /*
-      if (DB) {
-        fprintf(stderr, "!%s: mode=%d --> idx=%u --> val=%.17g\n", __func__, mode, idx,
-                val);
-      }
-      */
+       * if (DB) {
+       *   fprintf(stderr, "!%s: mode=%d --> idx=%u --> val=%.17g\n", __func__,
+       *           mode, idx, val);
+       * }
+       */
       nrrdDInsert[nout->type](nout->data, X, val);
     }
     free(wt);
@@ -464,6 +464,7 @@ int /* Biff: 1 */
 nrrdCheapMedian(Nrrd *_nout, const Nrrd *_nin, int pad, int mode, unsigned int radius,
                 float wght, unsigned int bins, int verberr) {
   static const char me[] = "nrrdCheapMedian", func[] = "cmedian";
+  DECISEP_DECL1;
   if (!(_nin && _nout)) {
     biffAddf(NRRD, "%s: got NULL pointer", me);
     return 1;
@@ -565,7 +566,8 @@ nrrdCheapMedian(Nrrd *_nout, const Nrrd *_nin, int pad, int mode, unsigned int r
   /* basic info handled by nrrdCopy above */
 
   nrrdAxisInfoCopy(nout, nin, NULL, NRRD_AXIS_INFO_NONE);
-  if (nrrdContentSet_va(nout, func, nin, "%d,%d,%g,%d", mode, radius, wght, bins)) {
+  if (nrrdContentSet_va(nout, func, nin, "%d,%d,%s,%d", mode, radius,
+                        airDtoS(Nb, wght, Ds), bins)) {
     biffAddf(NRRD, "%s:", me);
     airMopError(mop);
     return 1;
@@ -791,6 +793,7 @@ distanceBase(Nrrd *nout, const Nrrd *nin, int typeOut, const int *axisDo, double
   size_t ii, nn;
   double (*lup)(const void *, size_t), (*ins)(void *, size_t, double);
   double spcMean;
+  DECISEP_DECL1;
 
   if (!(nout && nin)) {
     biffAddf(NRRD, "%s: got NULL pointer", me);
@@ -814,7 +817,7 @@ distanceBase(Nrrd *nout, const Nrrd *nin, int typeOut, const int *axisDo, double
     return 1;
   }
   if (!AIR_EXISTS(thresh)) {
-    biffAddf(NRRD, "%s: threshold (%g) doesn't exist", me, thresh);
+    biffAddf(NRRD, "%s: threshold (%s) doesn't exist", me, airDtoS(Nb, thresh, Ds));
     return 1;
   }
 

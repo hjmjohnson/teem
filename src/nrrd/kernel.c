@@ -3038,7 +3038,7 @@ nrrdKernelParse(const NrrdKernel **kernelP, double *parm, const char *str_) {
     biffAddf(NRRD, "%s: got NULL pointer", me);
     return 1;
   }
-  if (!(decisep = airDecimalSeparatorLearn(decibuff))) {
+  if (!(decisep = airDeciSepLearn(decibuff, NULL))) {
     biffAddf(NRRD, "%s: couldn't learn locale's decimal separator", me);
     return 1;
   }
@@ -3227,9 +3227,9 @@ nrrdKernelParse(const NrrdKernel **kernelP, double *parm, const char *str_) {
     }
   }
   /*
-  fprintf(stderr, "%s: %g %g %g %g %g\n", me,
-          parm[0], parm[1], parm[2], parm[3], parm[4]);
-  */
+   * fprintf(stderr, "%s: %g %g %g %g %g\n", me,
+   *         parm[0], parm[1], parm[2], parm[3], parm[4]);
+   */
   airMopOkay(mop);
   return 0;
 }
@@ -3268,7 +3268,7 @@ nrrdKernelSpecSprint(char str_[AIR_STRLEN_SMALL + 1], const NrrdKernelSpec *ksp)
     biffAddf(NRRD, "%s: got NULL pointer", me);
     return 1;
   }
-  if (!(decisep = airDecimalSeparatorLearn(decibuff))) {
+  if (!(decisep = airDeciSepLearn(decibuff, NULL))) {
     biffAddf(NRRD, "%s: couldn't learn locale's decimal separator", me);
     return 1;
   }
@@ -3345,6 +3345,7 @@ nrrdKernelCompare(const NrrdKernel *kernA, const double parmA[NRRD_KERNEL_PARM_M
                   int *differ, char explain[AIR_STRLEN_LARGE + 1]) {
   static const char me[] = "nrrdKernelCompare";
   unsigned int pnum, pidx;
+  DECISEP_DECL(2);
 
   if (!(kernA && kernB && differ)) {
     biffAddf(NRRD, "%s: got NULL pointer (%p, %p, or %p)", me, AIR_CVOIDP(kernA),
@@ -3373,8 +3374,11 @@ nrrdKernelCompare(const NrrdKernel *kernA, const double parmA[NRRD_KERNEL_PARM_M
     if (parmA[pidx] != parmB[pidx]) {
       *differ = parmA[pidx] < parmB[pidx] ? -1 : 1;
       if (explain) {
-        snprintf(explain, ASP1_L, "parmA[%u]=%f %s parmB[%u]=%f", pidx, parmA[pidx],
-                 *differ < 0 ? "<" : ">", pidx, parmB[pidx]);
+        snprintf(explain, ASP1_L,
+                 "parmA[%u]=%s %s "
+                 "parmB[%u]=%s",
+                 pidx, airDtoS(Nb[0], parmA[pidx], Ds), *differ < 0 ? "<" : ">", /* */
+                 pidx, airDtoS(Nb[1], parmB[pidx], Ds));
       }
       return 0;
     }
@@ -3480,6 +3484,7 @@ nrrdKernelCheck(const NrrdKernel *kern, const double parm[NRRD_KERNEL_PARM_MAXNU
   unsigned int diffEvalNum, diffIntglNum, diffDerivNum;
   NrrdKernelSpec *kspA, *kspB;
   airArray *mop;
+  DECISEP_DECL(6);
 
   /* got tired of seeing these two lines over and over */
 #define ERRR                                                                            \
@@ -3550,7 +3555,8 @@ nrrdKernelCheck(const NrrdKernel *kern, const double parm[NRRD_KERNEL_PARM_MAXNU
       || (kern->eval1_d)(-supp - 10 * wee, parm)) {
     if (nrrdKernelCheap != kern) {
       /* the "cheap" kernel alone gets a pass on reporting its support */
-      biffAddf(NRRD, "%s: kern %s is non-zero outside support %g", me, kstr, supp);
+      biffAddf(NRRD, "%s: kern %s is non-zero outside support %s", me, kstr,
+               airDtoS(Nb[0], supp, Ds));
       ERRR;
     }
   }
@@ -3577,11 +3583,11 @@ nrrdKernelCheck(const NrrdKernel *kern, const double parm[NRRD_KERNEL_PARM_MAXNU
   kern->evalN_f(ran_f, dom_f, evalNum, parm);
   kern->evalN_d(ran_d, dom_d, evalNum, parm);
   /*
-  for (evalIdx=0; evalIdx<evalNum; evalIdx++) {
-    fprintf(stderr, "%u %g --> %g\n", AIR_UINT(evalIdx),
-            dom_d[evalIdx], ran_d[evalIdx]);
-  }
-  */
+   * for (evalIdx=0; evalIdx<evalNum; evalIdx++) {
+   *   fprintf(stderr, "%u %g --> %g\n", AIR_UINT(evalIdx),
+   *           dom_d[evalIdx], ran_d[evalIdx]);
+   * }
+   */
   kernD = nrrdKernelDerivative(kern);
   if (nrrdKernelFlag == kernD) {
     /* nrrdKernelDerivative is not confident about knowing derivative of kern */
@@ -3617,25 +3623,36 @@ nrrdKernelCheck(const NrrdKernel *kern, const double parm[NRRD_KERNEL_PARM_MAXNU
         || nrrdKernelBCCubicDD == kern || nrrdKernelAQuarticDD == kern) {
       if (fabs(single_f - ran_f[evalIdx]) > 0.0) {
         biffAddf(NRRD,
-                 "%s: %s (eval1_f(%.17g)=%.17g) != "
-                 "(evalN_f(%.17g)=%.17g) by %.17g > %.17g",
-                 me, kstr, dom_f[evalIdx], single_f, dom_f[evalIdx], ran_f[evalIdx],
-                 fabs(single_f - ran_f[evalIdx]), 0.0);
+                 "%s: %s "
+                 "(eval1_f(%s)=%s) != "
+                 "(evalN_f(%s)=%s) by "
+                 "%s > 0.0",
+                 me, kstr, /* */
+                 airDtoS(Nb[0], dom_f[evalIdx], Ds), airDtoS(Nb[1], single_f, Ds),
+                 airDtoS(Nb[2], dom_f[evalIdx], Ds), airDtoS(Nb[3], ran_f[evalIdx], Ds),
+                 airDtoS(Nb[4], fabs(single_f - ran_f[evalIdx]), Ds));
         ERRR;
       }
     } else { /* for most well-behaved kernels */
       if (single_f != ran_f[evalIdx]) {
         biffAddf(NRRD,
-                 "%s: %s (eval1_f(%.17g)=%.17g) != "
-                 "(evalN_f(%.17g)=%.17g)",
-                 me, kstr, dom_f[evalIdx], single_f, dom_f[evalIdx], ran_f[evalIdx]);
+                 "%s: %s "
+                 "(eval1_f(%s)=%s) != "
+                 "(evalN_f(%s)=%s)",
+                 me, kstr, /* */
+                 airDtoS(Nb[0], dom_f[evalIdx], Ds), airDtoS(Nb[1], single_f, Ds),
+                 airDtoS(Nb[2], dom_f[evalIdx], Ds), airDtoS(Nb[3], ran_f[evalIdx], Ds));
         ERRR;
       }
     }
     /* single double vs vector double */
     if (single_d != ran_d[evalIdx]) {
-      biffAddf(NRRD, "%s: %s (eval1_d(%.17g)=%.17g) != (evalN_d(%.17g)=%.17g)", me, kstr,
-               dom_d[evalIdx], single_d, dom_d[evalIdx], ran_d[evalIdx]);
+      biffAddf(NRRD,
+               "%s: %s "
+               "(eval1_d(%s)=%s) != (evalN_d(%s)=%s)",
+               me, kstr, /* */
+               airDtoS(Nb[0], dom_d[evalIdx], Ds), airDtoS(Nb[1], single_d, Ds),
+               airDtoS(Nb[2], dom_d[evalIdx], Ds), airDtoS(Nb[3], ran_d[evalIdx], Ds));
       ERRR;
     }
     /* single float vs single double */
@@ -3643,10 +3660,16 @@ nrrdKernelCheck(const NrrdKernel *kern, const double parm[NRRD_KERNEL_PARM_MAXNU
       diffEvalNum++;
       if (diffEvalNum > diffOkEvalMax) {
         biffAddf(NRRD,
-                 "%s: %s |eval1_f(%.17g)=%.17g) - (eval1_d(%.17g)=%.17g)|="
-                 "%.17g  >  epsilon %.17g too many times (%u > %u)",
-                 me, kstr, dom_f[evalIdx], single_f, dom_d[evalIdx], single_d,
-                 fabs(single_f - single_d), epsilon, diffEvalNum, diffOkEvalMax);
+                 "%s: %s "
+                 "|eval1_f(%s)=%s) - "
+                 "(eval1_d(%s)=%s)|="
+                 "%s  >  "
+                 "epsilon %s too many times (%u > %u)",
+                 me, kstr, /* */
+                 airDtoS(Nb[0], dom_f[evalIdx], Ds), airDtoS(Nb[1], single_f, Ds),
+                 airDtoS(Nb[2], dom_d[evalIdx], Ds), airDtoS(Nb[3], single_d, Ds),
+                 airDtoS(Nb[4], fabs(single_f - single_d), Ds),
+                 airDtoS(Nb[5], epsilon, Ds), diffEvalNum, diffOkEvalMax);
         ERRR;
       }
     }
@@ -3664,10 +3687,16 @@ nrrdKernelCheck(const NrrdKernel *kern, const double parm[NRRD_KERNEL_PARM_MAXNU
         diffIntglNum++;
         if (diffIntglNum > diffOkIntglOrDerivMax) {
           biffAddf(NRRD,
-                   "%s: %s(%.17g) |numerical deriv of integral(%s) %.17g - %.17g|="
-                   "%.17g > %.17g too many times (%u > %u)",
-                   me, kstr, dom_d[evalIdx], ikern->name, ndrv, single_d,
-                   fabs(ndrv - single_d), epsilon, diffIntglNum, diffOkIntglOrDerivMax);
+                   "%s: %s(%s) "
+                   "|numerical deriv of integral(%s) "
+                   "%s - %s|="
+                   "%s > "
+                   "%s too many times (%u > %u)",
+                   me, kstr, airDtoS(Nb[0], dom_d[evalIdx], Ds), /* */
+                   ikern->name,                                  /* */
+                   airDtoS(Nb[1], ndrv, Ds), airDtoS(Nb[2], single_d, Ds),
+                   airDtoS(Nb[3], fabs(ndrv - single_d), Ds),
+                   airDtoS(Nb[4], epsilon, Ds), diffIntglNum, diffOkIntglOrDerivMax);
           ERRR;
         }
       }
@@ -3684,11 +3713,15 @@ nrrdKernelCheck(const NrrdKernel *kern, const double parm[NRRD_KERNEL_PARM_MAXNU
         diffDerivNum++;
         if (diffDerivNum > diffOkIntglOrDerivMax) {
           biffAddf(NRRD,
-                   "%s: %s(%.17g) |numerical deriv(%s) %.17g - %.17g=%s(%.17g)|="
-                   "%.17g > %.17g too many times (%u > %u)",
-                   me, kstr, dom_d[evalIdx], kern->name, ndrv, dsingle, kdstr,
-                   dom_d[evalIdx], fabs(ndrv - dsingle), epsilon, diffDerivNum,
-                   diffOkIntglOrDerivMax);
+                   "%s: %s(%s) "
+                   "|numerical deriv(%s) %s - %s="
+                   "%s(%s)|="
+                   "%s > %s too many times (%u > %u)",
+                   me, kstr, airDtoS(Nb[0], dom_d[evalIdx], Ds), /* */
+                   kern->name, airDtoS(Nb[1], ndrv, Ds), airDtoS(Nb[2], dsingle, Ds),
+                   kdstr, airDtoS(Nb[3], dom_d[evalIdx], Ds), /* */
+                   airDtoS(Nb[4], fabs(ndrv - dsingle), Ds),  /* */
+                   airDtoS(Nb[5], epsilon, Ds), diffDerivNum, diffOkIntglOrDerivMax);
           ERRR;
         }
       }
@@ -3703,10 +3736,13 @@ nrrdKernelCheck(const NrrdKernel *kern, const double parm[NRRD_KERNEL_PARM_MAXNU
        way to set this */
     if (fabs(integral - kern->integral(parm)) > hackeps * epsilon) {
       biffAddf(NRRD,
-               "%s: %s |numerical integral %.17g - claimed %.17g| "
-               "%.17g > %.17g",
-               me, kstr, integral, kern->integral(parm),
-               fabs(integral - kern->integral(parm)), hackeps * epsilon);
+               "%s: %s |numerical integral %s "
+               "- claimed %s| "
+               "%s > %s",
+               me, kstr, airDtoS(Nb[0], integral, Ds), /* */
+               airDtoS(Nb[1], kern->integral(parm), Ds),
+               airDtoS(Nb[2], fabs(integral - kern->integral(parm)), Ds),
+               airDtoS(Nb[3], hackeps * epsilon, Ds));
       ERRR;
     }
   }

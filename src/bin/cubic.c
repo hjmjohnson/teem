@@ -43,7 +43,7 @@ main(int argc, char **argv) {
     usage();
   }
   airSetLocaleFromEnvOrExit(argv[0], airStdout());
-  DS = airDecimalSeparatorLearn(decibuff);
+  DS = airDeciSepLearn(decibuff, NULL);
   snprintf(buf, sizeof(buf), "%s %s %s", argv[1], argv[2], argv[3]);
   /* not sure why I packed the args back into one string ...
      ... but this gives reason to try airParseStrDdecisep.

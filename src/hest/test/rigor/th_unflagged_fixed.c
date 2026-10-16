@@ -58,7 +58,7 @@ hestCB posCB_parse0 = {2 * sizeof(double), "position", NULL, NULL};
 void
 pos_print(FILE *file, const double pos[2]) {
   char nbuff[2][AIR_STRLEN_SMALL + 1], decibuff[AIR_STRLEN_SMALL + 1];
-  const char *decisep = airDecimalSeparatorLearn(decibuff);
+  const char *decisep = airDeciSepLearn(decibuff, NULL);
   fprintf(file, "(%s,%s)", airDtoS(nbuff[0], pos[0], decisep),
           airDtoS(nbuff[1], pos[1], decisep));
   fflush(file);
@@ -105,7 +105,7 @@ hestCB posCB_destroy = {2 * sizeof(double), "position", pos_parse, combo_free_mo
 void
 combo_print(FILE *file, Combo *co) {
   char nbuff[AIR_STRLEN_SMALL + 1], decibuff[AIR_STRLEN_SMALL + 1];
-  const char *decisep = airDecimalSeparatorLearn(decibuff);
+  const char *decisep = airDeciSepLearn(decibuff, NULL);
   fprintf(file, "\"%s\"->%s", co->str, airDtoS(nbuff, co->val, decisep));
   fflush(file);
   return;

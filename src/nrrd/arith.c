@@ -55,6 +55,7 @@ nrrdArithGamma(Nrrd *nout, const Nrrd *nin, const NrrdRange *_range, double Gamm
   airArray *mop;
   double (*lup)(const void *, size_t);
   double (*ins)(void *, size_t, double);
+  DECISEP_DECL(3);
 
   if (!(nout && nin)) {
     /* _range can be NULL */
@@ -112,7 +113,8 @@ nrrdArithGamma(Nrrd *nout, const Nrrd *nin, const NrrdRange *_range, double Gamm
       ins(nout->data, I, val);
     }
   }
-  if (nrrdContentSet_va(nout, func, nin, "%g,%g,%g", min, max, Gamma)) {
+  if (nrrdContentSet_va(nout, func, nin, "%s,%s,%s", airDtoS(Nb[0], min, Ds),
+                        airDtoS(Nb[1], max, Ds), airDtoS(Nb[2], Gamma, Ds))) {
     biffAddf(NRRD, "%s:", me);
     airMopError(mop);
     return 1;
@@ -143,6 +145,7 @@ nrrdArithSRGBGamma(Nrrd *nout, const Nrrd *nin, const NrrdRange *_range, int for
   airArray *mop;
   double (*lup)(const void *, size_t);
   double (*ins)(void *, size_t, double);
+  DECISEP_DECL(2);
 
   if (!(nout && nin)) {
     /* _range can be NULL */
@@ -188,8 +191,8 @@ nrrdArithSRGBGamma(Nrrd *nout, const Nrrd *nin, const NrrdRange *_range, int for
     val = AIR_AFFINE(0.0, val, 1.0, min, max);
     ins(nout->data, I, val);
   }
-  if (nrrdContentSet_va(nout, func, nin, "%g,%g,%s", min, max,
-                        forward ? "forw" : "back")) {
+  if (nrrdContentSet_va(nout, func, nin, "%s,%s,%s", airDtoS(Nb[0], min, Ds),
+                        airDtoS(Nb[1], max, Ds), forward ? "forw" : "back")) {
     biffAddf(NRRD, "%s:", me);
     airMopError(mop);
     return 1;
@@ -999,12 +1002,12 @@ nrrdArithIterTernaryOpSelect(Nrrd *nout, int op, NrrdIter *inA, NrrdIter *inB,
     valB = nrrdIterValue(inB);
     valC = nrrdIterValue(inC);
     /*
-    if (!(I % 1000)) {
-      fprintf(stderr, "!%s: %d: top(%g,%g,%g) = %g\n", me, (int)I,
-              valA, valB, valC,
-              top(valA, valB, valC));
-    }
-    */
+     * if (!(I % 1000)) {
+     *   fprintf(stderr, "!%s: %d: top(%g,%g,%g) = %g\n", me, (int)I,
+     *           valA, valB, valC,
+     *           top(valA, valB, valC));
+     * }
+     */
     insert(nout->data, I, top(valA, valB, valC));
   }
   contA = nrrdIterContent(inA);
@@ -1062,6 +1065,7 @@ nrrdArithAffine(Nrrd *nout, double minIn, const Nrrd *nin, double maxIn, double 
   size_t I, N;
   double (*ins)(void *v, size_t I, double d), (*lup)(const void *v, size_t I), mmin,
     mmax;
+  DECISEP_DECL(4);
 
   if (!nout || nrrdCheck(nin)) {
     biffAddf(NRRD, "%s: got NULL pointer or invalid input", me);
@@ -1090,8 +1094,9 @@ nrrdArithAffine(Nrrd *nout, double minIn, const Nrrd *nin, double maxIn, double 
   /* HEY: it would be much better if the ordering here was the same as in
      AIR_AFFINE, but that's not easy with the way the content functions are
      now set up */
-  if (nrrdContentSet_va(nout, "affine", nin, "%g,%g,%g,%g", minIn, maxIn, minOut,
-                        maxOut)) {
+  if (nrrdContentSet_va(nout, "affine", nin, "%s,%s,%s,%s", /* */
+                        airDtoS(Nb[0], minIn, Ds), airDtoS(Nb[1], maxIn, Ds),
+                        airDtoS(Nb[2], minOut, Ds), airDtoS(Nb[3], maxOut, Ds))) {
     biffAddf(NRRD, "%s:", me);
     return 1;
   }

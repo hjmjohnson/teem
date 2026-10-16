@@ -525,7 +525,7 @@ nrrdSpaceVectorParse(double dir[NRRD_SPACE_DIM_MAX], const char *_str,
   static const char me[] = "nrrdSpaceVectorParse";
   airArray *mop;
   char *str, decibuff[AIR_STRLEN_SMALL + 1];
-  const char *decisep = airDecimalSeparatorLearn(decibuff);
+  const char *decisep = airDeciSepLearn(decibuff, NULL);
 
   mop = airMopNew();
   str = airStrdup(_str);

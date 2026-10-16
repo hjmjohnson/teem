@@ -145,7 +145,7 @@ encodingAscii_read(FILE *file, void *_data, size_t elNum, Nrrd *nrrd, NrrdIoStat
   if (nrrdTypeDouble == nrrd->type || nrrdTypeFloat == nrrd->type) {
     /* our ultimate reliance on sscanf requires us to learn (once) this locale's decimal
        separator, so we know how to convert '.' to that in strings as a pre-process */
-    if (!(decisep = airDecimalSeparatorLearn(decibuff))) {
+    if (!(decisep = airDeciSepLearn(decibuff, NULL))) {
       biffAddf(NRRD, "%s: couldn't learn decimal separator in this locale", me);
       return 1;
     }

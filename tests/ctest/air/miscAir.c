@@ -56,7 +56,7 @@ main(int argc, const char *argv[]) {
   char db[AIR_STRLEN_SMALL + 1], nb[3][AIR_STRLEN_SMALL + 1];
 
   airSetLocaleFromEnvOrExit(argv[0], airStderr());
-  const char *ds = airDecimalSeparatorLearn(db); /* okay to have declare-as-you go? */
+  const char *ds = airDeciSepLearn(db, NULL); /* okay to declare-as-you go? */
   AIR_UNUSED(argc);
   me = argv[0];
 

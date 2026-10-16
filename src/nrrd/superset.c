@@ -270,6 +270,7 @@ int /* Biff: 1 */
 nrrdPad_va(Nrrd *nout, const Nrrd *nin, const ptrdiff_t *min, const ptrdiff_t *max,
            int boundary, ...) {
   static const char me[] = "nrrdPad_va", func[] = "pad";
+  DECISEP_DECL1;
 
   if (!(nout && nin && min && max)) {
     biffAddf(NRRD, "%s: got NULL pointer", me);
@@ -313,8 +314,8 @@ nrrdPad_va(Nrrd *nout, const Nrrd *nin, const ptrdiff_t *min, const ptrdiff_t *m
     return 1;
   }
   /*
-  printf("!%s: boundary = %d, padValue = %g\n", me, boundary, padValue);
-  */
+   * printf("!%s: boundary = %d, padValue = %g\n", me, boundary, padValue);
+   */
   char stmp[2][AIR_STRLEN_SMALL + 1];
   size_t szIn[NRRD_DIM_MAX], szOut[NRRD_DIM_MAX];
   nrrdAxisInfoGet_nva(nin, nrrdAxisInfoSize, szIn);
@@ -430,8 +431,8 @@ nrrdPad_va(Nrrd *nout, const Nrrd *nin, const ptrdiff_t *min, const ptrdiff_t *m
               airSprintPtrdiff_t(stmp[1], max[ai]));
   }
   if (nrrdBoundaryPad == boundary) {
-    snprintf(buff2, sizeof(buff2), "%s(%g)", airEnumStr(nrrdBoundary, nrrdBoundaryPad),
-             padValue);
+    snprintf(buff2, sizeof(buff2), "%s(%s)", airEnumStr(nrrdBoundary, nrrdBoundaryPad),
+             airDtoS(Nb, padValue, Ds));
   } else {
     airStrcpy(buff2, sizeof(buff2), airEnumStr(nrrdBoundary, boundary));
   }

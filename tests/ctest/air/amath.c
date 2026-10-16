@@ -61,7 +61,7 @@ main(int argc, const char *argv[]) {
     unsigned int pi, ti, testnum = 2000;
     double aa[2], uu, eps = 8e-27, error;
     char db[AIR_STRLEN_SMALL + 1], nb[2][AIR_STRLEN_SMALL + 1];
-    const char *ds = airDecimalSeparatorLearn(db);
+    const char *ds = airDeciSepLearn(db, NULL);
     airRandMTState *rng = airRandMTStateNew(4242);
     airMopAdd(mop, rng, airRandMTStateNix_mop, airMopAlways);
     error = 0;

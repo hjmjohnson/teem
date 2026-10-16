@@ -97,7 +97,7 @@ called, which means that:
      All non-'.'-decimal-seperator cleverness pushed down into those functions.
 IF YOU HAVE BEEN USING airSingleSscanf->airSingleParse to parse double or floats,
 YOU SHOULD PROBABLY USE airStoF/airStoD directly, after a single call to
-airDecimalSeparatorLearn, so that that cost is amortized not repeatedly incurred!
+airDeciSepLearn, so that that cost is amortized not repeatedly incurred!
 The value of parsing a size_t in C89 code is still here and possibly useful.
 v . v . v . v . v . v . v . v . v . v . v . v . v . v . v . v . v . v . v . v . v . v
 Use within Teem of airSingleParse for FP vals should be minimized or eliminated.
@@ -113,7 +113,7 @@ airSingleParse(const char *str, const char *cnv, void *ptr) {
   if (!strcmp(cnv, "%e") || !strcmp(cnv, "%f") || !strcmp(cnv, "%g")
       || !strcmp(cnv, "%le") || !strcmp(cnv, "%lf") || !strcmp(cnv, "%lg")) {
     char decibuff[AIR_STRLEN_SMALL + 1];
-    const char *decisep = airDecimalSeparatorLearn(decibuff);
+    const char *decisep = airDeciSepLearn(decibuff, NULL);
     if (cnv[1] == 'l') {
       /* `ptr` points to a double */
       ret = airStoD(ptr, str, decisep);

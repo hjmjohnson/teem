@@ -434,20 +434,19 @@ static void nMinMaxExactFindDB(MMEF_ARGS(DB)) { MMEF_FLOAT(DB) }
  *
  * These also sets *hneP, using a value from the nrrdHasNonExist* enum
  */
-void (*const nrrdMinMaxExactFind[NRRD_TYPE_MAX + 1])(void *minP, void *maxP, int *hneP,
-                                                     const Nrrd *)
-  = {NULL,
-     nMinMaxExactFindCH,
-     nMinMaxExactFindUC,
-     nMinMaxExactFindSH,
-     nMinMaxExactFindUS,
-     nMinMaxExactFindIN,
-     nMinMaxExactFindUI,
-     nMinMaxExactFindLL,
-     nMinMaxExactFindUL,
-     nMinMaxExactFindFL,
-     nMinMaxExactFindDB,
-     NULL};
+void(*const nrrdMinMaxExactFind[NRRD_TYPE_MAX + 1]) /* */
+  (void *minP, void *maxP, int *hneP, const Nrrd *) = {NULL,
+                                                       nMinMaxExactFindCH,
+                                                       nMinMaxExactFindUC,
+                                                       nMinMaxExactFindSH,
+                                                       nMinMaxExactFindUS,
+                                                       nMinMaxExactFindIN,
+                                                       nMinMaxExactFindUI,
+                                                       nMinMaxExactFindLL,
+                                                       nMinMaxExactFindUL,
+                                                       nMinMaxExactFindFL,
+                                                       nMinMaxExactFindDB,
+                                                       NULL};
 
 /*
  ******** nrrdValCompare[]
@@ -559,7 +558,8 @@ nrrdArrayCompare(int type, const void *_valA, const void *_valB, size_t valNum,
   const unsigned char *valA, *valB;
   int (*compare)(const void *, const void *);
   size_t ii, sze;
-  char stmp[AIR_STRLEN_SMALL + 1];
+  char stmp[ASP1_S];
+  DECISEP_DECL(4);
 
   if (!(_valA && _valB && differ)) {
     biffAddf(NRRD, "%s: got NULL pointer (%p, %p, or %p)", me, _valA, _valB,
@@ -571,7 +571,7 @@ nrrdArrayCompare(int type, const void *_valA, const void *_valB, size_t valNum,
     return 1;
   }
   if (!AIR_EXISTS(epsilon)) {
-    biffAddf(NRRD, "%s: non-existent epsilon %g", me, epsilon);
+    biffAddf(NRRD, "%s: non-existent epsilon %s", me, airDtoS(Nb[0], epsilon, Ds));
     return 1;
   }
   if (airEnumValCheck(nrrdType, type)) {
@@ -608,15 +608,22 @@ nrrdArrayCompare(int type, const void *_valA, const void *_valB, size_t valNum,
           airSprintSize_t(stmp, ii);
           if (0 == epsilon) {
             snprintf(explain, AIR_STRLEN_LARGE + 1,
-                     "valA[%s]=%.17g %s valB[%s]=%.17g "
-                     "by %g",
-                     stmp, aa, *differ < 0 ? "<" : ">", stmp, bb, fabs(aa - bb));
+                     "valA[%s]=%s %s "
+                     "valB[%s]=%s "
+                     "by %s",
+                     stmp, airDtoS(Nb[0], aa, Ds), *differ < 0 ? "<" : ">", /* */
+                     stmp, airDtoS(Nb[1], bb, Ds),                          /* */
+                     airDtoS(Nb[2], fabs(aa - bb), Ds));
           } else {
             snprintf(explain, AIR_STRLEN_LARGE + 1,
-                     "valA[%s]=%.17g %s valB[%s]=%.17g "
-                     "by %g, more than eps %g",
-                     stmp, aa, *differ < 0 ? "<" : ">", stmp, bb, fabs(aa - bb),
-                     epsilon);
+                     "valA[%s]=%s %s "
+                     "valB[%s]=%s "
+                     "by %s, "
+                     "more than eps %s",
+                     stmp, airDtoS(Nb[0], aa, Ds), *differ < 0 ? "<" : ">", /* */
+                     stmp, airDtoS(Nb[1], bb, Ds),                          /* */
+                     airDtoS(Nb[2], fabs(aa - bb), Ds),                     /* */
+                     airDtoS(Nb[3], epsilon, Ds));
           }
         }
         break;

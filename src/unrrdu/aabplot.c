@@ -99,6 +99,7 @@ unu_aabplotMain(int argc, const char **argv, const char *me, const hestParm *hpa
     unsigned int xi, yi, pi, ti, sx, sy, pti[PTNUM];
     char *line, rbuff[128];
     Nrrd *nbuff;
+    DECISEP_DECL1;
 
     sx = AIR_UINT(nin->axis[0].size);
     sy = AIR_UINT(nin->axis[1].size);
@@ -118,9 +119,9 @@ unu_aabplotMain(int argc, const char **argv, const char *me, const hestParm *hpa
       for (pi = 0; pi < plen; pi++) {
         line[pi] = ' ';
       }
-      snprintf(rbuff, sizeof(rbuff), "|<-- %g", vrange[0]);
+      snprintf(rbuff, sizeof(rbuff), "|<-- %s", airDtoS(Nb, vrange[0], Ds));
       memcpy(line, rbuff, strlen(rbuff));
-      snprintf(rbuff, sizeof(rbuff), "%g -->|", vrange[1]);
+      snprintf(rbuff, sizeof(rbuff), "%s -->|", airDtoS(Nb, vrange[1], Ds));
       memcpy(line + plen - strlen(rbuff), rbuff, strlen(rbuff));
       printf("%s", line);
       if (medshow) {
@@ -137,10 +138,10 @@ unu_aabplotMain(int argc, const char **argv, const char *me, const hestParm *hpa
         pti[ti] = airIndexClamp(vrange[0], buff[airIndexClamp(0, ptile[ti], 100, sx)],
                                 vrange[1], plen);
         /*
-        fprintf(stderr, "ti %u (%g) -> buff[%u] = %g -> %u\n", ti,
-                ptile[ti], airIndexClamp(0, ptile[ti], 100, sx),
-                buff[airIndexClamp(0, ptile[ti], 100, sx)], pti[ti]);
-        */
+         * fprintf(stderr, "ti %u (%g) -> buff[%u] = %g -> %u\n", ti,
+         *         ptile[ti], airIndexClamp(0, ptile[ti], 100, sx),
+         *         buff[airIndexClamp(0, ptile[ti], 100, sx)], pti[ti]);
+         */
       }
       for (pi = 0; pi < plen; pi++) {
         line[pi] = pi % 2 ? ' ' : '.';
@@ -163,7 +164,7 @@ unu_aabplotMain(int argc, const char **argv, const char *me, const hestParm *hpa
       }
       printf("%s", line);
       if (medshow) {
-        printf(" %g", buff[airIndexClamp(0, 50, 100, sx)]);
+        printf(" %s", airDtoS(Nb, buff[airIndexClamp(0, 50, 100, sx)], Ds));
       }
       printf("\n");
 #if 0

@@ -24,7 +24,7 @@
 
 /*
 ** Tests:
-** airDecimalSeparatorLearn to learn whatever the decimal separator is in
+** airDeciSepLearn to learn whatever the decimal separator is in
 ** various locales that we try (with 1 or 2 byte non-'.' decimal separators),
 ** and then making sure airDtoS, airFtoS, airStoD, airStoF all use '.' as
 ** the decimal separator, despite the locale using otherwise.
@@ -34,20 +34,20 @@
 int
 main(int argc, const char *argv[]) {
   const char *me = argv[0];
-  /*         locale // (bytes) decimal separator, at least on a Mac */
+  /* Not all systems have all locales, and where available their
+     decimal separator may not be what is recorded in comments here */
   const char *funLocale[] = {
-    "de_DE.UTF-8", // (1) ","
-    "fr_FR.UTF-8", // (1) ","
-    "nl_NL.UTF-8", // (1) ","
-    "it_IT.UTF-8", // (1) ","
-#if 0
+    "de_DE.UTF-8",  // (1) ","
+    "fr_FR.UTF-8",  // (1) ","
+    "nl_NL.UTF-8",  // (1) ","
+    "it_IT.UTF-8",  // (1) ","
     "fa_AF.UTF-8",  // (2) "٫" == Arabic Decimal Separator
+    "ps_AF.utf8",   // (2) (same)
     "zh_TW.Big5",   // (2) "．" == full width full stop (?) but not in UTF-8
     "zh_CN.eucCN",  // (2) (same)
     "zh_CN.GB2312", // (2) \"#.\"
-#endif
   };
-  unsigned int li, tested = 0;
+  unsigned int li, tested[3] = {0, 0, 0};
   int failed = 0;
   char decibuff[AIR_STRLEN_SMALL + 1];
   const char *decisep;
@@ -59,24 +59,35 @@ main(int argc, const char *argv[]) {
     double dval = -1.0;
     float fval = -1.0f;
     int pret, cls;
+    char *end, tstr[] = "0.878906" /* test value < 1 with . decimal separator */;
     if (!setlocale(LC_NUMERIC, funLocale[li])) {
-      printf("%s: setlocale(LC_NUMERIC, \"%s\") failed (not installed?)\n", me,
-             funLocale[li]);
+      printf("%s: setlocale(LC_NUMERIC, \"%s\") failed (not installed?); moving on\n",
+             me, funLocale[li]);
       continue; /* locale not installed here */
+    } else {
+      printf("%s: setlocale(LC_NUMERIC, \"%s\") succeeded\n", me, funLocale[li]);
     }
-    tested++;
 
     /* sanity: confirm locale's decimal separator isn't '.' (else not useful test) */
-    if (1 == sscanf("0.878906", "%lf", &dval) && dval > 0.5) {
-      printf("%s: \"%s\" accepts '.' as decimal separator; boring\n", me, funLocale[li]);
+    dval = strtod(tstr, &end);
+    if (end != tstr && *end == '\0' && dval > 0.5) {
+      printf("%s: strtod in \"%s\" accepts '.' as decimal separator; moving on\n", me,
+             funLocale[li]);
       continue; /* platform's sscanf ignored the comma locale; skip this one */
+    } else {
+      printf("%s: strtod in \"%s\" does NOT accept'.' as decimal separator (good)\n", me,
+             funLocale[li]);
     }
 
-    if (!(decisep = airDecimalSeparatorLearn(decibuff))) {
+    if (!(decisep = airDeciSepLearn(decibuff, stderr))) {
       fprintf(stderr, "%s: oops couldn't learn %s's decimal separator", me,
               funLocale[li]);
       return 1;
     }
+    unsigned int dslen = (unsigned int)decisep[-1];
+    printf("%s: decisep under \"%s\" is length-%u \"%s\"\n", me, funLocale[li], dslen,
+           decisep);
+    tested[dslen]++; /* now increment count of locales tested */
     errno = 0;
     dval = -1.0;
 #define STR_(X)  #X
@@ -174,17 +185,18 @@ main(int argc, const char *argv[]) {
     }
   }
 
-  /* being a good citizen, fwiw */
+  /* being a good citizen, fwiw: restore locale to how C programs start */
   setlocale(LC_NUMERIC, "C");
-
-  if (!tested) {
+  unsigned total = tested[1] + tested[2];
+  if (!total) {
     fprintf(stderr, "%s: oops no non-'.'-decisep locale installed; skipping\n", me);
     return 77;
   }
   if (failed) {
     return 1;
   }
-  printf("%s: locale-independent parse verified in %u non-'.'-decisep locale%s\n", me,
-         tested, 1 == tested ? "" : "s");
+  printf("%s: C-locale-emulation parse verified in %u non-'.'-decisep locale%s: %u "
+         "1-byte and %u 2-byte\n",
+         me, total, 1 == total ? "" : "s", tested[1], tested[2]);
   return 0;
 }

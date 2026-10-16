@@ -244,7 +244,7 @@ stod(const char *str) {
   double val = 0.0;
   char decibuff[AIR_STRLEN_SMALL + 1];
 
-  airStoD(&val, str, airDecimalSeparatorLearn(decibuff));
+  airStoD(&val, str, airDeciSepLearn(decibuff, NULL));
   /* return value ignored, but trusting sscanf-like behavior that
      if a value could not be parsed, then &val is not set */
   return val;

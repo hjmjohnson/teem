@@ -234,6 +234,7 @@ miteNtxfCheck(const Nrrd *ntxf) {
   gageItemSpec isp;
   unsigned int rii, axi;
   int ilog2;
+  DECISEP_DECL(2);
 
   if (nrrdCheck(ntxf)) {
     biffMovef(MITE, NRRD, "%s: basic nrrd validity check failed", me);
@@ -318,8 +319,9 @@ miteNtxfCheck(const Nrrd *ntxf) {
         return 1;
       }
       if (!(ntxf->axis[axi].min < ntxf->axis[axi].max)) {
-        biffAddf(MITE, "%s: min (%g) not less than max (%g) on axis %u", me,
-                 ntxf->axis[axi].min, ntxf->axis[axi].max, axi);
+        biffAddf(MITE, "%s: min (%s) not less than max (%s) on axis %u", me,
+                 airDtoS(Nb[0], ntxf->axis[axi].min, Ds),
+                 airDtoS(Nb[1], ntxf->axis[axi].max, Ds), axi);
         return 1;
       }
     }
@@ -659,6 +661,7 @@ mite__StageRun(miteThread *mtt, miteUser *muu) {
   miteStage *stage;
   mite_t *rangeData;
   double *dbg = NULL;
+  DECISEP_DECL(3);
 
   finalIdx = 0;
   if (mtt->verbose) {
@@ -674,8 +677,15 @@ mite__StageRun(miteThread *mtt, miteUser *muu) {
       /* its a scalar txf domain variable */
       txfIdx = airIndexClamp(stage->min, *(stage->val), stage->max, stage->size);
       if (mtt->verbose) {
-        fprintf(stderr, "!%s: %s=%g in [%g,%g]/%u -> %u\n", me, stage->label,
-                *(stage->val), stage->min, stage->max, stage->size, txfIdx);
+        fprintf(stderr,
+                "!%s: %s="
+                "%s in "
+                "[%s,%s]/"
+                "%u -> %u\n",
+                me, stage->label,                  /* */
+                airDtoS(Nb[0], *(stage->val), Ds), /* */
+                airDtoS(Nb[1], stage->min, Ds), airDtoS(Nb[2], stage->max, Ds),
+                stage->size, txfIdx);
         dbg[0 + 2 * stageIdx] = *(stage->val);
       }
     }

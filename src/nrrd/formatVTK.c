@@ -284,6 +284,7 @@ formatVTK_write(FILE *file, const Nrrd *nrrd__, NrrdIoState *nio) {
   size_t nameSize = AIR_STRLEN_SMALL + 1;
   Nrrd *nrrd;
   airArray *mop;
+  DECISEP_DECL(3);
 
   /* HEY: should this copy be done more conservatively */
   mop = airMopNew();
@@ -365,8 +366,14 @@ formatVTK_write(FILE *file, const Nrrd *nrrd__, NrrdIoState *nio) {
   }
   fprintf(file, "DATASET STRUCTURED_POINTS\n");
   fprintf(file, "DIMENSIONS %u %u %u\n", sx, sy, sz);
-  fprintf(file, "ORIGIN %g %g %g\n", xm, ym, zm);
-  fprintf(file, "SPACING %g %g %g\n", xs, ys, zs);
+  fprintf(file, "ORIGIN %s %s %s\n", /* */
+          airDtoS(Nb[0], xm, Ds),    /* */
+          airDtoS(Nb[1], ym, Ds),    /* */
+          airDtoS(Nb[2], zm, Ds));
+  fprintf(file, "SPACING %s %s %s\n", /* */
+          airDtoS(Nb[0], xs, Ds),     /* */
+          airDtoS(Nb[1], ys, Ds),     /* */
+          airDtoS(Nb[2], zs, Ds));
   fprintf(file, "POINT_DATA %u\n", sx * sy * sz);
   airSrandMT(AIR_UINT(airTime()));
   snprintf(name, nameSize, "nrrd%05u", airRandInt(100000));

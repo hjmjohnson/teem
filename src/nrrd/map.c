@@ -500,7 +500,7 @@ nrrdHistoEq(Nrrd *nout, const Nrrd *nin, Nrrd **nmapP, unsigned int bins,
             unsigned int smart, float amount) {
   static const char me[] = "nrrdHistoEq", func[] = "heq";
   char db[ASP1_S], nb[ASP1_S];
-  const char *ds = airDecimalSeparatorLearn(db);
+  const char *ds = airDeciSepLearn(db, NULL);
 
   if (!(nout && nin)) {
     biffAddf(NRRD, "%s: got NULL pointer", me);

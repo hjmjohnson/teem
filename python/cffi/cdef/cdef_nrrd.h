@@ -458,7 +458,7 @@ typedef struct NrrdIoState_t {
   /*                             (new for TeemV2) ON READ+WRITE For learning and
                                  saving the current locale's decimal separator. NRRD
                                  files need to consistently use '.' as the decimal
-                                 separator, but the sscanf and printf that are used to
+                                 separator, but the strtod and printf that are used to
                                  read and write them are affected by the locale, in
                                  which the decimal separator could be ',' or various
                                  two-byte sequences. See air/fpio.c for a detailed
@@ -466,10 +466,9 @@ typedef struct NrrdIoState_t {
                                  the tldr is that instead of meddling with any
                                  `locale`-related API or data (which is hard to make
                                  fast, thread-safe, and memory-clean), we call
-                                 airDecimalSeparatorLearn to learn the separator, once,
-                                 and then we can use it for all NRRD IO. Because
-                                 airDecimalSeparatorLearn is called (indirectly) from
-                                 nrrdIoStateNew, the deal is this:
+                                 airDeciSepLearn to learn the separator, once, and then
+                                 we can use it for all NRRD IO. Because airDeciSepLearn
+                                 is called (indirectly) from nrrdIoStateNew, the deal is:
                                  *** After you call nrrdIoStateNew, you cannot then call
                                  *** setlocale() prior to doing any Nrrd I/O (such as
                                  *** with nrrdLoad or nrrdSave) because that could
@@ -798,6 +797,7 @@ extern const char *const nrrdEnvVarDefaultWriteCharsPerLine;
 extern const char *const nrrdEnvVarDefaultWriteValsPerLine;
 /* TeemV2: nrrdEnvVarStateVerboseIO --> nrrdEnvVarDefaultIoVerbose */
 extern const char *const nrrdEnvVarDefaultIoVerbose;
+extern const char *const nrrdEnvVarDefaultIoHeaderDoubleExcessPrecision;
 extern const char *const nrrdEnvVarStateKindNoop;
 extern const char *const nrrdEnvVarStateKeyValuePairsPropagate;
 extern const char *const nrrdEnvVarStateBlind8BitRange;

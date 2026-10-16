@@ -104,6 +104,8 @@ formatEPS_write(FILE *file, const Nrrd *nrrd__, NrrdIoState *nio) {
   double aspect, minX, minY, maxX, maxY, scale;
   unsigned int sx, sy;
   airArray *mop;
+  char Nb[4][ASP1_S];
+  const char *Ds = nio->decisep;
 
   mop = airMopNew();
   airMopAdd(mop, nrrd = nrrdNew(), nrrdNuke_mop, airMopAlways);
@@ -158,7 +160,9 @@ formatEPS_write(FILE *file, const Nrrd *nrrd__, NrrdIoState *nio) {
   fprintf(file, "%%%%Pages: 1\n");
   fprintf(file, "%%%%BoundingBox: %d %d %d %d\n", (int)floor(minX), (int)floor(minY),
           (int)ceil(maxX), (int)ceil(maxY));
-  fprintf(file, "%%%%HiResBoundingBox: %g %g %g %g\n", minX, minY, maxX, maxY);
+  fprintf(file, "%%%%HiResBoundingBox: %s %s %s %s\n",        /* */
+          airDtoS(Nb[0], minX, Ds), airDtoS(Nb[1], minY, Ds), /* */
+          airDtoS(Nb[2], maxX, Ds), airDtoS(Nb[3], maxY, Ds));
   fprintf(file, "%%%%EndComments\n");
   fprintf(file, "%%%%BeginProlog\n");
   fprintf(file, "%% linestr creates an empty string to hold "
@@ -167,15 +171,17 @@ formatEPS_write(FILE *file, const Nrrd *nrrd__, NrrdIoState *nio) {
   fprintf(file, "%%%%EndProlog\n");
   fprintf(file, "%%%%Page: 1 1\n");
   fprintf(file, "gsave\n");
-  fprintf(file, "%g %g moveto\n", minX, minY);
-  fprintf(file, "%g %g lineto\n", maxX, minY);
-  fprintf(file, "%g %g lineto\n", maxX, maxY);
-  fprintf(file, "%g %g lineto\n", minX, maxY);
+  fprintf(file, "%s %s moveto\n", airDtoS(Nb[0], minX, Ds), airDtoS(Nb[1], minY, Ds));
+  fprintf(file, "%s %s lineto\n", airDtoS(Nb[0], maxX, Ds), airDtoS(Nb[1], minY, Ds));
+  fprintf(file, "%s %s lineto\n", airDtoS(Nb[0], maxX, Ds), airDtoS(Nb[1], maxY, Ds));
+  fprintf(file, "%s %s lineto\n", airDtoS(Nb[0], minX, Ds), airDtoS(Nb[1], maxY, Ds));
   fprintf(file, "closepath\n");
   fprintf(file, "clip\n");
   fprintf(file, "gsave newpath\n");
-  fprintf(file, "%g %g translate\n", minX, minY);
-  fprintf(file, "%g %g scale\n", sx * scale, sy * scale);
+  fprintf(file, "%s %s translate\n", airDtoS(Nb[0], minX, Ds), airDtoS(Nb[1], minY, Ds));
+  fprintf(file, "%s %s scale\n",          /* */
+          airDtoS(Nb[0], sx * scale, Ds), /* */
+          airDtoS(Nb[1], sy * scale, Ds));
   fprintf(file, "%u %u 8\n", sx, sy);
   fprintf(file, "[%u 0 0 -%u 0 %u]\n", sx, sy, sy);
   if (color) {
