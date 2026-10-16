@@ -35,6 +35,8 @@ static const char *info = "flagged scalar options (kind 2)";
 
 int
 main(int argc, const char **argv) {
+  /* to debug how well we're doing C-locale-emulation */
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
   TH_SANITY;
   hestOpt *opt = NULL;
   hestParm *hparm = hestParmNew();
@@ -55,7 +57,7 @@ main(int argc, const char **argv) {
              // forgive the two calls to getenv
              getenv("TH_N_DFLT") ? getenv("TH_N_DFLT") : "99", "an integer");
   double x = 0.0;
-  hestOptAdd_1_Double(&opt, "x", "val", &x, testThing ? "nan" : "1.0", "a double");
+  hestOptAdd_1_Double(&opt, "x", "val", &x, testThing ? "nan" : "1.5", "a double");
   char *s = NULL;
   hestOptAdd_1_String(&opt, "s", "str", &s,
                       // forgive the two calls to getenv

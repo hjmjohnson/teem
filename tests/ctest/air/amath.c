@@ -29,8 +29,10 @@ main(int argc, const char *argv[]) {
   char stmp[AIR_STRLEN_SMALL + 1];
   airArray *mop;
 
+  /* for debugging C-locale-emulation conformance */
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
+
   AIR_UNUSED(argc);
-  AIR_UNUSED(argv);
   mop = airMopNew();
 
   { /* airLog2 */
@@ -57,9 +59,10 @@ main(int argc, const char *argv[]) {
 
   { /* airCbrt */
     unsigned int pi, ti, testnum = 2000;
-    airRandMTState *rng;
     double aa[2], uu, eps = 8e-27, error;
-    rng = airRandMTStateNew(4242);
+    char db[AIR_STRLEN_SMALL + 1], nb[2][AIR_STRLEN_SMALL + 1];
+    const char *ds = airDeciSepLearn(db, NULL);
+    airRandMTState *rng = airRandMTStateNew(4242);
     airMopAdd(mop, rng, airRandMTStateNix_mop, airMopAlways);
     error = 0;
     for (ti = 0; ti < testnum; ti++) {
@@ -74,11 +77,12 @@ main(int argc, const char *argv[]) {
     }
     error /= testnum;
     if (error > eps) {
-      fprintf(stderr, "average cbrt error was %.17g > eps %0.17g\n", error, eps);
+      fprintf(stderr, "average cbrt error was %s > eps %s\n", airDtoS(nb[0], error, ds),
+              airDtoS(nb[1], eps, ds));
       airMopError(mop);
       return 1;
     } else {
-      fprintf(stderr, "average cbrt error = %.17g\n", error);
+      fprintf(stderr, "average cbrt error = %s\n", airDtoS(nb[0], error, ds));
     }
   }
 

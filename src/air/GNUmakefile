@@ -47,12 +47,12 @@ $(L).PublicHdr = air.h
 $(L).PrivateHdr = privateAir.h
 # list below copied from similar block in CMakeLists.txt, but then add " \"
 $(L).Obj = $(patsubst %.c,%.o, \
-    754.c array.c endianAir.c enum.c heap.c math.c miscAir.c mop.c parseAir.c \
-    randJSF.c randMT.c sane.c string.c threadAir.c \
+    754.c array.c endianAir.c enum.c fpio.c heap.c math.c miscAir.c mop.c \
+    parseAir.c randJSF.c randMT.c sane.c string.c threadAir.c \
   )
 $(L).Test = floatprint doubleprint tok tmop fp trand trandJSF tmisc \
 	bessy tarr texp terf logrice tprint asprint \
-        t_airStrcpy t_airOneLine
+        t_airStrcpy t_airOneLine t_fpio
 ####
 ####
 ####

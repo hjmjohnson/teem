@@ -55,6 +55,9 @@ main(int argc, const char **argv) {
   double time0, time1;
   FILE *fout;
 
+  /* for debugging C-locale-emulation conformance */
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
+
   /* start-up */
   mop = airMopNew();
   hparm = hestParmNew();

@@ -236,6 +236,7 @@ mossFourPointTransform(Nrrd *nout, const Nrrd *nin, int boundary, const double *
   int xi, yi;
   unsigned int ci, nchan;
   double *val, (*ins)(void *v, size_t I, double f), (*clamp)(double val), PM[8];
+  DECISEP_DECL(7);
 
   if (!(nout && nin && msp && !mossImageCheck(nin))) {
     biffAddf(MOSS, "%s: got NULL pointer or bad image", me);
@@ -301,8 +302,16 @@ mossFourPointTransform(Nrrd *nout, const Nrrd *nin, int boundary, const double *
       double ww = PM[6] * xr + PM[7] * yr + 1;
       msp->verbose = (xi == msp->verbPixel[0] && yi == msp->verbPixel[1]);
       if (msp->verbose) {
-        printf("%s[%d,%d] --> rect x,y = %g,%g --> x,y,z = %g %g %g --> %g %g\n", me, xi,
-               yi, xr, yr, xx, yy, ww, xx / ww, yy / ww);
+        printf("%s[%d,%d] "
+               "--> rect x,y = %s,%s "                         /* */
+               "--> x,y,z = %s %s "                            /* */
+               "%s "                                           /* */
+               "--> %s %s\n",                                  /* */
+               me, xi, yi,                                     /* */
+               airDtoS(Nb[0], xr, Ds), airDtoS(Nb[1], yr, Ds), /* */
+               airDtoS(Nb[2], xx, Ds), airDtoS(Nb[3], yy, Ds), /* */
+               airDtoS(Nb[4], ww, Ds),                         /* */
+               airDtoS(Nb[5], xx / ww, Ds), airDtoS(Nb[6], yy / ww, Ds));
       }
       mossSamplerSample(val, msp, xx / ww, yy / ww);
       for (ci = 0; ci < nchan; ci++) {

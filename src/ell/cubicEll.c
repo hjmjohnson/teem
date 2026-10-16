@@ -43,8 +43,8 @@ ell_cubic(double root[3], double A, double B, double C, int newton) {
   double epsilon = 1.0E-11, AA, Q, R, QQQ, D, sqrt_D, der, u, v, x, theta, t, sub;
 
   /*
-  printf("%s: A B C = %g %g %g\n", me, A, B, C);
-  */
+   * printf("%s: A B C = %g %g %g\n", me, A, B, C);
+   */
   sub = A / 3.0;
   AA = A * A;
   Q = (AA / 3.0 - B) / 3.0;
@@ -66,10 +66,10 @@ ell_cubic(double root[3], double A, double B, double C, int newton) {
     root[1] = t * cos(theta - 2 * AIR_PI / 3.0) - sub;
     root[2] = t * cos(theta + 2 * AIR_PI / 3.0) - sub;
     /*
-    if (!AIR_EXISTS(root[0])) {
-      fprintf(stderr, "%s: %g %g %g --> nan!!!\n", me, A, B, C);
-    }
-    */
+     * if (!AIR_EXISTS(root[0])) {
+     *   fprintf(stderr, "%s: %g %g %g --> nan!!!\n", me, A, B, C);
+     * }
+     */
     return ell_cubic_root_three;
   } else if (D > epsilon) {
     double nr, fnr;
@@ -101,12 +101,12 @@ ell_cubic(double root[3], double A, double B, double C, int newton) {
     nr = -(A + x) / 2.0;
     fnr = ((nr + A) * nr + B) * nr + C; /* the polynomial evaluated at nr */
     /*
-    if (ell_debug) {
-      fprintf(stderr, "%s: root = %g -> %g, nr=% 20.15f\n"
-              "   fnr=% 20.15f\n", me,
-              x, (((x + A)*x + B)*x + C), nr, fnr);
-    }
-    */
+     * if (ell_debug) {
+     *   fprintf(stderr, "%s: root = %g -> %g, nr=% 20.15f\n"
+     *           "   fnr=% 20.15f\n", me,
+     *           x, (((x + A)*x + B)*x + C), nr, fnr);
+     * }
+     */
     if (fnr < -epsilon || fnr > epsilon) {
       root[0] = x;
       root[1] = root[2] = AIR_NAN;

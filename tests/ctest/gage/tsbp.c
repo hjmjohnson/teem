@@ -111,6 +111,9 @@ main(int argc, const char **argv) {
   gageStackBlurParm **sbpv;
   unsigned int sbpNum, sbpIdx;
 
+  /* for debugging C-locale-emulation conformance */
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
+
   me = argv[0];
   mop = airMopNew();
   hparm = hestParmNew();

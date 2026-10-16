@@ -118,6 +118,8 @@ const char *const nrrdEnvVarDefaultWriteCharsPerLine
 const char *const nrrdEnvVarDefaultWriteValsPerLine = "NRRD_DEFAULT_WRITE_VALS_PER_LINE";
 /* over-writes nrrd__StateVerboseIO for setting nrrdDefaultIoVerbose */
 const char *const nrrdEnvVarDefaultIoVerbose = "NRRD_DEFAULT_IO_VERBOSE";
+const char *const nrrdEnvVarDefaultIoHeaderDoubleExcessPrecision
+  = "NRRD_DEFAULT_IO_HEADER_DOUBLE_EXCESS_PRECISION";
 
 const char *const nrrdEnvVarStateKindNoop = "NRRD_STATE_KIND_NOOP";
 /* nrrdStateVerboseIO gone but still respect this to set nrrdDefaultIoVerbose */
@@ -254,7 +256,7 @@ nrrdGetenvDouble(double *val, const char **envStr, const char *envVar) {
   if (!env) {
     return -1;
   }
-  if (1 != airSingleSscanf(env, "%lf", &tmp)) {
+  if (1 != airSingleParse(env, "%lg", &tmp)) {
     return AIR_FALSE;
   } else {
     *val = tmp;
@@ -323,6 +325,8 @@ nrrdDefaultGetenv(void) {
   } else if (setNewWay) {
     nrrdDefaultIoVerbose = newVal;
   }
+  nrrdGetenvBool(&nrrdDefaultIoHeaderDoubleExcessPrecision, NULL,
+                 nrrdEnvVarDefaultIoHeaderDoubleExcessPrecision);
   return;
 }
 

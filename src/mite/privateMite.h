@@ -49,6 +49,14 @@ extern "C" {
 
 typedef unsigned int uint; /* uint is just more concise */
 
+/* to reduce boilerplate in code implementing C-locale-emulation */
+#define DECISEP_DECL1                                                                   \
+  char Nb[ASP1_S], Db[ASP1_S];                                                          \
+  const char *Ds = airDeciSepLearn(Db, NULL);
+#define DECISEP_DECL(N)                                                                 \
+  char Nb[(N)][ASP1_S], Db[ASP1_S];                                                     \
+  const char *Ds = airDeciSepLearn(Db, NULL);
+
 #if MITE_T_DOUBLE
 #  define mite_nt   nrrdTypeDouble
 #  define limnVTOQN limnVtoQN_d

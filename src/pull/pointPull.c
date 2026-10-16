@@ -111,12 +111,15 @@ void
 pull__PointHistAdd(pullPoint *point, int cond, double val) {
   static const char me[] = "pull__PointHistAdd";
   unsigned int phistIdx;
+  char Nb[4][ASP1_S], Db[ASP1_S];
+  const char *Ds = airDeciSepLearn(Db, NULL);
 
   phistIdx = airArrayLenIncr(point->phistArr, 1);
   ELL_4V_COPY(point->phist + _PHN * phistIdx, point->pos);
 
-  fprintf(stderr, "!%s: point %p pos = %.17g  %.17g  %.17g  %.17g (%g)\n", me, point,
-          point->pos[0], point->pos[1], point->pos[2], point->pos[3], val);
+  fprintf(stderr, "!%s: point %p pos = %s  %s  %s  %s (%g)\n", me, point,
+          airDtoS(Nb[0], point->pos[0], Ds), airDtoS(Nb[1], point->pos[1], Ds),
+          airDtoS(Nb[2], point->pos[2], Ds), airDtoS(Nb[3], point->pos[3], Ds), val);
 
   (point->phist + _PHN * phistIdx)[4] = cond;
   (point->phist + _PHN * phistIdx)[5] = val;

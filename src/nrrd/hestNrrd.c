@@ -291,7 +291,7 @@ nhIterParse(void *ptr, const char *str, char err[AIR_STRLEN_HUGE + 1]) {
     } else {
       /* fopen() failed, so it probably wasn't meant to be a filename */
       free(biffGetDone(NRRD));
-      ret = airSingleSscanf(str, "%lf", &val);
+      ret = airSingleParse(str, "%lg", &val);
       if (looksLikeANumber(str)
           || (1 == ret
               && (!AIR_EXISTS(val) || AIR_ABS(AIR_PI - val) < 0.0001

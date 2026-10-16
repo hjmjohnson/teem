@@ -453,6 +453,27 @@ typedef struct NrrdIoState_t {
                                  been allocated for oldDataSize */
   size_t oldDataSize;
   /*                             ON READ: size of mem pointed to by oldData */
+  char decibuff[AIR_STRLEN_SMALL + 1];
+  const char *decisep;
+  /*                             (new for TeemV2) ON READ+WRITE For learning and
+                                 saving the current locale's decimal separator. NRRD
+                                 files need to consistently use '.' as the decimal
+                                 separator, but the strtod and printf that are used to
+                                 read and write them are affected by the locale, in
+                                 which the decimal separator could be ',' or various
+                                 two-byte sequences. See air/fpio.c for a detailed
+                                 account of different strategies for handling locales;
+                                 the tldr is that instead of meddling with any
+                                 `locale`-related API or data (which is hard to make
+                                 fast, thread-safe, and memory-clean), we call
+                                 airDeciSepLearn to learn the separator, once, and then
+                                 we can use it for all NRRD IO. Because airDeciSepLearn
+                                 is called (indirectly) from nrrdIoStateNew, the deal is:
+                                 *** After you call nrrdIoStateNew, you cannot then call
+                                 *** setlocale() prior to doing any Nrrd I/O (such as
+                                 *** with nrrdLoad or nrrdSave) because that could
+                                 *** invalidate nio->decisep and break the intended
+                                 *** C-locale-emulation behavior. */
   /* The format and encoding.  These are initialized to `nrrdFormatUnknown`
      and `nrrdEncodingUnknown`, respectively, and DO USE THOSE VALUES for
      any kind of initialization or flagging; DO NOT USE NULL. */
@@ -776,6 +797,7 @@ extern const char *const nrrdEnvVarDefaultWriteCharsPerLine;
 extern const char *const nrrdEnvVarDefaultWriteValsPerLine;
 /* TeemV2: nrrdEnvVarStateVerboseIO --> nrrdEnvVarDefaultIoVerbose */
 extern const char *const nrrdEnvVarDefaultIoVerbose;
+extern const char *const nrrdEnvVarDefaultIoHeaderDoubleExcessPrecision;
 extern const char *const nrrdEnvVarStateKindNoop;
 extern const char *const nrrdEnvVarStateKeyValuePairsPropagate;
 extern const char *const nrrdEnvVarStateBlind8BitRange;
@@ -1039,9 +1061,11 @@ extern int nrrdIoDataFNCheck(NrrdIoState *nio, Nrrd *nrrd, int useBiff);
 extern int nrrdSpaceVectorParse(double dir[NRRD_SPACE_DIM_MAX], const char *str,
                                      unsigned int spaceDim, int useBiff);
 /* ---- END non-NrrdIO */
+/* TeemV2 API CHANGE: adding decisep arg here */
 extern size_t (*const nrrdStringValsParse[NRRD_TYPE_MAX + 1])(void *out,
                                                                    const char *s,
                                                                    const char *sep,
+                                                                   const char *decisep,
                                                                    size_t n);
 /* read.c */
 extern int nrrdOneLine(size_t *lenP, NrrdIoState *nio, FILE *file);

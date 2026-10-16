@@ -194,6 +194,7 @@ unu_resampleMain(int argc, const char **argv, const char *me, const hestParm *_h
   airArray *mop = unrrduMopNew(hopt, hparm);
   char *err;
 
+  DECISEP_DECL(2);
   if (nrrdHestBoundarySpecFinish(bspec, hopt + bspecIdx, padVal, hopt + padValIdx, me)) {
     airMopAdd(mop, err = biffGetDone(NRRD), airFree, airMopAlways);
     fprintf(stderr, "%s: error setting boundary behavior:\n%s", me, err);
@@ -220,7 +221,8 @@ unu_resampleMain(int argc, const char **argv, const char *me, const hestParm *_h
       }
       for (uint ai = 0; ai < offLen; ai++) {
         if (unrrduUnuScaleNothing != (int)(scale[0 + 2 * ai]) && !AIR_EXISTS(off[ai])) {
-          fprintf(stderr, "%s: off[%u] %g doesn't exist\n", me, ai, off[ai]);
+          fprintf(stderr, "%s: off[%u] %s doesn't exist\n", me, ai,
+                  airDtoS(Nb[0], off[ai], Ds));
           airMopError(mop);
           return 1;
         }
@@ -239,7 +241,8 @@ unu_resampleMain(int argc, const char **argv, const char *me, const hestParm *_h
       }
       for (uint ai = 0; ai < minLen; ai++) {
         if (unrrduUnuScaleNothing != (int)(scale[0 + 2 * ai]) && !AIR_EXISTS(min[ai])) {
-          fprintf(stderr, "%s: min[%u] %g doesn't exist\n", me, ai, min[ai]);
+          fprintf(stderr, "%s: min[%u] %s doesn't exist\n", me, ai,
+                  airDtoS(Nb[0], min[ai], Ds));
           airMopError(mop);
           return 1;
         }
@@ -257,7 +260,8 @@ unu_resampleMain(int argc, const char **argv, const char *me, const hestParm *_h
       }
       for (uint ai = 0; ai < maxLen; ai++) {
         if (unrrduUnuScaleNothing != (int)(scale[0 + 2 * ai]) && !AIR_EXISTS(max[ai])) {
-          fprintf(stderr, "%s: max[%u] %g doesn't exist\n", me, ai, max[ai]);
+          fprintf(stderr, "%s: max[%u] %s doesn't exist\n", me, ai,
+                  airDtoS(Nb[0], max[ai], Ds));
           airMopError(mop);
           return 1;
         }
@@ -356,9 +360,9 @@ unu_resampleMain(int argc, const char **argv, const char *me, const hestParm *_h
         case nrrdSpacingStatusUnknown:
         case nrrdSpacingStatusNone:
           fprintf(stderr,
-                  "%s: want to set output axis %u spacing (to %g), "
+                  "%s: want to set output axis %u spacing (to %s), "
                   "but can't find input axis spacing\n",
-                  me, ai, spout);
+                  me, ai, airDtoS(Nb[0], spout, Ds));
           airMopError(mop);
           return 1;
           break;
@@ -367,9 +371,9 @@ unu_resampleMain(int argc, const char **argv, const char *me, const hestParm *_h
         case nrrdSpacingStatusDirection:
           if (!AIR_EXISTS(spin)) {
             fprintf(stderr,
-                    "%s: want to set output axis %u spacing (to %g), "
-                    "but can't input axis spacing was %g\n",
-                    me, ai, spout, spin);
+                    "%s: want to set output axis %u spacing (to %s), "
+                    "but can't input axis spacing was %s\n",
+                    me, ai, airDtoS(Nb[0], spout, Ds), airDtoS(Nb[1], spin, Ds));
             airMopError(mop);
             return 1;
           }

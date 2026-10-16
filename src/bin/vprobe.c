@@ -62,6 +62,9 @@ main(int argc, const char *argv[]) {
   int otype, hackSet;
   char stmp[4][AIR_STRLEN_SMALL + 1];
 
+  /* really first: setlocale if requested */
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
+
   me = argv[0];
   /* parse environment variables first, in case they break nrrdDefault*
      or nrrdState* variables in a way that nrrdSanity() should see */

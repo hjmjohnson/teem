@@ -107,13 +107,13 @@ gridGen(Nrrd *nout, int typeOut, const Nrrd *nin, int psz, int psg) {
         nrrdSpaceVecScaleAdd2(loc, 1, loc, coord[axi], sdir[axi]);
       }
       /*
-      fprintf(stderr, "!%s: (%u) %u %u %u: %g %g\n", me,
-              AIR_UINT(II),
-              AIR_UINT(coord[0]),
-              AIR_UINT(coord[1]),
-              AIR_UINT(coord[2]),
-              loc[0], loc[1]);
-      */
+       * fprintf(stderr, "!%s: (%u) %u %u %u: %g %g\n", me,
+       *         AIR_UINT(II),
+       *         AIR_UINT(coord[0]),
+       *         AIR_UINT(coord[1]),
+       *         AIR_UINT(coord[2]),
+       *         loc[0], loc[1]);
+       */
       for (axi = 0; axi < sdim; axi++) {
         ins(out, axi + sdim * II, loc[axi]);
       }

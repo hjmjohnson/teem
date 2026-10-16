@@ -161,7 +161,7 @@ meetPullVolParse(meetPullVol *mpv, const char *_str) {
                                    :         : <---- ':' internal to blur parms
          fname : kind :<----- blur parms ----->: volname
             1  :   2  :      3     :    4    :5:6== # of ':'-separated tokens==`ctokn`
-       If we assume that the whole thing is formatted corretly, then the
+       If we assume that the whole thing is formatted correctly, then the
        # of tokens in the blur parms is ctokn-3 (because without any SS blur parms
        ctokn will always be 3). So we parse ctokn-3 tokens here within `if (wantSS)` */
     //    sbps = stack blur parm string
@@ -205,7 +205,9 @@ meetPullVolParse(meetPullVol *mpv, const char *_str) {
       for (uint pmi = 0; pmi < pmn; pmi++) {
         char *ptok = airStrtok(!pmi ? extraParm : NULL, "/", &plast);
         if (strstr(ptok, dnbiase) == ptok) {
-          if (1 != sscanf(ptok + strlen(dnbiase), "%lg", &(mpv->derivNormBiasSS))) {
+          if (1
+              != airSingleParse(ptok + strlen(dnbiase), "%lg",
+                                &(mpv->derivNormBiasSS))) {
             biffAddf(MEET, "%s: couldn't parse \"%s\" as double in \"%s\"", me,
                      ptok + strlen(dnbiase), ptok);
             airMopError(mop);
@@ -630,12 +632,12 @@ zeroScaleSet(meetPullInfo *minf, int haveZS, char **lastP) {
 
   if (haveZS) {
     tok = airStrtok(NULL, ":", lastP);
-    if (1 != sscanf(tok, "%lf", &(minf->zero))) {
+    if (1 != airSingleParse(tok, "%lg", &(minf->zero))) {
       biffAddf(MEET, "%s: couldn't parse %s as zero (double)", me, tok);
       return 1;
     }
     tok = airStrtok(NULL, ":", lastP);
-    if (1 != sscanf(tok, "%lf", &(minf->scale))) {
+    if (1 != airSingleParse(tok, "%lg", &(minf->scale))) {
       biffAddf(MEET, "%s: couldn't parse %s as scale (double)", me, tok);
       return 1;
     }

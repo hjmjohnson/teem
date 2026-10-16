@@ -42,6 +42,9 @@ main(int argc, const char *argv[]) {
   double v[NRRD_SPACE_DIM_MAX];
   Nrrd *nin;
 
+  /* really first: setlocale if requested */
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
+
   me = argv[0];
   mop = airMopNew();
   hparm = hestParmMopNew();

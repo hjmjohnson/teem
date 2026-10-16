@@ -17,6 +17,8 @@ static const char *info
 
 int
 main(int argc, const char **argv) {
+  /* to debug how well we're doing C-locale-emulation */
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
   TH_SANITY;
   hestOpt *hopt = NULL;
   // mopParm means using the "self-mopping" hparm for hestParseOrExit

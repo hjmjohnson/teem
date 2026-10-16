@@ -132,16 +132,16 @@ calcRGBA(mite_t *R, mite_t *G, mite_t *B, mite_t *A, miteThread *mtt, miteRender
   *A = mtt->range[miteRangeAlpha];
   *A = AIR_CLAMP(0.0, *A, 1.0);
   /*
-  if (mtt->verbose) {
-    fprintf(stderr, "%s: col[] = %g,%g,%g; A,E = %g,%g; Kads = %g,%g,%g\n", me,
-            col[0], col[1], col[2], mtt->range[miteRangeAlpha], E, ka, kd, ks);
-    fprintf(stderr, "%s: N = (%g,%g,%g), L = (%g,%g,%g) ---> LdotN = %g\n",
-            me, N[0], N[1], N[2], muu->lit->dir[0][0], muu->lit->dir[0][1],
-            muu->lit->dir[0][2], LdotN);
-    fprintf(stderr, "%s: ad[] = %g,%g,%g\n", me, ad[0], ad[1], ad[2]);
-    fprintf(stderr, "%s:  --> R,G,B,A = %g,%g,%g,%g\n", me, *R, *G, *B, *A);
-  }
-  */
+   * if (mtt->verbose) {
+   *   fprintf(stderr, "%s: col[] = %g,%g,%g; A,E = %g,%g; Kads = %g,%g,%g\n", me,
+   *           col[0], col[1], col[2], mtt->range[miteRangeAlpha], E, ka, kd, ks);
+   *   fprintf(stderr, "%s: N = (%g,%g,%g), L = (%g,%g,%g) ---> LdotN = %g\n",
+   *           me, N[0], N[1], N[2], muu->lit->dir[0][0], muu->lit->dir[0][1],
+   *           muu->lit->dir[0][2], LdotN);
+   *   fprintf(stderr, "%s: ad[] = %g,%g,%g\n", me, ad[0], ad[1], ad[2]);
+   *   fprintf(stderr, "%s:  --> R,G,B,A = %g,%g,%g,%g\n", me, *R, *G, *B, *A);
+   * }
+   */
   return;
 }
 
@@ -244,22 +244,22 @@ miteSample(miteThread *mtt, miteRender *mrr, miteUser *muu, int num, double rayT
   if (mtt->range[miteRangeAlpha]) {
     /* fprintf(stderr, "%s: mtt->TT = %g\n", me, mtt->TT); */
     /*
-    if (mtt->verbose) {
-      fprintf(stderr, "%s: before compositing: RGBT = %g,%g,%g,%g\n",
-              me, mtt->RR, mtt->GG, mtt->BB, mtt->TT);
-    }
-    */
+     * if (mtt->verbose) {
+     *   fprintf(stderr, "%s: before compositing: RGBT = %g,%g,%g,%g\n",
+     *           me, mtt->RR, mtt->GG, mtt->BB, mtt->TT);
+     * }
+     */
     calcRGBA(&R, &G, &B, &A, mtt, mrr, muu);
     mtt->RR += mtt->TT * A * R;
     mtt->GG += mtt->TT * A * G;
     mtt->BB += mtt->TT * A * B;
     mtt->TT *= 1 - A;
     /*
-    if (mtt->verbose) {
-      fprintf(stderr, "%s: after compositing: RGBT = %g,%g,%g,%g\n",
-              me, mtt->RR, mtt->GG, mtt->BB, mtt->TT);
-    }
-    */
+     * if (mtt->verbose) {
+     *   fprintf(stderr, "%s: after compositing: RGBT = %g,%g,%g,%g\n",
+     *           me, mtt->RR, mtt->GG, mtt->BB, mtt->TT);
+     * }
+     */
     /* fprintf(stderr, "%s: mtt->TT = %g\n", me, mtt->TT); */
   } else {
     R = G = B = A = 0;

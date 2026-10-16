@@ -115,7 +115,7 @@ unu_quantizeMain(int argc, const char **argv, const char *me, const hestParm *hp
 
   /* HEY copied from overrgb */
   double gamma;
-  if (!(!strcmp(gammaS, "srgb") || 1 == sscanf(gammaS, "%lf", &gamma))) {
+  if (!(!strcmp(gammaS, "srgb") || 1 == airSingleParse(gammaS, "%lf", &gamma))) {
     fprintf(stderr,
             "%s: gamma \"%s\" neither \"srgb\" nor "
             "parseable as double",

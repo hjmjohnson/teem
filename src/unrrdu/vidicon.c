@@ -90,7 +90,8 @@ unu_vidiconMain(int argc, const char **argv, const char *me, const hestParm *_hp
   Nrrd *nrescale = nrrdNew();
   airMopAdd(mop, nrescale, nrrdNuke_mop, airMopAlways);
 
-  fprintf(stderr, "%s: rescaling by %g ... \n", me, rescale);
+  DECISEP_DECL(2);
+  fprintf(stderr, "%s: rescaling by %s ... \n", me, airDtoS(Nb[0], rescale, Ds));
   NrrdResampleContext *rsmc = nrrdResampleContextNew();
   airMopAdd(mop, rsmc, nrrdResampleContextNix_mop, airMopAlways);
   if (nrrdResampleDefaultCenterSet(rsmc, nrrdCenterCell)
@@ -150,7 +151,8 @@ unu_vidiconMain(int argc, const char **argv, const char *me, const hestParm *_hp
       }
     }
     if (hi == hbins || !AIR_EXISTS(minval)) {
-      fprintf(stderr, "%s: failed to find lower %g-percentile value", me, rperc);
+      fprintf(stderr, "%s: failed to find lower %s-percentile value", me,
+              airDtoS(Nb[0], rperc, Ds));
       airMopError(submop);
       airMopError(mop);
       return 1;
@@ -166,12 +168,14 @@ unu_vidiconMain(int argc, const char **argv, const char *me, const hestParm *_hp
       }
     }
     if (!hi || !AIR_EXISTS(maxval)) {
-      fprintf(stderr, "%s: failed to find upper %g-percentile value", me, rperc);
+      fprintf(stderr, "%s: failed to find upper %s-percentile value", me,
+              airDtoS(Nb[0], rperc, Ds));
       airMopError(submop);
       airMopError(mop);
       return 1;
     }
-    fprintf(stderr, "%s: min %g --> 0, max %g --> 255\n", me, minval, maxval);
+    fprintf(stderr, "%s: min %s --> 0, max %s --> 255\n", me, airDtoS(Nb[0], minval, Ds),
+            airDtoS(Nb[1], maxval, Ds));
     nn = nrrdElementNumber(nrescale);
     float *rescaled = AIR_CAST(float *, nrescale->data);
     for (ii = 0; ii < nn; ii++) {

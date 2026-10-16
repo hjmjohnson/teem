@@ -25,7 +25,7 @@ pos_parse(void *_ptr, const char *str, char *err) {
   int ret;
 
   ptr = _ptr;
-  ret = sscanf(str, "%lf,%lf", ptr + 0, ptr + 1);
+  ret = airParseStrD(ptr, str, ",", 2); // was: sscanf(str, "%lf,%lf", ptr + 0, ptr + 1);
   if (2 != ret) {
     sprintf(err, "parsed %d (not 2) doubles", ret);
     return 1;
@@ -50,7 +50,7 @@ quat_parse(void *_ptr, const char *str, char *err) {
   printf("%s: ptrP = %p  ---malloc-->  ptr = *ptrP = %p\n", __func__, AIR_VOIDP(ptrP),
          AIR_VOIDP(*ptrP));
   ptr->str = NULL;
-  if (1 != sscanf(str, "%lf", &(ptr->val))) {
+  if (1 != airSingleParse(str, "%lf", &(ptr->val))) {
     sprintf(err, "didn't parse a double from %s", str);
     return (free(ptr), 1);
   }
@@ -76,6 +76,9 @@ main(int argc, const char **argv) {
   hestOpt *opt = NULL;
   hestParm *hparm;
   char *err = NULL;
+
+  /* to debug how we're doing C-locale-emulation */
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
 
   hparm = hestParmNew();
   hparm->responseFileEnable = AIR_TRUE;

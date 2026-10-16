@@ -55,7 +55,7 @@ main(int argc, char *argv[]) {
   for (c = airFP_Unknown + 1; c < airFP_Last; c++) {
     f = airFPGen_f(c);
     snprintf(str, sizeof(str), "%.9g", f);
-    ret = airSingleSscanf(str, "%f", &parsed_f);
+    ret = airSingleParse(str, "%f", &parsed_f);
     printf("********** airFPGen_f(%d=%s) = %s (-> %.9g(%d)) "
            "(AIR_EXISTS %d; airExists %d)\n",
            c, airEnumStr(airFPClass_ae, c), str, parsed_f, ret, AIR_EXISTS(f),
@@ -82,7 +82,7 @@ main(int argc, char *argv[]) {
   for (c = airFP_Unknown + 1; c < airFP_Last; c++) {
     d = airFPGen_d(c);
     snprintf(str, sizeof(str), "%0.17g", d);
-    ret = airSingleSscanf(str, "%lf", &parsed_d);
+    ret = airSingleParse(str, "%lf", &parsed_d);
     printf("********** airFPGen_d(%d=%s) = %s (-> %f(%d)) "
            "(AIR_EXISTS %d; airExists %d)\n",
            c, airEnumStr(airFPClass_ae, c), str, parsed_d, ret, AIR_EXISTS(d),

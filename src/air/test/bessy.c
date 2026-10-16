@@ -30,7 +30,7 @@ main(int argc, char *argv[]) {
   int i;
 
   me = argv[0];
-  if (2 != argc || 1 != sscanf(argv[1], "%lg", &x)) {
+  if (2 != argc || 1 != airSingleParse(argv[1], "%lg", &x)) {
     fprintf(stderr, "%s: need one double as argument\n", me);
     exit(1);
   }

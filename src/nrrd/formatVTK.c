@@ -136,17 +136,23 @@ formatVTK_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
   airToUpper(nio->line);
   while (!strstr(nio->line, "POINT_DATA")) {
     if (strstr(nio->line, "ORIGIN")) {
-      if (3 != sscanf(nio->line, "ORIGIN %lf %lf %lf", &xm, &ym, &zm)) {
+      if (3
+          != sscanf(nio->line, "ORIGIN %lf %lf %lf", /* NOT C-locale-emulating! */
+                    &xm, &ym, &zm)) {
         biffAddf(NRRD, "%s: couldn't parse ORIGIN line (\"%s\")", me, nio->line);
         return 1;
       }
     } else if (strstr(nio->line, "SPACING")) {
-      if (3 != sscanf(nio->line, "SPACING %lf %lf %lf", &xs, &ys, &zs)) {
+      if (3
+          != sscanf(nio->line, "SPACING %lf %lf %lf", /* NOT C-locale-emulating! */
+                    &xs, &ys, &zs)) {
         biffAddf(NRRD, "%s: couldn't parse SPACING line (\"%s\")", me, nio->line);
         return 1;
       }
     } else if (strstr(nio->line, "ASPECT_RATIO")) {
-      if (3 != sscanf(nio->line, "ASPECT_RATIO %lf %lf %lf", &xs, &ys, &zs)) {
+      if (3
+          != sscanf(nio->line, "ASPECT_RATIO %lf %lf %lf", /* NOT C-locale-emulating! */
+                    &xs, &ys, &zs)) {
         biffAddf(NRRD, "%s: couldn't parse ASPECT_RATIO line (\"%s\")", me, nio->line);
         return 1;
       }
@@ -278,6 +284,7 @@ formatVTK_write(FILE *file, const Nrrd *nrrd__, NrrdIoState *nio) {
   size_t nameSize = AIR_STRLEN_SMALL + 1;
   Nrrd *nrrd;
   airArray *mop;
+  DECISEP_DECL(3);
 
   /* HEY: should this copy be done more conservatively */
   mop = airMopNew();
@@ -359,8 +366,14 @@ formatVTK_write(FILE *file, const Nrrd *nrrd__, NrrdIoState *nio) {
   }
   fprintf(file, "DATASET STRUCTURED_POINTS\n");
   fprintf(file, "DIMENSIONS %u %u %u\n", sx, sy, sz);
-  fprintf(file, "ORIGIN %g %g %g\n", xm, ym, zm);
-  fprintf(file, "SPACING %g %g %g\n", xs, ys, zs);
+  fprintf(file, "ORIGIN %s %s %s\n", /* */
+          airDtoS(Nb[0], xm, Ds),    /* */
+          airDtoS(Nb[1], ym, Ds),    /* */
+          airDtoS(Nb[2], zm, Ds));
+  fprintf(file, "SPACING %s %s %s\n", /* */
+          airDtoS(Nb[0], xs, Ds),     /* */
+          airDtoS(Nb[1], ys, Ds),     /* */
+          airDtoS(Nb[2], zs, Ds));
   fprintf(file, "POINT_DATA %u\n", sx * sy * sz);
   airSrandMT(AIR_UINT(airTime()));
   snprintf(name, nameSize, "nrrd%05u", airRandInt(100000));

@@ -78,8 +78,8 @@ unu_axinfoMain(int argc, const char **argv, const char *me, const hestParm *hpar
   /* parse the strings given via -mm */
   double mm[2];
   if (2
-      != airSingleSscanf(mmStr[0], "%lf", mm + 0)
-           + airSingleSscanf(mmStr[1], "%lf", mm + 1)) {
+      != airSingleParse(mmStr[0], "%lf", mm + 0)
+           + airSingleParse(mmStr[1], "%lf", mm + 1)) {
     fprintf(stderr,
             "%s: couldn't parse both \"%s\" and \"%s\" "
             "(from \"-mm\") as doubles\n",

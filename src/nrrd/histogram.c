@@ -126,9 +126,9 @@ nrrdHisto(Nrrd *nout, const Nrrd *nin, const NrrdRange *_range, const Nrrd *nwgh
       if (AIR_IN_CL(min, val, max)) {
         idx = airIndex(min, val, max + eps, AIR_UINT(bins));
         /*
-        printf("!%s: %d: index(%g, %g, %g, %d) = %d\n",
-               me, (int)I, min, val, max, bins, idx);
-        */
+         * printf("!%s: %d: index(%g, %g, %g, %d) = %d\n",
+         *        me, (int)I, min, val, max, bins, idx);
+         */
         /* count is a double in order to simplify clamping the
            hit values to the representable range for nout->type */
         count = nrrdDLookup[nout->type](nout->data, idx);
@@ -285,13 +285,25 @@ nrrdHistoDraw(Nrrd *nout, const Nrrd *nin, size_t sy, int showLog, double max) {
     }
   }
   E = 0;
-  snprintf(cmt, sizeof(cmt), "min value: %g\n", nout->axis[0].min);
+  /* The code here has long been e.g.:
+   *    snprintf(cmt, sizeof(cmt), "min value: %g\n", nout->axis[0].min);
+   * but snprintf("%g") violates C-locale-emulation, so we use new air/fpio.c code.
+   * Should we write a double or a float?  Code precedent ("%g") suggests-ish float
+   * ("%g" does not actually reliably recover a float, certainly not a double).
+   * Logic suggests using what would reliably store the actual value (a double).
+   * Either one will produce different outputs than before; that is a side-effect
+   * of the C-locale-emulation explicit decision and the implicit decision to not
+   * support (in air/fpio.c functions) inexact string representations.
+   * We go with logic and use double.
+   */
+  DECISEP_DECL(2);
+  snprintf(cmt, sizeof(cmt), "min value: %s\n", airDtoS(Nb[0], nout->axis[0].min, Ds));
   if (!E) E |= nrrdCommentAdd(nout, cmt);
-  snprintf(cmt, sizeof(cmt), "max value: %g\n", nout->axis[0].max);
+  snprintf(cmt, sizeof(cmt), "max value: %s\n", airDtoS(Nb[0], nout->axis[0].max, Ds));
   if (!E) E |= nrrdCommentAdd(nout, cmt);
-  snprintf(cmt, sizeof(cmt), "max hits: %g, in bin %s, around value %g\n", maxhits,
-           airSprintSize_t(stmp, maxhitidx),
-           nrrdAxisInfoPos(nout, 0, AIR_DOUBLE(maxhitidx)));
+  snprintf(cmt, sizeof(cmt), "max hits: %s, in bin %s, around value %s\n",
+           airDtoS(Nb[0], maxhits, Ds), airSprintSize_t(stmp, maxhitidx),
+           airDtoS(Nb[1], nrrdAxisInfoPos(nout, 0, AIR_DOUBLE(maxhitidx)), Ds));
   if (!E) E |= nrrdCommentAdd(nout, cmt);
   if (!E) E |= nrrdContentSet_va(nout, func, nin, "%s", airSprintSize_t(stmp, sy));
   if (E) {

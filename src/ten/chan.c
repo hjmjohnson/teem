@@ -92,7 +92,7 @@ tenDWMRIKeyValueParse(Nrrd **ngradP, Nrrd **nbmatP, double *bP, unsigned int **s
     biffAddf(TEN, "%s: didn't have \"%s\" key", me, tenDWMRIBValueKey);
     return 1;
   }
-  if (1 != sscanf(val, "%lg", bP)) {
+  if (1 != airSingleParse(val, "%lg", bP)) {
     biffAddf(TEN,
              "%s: couldn't parse float from value \"%s\" "
              "for key \"%s\"",

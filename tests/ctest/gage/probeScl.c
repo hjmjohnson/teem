@@ -54,6 +54,9 @@ main(int argc, const char **argv) {
   int E;
   unsigned int sx, sy, sz, ki;
 
+  /* for debugging C-locale-emulation conformance */
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
+
   /* C89 doesn't allow setting these in array declaration */
   ikern[0] = nrrdKernelBox;
   ikern[1] = nrrdKernelTent;

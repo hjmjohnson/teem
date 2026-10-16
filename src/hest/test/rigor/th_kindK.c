@@ -45,7 +45,7 @@ pos_parse(void *_ptr, const char *str, char *err) {
   int ret;
 
   ptr = _ptr;
-  ret = sscanf(str, "%lf,%lf", ptr + 0, ptr + 1);
+  ret = airParseStrD(ptr, str, ",", 2); // was: sscanf(str, "%lf,%lf", ptr + 0, ptr + 1);
   if (2 != ret) {
     sprintf(err, "parsed %d (not 2) doubles", ret);
     return 1;
@@ -62,11 +62,10 @@ hestCB posCB = {2 * sizeof(double), "position", pos_parse, NULL};
 
 void
 pos_print(FILE *file, const double pos[2]) {
-  fprintf(file, "(");
-  airSinglePrintf(file, NULL, 0, "%lg", pos[0]);
-  fprintf(file, ",");
-  airSinglePrintf(file, NULL, 0, "%lg", pos[1]);
-  fprintf(file, ")");
+  char nbuff[2][AIR_STRLEN_SMALL + 1], decibuff[AIR_STRLEN_SMALL + 1];
+  const char *decisep = airDeciSepLearn(decibuff, NULL);
+  fprintf(file, "(%s,%s)", airDtoS(nbuff[0], pos[0], decisep),
+          airDtoS(nbuff[1], pos[1], decisep));
   fflush(file);
   return;
 }
@@ -90,7 +89,7 @@ combo_parse(void *_ptr, const char *str, char *err) {
          AIR_VOIDP(*ptrP));
          */
   ptr->str = NULL;
-  if (1 != airSingleSscanf(str, "%lf", &(ptr->val))) {
+  if (1 != airSingleParse(str, "%lf", &(ptr->val))) {
     sprintf(err, "didn't parse a double from %s", str);
     return (free(ptr), 1);
   }
@@ -117,14 +116,17 @@ hestCB comboCB = {sizeof(Combo *), "combo", combo_parse, combo_free_mop};
 
 void
 combo_print(FILE *file, Combo *co) {
-  fprintf(file, "\"%s\"->", co->str);
-  airSinglePrintf(file, NULL, 0, "%lg", co->val);
+  char nbuff[AIR_STRLEN_SMALL + 1], decibuff[AIR_STRLEN_SMALL + 1];
+  const char *decisep = airDeciSepLearn(decibuff, NULL);
+  fprintf(file, "\"%s\"->%s", co->str, airDtoS(nbuff, co->val, decisep));
   fflush(file);
   return;
 }
 
 int
 main(int argc, const char **argv) {
+  /* to debug how well we're doing C-locale-emulation */
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
   hestParm *hparm = hestParmNew();
   hparm->respectDashDashHelp = AIR_TRUE;
   unsigned int ncol = 70;

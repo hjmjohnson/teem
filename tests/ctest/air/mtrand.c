@@ -59,6 +59,9 @@ main(int argc, const char *argv[]) {
         3506494207u, 997691580u, 1726903302u, 3302470737u}};
   unsigned int ii, jj, rr;
 
+  /* for debugging C-locale-emulation conformance */
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
+
   AIR_UNUSED(argc);
   me = argv[0];
 

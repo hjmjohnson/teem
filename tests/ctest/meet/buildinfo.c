@@ -31,6 +31,9 @@ main(int argc, const char **argv) {
   AIR_UNUSED(argc);
   AIR_UNUSED(argv);
 
+  /* for debugging C-locale-emulation conformance */
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
+
   printf("Teem version %s, %s\n", airTeemVersion, airTeemReleaseDate);
 
   /* some of the things from airSanity */

@@ -1,0 +1,53 @@
+name: locale
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  ctest:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: linux
+            cflags: ""
+          - os: ubuntu-latest
+            name: linux-asan
+            cflags: "-fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=undefined"
+          - os: macos-latest
+            name: macos
+            cflags: ""
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install locales (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y locales ninja-build
+          sudo locale-gen de_DE.UTF-8 ps_AF.UTF-8
+
+      - name: Install Ninja (macOS)
+        if: runner.os == 'macOS'
+        run: brew install ninja
+
+      - name: Configure
+        run: >
+          cmake -S . -B build -G Ninja -DBUILD_TESTING=ON -DCMAKE_BUILD_TYPE=Debug
+          -DCMAKE_C_FLAGS="${{ matrix.cflags }}"
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Test (C locale)
+        run: ctest --test-dir build -j1 --output-on-failure
+
+      - name: Test (TEEM_SET_LOCALE=de_DE.UTF-8)
+        if: always()
+        env:
+          TEEM_SET_LOCALE: _de_DE.UTF-8
+        run: ctest --test-dir build -j1 --output-on-failure

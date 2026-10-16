@@ -913,6 +913,7 @@ main(int argc, const char **argv) {
   kind[2] = tenGageKind;
   kind[3] = NULL; /* dwi */
 
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
   me = argv[0];
   mop = airMopNew();
   hparm = hestParmNew();

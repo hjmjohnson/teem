@@ -107,6 +107,9 @@ main(int argc, const char *argv[]) {
   unsigned int bsNum, bsIdx;
   char buff[AIR_STRLEN_LARGE + 1];
 
+  /* for debugging C-locale-emulation conformance */
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
+
   me = argv[0];
   mop = airMopNew();
   hparm = hestParmNew();

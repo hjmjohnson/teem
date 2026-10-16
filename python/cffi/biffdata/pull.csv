@@ -36,10 +36,10 @@ pullCallbackSet,int,1,0,pull,pull/parmPull.c:406
 pullInterEnergySet,int,1,0,pull,pull/parmPull.c:431
 pullLogAddSet,int,1,0,pull,pull/parmPull.c:492
 pullPointNew,pullPoint *,NULL,0,pull,pull/pointPull.c:31
-pullProbe,int,1,0,pull,pull/pointPull.c:357
-pullPointInitializePerVoxel,int,1,0,pull,pull/pointPull.c:636
-pullPointInitializeRandomOrHalton,int,1,0,pull,pull/pointPull.c:821
-pullPointInitializeGivenPos,int,1,0,pull,pull/pointPull.c:993
+pullProbe,int,1,0,pull,pull/pointPull.c:360
+pullPointInitializePerVoxel,int,1,0,pull,pull/pointPull.c:639
+pullPointInitializeRandomOrHalton,int,1,0,pull,pull/pointPull.c:824
+pullPointInitializeGivenPos,int,1,0,pull,pull/pointPull.c:996
 pullTraceSet,int,1,0,pull,pull/trace.c:243
 pullTraceMultiAdd,int,1,0,pull,pull/trace.c:672
 pullTraceMultiPlotAdd,int,1,0,pull,pull/trace.c:702

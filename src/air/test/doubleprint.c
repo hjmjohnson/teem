@@ -36,17 +36,17 @@ main(int argc, char *argv[]) {
   }
   fS = argv[1];
 
-  ret = sscanf(fS, "%lf", &sd);
+  ret = sscanf(fS, "%lf", &sd); /* OKAY that is not locale-compensating */
   if (!ret) {
     printf("%s: sscanf(%s, \"%%lf\") failed\n", me, fS);
     printf("\n");
   }
-  if (1 != airSingleSscanf(fS, "%lf", &d)) {
+  if (1 != airSingleParse(fS, "%lf", &d)) {
     fprintf(stderr, "%s: couldn't parse \"%s\" as double\n", me, fS);
     exit(1);
   }
   if (ret && (sd != d)) {
-    printf("%s: sscanf result (%f) != airSingleSscanf (%f)!!!\n", me, sd, d);
+    printf("%s: sscanf result (%f) != airSingleParse (%f)!!!\n", me, sd, d);
     printf("\n");
   }
   f = AIR_FLOAT(d);

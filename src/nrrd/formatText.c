@@ -21,10 +21,7 @@
 #include "privateNrrd.h"
 #include <assert.h>
 
-/* TO THE CITIZENS OF THE WORLD:
-   I (GLK) would like to apologize for not supporting localizations
-   that would change how commas vs periods are interpreted during
-   number parsing. Please forgive me, or help me fix it :) */
+/* for TeemV2 we have C-locale-emulation in handling text files */
 
 static const char *const textSep = " ,\t";
 
@@ -79,7 +76,7 @@ formatText_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
   airArray *flArr, *dataArr;
   float oneFloat;
   char *data;
-  size_t (*parser)(void *, const char *, const char *, size_t);
+  size_t (*parser)(void *, const char *, const char *, const char *, size_t);
   airPtrPtrUnion appu;
 
   if (!formatText_contentStartsLike(nio)) {
@@ -271,7 +268,7 @@ formatText_read(FILE *file, Nrrd *nrrd, NrrdIoState *nio) {
       UNSETTWO;
       return 1;
     }
-    plen = parser(data + sy * sx * elsz, nio->line, textSep, sx);
+    plen = parser(data + sy * sx * elsz, nio->line, textSep, nio->decisep, sx);
     if (sx > plen) {
       char stmp[3][AIR_STRLEN_SMALL + 1];
       biffAddf(NRRD, "%s: could only parse %s values (not %s) on line %s", me,

@@ -28,13 +28,16 @@
 */
 
 int
-main(void) {
+main(int argc, const char **argv) {
   size_t II, *coord0, *ctmp0, *size0, coord1[1], ctmp1[1], size1[1], coord2[2], ctmp2[2],
     size2[2], coord3[3], ctmp3[3], size3[3], coord4[4], ctmp4[4], size4[4];
 #define BUFF_SIZE (NRRD_DIM_MAX * AIR_STRLEN_SMALL + 1)
   char sbuff[BUFF_SIZE], scomp[BUFF_SIZE], sigab[BUFF_SIZE], /* index gen and back */
     swhat[BUFF_SIZE];
   unsigned int ii, jj, kk, ll;
+
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
+  AIR_UNUSED(argc);
 
   /* This macro makes sure the given length-N coord##N vector is what it
      should be ("want"), via string comparison after the output of

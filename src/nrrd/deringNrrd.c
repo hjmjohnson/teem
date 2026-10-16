@@ -173,13 +173,15 @@ nrrdDeringInputSet(NrrdDeringContext *drc, const Nrrd *nin) {
 int /* Biff: 1 */
 nrrdDeringCenterSet(NrrdDeringContext *drc, double cx, double cy) {
   static const char me[] = "nrrdDeringCenterSet";
+  DECISEP_DECL(2);
 
   if (!drc) {
     biffAddf(NRRD, "%s: got NULL pointer", me);
     return 1;
   }
   if (!(AIR_EXISTS(cx) && AIR_EXISTS(cy))) {
-    biffAddf(NRRD, "%s: center (%g,%g) doesn't exist", me, cx, cy);
+    biffAddf(NRRD, "%s: center (%s,%s) doesn't exist", me, airDtoS(Nb[0], cx, Ds),
+             airDtoS(Nb[1], cy, Ds));
     return 1;
   }
 
@@ -192,6 +194,7 @@ nrrdDeringCenterSet(NrrdDeringContext *drc, double cx, double cy) {
 int /* Biff: 1 */
 nrrdDeringClampPercSet(NrrdDeringContext *drc, double lo, double hi) {
   static const char me[] = "nrrdDeringClampPercSet";
+  DECISEP_DECL(3);
 
   if (!drc) {
     biffAddf(NRRD, "%s: got NULL pointer", me);
@@ -199,8 +202,9 @@ nrrdDeringClampPercSet(NrrdDeringContext *drc, double lo, double hi) {
   }
   if (!(AIR_EXISTS(lo) && AIR_EXISTS(hi) && lo >= 0 && lo < CLAMP_PERC_MAX && hi >= 0
         && hi < CLAMP_PERC_MAX)) {
-    biffAddf(NRRD, "%s: need finite lo and hi both in [0.0, %g), not %g, %g", me,
-             CLAMP_PERC_MAX, lo, hi);
+    biffAddf(NRRD, "%s: need finite lo and hi both in [0.0, %s), not %s, %s", me,
+             airDtoS(Nb[0], CLAMP_PERC_MAX, Ds), airDtoS(Nb[1], lo, Ds),
+             airDtoS(Nb[2], hi, Ds));
     return 1;
   }
 
@@ -232,13 +236,15 @@ nrrdDeringClampHistoBinsSet(NrrdDeringContext *drc, unsigned int bins) {
 int /* Biff: 1 */
 nrrdDeringRadiusScaleSet(NrrdDeringContext *drc, double rsc) {
   static const char me[] = "nrrdDeringRadiusScaleSet";
+  DECISEP_DECL1;
 
   if (!drc) {
     biffAddf(NRRD, "%s: got NULL pointer", me);
     return 1;
   }
   if (!(AIR_EXISTS(rsc) && rsc > 0.0)) {
-    biffAddf(NRRD, "%s: need finite positive radius scale, not %g", me, rsc);
+    biffAddf(NRRD, "%s: need finite positive radius scale, not %s", me,
+             airDtoS(Nb, rsc, Ds));
     return 1;
   }
 
@@ -754,6 +760,7 @@ nrrdDeringExecute(NrrdDeringContext *drc, Nrrd *nout) {
   double dx, dy, radLen, len;
   deringBag *dbg;
   airArray *mop;
+  DECISEP_DECL(6);
 
   if (!(drc && nout)) {
     biffAddf(NRRD, "%s: got NULL pointer", me);
@@ -794,7 +801,7 @@ nrrdDeringExecute(NrrdDeringContext *drc, Nrrd *nout) {
   len = sqrt(dx * dx + dy * dy);
   radLen = AIR_MAX(radLen, len);
   if (drc->verbose) {
-    fprintf(stderr, "%s: radLen = %g\n", me, radLen);
+    fprintf(stderr, "%s: radLen = %s\n", me, airDtoS(Nb[0], radLen, Ds));
   }
 
   /* determine clamping, if any */
@@ -820,8 +827,8 @@ nrrdDeringExecute(NrrdDeringContext *drc, Nrrd *nout) {
       }
     }
     if (hi == drc->clampHistoBins) {
-      biffAddf(NRRD, "%s: failed to find lower %g-percentile value", me,
-               drc->clampPerc[0]);
+      biffAddf(NRRD, "%s: failed to find lower %s-percentile value", me,
+               airDtoS(Nb[0], drc->clampPerc[0], Ds));
       return 1;
     }
     sum = 0;
@@ -834,14 +841,18 @@ nrrdDeringExecute(NrrdDeringContext *drc, Nrrd *nout) {
       }
     }
     if (!hi) {
-      biffAddf(NRRD, "%s: failed to find upper %g-percentile value", me,
-               drc->clampPerc[1]);
+      biffAddf(NRRD, "%s: failed to find upper %s-percentile value", me,
+               airDtoS(Nb[0], drc->clampPerc[1], Ds));
       return 1;
     }
     if (drc->verbose) {
-      fprintf(stderr, "%s: [%g,%g]-%%ile clamping of [%g,%g] --> [%g,%g]\n", me,
-              drc->clampPerc[0], drc->clampPerc[1], nhist->axis[0].min,
-              nhist->axis[0].max, drc->clamp[0], drc->clamp[1]);
+      fprintf(stderr, "%s: [%s,%s]-%%ile clamping of [%s,%s] --> [%s,%s]\n", me,
+              airDtoS(Nb[0], drc->clampPerc[0], Ds),  /* */
+              airDtoS(Nb[1], drc->clampPerc[1], Ds),  /* */
+              airDtoS(Nb[2], nhist->axis[0].min, Ds), /* */
+              airDtoS(Nb[3], nhist->axis[0].max, Ds), /* */
+              airDtoS(Nb[4], drc->clamp[0], Ds),      /* */
+              airDtoS(Nb[5], drc->clamp[1], Ds));
     }
     drc->clampDo = AIR_TRUE;
   } else {
@@ -874,7 +885,8 @@ nrrdDeringExecute(NrrdDeringContext *drc, Nrrd *nout) {
     }
   }
   if (drc->verbose) {
-    fprintf(stderr, "%s: ring magnitude = %g\n", me, drc->ringMagnitude);
+    fprintf(stderr, "%s: ring magnitude = %s\n", me,
+            airDtoS(Nb[0], drc->ringMagnitude, Ds));
   }
 
   airMopOkay(mop);

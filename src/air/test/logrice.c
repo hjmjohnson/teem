@@ -29,8 +29,9 @@ main(int argc, char *argv[]) {
   double tru, mes, sig;
 
   me = argv[0];
-  if (4 != argc || 1 != sscanf(argv[1], "%lg", &tru) || 1 != sscanf(argv[2], "%lg", &mes)
-      || 1 != sscanf(argv[3], "%lg", &sig)) {
+  if (4 != argc || 1 != airSingleParse(argv[1], "%lg", &tru)
+      || 1 != airSingleParse(argv[2], "%lg", &mes)
+      || 1 != airSingleParse(argv[3], "%lg", &sig)) {
     fprintf(stderr, "%s: need three doubles\n", me);
     exit(1);
   }

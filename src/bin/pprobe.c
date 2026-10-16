@@ -73,6 +73,9 @@ main(int argc, const char *argv[]) {
   unsigned int *skip, skipNum;
   gageStackBlurParm *sbp;
 
+  /* really first: setlocale if requested */
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
+
   mop = airMopNew();
   me = argv[0];
   hparm = hestParmMopNew();

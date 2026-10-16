@@ -21,6 +21,8 @@ static const char *info = "fixed multiple-parameter options (kind 3)";
 
 int
 main(int argc, const char **argv) {
+  /* to debug how well we're doing C-locale-emulation */
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
   TH_SANITY;
   hestOpt *opt = NULL;
   hestParm *hparm = hestParmNew();

@@ -112,10 +112,11 @@ undosConvert(const char *me, const char *name, int reverse, int mac, int quiet,
   } while (EOF != car && badPerc > 100.0 * numBad / dataArr->len);
   if (EOF != car) {
     if (!quiet) {
+      DECISEP_DECL1;
       fprintf(stderr,
-              "%s: more than %g%% of \"%s\" is non-printing, "
+              "%s: more than %s%% of \"%s\" is non-printing, "
               "skipping ...\n",
-              me, badPerc, name);
+              me, airDtoS(Nb, badPerc, Ds), name);
     }
     airMopError(mop);
     return;

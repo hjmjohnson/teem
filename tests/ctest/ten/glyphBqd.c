@@ -35,6 +35,9 @@ main(int argc, const char **argv) {
   char *err, *refname, explain[AIR_STRLEN_LARGE + 1];
   int differ, ret;
 
+  /* for debugging C-locale-emulation conformance */
+  airSetLocaleFromEnvOrExit(argv[0], airStderr());
+
   mop = airMopNew();
   nabc = nrrdNew();
   airMopAdd(mop, nabc, nrrdNuke_mop, airMopAlways);

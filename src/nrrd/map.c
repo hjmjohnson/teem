@@ -499,6 +499,9 @@ int /* Biff: 1 */
 nrrdHistoEq(Nrrd *nout, const Nrrd *nin, Nrrd **nmapP, unsigned int bins,
             unsigned int smart, float amount) {
   static const char me[] = "nrrdHistoEq", func[] = "heq";
+  char db[ASP1_S], nb[ASP1_S];
+  const char *ds = airDeciSepLearn(db, NULL);
+
   if (!(nout && nin)) {
     biffAddf(NRRD, "%s: got NULL pointer", me);
     return 1;
@@ -561,9 +564,12 @@ nrrdHistoEq(Nrrd *nout, const Nrrd *nin, Nrrd **nmapP, unsigned int bins,
     hist = (uint *)nhist->data;
     nhist->axis[0].size = bins;
     /* allocate the respect, steady, and last arrays */
-    assert((respect = AIR_MALLOC(bins, uint)));
-    assert((steady = AIR_MALLOC(2 * bins, uint)));
-    assert((last = AIR_MALLOC(bins, double)));
+    respect = AIR_MALLOC(bins, uint);
+    assert(respect);
+    steady = AIR_MALLOC(2 * bins, uint);
+    assert(steady);
+    last = AIR_MALLOC(bins, double);
+    assert(last);
     airMopMem(mop, &respect, airMopAlways);
     airMopMem(mop, &steady, airMopAlways);
     airMopMem(mop, &last, airMopAlways);
@@ -628,8 +634,8 @@ nrrdHistoEq(Nrrd *nout, const Nrrd *nin, Nrrd **nmapP, unsigned int bins,
     }
     if (VERBUG) {
       for (uint ti = 0; ti < bins; ti++) {
-        fprintf(stderr, "%s: pre-sort [%3u]: last=%g, steady=[%u %u]\n", __func__, ti,
-                last[ti], steady[0 + 2 * ti], steady[1 + 2 * ti]);
+        fprintf(stderr, "%s: pre-sort [%3u]: last=%s, steady=[%u %u]\n", __func__, ti,
+                airDtoS(nb, last[ti], ds), steady[0 + 2 * ti], steady[1 + 2 * ti]);
       }
     }
     /* now sort the steady array; note the "2 *" */
@@ -704,7 +710,8 @@ nrrdHistoEq(Nrrd *nout, const Nrrd *nin, Nrrd **nmapP, unsigned int bins,
       respectedBinCount = hist[bii];
     }
     if (VERBUG) {
-      fprintf(stderr, "%s: (initial) ycoord[%u] = %g\n", me, bii, ycoord[bii]);
+      fprintf(stderr, "%s: (initial) ycoord[%u] = %s\n", me, bii,
+              airDtoS(nb, ycoord[bii], ds));
     }
   }
   // (removed attempted cleverness to avoid integrated histo discontinuities)
@@ -717,7 +724,8 @@ nrrdHistoEq(Nrrd *nout, const Nrrd *nin, Nrrd **nmapP, unsigned int bins,
   }
   if (VERBUG) {
     for (uint bii = 0; bii <= bins; bii++) {
-      fprintf(stderr, "%s: (rescale) ycoord[%u] = %g\n", me, bii, ycoord[bii]);
+      fprintf(stderr, "%s: (rescale) ycoord[%u] = %s\n", me, bii,
+              airDtoS(nb, ycoord[bii], ds));
     }
   }
   if (!AIR_EXISTS(ycoord[bins])) {

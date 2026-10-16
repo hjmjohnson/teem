@@ -18,6 +18,7 @@
 */
 
 #include "../air.h"
+#include <locale.h>
 
 /*
   For testing how much airSinglePrintf can print floats or doubles with enough
@@ -31,7 +32,7 @@ usage(const char *me) {
   exit(1);
 }
 
-/* before Aug'26 fix */
+/* parseAir.c/airSingleSscanf as it was before Aug 2026 fix */
 int
 oldSingleSscanf(const char *str, const char *fmt, void *ptr) {
   char *tmp;
@@ -105,11 +106,18 @@ main(int argc, const char *argv[]) {
   int assr;
   me = argv[0];
 
+  const char *lret = setlocale(LC_NUMERIC, getenv("LANG"));
+  if (!lret) {
+    fprintf(stderr, "%s: setlocale(LC_NUMERIC, %s) failed (returned NULL)\n", me,
+            getenv("LANG"));
+    return 1;
+  }
+
   if (3 == argc && !strcmp(argv[1], "z")) {
-    /* special hack for testing airSingleSscanf with %zu */
+    /* special hack for testing airSingleParse with %zu */
     size_t sz;
     const char *str = !strcmp(argv[2], "NULL") ? NULL : argv[2];
-    assr = airSingleSscanf(str, "%zu", &sz);
+    assr = airSingleParse(str, "%zu", &sz);
     if (1 == assr) {
       printf("%s: parsed:\"%s\"\n", argv[0], argv[2]);
       printf("%s:     as: %zu (returned %d)\n", argv[0], sz, assr);
@@ -151,7 +159,7 @@ main(int argc, const char *argv[]) {
   const char *fmt = argv[4];
 
   double dbl0, dbl1;
-  assr = airSingleSscanf(dblStr, "%lf", &dbl0);
+  assr = airSingleParse(dblStr, "%lf", &dbl0);
   if (1 != assr) {
     fprintf(stderr, "%s: couldn't parse \"%s\" as double (got %d)\n", me, dblStr, assr);
     exit(1);
@@ -172,15 +180,15 @@ main(int argc, const char *argv[]) {
   size_t I, N = ((size_t)1) << lg;
 
   if ('%' != fmt[0]) {
-    /* some whole string to test with */
+    /* some whole format string to test with */
     size_t buffSize = 2 * strlen(fmt) + 1;
     char *buff = AIR_CALLOC(buffSize, char);
     airSinglePrintf(NULL, buff, buffSize, fmt, dbl0);
     printf("%s: sprint(buff, |%s|, %.17g) = |%s|\n", me, fmt, dbl0, buff);
     free(buff);
   } else {
-    /* assuming `fmt` is JUST the conversion sequence, most usefully %g or %lg, and scan
-       values to test */
+    /* assuming `fmt` is JUST the conversion sequence, most usefully %g or %lg,
+       we use it PLUS scan subsequent values to test */
     printf("%s: we shall begin scanning\n", me);
     char buff[AIR_STRLEN_SMALL + 1];
     size_t buffSize = AIR_STRLEN_SMALL + 1;
@@ -193,7 +201,7 @@ main(int argc, const char *argv[]) {
           sprintf(buff2, fmt, adbl.d);
           printf("%s: %.17g ---sprintf(%s)---> \"%s\"\n\n", me, adbl.d, fmt, buff2);
         }
-        airSingleSscanf(buff, "%lf", &dbl1);
+        airSingleParse(buff, "%lf", &dbl1);
         if (AIR_EXISTS(dbl0) && dbl1 != adbl.d) {
           printf(
             "%s: %.17g ---aSPrint(%s)---> \"%s\" ---sscanf---> %.17g != start val!\n",
@@ -204,7 +212,7 @@ main(int argc, const char *argv[]) {
       } else {
         float flt1;
         airSinglePrintf(NULL, buff, buffSize, fmt, aflt.f);
-        airSingleSscanf(buff, "%f", &flt1);
+        airSingleParse(buff, "%f", &flt1);
         if (verbose) {
           printf("%s: %.9g ---aSPrint(%s)---> \"%s\"\n", me, aflt.f, fmt, buff);
           sprintf(buff2, fmt, aflt.f);

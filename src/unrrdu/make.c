@@ -254,6 +254,14 @@ unu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hparm
                       "this option allows you to explicitly name the data file, "
                       "instead of (by default, not using this option) having it be "
                       "the same filename base as the header file.");
+  int hdrDblXPrec;
+  hestOptAdd_1_Bool(&hopt, "hdep", "bool", &hdrDblXPrec,
+                    nrrdDefaultIoHeaderDoubleExcessPrecision ? "true" : "false",
+                    "how to set NrrdIoState->headerDoubleExcessPrecision. If true, "
+                    "`double` values in the NRRD header are printed with conversion "
+                    "%.17g, which means the resulting strings may be longer than "
+                    "necessary to recover all 64 bits of the `double`. This emulates "
+                    "some under-informed choices that affected pre-TeemV2 code.");
   int verboseBump;
   hestOptAdd_1_Int(&hopt, "vb,verbump", "bump", &verboseBump, "1",
                    "just before calling nrrdFormatNRRD->read to read data files, "
@@ -602,6 +610,7 @@ unu_makeMain(int argc, const char **argv, const char *me, const hestParm *_hparm
      header-relative path to them is.  This assuages concerns that come up even with
      headerOnly */
   nio->path = airStrdup(".");
+  nio->headerDoubleExcessPrecision = hdrDblXPrec;
   if (headerOnly) {
     /* we open and hand off the output FILE* to the nrrd writer, which
        will not write any data, because of nio->skipData = AIR_TRUE */

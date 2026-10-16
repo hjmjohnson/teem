@@ -36,17 +36,17 @@ main(int argc, char *argv[]) {
   }
   fS = argv[1];
 
-  ret = sscanf(fS, "%f", &sf);
+  ret = sscanf(fS, "%f", &sf); /* intentionally not airSingleParse */
   if (!ret) {
     printf("%s: sscanf(%s, \"%%f\") failed\n", me, fS);
     printf("\n");
   }
-  if (1 != airSingleSscanf(fS, "%f", &f)) {
+  if (1 != airSingleParse(fS, "%f", &f)) {
     fprintf(stderr, "%s: couldn't parse \"%s\" as float\n", me, fS);
     exit(1);
   }
   if (ret && (sf != f)) {
-    printf("%s: sscanf result (%f) != airSingleSscanf (%f) !!!\n", me, sf, f);
+    printf("%s: sscanf result (%f) != airSingleParse (%f) !!!\n", me, sf, f);
     printf("\n");
   }
   d = f;
@@ -71,7 +71,7 @@ main(int argc, char *argv[]) {
       l2d, fl2d, ss, ess, frx, ee);
   }
 
-  ret = sscanf(fS, "%lf", &d);
+  ret = sscanf(fS, "%lf", &d); /* intentionally not airSingleParse */
   if (!ret) {
     printf("%s: sscanf(%s, \"%%lf\") failed\n", me, fS);
     printf("\n");
